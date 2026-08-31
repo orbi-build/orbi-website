@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — 把 GitHub Issue 做成合进去的 PR</title>
-  <meta name="description" content="把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR。跑在你自己的机器和模型上。">
+  <title>Orbi — 让 AI 工程任务可靠、可审计、可恢复地完成</title>
+  <meta name="description" content="在你自己的机器和代码环境里，让 AI 工程任务可靠、可审计、可恢复地完成。GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。不是又一个通用 coding agent。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
@@ -14,16 +14,16 @@
   <div class="sheet">
     <header class="top">
       <p class="wordmark">ORBI</p>
-      <p class="job">JOB&nbsp;v0.2.0&nbsp;/&nbsp;factory&nbsp;OS</p>
+      <p class="job">JOB&nbsp;v0.2.0&nbsp;/&nbsp;your&nbsp;machine</p>
     </header>
 
     <section class="hero" aria-labelledby="hook">
       <div class="hero-copy">
-        <p class="stamp">GitHub-native</p>
-        <h1 id="hook">把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR。<br>跑在你自己的机器和模型上。</h1>
+        <p class="stamp">不是 coding agent</p>
+        <h1 id="hook">在你自己的机器和代码环境里，<br>让 AI 工程任务可靠、可审计、可恢复地完成。</h1>
       </div>
       <div class="hero-act">
-        <p class="lede">不是又一个通用 coding agent。状态只在 GitHub：领取、实现、独立 review、失败留在同一张 PR 里接着修，直到合进去。用你的仓库、你的 GPU、你的 API key。</p>
+        <p class="lede">GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。状态只在 GitHub。失败停在同一张 PR 上接着修。用你的仓库、你的 GPU、你的 API key。</p>
         <p class="cta-row">
           <a class="cta cta-primary" href="https://github.com/orbi-build/orbi">打开 GitHub</a>
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">看 v0.2.0</a>
@@ -34,38 +34,38 @@
     <section class="line" aria-labelledby="line-title">
       <div class="line-head">
         <h2 id="line-title">一张 Issue 进来之后</h2>
-        <p class="line-note">六站。不停线。</p>
+        <p class="line-note">合进去才算完</p>
       </div>
       <ol class="track">
         <li>
           <span class="step-id">01</span>
-          <span class="step-name">任务进入</span>
-          <span class="step-copy">Issue 标成 ai-ready。Runner 按 P0、bug、milestone 领取。</span>
+          <span class="step-name">领取</span>
+          <span class="step-copy">GitHub Issue 是唯一任务状态。Runner 自己领。</span>
         </li>
         <li>
           <span class="step-id">02</span>
-          <span class="step-name">Agent 实现</span>
+          <span class="step-name">实现</span>
           <span class="step-copy">独立 worktree 里改代码、跑测试、提交。</span>
         </li>
         <li>
           <span class="step-id">03</span>
-          <span class="step-name">测试与 Review</span>
-          <span class="step-copy">另一场 session 审同一份 diff，能改就当场改。</span>
+          <span class="step-name">独立 Review</span>
+          <span class="step-copy">另一场 session，审同一份 diff。</span>
         </li>
         <li>
           <span class="step-id">04</span>
-          <span class="step-name">失败恢复</span>
-          <span class="step-copy">停在同一张 PR。进程没了，现场还在。</span>
+          <span class="step-name">会话内修复</span>
+          <span class="step-copy">Reviewer 能改就当场改，只推任务分支。</span>
         </li>
         <li>
           <span class="step-id">05</span>
-          <span class="step-name">发布</span>
-          <span class="step-copy">冻 base、对范围、跑测试、打 tag、出 Release。</span>
+          <span class="step-name">精确 Merge</span>
+          <span class="step-copy">合进去的必须是刚审过、含最新 base 的那个 head。</span>
         </li>
         <li>
           <span class="step-id">06</span>
-          <span class="step-name">监控</span>
-          <span class="step-copy">journal、progress comment、Prometheus。</span>
+          <span class="step-name">失败可恢复</span>
+          <span class="step-copy">停在同一张 PR。进程没了，现场还在。</span>
         </li>
       </ol>
     </section>

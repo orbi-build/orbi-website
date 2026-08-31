@@ -9,9 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 HTML_PATH = ROOT / "public" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
 
-HOOK = "把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR。"
-HOOK_WHERE = "跑在你自己的机器和模型上。"
-STEPS = ("任务进入", "Agent 实现", "测试与 Review", "失败恢复", "发布", "监控")
+HOOK = "在你自己的机器和代码环境里"
+HOOK_JOB = "让 AI 工程任务可靠、可审计、可恢复地完成。"
+OFFER = "GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。"
+FACTORY_SLOGAN = "软件工厂的工厂"
+STEPS = ("领取", "实现", "独立 Review", "会话内修复", "精确 Merge", "失败可恢复")
 
 
 class PageParser(HTMLParser):
@@ -53,7 +55,10 @@ class LandingTests(unittest.TestCase):
 
     def test_hero_sentence_in_markup(self) -> None:
         self.assertIn(HOOK, self.html)
-        self.assertIn(HOOK_WHERE, self.html)
+        self.assertIn(HOOK_JOB, self.html)
+        self.assertIn(OFFER, self.html)
+        self.assertNotIn(FACTORY_SLOGAN, self.html)
+        self.assertNotIn("factory OS", self.html)
 
     def test_two_ctas_point_at_github(self) -> None:
         hrefs = [href for _, href in self.page.hrefs]
