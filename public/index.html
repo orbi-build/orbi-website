@@ -7,67 +7,74 @@
   <meta name="description" content="Orbi 是用来建设和运行 AI 软件工厂的基础设施。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="grain" aria-hidden="true"></div>
-  <header class="top">
-    <span class="mark">ORBI</span>
-    <span class="meta">factory OS · v0.2.0</span>
-  </header>
+  <div class="sheet">
+    <header class="top">
+      <p class="wordmark">ORBI</p>
+      <p class="job">JOB&nbsp;v0.2.0&nbsp;/&nbsp;factory&nbsp;OS</p>
+    </header>
 
-  <main>
     <section class="hero" aria-labelledby="hook">
-      <p class="kicker">基础设施</p>
-      <h1 id="hook">Orbi 是用来建设和运行 AI 软件工厂的基础设施——软件工厂的工厂。</h1>
-      <p class="lede">GitHub 上丢一张 Issue。后面的实现、测试、review、合入和发版，由 Runner 接着跑。</p>
-      <p class="cta-row">
-        <a class="cta cta-primary" href="https://github.com/orbi-build/orbi">打开 GitHub</a>
-        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">看 v0.2.0</a>
-      </p>
+      <div class="hero-copy">
+        <p class="stamp">基础设施</p>
+        <h1 id="hook">Orbi 是用来建设和运行 AI 软件工厂的基础设施——软件工厂的工厂。</h1>
+      </div>
+      <div class="hero-act">
+        <p class="lede">GitHub 上丢一张 Issue。后面的实现、测试、review、合入和发版，由 Runner 接着跑。</p>
+        <p class="cta-row">
+          <a class="cta cta-primary" href="https://github.com/orbi-build/orbi">打开 GitHub</a>
+          <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">看 v0.2.0</a>
+        </p>
+      </div>
     </section>
 
     <section class="line" aria-labelledby="line-title">
-      <h2 id="line-title">一张 Issue 进来之后</h2>
-      <ol class="steps">
+      <div class="line-head">
+        <h2 id="line-title">一张 Issue 进来之后</h2>
+        <p class="line-note">六站。不停线。</p>
+      </div>
+      <ol class="track">
         <li>
           <span class="step-id">01</span>
           <span class="step-name">任务进入</span>
-          <span class="step-copy">Issue 标成 ai-ready。Runner 按 P0、bug、milestone 领取，不靠人派工。</span>
+          <span class="step-copy">Issue 标成 ai-ready。Runner 按 P0、bug、milestone 领取。</span>
         </li>
         <li>
           <span class="step-id">02</span>
           <span class="step-name">Agent 实现</span>
-          <span class="step-copy">在独立 worktree 里改代码、跑测试、提交。写什么由 Agent 判断。</span>
+          <span class="step-copy">独立 worktree 里改代码、跑测试、提交。</span>
         </li>
         <li>
           <span class="step-id">03</span>
           <span class="step-name">测试与 Review</span>
-          <span class="step-copy">另一场 session 审同一份 diff。能改就当场改，再出 verdict。</span>
+          <span class="step-copy">另一场 session 审同一份 diff，能改就当场改。</span>
         </li>
         <li>
           <span class="step-id">04</span>
           <span class="step-name">失败恢复</span>
-          <span class="step-copy">能自动救的失败停在同一张 PR。进程没了，现场还在 Issue 和 journal 里。</span>
+          <span class="step-copy">停在同一张 PR。进程没了，现场还在。</span>
         </li>
         <li>
           <span class="step-id">05</span>
           <span class="step-name">发布</span>
-          <span class="step-copy">一张 ai-release Issue：冻 base、对范围、跑测试、打 tag、出 GitHub Release。</span>
+          <span class="step-copy">冻 base、对范围、跑测试、打 tag、出 Release。</span>
         </li>
         <li>
           <span class="step-id">06</span>
           <span class="step-name">监控</span>
-          <span class="step-copy">journal 心跳、一条 progress comment、Prometheus。不用一直盯终端。</span>
+          <span class="step-copy">journal、progress comment、Prometheus。</span>
         </li>
       </ol>
     </section>
-  </main>
 
-  <footer>
-    <a href="https://github.com/orbi-build/orbi">GitHub</a>
-    <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-  </footer>
+    <footer>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
+      <span class="foot-mark">orbi.build</span>
+    </footer>
+  </div>
 </body>
 </html>
