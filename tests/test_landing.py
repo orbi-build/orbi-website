@@ -100,7 +100,6 @@ class LandingTests(unittest.TestCase):
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)
         self.assertIn('"orbi.build"', worker)
-        self.assertIn("/zh/index.html", worker)
 
 
 if __name__ == "__main__":

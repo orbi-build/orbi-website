@@ -19,11 +19,6 @@ export default {
       );
     }
 
-    if (url.pathname === "/zh" || url.pathname === "/zh/") {
-      url.pathname = "/zh/index.html";
-      request = new Request(url, request);
-    }
-
     const asset = await env.ASSETS.fetch(request);
     const response = new Response(asset.body, asset);
     for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
