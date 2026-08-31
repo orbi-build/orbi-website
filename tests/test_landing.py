@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HTML_PATH = ROOT / "public" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
 
-HOOK = "Orbi 是用来建设和运行 AI 软件工厂的基础设施——软件工厂的工厂。"
+HOOK = "把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR——跑在你自己的机器和模型上。"
 STEPS = ("任务进入", "Agent 实现", "测试与 Review", "失败恢复", "发布", "监控")
 
 
