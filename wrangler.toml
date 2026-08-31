@@ -6,3 +6,11 @@ workers_dev = true
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
+
+[[routes]]
+pattern = "orbi.build"
+custom_domain = true
+
+[[routes]]
+pattern = "www.orbi.build"
+custom_domain = true
