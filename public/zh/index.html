@@ -3,210 +3,247 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — 开一张 Issue，合进去一张 PR</title>
-  <meta name="description" content="Orbi 在你自己的机器上把活干完：实现、独立审查、测试、合并。账记在 GitHub。GPU 和密钥是你的。">
+  <title>Orbi — 关灯以后，软件继续交付</title>
+  <meta name="description" content="Orbi 把 GitHub Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的软件生产系统。">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <header class="nav">
-    <a class="wordmark" href="/zh/">Orbi</a>
-    <nav>
-      <a href="https://docs.orbi.build/zh">文档</a>
-      <a href="https://github.com/orbi-build/orbi">GitHub</a>
-      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-      <span class="lang">
-        <a href="/" title="English" lang="en">🇺🇸</a>
-        <span aria-current="page" title="中文">🇨🇳</span>
-      </span>
-    </nav>
-  </header>
+  <a class="skip-link" href="#main-content">跳到正文</a>
 
-  <main>
-    <section class="hero">
+  <div class="night">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Orbi</span>
+      </a>
+      <nav aria-label="主导航">
+        <a class="nav-detail" href="#system">产品</a>
+        <a class="nav-detail" href="#direction">方向</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <span class="language" role="group" aria-label="语言">
+          <a href="/" lang="en">EN</a>
+          <span aria-current="page">中文</span>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+  <div class="night">
+    <section class="hero shell" data-status="shipping">
       <div class="hero-copy">
-        <p class="kicker">不是聊天机器人</p>
-        <h1>开一张 Issue，<br>合进去一张 PR。</h1>
-        <p class="lede">它改代码，另一场审查同一份 diff，测试必须过，然后那个提交才进 main。账在 GitHub 上。跑在你的机器、你的 GPU、你的密钥上。</p>
-        <p class="cta-row">
-          <a class="cta cta-primary" href="https://docs.orbi.build/zh">文档</a>
-          <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
-        </p>
+        <p class="eyebrow"><span class="live-dot"></span>GitHub 原生的软件生产系统</p>
+        <h1>关灯以后，<br><span>软件继续交付。</span></h1>
+        <p class="hero-lede">Orbi 把 Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的生产系统。它跑在你的机器和模型上，状态留在 GitHub。</p>
+        <div class="cta-row">
+          <a class="button button-signal" data-cta="install" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
+          <a class="button button-ghost" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付</a>
+        </div>
+        <ul class="trust-line" aria-label="产品属性">
+          <li>Apache 2.0</li>
+          <li>自托管</li>
+          <li>自带模型</li>
+        </ul>
       </div>
-      <figure class="demo" id="orbi-demo" data-lang="zh">
-        <div class="demo-frame">
-          <div class="demo-chrome">
-            <span class="demo-dots" aria-hidden="true"></span>
-            <span>orbi-build/orbi · Issue #48</span>
-            <span class="demo-clock" data-clock>13:02</span>
+
+      <figure class="factory-trace" id="factory-trace" aria-labelledby="trace-caption">
+        <div class="trace-head">
+          <span><i class="live-dot"></i> 01 号产线 / 运行中</span>
+          <span>orbi-build/orbi</span>
+        </div>
+        <div class="trace-body">
+          <div class="trace-axis" aria-hidden="true"><span></span></div>
+          <ol class="trace-nodes">
+            <li class="trace-node" data-trace-node data-capability="epic">
+              <span class="trace-index">范围</span>
+              <strong>Epic + Milestone</strong>
+              <small>确定版本边界</small>
+            </li>
+            <li class="trace-node" data-trace-node data-capability="dependency">
+              <span class="trace-index">顺序</span>
+              <strong>GitHub blockedBy</strong>
+              <small>证据表明就绪才开工</small>
+            </li>
+            <li class="trace-node" data-trace-node data-capability="delivery">
+              <span class="trace-index">生产</span>
+              <strong>Issue #48 → PR #193</strong>
+              <small>实现 · 测试 · 审查 · 修复 · 合并</small>
+            </li>
+            <li class="trace-node" data-trace-node data-capability="release">
+              <span class="trace-index">出厂</span>
+              <strong>Release v0.2.0</strong>
+              <small>冻结 SHA · 完整门禁 · 不可变 Tag</small>
+            </li>
+          </ol>
+        </div>
+        <figcaption id="trace-caption">
+          <span>可恢复状态</span>
+          <strong>GitHub 是账本。通过审查的提交才是产品。</strong>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="stats shell" id="orbi-stats" data-lang="zh" data-status="shipping" aria-label="GitHub 实时生产记录">
+      <p class="stats-label">实时生产记录</p>
+      <div class="stat"><strong data-stat="days">0</strong><span>运行天数</span><small data-started></small></div>
+      <div class="stat"><strong data-stat="issues">0</strong><span>已关闭 Issue</span></div>
+      <div class="stat"><strong data-stat="prs">0</strong><span>已合并 PR</span></div>
+      <div class="stat"><strong data-stat="releases">0</strong><span>已发布版本</span></div>
+    </section>
+  </div>
+
+    <section class="thesis shell" aria-labelledby="thesis-title">
+      <div>
+        <p class="section-tag">行业正在换挡</p>
+        <h2 id="thesis-title">模型会写越来越多的代码。<br>交付不会因此自动完成。</h2>
+        <p class="section-lede">当 Agent 能连续工作数小时、并行处理多个任务，瓶颈就从写代码转向：决定改什么、协调依赖、证明结果正确、控制权限，以及把一个精确版本安全送进生产。</p>
+        <p class="thesis-punch">Agent 越强，生产系统越重要。</p>
+      </div>
+      <ol class="shift-list">
+        <li><span>01</span><strong>一次提示</strong><em>→</em><b>长时间委派</b></li>
+        <li><span>02</span><strong>单个 Agent</strong><em>→</em><b>按任务选择协作方式</b></li>
+        <li><span>03</span><strong>生成代码</strong><em>→</em><b>交付版本和结果</b></li>
+        <li><span>04</span><strong>人盯过程</strong><em>→</em><b>人只处理决策点</b></li>
+      </ol>
+    </section>
+
+    <section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">
+      <div class="shell">
+        <p class="section-tag">今天已经在运行</p>
+        <div class="section-heading">
+          <h2 id="system-title">不是单任务队列。<br>是一张交付图。</h2>
+          <p>Issue 是最小执行单元，但 Orbi 管的不是孤立 Issue：Epic 和 Milestone 确定范围，blockedBy 排定依赖，Review/Fix 让 PR 收敛，Release Issue 把一组结果冻结成版本。</p>
+        </div>
+
+        <div class="production-map" role="group" aria-label="Orbi 当前生产系统">
+          <div class="map-row" data-capability="epic">
+            <div class="map-label"><span>01</span><strong>组织</strong></div>
+            <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
+            <p>聚合多个结果，但不让 Runner 把协调事项错当成可执行任务。</p>
           </div>
-          <div class="demo-body">
-            <p class="demo-id">#48</p>
-            <p class="demo-title" data-title>Runner 停掉时记下当前 Issue</p>
-            <p class="demo-labels" data-labels></p>
-            <ol class="demo-rail" data-rail></ol>
-            <ol class="demo-log" data-log></ol>
-            <p class="demo-pr" data-pr hidden></p>
+          <div class="map-row" data-capability="dependency">
+            <div class="map-label"><span>02</span><strong>排序</strong></div>
+            <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
+            <p>读取 GitHub 原生依赖；前置关闭以后，任务才自然进入生产。</p>
+          </div>
+          <div class="map-row map-row-signal" data-capability="delivery">
+            <div class="map-label"><span>03</span><strong>交付</strong></div>
+            <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>测试</span><i></i><span>审查 + 修复</span><i></i><span>精确合并</span></div>
+            <p>第二场会话可以直接修复分支；只有刚刚审过的那个 Head 可以进入主分支。</p>
+          </div>
+          <div class="map-row" data-capability="release">
+            <div class="map-label"><span>04</span><strong>发版</strong></div>
+            <div class="map-track"><span>冻结 SHA</span><i></i><span>完整门禁</span><i></i><span>Tag + Release</span></div>
+            <p>逐项核对范围和仓库状态，再发布不可变版本；发版不是让 Agent 临场发挥。</p>
+          </div>
+          <div class="recovery-rail">
+            <span>恢复总线</span>
+            <p>进程被杀、测试失败、提交没推出去——下一拍仍然回到同一个 Run、分支、Worktree 和 PR。</p>
           </div>
         </div>
-        <figcaption>#48 是仓库里真跑过的一票：开了，审了，合了。</figcaption>
-      </figure>
-    </section>
-
-    <section class="stats" id="orbi-stats" data-lang="zh" aria-label="GitHub 实时统计">
-      <div>
-        <p class="num" data-stat="days">0</p>
-        <p class="lbl">天</p>
-        <p class="sub" data-started></p>
-      </div>
-      <div>
-        <p class="num" data-stat="issues">0</p>
-        <p class="lbl">已关闭 Issue</p>
-      </div>
-      <div>
-        <p class="num" data-stat="prs">0</p>
-        <p class="lbl">已合并 PR</p>
-      </div>
-      <div>
-        <p class="num" data-stat="releases">0</p>
-        <p class="lbl">已发布版本</p>
       </div>
     </section>
 
-    <section class="band">
-      <h2>票进来之后</h2>
-      <p class="section-lede">Runner 自己领。改完、再审一遍、合进 main。失败了还是这张 PR，不会另开一张。</p>
-      <ol class="steps" data-flow>
-        <li>
-          <span>01</span>
-          <h3>领取</h3>
-          <p>你给 Issue 打标。Runner 来领。没有第二套看板。</p>
-        </li>
-        <li>
-          <span>02</span>
-          <h3>实现</h3>
-          <p>单独的工作树。先写测试。提交只上任务分支。</p>
-        </li>
-        <li>
-          <span>03</span>
-          <h3>审查</h3>
-          <p>新进程，同一份 diff。能改就改。绝不推 main。</p>
-        </li>
-        <li>
-          <span>04</span>
-          <h3>合并</h3>
-          <p>main 要新。要能合。SHA 必须是刚审过的那个。</p>
-        </li>
-        <li>
-          <span>05</span>
-          <h3>接着干</h3>
-          <p>失败停在这张 PR。重启读 GitHub，不读聊天记录。</p>
-        </li>
-        <li>
-          <span>06</span>
-          <h3>发版</h3>
-          <p>一张发版 Issue：冻住底仓、核对范围、跑测试、打 tag。tag 从不强推。</p>
-        </li>
-      </ol>
-      <div class="shots">
-        <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
-          <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48：Runner 停掉时记下当前 Issue。">
+    <section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
+      <div class="section-heading proof-heading">
+        <div>
+          <p class="section-tag">真实生产证据</p>
+          <h2 id="proof-title">不是流程图。<br>是已经发生的交付。</h2>
+        </div>
+        <p>Issue #48 进入真实的 Orbi 仓库。隔离运行完成实现，另一场会话审查同一份 Diff，PR #193 随后合并。今天仍然可以检查全过程，因为 GitHub 本身就是记录。</p>
+      </div>
+      <div class="proof-flow">
+        <a class="proof-shot proof-input" href="https://github.com/orbi-build/orbi/issues/48">
+          <span>输入 / ISSUE #48</span>
+          <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48：Runner 停掉时记录当前 Issue。">
         </a>
-        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
-          <img src="/img/pr-193.png" width="1200" height="600" alt="由该 Issue 合并的 PR #193。">
+        <div class="proof-arrow" aria-hidden="true"><span>已审查</span>→</div>
+        <a class="proof-shot proof-output" href="https://github.com/orbi-build/orbi/pull/193">
+          <span>输出 / 已合并 PR #193</span>
+          <img src="/img/pr-193.png" width="1200" height="600" alt="从 Issue #48 交付并合并的 GitHub PR #193。">
         </a>
       </div>
-    </section>
-
-    <section class="band">
-      <h2>聊天窗口交不了货</h2>
-      <div class="split">
-        <p>模型丢出一份 diff，审查、测试、合并还是你的事。窗口一关，活就没了。试一下够用。通宵把仓库推上去不够用。</p>
-        <p>难的是做完：测试要过，另一场看同一份改动，审过的提交进 main，机器重启了现场还在。</p>
-      </div>
-      <div class="compare">
-        <article>
-          <h3>Coding agent</h3>
-          <ul>
-            <li>状态在聊天里</li>
-            <li>同一场又写又「审」</li>
-            <li>合不合看你</li>
-            <li>进程没了，活也没了</li>
-          </ul>
-        </article>
-        <article class="hi">
-          <h3>Orbi</h3>
-          <ul>
-            <li>Issue、PR、标签就是账本</li>
-            <li>另一场审查，而且可以改</li>
-            <li>只能合刚审过的那个提交</li>
-            <li>下一拍还在这张 PR 上接着干</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="band">
-      <h2>机器是你的。GitHub 只记账。</h2>
-      <p class="section-lede">代码和模型留在你已经有的那台机器上。</p>
-      <figure class="diagram">
-        <img src="/img/where.svg" width="1100" height="200" alt="你的机器、Orbi runner、GitHub Issue 和 PR。">
-      </figure>
-    </section>
-
-    <section class="band">
-      <h2>它真正卡住的几件事</h2>
-      <ul class="bento">
-        <li>
-          <h3>只有一本账</h3>
-          <p>Issue、标签、PR、评论。没有影子库，也没有另一套工作区要对账。</p>
-        </li>
-        <li>
-          <h3>审查的人会改</h3>
-          <p>独立的一场。可以改代码、跑完全量、只推任务分支，再对修好的提交下结论。</p>
-        </li>
-        <li>
-          <h3>合进去的 SHA 对得上</h3>
-          <p>必须是刚审过的那个。底仓必须新。Runner 不自动解冲突。</p>
-        </li>
-        <li>
-          <h3>死了还能续</h3>
-          <p>进程被杀、测试挂了、本地提交没推出去——同一场、同一张 PR、下一拍继续。只有人必须拍板的才停。</p>
-        </li>
-        <li>
-          <h3>模型是你的</h3>
-          <p>本地 GPU 或自带密钥。兼容 OpenAI 接口。仓库不必离开你信的那台机器。</p>
-        </li>
-        <li>
-          <h3>测试就是门</h3>
-          <p>先写测试。跑全套。Python 运行时行和分支都要 100%。失败就停，没有退路。</p>
-        </li>
+      <ul class="proof-ledger">
+        <li><span>01</span><strong>会修复的独立审查</strong><p>Reviewer 改代码、重跑全量，再对修复后的 Head 下结论。</p></li>
+        <li><span>02</span><strong>合并证据只绑定一个 SHA</strong><p>最新底仓、可以合并，以及真正收到 Verdict 的那个 Commit。</p></li>
+        <li><span>03</span><strong>失败不产生第二套故事</strong><p>Issue、PR、Label、Journal 和 Run ID 足够让重启恢复同一现场。</p></li>
       </ul>
     </section>
 
-    <section class="band close">
-      <h2>活已经在 GitHub Issue 里，就在那儿跑。</h2>
-      <p>Apache 2.0。自己托管。当前是 v0.2.0。接上你已经在付的模型。</p>
-      <p class="cta-row">
-        <a class="cta cta-primary" href="https://docs.orbi.build/zh">文档</a>
-        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-      </p>
+    <section class="ownership" data-status="shipping" aria-labelledby="ownership-title">
+      <div class="shell ownership-grid">
+        <div>
+          <p class="section-tag section-tag-dark">你的工厂现场</p>
+          <h2 id="ownership-title">你的代码。你的算力。<br>你的权限。</h2>
+          <p>Orbi 在仓库和模型访问本来就存在的地方运行。GitHub 保存长期协调和交付证据；你的机器执行真正的生产。</p>
+        </div>
+        <div class="ownership-map" role="group" aria-label="Orbi 执行边界">
+          <div><span>控制面</span><strong>GitHub</strong><small>Issue · PR · 依赖 · Release</small></div>
+          <i aria-hidden="true"></i>
+          <div class="ownership-core"><span>Runner</span><strong>Orbi</strong><small>策略 · 恢复 · 合并门禁</small></div>
+          <i aria-hidden="true"></i>
+          <div><span>执行面</span><strong>你的机器</strong><small>仓库 · 模型 · 密钥 · 测试</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
+      <div class="direction-head">
+        <div>
+          <p class="section-tag">正在建设的方向 · 不是已上线清单</p>
+          <h2 id="direction-title">从交付任务，<br>到持续演进软件。</h2>
+        </div>
+        <p>今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
+      </div>
+
+      <ol class="future-loop">
+        <li><span>01 / 感知</span><strong>读取软件现场</strong><p>故障、遥测、用户反馈、安全发现、依赖漂移。</p></li>
+        <li><span>02 / 决策</span><strong>提出下一项改动</strong><p>让工作有证据，再按目标、依赖、风险和成本排序。</p></li>
+        <li><span>03 / 生产</span><strong>选择合适的智能</strong><p>顺序任务用一个 Agent；真正可拆的任务才组织专业 Agent 协作。</p></li>
+        <li><span>04 / 证明</span><strong>把信心写成可执行门禁</strong><p>测试、Eval、模拟、安全策略和明确的人工审批边界。</p></li>
+        <li><span>05 / 发布</span><strong>控制影响范围</strong><p>不可变 Release、渐进交付、自动回滚和完整来源记录。</p></li>
+        <li><span>06 / 学习</span><strong>让结果回到下一轮</strong><p>有效做法成为证据；失败成为可复现任务，而不是口耳相传。</p></li>
+      </ol>
+
+      <div class="direction-thesis">
+        <p>模型会更换，Agent 会进化。长期产品是让<strong>目标、状态、权限、验证、成本和生产证据</strong>始终保持连续的那一层。</p>
+        <p>Orbi 不应该变成另一个聊天窗口或另一个看板。它应该成为 Agent 之上的生产控制系统。</p>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">开源核心</p>
+      <h2 id="closing-title">先让一个仓库，<br>关灯运行。</h2>
+      <p>Apache 2.0，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到经过审查的结果。</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="https://github.com/orbi-build/orbi">查看源码</a>
+        <a class="text-link" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">阅读 v0.2.0 发布记录 →</a>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <a href="https://docs.orbi.build/zh">文档</a>
-    <a href="https://github.com/orbi-build/orbi">GitHub</a>
-    <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-    <a href="/" title="English">🇺🇸</a>
-    <span class="foot-mark">orbi.build</span>
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="/" lang="en">EN</a>
+    </nav>
   </footer>
+
   <script src="/demo.js" defer></script>
 </body>
 </html>

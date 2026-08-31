@@ -3,210 +3,251 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — GitHub Issue in, merged PR out</title>
-  <meta name="description" content="Orbi finishes the job on your machine: implement, independent review, tests, merge. GitHub stays the record. Your GPU, your keys.">
+  <title>Orbi — Software keeps shipping after the lights go out</title>
+  <meta name="description" content="Orbi connects GitHub Issues, dependencies, Epics, implementation, independent review, exact-head merge, and releases into one recoverable production system.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <header class="nav">
-    <a class="wordmark" href="/">Orbi</a>
-    <nav>
-      <a href="https://docs.orbi.build">Docs</a>
-      <a href="https://github.com/orbi-build/orbi">GitHub</a>
-      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-      <span class="lang">
-        <span aria-current="page" title="English">🇺🇸</span>
-        <a href="/zh/" title="中文" lang="zh-CN">🇨🇳</a>
-      </span>
-    </nav>
-  </header>
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="kicker">Not a chatbot</p>
-        <h1>GitHub Issue in.<br>Merged PR out.</h1>
-        <p class="lede">It implements, a second process reviews the same diff, tests have to pass, then that commit lands. The ledger is GitHub. The run is your machine, your GPU, your keys.</p>
-        <p class="cta-row">
-          <a class="cta cta-primary" href="https://docs.orbi.build">Docs</a>
-          <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
-        </p>
-      </div>
-      <figure class="demo" id="orbi-demo" data-lang="en">
-        <div class="demo-frame">
-          <div class="demo-chrome">
-            <span class="demo-dots" aria-hidden="true"></span>
-            <span>orbi-build/orbi · Issue #48</span>
-            <span class="demo-clock" data-clock>13:02</span>
+  <div class="night">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Orbi</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a class="nav-detail" href="#system">Product</a>
+        <a class="nav-detail" href="#direction">Direction</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+    <main id="main-content">
+  <div class="night">
+      <section class="hero shell" data-status="shipping">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="live-dot"></span>GitHub-native software production</p>
+          <h1>Software keeps shipping<br><span>after the lights go out.</span></h1>
+          <p class="hero-lede">Orbi connects Issues, dependencies, Epics, implementation, independent review, exact-head merge, and releases into one recoverable production system—running on your machines and models.</p>
+          <div class="cta-row">
+            <a class="button button-signal" data-cta="install" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+            <a class="button button-ghost" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">Inspect a real delivery</a>
           </div>
-          <div class="demo-body">
-            <p class="demo-id">#48</p>
-            <p class="demo-title" data-title>Log active Issue context when Runner is stopped</p>
-            <p class="demo-labels" data-labels></p>
-            <ol class="demo-rail" data-rail></ol>
-            <ol class="demo-log" data-log></ol>
-            <p class="demo-pr" data-pr hidden></p>
+          <ul class="trust-line" aria-label="Product attributes">
+            <li>Apache 2.0</li>
+            <li>Self-hosted</li>
+            <li>Your models</li>
+          </ul>
+        </div>
+
+        <figure class="factory-trace" id="factory-trace" aria-labelledby="trace-caption">
+          <div class="trace-head">
+            <span><i class="live-dot"></i> LINE 01 / RUNNING</span>
+            <span>orbi-build/orbi</span>
+          </div>
+          <div class="trace-body">
+            <div class="trace-axis" aria-hidden="true"><span></span></div>
+            <ol class="trace-nodes">
+              <li class="trace-node" data-trace-node data-capability="epic">
+                <span class="trace-index">SCOPE</span>
+                <strong>Epic + milestone</strong>
+                <small>define the release boundary</small>
+              </li>
+              <li class="trace-node" data-trace-node data-capability="dependency">
+                <span class="trace-index">ORDER</span>
+                <strong>Native blockedBy</strong>
+                <small>work starts when evidence says ready</small>
+              </li>
+              <li class="trace-node" data-trace-node data-capability="delivery">
+                <span class="trace-index">BUILD</span>
+                <strong>Issue #48 → PR #193</strong>
+                <small>implement · test · review · fix · merge</small>
+              </li>
+              <li class="trace-node" data-trace-node data-capability="release">
+                <span class="trace-index">SHIP</span>
+                <strong>Release v0.2.0</strong>
+                <small>frozen SHA · full gate · immutable tag</small>
+              </li>
+            </ol>
+          </div>
+          <figcaption id="trace-caption">
+            <span>RECOVERABLE STATE</span>
+            <strong>GitHub is the ledger. The reviewed commit is the product.</strong>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="stats shell" id="orbi-stats" data-lang="en" data-status="shipping" aria-label="Live GitHub evidence">
+        <p class="stats-label">LIVE PRODUCTION RECORD</p>
+        <div class="stat">
+          <strong data-stat="days">0</strong>
+          <span>days running</span>
+          <small data-started></small>
+        </div>
+        <div class="stat"><strong data-stat="issues">0</strong><span>issues closed</span></div>
+        <div class="stat"><strong data-stat="prs">0</strong><span>PRs merged</span></div>
+        <div class="stat"><strong data-stat="releases">0</strong><span>releases shipped</span></div>
+      </section>
+  </div>
+
+      <section class="thesis shell" aria-labelledby="thesis-title">
+        <div>
+          <p class="section-tag">THE SHIFT</p>
+          <h2 id="thesis-title">Models will write more code.<br>Shipping will still need a system.</h2>
+          <p class="section-lede">As agents work for hours and run in parallel, the bottleneck moves. It is no longer typing code. It is deciding what should change, ordering dependent work, proving the result, controlling authority, and carrying an exact version into production.</p>
+          <p class="thesis-punch">Stronger agents make the production system more important, not less.</p>
+        </div>
+        <ol class="shift-list">
+          <li><span>01</span><strong>Prompt</strong><em>→</em><b>Long-running delegation</b></li>
+          <li><span>02</span><strong>One agent</strong><em>→</em><b>Purpose-fit coordination</b></li>
+          <li><span>03</span><strong>Code output</strong><em>→</em><b>Versioned outcomes</b></li>
+          <li><span>04</span><strong>Human supervision</strong><em>→</em><b>Human decisions</b></li>
+        </ol>
+      </section>
+
+      <section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">
+        <div class="shell">
+          <p class="section-tag">SHIPPING TODAY</p>
+          <div class="section-heading">
+            <h2 id="system-title">A delivery graph.<br>Not a task queue.</h2>
+            <p>An Issue is the executable unit, but Orbi does not manage Issues in isolation. Epics and milestones hold scope. Dependencies order the work. Review and repair converge each PR. A Release Issue freezes the result into a version.</p>
+          </div>
+
+          <div class="production-map" role="group" aria-label="Current Orbi production system">
+            <div class="map-row" data-capability="epic">
+              <div class="map-label"><span>01</span><strong>Coordinate</strong></div>
+              <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
+              <p>Group outcomes without letting the Runner mistake coordination for execution.</p>
+            </div>
+            <div class="map-row" data-capability="dependency">
+              <div class="map-label"><span>02</span><strong>Order</strong></div>
+              <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
+              <p>Use GitHub's real dependency graph. A task enters production only when its blockers close.</p>
+            </div>
+            <div class="map-row map-row-signal" data-capability="delivery">
+              <div class="map-label"><span>03</span><strong>Deliver</strong></div>
+              <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>Tests</span><i></i><span>Review + fix</span><i></i><span>Exact-head merge</span></div>
+              <p>A second session may patch the branch. Only its reviewed head is allowed to land.</p>
+            </div>
+            <div class="map-row" data-capability="release">
+              <div class="map-label"><span>04</span><strong>Release</strong></div>
+              <div class="map-track"><span>Freeze SHA</span><i></i><span>Full gate</span><i></i><span>Tag + release</span></div>
+              <p>Validate scope and the repository, then publish an immutable version—without an Agent improvising the release.</p>
+            </div>
+            <div class="recovery-rail">
+              <span>RECOVERY BUS</span>
+              <p>Process killed. Test failed. Commit not pushed. The same run, branch, worktree, and PR remain the scene for the next tick.</p>
+            </div>
           </div>
         </div>
-        <figcaption>Issue #48, as it actually ran — then shipped.</figcaption>
-      </figure>
-    </section>
+      </section>
 
-    <section class="stats" id="orbi-stats" data-lang="en" aria-label="Live GitHub totals">
-      <div>
-        <p class="num" data-stat="days">0</p>
-        <p class="lbl">days live</p>
-        <p class="sub" data-started></p>
-      </div>
-      <div>
-        <p class="num" data-stat="issues">0</p>
-        <p class="lbl">issues closed</p>
-      </div>
-      <div>
-        <p class="num" data-stat="prs">0</p>
-        <p class="lbl">PRs merged</p>
-      </div>
-      <div>
-        <p class="num" data-stat="releases">0</p>
-        <p class="lbl">releases</p>
-      </div>
-    </section>
+      <section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
+        <div class="section-heading proof-heading">
+          <div>
+            <p class="section-tag">PRODUCTION EVIDENCE</p>
+            <h2 id="proof-title">Not a diagram.<br>A delivery that happened.</h2>
+          </div>
+          <p>Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, and PR #193 merged. The record is still inspectable because the record is GitHub.</p>
+        </div>
+        <div class="proof-flow">
+          <a class="proof-shot proof-input" href="https://github.com/orbi-build/orbi/issues/48">
+            <span>INPUT / ISSUE #48</span>
+            <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48: Log active Issue context when Runner is stopped.">
+          </a>
+          <div class="proof-arrow" aria-hidden="true"><span>reviewed</span>→</div>
+          <a class="proof-shot proof-output" href="https://github.com/orbi-build/orbi/pull/193">
+            <span>OUTPUT / MERGED PR #193</span>
+            <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193 merged from Issue #48.">
+          </a>
+        </div>
+        <ul class="proof-ledger">
+          <li><span>01</span><strong>Independent review that can fix</strong><p>The reviewer changes code, reruns the suite, and judges the repaired head.</p></li>
+          <li><span>02</span><strong>Merge evidence tied to one SHA</strong><p>A fresh base, a mergeable PR, and the exact commit that received the verdict.</p></li>
+          <li><span>03</span><strong>Recovery without a second story</strong><p>Restarts reconstruct the delivery from the Issue, PR, labels, journal, and run ID.</p></li>
+        </ul>
+      </section>
 
-    <section class="band">
-      <h2>After you open the ticket</h2>
-      <p class="section-lede">The runner takes it, writes the change, a second session reviews, then it merges. Fail, and that PR is still the ticket.</p>
-      <ol class="steps" data-flow>
-        <li>
-          <span>01</span>
-          <h3>Claim</h3>
-          <p>You label the Issue. The runner picks it up. No second board.</p>
-        </li>
-        <li>
-          <span>02</span>
-          <h3>Implement</h3>
-          <p>Isolated worktree. Tests first. Commits stay on the task branch.</p>
-        </li>
-        <li>
-          <span>03</span>
-          <h3>Review</h3>
-          <p>New process, same diff. It can patch. It never pushes main.</p>
-        </li>
-        <li>
-          <span>04</span>
-          <h3>Merge</h3>
-          <p>Fresh base. Mergeable. The SHA that was just reviewed — nothing else.</p>
-        </li>
-        <li>
-          <span>05</span>
-          <h3>Recover</h3>
-          <p>Failure stays on that PR. Restart reads GitHub, not a chat log.</p>
-        </li>
-        <li>
-          <span>06</span>
-          <h3>Release</h3>
-          <p>A release Issue freezes the base, checks scope, tests, tags. Tags are never force-pushed.</p>
-        </li>
-      </ol>
-      <div class="shots">
-        <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
-          <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48: Log active Issue context when Runner is stopped.">
-        </a>
-        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
-          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193, merged from that Issue.">
-        </a>
-      </div>
-    </section>
+      <section class="ownership" data-status="shipping" aria-labelledby="ownership-title">
+        <div class="shell ownership-grid">
+          <div>
+            <p class="section-tag section-tag-dark">YOUR FACTORY FLOOR</p>
+            <h2 id="ownership-title">Your code. Your compute.<br>Your authority.</h2>
+            <p>Orbi runs where the repository and model access already live. GitHub carries durable coordination and evidence; your machine carries the execution.</p>
+          </div>
+          <div class="ownership-map" role="group" aria-label="Orbi execution boundary">
+            <div><span>CONTROL</span><strong>GitHub</strong><small>Issues · PRs · dependencies · releases</small></div>
+            <i aria-hidden="true"></i>
+            <div class="ownership-core"><span>RUNNER</span><strong>Orbi</strong><small>policy · recovery · merge gates</small></div>
+            <i aria-hidden="true"></i>
+            <div><span>EXECUTION</span><strong>Your machine</strong><small>repo · models · keys · tests</small></div>
+          </div>
+        </div>
+      </section>
 
-    <section class="band">
-      <h2>A chat is not a delivery system</h2>
-      <div class="split">
-        <p>An agent that dumps a diff still leaves review, tests, and merge to you. Kill the window and the work is gone. Fine for a spike. Not how you ship overnight.</p>
-        <p>The hard part is finishing: tests, a second pair of eyes on the same diff, the reviewed commit on main, and a scene you can pick up after reboot.</p>
-      </div>
-      <div class="compare">
-        <article>
-          <h3>Coding agent</h3>
-          <ul>
-            <li>State lives in a thread</li>
-            <li>One session writes and “reviews”</li>
-            <li>You merge, or you don’t</li>
-            <li>A dead process is a lost task</li>
-          </ul>
-        </article>
-        <article class="hi">
-          <h3>Orbi</h3>
-          <ul>
-            <li>Issue, PR, labels — that’s the record</li>
-            <li>A second session reviews, and may fix</li>
-            <li>Only the reviewed head is allowed to land</li>
-            <li>The next tick continues the same PR</li>
-          </ul>
-        </article>
-      </div>
-    </section>
+      <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
+        <div class="direction-head">
+          <div>
+            <p class="section-tag">THE DIRECTION · NOT A SHIPPING CLAIM</p>
+            <h2 id="direction-title">From delivering work<br>to continuously evolving software.</h2>
+          </div>
+          <p>Today, explicit GitHub tasks and Release Issues enter the line. The next horizon is a closed production loop: software supplies evidence from its own operation, Orbi turns that evidence into bounded work, Agents execute, and the result is measured after release.</p>
+        </div>
 
-    <section class="band">
-      <h2>Your machine. GitHub is the ledger.</h2>
-      <p class="section-lede">Code and models stay on the box you already have.</p>
-      <figure class="diagram">
-        <img src="/img/where.svg" width="1100" height="200" alt="Your machine with GPU and BYOK, the Orbi runner, and GitHub Issues and PRs.">
-      </figure>
-    </section>
+        <ol class="future-loop">
+          <li><span>01 / SENSE</span><strong>Read the software</strong><p>Incidents, telemetry, user feedback, security findings, dependency drift.</p></li>
+          <li><span>02 / DECIDE</span><strong>Propose the next change</strong><p>Ground work in evidence; order it by goals, dependencies, risk, and cost.</p></li>
+          <li><span>03 / BUILD</span><strong>Choose the right intelligence</strong><p>One Agent for sequential work, coordinated specialists where work can truly split.</p></li>
+          <li><span>04 / PROVE</span><strong>Make confidence executable</strong><p>Tests, evaluations, simulations, security rules, and explicit approval boundaries.</p></li>
+          <li><span>05 / SHIP</span><strong>Control the blast radius</strong><p>Immutable releases, progressive delivery, automatic rollback, complete provenance.</p></li>
+          <li><span>06 / LEARN</span><strong>Feed outcomes back</strong><p>What worked becomes evidence. What failed becomes a reproducible task—not folklore.</p></li>
+        </ol>
 
-    <section class="band">
-      <h2>What it actually enforces</h2>
-      <ul class="bento">
-        <li>
-          <h3>One record</h3>
-          <p>Issues, labels, PRs, comments. No shadow database. No second workspace to reconcile.</p>
-        </li>
-        <li>
-          <h3>Reviewer that patches</h3>
-          <p>Independent session. It can change code, re-run the suite, push the task branch, then verdict the new head.</p>
-        </li>
-        <li>
-          <h3>Exact-head merge</h3>
-          <p>The merge matches the SHA that was reviewed. Base must be fresh. The runner does not auto-resolve conflicts.</p>
-        </li>
-        <li>
-          <h3>Recoverable</h3>
-          <p>Killed runner, failed tests, unpushed commit — same run, same PR, next tick. Blocked is only for a human decision.</p>
-        </li>
-        <li>
-          <h3>Your model</h3>
-          <p>Local GPU or BYOK. OpenAI-compatible providers. The repo does not have to leave the box you trust.</p>
-        </li>
-        <li>
-          <h3>Tests are the gate</h3>
-          <p>TDD. Full suite. 100% line and branch coverage on the Python runtime. Fail fast. No fallback path.</p>
-        </li>
-      </ul>
-    </section>
+        <div class="direction-thesis">
+          <p>Models will change. Agents will improve. The durable product is the layer that keeps <strong>intent, state, authority, verification, economics, and production evidence</strong> coherent across all of them.</p>
+          <p>Orbi should not become another chat window or another board. It should become the control system above the Agents.</p>
+        </div>
+      </section>
 
-    <section class="band close">
-      <h2>If the work is already a GitHub Issue, run it there.</h2>
-      <p>Apache 2.0. Self-hosted. Current line is v0.2.0. Point it at a model you already pay for.</p>
-      <p class="cta-row">
-        <a class="cta cta-primary" href="https://docs.orbi.build">Docs</a>
-        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-      </p>
-    </section>
-  </main>
+      <section class="closing shell" aria-labelledby="closing-title">
+        <p class="section-tag">OPEN SOURCE CORE</p>
+        <h2 id="closing-title">Start with one repository.<br>Turn the lights off.</h2>
+        <p>Apache 2.0. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a reviewed result.</p>
+        <div class="cta-row">
+          <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+          <a class="button button-outline" href="https://github.com/orbi-build/orbi">View the source</a>
+          <a class="text-link" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">Read the v0.2.0 release →</a>
+        </div>
+      </section>
+    </main>
 
-  <footer>
-    <a href="https://docs.orbi.build">Docs</a>
-    <a href="https://github.com/orbi-build/orbi">GitHub</a>
-    <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-    <a href="/zh/" title="中文">🇨🇳</a>
-    <span class="foot-mark">orbi.build</span>
-  </footer>
+    <footer class="site-footer shell">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Orbi</span>
+      </a>
+      <p>Software production that survives the session.</p>
+      <nav aria-label="Footer navigation">
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/zh/" lang="zh-CN">中文</a>
+      </nav>
+    </footer>
+
   <script src="/demo.js" defer></script>
 </body>
 </html>

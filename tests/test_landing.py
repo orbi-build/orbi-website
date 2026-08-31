@@ -23,9 +23,11 @@ class PageParser(HTMLParser):
         self._href: str | None = None
         self._buf: list[str] = []
         self.text_chunks: list[str] = []
+        self.elements: list[tuple[str, dict[str, str]]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         got = {k: v or "" for k, v in attrs}
+        self.elements.append((tag, got))
         if tag == "a":
             self._href = got.get("href", "")
             self._buf = []
@@ -61,19 +63,13 @@ class LandingTests(unittest.TestCase):
 
     def test_english_is_the_default_page(self) -> None:
         self.assertIn('lang="en"', self.en_html)
-        self.assertIn("GitHub Issue in", self.en_html)
-        self.assertIn("A chat is not a delivery system", self.en_html)
-        self.assertIn("your GPU", self.en_html)
-        self.assertNotIn("Loops on this page", self.en_html)
+        self.assertIn("Software keeps shipping", self.en_html)
 
     def test_chinese_page_exists(self) -> None:
         self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn("开一张 Issue", self.zh_html)
-        self.assertIn("聊天窗口交不了货", self.zh_html)
-        self.assertNotIn("这页上循环播放", self.zh_html)
-        self.assertNotIn("产品讨论里的 Offer", self.zh_html)
+        self.assertIn("软件继续交付", self.zh_html)
 
-    def test_no_factory_slogan_or_nineties_type(self) -> None:
+    def test_no_generic_factory_os_or_nineties_type(self) -> None:
         for html in (self.en_html, self.zh_html):
             self.assertNotIn(FACTORY_SLOGAN, html)
             self.assertNotIn("factory OS", html)
@@ -90,32 +86,60 @@ class LandingTests(unittest.TestCase):
         self.assertTrue(any("/zh/" in href or href.endswith("/zh") for href in en_hrefs), en_hrefs)
         self.assertTrue(any(href == "/" or href.endswith("orbi.build/") for href in zh_hrefs), zh_hrefs)
 
-    def test_delivery_loop_is_on_the_page(self) -> None:
-        for name in ("Claim", "Implement", "Review", "Merge"):
-            self.assertIn(name, self.en.text)
-        for name in ("领取", "实现", "审查", "合并"):
-            self.assertIn(name, self.zh.text)
-
-    def test_language_uses_flag_emoji(self) -> None:
+    def test_language_switch_uses_readable_names(self) -> None:
         for html in (self.en_html, self.zh_html):
-            self.assertIn("🇺🇸", html)
-            self.assertIn("🇨🇳", html)
+            self.assertNotIn("🇺🇸", html)
+            self.assertNotIn("🇨🇳", html)
+            self.assertIn(">EN<", html)
+            self.assertIn(">中文<", html)
+
+    def test_pages_distinguish_shipping_product_from_future_direction(self) -> None:
+        for page in (self.en, self.zh):
+            sections = [attrs.get("data-status") for tag, attrs in page.elements if tag == "section"]
+            self.assertIn("shipping", sections)
+            self.assertIn("direction", sections)
+
+    def test_factory_map_covers_the_current_delivery_graph(self) -> None:
+        expected = {"epic", "dependency", "delivery", "release"}
+        for page in (self.en, self.zh):
+            capabilities = {
+                attrs["data-capability"]
+                for _, attrs in page.elements
+                if "data-capability" in attrs
+            }
+            self.assertTrue(expected.issubset(capabilities), capabilities)
+
+    def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
+        for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
+            ctas = {
+                attrs.get("data-cta"): attrs.get("href")
+                for tag, attrs in page.elements
+                if tag == "a" and "data-cta" in attrs
+            }
+            self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
+            self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
+
+    def test_pages_declare_a_favicon_instead_of_requesting_a_missing_default(self) -> None:
+        for page in (self.en, self.zh):
+            icons = [
+                attrs.get("href", "")
+                for tag, attrs in page.elements
+                if tag == "link" and "icon" in attrs.get("rel", "").split()
+            ]
+            self.assertTrue(icons, "browser would request missing /favicon.ico")
 
     def test_pages_ship_screenshots_and_diagrams(self) -> None:
         for html in (self.en_html, self.zh_html):
             self.assertIn("/img/issue-48.png", html)
             self.assertIn("/img/pr-193.png", html)
-            self.assertIn("/img/where.svg", html)
             self.assertIn('id="orbi-stats"', html)
-            self.assertIn("data-flow", html)
 
-    def test_hero_plays_a_delivery_demo(self) -> None:
+    def test_hero_plays_a_factory_trace(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
-        self.assertIn("ai-ready", js)
-        self.assertIn("ai-merged", js)
-        self.assertIn("v0.2.0", js)
+        self.assertIn("data-trace-node", js)
+        self.assertIn("prefers-reduced-motion", js)
         for html in (self.en_html, self.zh_html):
-            self.assertIn('id="orbi-demo"', html)
+            self.assertIn('id="factory-trace"', html)
             self.assertIn("/demo.js", html)
 
     def test_worker_keeps_www_to_apex(self) -> None:
