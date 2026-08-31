@@ -61,17 +61,17 @@ class LandingTests(unittest.TestCase):
 
     def test_english_is_the_default_page(self) -> None:
         self.assertIn('lang="en"', self.en_html)
-        self.assertIn("Finish the engineering job", self.en_html)
-        self.assertIn("chat window is not a delivery system", self.en_html)
-        self.assertIn("GitHub is the only system of record", self.en_html)
+        self.assertIn("GitHub Issue in", self.en_html)
+        self.assertIn("A chat is not a delivery system", self.en_html)
         self.assertIn("your GPU", self.en_html)
+        self.assertNotIn("Loops on this page", self.en_html)
 
     def test_chinese_page_exists(self) -> None:
         self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn("在你自己的机器和代码环境里", self.zh_html)
-        self.assertIn("可靠、可审计、可恢复", self.zh_html)
-        self.assertIn("聊天窗口不是交付系统", self.zh_html)
-        self.assertIn("GitHub 是唯一的任务状态", self.zh_html)
+        self.assertIn("开一张 Issue", self.zh_html)
+        self.assertIn("聊天窗口交不了货", self.zh_html)
+        self.assertNotIn("这页上循环播放", self.zh_html)
+        self.assertNotIn("产品讨论里的 Offer", self.zh_html)
 
     def test_no_factory_slogan_or_nineties_type(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -91,9 +91,9 @@ class LandingTests(unittest.TestCase):
         self.assertTrue(any(href == "/" or href.endswith("orbi.build/") for href in zh_hrefs), zh_hrefs)
 
     def test_delivery_loop_is_on_the_page(self) -> None:
-        for name in ("Claim", "Implement", "Independent review", "Merge"):
+        for name in ("Claim", "Implement", "Review", "Merge"):
             self.assertIn(name, self.en.text)
-        for name in ("领取", "实现", "独立 Review", "精确 Merge"):
+        for name in ("领取", "实现", "审查", "合并"):
             self.assertIn(name, self.zh.text)
 
     def test_language_uses_flag_emoji(self) -> None:
@@ -106,8 +106,8 @@ class LandingTests(unittest.TestCase):
             self.assertIn("/img/issue-48.png", html)
             self.assertIn("/img/pr-193.png", html)
             self.assertIn("/img/where.svg", html)
-        self.assertIn("/img/flow-en.svg", self.en_html)
-        self.assertIn("/img/flow-zh.svg", self.zh_html)
+            self.assertIn('id="orbi-stats"', html)
+            self.assertIn("data-flow", html)
 
     def test_hero_plays_a_delivery_demo(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
@@ -122,6 +122,9 @@ class LandingTests(unittest.TestCase):
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)
         self.assertIn('"orbi.build"', worker)
+        self.assertIn('"/stats"', worker)
+        self.assertIn("type:issue state:closed", worker)
+        self.assertIn("is:pr is:merged", worker)
 
 
 if __name__ == "__main__":

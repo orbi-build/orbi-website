@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — Finish the engineering job on your machine</title>
-  <meta name="description" content="Orbi turns a GitHub Issue into an implemented, independently reviewed, tested, and merged PR. It runs on your machine, your GPU, and your API keys. Not another coding agent.">
+  <title>Orbi — GitHub Issue in, merged PR out</title>
+  <meta name="description" content="Orbi finishes the job on your machine: implement, independent review, tests, merge. GitHub stays the record. Your GPU, your keys.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -30,11 +30,11 @@
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="kicker">Not another coding agent</p>
-        <h1>Finish the engineering job — on your machine.</h1>
-        <p class="lede">Orbi takes a GitHub Issue through implementation, independent review, tests, and merge. The record stays on GitHub. The run stays on your hardware and your keys.</p>
+        <p class="kicker">Not a chatbot</p>
+        <h1>GitHub Issue in.<br>Merged PR out.</h1>
+        <p class="lede">It implements, a second process reviews the same diff, tests have to pass, then that commit lands. The ledger is GitHub. The run is your machine, your GPU, your keys.</p>
         <p class="cta-row">
-          <a class="cta cta-primary" href="https://docs.orbi.build">Read the docs</a>
+          <a class="cta cta-primary" href="https://docs.orbi.build">Docs</a>
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
       </div>
@@ -54,16 +54,65 @@
             <p class="demo-pr" data-pr hidden></p>
           </div>
         </div>
-        <figcaption>Issue → implement → independent review → merge → release. Loops on this page; the real run is #48 → PR #193.</figcaption>
+        <figcaption>Issue #48, as it actually ran — then shipped.</figcaption>
       </figure>
     </section>
 
+    <section class="stats" id="orbi-stats" data-lang="en" aria-label="Live GitHub totals">
+      <div>
+        <p class="num" data-stat="days">0</p>
+        <p class="lbl">days live</p>
+        <p class="sub" data-started></p>
+      </div>
+      <div>
+        <p class="num" data-stat="issues">0</p>
+        <p class="lbl">issues closed</p>
+      </div>
+      <div>
+        <p class="num" data-stat="prs">0</p>
+        <p class="lbl">PRs merged</p>
+      </div>
+      <div>
+        <p class="num" data-stat="releases">0</p>
+        <p class="lbl">releases</p>
+      </div>
+    </section>
+
     <section class="band">
-      <h2>What actually happens to an Issue</h2>
-      <p class="section-lede">This is the offer: an Issue becomes an implemented, independently reviewed, tested, merged PR, on the customer’s machine and model account.</p>
-      <figure class="diagram">
-        <img src="/img/flow-en.svg" width="1100" height="300" alt="Flow: Issue, worktree, tests, independent review, merge. Failures loop back on the same PR. Labels: ai-ready to in-progress to pr-opened to merged or fix-needed.">
-      </figure>
+      <h2>After you open the ticket</h2>
+      <p class="section-lede">The runner takes it, writes the change, a second session reviews, then it merges. Fail, and that PR is still the ticket.</p>
+      <ol class="steps" data-flow>
+        <li>
+          <span>01</span>
+          <h3>Claim</h3>
+          <p>You label the Issue. The runner picks it up. No second board.</p>
+        </li>
+        <li>
+          <span>02</span>
+          <h3>Implement</h3>
+          <p>Isolated worktree. Tests first. Commits stay on the task branch.</p>
+        </li>
+        <li>
+          <span>03</span>
+          <h3>Review</h3>
+          <p>New process, same diff. It can patch. It never pushes main.</p>
+        </li>
+        <li>
+          <span>04</span>
+          <h3>Merge</h3>
+          <p>Fresh base. Mergeable. The SHA that was just reviewed — nothing else.</p>
+        </li>
+        <li>
+          <span>05</span>
+          <h3>Recover</h3>
+          <p>Failure stays on that PR. Restart reads GitHub, not a chat log.</p>
+        </li>
+        <li>
+          <span>06</span>
+          <h3>Release</h3>
+          <p>A release Issue freezes the base, checks scope, tests, tags. Tags are never force-pushed.</p>
+        </li>
+      </ol>
       <div class="shots">
         <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
           <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48: Log active Issue context when Runner is stopped.">
@@ -72,51 +121,19 @@
           <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193, merged from that Issue.">
         </a>
       </div>
-      <ol class="steps">
-        <li>
-          <span>01</span>
-          <h3>Claim</h3>
-          <p>You mark the Issue. The runner picks it up. Labels are the queue — no second board.</p>
-        </li>
-        <li>
-          <span>02</span>
-          <h3>Implement</h3>
-          <p>Isolated git worktree. Tests first. The change is committed on a task branch, never on main.</p>
-        </li>
-        <li>
-          <span>03</span>
-          <h3>Independent review</h3>
-          <p>A new process, a new transcript, the same diff. The reviewer can patch in-session. It only pushes the task branch.</p>
-        </li>
-        <li>
-          <span>04</span>
-          <h3>Merge</h3>
-          <p>Latest base, mergeable, exact reviewed SHA. Nothing else lands.</p>
-        </li>
-        <li>
-          <span>05</span>
-          <h3>Recover</h3>
-          <p>If it fails, it stays on that PR. Restart reads GitHub, not a local chat log.</p>
-        </li>
-        <li>
-          <span>06</span>
-          <h3>Release</h3>
-          <p>A release Issue freezes the base, checks scope, runs tests, tags, and publishes. No force-push of tags.</p>
-        </li>
-      </ol>
     </section>
 
     <section class="band">
-      <h2>The chat window is not a delivery system</h2>
+      <h2>A chat is not a delivery system</h2>
       <div class="split">
-        <p>A coding agent writes a diff and hands the rest back to you. Review is a comment. Merge is you. Kill the process and the task is gone. That is fine for a spike. It is not how you ship a repository overnight.</p>
-        <p>The pain is not “AI cannot write code”. The pain is that engineering work has to <em>finish</em>: tests, an independent look at the same diff, a merge of the reviewed commit, and a scene you can recover when the box reboots.</p>
+        <p>An agent that dumps a diff still leaves review, tests, and merge to you. Kill the window and the work is gone. Fine for a spike. Not how you ship overnight.</p>
+        <p>The hard part is finishing: tests, a second pair of eyes on the same diff, the reviewed commit on main, and a scene you can pick up after reboot.</p>
       </div>
       <div class="compare">
         <article>
           <h3>Coding agent</h3>
           <ul>
-            <li>State lives in a chat thread</li>
+            <li>State lives in a thread</li>
             <li>One session writes and “reviews”</li>
             <li>You merge, or you don’t</li>
             <li>A dead process is a lost task</li>
@@ -125,58 +142,58 @@
         <article class="hi">
           <h3>Orbi</h3>
           <ul>
-            <li>GitHub Issue / PR / labels are the record</li>
+            <li>Issue, PR, labels — that’s the record</li>
             <li>A second session reviews, and may fix</li>
             <li>Only the reviewed head is allowed to land</li>
-            <li>Failure stays on the same PR; the next tick continues</li>
+            <li>The next tick continues the same PR</li>
           </ul>
         </article>
       </div>
     </section>
 
     <section class="band">
-      <h2>Where it runs</h2>
-      <p class="section-lede">Code and models stay on the box you already have. GitHub is only the record.</p>
+      <h2>Your machine. GitHub is the ledger.</h2>
+      <p class="section-lede">Code and models stay on the box you already have.</p>
       <figure class="diagram">
-        <img src="/img/where.svg" width="1100" height="200" alt="Your machine with GPU and BYOK, the Orbi runner, and GitHub Issues and PRs, connected in one loop.">
+        <img src="/img/where.svg" width="1100" height="200" alt="Your machine with GPU and BYOK, the Orbi runner, and GitHub Issues and PRs.">
       </figure>
     </section>
 
     <section class="band">
-      <h2>Why this is the product</h2>
+      <h2>What it actually enforces</h2>
       <ul class="bento">
         <li>
-          <h3>GitHub is the only system of record</h3>
-          <p>Issues, labels, PRs, and comments. No shadow database, no agent workspace to reconcile.</p>
+          <h3>One record</h3>
+          <p>Issues, labels, PRs, comments. No shadow database. No second workspace to reconcile.</p>
         </li>
         <li>
-          <h3>Reviewer is a fixer</h3>
+          <h3>Reviewer that patches</h3>
           <p>Independent session. It can change code, re-run the suite, push the task branch, then verdict the new head.</p>
         </li>
         <li>
           <h3>Exact-head merge</h3>
-          <p>The merge matches the SHA that was reviewed. Base must be fresh. Conflicts are not auto-solved by the runner.</p>
+          <p>The merge matches the SHA that was reviewed. Base must be fresh. The runner does not auto-resolve conflicts.</p>
         </li>
         <li>
-          <h3>Recoverable by construction</h3>
-          <p>A killed runner, a failed test, an unpushed commit — same run, same PR, next tick. Blocked is only for things a human must decide.</p>
+          <h3>Recoverable</h3>
+          <p>Killed runner, failed tests, unpushed commit — same run, same PR, next tick. Blocked is only for a human decision.</p>
         </li>
         <li>
-          <h3>Your machine, your model</h3>
-          <p>Local GPU or BYOK. OpenAI-compatible providers. The repo does not have to leave the box you already trust.</p>
+          <h3>Your model</h3>
+          <p>Local GPU or BYOK. OpenAI-compatible providers. The repo does not have to leave the box you trust.</p>
         </li>
         <li>
-          <h3>The test contract is the gate</h3>
-          <p>TDD. Full suite. 100% line and branch coverage on the Python runtime. Fail fast, no fallback path.</p>
+          <h3>Tests are the gate</h3>
+          <p>TDD. Full suite. 100% line and branch coverage on the Python runtime. Fail fast. No fallback path.</p>
         </li>
       </ul>
     </section>
 
     <section class="band close">
-      <h2>If the work already lives as GitHub Issues, run it there.</h2>
-      <p>Orbi is Apache 2.0 and self-hosted. v0.2.0 is the current line. Read the docs, clone the repo, point it at a model you already pay for.</p>
+      <h2>If the work is already a GitHub Issue, run it there.</h2>
+      <p>Apache 2.0. Self-hosted. Current line is v0.2.0. Point it at a model you already pay for.</p>
       <p class="cta-row">
-        <a class="cta cta-primary" href="https://docs.orbi.build">Read the docs</a>
+        <a class="cta cta-primary" href="https://docs.orbi.build">Docs</a>
         <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
       </p>

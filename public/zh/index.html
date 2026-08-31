@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — 在你自己的机器上把工程任务做完</title>
-  <meta name="description" content="Orbi 把 GitHub Issue 做成经过实现、独立审查、测试并合并的 PR。跑在你的机器、GPU 和 API key 上。不是又一个 coding agent。">
+  <title>Orbi — 开一张 Issue，合进去一张 PR</title>
+  <meta name="description" content="Orbi 在你自己的机器上把活干完：实现、独立审查、测试、合并。账记在 GitHub。GPU 和密钥是你的。">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -30,9 +30,9 @@
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="kicker">不是又一个 coding agent</p>
-        <h1>在你自己的机器和代码环境里，让 AI 工程任务可靠、可审计、可恢复地完成。</h1>
-        <p class="lede">GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。状态只在 GitHub。执行发生在你的仓库、你的 GPU、你的 API key 上。</p>
+        <p class="kicker">不是聊天机器人</p>
+        <h1>开一张 Issue，<br>合进去一张 PR。</h1>
+        <p class="lede">它改代码，另一场审查同一份 diff，测试必须过，然后那个提交才进 main。账在 GitHub 上。跑在你的机器、你的 GPU、你的密钥上。</p>
         <p class="cta-row">
           <a class="cta cta-primary" href="https://docs.orbi.build/zh">文档</a>
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
@@ -54,127 +54,144 @@
             <p class="demo-pr" data-pr hidden></p>
           </div>
         </div>
-        <figcaption>Issue → 实现 → 独立审查 → 合并 → 发布。这页上循环播放；真实记录是 #48 → PR #193。</figcaption>
+        <figcaption>#48 是仓库里真跑过的一票：开了，审了，合了。</figcaption>
       </figure>
     </section>
 
+    <section class="stats" id="orbi-stats" data-lang="zh" aria-label="GitHub 实时统计">
+      <div>
+        <p class="num" data-stat="days">0</p>
+        <p class="lbl">天</p>
+        <p class="sub" data-started></p>
+      </div>
+      <div>
+        <p class="num" data-stat="issues">0</p>
+        <p class="lbl">已关闭 Issue</p>
+      </div>
+      <div>
+        <p class="num" data-stat="prs">0</p>
+        <p class="lbl">已合并 PR</p>
+      </div>
+      <div>
+        <p class="num" data-stat="releases">0</p>
+        <p class="lbl">已发布版本</p>
+      </div>
+    </section>
+
     <section class="band">
-      <h2>一张 Issue 进来之后</h2>
-      <p class="section-lede">产品讨论里的 Offer：把 GitHub Issue 做成经过实现、独立审查、测试并合并的 PR，跑在客户自己的机器和模型账号上。</p>
-      <figure class="diagram">
-        <img src="/img/flow-zh.svg" width="1100" height="300" alt="流程：领取、实现、测试、独立 Review、合并。失败绕回同一张 PR。状态：ai-ready → in-progress → pr-opened → merged / fix-needed。">
-      </figure>
+      <h2>票进来之后</h2>
+      <p class="section-lede">Runner 自己领。改完、再审一遍、合进 main。失败了还是这张 PR，不会另开一张。</p>
+      <ol class="steps" data-flow>
+        <li>
+          <span>01</span>
+          <h3>领取</h3>
+          <p>你给 Issue 打标。Runner 来领。没有第二套看板。</p>
+        </li>
+        <li>
+          <span>02</span>
+          <h3>实现</h3>
+          <p>单独的工作树。先写测试。提交只上任务分支。</p>
+        </li>
+        <li>
+          <span>03</span>
+          <h3>审查</h3>
+          <p>新进程，同一份 diff。能改就改。绝不推 main。</p>
+        </li>
+        <li>
+          <span>04</span>
+          <h3>合并</h3>
+          <p>main 要新。要能合。SHA 必须是刚审过的那个。</p>
+        </li>
+        <li>
+          <span>05</span>
+          <h3>接着干</h3>
+          <p>失败停在这张 PR。重启读 GitHub，不读聊天记录。</p>
+        </li>
+        <li>
+          <span>06</span>
+          <h3>发版</h3>
+          <p>一张发版 Issue：冻住底仓、核对范围、跑测试、打 tag。tag 从不强推。</p>
+        </li>
+      </ol>
       <div class="shots">
         <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
           <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48：Runner 停掉时记下当前 Issue。">
         </a>
         <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
-          <img src="/img/pr-193.png" width="1200" height="600" alt="由该 Issue 产出并合并的 PR #193。">
+          <img src="/img/pr-193.png" width="1200" height="600" alt="由该 Issue 合并的 PR #193。">
         </a>
       </div>
-      <ol class="steps">
-        <li>
-          <span>01</span>
-          <h3>领取</h3>
-          <p>你给 Issue 打标。Runner 自己领。队列就是 label，没有第二套看板。</p>
-        </li>
-        <li>
-          <span>02</span>
-          <h3>实现</h3>
-          <p>隔离 git worktree。先写测试再改代码。只提交任务分支，不碰 main。</p>
-        </li>
-        <li>
-          <span>03</span>
-          <h3>独立 Review</h3>
-          <p>新进程、新 transcript、同一份 diff。Reviewer 能当场改。只推任务分支。</p>
-        </li>
-        <li>
-          <span>04</span>
-          <h3>精确 Merge</h3>
-          <p>最新 base、可合并、SHA 对得上刚审过的那个。别的不让进。</p>
-        </li>
-        <li>
-          <span>05</span>
-          <h3>失败可恢复</h3>
-          <p>失败就停在那张 PR。重启读的是 GitHub，不是本地聊天日志。</p>
-        </li>
-        <li>
-          <span>06</span>
-          <h3>发布</h3>
-          <p>一张 Release Issue：冻 base、对范围、跑测试、打 tag、出 Release。tag 从不 force-push。</p>
-        </li>
-      </ol>
     </section>
 
     <section class="band">
-      <h2>聊天窗口不是交付系统</h2>
+      <h2>聊天窗口交不了货</h2>
       <div class="split">
-        <p>Coding agent 写出一份 diff，剩下的还给你。Review 是一条评论。Merge 是你自己点。进程一死，任务就没了。做 spike 够用。通宵把仓库推上去不够用。</p>
-        <p>痛点不是「AI 不会写代码」。痛点是工程任务必须<strong>做完</strong>：测试、另一场 session 审同一份 diff、合进去的是审过的那个 commit、机器重启之后现场还在。</p>
+        <p>模型丢出一份 diff，审查、测试、合并还是你的事。窗口一关，活就没了。试一下够用。通宵把仓库推上去不够用。</p>
+        <p>难的是做完：测试要过，另一场看同一份改动，审过的提交进 main，机器重启了现场还在。</p>
       </div>
       <div class="compare">
         <article>
           <h3>Coding agent</h3>
           <ul>
-            <li>状态在聊天记录里</li>
-            <li>同一场 session 既写又「审」</li>
-            <li>合不合进去看你</li>
-            <li>进程没了，任务也就没了</li>
+            <li>状态在聊天里</li>
+            <li>同一场又写又「审」</li>
+            <li>合不合看你</li>
+            <li>进程没了，活也没了</li>
           </ul>
         </article>
         <article class="hi">
           <h3>Orbi</h3>
           <ul>
-            <li>GitHub Issue / PR / label 就是记录</li>
-            <li>另一场 session 审查，而且可以改</li>
-            <li>只允许刚审过的 head 落地</li>
-            <li>失败停在同一张 PR，下一拍接着干</li>
+            <li>Issue、PR、标签就是账本</li>
+            <li>另一场审查，而且可以改</li>
+            <li>只能合刚审过的那个提交</li>
+            <li>下一拍还在这张 PR 上接着干</li>
           </ul>
         </article>
       </div>
     </section>
 
     <section class="band">
-      <h2>跑在哪</h2>
-      <p class="section-lede">代码和模型留在你已经有的那台机器上。GitHub 只负责记账。</p>
+      <h2>机器是你的。GitHub 只记账。</h2>
+      <p class="section-lede">代码和模型留在你已经有的那台机器上。</p>
       <figure class="diagram">
-        <img src="/img/where.svg" width="1100" height="200" alt="你的机器（GPU、BYOK）、Orbi runner、GitHub Issue/PR，连成一条环。">
+        <img src="/img/where.svg" width="1100" height="200" alt="你的机器、Orbi runner、GitHub Issue 和 PR。">
       </figure>
     </section>
 
     <section class="band">
-      <h2>为什么是这个产品</h2>
+      <h2>它真正卡住的几件事</h2>
       <ul class="bento">
         <li>
-          <h3>GitHub 是唯一的任务状态</h3>
-          <p>Issue、label、PR、评论。没有影子数据库，也没有另一套 agent 工作区要对账。</p>
+          <h3>只有一本账</h3>
+          <p>Issue、标签、PR、评论。没有影子库，也没有另一套工作区要对账。</p>
         </li>
         <li>
-          <h3>Reviewer 会修，不只留言</h3>
-          <p>独立 session。可以改代码、跑完全量、推任务分支，再对修复后的 head 给结论。</p>
+          <h3>审查的人会改</h3>
+          <p>独立的一场。可以改代码、跑完全量、只推任务分支，再对修好的提交下结论。</p>
         </li>
         <li>
-          <h3>精确 head 合并</h3>
-          <p>合进去的 SHA 必须是刚审过的。base 必须新。Runner 不自动解冲突。</p>
+          <h3>合进去的 SHA 对得上</h3>
+          <p>必须是刚审过的那个。底仓必须新。Runner 不自动解冲突。</p>
         </li>
         <li>
-          <h3>天生可恢复</h3>
-          <p>Runner 被杀、测试失败、本地 commit 没推出去——同一 run、同一 PR、下一拍继续。只有人必须决策的才进 blocked。</p>
+          <h3>死了还能续</h3>
+          <p>进程被杀、测试挂了、本地提交没推出去——同一场、同一张 PR、下一拍继续。只有人必须拍板的才停。</p>
         </li>
         <li>
-          <h3>你的机器，你的模型</h3>
-          <p>本地 GPU 或 BYOK。OpenAI-compatible provider。仓库不必离开你已经信任的那台机器。</p>
+          <h3>模型是你的</h3>
+          <p>本地 GPU 或自带密钥。兼容 OpenAI 接口。仓库不必离开你信的那台机器。</p>
         </li>
         <li>
-          <h3>测试契约就是门禁</h3>
-          <p>TDD。全量套件。Python 运行时 100% line / branch。失败即停，没有 fallback。</p>
+          <h3>测试就是门</h3>
+          <p>先写测试。跑全套。Python 运行时行和分支都要 100%。失败就停，没有退路。</p>
         </li>
       </ul>
     </section>
 
     <section class="band close">
-      <h2>工作已经在 GitHub Issue 里的话，就在那里跑。</h2>
-      <p>Orbi 是 Apache 2.0，自托管。当前是 v0.2.0。读文档，clone 仓库，接上你已经在付的模型。</p>
+      <h2>活已经在 GitHub Issue 里，就在那儿跑。</h2>
+      <p>Apache 2.0。自己托管。当前是 v0.2.0。接上你已经在付的模型。</p>
       <p class="cta-row">
         <a class="cta cta-primary" href="https://docs.orbi.build/zh">文档</a>
         <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
