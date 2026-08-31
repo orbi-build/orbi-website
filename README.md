@@ -25,3 +25,9 @@ npx wrangler deploy --domains orbi.build --domains www.orbi.build
 ```
 
 Worker 会把 `www.orbi.build` 301 到 `orbi.build`。
+
+## 检查
+
+```bash
+python3 -m unittest tests.test_landing -v
+```
