@@ -38,11 +38,23 @@
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
       </div>
-      <figure class="hero-shot">
-        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
-          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub PR #193：Runner 停掉时记下当前 Issue。+564 行，已合并。">
-        </a>
-        <figcaption>真实跑过：Issue #48 → PR #193，独立审查后合并。</figcaption>
+      <figure class="demo" id="orbi-demo" data-lang="zh">
+        <div class="demo-frame">
+          <div class="demo-chrome">
+            <span class="demo-dots" aria-hidden="true"></span>
+            <span>orbi-build/orbi · Issue #48</span>
+            <span class="demo-clock" data-clock>13:02</span>
+          </div>
+          <div class="demo-body">
+            <p class="demo-id">#48</p>
+            <p class="demo-title" data-title>Runner 停掉时记下当前 Issue</p>
+            <p class="demo-labels" data-labels></p>
+            <ol class="demo-rail" data-rail></ol>
+            <ol class="demo-log" data-log></ol>
+            <p class="demo-pr" data-pr hidden></p>
+          </div>
+        </div>
+        <figcaption>Issue → 实现 → 独立审查 → 合并 → 发布。这页上循环播放；真实记录是 #48 → PR #193。</figcaption>
       </figure>
     </section>
 
@@ -178,5 +190,6 @@
     <a href="/" title="English">🇺🇸</a>
     <span class="foot-mark">orbi.build</span>
   </footer>
+  <script src="/demo.js" defer></script>
 </body>
 </html>

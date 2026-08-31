@@ -109,6 +109,15 @@ class LandingTests(unittest.TestCase):
         self.assertIn("/img/flow-en.svg", self.en_html)
         self.assertIn("/img/flow-zh.svg", self.zh_html)
 
+    def test_hero_plays_a_delivery_demo(self) -> None:
+        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        self.assertIn("ai-ready", js)
+        self.assertIn("ai-merged", js)
+        self.assertIn("v0.2.0", js)
+        for html in (self.en_html, self.zh_html):
+            self.assertIn('id="orbi-demo"', html)
+            self.assertIn("/demo.js", html)
+
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)

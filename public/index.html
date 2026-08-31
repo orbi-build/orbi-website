@@ -38,11 +38,23 @@
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
       </div>
-      <figure class="hero-shot">
-        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
-          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193: Log the active Issue context when the Runner is stopped. +564 lines, merged.">
-        </a>
-        <figcaption>Real run. Issue #48 → PR #193, independently reviewed and merged.</figcaption>
+      <figure class="demo" id="orbi-demo" data-lang="en">
+        <div class="demo-frame">
+          <div class="demo-chrome">
+            <span class="demo-dots" aria-hidden="true"></span>
+            <span>orbi-build/orbi · Issue #48</span>
+            <span class="demo-clock" data-clock>13:02</span>
+          </div>
+          <div class="demo-body">
+            <p class="demo-id">#48</p>
+            <p class="demo-title" data-title>Log active Issue context when Runner is stopped</p>
+            <p class="demo-labels" data-labels></p>
+            <ol class="demo-rail" data-rail></ol>
+            <ol class="demo-log" data-log></ol>
+            <p class="demo-pr" data-pr hidden></p>
+          </div>
+        </div>
+        <figcaption>Issue → implement → independent review → merge → release. Loops on this page; the real run is #48 → PR #193.</figcaption>
       </figure>
     </section>
 
@@ -178,5 +190,6 @@
     <a href="/zh/" title="中文">🇨🇳</a>
     <span class="foot-mark">orbi.build</span>
   </footer>
+  <script src="/demo.js" defer></script>
 </body>
 </html>
