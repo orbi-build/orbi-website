@@ -1,80 +1,174 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — 让 AI 工程任务可靠、可审计、可恢复地完成</title>
-  <meta name="description" content="在你自己的机器和代码环境里，让 AI 工程任务可靠、可审计、可恢复地完成。GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。不是又一个通用 coding agent。">
+  <title>Orbi — Finish the engineering job on your machine</title>
+  <meta name="description" content="Orbi turns a GitHub Issue into an implemented, independently reviewed, tested, and merged PR. It runs on your machine, your GPU, and your API keys. Not another coding agent.">
+  <link rel="canonical" href="https://orbi.build/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="sheet">
-    <header class="top">
-      <p class="wordmark">ORBI</p>
-      <p class="job">JOB&nbsp;v0.2.0&nbsp;/&nbsp;your&nbsp;machine</p>
-    </header>
+  <header class="nav">
+    <a class="wordmark" href="/">Orbi</a>
+    <nav>
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
+      <span class="lang">
+        <span aria-current="page">EN</span>
+        <a href="/zh/">中文</a>
+      </span>
+    </nav>
+  </header>
 
-    <section class="hero" aria-labelledby="hook">
+  <main>
+    <section class="hero">
       <div class="hero-copy">
-        <p class="stamp">不是 coding agent</p>
-        <h1 id="hook">在你自己的机器和<span class="keep">代码环境里，</span><br>让 AI 工程任务<span class="keep">可靠、可审计、可恢复地完成。</span></h1>
-      </div>
-      <div class="hero-act">
-        <p class="lede">GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。状态只在 GitHub。失败停在同一张 PR 上接着修。用你的仓库、你的 GPU、你的 API key。</p>
+        <p class="kicker">Not another coding agent</p>
+        <h1>Finish the engineering job — on your machine.</h1>
+        <p class="lede">Orbi takes a GitHub Issue through implementation, independent review, tests, and merge. The record stays on GitHub. The run stays on your hardware and your keys.</p>
         <p class="cta-row">
-          <a class="cta cta-primary" href="https://github.com/orbi-build/orbi">打开 GitHub</a>
-          <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">看 v0.2.0</a>
+          <a class="cta cta-primary" href="https://docs.orbi.build">Read the docs</a>
+          <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
+      </div>
+      <aside class="mock" aria-label="A GitHub Issue moving through Orbi">
+        <div class="mock-bar">
+          <span class="mock-dots" aria-hidden="true"></span>
+          <span>github.com/orbi-build/orbi · Issue #48</span>
+        </div>
+        <div class="mock-body">
+          <p class="mock-title">Runner restart remembers the current Issue</p>
+          <p class="mock-labels"><span>ai-in-progress</span><span>bug</span></p>
+          <ol class="mock-log">
+            <li><em>13:02</em> claimed · isolated worktree</li>
+            <li><em>13:18</em> tests · 100% line / branch</li>
+            <li><em>13:41</em> independent review · patched in session</li>
+            <li class="ok"><em>13:44</em> merge · exact reviewed head</li>
+          </ol>
+          <p class="mock-foot">PR #193 · MERGED · same run_id</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="band">
+      <h2>The chat window is not a delivery system</h2>
+      <div class="split">
+        <p>A coding agent writes a diff and hands the rest back to you. Review is a comment. Merge is you. Kill the process and the task is gone. That is fine for a spike. It is not how you ship a repository overnight.</p>
+        <p>The pain is not “AI cannot write code”. The pain is that engineering work has to <em>finish</em>: tests, an independent look at the same diff, a merge of the reviewed commit, and a scene you can recover when the box reboots.</p>
+      </div>
+      <div class="compare">
+        <article>
+          <h3>Coding agent</h3>
+          <ul>
+            <li>State lives in a chat thread</li>
+            <li>One session writes and “reviews”</li>
+            <li>You merge, or you don’t</li>
+            <li>A dead process is a lost task</li>
+          </ul>
+        </article>
+        <article class="hi">
+          <h3>Orbi</h3>
+          <ul>
+            <li>GitHub Issue / PR / labels are the record</li>
+            <li>A second session reviews, and may fix</li>
+            <li>Only the reviewed head is allowed to land</li>
+            <li>Failure stays on the same PR; the next tick continues</li>
+          </ul>
+        </article>
       </div>
     </section>
 
-    <section class="line" aria-labelledby="line-title">
-      <div class="line-head">
-        <h2 id="line-title">一张 Issue 进来之后</h2>
-        <p class="line-note">合进去才算完</p>
-      </div>
-      <ol class="track">
+    <section class="band">
+      <h2>What actually happens to an Issue</h2>
+      <p class="section-lede">This is the offer from the product discussions: an Issue becomes an implemented, independently reviewed, tested, merged PR, on the customer’s machine and model account.</p>
+      <ol class="steps">
         <li>
-          <span class="step-id">01</span>
-          <span class="step-name">领取</span>
-          <span class="step-copy">GitHub Issue 是唯一任务状态。Runner 自己领。</span>
+          <span>01</span>
+          <h3>Claim</h3>
+          <p>You mark the Issue. The runner picks it up. Labels are the queue — no second board.</p>
         </li>
         <li>
-          <span class="step-id">02</span>
-          <span class="step-name">实现</span>
-          <span class="step-copy">独立 worktree 里改代码、跑测试、提交。</span>
+          <span>02</span>
+          <h3>Implement</h3>
+          <p>Isolated git worktree. Tests first. The change is committed on a task branch, never on main.</p>
         </li>
         <li>
-          <span class="step-id">03</span>
-          <span class="step-name">独立 Review</span>
-          <span class="step-copy">另一场 session，审同一份 diff。</span>
+          <span>03</span>
+          <h3>Independent review</h3>
+          <p>A new process, a new transcript, the same diff. The reviewer can patch in-session. It only pushes the task branch.</p>
         </li>
         <li>
-          <span class="step-id">04</span>
-          <span class="step-name">会话内修复</span>
-          <span class="step-copy">Reviewer 能改就当场改，只推任务分支。</span>
+          <span>04</span>
+          <h3>Merge</h3>
+          <p>Latest base, mergeable, exact reviewed SHA. Nothing else lands.</p>
         </li>
         <li>
-          <span class="step-id">05</span>
-          <span class="step-name">精确 Merge</span>
-          <span class="step-copy">合进去的必须是刚审过、含最新 base 的那个 head。</span>
+          <span>05</span>
+          <h3>Recover</h3>
+          <p>If it fails, it stays on that PR. Restart reads GitHub, not a local chat log.</p>
         </li>
         <li>
-          <span class="step-id">06</span>
-          <span class="step-name">失败可恢复</span>
-          <span class="step-copy">停在同一张 PR。进程没了，现场还在。</span>
+          <span>06</span>
+          <h3>Release</h3>
+          <p>A release Issue freezes the base, checks scope, runs tests, tags, and publishes. No force-push of tags.</p>
         </li>
       </ol>
     </section>
 
-    <footer>
-      <a href="https://github.com/orbi-build/orbi">GitHub</a>
-      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-      <span class="foot-mark">orbi.build</span>
-    </footer>
-  </div>
+    <section class="band">
+      <h2>Why this is the product</h2>
+      <ul class="bento">
+        <li>
+          <h3>GitHub is the only system of record</h3>
+          <p>Issues, labels, PRs, and comments. No shadow database, no agent workspace to reconcile.</p>
+        </li>
+        <li>
+          <h3>Reviewer is a fixer</h3>
+          <p>Independent session. It can change code, re-run the suite, push the task branch, then verdict the new head.</p>
+        </li>
+        <li>
+          <h3>Exact-head merge</h3>
+          <p>The merge matches the SHA that was reviewed. Base must be fresh. Conflicts are not auto-solved by the runner.</p>
+        </li>
+        <li>
+          <h3>Recoverable by construction</h3>
+          <p>A killed runner, a failed test, an unpushed commit — same run, same PR, next tick. Blocked is only for things a human must decide.</p>
+        </li>
+        <li>
+          <h3>Your machine, your model</h3>
+          <p>Local GPU or BYOK. OpenAI-compatible providers. The repo does not have to leave the box you already trust.</p>
+        </li>
+        <li>
+          <h3>The test contract is the gate</h3>
+          <p>TDD. Full suite. 100% line and branch coverage on the Python runtime. Fail fast, no fallback path.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="band close">
+      <h2>If the work already lives as GitHub Issues, run it there.</h2>
+      <p>Orbi is Apache 2.0 and self-hosted. v0.2.0 is the current line. Read the docs, clone the repo, point it at a model you already pay for.</p>
+      <p class="cta-row">
+        <a class="cta cta-primary" href="https://docs.orbi.build">Read the docs</a>
+        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://docs.orbi.build">Docs</a>
+    <a href="https://github.com/orbi-build/orbi">GitHub</a>
+    <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
+    <a href="/zh/">中文</a>
+    <span class="foot-mark">orbi.build</span>
+  </footer>
 </body>
 </html>

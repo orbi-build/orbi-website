@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-"""Read the shipped landing HTML (public/index.html), not a fixture."""
+"""Read the shipped landing HTML, not a fixture."""
 
 from html.parser import HTMLParser
 from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML_PATH = ROOT / "public" / "index.html"
+EN_PATH = ROOT / "public" / "index.html"
+ZH_PATH = ROOT / "public" / "zh" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
 
-HOOK = "在你自己的机器和代码环境里"
-HOOK_JOB = "让 AI 工程任务"
-HOOK_QUALITY = "可靠、可审计、可恢复"
-OFFER = "GitHub Issue 自动推进为经过实现、独立审查、测试并合并的 PR。"
 FACTORY_SLOGAN = "软件工厂的工厂"
-STEPS = ("领取", "实现", "独立 Review", "会话内修复", "精确 Merge", "失败可恢复")
+GITHUB = "https://github.com/orbi-build/orbi"
+DOCS_EN = "https://docs.orbi.build"
+DOCS_ZH = "https://docs.orbi.build/zh"
 
 
 class PageParser(HTMLParser):
@@ -27,7 +26,7 @@ class PageParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         got = {k: v or "" for k, v in attrs}
-        if tag == "a" and "cta" in got.get("class", "").split():
+        if tag == "a":
             self._href = got.get("href", "")
             self._buf = []
 
@@ -47,43 +46,61 @@ class PageParser(HTMLParser):
         return " ".join(self.text_chunks)
 
 
+def parse(path: Path) -> tuple[str, PageParser]:
+    html = path.read_text(encoding="utf-8")
+    page = PageParser()
+    page.feed(html)
+    return html, page
+
+
 class LandingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.html = HTML_PATH.read_text(encoding="utf-8")
-        cls.page = PageParser()
-        cls.page.feed(cls.html)
+        cls.en_html, cls.en = parse(EN_PATH)
+        cls.zh_html, cls.zh = parse(ZH_PATH)
 
-    def test_hero_sentence_in_markup(self) -> None:
-        self.assertIn(HOOK, self.html)
-        self.assertIn(HOOK_JOB, self.html)
-        self.assertIn(HOOK_QUALITY, self.html)
-        self.assertIn(OFFER, self.html)
-        self.assertIn('class="keep"', self.html)
-        self.assertNotIn(FACTORY_SLOGAN, self.html)
-        self.assertNotIn("factory OS", self.html)
+    def test_english_is_the_default_page(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn("Finish the engineering job", self.en_html)
+        self.assertIn("chat window is not a delivery system", self.en_html)
+        self.assertIn("GitHub is the only system of record", self.en_html)
+        self.assertIn("your GPU", self.en_html)
 
-    def test_two_ctas_point_at_github(self) -> None:
-        hrefs = [href for _, href in self.page.hrefs]
-        self.assertGreaterEqual(len(hrefs), 2, self.page.hrefs)
-        primary, secondary = hrefs[0], hrefs[1]
-        self.assertTrue(primary, "primary CTA href empty")
-        self.assertTrue(secondary, "secondary CTA href empty")
-        self.assertIn("github.com/orbi-build", primary)
-        self.assertTrue(
-            "github.com/orbi-build" in secondary
-            or "/releases/" in secondary
-        )
+    def test_chinese_page_exists(self) -> None:
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn("在你自己的机器和代码环境里", self.zh_html)
+        self.assertIn("可靠、可审计、可恢复", self.zh_html)
+        self.assertIn("聊天窗口不是交付系统", self.zh_html)
+        self.assertIn("GitHub 是唯一的任务状态", self.zh_html)
 
-    def test_workflow_steps_are_page_copy(self) -> None:
-        for name in STEPS:
-            with self.subTest(step=name):
-                self.assertIn(name, self.page.text)
+    def test_no_factory_slogan_or_nineties_type(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            self.assertNotIn(FACTORY_SLOGAN, html)
+            self.assertNotIn("factory OS", html)
+            self.assertNotIn("Barlow Condensed", html)
+            self.assertNotIn("Noto Serif SC", html)
+
+    def test_docs_and_github_on_both_languages(self) -> None:
+        en_hrefs = [href for _, href in self.en.hrefs]
+        zh_hrefs = [href for _, href in self.zh.hrefs]
+        self.assertTrue(any(href.rstrip("/").startswith(DOCS_EN) for href in en_hrefs), en_hrefs)
+        self.assertTrue(any(href.rstrip("/").startswith(DOCS_ZH) for href in zh_hrefs), zh_hrefs)
+        self.assertTrue(any(href.startswith(GITHUB) for href in en_hrefs), en_hrefs)
+        self.assertTrue(any(href.startswith(GITHUB) for href in zh_hrefs), zh_hrefs)
+        self.assertTrue(any("/zh/" in href or href.endswith("/zh") for href in en_hrefs), en_hrefs)
+        self.assertTrue(any(href == "/" or href.endswith("orbi.build/") for href in zh_hrefs), zh_hrefs)
+
+    def test_delivery_loop_is_on_the_page(self) -> None:
+        for name in ("Claim", "Implement", "Independent review", "Merge"):
+            self.assertIn(name, self.en.text)
+        for name in ("领取", "实现", "独立 Review", "精确 Merge"):
+            self.assertIn(name, self.zh.text)
 
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)
         self.assertIn('"orbi.build"', worker)
+        self.assertIn("/zh/index.html", worker)
 
 
 if __name__ == "__main__":
