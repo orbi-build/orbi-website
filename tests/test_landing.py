@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 HTML_PATH = ROOT / "public" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
 
-HOOK = "把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR——跑在你自己的机器和模型上。"
+HOOK = "把 GitHub Issue 自动做成经过实现、独立审查、测试并合并的 PR。"
+HOOK_WHERE = "跑在你自己的机器和模型上。"
 STEPS = ("任务进入", "Agent 实现", "测试与 Review", "失败恢复", "发布", "监控")
 
 
@@ -52,6 +53,7 @@ class LandingTests(unittest.TestCase):
 
     def test_hero_sentence_in_markup(self) -> None:
         self.assertIn(HOOK, self.html)
+        self.assertIn(HOOK_WHERE, self.html)
 
     def test_two_ctas_point_at_github(self) -> None:
         hrefs = [href for _, href in self.page.hrefs]
