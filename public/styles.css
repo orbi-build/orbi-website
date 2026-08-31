@@ -59,12 +59,17 @@ a { color: inherit; }
 
 .lang {
   display: inline-flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   padding-left: 18px;
   border-left: 1px solid var(--line);
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
-.lang [aria-current="page"] { color: var(--fg); }
+.lang a { opacity: 0.38; }
+.lang a:hover,
+.lang [aria-current="page"] { opacity: 1; color: var(--fg); }
 
 .hero {
   display: grid;
@@ -127,6 +132,38 @@ h1 {
 }
 
 .cta-secondary:hover { background: rgba(255, 255, 255, 0.04); }
+
+.hero-shot { margin: 0; }
+.hero-shot figcaption,
+.diagram figcaption {
+  margin: 10px 0 0;
+  color: var(--mute);
+  font-size: 0.85rem;
+}
+
+.shot {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.shot img,
+.diagram img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 28px;
+}
+
+.diagram { margin: 0 0 24px; }
 
 .mock {
   background: var(--panel);
@@ -353,7 +390,7 @@ footer a:hover { color: var(--fg); }
 @media (max-width: 900px) {
   .nav, main, footer { width: min(1120px, calc(100% - 32px)); }
   .nav nav { gap: 12px; font-size: 0.84rem; }
-  .hero, .split, .compare, .steps, .bento {
+  .hero, .split, .compare, .steps, .bento, .shots {
     grid-template-columns: 1fr;
   }
   .hero { padding: 36px 0 56px; gap: 28px; }

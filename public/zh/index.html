@@ -21,8 +21,8 @@
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
       <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
       <span class="lang">
-        <a href="/">EN</a>
-        <span aria-current="page">中文</span>
+        <a href="/" title="English" lang="en">🇺🇸</a>
+        <span aria-current="page" title="中文">🇨🇳</span>
       </span>
     </nav>
   </header>
@@ -38,56 +38,28 @@
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
       </div>
-      <aside class="mock" aria-label="一张 GitHub Issue 在 Orbi 里跑完">
-        <div class="mock-bar">
-          <span class="mock-dots" aria-hidden="true"></span>
-          <span>github.com/orbi-build/orbi · Issue #48</span>
-        </div>
-        <div class="mock-body">
-          <p class="mock-title">Runner 重启后仍记得当前 Issue</p>
-          <p class="mock-labels"><span>ai-in-progress</span><span>bug</span></p>
-          <ol class="mock-log">
-            <li><em>13:02</em> 领取 · 隔离 worktree</li>
-            <li><em>13:18</em> 测试 · 100% line / branch</li>
-            <li><em>13:41</em> 独立 review · 会话内修复</li>
-            <li class="ok"><em>13:44</em> 合并 · 刚审过的那个 head</li>
-          </ol>
-          <p class="mock-foot">PR #193 · MERGED · 同一个 run_id</p>
-        </div>
-      </aside>
-    </section>
-
-    <section class="band">
-      <h2>聊天窗口不是交付系统</h2>
-      <div class="split">
-        <p>Coding agent 写出一份 diff，剩下的还给你。Review 是一条评论。Merge 是你自己点。进程一死，任务就没了。做 spike 够用。通宵把仓库推上去不够用。</p>
-        <p>痛点不是「AI 不会写代码」。痛点是工程任务必须<strong>做完</strong>：测试、另一场 session 审同一份 diff、合进去的是审过的那个 commit、机器重启之后现场还在。</p>
-      </div>
-      <div class="compare">
-        <article>
-          <h3>Coding agent</h3>
-          <ul>
-            <li>状态在聊天记录里</li>
-            <li>同一场 session 既写又「审」</li>
-            <li>合不合进去看你</li>
-            <li>进程没了，任务也就没了</li>
-          </ul>
-        </article>
-        <article class="hi">
-          <h3>Orbi</h3>
-          <ul>
-            <li>GitHub Issue / PR / label 就是记录</li>
-            <li>另一场 session 审查，而且可以改</li>
-            <li>只允许刚审过的 head 落地</li>
-            <li>失败停在同一张 PR，下一拍接着干</li>
-          </ul>
-        </article>
-      </div>
+      <figure class="hero-shot">
+        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
+          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub PR #193：Runner 停掉时记下当前 Issue。+564 行，已合并。">
+        </a>
+        <figcaption>真实跑过：Issue #48 → PR #193，独立审查后合并。</figcaption>
+      </figure>
     </section>
 
     <section class="band">
       <h2>一张 Issue 进来之后</h2>
       <p class="section-lede">产品讨论里的 Offer：把 GitHub Issue 做成经过实现、独立审查、测试并合并的 PR，跑在客户自己的机器和模型账号上。</p>
+      <figure class="diagram">
+        <img src="/img/flow-zh.svg" width="1100" height="300" alt="流程：领取、实现、测试、独立 Review、合并。失败绕回同一张 PR。状态：ai-ready → in-progress → pr-opened → merged / fix-needed。">
+      </figure>
+      <div class="shots">
+        <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
+          <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48：Runner 停掉时记下当前 Issue。">
+        </a>
+        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
+          <img src="/img/pr-193.png" width="1200" height="600" alt="由该 Issue 产出并合并的 PR #193。">
+        </a>
+      </div>
       <ol class="steps">
         <li>
           <span>01</span>
@@ -120,6 +92,42 @@
           <p>一张 Release Issue：冻 base、对范围、跑测试、打 tag、出 Release。tag 从不 force-push。</p>
         </li>
       </ol>
+    </section>
+
+    <section class="band">
+      <h2>聊天窗口不是交付系统</h2>
+      <div class="split">
+        <p>Coding agent 写出一份 diff，剩下的还给你。Review 是一条评论。Merge 是你自己点。进程一死，任务就没了。做 spike 够用。通宵把仓库推上去不够用。</p>
+        <p>痛点不是「AI 不会写代码」。痛点是工程任务必须<strong>做完</strong>：测试、另一场 session 审同一份 diff、合进去的是审过的那个 commit、机器重启之后现场还在。</p>
+      </div>
+      <div class="compare">
+        <article>
+          <h3>Coding agent</h3>
+          <ul>
+            <li>状态在聊天记录里</li>
+            <li>同一场 session 既写又「审」</li>
+            <li>合不合进去看你</li>
+            <li>进程没了，任务也就没了</li>
+          </ul>
+        </article>
+        <article class="hi">
+          <h3>Orbi</h3>
+          <ul>
+            <li>GitHub Issue / PR / label 就是记录</li>
+            <li>另一场 session 审查，而且可以改</li>
+            <li>只允许刚审过的 head 落地</li>
+            <li>失败停在同一张 PR，下一拍接着干</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <h2>跑在哪</h2>
+      <p class="section-lede">代码和模型留在你已经有的那台机器上。GitHub 只负责记账。</p>
+      <figure class="diagram">
+        <img src="/img/where.svg" width="1100" height="200" alt="你的机器（GPU、BYOK）、Orbi runner、GitHub Issue/PR，连成一条环。">
+      </figure>
     </section>
 
     <section class="band">
@@ -167,7 +175,7 @@
     <a href="https://docs.orbi.build/zh">文档</a>
     <a href="https://github.com/orbi-build/orbi">GitHub</a>
     <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-    <a href="/">EN</a>
+    <a href="/" title="English">🇺🇸</a>
     <span class="foot-mark">orbi.build</span>
   </footer>
 </body>

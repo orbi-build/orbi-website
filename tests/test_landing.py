@@ -96,6 +96,19 @@ class LandingTests(unittest.TestCase):
         for name in ("领取", "实现", "独立 Review", "精确 Merge"):
             self.assertIn(name, self.zh.text)
 
+    def test_language_uses_flag_emoji(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            self.assertIn("🇺🇸", html)
+            self.assertIn("🇨🇳", html)
+
+    def test_pages_ship_screenshots_and_diagrams(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            self.assertIn("/img/issue-48.png", html)
+            self.assertIn("/img/pr-193.png", html)
+            self.assertIn("/img/where.svg", html)
+        self.assertIn("/img/flow-en.svg", self.en_html)
+        self.assertIn("/img/flow-zh.svg", self.zh_html)
+
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)

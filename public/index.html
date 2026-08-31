@@ -21,8 +21,8 @@
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
       <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
       <span class="lang">
-        <span aria-current="page">EN</span>
-        <a href="/zh/">中文</a>
+        <span aria-current="page" title="English">🇺🇸</span>
+        <a href="/zh/" title="中文" lang="zh-CN">🇨🇳</a>
       </span>
     </nav>
   </header>
@@ -38,56 +38,28 @@
           <a class="cta cta-secondary" href="https://github.com/orbi-build/orbi">GitHub</a>
         </p>
       </div>
-      <aside class="mock" aria-label="A GitHub Issue moving through Orbi">
-        <div class="mock-bar">
-          <span class="mock-dots" aria-hidden="true"></span>
-          <span>github.com/orbi-build/orbi · Issue #48</span>
-        </div>
-        <div class="mock-body">
-          <p class="mock-title">Runner restart remembers the current Issue</p>
-          <p class="mock-labels"><span>ai-in-progress</span><span>bug</span></p>
-          <ol class="mock-log">
-            <li><em>13:02</em> claimed · isolated worktree</li>
-            <li><em>13:18</em> tests · 100% line / branch</li>
-            <li><em>13:41</em> independent review · patched in session</li>
-            <li class="ok"><em>13:44</em> merge · exact reviewed head</li>
-          </ol>
-          <p class="mock-foot">PR #193 · MERGED · same run_id</p>
-        </div>
-      </aside>
-    </section>
-
-    <section class="band">
-      <h2>The chat window is not a delivery system</h2>
-      <div class="split">
-        <p>A coding agent writes a diff and hands the rest back to you. Review is a comment. Merge is you. Kill the process and the task is gone. That is fine for a spike. It is not how you ship a repository overnight.</p>
-        <p>The pain is not “AI cannot write code”. The pain is that engineering work has to <em>finish</em>: tests, an independent look at the same diff, a merge of the reviewed commit, and a scene you can recover when the box reboots.</p>
-      </div>
-      <div class="compare">
-        <article>
-          <h3>Coding agent</h3>
-          <ul>
-            <li>State lives in a chat thread</li>
-            <li>One session writes and “reviews”</li>
-            <li>You merge, or you don’t</li>
-            <li>A dead process is a lost task</li>
-          </ul>
-        </article>
-        <article class="hi">
-          <h3>Orbi</h3>
-          <ul>
-            <li>GitHub Issue / PR / labels are the record</li>
-            <li>A second session reviews, and may fix</li>
-            <li>Only the reviewed head is allowed to land</li>
-            <li>Failure stays on the same PR; the next tick continues</li>
-          </ul>
-        </article>
-      </div>
+      <figure class="hero-shot">
+        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
+          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193: Log the active Issue context when the Runner is stopped. +564 lines, merged.">
+        </a>
+        <figcaption>Real run. Issue #48 → PR #193, independently reviewed and merged.</figcaption>
+      </figure>
     </section>
 
     <section class="band">
       <h2>What actually happens to an Issue</h2>
-      <p class="section-lede">This is the offer from the product discussions: an Issue becomes an implemented, independently reviewed, tested, merged PR, on the customer’s machine and model account.</p>
+      <p class="section-lede">This is the offer: an Issue becomes an implemented, independently reviewed, tested, merged PR, on the customer’s machine and model account.</p>
+      <figure class="diagram">
+        <img src="/img/flow-en.svg" width="1100" height="300" alt="Flow: Issue, worktree, tests, independent review, merge. Failures loop back on the same PR. Labels: ai-ready to in-progress to pr-opened to merged or fix-needed.">
+      </figure>
+      <div class="shots">
+        <a class="shot" href="https://github.com/orbi-build/orbi/issues/48">
+          <img src="/img/issue-48.png" width="1200" height="600" alt="GitHub Issue #48: Log active Issue context when Runner is stopped.">
+        </a>
+        <a class="shot" href="https://github.com/orbi-build/orbi/pull/193">
+          <img src="/img/pr-193.png" width="1200" height="600" alt="GitHub pull request #193, merged from that Issue.">
+        </a>
+      </div>
       <ol class="steps">
         <li>
           <span>01</span>
@@ -120,6 +92,42 @@
           <p>A release Issue freezes the base, checks scope, runs tests, tags, and publishes. No force-push of tags.</p>
         </li>
       </ol>
+    </section>
+
+    <section class="band">
+      <h2>The chat window is not a delivery system</h2>
+      <div class="split">
+        <p>A coding agent writes a diff and hands the rest back to you. Review is a comment. Merge is you. Kill the process and the task is gone. That is fine for a spike. It is not how you ship a repository overnight.</p>
+        <p>The pain is not “AI cannot write code”. The pain is that engineering work has to <em>finish</em>: tests, an independent look at the same diff, a merge of the reviewed commit, and a scene you can recover when the box reboots.</p>
+      </div>
+      <div class="compare">
+        <article>
+          <h3>Coding agent</h3>
+          <ul>
+            <li>State lives in a chat thread</li>
+            <li>One session writes and “reviews”</li>
+            <li>You merge, or you don’t</li>
+            <li>A dead process is a lost task</li>
+          </ul>
+        </article>
+        <article class="hi">
+          <h3>Orbi</h3>
+          <ul>
+            <li>GitHub Issue / PR / labels are the record</li>
+            <li>A second session reviews, and may fix</li>
+            <li>Only the reviewed head is allowed to land</li>
+            <li>Failure stays on the same PR; the next tick continues</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <h2>Where it runs</h2>
+      <p class="section-lede">Code and models stay on the box you already have. GitHub is only the record.</p>
+      <figure class="diagram">
+        <img src="/img/where.svg" width="1100" height="200" alt="Your machine with GPU and BYOK, the Orbi runner, and GitHub Issues and PRs, connected in one loop.">
+      </figure>
     </section>
 
     <section class="band">
@@ -167,7 +175,7 @@
     <a href="https://docs.orbi.build">Docs</a>
     <a href="https://github.com/orbi-build/orbi">GitHub</a>
     <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">v0.2.0</a>
-    <a href="/zh/">中文</a>
+    <a href="/zh/" title="中文">🇨🇳</a>
     <span class="foot-mark">orbi.build</span>
   </footer>
 </body>
