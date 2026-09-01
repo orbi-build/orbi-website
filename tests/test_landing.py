@@ -16,6 +16,7 @@ GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
 DOCS_ZH = "https://docs.orbi.build/zh"
 CLOUD_DISCUSSION = "https://github.com/orbi-build/orbi/discussions/225"
+ROADMAP = "https://github.com/orbi-build/orbi/milestones"
 
 
 class PageParser(HTMLParser):
@@ -85,8 +86,14 @@ class LandingTests(unittest.TestCase):
         self.assertTrue(any(href.rstrip("/").startswith(DOCS_ZH) for href in zh_hrefs), zh_hrefs)
         self.assertTrue(any(href.startswith(GITHUB) for href in en_hrefs), en_hrefs)
         self.assertTrue(any(href.startswith(GITHUB) for href in zh_hrefs), zh_hrefs)
+        self.assertIn(ROADMAP, en_hrefs)
+        self.assertIn(ROADMAP, zh_hrefs)
         self.assertTrue(any("/zh/" in href or href.endswith("/zh") for href in en_hrefs), en_hrefs)
         self.assertTrue(any(href == "/" or href.endswith("orbi.build/") for href in zh_hrefs), zh_hrefs)
+
+    def test_public_roadmap_is_named_in_both_languages(self) -> None:
+        self.assertTrue(any(text == "Roadmap" and href == ROADMAP for text, href in self.en.hrefs))
+        self.assertTrue(any(text == "路线图" and href == ROADMAP for text, href in self.zh.hrefs))
 
     def test_language_switch_uses_readable_names(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -137,9 +144,11 @@ class LandingTests(unittest.TestCase):
             self.assertEqual(cloud_sections[0].get("data-status"), "direction")
         self.assertIn("Self-hosted, free forever", self.en.text)
         self.assertIn("Managed Cloud", self.en.text)
+        self.assertIn("commercial managed service", self.en.text)
         self.assertIn("Platform subscription + managed runtime + model usage", self.en.text)
         self.assertIn("自托管，永久免费", self.zh.text)
         self.assertIn("托管 Cloud", self.zh.text)
+        self.assertIn("商业托管服务", self.zh.text)
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
