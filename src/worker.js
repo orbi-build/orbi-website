@@ -9,15 +9,22 @@ const SECURITY_HEADERS = {
 };
 
 const GH = "https://api.github.com";
-const GH_HEADERS = {
-  Accept: "application/vnd.github+json",
-  "User-Agent": "orbi-website",
-};
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
 
-async function ghJson(path) {
-  const response = await fetch(`${GH}${path}`, { headers: GH_HEADERS });
+function githubHeaders(token) {
+  if (!token) {
+    throw new Error("GITHUB_TOKEN is not configured");
+  }
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "User-Agent": "orbi-website",
+  };
+}
+
+async function ghJson(path, token) {
+  const response = await fetch(`${GH}${path}`, { headers: githubHeaders(token) });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`github ${response.status} ${path}: ${body.slice(0, 200)}`);
@@ -25,13 +32,13 @@ async function ghJson(path) {
   return response.json();
 }
 
-async function loadStats() {
+async function loadStats(token) {
   const repo = "orbi-build/orbi";
   const [meta, closed, merged, releases] = await Promise.all([
-    ghJson(`/repos/${repo}`),
-    ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`),
-    ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`),
-    ghJson(`/repos/${repo}/releases?per_page=100`),
+    ghJson(`/repos/${repo}`, token),
+    ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`, token),
+    ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`, token),
+    ghJson(`/repos/${repo}/releases?per_page=100`, token),
   ]);
   return {
     started: meta.created_at,
@@ -41,13 +48,13 @@ async function loadStats() {
   };
 }
 
-async function statsResponse(request) {
+async function statsResponse(request, token) {
   const cache = caches.default;
   const cached = await cache.match(STATS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats();
+  const stats = await loadStats(token);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -74,7 +81,7 @@ export default {
 
     if (url.pathname === "/stats") {
       try {
-        return await statsResponse(request);
+        return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
         return new Response(JSON.stringify({ error: String(err.message || err) }), {
           status: 502,

@@ -183,6 +183,14 @@ class LandingTests(unittest.TestCase):
         self.assertIn("type:issue state:closed", worker)
         self.assertIn("is:pr is:merged", worker)
 
+    def test_stats_authenticate_github_without_exposing_the_secret(self) -> None:
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("env.GITHUB_TOKEN", worker)
+        self.assertIn("Authorization", worker)
+        self.assertIn("Bearer", worker)
+        self.assertNotIn("GITHUB_TOKEN", self.en_html)
+        self.assertNotIn("GITHUB_TOKEN", self.zh_html)
+
 
 if __name__ == "__main__":
     unittest.main()
