@@ -455,6 +455,7 @@ h1 span { color: var(--signal); }
 .stat strong {
   font-family: var(--display);
   font-size: clamp(2.4rem, 3.5vw, 4rem);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   letter-spacing: -0.06em;
   line-height: 1;

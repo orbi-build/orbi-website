@@ -175,6 +175,13 @@ class LandingTests(unittest.TestCase):
             self.assertIn('id="factory-trace"', html)
             self.assertIn("/demo.js", html)
 
+    def test_stats_count_up_when_the_record_enters_the_viewport(self) -> None:
+        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        self.assertIn("IntersectionObserver", js)
+        self.assertIn("startStats", js)
+        self.assertIn("2600", js)
+        self.assertIn('threshold: 0.25', js)
+
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)

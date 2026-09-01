@@ -89,29 +89,50 @@
 
   function bootStats(root) {
     const lang = root.getAttribute("data-lang") === "zh" ? "zh" : "en";
-    fetch("/stats")
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("stats " + response.status);
-        }
-        return response.json();
-      })
-      .then(function (stats) {
-        const days = Math.max(0, Math.floor((Date.now() - Date.parse(stats.started)) / 86400000));
-        const started = root.querySelector("[data-started]");
-        if (started) {
-          started.textContent = formatStarted(stats.started, lang);
-        }
-        countUp(root.querySelector('[data-stat="days"]'), days, 900);
-        countUp(root.querySelector('[data-stat="issues"]'), stats.issues_closed, 1100);
-        countUp(root.querySelector('[data-stat="prs"]'), stats.prs_merged, 1200);
-        countUp(root.querySelector('[data-stat="releases"]'), stats.releases, 800);
-      })
-      .catch(function () {
-        root.querySelectorAll("[data-stat]").forEach(function (element) {
-          element.textContent = "—";
+    let startedCounting = false;
+
+    function startStats() {
+      if (startedCounting) {
+        return;
+      }
+      startedCounting = true;
+      fetch("/stats")
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("stats " + response.status);
+          }
+          return response.json();
+        })
+        .then(function (stats) {
+          const days = Math.max(0, Math.floor((Date.now() - Date.parse(stats.started)) / 86400000));
+          const started = root.querySelector("[data-started]");
+          if (started) {
+            started.textContent = formatStarted(stats.started, lang);
+          }
+          countUp(root.querySelector('[data-stat="days"]'), days, 2000);
+          countUp(root.querySelector('[data-stat="issues"]'), stats.issues_closed, 2600);
+          countUp(root.querySelector('[data-stat="prs"]'), stats.prs_merged, 2400);
+          countUp(root.querySelector('[data-stat="releases"]'), stats.releases, 1800);
+        })
+        .catch(function () {
+          root.querySelectorAll("[data-stat]").forEach(function (element) {
+            element.textContent = "—";
+          });
         });
-      });
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      startStats();
+      return;
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+      if (entries.some(function (entry) { return entry.isIntersecting; })) {
+        observer.disconnect();
+        startStats();
+      }
+    }, { threshold: 0.25 });
+    observer.observe(root);
   }
 
   document.querySelectorAll("#factory-trace").forEach(bootFactoryTrace);
