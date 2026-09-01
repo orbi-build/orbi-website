@@ -3,6 +3,7 @@
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,7 @@ FACTORY_SLOGAN = "软件工厂的工厂"
 GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
 DOCS_ZH = "https://docs.orbi.build/zh"
+CLOUD_DISCUSSION = "https://github.com/orbi-build/orbi/discussions/225"
 
 
 class PageParser(HTMLParser):
@@ -118,6 +120,37 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
+            self.assertEqual(ctas["cloud"], CLOUD_DISCUSSION)
+
+    def test_hero_leads_with_github_issues_without_a_second_workspace(self) -> None:
+        self.assertIn("Turn GitHub Issues into reviewed software", self.en.text)
+        self.assertIn("No new workspace", self.en.text)
+        self.assertIn("让 GitHub Issue 变成经过审查的软件", self.zh.text)
+        self.assertIn("不用迁移工作流", self.zh.text)
+
+    def test_cloud_is_a_direction_not_a_shipping_claim(self) -> None:
+        for page in (self.en, self.zh):
+            cloud_sections = [
+                attrs for tag, attrs in page.elements
+                if tag == "section" and attrs.get("id") == "run-orbi"
+            ]
+            self.assertEqual(cloud_sections[0].get("data-status"), "direction")
+        self.assertIn("Self-hosted, free forever", self.en.text)
+        self.assertIn("Managed Cloud", self.en.text)
+        self.assertIn("Platform subscription + managed runtime + model usage", self.en.text)
+        self.assertIn("自托管，永久免费", self.zh.text)
+        self.assertIn("托管 Cloud", self.zh.text)
+        self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
+
+    def test_display_headings_have_no_terminal_periods(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
+            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            self.assertTrue(plain)
+            self.assertFalse(
+                [heading for heading in plain if heading.endswith((".", "。"))],
+                plain,
+            )
 
     def test_pages_declare_a_favicon_instead_of_requesting_a_missing_default(self) -> None:
         for page in (self.en, self.zh):

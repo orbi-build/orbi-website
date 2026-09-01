@@ -41,16 +41,17 @@
     <section class="hero shell" data-status="shipping">
       <div class="hero-copy">
         <p class="eyebrow"><span class="live-dot"></span>GitHub 原生的软件生产系统</p>
-        <h1>关灯以后，<br><span>软件继续交付。</span></h1>
-        <p class="hero-lede">Orbi 把 Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的生产系统。它跑在你的机器和模型上，状态留在 GitHub。</p>
+        <h1>让 GitHub Issue<br><span>变成经过审查的软件</span></h1>
+        <p class="hero-lede"><strong>不用迁移工作流。</strong>Orbi 直接读取仓库里已有的 Issue、依赖、Milestone 和 Release，把它们推进到实现、独立审查、故障恢复和精确合并。GitHub 始终是唯一事实源。</p>
         <div class="cta-row">
-          <a class="button button-signal" data-cta="install" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
-          <a class="button button-ghost" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付</a>
+          <a class="button button-signal" data-cta="install" href="https://docs.orbi.build/zh">免费自托管 <span aria-hidden="true">↗</span></a>
+          <a class="button button-ghost" data-cta="cloud" href="https://github.com/orbi-build/orbi/discussions/225">了解托管 Cloud</a>
+          <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付 →</a>
         </div>
         <ul class="trust-line" aria-label="产品属性">
           <li>Apache 2.0</li>
-          <li>自托管</li>
-          <li>自带模型</li>
+          <li>GitHub 就是账本</li>
+          <li>执行方式由你选择</li>
         </ul>
       </div>
 
@@ -103,7 +104,7 @@
     <section class="thesis shell" aria-labelledby="thesis-title">
       <div>
         <p class="section-tag">行业正在换挡</p>
-        <h2 id="thesis-title">模型会写越来越多的代码。<br>交付不会因此自动完成。</h2>
+        <h2 id="thesis-title">模型会写越来越多的代码。<br>交付不会因此自动完成</h2>
         <p class="section-lede">当 Agent 能连续工作数小时、并行处理多个任务，瓶颈就从写代码转向：决定改什么、协调依赖、证明结果正确、控制权限，以及把一个精确版本安全送进生产。</p>
         <p class="thesis-punch">Agent 越强，生产系统越重要。</p>
       </div>
@@ -119,7 +120,7 @@
       <div class="shell">
         <p class="section-tag">今天已经在运行</p>
         <div class="section-heading">
-          <h2 id="system-title">不是单任务队列。<br>是一张交付图。</h2>
+          <h2 id="system-title">不是单任务队列。<br>是一张交付图</h2>
           <p>Issue 是最小执行单元，但 Orbi 管的不是孤立 Issue：Epic 和 Milestone 确定范围，blockedBy 排定依赖，Review/Fix 让 PR 收敛，Release Issue 把一组结果冻结成版本。</p>
         </div>
 
@@ -156,7 +157,7 @@
       <div class="section-heading proof-heading">
         <div>
           <p class="section-tag">真实生产证据</p>
-          <h2 id="proof-title">不是流程图。<br>是已经发生的交付。</h2>
+          <h2 id="proof-title">不是流程图。<br>是已经发生的交付</h2>
         </div>
         <p>Issue #48 进入真实的 Orbi 仓库。隔离运行完成实现，另一场会话审查同一份 Diff，PR #193 随后合并。今天仍然可以检查全过程，因为 GitHub 本身就是记录。</p>
       </div>
@@ -182,7 +183,7 @@
       <div class="shell ownership-grid">
         <div>
           <p class="section-tag section-tag-dark">你的工厂现场</p>
-          <h2 id="ownership-title">你的代码。你的算力。<br>你的权限。</h2>
+          <h2 id="ownership-title">你的代码。你的算力。<br>你的权限</h2>
           <p>Orbi 在仓库和模型访问本来就存在的地方运行。GitHub 保存长期协调和交付证据；你的机器执行真正的生产。</p>
         </div>
         <div class="ownership-map" role="group" aria-label="Orbi 执行边界">
@@ -195,11 +196,48 @@
       </div>
     </section>
 
+    <section class="run-orbi" id="run-orbi" data-status="direction" aria-labelledby="run-orbi-title">
+      <div class="shell">
+        <div class="section-heading">
+          <div>
+            <p class="section-tag">按你的方式运行</p>
+            <h2 id="run-orbi-title">一套生产系统<br>执行方式由你选择</h2>
+          </div>
+          <p>开源自托管版今天已经可用。托管 Cloud 正在设计中，仍然以 GitHub 为唯一账本，不增加第二套看板，也不把执行绑定到一家模型服务。</p>
+        </div>
+        <div class="run-options">
+          <article class="run-option run-option-live">
+            <p class="option-state">今天已经可用</p>
+            <h3>自托管，永久免费</h3>
+            <p>在自己的机器、GPU 和模型凭证上运行 Orbi。Apache 2.0 交付核心不收平台费。</p>
+            <ul>
+              <li>仓库和密钥留在自己的机器上</li>
+              <li>使用本地模型或任意受支持的 Provider</li>
+              <li>GitHub 保存长期生产记录</li>
+            </ul>
+            <a class="button button-dark" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
+          </article>
+          <article class="run-option run-option-cloud">
+            <p class="option-state">设计中 · 尚未上线</p>
+            <h3>托管 Cloud</h3>
+            <p>连接 GitHub，由 Orbi 托管控制面。你可以接入自己的 Runner、GPU 或 API Key，也可以选择托管运行时和模型。</p>
+            <ul>
+              <li>平台订阅支付协调、恢复和交付证据</li>
+              <li>只有使用 Orbi 托管环境时才收运行时费用</li>
+              <li>托管模型单独按量计费；自带模型不收模型费</li>
+            </ul>
+            <a class="button button-outline" data-cta="cloud" href="https://github.com/orbi-build/orbi/discussions/225">参与 Cloud 讨论 ↗</a>
+          </article>
+        </div>
+        <p class="pricing-equation"><span>建议的 CLOUD 账单</span><strong>平台订阅 + 托管运行时 + 模型用量</strong><small>自带算力或模型，对应的用量费用归零；完全自托管开源核心，向 Orbi 支付 ¥0。</small></p>
+      </div>
+    </section>
+
     <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
       <div class="direction-head">
         <div>
           <p class="section-tag">正在建设的方向 · 不是已上线清单</p>
-          <h2 id="direction-title">从交付任务，<br>到持续演进软件。</h2>
+          <h2 id="direction-title">从交付任务，<br>到持续演进软件</h2>
         </div>
         <p>今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
       </div>
@@ -221,7 +259,7 @@
 
     <section class="closing shell" aria-labelledby="closing-title">
       <p class="section-tag">开源核心</p>
-      <h2 id="closing-title">先让一个仓库，<br>关灯运行。</h2>
+      <h2 id="closing-title">先让一个仓库<br>关灯运行</h2>
       <p>Apache 2.0，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到经过审查的结果。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
