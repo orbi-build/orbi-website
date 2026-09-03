@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — Open-source AI coding agent that ships from GitHub Issues</title>
-  <meta name="description" content="Orbi is a self-hosted, Apache 2.0 AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model — Claude, GPT, or local.">
+  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model — Claude, GPT, or local.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -18,14 +18,14 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/">
   <meta property="og:title" content="Orbi — Open-source AI coding agent that ships from GitHub Issues">
-  <meta property="og:description" content="A self-hosted, Apache 2.0 AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model.">
+  <meta property="og:description" content="A self-hosted, fair-code AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Orbi — turn GitHub Issues into reviewed software.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Orbi — Open-source AI coding agent that ships from GitHub Issues">
-  <meta name="twitter:description" content="A GitHub-native software production system: Issues in, reviewed and released software out. Apache 2.0, self-hosted.">
+  <meta name="twitter:description" content="A GitHub-native software production system: Issues in, reviewed and released software out. Fair-code, self-hosted, free forever.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
         "operatingSystem": "Linux, macOS",
         "url": "https://orbi.build/",
         "downloadUrl": "https://github.com/orbi-build/orbi",
-        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "license": "https://github.com/orbi-build/orbi/blob/main/LICENSE.md",
         "isAccessibleForFree": true,
         "description": "Orbi is a GitHub-native software production system. It runs the Issues, dependencies, Epics, milestones, and releases already in a repository through implementation, independent review, recovery, and exact-head merge, keeping GitHub as the source of truth.",
         "featureList": [
@@ -76,7 +76,7 @@
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD",
-          "description": "Self-hosted Apache 2.0 core, free forever."
+          "description": "Self-hosted core, free forever under the Sustainable Use License."
         },
         "publisher": { "@id": "https://orbi.build/#organization" }
       },
@@ -97,7 +97,7 @@
             "name": "Which AI models can I use with Orbi?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work. Model spend goes to your provider at your rate; the Apache 2.0 core has no platform fee."
+              "text": "Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work. Model spend goes to your provider at your rate; the self-hosted core has no platform fee."
             }
           },
           {
@@ -129,7 +129,7 @@
             "name": "Is Orbi free, and what is Managed Cloud?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The self-hosted core is Apache 2.0 and free forever — self-host it and you pay Orbi nothing, only your model provider. Managed Cloud is in design and not yet shipping; nothing about it is available to buy today."
+              "text": "The self-hosted core is free forever under the Sustainable Use License (fair-code): running Orbi on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is required only to sell Orbi itself — hosting it as a service for your customers, or embedding it in a paid product. Managed Cloud is in design and not yet shipping."
             }
           }
         ]
@@ -177,7 +177,7 @@
             <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">Inspect a real delivery →</a>
           </div>
           <ul class="trust-line" aria-label="Product attributes">
-            <li>Apache 2.0, free forever</li>
+            <li>Fair-code, free forever</li>
             <li>Self-hosted — code never leaves your machine</li>
             <li>Bring your own model</li>
           </ul>
@@ -346,7 +346,7 @@
             <article class="run-option run-option-live">
               <p class="option-state">SHIPPING TODAY</p>
               <h3>Self-hosted, free forever</h3>
-              <p>Run Orbi on your own machine, GPU, and model credentials. The Apache 2.0 delivery core has no platform fee.</p>
+              <p>Run Orbi on your own machine, GPU, and model credentials. The self-hosted delivery core has no platform fee.</p>
               <ul>
                 <li>Your repository and keys stay on your machine</li>
                 <li>Use local models or any supported provider</li>
@@ -414,7 +414,7 @@
               <summary><span>02</span>Which AI models can I use?</summary>
               <div class="faq-answer">
                 <p>Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work, and you can change your mind later without changing your workflow.</p>
-                <p>Model spend goes to your provider at your rate. Orbi charges nothing on top: the Apache 2.0 core has no platform fee.</p>
+                <p>Model spend goes to your provider at your rate. Orbi charges nothing on top: the self-hosted core has no platform fee.</p>
               </div>
             </details>
 
@@ -445,7 +445,7 @@
             <details class="faq-item">
               <summary><span>06</span>Is it really free, and what is Managed Cloud?</summary>
               <div class="faq-answer">
-                <p>The self-hosted core is Apache 2.0 and free forever. Self-host it and you pay Orbi nothing — only your model provider.</p>
+                <p>The self-hosted core is free forever under the <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md">Sustainable Use License</a>: running it on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is needed only to sell Orbi itself — hosting it for your customers, or embedding it in a paid product.</p>
                 <p>Managed Cloud is <strong>in design and not yet shipping</strong>. The plan is a hosted control plane billed as platform subscription plus managed runtime plus model usage, where bringing your own compute or model removes that line. Nothing about it is available to buy today.</p>
               </div>
             </details>
@@ -457,7 +457,7 @@
         <p class="section-tag">OPEN SOURCE CORE</p>
         <h2 id="closing-title">Install the open-source agent
           <br>and turn the lights off</h2>
-        <p>Apache 2.0. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a reviewed result.</p>
+        <p>Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a reviewed result.</p>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" href="https://github.com/orbi-build/orbi">View the source</a>

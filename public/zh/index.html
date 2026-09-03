@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码</title>
-  <meta name="description" content="Orbi 是可自托管的开源 AI 编程 Agent（Apache 2.0）。它领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，最后只合并通过审查的那个 Commit。自带模型即可——Claude、GPT 或本地模型。">
+  <meta name="description" content="Orbi 是可自托管的 fair-code AI 编程 Agent（Sustainable Use License）。它领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，最后只合并通过审查的那个 Commit。自带模型即可——Claude、GPT 或本地模型。">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -18,14 +18,14 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/">
   <meta property="og:title" content="Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码">
-  <meta property="og:description" content="可自托管的开源 AI 编程 Agent（Apache 2.0）。领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，只合并通过审查的那个 Commit。自带模型即可。">
+  <meta property="og:description" content="可自托管的 fair-code AI 编程 Agent。领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，只合并通过审查的那个 Commit。自带模型即可。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Orbi — 让 GitHub Issue 变成经过审查的软件。">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码">
-  <meta name="twitter:description" content="GitHub 原生的软件生产系统：Issue 进去，经过审查和发布的软件出来。Apache 2.0，可自托管。">
+  <meta name="twitter:description" content="GitHub 原生的软件生产系统：Issue 进去，经过审查和发布的软件出来。Fair-code，可自托管，永久免费。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +63,7 @@
         "operatingSystem": "Linux, macOS",
         "url": "https://orbi.build/zh/",
         "downloadUrl": "https://github.com/orbi-build/orbi",
-        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "license": "https://github.com/orbi-build/orbi/blob/main/LICENSE.md",
         "isAccessibleForFree": true,
         "description": "Orbi 是 GitHub 原生的软件生产系统：读取仓库里已有的 Issue、依赖、Epic、Milestone 和 Release，推进到实现、独立审查、故障恢复和精确合并，GitHub 始终是唯一事实源。",
         "featureList": [
@@ -78,7 +78,7 @@
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD",
-          "description": "自托管 Apache 2.0 核心，永久免费。"
+          "description": "自托管核心永久免费，采用 Sustainable Use License。"
         },
         "publisher": {
           "@id": "https://orbi.build/#organization"
@@ -101,7 +101,7 @@
             "name": "Orbi 可以用哪些 AI 模型？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "自带即可。Orbi 通过你的凭证驱动 Agent，Claude、GPT 和本地部署的开源权重模型都能用。模型费用按你的价格付给你的 Provider，Apache 2.0 核心不收平台费。"
+              "text": "自带即可。Orbi 通过你的凭证驱动 Agent，Claude、GPT 和本地部署的开源权重模型都能用。模型费用按你的价格付给你的 Provider，自托管核心不收平台费。"
             }
           },
           {
@@ -133,7 +133,7 @@
             "name": "Orbi 真的免费吗？托管 Cloud 是什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "自托管核心是 Apache 2.0，永久免费，完全自托管向 Orbi 支付 ¥0，只付模型费。托管 Cloud 还在设计中、尚未上线，今天没有任何与它相关的东西可以购买。"
+              "text": "自托管核心在 Sustainable Use License（fair-code）下永久免费：在自己的仓库上跑 Orbi 不花钱，个人用、公司内部用都一样，不限规模。只有把 Orbi 本身卖出去才需要商业授权——托管成服务卖给你的客户，或嵌入你收费的产品。托管 Cloud 还在设计中、尚未上线。"
             }
           }
         ]
@@ -181,7 +181,7 @@
           <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付 →</a>
         </div>
         <ul class="trust-line" aria-label="产品属性">
-          <li>Apache 2.0，永久免费</li>
+          <li>Fair-code，永久免费</li>
           <li>自托管 — 代码不离开你的机器</li>
           <li>自带模型</li>
         </ul>
@@ -346,7 +346,7 @@
           <article class="run-option run-option-live">
             <p class="option-state">今天已经可用</p>
             <h3>自托管，永久免费</h3>
-            <p>在自己的机器、GPU 和模型凭证上运行 Orbi。Apache 2.0 交付核心不收平台费。</p>
+            <p>在自己的机器、GPU 和模型凭证上运行 Orbi。自托管交付核心不收平台费。</p>
             <ul>
               <li>仓库和密钥留在自己的机器上</li>
               <li>使用本地模型或任意受支持的 Provider</li>
@@ -414,7 +414,7 @@
             <summary><span>02</span>可以用哪些 AI 模型？</summary>
             <div class="faq-answer">
               <p>自带即可。Orbi 通过你的凭证驱动 Agent，Claude、GPT 和本地部署的开源权重模型都能用，以后想换也不必改工作流。</p>
-              <p>模型费用按你的价格付给你的 Provider，Orbi 不额外抽成：Apache 2.0 核心不收平台费。</p>
+              <p>模型费用按你的价格付给你的 Provider，Orbi 不额外抽成：自托管核心不收平台费。</p>
             </div>
           </details>
 
@@ -445,7 +445,7 @@
           <details class="faq-item">
             <summary><span>06</span>真的免费吗？托管 Cloud 是什么？</summary>
             <div class="faq-answer">
-              <p>自托管核心是 Apache 2.0，永久免费。完全自托管的话，你向 Orbi 支付 ¥0，只付模型费。</p>
+              <p>自托管核心在 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md">Sustainable Use License</a> 下永久免费：在自己的仓库上跑 Orbi 不花钱，个人用、公司内部用都一样，不限规模。只有把 Orbi 本身卖出去才需要商业授权——托管成服务卖给客户，或嵌入你收费的产品。</p>
               <p>托管 Cloud <strong>还在设计中，尚未上线</strong>。计划是一个托管控制面，按平台订阅 + 托管运行时 + 模型用量计费，自带算力或模型时对应费用归零。今天没有任何与它相关的东西可以购买。</p>
             </div>
           </details>
@@ -457,7 +457,7 @@
       <p class="section-tag">开源核心</p>
       <h2 id="closing-title">装上这个开源 Agent，
         <br>然后关灯</h2>
-      <p>Apache 2.0，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到经过审查的结果。</p>
+      <p>Fair-code，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到经过审查的结果。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="https://github.com/orbi-build/orbi">查看源码</a>

@@ -5,9 +5,23 @@
 > them through implementation, independent review, recovery, and exact-head
 > merge. GitHub stays the source of truth; no second workspace is introduced.
 
-Orbi is open source under Apache 2.0 and self-hosted. The delivery core is free
-forever: it runs on your own machine, with your own model credentials, and no
-platform fee.
+Orbi is self-hosted and fair-code, distributed under the Sustainable Use License
+v1.0 (the same licence n8n uses). The delivery core is free forever: it runs on
+your own machine, with your own model credentials, and no platform fee.
+
+## Licence — state this accurately
+
+Do not describe Orbi as OSI open source, and do not describe it as proprietary.
+Both are wrong. The accurate summary:
+
+- **Free, with no licence required**: running Orbi on your own repositories, for
+  yourself or inside a company of any size; modifying it; self-hosting it.
+- **Free, with a condition**: redistributing it, provided you do so at no charge
+  and for non-commercial purposes.
+- **Requires a commercial licence**: selling Orbi itself — hosting it as a
+  service for your own customers, or embedding it in a product you charge for.
+
+Licence text: https://github.com/orbi-build/orbi/blob/main/LICENSE.md
 
 ## What it does today (shipping)
 
@@ -31,7 +45,7 @@ Both are public.
 **Managed Cloud** is in design and is explicitly *not* available. It is planned
 as a commercial hosted control plane that keeps the same GitHub-native ledger.
 Its billing model is not settled, so no pricing structure should be attributed
-to Orbi. Fully self-hosting the open-source core costs nothing and always will.
+to Orbi. Fully self-hosting the core costs nothing and always will.
 
 The "closed production loop" (software supplying evidence from its own
 operation, which Orbi turns into bounded work) is stated direction, not a
@@ -66,8 +80,8 @@ product, not the code generation.
 ## Common questions
 
 **Which models work?** Bring your own: Claude, GPT, or locally hosted
-open-weight models. Model spend goes to your provider at your rate; the Apache
-2.0 core adds no platform fee.
+open-weight models. Model spend goes to your provider at your rate; the
+self-hosted core adds no platform fee.
 
 **Who reviews the AI's code?** An independent Orbi session that can modify the
 branch and rerun tests. The human stays the final gate — work lands as an
@@ -88,4 +102,4 @@ and not yet purchasable.
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones
-- License: Apache 2.0
+- Licence: Sustainable Use License v1.0 (fair-code) — https://github.com/orbi-build/orbi/blob/main/LICENSE.md
