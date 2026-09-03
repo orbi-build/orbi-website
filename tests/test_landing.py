@@ -19,7 +19,25 @@ CLOUD_DISCUSSION = "https://github.com/orbi-build/orbi/discussions/225"
 ROADMAP = "https://github.com/orbi-build/orbi/milestones"
 
 
+# Tags that start a new line in a rendered page. Text either side of one is
+# separate words; text either side of an inline tag (<strong>, <span>, <em>)
+# is not, and joining across those would invent boundaries the DOM lacks.
+BREAKING_TAGS = frozenset(
+    """br p div section article header footer main nav aside ul ol li dl dt dd
+    h1 h2 h3 h4 h5 h6 figure figcaption blockquote pre table tr td th form
+    fieldset legend hr button option""".split()
+)
+
+HEADING_TAGS = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
+
+
 class PageParser(HTMLParser):
+    """Reads page text the way a browser builds textContent.
+
+    Whitespace comes from the markup, never from the joining, so an
+    assertion here fails on exactly what a crawler would misread.
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.hrefs: list[tuple[str, str]] = []
@@ -27,15 +45,44 @@ class PageParser(HTMLParser):
         self._buf: list[str] = []
         self.text_chunks: list[str] = []
         self.elements: list[tuple[str, dict[str, str]]] = []
+        # Each heading twice: as textContent gives it (a crawler's view, where a
+        # bare <br> leaves no separator) and as a reader sees it rendered.
+        self.headings: list[str] = []
+        self.headings_rendered: list[str] = []
+        self._heading: list[str] | None = None
+        self._heading_rendered: list[str] | None = None
+
+    def _break(self) -> None:
+        if self.text_chunks and self.text_chunks[-1] != "\n":
+            self.text_chunks.append("\n")
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         got = {k: v or "" for k, v in attrs}
         self.elements.append((tag, got))
+        if tag in BREAKING_TAGS:
+            self._break()
+            if self._heading_rendered is not None:
+                self._heading_rendered.append("\n")
+        if tag in HEADING_TAGS:
+            self._heading = []
+            self._heading_rendered = []
         if tag == "a":
             self._href = got.get("href", "")
             self._buf = []
 
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_starttag(tag, attrs)
+
     def handle_endtag(self, tag: str) -> None:
+        if tag in BREAKING_TAGS:
+            self._break()
+        if tag in HEADING_TAGS and self._heading is not None:
+            self.headings.append("".join(self._heading).strip())
+            self.headings_rendered.append(
+                " ".join("".join(self._heading_rendered or []).split())
+            )
+            self._heading = None
+            self._heading_rendered = None
         if tag == "a" and self._href is not None:
             self.hrefs.append(("".join(self._buf).strip(), self._href))
             self._href = None
@@ -45,10 +92,15 @@ class PageParser(HTMLParser):
         self.text_chunks.append(data)
         if self._href is not None:
             self._buf.append(data)
+        if self._heading is not None:
+            self._heading.append(data)
+        if self._heading_rendered is not None:
+            self._heading_rendered.append(data)
 
     @property
     def text(self) -> str:
-        return " ".join(self.text_chunks)
+        """Rendered text with runs of whitespace collapsed, as a reader sees it."""
+        return " ".join("".join(self.text_chunks).split())
 
 
 def parse(path: Path) -> tuple[str, PageParser]:
@@ -184,6 +236,45 @@ class LandingTests(unittest.TestCase):
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
             self.assertEqual(ctas["cloud"], CLOUD_DISCUSSION)
+
+    def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
+        """Inline tags must not invent whitespace; <br> must produce it.
+
+        The old parser joined every text chunk with a space, so it saw word
+        boundaries the DOM does not have. That hid `Issuesinto` from these
+        tests while crawlers and AI summarisers read it verbatim.
+        """
+        inline = PageParser()
+        inline.feed("<p>Read the <strong>v0.2.0</strong> release</p>")
+        self.assertEqual(inline.text, "Read the v0.2.0 release")
+
+        glued = PageParser()
+        glued.feed("<p>Read the<strong>v0.2.0</strong>release</p>")
+        self.assertEqual(glued.text, "Read thev0.2.0release")
+
+        broken = PageParser()
+        broken.feed("<h1>Turn GitHub Issues<br>into reviewed software</h1>")
+        self.assertEqual(broken.text, "Turn GitHub Issues into reviewed software")
+
+        blocks = PageParser()
+        blocks.feed("<p>First</p><p>Second</p>")
+        self.assertEqual(blocks.text, "First Second")
+
+    def test_display_headings_keep_word_boundaries_for_crawlers(self) -> None:
+        """A heading must read the same to a crawler as it does on screen.
+
+        `<br>` breaks the line visually but contributes nothing to
+        textContent, so `Issues<br>into` reaches crawlers and AI summarisers
+        as `Issuesinto`. Any heading whose collapsed textContent differs from
+        its rendered text has lost a word boundary.
+        """
+        for page in (self.en, self.zh):
+            for crawler, rendered in zip(page.headings, page.headings_rendered):
+                self.assertEqual(
+                    " ".join(crawler.split()),
+                    rendered,
+                    f"heading loses a word boundary for crawlers: {crawler!r}",
+                )
 
     def test_hero_leads_with_github_issues_without_a_second_workspace(self) -> None:
         self.assertIn("Turn GitHub Issues into reviewed software", self.en.text)
