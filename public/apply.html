@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>报名 Orbi 首批开源共建用户</title>
+  <meta name="description" content="加入 Orbi 首批开源共建用户，在自己仓库里跑一个真实任务，一起把 Orbi 做可靠。">
+  <link rel="canonical" href="https://orbi.build/apply">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .apply-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 200px); padding:56px 18px 96px; }
+    .apply-card { width:100%; max-width:880px; }
+    .title-row { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin:0 0 12px; }
+    .apply-title { flex:1 1 auto; max-width:none; font:700 clamp(30px,6vw,54px)/1.08 var(--font-head, "Familjen Grotesk", sans-serif); letter-spacing:-.01em; margin:0; color:#e6ecf7; }
+    .lang-switch { flex:none; margin-top:6px; background:none; border:1px solid #27324a; color:#aab8d4; font:500 14px "Instrument Sans","Noto Sans SC",sans-serif; padding:7px 14px; border-radius:20px; cursor:pointer; }
+    .lang-switch:hover { border-color:#3b4a6e; color:#e6ecf7; }
+    .apply-sub { color:#8ea0c0; font-size:16px; line-height:1.65; margin:0 0 42px; }
+    .apply-form { display:flex; flex-direction:column; }
+    .field { margin-bottom:22px; }
+    .field label { display:block; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; margin:0 0 8px; }
+    .field label .req { color:#ff6b6b; }
+    .field input, .field textarea { width:100%; box-sizing:border-box; padding:14px 16px; background:#101724; color:#e6ecf7; border:1px solid #27324a; border-radius:10px; font:400 16px/1.5 "Instrument Sans","Noto Sans SC",sans-serif; }
+    .field input:focus, .field textarea:focus { outline:none; border-color:#3b4a6e; }
+    .field textarea { resize:vertical; min-height:110px; }
+    .field .hint { color:#5f6f8f; font-size:12.5px; margin-top:6px; line-height:1.5; }
+    .submit { width:100%; padding:15px 24px; font:600 16px "Instrument Sans","Noto Sans SC",sans-serif; border:0; border-radius:10px; cursor:pointer; }
+    #result { margin:0; padding:14px 16px; border-radius:10px; font-size:15px; line-height:1.5; display:none; }
+    #result.ok { display:block; background:#0d1f14; color:#7ee0a3; border:1px solid #1e5134; }
+    #result.err { display:block; background:#230f0f; color:#ff9b9b; border:1px solid #5c2424; }
+    @media (max-width: 640px) {
+      .apply-wrap { padding:48px 18px 80px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到表单</a>
+  <div class="night" style="position:relative;min-height:100vh">
+    <main id="main-content" class="apply-wrap">
+      <div class="apply-card">
+        <div class="title-row">
+          <h1 class="apply-title" data-zh="让 Orbi 在你自己仓库里跑一个真实任务" data-en="Run a real task on your own repo with Orbi">让 Orbi 在你自己仓库里跑一个真实任务</h1>
+          <button class="lang-switch" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+        </div>
+        <p class="apply-sub" data-zh="Orbi 是一个可自托管的软件工厂：GitHub Issue 进去，经过实现、独立审查和验证的软件交付出来。我们正在找第一批用户，在真实仓库里跑真实任务。" data-en="Orbi is a self-hosted software factory: GitHub Issues in, reviewed, verified software out. We are looking for our first users to run real tasks on real repositories.">Orbi 是一个可自托管的软件工厂：GitHub Issue 进去，经过实现、独立审查和验证的软件交付出来。我们正在找第一批用户，在真实仓库里跑真实任务。</p>
+
+        <form id="apply" class="apply-form" novalidate>
+          <div class="field">
+            <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
+            <input id="f-name" name="name" type="text" required autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label for="f-tg" data-zh="Telegram 账号（必填，拉你进群）" data-en="Telegram handle (required, for the group invite)"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
+            <input id="f-tg" name="tg" type="text" required placeholder="@yourhandle">
+            <p class="hint" data-zh="开源共建在 Telegram 群里进行，需要用它拉你进群。" data-en="The open-source cohort runs in a Telegram group — we need this to invite you.">开源共建在 Telegram 群里进行，需要用它拉你进群。</p>
+          </div>
+
+          <div class="field">
+            <label for="f-email" data-zh="Email（选填）" data-en="Email (optional)"><span data-zh="Email（选填）" data-en="Email (optional)">Email（选填）</span></label>
+            <input id="f-email" name="email" type="email" autocomplete="email">
+          </div>
+
+          <div class="field">
+            <label for="f-agent" data-zh="当前使用的 Agent / AI 工具" data-en="Agent / AI tools you currently use"><span data-zh="当前使用的 Agent / AI 工具" data-en="Agent / AI tools you currently use">当前使用的 Agent / AI 工具</span></label>
+            <input id="f-agent" name="agent_tools" type="text" placeholder="Cursor, Claude Code, Copilot…">
+          </div>
+
+          <div class="field">
+            <label for="f-role" data-zh="身份 / 团队规模" data-en="Identity / team size"><span data-zh="身份 / 团队规模" data-en="Identity / team size">身份 / 团队规模</span></label>
+            <input id="f-role" name="role" type="text">
+          </div>
+
+          <div class="field">
+            <label for="f-scenario" data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first"><span data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first">你的仓库 & 想先交给 Orbi 跑通的部分</span> <span class="req">*</span></label>
+            <textarea id="f-scenario" name="scenario" rows="4" required data-zh="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue" data-en="One line about your repo; which delivery you want Orbi to automate (Issue claim, dependency order, review/merge…), or the first real Issue to run" placeholder="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-pain" data-zh="现在你用 AI 干活最大的痛点" data-en="Your biggest pain delegating work to AI today"><span data-zh="现在你用 AI 干活最大的痛点" data-en="Your biggest pain delegating work to AI today">现在你用 AI 干活最大的痛点</span></label>
+            <textarea id="f-pain" name="pain" rows="3" data-zh="比如：上下文总断、没人盯着不放心、并发任务乱、review 不靠谱、离无人值守还差什么…" data-en="e.g. lost context, needs babysitting, parallel tasks get messy, unreliable review, what is missing for unattended runs…" placeholder="比如：上下文总断、没人盯着不放心、并发任务乱、review 不靠谱、离无人值守还差什么…"></textarea>
+          </div>
+
+          <button type="submit" class="button button-signal submit" data-zh="提交报名" data-en="Submit application">提交报名</button>
+          <p id="result" role="status"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const langBtn = document.getElementById("langBtn");
+    const els = [...document.querySelectorAll("[data-zh]")];
+    let en = false;
+    function setLang(toEn) {
+      en = toEn;
+      langBtn.textContent = en ? "中文" : "EN";
+      document.documentElement.lang = en ? "en" : "zh-CN";
+      document.title = en
+        ? "Apply — Orbi early adopter"
+        : "报名 Orbi 首批开源共建用户";
+      for (const el of els) {
+        if (el.tagName === "TEXTAREA") el.placeholder = en ? el.dataset.en : el.dataset.zh;
+        else el.innerHTML = en ? el.dataset.en : el.dataset.zh;
+      }
+    }
+    langBtn.addEventListener("click", () => setLang(!en));
+
+    const form = document.getElementById("apply");
+    const result = document.getElementById("result");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      result.className = "";
+      try {
+        const res = await fetch("/api/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          result.className = "ok";
+          result.textContent = en
+            ? "Got it. We will follow up shortly."
+            : "已收到。如果匹配，我们会尽快拉你进共建群。";
+          form.reset();
+        } else {
+          result.className = "err";
+          result.textContent = en
+            ? "Something went wrong: " + (json.error || res.status)
+            : "出错了：" + (json.error || res.status);
+        }
+      } catch (err) {
+        result.className = "err";
+        result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
+      }
+    });
+  </script>
+</body>
+</html>

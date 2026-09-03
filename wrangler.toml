@@ -14,3 +14,8 @@ custom_domain = true
 [[routes]]
 pattern = "www.orbi.build"
 custom_domain = true
+
+[[d1_databases]]
+binding = "orbi_applications"
+database_name = "orbi-applications"
+database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"

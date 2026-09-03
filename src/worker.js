@@ -68,6 +68,44 @@ async function statsResponse(request, token) {
   return response;
 }
 
+async function handleApply(request, env) {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "invalid json" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const name = String(body.name || "").trim();
+  const tg = String(body.tg || "").trim();
+  const email = String(body.email || "").trim();
+  const agentTools = String(body.agent_tools || "").trim();
+  const role = String(body.role || "").trim();
+  const scenario = String(body.scenario || "").trim();
+  const pain = String(body.pain || "").trim();
+  if (!name || !tg || !scenario) {
+    return new Response(JSON.stringify({ error: "name, tg and scenario are required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  await env.orbi_applications.prepare(
+    "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  ).bind(name, tg, email, agentTools, role, scenario, pain).run();
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 201,
+    headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -91,6 +129,10 @@ export default {
           },
         });
       }
+    }
+
+    if (url.pathname === "/api/apply") {
+      return await handleApply(request, env);
     }
 
     const asset = await env.ASSETS.fetch(request);
