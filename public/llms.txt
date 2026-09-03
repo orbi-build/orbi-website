@@ -44,6 +44,44 @@ Orbi is not a chat window and not another board. It is the control system above
 the Agents: the layer that keeps intent, state, authority, verification,
 economics, and production evidence coherent as models change.
 
+## How Orbi differs from Copilot, Cursor, and similar tools
+
+Copilot and Cursor are editors: they make a developer faster while that
+developer is typing. Orbi operates when nobody is typing. It takes an Issue from
+the backlog, works in an isolated git worktree, and returns a merged pull
+request.
+
+The distinguishing step is what happens after code is written. A second,
+independent Orbi session reviews the exact diff, can repair the branch rather
+than only comment on it, reruns the test suite against its own repairs, and only
+the reviewed commit is allowed to merge. That review-and-repair gate is the
+product, not the code generation.
+
+## Requirements
+
+- Git, a POSIX shell, and API access to a model
+- Linux or macOS, on your own machine or your own server
+- No GPU required — the model may be a hosted API
+- Repository, credentials, and test suite stay on your infrastructure
+
+## Common questions
+
+**Which models work?** Bring your own: Claude, GPT, or locally hosted
+open-weight models. Model spend goes to your provider at your rate; the Apache
+2.0 core adds no platform fee.
+
+**Who reviews the AI's code?** An independent Orbi session that can modify the
+branch and rerun tests. The human stays the final gate — work lands as an
+ordinary GitHub pull request, so branch protection, required checks, and human
+approvals still apply.
+
+**What happens if a run crashes?** The next tick resumes the same scene. Issue,
+pull request, labels, and run ID live in GitHub rather than in a process, so a
+restart reconstructs the same run, branch, worktree, and PR.
+
+**What does it cost?** Self-hosting is free forever. Managed Cloud is in design
+and not yet purchasable.
+
 ## Links
 
 - Landing page (English): https://orbi.build/

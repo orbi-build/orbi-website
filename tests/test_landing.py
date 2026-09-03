@@ -118,11 +118,43 @@ class LandingTests(unittest.TestCase):
 
     def test_english_is_the_default_page(self) -> None:
         self.assertIn('lang="en"', self.en_html)
-        self.assertIn("Software keeps shipping", self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/"', self.en_html)
 
     def test_chinese_page_exists(self) -> None:
         self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn("软件继续交付", self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/"', self.zh_html)
+
+    def test_title_and_description_carry_search_terms(self) -> None:
+        """Titles must name what someone would search for, not only the metaphor.
+
+        "Software keeps shipping after the lights go out" is memorable but
+        nobody types it into a search box.
+        """
+        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
+        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
+        self.assertLessEqual(len(en_title), 65, en_title)
+        self.assertLessEqual(len(en_desc), 260, len(en_desc))
+        for term in ("AI coding agent", "GitHub Issues", "open-source"):
+            self.assertIn(term.lower(), (en_title + " " + en_desc).lower(), term)
+
+        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
+        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
+        for term in ("AI 编程 Agent", "GitHub Issue", "自托管"):
+            self.assertIn(term, zh_title + " " + zh_desc, term)
+
+    def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:
+        """At least half the H2s should contain a term someone would search."""
+        terms_en = ("ai", "agent", "github", "code review", "self-host",
+                    "open-source", "model", "automat", "issue", "pr")
+        terms_zh = ("ai", "agent", "github", "代码审查", "自托管",
+                    "开源", "模型", "自动", "issue", "pr")
+        for page, terms in ((self.en, terms_en), (self.zh, terms_zh)):
+            h2s = [h for h in page.headings_rendered if h]
+            hits = [h for h in h2s if any(t in h.lower() for t in terms)]
+            self.assertGreaterEqual(
+                len(hits), len(h2s) // 2,
+                f"only {len(hits)}/{len(h2s)} headings carry a search term: {h2s}",
+            )
 
     def test_no_generic_factory_os_or_nineties_type(self) -> None:
         for html in (self.en_html, self.zh_html):

@@ -930,6 +930,84 @@ h2 {
 .direction-thesis p { margin-bottom: 0; }
 .direction-thesis strong { color: #006c5b; }
 
+.faq {
+  padding-top: clamp(100px, 10vw, 168px);
+  padding-bottom: clamp(100px, 10vw, 168px);
+  border-top: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+.faq h2 { max-width: 24ch; }
+
+.faq-list {
+  margin-top: 62px;
+  border-top: 2px solid var(--ink);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  display: grid;
+  grid-template-columns: 44px 1fr 28px;
+  gap: 18px;
+  align-items: baseline;
+  padding: 24px 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--display);
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary span {
+  color: #4d625e;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+.faq-item summary::after {
+  content: "+";
+  justify-self: end;
+  color: var(--signal);
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.faq-item[open] summary::after { content: "−"; }
+.faq-item summary:hover { color: #0b5f50; }
+
+.faq-answer {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 18px;
+  padding: 0 0 28px;
+}
+
+.faq-answer p {
+  grid-column: 2;
+  max-width: 58rem;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+}
+
+.faq-answer p + p { margin-top: 12px; }
+.faq-answer code {
+  padding: 1px 6px;
+  background: #dfe7e4;
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
 .closing {
   border-top: 1px solid var(--line);
 }
@@ -1114,6 +1192,11 @@ h2 {
   .future-loop li:last-child::after { content: none; }
   .future-loop strong { margin-top: 38px; }
   .direction-thesis { grid-template-columns: 1fr; gap: 28px; font-size: 1.3rem; }
+
+  .faq { padding-top: 88px; padding-bottom: 88px; }
+  .faq-list { margin-top: 46px; }
+  .faq-item summary { grid-template-columns: 30px 1fr 22px; gap: 12px; padding: 20px 0; }
+  .faq-answer { grid-template-columns: 30px 1fr; gap: 12px; padding-bottom: 22px; }
 
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }

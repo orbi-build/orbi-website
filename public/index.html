@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — Software keeps shipping after the lights go out</title>
-  <meta name="description" content="Orbi connects GitHub Issues, dependencies, Epics, implementation, independent review, exact-head merge, and releases into one recoverable production system.">
+  <title>Orbi — Open-source AI coding agent that ships from GitHub Issues</title>
+  <meta name="description" content="Orbi is a self-hosted, Apache 2.0 AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model — Claude, GPT, or local.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -17,14 +17,14 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/">
-  <meta property="og:title" content="Orbi — Turn GitHub Issues into reviewed software">
-  <meta property="og:description" content="Orbi runs the Issues, dependencies, milestones, and releases already in your repository through implementation, independent review, recovery, and exact-head merge. GitHub remains the source of truth.">
+  <meta property="og:title" content="Orbi — Open-source AI coding agent that ships from GitHub Issues">
+  <meta property="og:description" content="A self-hosted, Apache 2.0 AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Orbi — turn GitHub Issues into reviewed software.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Orbi — Turn GitHub Issues into reviewed software">
+  <meta name="twitter:title" content="Orbi — Open-source AI coding agent that ships from GitHub Issues">
   <meta name="twitter:description" content="A GitHub-native software production system: Issues in, reviewed and released software out. Apache 2.0, self-hosted.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,6 +79,60 @@
           "description": "Self-hosted Apache 2.0 core, free forever."
         },
         "publisher": { "@id": "https://orbi.build/#organization" }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://orbi.build/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does Orbi actually need to run?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API. Your repository, your keys, and your test suite stay where they already are."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which AI models can I use with Orbi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work. Model spend goes to your provider at your rate; the Apache 2.0 core has no platform fee."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is Orbi different from GitHub Copilot or Cursor?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and returns a merged pull request. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Who reviews the AI's code?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Another Orbi session, running independently of the one that wrote the code, and it can change the branch rather than only comment. It reruns tests against its own repairs. You stay the last gate: work lands as a normal GitHub pull request, so branch protection, required checks, and human approvals still apply."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens when a run crashes halfway?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The next tick returns to the same scene. The Issue, pull request, labels, and run ID live in GitHub rather than in a process, so restarts reconstruct the same run, branch, worktree, and PR."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Orbi free, and what is Managed Cloud?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The self-hosted core is Apache 2.0 and free forever — self-host it and you pay Orbi nothing, only your model provider. Managed Cloud is in design and not yet shipping; nothing about it is available to buy today."
+            }
+          }
+        ]
       }
     ]
   }
@@ -123,9 +177,9 @@
             <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">Inspect a real delivery →</a>
           </div>
           <ul class="trust-line" aria-label="Product attributes">
-            <li>Apache 2.0</li>
-            <li>GitHub is the ledger</li>
-            <li>Your execution choice</li>
+            <li>Apache 2.0, free forever</li>
+            <li>Self-hosted — code never leaves your machine</li>
+            <li>Bring your own model</li>
           </ul>
         </div>
 
@@ -182,8 +236,8 @@
       <section class="thesis shell" aria-labelledby="thesis-title">
         <div>
           <p class="section-tag">THE SHIFT</p>
-          <h2 id="thesis-title">Models will write more code.
-            <br>Shipping will still need a system</h2>
+          <h2 id="thesis-title">AI agents write the code.
+            <br>Shipping it still needs a system</h2>
           <p class="section-lede">As agents work for hours and run in parallel, the bottleneck moves. It is no longer typing code. It is deciding what should change, ordering dependent work, proving the result, controlling authority, and carrying an exact version into production.</p>
           <p class="thesis-punch">Stronger agents make the production system more important, not less.</p>
         </div>
@@ -199,8 +253,8 @@
         <div class="shell">
           <p class="section-tag">SHIPPING TODAY</p>
           <div class="section-heading">
-            <h2 id="system-title">A delivery graph.
-              <br>Not a task queue</h2>
+            <h2 id="system-title">How Orbi automates
+              <br>GitHub Issue to merged PR</h2>
             <p>An Issue is the executable unit, but Orbi does not manage Issues in isolation. Epics and milestones hold scope. Dependencies order the work. Review and repair converge each PR. A Release Issue freezes the result into a version.</p>
           </div>
 
@@ -237,8 +291,8 @@
         <div class="section-heading proof-heading">
           <div>
             <p class="section-tag">PRODUCTION EVIDENCE</p>
-            <h2 id="proof-title">Not a diagram.
-              <br>A delivery that happened</h2>
+            <h2 id="proof-title">AI code review
+              <br>on a real merged PR</h2>
           </div>
           <p>Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, and PR #193 merged. The record is still inspectable because the record is GitHub.</p>
         </div>
@@ -264,8 +318,8 @@
         <div class="shell ownership-grid">
           <div>
             <p class="section-tag section-tag-dark">YOUR FACTORY FLOOR</p>
-            <h2 id="ownership-title">Your code. Your compute.
-              <br>Your authority</h2>
+            <h2 id="ownership-title">Self-hosted, so your code
+              <br>never leaves your machine</h2>
             <p>Orbi runs where the repository and model access already live. GitHub carries durable coordination and evidence; your machine carries the execution.</p>
           </div>
           <div class="ownership-map" role="group" aria-label="Orbi execution boundary">
@@ -283,8 +337,8 @@
           <div class="section-heading">
             <div>
               <p class="section-tag">RUN IT YOUR WAY</p>
-              <h2 id="run-orbi-title">One production system.
-                <br>Your execution choice</h2>
+              <h2 id="run-orbi-title">Bring your own model
+                <br>Claude, GPT, or local</h2>
             </div>
             <p>The open-source core ships today. Managed Cloud is a commercial managed service being designed with the same GitHub-native ledger—without creating another board or locking execution to one model provider.</p>
           </div>
@@ -320,8 +374,8 @@
         <div class="direction-head">
           <div>
             <p class="section-tag">THE DIRECTION · NOT A SHIPPING CLAIM</p>
-            <h2 id="direction-title">From delivering work
-              <br>to continuously evolving software</h2>
+            <h2 id="direction-title">Where autonomous software
+              <br>development goes next</h2>
           </div>
           <p>Today, explicit GitHub tasks and Release Issues enter the line. The next horizon is a closed production loop: software supplies evidence from its own operation, Orbi turns that evidence into bounded work, Agents execute, and the result is measured after release.</p>
         </div>
@@ -341,10 +395,68 @@
         </div>
       </section>
 
+      <section class="faq" id="faq" data-status="shipping" aria-labelledby="faq-title">
+        <div class="shell">
+          <p class="section-tag">BEFORE YOU INSTALL</p>
+          <h2 id="faq-title">Questions people ask
+            <br>before running an agent on their repo</h2>
+
+          <div class="faq-list">
+            <details class="faq-item" open>
+              <summary><span>01</span>What does Orbi actually need to run?</summary>
+              <div class="faq-answer">
+                <p>Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API.</p>
+                <p>Your repository, your keys, and your test suite stay where they already are. Orbi does not upload your code to a service we operate.</p>
+              </div>
+            </details>
+
+            <details class="faq-item" open>
+              <summary><span>02</span>Which AI models can I use?</summary>
+              <div class="faq-answer">
+                <p>Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work, and you can change your mind later without changing your workflow.</p>
+                <p>Model spend goes to your provider at your rate. Orbi charges nothing on top: the Apache 2.0 core has no platform fee.</p>
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary><span>03</span>How is this different from Copilot or Cursor?</summary>
+              <div class="faq-answer">
+                <p>Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and comes back with a merged pull request.</p>
+                <p>The difference that matters is what happens after the code is written. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit is allowed to merge. That review step is the product.</p>
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary><span>04</span>Who reviews the AI's code?</summary>
+              <div class="faq-answer">
+                <p>Another Orbi session, running independently of the one that wrote the code, and it can change the branch rather than only comment on it. It reruns the tests against its own repairs and judges the repaired head.</p>
+                <p>You stay the last gate. The work lands as a normal GitHub pull request, so your branch protection, required checks, and human approvals apply exactly as they do today.</p>
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary><span>05</span>What happens when a run crashes halfway?</summary>
+              <div class="faq-answer">
+                <p>The next tick returns to the same scene. Because the Issue, the pull request, the labels, and the run ID live in GitHub rather than in a process, a killed process or a failed test does not produce a second story about what happened.</p>
+                <p>Restarts reconstruct state from that record — the same run, branch, worktree, and PR.</p>
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary><span>06</span>Is it really free, and what is Managed Cloud?</summary>
+              <div class="faq-answer">
+                <p>The self-hosted core is Apache 2.0 and free forever. Self-host it and you pay Orbi nothing — only your model provider.</p>
+                <p>Managed Cloud is <strong>in design and not yet shipping</strong>. The plan is a hosted control plane billed as platform subscription plus managed runtime plus model usage, where bringing your own compute or model removes that line. Nothing about it is available to buy today.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
       <section class="closing shell" aria-labelledby="closing-title">
         <p class="section-tag">OPEN SOURCE CORE</p>
-        <h2 id="closing-title">Start with one repository.
-          <br>Turn the lights off</h2>
+        <h2 id="closing-title">Install the open-source agent
+          <br>and turn the lights off</h2>
         <p>Apache 2.0. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a reviewed result.</p>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
@@ -363,6 +475,7 @@
       <nav aria-label="Footer navigation">
         <a href="https://docs.orbi.build">Docs</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="#faq">FAQ</a>
         <a href="#direction">Direction</a>
         <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
         <a href="/zh/" lang="zh-CN">中文</a>

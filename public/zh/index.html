@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — 关灯以后，软件继续交付</title>
-  <meta name="description" content="Orbi 把 GitHub Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的软件生产系统。">
+  <title>Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码</title>
+  <meta name="description" content="Orbi 是可自托管的开源 AI 编程 Agent（Apache 2.0）。它领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，最后只合并通过审查的那个 Commit。自带模型即可——Claude、GPT 或本地模型。">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -17,14 +17,14 @@
   <meta property="og:locale" content="zh_CN">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/">
-  <meta property="og:title" content="Orbi — 让 GitHub Issue 变成经过审查的软件">
-  <meta property="og:description" content="Orbi 直接读取仓库里已有的 Issue、依赖、Milestone 和 Release，把它们推进到实现、独立审查、故障恢复和精确合并。GitHub 始终是唯一事实源。">
+  <meta property="og:title" content="Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码">
+  <meta property="og:description" content="可自托管的开源 AI 编程 Agent（Apache 2.0）。领取 GitHub Issue、写代码、跑独立 AI 代码审查并自动修复，只合并通过审查的那个 Commit。自带模型即可。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Orbi — 让 GitHub Issue 变成经过审查的软件。">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Orbi — 让 GitHub Issue 变成经过审查的软件">
+  <meta name="twitter:title" content="Orbi — 开源 AI 编程 Agent，从 GitHub Issue 直接交付代码">
   <meta name="twitter:description" content="GitHub 原生的软件生产系统：Issue 进去，经过审查和发布的软件出来。Apache 2.0，可自托管。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +41,9 @@
         "name": "Orbi",
         "url": "https://orbi.build/",
         "logo": "https://orbi.build/img/og.png",
-        "sameAs": ["https://github.com/orbi-build"]
+        "sameAs": [
+          "https://github.com/orbi-build"
+        ]
       },
       {
         "@type": "WebSite",
@@ -49,7 +51,9 @@
         "url": "https://orbi.build/zh/",
         "name": "Orbi",
         "inLanguage": "zh-CN",
-        "publisher": { "@id": "https://orbi.build/#organization" }
+        "publisher": {
+          "@id": "https://orbi.build/#organization"
+        }
       },
       {
         "@type": "SoftwareApplication",
@@ -76,7 +80,63 @@
           "priceCurrency": "USD",
           "description": "自托管 Apache 2.0 核心，永久免费。"
         },
-        "publisher": { "@id": "https://orbi.build/#organization" }
+        "publisher": {
+          "@id": "https://orbi.build/#organization"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://orbi.build/zh/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "跑 Orbi 需要什么前提？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器或服务器。不需要 GPU——思考交给模型，模型可以是托管 API。仓库、密钥和测试套件都留在原地，Orbi 不会把代码上传到我们运营的服务上。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Orbi 可以用哪些 AI 模型？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "自带即可。Orbi 通过你的凭证驱动 Agent，Claude、GPT 和本地部署的开源权重模型都能用。模型费用按你的价格付给你的 Provider，Apache 2.0 核心不收平台费。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Orbi 和 GitHub Copilot、Cursor 有什么区别？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Copilot 和 Cursor 是编辑器，让你敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领 Issue，在隔离的 Worktree 里干活，交回一个已合并的 PR。另一场会话审查同一份 Diff、直接修复、重跑测试，只有通过审查的 Commit 才允许合并。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "AI 写的代码谁来审查？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "另一场独立于写代码那场的 Orbi 会话，而且它能直接改分支而非只留评论，并针对自己的修复重跑测试。最后一道关仍然是你：产出以普通 GitHub PR 落地，现有的分支保护、必需检查和人工审批照常生效。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Orbi 跑到一半崩溃了怎么办？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "下一拍回到同一个现场。Issue、PR、Label 和 Run ID 存在 GitHub 里而不是进程里，重启会从这份记录恢复出同一个 Run、分支、Worktree 和 PR。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Orbi 真的免费吗？托管 Cloud 是什么？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "自托管核心是 Apache 2.0，永久免费，完全自托管向 Orbi 支付 ¥0，只付模型费。托管 Cloud 还在设计中、尚未上线，今天没有任何与它相关的东西可以购买。"
+            }
+          }
+        ]
       }
     ]
   }
@@ -121,9 +181,9 @@
           <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付 →</a>
         </div>
         <ul class="trust-line" aria-label="产品属性">
-          <li>Apache 2.0</li>
-          <li>GitHub 就是账本</li>
-          <li>执行方式由你选择</li>
+          <li>Apache 2.0，永久免费</li>
+          <li>自托管 — 代码不离开你的机器</li>
+          <li>自带模型</li>
         </ul>
       </div>
 
@@ -176,8 +236,8 @@
     <section class="thesis shell" aria-labelledby="thesis-title">
       <div>
         <p class="section-tag">行业正在换挡</p>
-        <h2 id="thesis-title">模型会写越来越多的代码。
-          <br>交付不会因此自动完成</h2>
+        <h2 id="thesis-title">AI Agent 会写代码，
+          <br>但交付仍然需要系统</h2>
         <p class="section-lede">当 Agent 能连续工作数小时、并行处理多个任务，瓶颈就从写代码转向：决定改什么、协调依赖、证明结果正确、控制权限，以及把一个精确版本安全送进生产。</p>
         <p class="thesis-punch">Agent 越强，生产系统越重要。</p>
       </div>
@@ -193,8 +253,8 @@
       <div class="shell">
         <p class="section-tag">今天已经在运行</p>
         <div class="section-heading">
-          <h2 id="system-title">不是单任务队列。
-            <br>是一张交付图</h2>
+          <h2 id="system-title">Orbi 如何把 GitHub Issue
+            <br>自动做成已合并的 PR</h2>
           <p>Issue 是最小执行单元，但 Orbi 管的不是孤立 Issue：Epic 和 Milestone 确定范围，blockedBy 排定依赖，Review/Fix 让 PR 收敛，Release Issue 把一组结果冻结成版本。</p>
         </div>
 
@@ -231,8 +291,8 @@
       <div class="section-heading proof-heading">
         <div>
           <p class="section-tag">真实生产证据</p>
-          <h2 id="proof-title">不是流程图。
-            <br>是已经发生的交付</h2>
+          <h2 id="proof-title">AI 代码审查
+            <br>跑在真实合并的 PR 上</h2>
         </div>
         <p>Issue #48 进入真实的 Orbi 仓库。隔离运行完成实现，另一场会话审查同一份 Diff，PR #193 随后合并。今天仍然可以检查全过程，因为 GitHub 本身就是记录。</p>
       </div>
@@ -258,8 +318,8 @@
       <div class="shell ownership-grid">
         <div>
           <p class="section-tag section-tag-dark">你的工厂现场</p>
-          <h2 id="ownership-title">你的代码。你的算力。
-            <br>你的权限</h2>
+          <h2 id="ownership-title">可自托管，代码
+            <br>不离开你的机器</h2>
           <p>Orbi 在仓库和模型访问本来就存在的地方运行。GitHub 保存长期协调和交付证据；你的机器执行真正的生产。</p>
         </div>
         <div class="ownership-map" role="group" aria-label="Orbi 执行边界">
@@ -277,8 +337,8 @@
         <div class="section-heading">
           <div>
             <p class="section-tag">按你的方式运行</p>
-            <h2 id="run-orbi-title">一套生产系统
-              <br>执行方式由你选择</h2>
+            <h2 id="run-orbi-title">自带模型即可
+              <br>Claude、GPT 或本地模型</h2>
           </div>
           <p>开源核心今天已经可用。托管 Cloud 是正在设计中的商业托管服务，仍然以 GitHub 为唯一账本，不增加第二套看板，也不把执行绑定到一家模型服务。</p>
         </div>
@@ -314,8 +374,8 @@
       <div class="direction-head">
         <div>
           <p class="section-tag">正在建设的方向 · 不是已上线清单</p>
-          <h2 id="direction-title">从交付任务，
-            <br>到持续演进软件</h2>
+          <h2 id="direction-title">自主软件开发
+            <br>的下一步是什么</h2>
         </div>
         <p>今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
       </div>
@@ -335,10 +395,68 @@
       </div>
     </section>
 
+    <section class="faq" id="faq" data-status="shipping" aria-labelledby="faq-title">
+      <div class="shell">
+        <p class="section-tag">动手之前</p>
+        <h2 id="faq-title">把 Agent 放进自己仓库前，
+          <br>大家都会问的问题</h2>
+
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary><span>01</span>跑 Orbi 需要什么前提？</summary>
+            <div class="faq-answer">
+              <p>Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。</p>
+              <p>仓库、密钥和测试套件都留在原地。Orbi 不会把你的代码上传到我们运营的服务上。</p>
+            </div>
+          </details>
+
+          <details class="faq-item" open>
+            <summary><span>02</span>可以用哪些 AI 模型？</summary>
+            <div class="faq-answer">
+              <p>自带即可。Orbi 通过你的凭证驱动 Agent，Claude、GPT 和本地部署的开源权重模型都能用，以后想换也不必改工作流。</p>
+              <p>模型费用按你的价格付给你的 Provider，Orbi 不额外抽成：Apache 2.0 核心不收平台费。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>03</span>和 Copilot、Cursor 有什么区别？</summary>
+            <div class="faq-answer">
+              <p>那些是编辑器——让你在敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领一个 Issue，在隔离的 Worktree 里干活，最后交回一个已合并的 PR。</p>
+              <p>真正的区别在代码写完之后。另一场会话审查同一份 Diff、直接修复、重跑全量测试，只有通过审查的那个 Commit 才允许合并。这个审查环节才是产品本身。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>04</span>AI 写的代码谁来审？</summary>
+            <div class="faq-answer">
+              <p>另一场独立于写代码那场的 Orbi 会话，而且它能直接改分支，不是只留评论。它会针对自己的修复重跑测试，再对修复后的 Head 下结论。</p>
+              <p>最后一道关仍然是你。产出以普通 GitHub PR 落地，你现有的分支保护、必需检查和人工审批照常生效。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>05</span>跑到一半崩了怎么办？</summary>
+            <div class="faq-answer">
+              <p>下一拍回到同一个现场。因为 Issue、PR、Label 和 Run ID 存在 GitHub 里而不是进程里，进程被杀或测试失败不会产生第二套关于「刚才发生了什么」的说法。</p>
+              <p>重启会从这份记录里恢复出同一个 Run、分支、Worktree 和 PR。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>06</span>真的免费吗？托管 Cloud 是什么？</summary>
+            <div class="faq-answer">
+              <p>自托管核心是 Apache 2.0，永久免费。完全自托管的话，你向 Orbi 支付 ¥0，只付模型费。</p>
+              <p>托管 Cloud <strong>还在设计中，尚未上线</strong>。计划是一个托管控制面，按平台订阅 + 托管运行时 + 模型用量计费，自带算力或模型时对应费用归零。今天没有任何与它相关的东西可以购买。</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <section class="closing shell" aria-labelledby="closing-title">
       <p class="section-tag">开源核心</p>
-      <h2 id="closing-title">先让一个仓库
-        <br>关灯运行</h2>
+      <h2 id="closing-title">装上这个开源 Agent，
+        <br>然后关灯</h2>
       <p>Apache 2.0，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到经过审查的结果。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
@@ -357,6 +475,7 @@
     <nav aria-label="页脚导航">
       <a href="https://docs.orbi.build/zh">文档</a>
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="#faq">常见问题</a>
       <a href="#direction">方向</a>
       <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
       <a href="/" lang="en">EN</a>
