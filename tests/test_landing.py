@@ -386,6 +386,23 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN", self.en_html)
         self.assertNotIn("GITHUB_TOKEN", self.zh_html)
 
+    def test_apply_collects_pricing_signals(self) -> None:
+        """The first cohort is the only chance to gather real pricing data.
+
+        Two answers set the price: what they already pay for AI coding (the
+        anchor) and how many Issues they'd hand over per week (the volume).
+        Without both, Cloud pricing is guesswork.
+        """
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        migrations = "\n".join(
+            p.read_text(encoding="utf-8") for p in sorted((ROOT / "migrations").glob("*.sql"))
+        )
+        for field in ("ai_spend", "issue_volume"):
+            self.assertIn(f'name="{field}"', apply_html, field)
+            self.assertIn(f'"{field}"', worker, field)
+            self.assertIn(field, migrations, field)
+
     def test_apply_bounds_every_stored_field(self) -> None:
         """An unauthenticated write path must cap what it stores."""
         worker = WORKER_PATH.read_text(encoding="utf-8")

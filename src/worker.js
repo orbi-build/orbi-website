@@ -23,6 +23,8 @@ const MAX_FIELD = {
   role: 200,
   scenario: 2000,
   pain: 2000,
+  ai_spend: 60,
+  issue_volume: 60,
 };
 
 function field(body, key) {
@@ -128,6 +130,8 @@ async function handleApply(request, env) {
   const role = field(body, "role");
   const scenario = field(body, "scenario");
   const pain = field(body, "pain");
+  const aiSpend = field(body, "ai_spend");
+  const issueVolume = field(body, "issue_volume");
   if (!name || !tg || !scenario) {
     return new Response(JSON.stringify({ error: "name, tg and scenario are required" }), {
       status: 400,
@@ -135,8 +139,8 @@ async function handleApply(request, env) {
     });
   }
   await env.orbi_applications.prepare(
-    "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  ).bind(name, tg, email, agentTools, role, scenario, pain).run();
+    "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  ).bind(name, tg, email, agentTools, role, scenario, pain, aiSpend, issueVolume).run();
   return new Response(JSON.stringify({ ok: true }), {
     status: 201,
     headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },

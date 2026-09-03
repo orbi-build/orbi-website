@@ -37,8 +37,9 @@
     .field { margin-bottom:22px; }
     .field label { display:block; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; margin:0 0 8px; }
     .field label .req { color:#ff6b6b; }
-    .field input, .field textarea { width:100%; box-sizing:border-box; padding:14px 16px; background:#101724; color:#e6ecf7; border:1px solid #27324a; border-radius:10px; font:400 16px/1.5 "Instrument Sans","Noto Sans SC",sans-serif; }
-    .field input:focus, .field textarea:focus { outline:none; border-color:#3b4a6e; }
+    .field input, .field textarea, .field select { width:100%; box-sizing:border-box; padding:14px 16px; background:#101724; color:#e6ecf7; border:1px solid #27324a; border-radius:10px; font:400 16px/1.5 "Instrument Sans","Noto Sans SC",sans-serif; }
+    .field input:focus, .field textarea:focus, .field select:focus { outline:none; border-color:#3b4a6e; }
+    .field select { appearance:none; cursor:pointer; background-image:linear-gradient(45deg,transparent 50%,#8698ba 50%),linear-gradient(135deg,#8698ba 50%,transparent 50%); background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px; background-size:6px 6px,6px 6px; background-repeat:no-repeat; padding-right:44px; }
     .field textarea { resize:vertical; min-height:110px; }
     .field .hint { color:#8698ba; font-size:12.5px; margin-top:6px; line-height:1.5; }
     .apply-nav { width:100%; max-width:880px; margin:0 auto 34px; }
@@ -101,6 +102,32 @@
           <div class="field">
             <label for="f-scenario" data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first"><span data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first">你的仓库 & 想先交给 Orbi 跑通的部分</span> <span class="req">*</span></label>
             <textarea id="f-scenario" name="scenario" rows="4" required data-zh="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue" data-en="One line about your repo; which delivery you want Orbi to automate (Issue claim, dependency order, review/merge…), or the first real Issue to run" placeholder="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-ai-spend" data-zh="每月在 AI 编程工具上的花费" data-en="Monthly spend on AI coding tools"><span data-zh="每月在 AI 编程工具上的花费" data-en="Monthly spend on AI coding tools">每月在 AI 编程工具上的花费</span></label>
+            <select id="f-ai-spend" name="ai_spend" data-zh="&lt;option value=&quot;&quot;&gt;选一个区间&lt;/option&gt;&lt;option&gt;还没花钱&lt;/option&gt;&lt;option&gt;$1-20&lt;/option&gt;&lt;option&gt;$20-100&lt;/option&gt;&lt;option&gt;$100-500&lt;/option&gt;&lt;option&gt;$500+&lt;/option&gt;" data-en="&lt;option value=&quot;&quot;&gt;Pick a range&lt;/option&gt;&lt;option&gt;Nothing yet&lt;/option&gt;&lt;option&gt;$1-20&lt;/option&gt;&lt;option&gt;$20-100&lt;/option&gt;&lt;option&gt;$100-500&lt;/option&gt;&lt;option&gt;$500+&lt;/option&gt;">
+              <option value="">选一个区间</option>
+              <option>还没花钱</option>
+              <option>$1-20</option>
+              <option>$20-100</option>
+              <option>$100-500</option>
+              <option>$500+</option>
+            </select>
+            <p class="hint" data-zh="Claude、Cursor、Copilot 等加起来。用来判断 Orbi 该定什么价位。" data-en="Claude, Cursor, Copilot and the rest combined — it tells us what Orbi should cost.">Claude、Cursor、Copilot 等加起来。用来判断 Orbi 该定什么价位。</p>
+          </div>
+
+          <div class="field">
+            <label for="f-volume" data-zh="每周想交给 Orbi 跑几个 Issue" data-en="Issues you would hand to Orbi per week"><span data-zh="每周想交给 Orbi 跑几个 Issue" data-en="Issues you would hand to Orbi per week">每周想交给 Orbi 跑几个 Issue</span></label>
+            <select id="f-volume" name="issue_volume" data-zh="&lt;option value=&quot;&quot;&gt;选一个区间&lt;/option&gt;&lt;option&gt;1-3 个&lt;/option&gt;&lt;option&gt;4-10 个&lt;/option&gt;&lt;option&gt;10-30 个&lt;/option&gt;&lt;option&gt;30 个以上&lt;/option&gt;&lt;option&gt;还不确定&lt;/option&gt;" data-en="&lt;option value=&quot;&quot;&gt;Pick a range&lt;/option&gt;&lt;option&gt;1-3&lt;/option&gt;&lt;option&gt;4-10&lt;/option&gt;&lt;option&gt;10-30&lt;/option&gt;&lt;option&gt;30+&lt;/option&gt;&lt;option&gt;Not sure yet&lt;/option&gt;">
+              <option value="">选一个区间</option>
+              <option>1-3 个</option>
+              <option>4-10 个</option>
+              <option>10-30 个</option>
+              <option>30 个以上</option>
+              <option>还不确定</option>
+            </select>
+            <p class="hint" data-zh="按你现在的 Backlog 估个数就行，不用精确。" data-en="A rough guess from your current backlog is fine.">按你现在的 Backlog 估个数就行，不用精确。</p>
           </div>
 
           <div class="field">
