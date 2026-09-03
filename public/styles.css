@@ -88,6 +88,11 @@ img {
   mask-image: linear-gradient(to bottom, black, transparent 78%);
 }
 
+.nav-shell {
+  z-index: 20;
+  overflow: visible;
+}
+
 .site-header {
   position: relative;
   z-index: 5;
@@ -112,21 +117,43 @@ img {
 }
 
 .wordmark-mark {
-  display: grid;
-  grid-template-columns: repeat(3, 7px);
-  gap: 3px;
-  align-items: end;
-  height: 18px;
-}
-
-.wordmark-mark i {
   display: block;
-  height: 7px;
-  background: var(--signal);
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
 }
 
-.wordmark-mark i:nth-child(2) { height: 12px; background: var(--run); }
-.wordmark-mark i:nth-child(3) { height: 18px; background: #edf5f0; }
+.menu-toggle {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line-dark);
+  background: transparent;
+  color: #edf5f0;
+  cursor: pointer;
+}
+
+.menu-toggle:hover { border-color: rgba(237, 245, 240, 0.5); }
+
+.menu-toggle > span {
+  display: grid;
+  gap: 5px;
+  width: 20px;
+}
+
+.menu-toggle i {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.menu-toggle[aria-expanded="true"] i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] i:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded="true"] i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .site-header nav,
 .site-footer nav {
@@ -147,6 +174,20 @@ img {
 }
 
 .site-header nav > a:hover { color: #fff; }
+
+.site-header nav > a.nav-apply {
+  min-width: 76px;
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--signal);
+  color: var(--night);
+  font-weight: 700;
+}
+
+.site-header nav > a.nav-apply:hover {
+  background: #ffc43d;
+  color: var(--night);
+}
 
 .language {
   display: inline-flex;
@@ -952,19 +993,64 @@ h2 {
   .pricing-equation small { grid-column: 2; }
 }
 
+@media (max-width: 900px) {
+  .menu-toggle { display: grid; }
+
+  .site-header nav {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 50%;
+    display: none;
+    width: 100vw;
+    padding: 10px 16px;
+    border: 1px solid var(--line-dark);
+    border-top: 0;
+    background: #07191f;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+    transform: translateX(-50%);
+  }
+
+  .site-header nav.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .site-header nav > a {
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 46px;
+    padding: 0 12px;
+    font-size: 0.92rem;
+  }
+
+  .site-header nav > a.nav-apply {
+    justify-content: center;
+    margin-top: 8px;
+    border-top: 0;
+  }
+
+  .site-header nav > a + a { border-top: 1px solid var(--line-dark); }
+
+  .language {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .language > * { flex: 1; }
+}
+
 @media (max-width: 760px) {
   body { font-size: 16px; }
   .shell,
   .site-header { width: min(100% - 32px, 1400px); }
   .site-header { min-height: 72px; }
-  .site-header nav { gap: 14px; font-size: 0.78rem; }
-  .nav-detail { display: none; }
   .wordmark { font-size: 1rem; }
 
   .hero { gap: 56px; padding: 70px 0 58px; }
   h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); line-height: 0.91; }
   html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
-  html[lang="zh-CN"] h1 span { white-space: nowrap; }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-proof-link { width: 100%; margin: 8px 0 0; text-align: center; }
@@ -1031,13 +1117,18 @@ h2 {
 
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
-  .site-footer { grid-template-columns: 1fr auto; }
-  .site-footer > p { grid-column: 1 / -1; grid-row: 2; }
+  .site-footer { grid-template-columns: 1fr; }
+  .site-footer > p { grid-column: 1; grid-row: auto; }
+  .site-footer nav {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
 }
 
 @media (max-width: 430px) {
-  .site-header nav > a:not(:last-of-type) { display: none; }
-  .language > * { padding: 7px 8px; }
   .trace-index { font-size: 0.58rem; }
   .stat strong { font-size: 2.5rem; }
 }

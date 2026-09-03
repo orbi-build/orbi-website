@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — 关灯以后，软件继续交付</title>
   <meta name="description" content="Orbi 把 GitHub Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的软件生产系统。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Orbi — 灯熄以后，软件继续交付">
+  <meta property="og:description" content="GitHub Issue 进，经过验证、审查的软件交付出。可自托管、开源（Apache 2.0）的自动化软件工厂。">
+  <meta property="og:url" content="https://orbi.build/zh/">
+  <meta property="og:image" content="https://orbi.build/img/pr-193.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="600">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Orbi — 灯熄以后，软件继续交付">
+  <meta name="twitter:description" content="GitHub Issue 进，经过验证、审查的软件交付出。可自托管、开源（Apache 2.0）的自动化软件工厂。">
+  <meta name="twitter:image" content="https://orbi.build/img/pr-193.png">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -17,19 +29,20 @@
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>
 
-  <div class="night">
+  <div class="night nav-shell">
     <header class="site-header">
       <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
-        <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
         <span>Orbi</span>
       </a>
-      <nav aria-label="主导航">
-        <a class="nav-detail" href="#system">产品</a>
-        <a class="nav-detail" href="#direction">方向</a>
-        <a class="nav-detail" href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="#system">产品怎么运作</a>
         <a href="https://docs.orbi.build/zh">文档</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a class="nav-detail" href="/apply">报名</a>
+        <a class="nav-apply" href="/apply">报名</a>
         <span class="language" role="group" aria-label="语言">
           <a href="/" lang="en">EN</a>
           <span aria-current="page">中文</span>
@@ -273,13 +286,14 @@
 
   <footer class="site-footer shell">
     <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
-      <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>
     </a>
     <p>不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
       <a href="https://docs.orbi.build/zh">文档</a>
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="#direction">方向</a>
       <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
       <a href="/" lang="en">EN</a>
     </nav>

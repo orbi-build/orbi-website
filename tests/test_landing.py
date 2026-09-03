@@ -95,12 +95,68 @@ class LandingTests(unittest.TestCase):
         self.assertTrue(any(text == "Roadmap" and href == ROADMAP for text, href in self.en.hrefs))
         self.assertTrue(any(text == "路线图" and href == ROADMAP for text, href in self.zh.hrefs))
 
+    def test_primary_navigation_keeps_only_first_visit_actions(self) -> None:
+        for html, labels in (
+            (
+                self.en_html,
+                ("How it works", "Docs", "GitHub", "Apply"),
+            ),
+            (
+                self.zh_html,
+                ("产品怎么运作", "文档", "GitHub", "报名"),
+            ),
+        ):
+            nav_start = html.index('data-primary-nav')
+            nav_end = html.index("</nav>", nav_start)
+            primary_nav = html[nav_start:nav_end]
+            for label in labels:
+                self.assertIn(f">{label}<", primary_nav)
+            self.assertNotIn(">Direction<", primary_nav)
+            self.assertNotIn(">Roadmap<", primary_nav)
+            self.assertNotIn(">方向<", primary_nav)
+            self.assertNotIn(">路线图<", primary_nav)
+
     def test_language_switch_uses_readable_names(self) -> None:
         for html in (self.en_html, self.zh_html):
             self.assertNotIn("🇺🇸", html)
             self.assertNotIn("🇨🇳", html)
             self.assertIn(">EN<", html)
             self.assertIn(">中文<", html)
+
+    def test_mobile_navigation_exposes_an_accessible_toggle(self) -> None:
+        for page in (self.en, self.zh):
+            toggles = [
+                attrs
+                for tag, attrs in page.elements
+                if tag == "button" and "data-menu-toggle" in attrs
+            ]
+            self.assertEqual(len(toggles), 1, toggles)
+            toggle = toggles[0]
+            self.assertEqual(toggle.get("aria-expanded"), "false")
+            self.assertTrue(toggle.get("aria-label"))
+            controlled_id = toggle.get("aria-controls")
+            self.assertTrue(controlled_id)
+
+            controlled_navs = [
+                attrs
+                for tag, attrs in page.elements
+                if tag == "nav"
+                and attrs.get("id") == controlled_id
+                and "data-primary-nav" in attrs
+            ]
+            self.assertEqual(len(controlled_navs), 1, controlled_navs)
+
+    def test_header_and_footer_use_the_selected_breakout_ring_logo(self) -> None:
+        for page in (self.en, self.zh):
+            marks = [
+                attrs.get("src")
+                for tag, attrs in page.elements
+                if tag == "img" and "wordmark-mark" in attrs.get("class", "").split()
+            ]
+            self.assertEqual(
+                marks,
+                ["/logo-mark-on-dark.svg", "/logo-mark.svg"],
+            )
 
     def test_pages_distinguish_shipping_product_from_future_direction(self) -> None:
         for page in (self.en, self.zh):
