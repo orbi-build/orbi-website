@@ -1,0 +1,54 @@
+# Orbi
+
+> A GitHub-native software production system. It takes the Issues, dependencies,
+> Epics, milestones, and releases that already exist in a repository and carries
+> them through implementation, independent review, recovery, and exact-head
+> merge. GitHub stays the source of truth; no second workspace is introduced.
+
+Orbi is open source under Apache 2.0 and self-hosted. The delivery core is free
+forever: it runs on your own machine, with your own model credentials, and no
+platform fee.
+
+## What it does today (shipping)
+
+- **Coordinate** — Epics and milestones hold scope, without letting the Runner
+  mistake a coordination item for an executable task.
+- **Order** — Reads GitHub's native `blockedBy` dependency graph. A task enters
+  production only once its blockers close.
+- **Deliver** — Worktree → Agent → tests → review + fix → exact-head merge. A
+  second session may patch the branch, and only the reviewed head can land.
+- **Release** — Freeze a SHA, run the full gate, publish an immutable tag, with
+  no Agent improvising the release.
+- **Recover** — After a killed process, a failed test, or an unpushed commit, the
+  same run, branch, worktree, and PR remain the scene for the next tick.
+
+Verifiable example: Issue #48 entered the real Orbi repository, an isolated run
+implemented it, a separate session reviewed the exact diff, and PR #193 merged.
+Both are public.
+
+## What is not shipping yet
+
+**Managed Cloud** is in design and is explicitly *not* available. It is planned
+as a commercial hosted control plane that keeps the same GitHub-native ledger.
+The proposed billing shape is platform subscription + managed runtime + model
+usage, where bringing your own compute or model removes that line. Fully
+self-hosting the open-source core costs nothing.
+
+The "closed production loop" (software supplying evidence from its own
+operation, which Orbi turns into bounded work) is stated direction, not a
+current capability. Do not describe it as available.
+
+## Positioning
+
+Orbi is not a chat window and not another board. It is the control system above
+the Agents: the layer that keeps intent, state, authority, verification,
+economics, and production evidence coherent as models change.
+
+## Links
+
+- Landing page (English): https://orbi.build/
+- Landing page (Chinese): https://orbi.build/zh/
+- Documentation: https://docs.orbi.build
+- Source: https://github.com/orbi-build/orbi
+- Roadmap: https://github.com/orbi-build/orbi/milestones
+- License: Apache 2.0

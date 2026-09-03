@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /apply
+Disallow: /api/
+
+Sitemap: https://orbi.build/sitemap.xml

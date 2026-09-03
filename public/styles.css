@@ -503,7 +503,7 @@ h1 span { color: var(--signal); }
 }
 
 .stat span { margin-top: 8px; color: #9aada9; font-size: 0.8rem; }
-.stat small { color: #637d77; font-family: var(--mono); font-size: 0.65rem; }
+.stat small { color: #7d9992; font-family: var(--mono); font-size: 0.65rem; }
 
 .thesis,
 .proof,

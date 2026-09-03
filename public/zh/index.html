@@ -5,26 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — 关灯以后，软件继续交付</title>
   <meta name="description" content="Orbi 把 GitHub Issue、依赖、Epic、实现、独立审查、精确合并和发版接成一个可恢复的软件生产系统。">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Orbi — 灯熄以后，软件继续交付">
-  <meta property="og:description" content="GitHub Issue 进，经过验证、审查的软件交付出。可自托管、开源（Apache 2.0）的自动化软件工厂。">
-  <meta property="og:url" content="https://orbi.build/zh/">
-  <meta property="og:image" content="https://orbi.build/img/pr-193.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="600">
-  <meta property="og:locale" content="zh_CN">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Orbi — 灯熄以后，软件继续交付">
-  <meta name="twitter:description" content="GitHub Issue 进，经过验证、审查的软件交付出。可自托管、开源（Apache 2.0）的自动化软件工厂。">
-  <meta name="twitter:image" content="https://orbi.build/img/pr-193.png">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/">
+  <meta property="og:title" content="Orbi — 让 GitHub Issue 变成经过审查的软件">
+  <meta property="og:description" content="Orbi 直接读取仓库里已有的 Issue、依赖、Milestone 和 Release，把它们推进到实现、独立审查、故障恢复和精确合并。GitHub 始终是唯一事实源。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi — 让 GitHub Issue 变成经过审查的软件。">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Orbi — 让 GitHub Issue 变成经过审查的软件">
+  <meta name="twitter:description" content="GitHub 原生的软件生产系统：Issue 进去，经过审查和发布的软件出来。Apache 2.0，可自托管。">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://orbi.build/#organization",
+        "name": "Orbi",
+        "url": "https://orbi.build/",
+        "logo": "https://orbi.build/img/og.png",
+        "sameAs": ["https://github.com/orbi-build"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://orbi.build/zh/#website",
+        "url": "https://orbi.build/zh/",
+        "name": "Orbi",
+        "inLanguage": "zh-CN",
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://orbi.build/#software",
+        "name": "Orbi",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS",
+        "url": "https://orbi.build/zh/",
+        "downloadUrl": "https://github.com/orbi-build/orbi",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "isAccessibleForFree": true,
+        "description": "Orbi 是 GitHub 原生的软件生产系统：读取仓库里已有的 Issue、依赖、Epic、Milestone 和 Release，推进到实现、独立审查、故障恢复和精确合并，GitHub 始终是唯一事实源。",
+        "featureList": [
+          "Epic 与 Milestone 确定范围",
+          "读取 GitHub 原生 blockedBy 依赖排序",
+          "可直接修复分支的独立审查",
+          "精确 Head 合并门禁",
+          "Release Issue 把 SHA 冻结成不可变 Tag",
+          "中断后可恢复同一现场"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "自托管 Apache 2.0 核心，永久免费。"
+        },
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>

@@ -5,26 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — Software keeps shipping after the lights go out</title>
   <meta name="description" content="Orbi connects GitHub Issues, dependencies, Epics, implementation, independent review, exact-head merge, and releases into one recoverable production system.">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Orbi — Software keeps shipping after the lights go out">
-  <meta property="og:description" content="GitHub Issues in, reviewed software out. A self-hostable, open-source (Apache 2.0) autonomous software factory.">
-  <meta property="og:url" content="https://orbi.build/">
-  <meta property="og:image" content="https://orbi.build/img/pr-193.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="600">
-  <meta property="og:locale" content="en_US">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Orbi — Software keeps shipping after the lights go out">
-  <meta name="twitter:description" content="GitHub Issues in, reviewed software out. A self-hostable, open-source (Apache 2.0) autonomous software factory.">
-  <meta name="twitter:image" content="https://orbi.build/img/pr-193.png">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/">
+  <meta property="og:title" content="Orbi — Turn GitHub Issues into reviewed software">
+  <meta property="og:description" content="Orbi runs the Issues, dependencies, milestones, and releases already in your repository through implementation, independent review, recovery, and exact-head merge. GitHub remains the source of truth.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi — turn GitHub Issues into reviewed software.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Orbi — Turn GitHub Issues into reviewed software">
+  <meta name="twitter:description" content="A GitHub-native software production system: Issues in, reviewed and released software out. Apache 2.0, self-hosted.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://orbi.build/#organization",
+        "name": "Orbi",
+        "url": "https://orbi.build/",
+        "logo": "https://orbi.build/img/og.png",
+        "sameAs": ["https://github.com/orbi-build"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://orbi.build/#website",
+        "url": "https://orbi.build/",
+        "name": "Orbi",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://orbi.build/#software",
+        "name": "Orbi",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS",
+        "url": "https://orbi.build/",
+        "downloadUrl": "https://github.com/orbi-build/orbi",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "isAccessibleForFree": true,
+        "description": "Orbi is a GitHub-native software production system. It runs the Issues, dependencies, Epics, milestones, and releases already in a repository through implementation, independent review, recovery, and exact-head merge, keeping GitHub as the source of truth.",
+        "featureList": [
+          "Epic and milestone scoping",
+          "Native GitHub blockedBy dependency ordering",
+          "Independent review that can repair the branch",
+          "Exact-head merge gating",
+          "Release Issues that freeze a SHA into an immutable tag",
+          "Recovery from an interrupted run"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Self-hosted Apache 2.0 core, free forever."
+        },
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>

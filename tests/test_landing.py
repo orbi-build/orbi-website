@@ -263,6 +263,24 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN", self.en_html)
         self.assertNotIn("GITHUB_TOKEN", self.zh_html)
 
+    def test_apply_bounds_every_stored_field(self) -> None:
+        """An unauthenticated write path must cap what it stores."""
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("MAX_FIELD", worker)
+        self.assertIn("MAX_BODY_BYTES", worker)
+        self.assertIn("slice(0, ", worker)
+
+    def test_apply_rejects_oversized_bodies_before_parsing(self) -> None:
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("content-length", worker)
+        self.assertIn("413", worker)
+
+    def test_stats_does_not_leak_upstream_error_text(self) -> None:
+        """A 502 must not echo GitHub's response body to anonymous callers."""
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertNotIn("String(err.message || err)", worker)
+        self.assertIn("upstream unavailable", worker)
+
 
 if __name__ == "__main__":
     unittest.main()

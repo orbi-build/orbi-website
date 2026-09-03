@@ -12,6 +12,23 @@ const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
 
+// /api/apply is an unauthenticated write into D1: bound the body and every
+// column so a script cannot fill the table with oversized rows.
+const MAX_BODY_BYTES = 16384;
+const MAX_FIELD = {
+  name: 120,
+  tg: 120,
+  email: 200,
+  agent_tools: 300,
+  role: 200,
+  scenario: 2000,
+  pain: 2000,
+};
+
+function field(body, key) {
+  return String(body[key] || "").trim().slice(0, MAX_FIELD[key]);
+}
+
 function githubHeaders(token) {
   if (!token) {
     throw new Error("GITHUB_TOKEN is not configured");
@@ -75,22 +92,42 @@ async function handleApply(request, env) {
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
+  const declared = Number(request.headers.get("content-length") || 0);
+  if (declared > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: "payload too large" }), {
+      status: 413,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
   let body;
   try {
-    body = await request.json();
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_BYTES) {
+      return new Response(JSON.stringify({ error: "payload too large" }), {
+        status: 413,
+        headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+      });
+    }
+    body = JSON.parse(raw);
   } catch (err) {
     return new Response(JSON.stringify({ error: "invalid json" }), {
       status: 400,
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
-  const name = String(body.name || "").trim();
-  const tg = String(body.tg || "").trim();
-  const email = String(body.email || "").trim();
-  const agentTools = String(body.agent_tools || "").trim();
-  const role = String(body.role || "").trim();
-  const scenario = String(body.scenario || "").trim();
-  const pain = String(body.pain || "").trim();
+  if (body === null || typeof body !== "object" || Array.isArray(body)) {
+    return new Response(JSON.stringify({ error: "invalid json" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const name = field(body, "name");
+  const tg = field(body, "tg");
+  const email = field(body, "email");
+  const agentTools = field(body, "agent_tools");
+  const role = field(body, "role");
+  const scenario = field(body, "scenario");
+  const pain = field(body, "pain");
   if (!name || !tg || !scenario) {
     return new Response(JSON.stringify({ error: "name, tg and scenario are required" }), {
       status: 400,
@@ -121,7 +158,10 @@ export default {
       try {
         return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
-        return new Response(JSON.stringify({ error: String(err.message || err) }), {
+        // Detail stays in the Worker log; the response must not echo GitHub's
+        // body, which can carry rate-limit and token-scope text.
+        console.error("stats failed:", err && err.message ? err.message : err);
+        return new Response(JSON.stringify({ error: "upstream unavailable" }), {
           status: 502,
           headers: {
             "Content-Type": "application/json; charset=utf-8",
