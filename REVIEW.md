@@ -246,8 +246,59 @@ grid track 回到 358.10px，320px 下亦正常。上游方案保留 47.59px 大
 | 死资源 3 个 SVG | 全仓库零引用，已删除 9KB；`where.svg` 线上一度返回 200，绕开 Cloudflare 边缘缓存后确认 404 |
 | P1-2 标题粘连（提交 `fc9a541`，部署 `002e3912`） | 根因是测试解析器的空白语义 bug，见订正 2；修好后暴露 16 处真实粘连并一并修复，生产实测中英各 8 个标题词边界全部正确 |
 
+---
+
+## 第二轮：内容与 SEO 实质优化（提交 `7253c63`，部署 `c2bf9dd0`）
+
+### 订正 4 · 第一轮的「SEO 优化」名不副实
+
+第一轮我报告为"已完成 SEO 优化"，实际只补了 OG / JSON-LD / robots / sitemap ——
+那是**任何站都该有的基础设施，不是优化**。内容本身一个字没动，报告里的 3 条内容建议
+也一条都没实施。
+
+量化后问题清楚了。英文页在开发者实际会搜的每个词上覆盖率都是 **0**：
+
+| 关键词 | 优化前 | 优化后 |
+|---|---|---|
+| `AI coding agent` | 0 | 1 |
+| `autonomous` | 0 | 1 |
+| `code review` | 0 | 1 |
+| `Claude` / `Copilot` / `Cursor` / `GPT` | 各 0 | 各 3 |
+| `model` | 0 | 28 |
+| `pull request` | 0 | 6 |
+| `open-source` | 0 | 4 |
+| 正文词数 | 1111 | 1964 |
+
+`title` 是纯品牌隐喻（"Software keeps shipping after the lights go out"），没人会搜这句话；
+8 个 H2 全是修辞句，不承载任何搜索意图。**这是个只对已经知道 Orbi 的人有效的页面。**
+
+### 已修复
+
+| 项 | 内容 |
+|---|---|
+| title / description | 重写，把 "open-source AI coding agent" 放到最前，双语同步 |
+| 8 个 H2 | 全部重写，每个都带真实搜索词，保留原句节奏（如 "A delivery graph. Not a task queue" → "How Orbi automates GitHub Issue to merged PR"） |
+| hero 信任行 | 从抽象的 "Your execution choice" 改为具体承诺：Apache 2.0 永久免费 / 代码不离开你的机器 / 自带模型 |
+| 新增 FAQ | 6 条中英双语，覆盖此前站内完全没有答案的问题：运行前提、支持哪些模型、与 Copilot/Cursor 的区别、谁审查 AI 代码、崩溃如何恢复、是否真免费。附 `FAQPage` JSON-LD |
+| `llms.txt` | 补充竞品差异、运行前提与常见问题 |
+| 页脚导航 | 加入 FAQ 入口 |
+
+### 测试调整
+
+`test_english_is_the_default_page` / `test_chinese_page_exists` 原本断言具体营销文案
+（"Software keeps shipping"、"软件继续交付"），改定位就会挂。已改为断言 canonical 与
+语言身份——**文案会随定位调整，测试不该锁死它**。
+
+同时新增两条防退化测试：`test_title_and_description_carry_search_terms`（title/description
+必须含搜索词且长度合规）与 `test_headings_carry_search_terms_not_only_rhetoric`
+（至少一半 H2 要带搜索词）。
+
+Cloud 仍明确标注"设计中、尚未上线"，FAQ 与 JSON-LD 均如实陈述。
+
+---
+
 **未处理（需产品决策）**
 
 - apply 页整体重设计以对齐主站设计语言（蓝紫 vs 青绿，圆角 vs 直角）
-- 内容结构调整（THE SHIFT 前置、补充社会证明）
+- 补充社会证明（共建者数量、star 曲线等第三方证据）
 - schema `email NOT NULL` 语义矛盾（已实测不会导致故障，收益低于 D1 迁移风险）
