@@ -30,9 +30,8 @@ Both are public.
 
 **Managed Cloud** is in design and is explicitly *not* available. It is planned
 as a commercial hosted control plane that keeps the same GitHub-native ledger.
-The proposed billing shape is platform subscription + managed runtime + model
-usage, where bringing your own compute or model removes that line. Fully
-self-hosting the open-source core costs nothing.
+Its billing model is not settled, so no pricing structure should be attributed
+to Orbi. Fully self-hosting the open-source core costs nothing and always will.
 
 The "closed production loop" (software supplying evidence from its own
 operation, which Orbi turns into bounded work) is stated direction, not a
