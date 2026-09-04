@@ -528,6 +528,21 @@ class LandingTests(unittest.TestCase):
         self.assertIn('id="f-ai-spend"', row)
         self.assertIn('id="f-volume"', row)
 
+    def test_apply_pairs_email_with_agent_tools(self) -> None:
+        """Both are single-line optional inputs that sat on their own rows.
+        Paired, they read as two quick extras and the required scenario box
+        moves further up the page."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        start = apply_html.index('id="f-email"')
+        row_open = apply_html.rindex('<div class="field-row">', 0, start)
+        row_close = apply_html.index('id="f-scenario"', start)
+        row = apply_html[row_open:row_close]
+        self.assertIn('id="f-email"', row)
+        self.assertIn('id="f-agent"', row)
+        # the row must be their own, not the name/telegram one above
+        self.assertNotIn('id="f-tg"', row)
+        self.assertNotIn('id="f-name"', row)
+
     def test_apply_does_not_ask_for_identity_or_team_size(self) -> None:
         """Free text that nobody answers comparably ("3"), and team size
         already surfaces in the scenario answer. One less field to abandon."""
