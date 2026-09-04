@@ -259,6 +259,76 @@
     observer.observe(root);
   }
 
+  /* One-click copy for the install commands.
+   *
+   * navigator.clipboard needs a secure context and can still reject (denied
+   * permission, older Safari), so fall back to a hidden textarea + execCommand.
+   * The button reports the result in place rather than through a toast, and
+   * restores its label so a second copy still reads as an action.
+   */
+  function bootCopy(button) {
+    const source = button.parentElement.querySelector("[data-copy-source]");
+    if (!source) {
+      return;
+    }
+
+    const idleLabel = button.textContent;
+    const doneLabel = button.getAttribute("data-copied-label") || idleLabel;
+    let restore = null;
+
+    function legacyCopy(text) {
+      const scratch = document.createElement("textarea");
+      scratch.value = text;
+      scratch.setAttribute("readonly", "");
+      scratch.style.position = "fixed";
+      scratch.style.top = "-1000px";
+      document.body.appendChild(scratch);
+      scratch.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (error) {
+        ok = false;
+      }
+      document.body.removeChild(scratch);
+      return ok;
+    }
+
+    function report(ok) {
+      button.textContent = ok ? doneLabel : idleLabel;
+      button.classList.toggle("is-copied", ok);
+      if (!ok) {
+        // Nothing was copied, so leave the text selectable and say nothing
+        // misleading. Selecting it makes the manual path one gesture shorter.
+        const range = document.createRange();
+        range.selectNodeContents(source);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return;
+      }
+      window.clearTimeout(restore);
+      restore = window.setTimeout(function () {
+        button.textContent = idleLabel;
+        button.classList.remove("is-copied");
+      }, 2000);
+    }
+
+    button.addEventListener("click", function () {
+      const text = source.textContent;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () {
+          report(true);
+        }, function () {
+          report(legacyCopy(text));
+        });
+        return;
+      }
+      report(legacyCopy(text));
+    });
+  }
+
+  document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
   document.querySelectorAll("#factory-trace").forEach(bootFactoryTrace);
   document.querySelectorAll("#orbi-stats").forEach(bootStats);

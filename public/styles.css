@@ -1037,15 +1037,46 @@ h2 {
  * flex row keeps its intrinsic width unless min-width is cleared, which
  * would drag the page sideways on a phone; the code scrolls in its own box. */
 .install-block {
+  position: relative;
   flex-basis: 100%;
   min-width: 0;
   border: 1px solid var(--line);
   background: var(--night);
 }
 
+.install-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-dark);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c3d5d0;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+
+.install-copy:hover {
+  border-color: rgba(237, 245, 240, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  color: #edf5f0;
+}
+
+.install-copy.is-copied {
+  border-color: var(--run);
+  color: var(--run);
+}
+
 .install-block pre {
   margin: 0;
-  padding: 18px 20px;
+  /* Right padding keeps the first command clear of the copy button. */
+  padding: 18px 88px 18px 20px;
   overflow-x: auto;
   color: #dbe9e4;
   font-family: var(--mono);
@@ -1273,6 +1304,20 @@ h2 {
 }
 
 @media (max-width: 760px) {
+  /* A <pre> scrolls horizontally, so right padding scrolls away with the
+   * content and the floating button ends up on top of the commands. On narrow
+   * screens give it its own full-width bar above the code instead. */
+  .install-copy {
+    position: static;
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    border-width: 0 0 1px;
+    text-align: center;
+  }
+  .install-block pre { padding: 16px; font-size: 0.72rem; line-height: 1.75; }
+  .install-block .install-needs { padding: 0 16px 14px; }
+
   body { font-size: 16px; }
   .shell,
   .site-header { width: min(100% - 32px, 1400px); }

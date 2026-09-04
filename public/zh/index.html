@@ -329,7 +329,8 @@
       <div class="midway">
         <p>在你自己的仓库上跑一次</p>
         <div class="install-block">
-          <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+          <button class="install-copy" type="button" data-copy aria-label="复制安装命令" data-copied-label="已复制">复制</button>
+          <pre><code data-copy-source>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
 uv tool install --force --reinstall --editable --python /usr/bin/python3 .
 cp .orbi.example.toml orbi.toml
 orbi setup --config orbi.toml</code></pre>

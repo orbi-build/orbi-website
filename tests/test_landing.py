@@ -396,6 +396,20 @@ class LandingTests(unittest.TestCase):
             # the honest prerequisites, so nobody discovers systemd halfway in
             self.assertIn("systemd", html)
 
+    def test_install_commands_are_copyable_in_one_click(self) -> None:
+        """Four lines with long flags are miserable to select by hand."""
+        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        self.assertIn("clipboard", js)
+        for page, label in ((self.en, "Copy"), (self.zh, "复制")):
+            buttons = [
+                attrs for tag, attrs in page.elements
+                if tag == "button" and "data-copy" in attrs
+            ]
+            self.assertEqual(len(buttons), 1, buttons)
+            # the button must say what it copies, for screen readers too
+            self.assertTrue(buttons[0].get("aria-label"), buttons[0])
+            self.assertTrue(buttons[0].get("data-copied-label"), buttons[0])
+
     def test_wide_code_scrolls_inside_its_own_container(self) -> None:
         """A <pre> in a grid/flex track needs min-width:0, or its intrinsic
         width drags the whole page sideways on a phone."""

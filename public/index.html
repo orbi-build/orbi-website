@@ -331,7 +331,8 @@
         <div class="midway">
           <p>Run this on your own repository</p>
           <div class="install-block">
-            <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+            <button class="install-copy" type="button" data-copy aria-label="Copy the install commands" data-copied-label="Copied">Copy</button>
+            <pre><code data-copy-source>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
 uv tool install --force --reinstall --editable --python /usr/bin/python3 .
 cp .orbi.example.toml orbi.toml
 orbi setup --config orbi.toml</code></pre>
