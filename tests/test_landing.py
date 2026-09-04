@@ -490,6 +490,19 @@ class LandingTests(unittest.TestCase):
             ):
                 self.assertNotIn(tracker, page.lower(), tracker)
 
+    def test_apply_pairs_name_and_telegram_on_one_row(self) -> None:
+        """Name and Telegram are both short; pairing them keeps the form from
+        reading as a long column of single inputs. Stacks under 640px."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn('<div class="field-row">', apply_html)
+        self.assertIn(".field-row { display:grid; grid-template-columns:1fr 1fr;", apply_html)
+        self.assertIn(".field-row { grid-template-columns:1fr;", apply_html)
+        row_start = apply_html.index('<div class="field-row">')
+        row_end = apply_html.index('id="f-email"')
+        row = apply_html[row_start:row_end]
+        self.assertIn('id="f-name"', row)
+        self.assertIn('id="f-tg"', row)
+
     def test_apply_collects_pricing_signals(self) -> None:
         """The first cohort is the only chance to gather real pricing data.
 

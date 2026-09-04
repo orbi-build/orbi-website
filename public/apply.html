@@ -34,6 +34,7 @@
     .lang-switch:hover { border-color:#3b4a6e; color:#e6ecf7; }
     .apply-sub { color:#8ea0c0; font-size:16px; line-height:1.65; margin:0 0 42px; }
     .apply-form { display:flex; flex-direction:column; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; }
     .field { margin-bottom:22px; }
     .field label { display:block; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; margin:0 0 8px; }
     .field label .req { color:#ff6b6b; }
@@ -50,6 +51,7 @@
     #result.err { display:block; background:#230f0f; color:#ff9b9b; border:1px solid #5c2424; }
     @media (max-width: 640px) {
       .apply-wrap { padding:48px 18px 80px; }
+      .field-row { grid-template-columns:1fr; gap:0; }
     }
   </style>
 </head>
@@ -73,15 +75,17 @@
         <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
 
         <form id="apply" class="apply-form" novalidate>
-          <div class="field">
-            <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
-            <input id="f-name" name="name" type="text" required autocomplete="name">
-          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
+              <input id="f-name" name="name" type="text" required autocomplete="name">
+            </div>
 
-          <div class="field">
-            <label for="f-tg" data-zh="Telegram 账号（必填，拉你进群）" data-en="Telegram handle (required, for the group invite)"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
-            <input id="f-tg" name="tg" type="text" required placeholder="@yourhandle">
-            <p class="hint" data-zh="开源共建在 Telegram 群里进行，需要用它拉你进群。" data-en="The open-source cohort runs in a Telegram group — we need this to invite you.">开源共建在 Telegram 群里进行，需要用它拉你进群。</p>
+            <div class="field">
+              <label for="f-tg" data-zh="Telegram 账号（必填，拉你进群）" data-en="Telegram handle (required, for the group invite)"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
+              <input id="f-tg" name="tg" type="text" required placeholder="@yourhandle">
+              <p class="hint" data-zh="开源共建在 Telegram 群里进行，需要用它拉你进群。" data-en="The open-source cohort runs in a Telegram group — we need this to invite you.">开源共建在 Telegram 群里进行，需要用它拉你进群。</p>
+            </div>
           </div>
 
           <div class="field">
