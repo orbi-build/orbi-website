@@ -330,8 +330,15 @@
         </ul>
         <div class="midway">
           <p>Run this on your own repository</p>
+          <div class="install-block">
+            <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+uv tool install --force --reinstall --editable --python /usr/bin/python3 .
+cp .orbi.example.toml orbi.toml
+orbi setup --config orbi.toml</code></pre>
+            <p class="install-needs">Needs Python 3.14, git, gh, systemd, and a model endpoint. <code>orbi doctor</code> names whatever is missing.</p>
+          </div>
           <a class="button button-dark" data-cta="midway-apply" href="/apply">Join the early cohort <span aria-hidden="true">↗</span></a>
-          <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">Install it yourself</a>
+          <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">Read the setup guide</a>
           <p class="midway-sub">Stuck on environment, model access, or workflow? We will get your first Issue running, and whatever you hit becomes an Issue we fix first.</p>
         </div>
       </section>

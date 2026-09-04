@@ -328,8 +328,15 @@
       </ul>
       <div class="midway">
         <p>在你自己的仓库上跑一次</p>
+        <div class="install-block">
+          <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+uv tool install --force --reinstall --editable --python /usr/bin/python3 .
+cp .orbi.example.toml orbi.toml
+orbi setup --config orbi.toml</code></pre>
+          <p class="install-needs">需要 Python 3.14、git、gh、systemd 和一个模型端点。缺什么，<code>orbi doctor</code> 会直接点出来。</p>
+        </div>
         <a class="button button-dark" data-cta="midway-apply" href="/apply">报名首批共建 <span aria-hidden="true">↗</span></a>
-        <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">自己动手装</a>
+        <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">阅读安装文档</a>
         <p class="midway-sub">卡在环境、模型接入或工作流上？我们帮你把第一个 Issue 跑通，你踩的坑会变成我们优先修的 Issue。</p>
       </div>
     </section>

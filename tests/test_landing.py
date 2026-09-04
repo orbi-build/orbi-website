@@ -387,6 +387,22 @@ class LandingTests(unittest.TestCase):
                 floor = attrs.get("data-floor", "")
                 self.assertTrue(floor.isdigit() and int(floor) > 0, attrs)
 
+    def test_install_path_is_concrete_not_just_a_link(self) -> None:
+        """"Install it yourself" should show what installing actually costs,
+        not send the reader to the docs to find out."""
+        for html in (self.en_html, self.zh_html):
+            self.assertIn("git clone https://github.com/orbi-build/orbi.git", html)
+            self.assertIn("orbi setup --config orbi.toml", html)
+            # the honest prerequisites, so nobody discovers systemd halfway in
+            self.assertIn("systemd", html)
+
+    def test_wide_code_scrolls_inside_its_own_container(self) -> None:
+        """A <pre> in a grid/flex track needs min-width:0, or its intrinsic
+        width drags the whole page sideways on a phone."""
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(".install-block", css)
+        self.assertIn("overflow-x: auto", css)
+
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)

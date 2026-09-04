@@ -1033,6 +1033,43 @@ h2 {
   color: var(--ink-soft);
 }
 
+/* The install commands sit on their own row inside .midway. A <pre> in a
+ * flex row keeps its intrinsic width unless min-width is cleared, which
+ * would drag the page sideways on a phone; the code scrolls in its own box. */
+.install-block {
+  flex-basis: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--night);
+}
+
+.install-block pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  color: #dbe9e4;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+.install-block .install-needs {
+  flex: none;
+  margin: 0;
+  padding: 0 20px 16px;
+  color: #8ba39d;
+  font-family: var(--body);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.install-block .install-needs code {
+  color: #b9cec8;
+  font-family: var(--mono);
+  font-size: 0.95em;
+}
+
 .faq {
   padding-top: clamp(100px, 10vw, 168px);
   padding-bottom: clamp(100px, 10vw, 168px);
