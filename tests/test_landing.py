@@ -566,6 +566,10 @@ class LandingTests(unittest.TestCase):
         # own required check, so "   " would otherwise pass here and come back
         # as a 400 that never names the field
         self.assertIn(".trim()", apply_html)
+        # a filled-but-malformed field is not a missing one; saying "还差…没填"
+        # about an optional email the user did fill reads as a lie
+        self.assertIn("data-msg-invalid", apply_html)
+        self.assertIn("valueMissing", apply_html)
 
     def test_apply_shows_the_outcome_where_the_user_is_looking(self) -> None:
         """The form clears on success, which alone reads as "nothing

@@ -74,7 +74,7 @@
         </div>
         <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
 
-        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}">
+        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}">
           <div class="field-row">
             <div class="field">
               <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
@@ -200,11 +200,14 @@
               .replace(/[（(][^）)]*[）)]/g, "")
               .trim()
           : missing.name;
+        // A filled-but-malformed field is not a missing one; telling someone
+        // an optional email they did fill is "not filled in" is just wrong.
+        const empty = missing.validity.valueMissing;
+        const key = empty
+          ? (en ? "data-msg-required-en" : "data-msg-required")
+          : (en ? "data-msg-invalid-en" : "data-msg-invalid");
         result.className = "err";
-        result.textContent = (en
-          ? form.getAttribute("data-msg-required-en")
-          : form.getAttribute("data-msg-required")
-        ).replace("{field}", fieldName);
+        result.textContent = form.getAttribute(key).replace("{field}", fieldName);
         missing.focus();
         missing.scrollIntoView({ block: "center", behavior: "smooth" });
         return;
