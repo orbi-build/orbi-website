@@ -563,6 +563,14 @@ class LandingTests(unittest.TestCase):
             # marker; the swapped element must be an inner span instead
             self.assertNotIn("data-zh=", attrs, "%s label is overwritten wholesale" % field_id)
 
+    def test_apply_blocks_double_submission(self) -> None:
+        """On a slow connection nothing says the request is in flight, so the
+        button gets clicked again — measured 3 POSTs from 3 clicks against
+        production. Disable it for the duration and say it is sending."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn("submit.disabled", apply_html)
+        self.assertIn("data-msg-sending", apply_html)
+
     def test_apply_pairs_email_with_agent_tools(self) -> None:
         """Both are single-line optional inputs that sat on their own rows.
         Paired, they read as two quick extras and the required scenario box

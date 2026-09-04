@@ -74,7 +74,7 @@
         </div>
         <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
 
-        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}">
+        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}" data-msg-sending="正在提交…" data-msg-sending-en="Sending…">
           <div class="field-row">
             <div class="field">
               <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
@@ -165,6 +165,8 @@
 
     const form = document.getElementById("apply");
     const result = document.getElementById("result");
+    const submit = form.querySelector("button[type=submit]");
+    const submitLabel = { zh: submit.dataset.zh, en: submit.dataset.en };
 
     // Put the outcome in front of the person who just submitted, wherever
     // they had scrolled to, and move focus so a screen reader lands on it.
@@ -215,6 +217,15 @@
 
       const data = Object.fromEntries(new FormData(form));
       result.className = "";
+
+      // Nothing else signals that the request is in flight, so on a slow
+      // connection the button just gets clicked again — three clicks made
+      // three records. Hold it closed until the round-trip finishes.
+      submit.disabled = true;
+      submit.textContent = en
+        ? form.getAttribute("data-msg-sending-en")
+        : form.getAttribute("data-msg-sending");
+
       try {
         const res = await fetch("/api/apply", {
           method: "POST",
@@ -244,6 +255,9 @@
         result.className = "err";
         result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
         showResult();
+      } finally {
+        submit.disabled = false;
+        submit.textContent = en ? submitLabel.en : submitLabel.zh;
       }
     });
   </script>
