@@ -1,0 +1,10 @@
+{
+  "name": "orbi-website-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "orbi.build Cloudflare Worker + assets",
+  "type": "module",
+  "dependencies": {
+    "@datafast/ai-crawl": "^1.0.9"
+  }
+}

@@ -1,6 +1,14 @@
+import { withAICrawlerTracking } from "@datafast/ai-crawl";
+
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
 };
+
+// Server-side DataFast website id: the same id used by the browser tracking
+// script in the HTML head, here feeding AI-crawler traffic to the Bot traffic
+// card. The wrapper only fires for known crawler user agents and never for
+// human browsers or filtered static assets.
+const DATAFAST_WEBSITE_ID = "dfid_Pi7Ns3F360oaZZcmnZgV4";
 
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
@@ -212,8 +220,7 @@ async function handleApply(request, env) {
   });
 }
 
-export default {
-  async fetch(request, env) {
+async function handleFetch(request, env) {
     const url = new URL(request.url);
     const canonicalHost = HOST_ALIASES[url.hostname];
     if (canonicalHost) {
@@ -250,5 +257,10 @@ export default {
       response.headers.set(key, value);
     }
     return response;
-  },
+}
+
+export default {
+  // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
+  // ctx.waitUntil, so tracking never delays the response.
+  fetch: withAICrawlerTracking(handleFetch, { websiteId: DATAFAST_WEBSITE_ID }),
 };
