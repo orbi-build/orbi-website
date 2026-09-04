@@ -135,6 +135,62 @@
     window.requestAnimationFrame(frame);
   }
 
+  /* Draw the star history as a filled sparkline.
+   *
+   * The viewBox is 120x46 with a 3px inset so the endpoint dot and the
+   * 1.5px stroke stay inside the box; preserveAspectRatio="none" lets the
+   * curve stretch to whatever width the stats cell gets. Fewer than two
+   * points is not a trend, so the block stays hidden.
+   */
+  function drawStarChart(root, stats) {
+    const box = root.querySelector("[data-star-chart]");
+    const history = stats && stats.star_history;
+    if (!box || !Array.isArray(history) || history.length < 2) {
+      return;
+    }
+
+    const svg = box.querySelector("svg");
+    const W = 120;
+    const H = 46;
+    const pad = 3;
+    const values = history.map(function (point) { return point.stars; });
+    const max = Math.max.apply(null, values);
+    const min = Math.min.apply(null, values);
+    const span = max - min || 1;
+
+    const points = values.map(function (value, index) {
+      const x = pad + (index / (values.length - 1)) * (W - pad * 2);
+      const y = H - pad - ((value - min) / span) * (H - pad * 2);
+      return [Math.round(x * 100) / 100, Math.round(y * 100) / 100];
+    });
+
+    const line = points
+      .map(function (p, i) { return (i === 0 ? "M" : "L") + p[0] + " " + p[1]; })
+      .join(" ");
+    const area = line + " L" + points[points.length - 1][0] + " " + (H - pad) +
+      " L" + points[0][0] + " " + (H - pad) + " Z";
+    const last = points[points.length - 1];
+
+    const ns = "http://www.w3.org/2000/svg";
+    function shape(tag, attrs) {
+      const node = document.createElementNS(ns, tag);
+      Object.keys(attrs).forEach(function (key) {
+        node.setAttribute(key, attrs[key]);
+      });
+      return node;
+    }
+
+    svg.appendChild(shape("path", { class: "star-area", d: area }));
+    svg.appendChild(shape("path", { class: "star-line", d: line }));
+    svg.appendChild(shape("circle", { class: "star-tip", cx: last[0], cy: last[1], r: 2.4 }));
+
+    const total = box.querySelector("[data-star-total]");
+    if (total) {
+      countUp(total, stats.stars || values[values.length - 1], 2200);
+    }
+    box.hidden = false;
+  }
+
   function bootStats(root) {
     const lang = root.getAttribute("data-lang") === "zh" ? "zh" : "en";
     let startedCounting = false;
@@ -161,6 +217,7 @@
           countUp(root.querySelector('[data-stat="issues"]'), stats.issues_closed, 2600);
           countUp(root.querySelector('[data-stat="prs"]'), stats.prs_merged, 2400);
           countUp(root.querySelector('[data-stat="releases"]'), stats.releases, 1800);
+          drawStarChart(root, stats);
         })
         .catch(function () {
           root.querySelectorAll("[data-stat]").forEach(function (element) {

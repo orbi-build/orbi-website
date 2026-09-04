@@ -271,10 +271,21 @@ h2 {
 }
 
 h1 {
-  margin-bottom: 28px;
-  font-size: clamp(4.15rem, 6.5vw, 7.3rem);
-  line-height: 0.87;
+  margin-bottom: 24px;
+  font-size: clamp(3.4rem, 5.4vw, 6rem);
+  line-height: 0.9;
   max-width: 9.4em;
+}
+
+/* Short viewports (1366x768 laptops land at ~698px of usable height) pushed
+   the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
+   headline and the hero padding so the buttons stay in the first screen. */
+@media (max-height: 820px) and (min-width: 981px) {
+  .hero { min-height: auto; padding: 60px 0 64px; }
+  h1 { font-size: clamp(3rem, 4.4vw, 4.4rem); margin-bottom: 20px; }
+  .hero-lede { margin-bottom: 26px; font-size: 1.05rem; }
+  .eyebrow { margin-bottom: 20px; }
+  .trust-line { margin-top: 22px; }
 }
 
 h1 span { color: var(--signal); }
@@ -478,6 +489,45 @@ h1 span { color: var(--signal); }
   min-height: 148px;
   border-top: 1px solid var(--line-dark);
   border-bottom: 1px solid var(--line-dark);
+}
+
+/* The label cell was 1.45fr of empty space next to four numbers; the star
+   curve lives there so the record shows acceleration, not just totals. */
+.stats-label {
+  gap: 12px;
+}
+
+.star-chart {
+  display: block;
+  width: 100%;
+  height: 46px;
+  overflow: visible;
+}
+
+.star-chart .star-area { fill: rgba(92, 214, 181, 0.16); }
+.star-chart .star-line {
+  fill: none;
+  stroke: var(--run);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.star-chart .star-tip { fill: var(--run); }
+
+.star-caption {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: #9aada9;
+  font-size: 0.78rem;
+}
+
+.star-caption b {
+  color: #edf5f0;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .stats-label,
@@ -929,6 +979,39 @@ h2 {
 
 .direction-thesis p { margin-bottom: 0; }
 .direction-thesis strong { color: #006c5b; }
+
+/* Mid-page conversion point: the CTAs sat at 7%, 62% and 97%, leaving the
+   whole evidence stretch without a way to act. This lands right after the
+   real delivery, where the argument is strongest. */
+.midway {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: 74px;
+  padding: 26px 30px;
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+.midway p {
+  flex: 1 1 22rem;
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.midway .midway-sub {
+  flex-basis: 100%;
+  margin: -4px 0 0;
+  font-family: var(--body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+}
 
 .faq {
   padding-top: clamp(100px, 10vw, 168px);

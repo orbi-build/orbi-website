@@ -42,8 +42,10 @@ function githubHeaders(token) {
   };
 }
 
-async function ghJson(path, token) {
-  const response = await fetch(`${GH}${path}`, { headers: githubHeaders(token) });
+async function ghJson(path, token, extraHeaders) {
+  const response = await fetch(`${GH}${path}`, {
+    headers: { ...githubHeaders(token), ...(extraHeaders || {}) },
+  });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`github ${response.status} ${path}: ${body.slice(0, 200)}`);
@@ -51,19 +53,58 @@ async function ghJson(path, token) {
   return response.json();
 }
 
+/** Daily cumulative star counts, oldest first.
+ *
+ * The `star.json` media type is what turns a stargazer into a dated event;
+ * without it GitHub returns bare users and there is no curve to draw. Only
+ * the last page matters for the total, but the whole history is small
+ * enough (a few hundred) to fold in one pass.
+ */
+async function loadStarHistory(repo, token) {
+  const perPage = 100;
+  const days = new Map();
+  for (let page = 1; page <= 5; page += 1) {
+    const batch = await ghJson(
+      `/repos/${repo}/stargazers?per_page=${perPage}&page=${page}`,
+      token,
+      { Accept: "application/vnd.github.star+json" },
+    );
+    if (!Array.isArray(batch) || batch.length === 0) {
+      break;
+    }
+    for (const entry of batch) {
+      const day = String(entry.starred_at || "").slice(0, 10);
+      if (day) {
+        days.set(day, (days.get(day) || 0) + 1);
+      }
+    }
+    if (batch.length < perPage) {
+      break;
+    }
+  }
+  let total = 0;
+  return [...days.keys()].sort().map((date) => {
+    total += days.get(date);
+    return { date, stars: total };
+  });
+}
+
 async function loadStats(token) {
   const repo = "orbi-build/orbi";
-  const [meta, closed, merged, releases] = await Promise.all([
+  const [meta, closed, merged, releases, stars] = await Promise.all([
     ghJson(`/repos/${repo}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`, token),
     ghJson(`/repos/${repo}/releases?per_page=100`, token),
+    loadStarHistory(repo, token).catch(() => []),
   ]);
   return {
     started: meta.created_at,
     issues_closed: closed.total_count,
     prs_merged: merged.total_count,
     releases: Array.isArray(releases) ? releases.length : 0,
+    stars: meta.stargazers_count,
+    star_history: stars,
   };
 }
 

@@ -225,7 +225,13 @@
     </section>
 
     <section class="stats shell" id="orbi-stats" data-lang="zh" data-status="shipping" aria-label="GitHub 实时生产记录">
-      <p class="stats-label">ORBI 正在造 ORBI · 实时</p>
+      <div class="stats-label">
+        <span>ORBI 正在造 ORBI · 实时</span>
+        <div data-star-chart hidden>
+          <svg class="star-chart" viewBox="0 0 120 46" preserveAspectRatio="none" role="img" aria-labelledby="star-chart-title-zh"><title id="star-chart-title-zh">GitHub Star 增长曲线</title></svg>
+          <p class="star-caption"><b data-star-total>0</b> <span>GitHub Star</span></p>
+        </div>
+      </div>
       <div class="stat"><strong data-stat="days">0</strong><span>运行天数</span><small data-started></small></div>
       <div class="stat"><strong data-stat="issues">0</strong><span>已关闭 Issue</span></div>
       <div class="stat"><strong data-stat="prs">0</strong><span>已合并 PR</span></div>
@@ -312,6 +318,12 @@
         <li><span>02</span><strong>合并证据只绑定一个 SHA</strong><p>最新底仓、可以合并，以及真正收到 Verdict 的那个 Commit。</p></li>
         <li><span>03</span><strong>失败不产生第二套故事</strong><p>Issue、PR、Label、Journal 和 Run ID 足够让重启恢复同一现场。</p></li>
       </ul>
+      <div class="midway">
+        <p>在你自己的仓库上跑一次</p>
+        <a class="button button-dark" data-cta="midway-apply" href="/apply">报名首批共建 <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">自己动手装</a>
+        <p class="midway-sub">卡在环境、模型接入或工作流上？我们帮你把第一个 Issue 跑通，你踩的坑会变成我们优先修的 Issue。</p>
+      </div>
     </section>
 
     <section class="ownership" data-status="shipping" aria-labelledby="ownership-title">

@@ -221,7 +221,13 @@
       </section>
 
       <section class="stats shell" id="orbi-stats" data-lang="en" data-status="shipping" aria-label="Live GitHub evidence">
-        <p class="stats-label">ORBI BUILDING ORBI · LIVE</p>
+        <div class="stats-label">
+          <span>ORBI BUILDING ORBI · LIVE</span>
+          <div data-star-chart hidden>
+            <svg class="star-chart" viewBox="0 0 120 46" preserveAspectRatio="none" role="img" aria-labelledby="star-chart-title"><title id="star-chart-title">GitHub stars over time</title></svg>
+            <p class="star-caption"><b data-star-total>0</b> <span>GitHub stars</span></p>
+          </div>
+        </div>
         <div class="stat">
           <strong data-stat="days">0</strong>
           <span>days running</span>
@@ -312,6 +318,12 @@
           <li><span>02</span><strong>Merge evidence tied to one SHA</strong><p>A fresh base, a mergeable PR, and the exact commit that received the verdict.</p></li>
           <li><span>03</span><strong>Recovery without a second story</strong><p>Restarts reconstruct the delivery from the Issue, PR, labels, journal, and run ID.</p></li>
         </ul>
+        <div class="midway">
+          <p>Run this on your own repository</p>
+          <a class="button button-dark" data-cta="midway-apply" href="/apply">Join the early cohort <span aria-hidden="true">↗</span></a>
+          <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">Install it yourself</a>
+          <p class="midway-sub">Stuck on environment, model access, or workflow? We will get your first Issue running, and whatever you hit becomes an Issue we fix first.</p>
+        </div>
       </section>
 
       <section class="ownership" data-status="shipping" aria-labelledby="ownership-title">

@@ -386,6 +386,31 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN", self.en_html)
         self.assertNotIn("GITHUB_TOKEN", self.zh_html)
 
+    def test_stats_carry_the_star_history(self) -> None:
+        """The static counters show scale; only a curve shows acceleration.
+
+        Ten days from 2 stars to 52 is the strongest thing this page can
+        say, and a row of frozen numbers cannot say it.
+        """
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("stargazers", worker)
+        self.assertIn("star.json", worker)
+        self.assertIn("stars", worker)
+        for page in (self.en_html, self.zh_html):
+            self.assertIn("data-star-chart", page)
+        demo = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        self.assertIn("data-star-chart", demo)
+
+    def test_no_third_party_analytics(self) -> None:
+        """A page that promises code never leaves your machine must not ship
+        visitor data to someone else. Cloudflare's own analytics is enough."""
+        for page in (self.en_html, self.zh_html):
+            for tracker in (
+                "google-analytics", "googletagmanager", "gtag(",
+                "plausible.io", "umami", "segment.com", "hotjar",
+            ):
+                self.assertNotIn(tracker, page.lower(), tracker)
+
     def test_apply_collects_pricing_signals(self) -> None:
         """The first cohort is the only chance to gather real pricing data.
 
