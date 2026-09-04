@@ -538,12 +538,30 @@ class LandingTests(unittest.TestCase):
         required_ids = re.findall(r'<(?:input|textarea)[^>]*id="([^"]+)"[^>]*\brequired\b', apply_html)
         required_ids += re.findall(r'<(?:input|textarea)[^>]*\brequired\b[^>]*id="([^"]+)"', apply_html)
         required_ids = sorted(set(required_ids))
-        self.assertEqual(required_ids, ["f-name", "f-scenario", "f-tg"], required_ids)
+        # Telegram already identifies and reaches the person, so a nickname is
+        # one more thing to abandon the form over. Only tg and scenario are
+        # genuinely needed to act on an application.
+        self.assertEqual(required_ids, ["f-scenario", "f-tg"], required_ids)
 
         for field_id in required_ids:
             start = apply_html.index('for="%s"' % field_id)
             label = apply_html[start:apply_html.index("</label>", start)]
             self.assertIn('class="req"', label, "%s has no required marker" % field_id)
+
+    def test_language_switch_keeps_the_required_markers(self) -> None:
+        """setLang() assigns innerHTML on each label, which wipes the nested
+        <span class="req">*</span> — English visitors saw no required markers
+        at all. The marker has to live outside what the switch overwrites."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        import re
+
+        for match in re.finditer(r'<label for="([^"]+)"([^>]*)>(.*?)</label>', apply_html, re.S):
+            field_id, attrs, body = match.groups()
+            if 'class="req"' not in body:
+                continue
+            # a label whose own data-zh/data-en is swapped in would lose the
+            # marker; the swapped element must be an inner span instead
+            self.assertNotIn("data-zh=", attrs, "%s label is overwritten wholesale" % field_id)
 
     def test_apply_pairs_email_with_agent_tools(self) -> None:
         """Both are single-line optional inputs that sat on their own rows.

@@ -77,12 +77,12 @@
         <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}">
           <div class="field-row">
             <div class="field">
-              <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span> <span class="req">*</span></label>
-              <input id="f-name" name="name" type="text" required autocomplete="name">
+              <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
+              <input id="f-name" name="name" type="text" autocomplete="name">
             </div>
 
             <div class="field">
-              <label for="f-tg" data-zh="Telegram 账号（必填，拉你进群）" data-en="Telegram handle (required, for the group invite)"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
+              <label for="f-tg"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
               <input id="f-tg" name="tg" type="text" required placeholder="@yourhandle">
               <p class="hint" data-zh="开源共建在 Telegram 群里进行，需要用它拉你进群。" data-en="The open-source cohort runs in a Telegram group — we need this to invite you.">开源共建在 Telegram 群里进行，需要用它拉你进群。</p>
             </div>
@@ -101,7 +101,7 @@
           </div>
 
           <div class="field">
-            <label for="f-scenario" data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first"><span data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first">你的仓库 & 想先交给 Orbi 跑通的部分</span> <span class="req">*</span></label>
+            <label for="f-scenario"><span data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first">你的仓库 & 想先交给 Orbi 跑通的部分</span> <span class="req">*</span></label>
             <textarea id="f-scenario" name="scenario" rows="4" required data-zh="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue" data-en="One line about your repo; which delivery you want Orbi to automate (Issue claim, dependency order, review/merge…), or the first real Issue to run" placeholder="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue"></textarea>
           </div>
 

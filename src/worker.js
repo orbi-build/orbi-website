@@ -171,8 +171,11 @@ async function handleApply(request, env) {
   const pain = field(body, "pain");
   const aiSpend = field(body, "ai_spend");
   const issueVolume = field(body, "issue_volume");
-  if (!name || !tg || !scenario) {
-    return new Response(JSON.stringify({ error: "name, tg and scenario are required" }), {
+  // A nickname is not needed to act on an application: tg identifies and
+  // reaches the person. The column is NOT NULL, so an omitted name is stored
+  // as an empty string rather than rejected.
+  if (!tg || !scenario) {
+    return new Response(JSON.stringify({ error: "tg and scenario are required" }), {
       status: 400,
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
