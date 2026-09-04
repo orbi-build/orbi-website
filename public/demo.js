@@ -233,8 +233,14 @@
           drawStarChart(root, stats);
         })
         .catch(function () {
+          // The counters are the page's only social proof. Four em-dashes read
+          // as a broken page, so fall back to the conservative floor values in
+          // the HTML, which under-state the real record and need no network.
           root.querySelectorAll("[data-stat]").forEach(function (element) {
-            element.textContent = "—";
+            const floor = element.getAttribute("data-floor");
+            if (floor) {
+              countUp(element, floor, 2000);
+            }
           });
         });
     }

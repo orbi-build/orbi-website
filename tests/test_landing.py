@@ -370,6 +370,23 @@ class LandingTests(unittest.TestCase):
         self.assertIn("2600", js)
         self.assertIn('threshold: 0.25', js)
 
+    def test_stats_never_render_a_hollow_record(self) -> None:
+        """The live counters are the page's only social proof. When /stats is
+        unreachable they must fall back to conservative real numbers, not to
+        four em-dashes that read as a broken page."""
+        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        self.assertNotIn('"\u2014"', js)
+        self.assertIn("data-floor", js)
+        for page in (self.en, self.zh):
+            stats = [
+                attrs for tag, attrs in page.elements
+                if tag == "strong" and "data-stat" in attrs
+            ]
+            self.assertEqual(len(stats), 4, stats)
+            for attrs in stats:
+                floor = attrs.get("data-floor", "")
+                self.assertTrue(floor.isdigit() and int(floor) > 0, attrs)
+
     def test_worker_keeps_www_to_apex(self) -> None:
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn('"www.orbi.build"', worker)
