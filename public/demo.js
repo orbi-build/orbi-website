@@ -181,8 +181,21 @@
     }
 
     svg.appendChild(shape("path", { class: "star-area", d: area }));
-    svg.appendChild(shape("path", { class: "star-line", d: line }));
-    svg.appendChild(shape("circle", { class: "star-tip", cx: last[0], cy: last[1], r: 2.4 }));
+    svg.appendChild(shape("path", {
+      class: "star-line",
+      d: line,
+      "vector-effect": "non-scaling-stroke",
+    }));
+
+    // The SVG stretches horizontally (preserveAspectRatio="none"), which
+    // would squash a <circle> into an ellipse. Place the endpoint as an
+    // element positioned in percentages instead, so it stays round at any
+    // width.
+    const dot = document.createElement("span");
+    dot.className = "star-dot";
+    dot.style.left = ((last[0] / W) * 100) + "%";
+    dot.style.top = ((last[1] / H) * 100) + "%";
+    box.querySelector(".star-plot").appendChild(dot);
 
     const total = box.querySelector("[data-star-total]");
     if (total) {

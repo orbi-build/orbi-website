@@ -386,6 +386,18 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN", self.en_html)
         self.assertNotIn("GITHUB_TOKEN", self.zh_html)
 
+    def test_star_chart_endpoint_stays_round(self) -> None:
+        """`preserveAspectRatio="none"` stretched the SVG 2.6x horizontally,
+        so the endpoint circle rendered as a 12x5 ellipse and the stroke
+        thinned unevenly. The dot is positioned in CSS instead, and the
+        stroke opts out of scaling."""
+        demo = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn("non-scaling-stroke", demo)
+        self.assertNotIn('shape("circle"', demo)
+        self.assertIn(".star-dot", css)
+        self.assertIn("border-radius: 50%", css)
+
     def test_stats_carry_the_star_history(self) -> None:
         """The static counters show scale; only a curve shows acceleration.
 

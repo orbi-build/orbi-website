@@ -512,7 +512,23 @@ h1 span { color: var(--signal); }
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-.star-chart .star-tip { fill: var(--run); }
+/* The endpoint is a positioned element, not an SVG <circle>: the chart
+   stretches ~2.6x horizontally, which would render a circle as a flat
+   ellipse (measured 12x5). Percentages keep it on the last data point. */
+.star-plot {
+  position: relative;
+  display: block;
+}
+
+.star-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--run);
+  box-shadow: 0 0 0 3px rgba(92, 214, 181, 0.18);
+}
 
 .star-caption {
   display: flex;
