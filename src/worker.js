@@ -20,7 +20,6 @@ const MAX_FIELD = {
   tg: 120,
   email: 200,
   agent_tools: 300,
-  role: 200,
   scenario: 2000,
   pain: 2000,
   ai_spend: 60,
@@ -168,7 +167,6 @@ async function handleApply(request, env) {
   const tg = field(body, "tg");
   const email = field(body, "email");
   const agentTools = field(body, "agent_tools");
-  const role = field(body, "role");
   const scenario = field(body, "scenario");
   const pain = field(body, "pain");
   const aiSpend = field(body, "ai_spend");
@@ -181,8 +179,8 @@ async function handleApply(request, env) {
   }
   try {
     await env.orbi_applications.prepare(
-      "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    ).bind(name, tg, email, agentTools, role, scenario, pain, aiSpend, issueVolume).run();
+      "INSERT INTO applications (name, tg, email, agent_tools, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    ).bind(name, tg, email, agentTools, scenario, pain, aiSpend, issueVolume).run();
   } catch (err) {
     // A failed insert used to bubble up as a 500 and the lead was lost for
     // good: nothing else on the path keeps a copy. Log the parsed payload so
@@ -194,7 +192,6 @@ async function handleApply(request, env) {
       name: name,
       tg: tg,
       email: email,
-      role: role,
       scenario: scenario,
       pain: pain,
       agent_tools: agentTools,

@@ -517,6 +517,26 @@ class LandingTests(unittest.TestCase):
         self.assertIn('id="f-name"', row)
         self.assertIn('id="f-tg"', row)
 
+    def test_apply_pairs_the_two_pricing_selects(self) -> None:
+        """Both are short dropdowns; side by side they read as one question
+        about volume rather than two more rows to get through."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        start = apply_html.index('id="f-ai-spend"')
+        row_open = apply_html.rindex('<div class="field-row">', 0, start)
+        row_close = apply_html.index('id="f-pain"', start)
+        row = apply_html[row_open:row_close]
+        self.assertIn('id="f-ai-spend"', row)
+        self.assertIn('id="f-volume"', row)
+
+    def test_apply_does_not_ask_for_identity_or_team_size(self) -> None:
+        """Free text that nobody answers comparably ("3"), and team size
+        already surfaces in the scenario answer. One less field to abandon."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertNotIn('name="role"', apply_html)
+        self.assertNotIn('id="f-role"', apply_html)
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertNotIn('field(body, "role")', worker)
+
     def test_apply_validates_before_posting(self) -> None:
         """novalidate turns off the browser's own check, so the form must do
         it in JS. Otherwise a missing field costs a round-trip and comes back
