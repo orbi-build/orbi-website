@@ -552,6 +552,16 @@ class LandingTests(unittest.TestCase):
         # as a 400 that never names the field
         self.assertIn(".trim()", apply_html)
 
+    def test_apply_shows_the_outcome_where_the_user_is_looking(self) -> None:
+        """The form clears on success, which alone reads as "nothing
+        happened" if the confirmation is off-screen — measured at y=1627 in a
+        844px viewport when submitting after scrolling up to re-check."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn("scrollIntoView", apply_html)
+        # the confirmation must be announced, not just painted
+        self.assertIn('role="status"', apply_html)
+        self.assertIn('aria-live', apply_html)
+
     def test_apply_collects_pricing_signals(self) -> None:
         """The first cohort is the only chance to gather real pricing data.
 

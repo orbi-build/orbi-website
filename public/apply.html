@@ -137,7 +137,7 @@
           </div>
 
           <button type="submit" class="button button-signal submit" data-zh="提交报名" data-en="Submit application">提交报名</button>
-          <p id="result" role="status"></p>
+          <p id="result" role="status" aria-live="polite" tabindex="-1"></p>
         </form>
       </div>
     </main>
@@ -163,6 +163,13 @@
 
     const form = document.getElementById("apply");
     const result = document.getElementById("result");
+
+    // Put the outcome in front of the person who just submitted, wherever
+    // they had scrolled to, and move focus so a screen reader lands on it.
+    function showResult() {
+      result.scrollIntoView({ block: "center", behavior: "smooth" });
+      result.focus({ preventScroll: true });
+    }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
@@ -215,16 +222,23 @@
           result.textContent = en
             ? "Got it. We will follow up shortly."
             : "已收到。如果匹配，我们会尽快拉你进共建群。";
+          // Clearing the form is the right end state for a one-off action, but
+          // on its own it reads as "nothing happened" when the confirmation is
+          // below the fold — someone who scrolled up to re-read their answers
+          // sees only the emptied fields and submits again.
           form.reset();
+          showResult();
         } else {
           result.className = "err";
           result.textContent = en
             ? "Something went wrong: " + (json.error || res.status)
             : "出错了：" + (json.error || res.status);
+          showResult();
         }
       } catch (err) {
         result.className = "err";
         result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
+        showResult();
       }
     });
   </script>
