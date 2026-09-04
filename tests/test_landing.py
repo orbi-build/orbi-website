@@ -401,6 +401,24 @@ class LandingTests(unittest.TestCase):
         demo = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("data-star-chart", demo)
 
+    def test_proof_runs_all_the_way_to_the_release(self) -> None:
+        """The evidence strip must end where the headline promises.
+
+        The section claims Issue to tagged release, so stopping at the
+        merged PR leaves the last and least-believed step unproven.
+        """
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            self.assertIn("/img/release-v020.png", html)
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn(
+                f"{GITHUB}/releases/tag/v0.2.0", hrefs,
+                "the release shot must link to the real release",
+            )
+            self.assertEqual(
+                html.count("proof-arrow"), 2,
+                "two arrows: Issue -> PR -> release",
+            )
+
     def test_x_account_is_reachable_and_credited(self) -> None:
         """X is where the audience actually comes from.
 

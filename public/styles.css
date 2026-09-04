@@ -738,9 +738,11 @@ h2 {
 .proof-heading { align-items: end; }
 .proof-heading h2 { margin-bottom: 0; }
 
+/* Issue -> PR -> release: the headline promises a tagged release, so the
+   evidence strip has to show one. Three shots, two arrows. */
 .proof-flow {
   display: grid;
-  grid-template-columns: 0.9fr 80px 1.1fr;
+  grid-template-columns: 1fr 84px 1fr 84px 1fr;
   align-items: center;
   margin-top: 80px;
 }
@@ -753,13 +755,13 @@ h2 {
   border: 1px solid var(--ink);
   background: #fff;
   text-decoration: none;
-  box-shadow: 13px 13px 0 #cad4d0;
+  box-shadow: 9px 9px 0 #cad4d0;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .proof-shot:hover {
   transform: translate(-3px, -3px);
-  box-shadow: 18px 18px 0 #c3cec9;
+  box-shadow: 13px 13px 0 #c3cec9;
 }
 
 .proof-shot > span {
@@ -779,17 +781,19 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 2px;
   color: var(--signal);
   font-family: var(--display);
-  font-size: 2rem;
+  font-size: 1.7rem;
 }
 
 .proof-arrow span {
   color: #4b615d;
   font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .proof-ledger {
@@ -1148,6 +1152,13 @@ h2 {
   .proof-heading,
   .direction-head,
   .ownership-grid { grid-template-columns: 1fr; }
+
+  /* Three shots side by side get too narrow below ~1160px; stack the
+     release under the Issue -> PR pair instead of shrinking all three. */
+  .proof-flow { grid-template-columns: 1fr 70px 1fr; gap: 22px 0; }
+  .proof-flow > .proof-arrow:last-of-type { grid-column: 1 / -1; transform: rotate(90deg); }
+  .proof-flow > .proof-arrow:last-of-type span { transform: rotate(-90deg); }
+  .proof-flow > .proof-shot:last-of-type { grid-column: 1 / -1; max-width: 640px; margin-inline: auto; }
 
   .shift-list { max-width: 760px; }
   .map-row { grid-template-columns: 120px minmax(0, 1fr); padding: 28px 0; }
