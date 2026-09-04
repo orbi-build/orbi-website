@@ -31,6 +31,21 @@ function field(body, key) {
   return String(body[key] || "").trim().slice(0, MAX_FIELD[key]);
 }
 
+// Enough to recognise and contact the person after a manual recovery, without
+// writing a full address into a log line.
+function maskEmail(value) {
+  if (!value) {
+    return "";
+  }
+  const at = value.lastIndexOf("@");
+  if (at < 1) {
+    return "***";
+  }
+  const user = value.slice(0, at);
+  const head = user.slice(0, 2);
+  return head + "***" + value.slice(at);
+}
+
 function githubHeaders(token) {
   if (!token) {
     throw new Error("GITHUB_TOKEN is not configured");
@@ -184,10 +199,24 @@ async function handleApply(request, env) {
       "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     ).bind(name, tg, email, agentTools, role, scenario, pain, aiSpend, issueVolume).run();
   } catch (err) {
-    // A failed insert used to bubble up as a 500 and the lead was lost
-    // silently. Log the reason so a schema mismatch is visible in the
-    // Worker logs instead of only showing up as a gap in the id sequence.
-    console.error("apply insert failed", err && err.message);
+    // A failed insert used to bubble up as a 500 and the lead was lost for
+    // good: nothing else on the path keeps a copy. Log the parsed payload so
+    // the application can be recovered by hand from the Worker logs. The
+    // email is masked because the log is not the place to keep it in the
+    // clear, and the raw body is never logged — only fields we recognise.
+    console.error("apply_insert_failed " + JSON.stringify({
+      reason: (err && err.message) || String(err),
+      at: new Date().toISOString(),
+      name: name,
+      tg: tg,
+      email: maskEmail(email),
+      role: role,
+      scenario: scenario,
+      pain: pain,
+      agent_tools: agentTools,
+      ai_spend: aiSpend,
+      issue_volume: issueVolume,
+    }));
     return new Response(JSON.stringify({ error: "could not save the application" }), {
       status: 500,
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },

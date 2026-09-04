@@ -517,6 +517,21 @@ class LandingTests(unittest.TestCase):
         self.assertIn('id="f-name"', row)
         self.assertIn('id="f-tg"', row)
 
+    def test_apply_validates_before_posting(self) -> None:
+        """novalidate turns off the browser's own check, so the form must do
+        it in JS. Otherwise a missing field costs a round-trip and comes back
+        as a raw English API string that never says which field is empty."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn("checkValidity", apply_html)
+        # the offending field has to be focused, not just flagged
+        self.assertIn("focus()", apply_html)
+        # and it needs a localized message, not the API's English error
+        self.assertIn("data-msg-required", apply_html)
+        # spaces must be trimmed client-side too: the Worker trims before its
+        # own required check, so "   " would otherwise pass here and come back
+        # as a 400 that never names the field
+        self.assertIn(".trim()", apply_html)
+
     def test_apply_collects_pricing_signals(self) -> None:
         """The first cohort is the only chance to gather real pricing data.
 
@@ -533,6 +548,24 @@ class LandingTests(unittest.TestCase):
             self.assertIn(f'name="{field}"', apply_html, field)
             self.assertIn(f'"{field}"', worker, field)
             self.assertIn(field, migrations, field)
+
+    def test_apply_logs_the_payload_when_it_cannot_be_stored(self) -> None:
+        """A lead that fails to insert is gone unless the request itself is in
+        the log. Log the payload, but never the raw body (it may hold anything
+        a stranger typed) and never the email in the clear."""
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("apply_insert_failed", worker)
+        self.assertIn("JSON.stringify", worker)
+        # the recoverable fields have to be in the log line
+        for token in ("name", "tg", "scenario"):
+            self.assertIn(token, worker)
+
+    def test_worker_keeps_observability_on_so_logs_persist(self) -> None:
+        """console.error alone is invisible unless a tail is attached;
+        observability is what makes it survive to be read later."""
+        config = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
+        self.assertIn("[observability]", config)
+        self.assertIn("enabled = true", config)
 
     def test_apply_bounds_every_stored_field(self) -> None:
         """An unauthenticated write path must cap what it stores."""

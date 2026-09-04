@@ -74,7 +74,7 @@
         </div>
         <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
 
-        <form id="apply" class="apply-form" novalidate>
+        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}">
           <div class="field-row">
             <div class="field">
               <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
@@ -168,6 +168,42 @@
     const result = document.getElementById("result");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+
+      // The form is novalidate so the browser will not flag anything itself.
+      // Check here instead: a missing field should not cost a round-trip and
+      // come back as an English API string that never names the field.
+      // Trim first: the Worker trims before its own required check, so a
+      // field of spaces passes checkValidity() here and still comes back 400.
+      for (const el of form.elements) {
+        if (el.value && typeof el.value === "string" && el.type !== "submit") {
+          el.value = el.value.trim();
+        }
+      }
+      const missing = Array.from(form.elements).find(
+        (el) => el.willValidate && !el.checkValidity(),
+      );
+      if (missing) {
+        // setLang() rewrites each label's innerHTML, which drops the inner
+        // spans, so read the label itself and strip the required marker.
+        const label = form.querySelector('label[for="' + missing.id + '"]');
+        // Labels carry a required marker and a parenthetical aside; the
+        // message wants the field's name on its own.
+        const fieldName = label
+          ? label.textContent
+              .replace(/[*＊]/g, "")
+              .replace(/[（(][^）)]*[）)]/g, "")
+              .trim()
+          : missing.name;
+        result.className = "err";
+        result.textContent = (en
+          ? form.getAttribute("data-msg-required-en")
+          : form.getAttribute("data-msg-required")
+        ).replace("{field}", fieldName);
+        missing.focus();
+        missing.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+
       const data = Object.fromEntries(new FormData(form));
       result.className = "";
       try {
