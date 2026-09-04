@@ -31,21 +31,6 @@ function field(body, key) {
   return String(body[key] || "").trim().slice(0, MAX_FIELD[key]);
 }
 
-// Enough to recognise and contact the person after a manual recovery, without
-// writing a full address into a log line.
-function maskEmail(value) {
-  if (!value) {
-    return "";
-  }
-  const at = value.lastIndexOf("@");
-  if (at < 1) {
-    return "***";
-  }
-  const user = value.slice(0, at);
-  const head = user.slice(0, 2);
-  return head + "***" + value.slice(at);
-}
-
 function githubHeaders(token) {
   if (!token) {
     throw new Error("GITHUB_TOKEN is not configured");
@@ -201,15 +186,14 @@ async function handleApply(request, env) {
   } catch (err) {
     // A failed insert used to bubble up as a 500 and the lead was lost for
     // good: nothing else on the path keeps a copy. Log the parsed payload so
-    // the application can be recovered by hand from the Worker logs. The
-    // email is masked because the log is not the place to keep it in the
-    // clear, and the raw body is never logged — only fields we recognise.
+    // the application can be recovered by hand from the Worker logs. Only
+    // fields we recognise are logged, never the raw body.
     console.error("apply_insert_failed " + JSON.stringify({
       reason: (err && err.message) || String(err),
       at: new Date().toISOString(),
       name: name,
       tg: tg,
-      email: maskEmail(email),
+      email: email,
       role: role,
       scenario: scenario,
       pain: pain,

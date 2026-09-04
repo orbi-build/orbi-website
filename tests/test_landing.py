@@ -551,21 +551,31 @@ class LandingTests(unittest.TestCase):
 
     def test_apply_logs_the_payload_when_it_cannot_be_stored(self) -> None:
         """A lead that fails to insert is gone unless the request itself is in
-        the log. Log the payload, but never the raw body (it may hold anything
-        a stranger typed) and never the email in the clear."""
+        the log. Log every recognised field so it can be recovered by hand."""
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn("apply_insert_failed", worker)
         self.assertIn("JSON.stringify", worker)
-        # the recoverable fields have to be in the log line
-        for token in ("name", "tg", "scenario"):
+        for token in ("name", "tg", "scenario", "email"):
             self.assertIn(token, worker)
 
-    def test_worker_keeps_observability_on_so_logs_persist(self) -> None:
-        """console.error alone is invisible unless a tail is attached;
-        observability is what makes it survive to be read later."""
-        config = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
-        self.assertIn("[observability]", config)
-        self.assertIn("enabled = true", config)
+    def test_wrangler_config_keeps_every_binding_at_top_level(self) -> None:
+        """A table header claims every key after it, so a stray [section]
+        above `assets` swallows the binding and env.ASSETS goes undefined —
+        which takes the whole site down with a 1101."""
+        import tomllib
+
+        with open(ROOT / "wrangler.toml", "rb") as handle:
+            config = tomllib.load(handle)
+
+        self.assertEqual(config["assets"]["binding"], "ASSETS")
+        self.assertEqual(config["assets"]["directory"], "./public/")
+        self.assertEqual(len(config["d1_databases"]), 1)
+        self.assertEqual(len(config["routes"]), 2)
+        # observability must hold only its own keys
+        self.assertEqual(
+            set(config["observability"]), {"enabled", "head_sampling_rate"}
+        )
+        self.assertTrue(config["observability"]["enabled"])
 
     def test_apply_bounds_every_stored_field(self) -> None:
         """An unauthenticated write path must cap what it stores."""

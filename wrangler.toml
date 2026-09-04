@@ -4,13 +4,6 @@ compatibility_date = "2026-08-31"
 account_id = "9d4b74d3dc4247dfcd4b3ca77869cbdf"
 workers_dev = true
 
-# console.* is only visible to an attached `wrangler tail` unless this is on.
-# The apply handler logs a recoverable payload when an insert fails, which is
-# worthless if the log does not survive to be read afterwards.
-[observability]
-enabled = true
-head_sampling_rate = 1
-
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
 
@@ -26,3 +19,9 @@ custom_domain = true
 binding = "orbi_applications"
 database_name = "orbi-applications"
 database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
+
+# Must stay last: every key after a table header belongs to that table, so
+# putting this above `assets` swallows it and env.ASSETS becomes undefined.
+[observability]
+enabled = true
+head_sampling_rate = 1
