@@ -179,9 +179,20 @@ async function handleApply(request, env) {
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
-  await env.orbi_applications.prepare(
-    "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-  ).bind(name, tg, email, agentTools, role, scenario, pain, aiSpend, issueVolume).run();
+  try {
+    await env.orbi_applications.prepare(
+      "INSERT INTO applications (name, tg, email, agent_tools, role, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    ).bind(name, tg, email, agentTools, role, scenario, pain, aiSpend, issueVolume).run();
+  } catch (err) {
+    // A failed insert used to bubble up as a 500 and the lead was lost
+    // silently. Log the reason so a schema mismatch is visible in the
+    // Worker logs instead of only showing up as a gap in the id sequence.
+    console.error("apply insert failed", err && err.message);
+    return new Response(JSON.stringify({ error: "could not save the application" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
   return new Response(JSON.stringify({ ok: true }), {
     status: 201,
     headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
