@@ -401,6 +401,22 @@ class LandingTests(unittest.TestCase):
         demo = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("data-star-chart", demo)
 
+    def test_x_account_is_reachable_and_credited(self) -> None:
+        """X is where the audience actually comes from.
+
+        Every star so far arrived because the author posted on X, but the
+        site had no link back: visitors landed and lost the thread, share
+        cards carried no attribution, and AI retrieval had no way to know
+        which account is official.
+        """
+        for page in (self.en_html, self.zh_html):
+            self.assertIn('name="twitter:site" content="@xqliu"', page)
+            self.assertIn('name="twitter:creator" content="@xqliu"', page)
+            self.assertIn("https://x.com/xqliu", page)
+        for page in (self.en, self.zh):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn("https://x.com/xqliu", hrefs, hrefs)
+
     def test_no_third_party_analytics(self) -> None:
         """A page that promises code never leaves your machine must not ship
         visitor data to someone else. Cloudflare's own analytics is enough."""
