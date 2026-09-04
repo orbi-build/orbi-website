@@ -74,7 +74,7 @@
         </div>
         <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
 
-        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}" data-msg-sending="正在提交…" data-msg-sending-en="Sending…">
+        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}" data-msg-sending="正在提交…" data-msg-sending-en="Sending…" data-msg-email-hint="这个邮箱地址看起来不完整，我们主要用 Telegram 联系你" data-msg-email-hint-en="That email looks incomplete — we mainly reach out on Telegram">
           <div class="field-row">
             <div class="field">
               <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
@@ -187,8 +187,11 @@
           el.value = el.value.trim();
         }
       }
+      // Only required fields gate the submit. Nothing is ever sent to the
+      // optional email — Telegram is how people get contacted — so rejecting
+      // a complete application over its format is pure friction.
       const missing = Array.from(form.elements).find(
-        (el) => el.willValidate && !el.checkValidity(),
+        (el) => el.required && el.willValidate && !el.checkValidity(),
       );
       if (missing) {
         // setLang() rewrites each label's innerHTML, which drops the inner
@@ -242,7 +245,14 @@
           // on its own it reads as "nothing happened" when the confirmation is
           // below the fold — someone who scrolled up to re-read their answers
           // sees only the emptied fields and submits again.
+          const email = form.querySelector("#f-email");
+          const emailOff = email && email.value && !email.checkValidity();
           form.reset();
+          if (emailOff) {
+            result.textContent += " " + (en
+              ? form.getAttribute("data-msg-email-hint-en")
+              : form.getAttribute("data-msg-email-hint"));
+          }
           showResult();
         } else {
           result.className = "err";

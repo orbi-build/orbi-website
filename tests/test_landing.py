@@ -563,6 +563,15 @@ class LandingTests(unittest.TestCase):
             # marker; the swapped element must be an inner span instead
             self.assertNotIn("data-zh=", attrs, "%s label is overwritten wholesale" % field_id)
 
+    def test_optional_email_never_blocks_the_submission(self) -> None:
+        """Nothing is sent to this address — Telegram is how people get
+        contacted — so a malformed optional field must not stop an otherwise
+        complete application. Only required fields gate the submit."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn("el.required", apply_html)
+        # a hint is fine; a blocked submission is not
+        self.assertIn("data-msg-email-hint", apply_html)
+
     def test_apply_blocks_double_submission(self) -> None:
         """On a slow connection nothing says the request is in flight, so the
         button gets clicked again — measured 3 POSTs from 3 clicks against
