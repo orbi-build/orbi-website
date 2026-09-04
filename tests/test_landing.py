@@ -528,6 +528,23 @@ class LandingTests(unittest.TestCase):
         self.assertIn('id="f-ai-spend"', row)
         self.assertIn('id="f-volume"', row)
 
+    def test_apply_marks_every_required_field(self) -> None:
+        """A field the form rejects must look required before it is rejected.
+        name carried `required` with no marker, so it read as optional and got
+        skipped — then the submit failed on it."""
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        import re
+
+        required_ids = re.findall(r'<(?:input|textarea)[^>]*id="([^"]+)"[^>]*\brequired\b', apply_html)
+        required_ids += re.findall(r'<(?:input|textarea)[^>]*\brequired\b[^>]*id="([^"]+)"', apply_html)
+        required_ids = sorted(set(required_ids))
+        self.assertEqual(required_ids, ["f-name", "f-scenario", "f-tg"], required_ids)
+
+        for field_id in required_ids:
+            start = apply_html.index('for="%s"' % field_id)
+            label = apply_html[start:apply_html.index("</label>", start)]
+            self.assertIn('class="req"', label, "%s has no required marker" % field_id)
+
     def test_apply_pairs_email_with_agent_tools(self) -> None:
         """Both are single-line optional inputs that sat on their own rows.
         Paired, they read as two quick extras and the required scenario box
