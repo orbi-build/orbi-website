@@ -15,7 +15,6 @@ FACTORY_SLOGAN = "软件工厂的工厂"
 GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
 DOCS_ZH = "https://docs.orbi.build/zh"
-CLOUD_DISCUSSION = "https://github.com/orbi-build/orbi/discussions/225"
 ROADMAP = "https://github.com/orbi-build/orbi/milestones"
 
 
@@ -267,7 +266,7 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud"], CLOUD_DISCUSSION)
+            self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -329,6 +328,36 @@ class LandingTests(unittest.TestCase):
         self.assertIn("托管 Cloud", self.zh.text)
         self.assertIn("商业托管服务", self.zh.text)
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
+
+    def test_cloud_entry_names_founding_pilot_and_apply(self) -> None:
+        for page, state, apply_label in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply for the Founding Pilot"),
+            (self.zh, "创始试点 · 席位有限", "申请创始试点"),
+        ):
+            self.assertIn(state, page.text)
+            self.assertIn(apply_label, page.text)
+            self.assertTrue(
+                any(
+                    href == "/apply" and text.startswith(apply_label)
+                    for text, href in page.hrefs
+                ),
+                page.hrefs,
+            )
+
+    def test_accepted_partners_get_connect_and_status_links(self) -> None:
+        cloud_login = "https://beta.orbi.build/api/login"
+        cloud_status = "https://beta.orbi.build/api/"
+        for page in (self.en, self.zh):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn(cloud_login, hrefs)
+            self.assertIn(cloud_status, hrefs)
+
+    def test_cloud_faq_matches_pilot_reality(self) -> None:
+        for html, not_yet in (
+            (self.en_html, "in design and not yet shipping"),
+            (self.zh_html, "还在设计中，尚未上线"),
+        ):
+            self.assertNotIn(not_yet, html)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
         for html in (self.en_html, self.zh_html):
