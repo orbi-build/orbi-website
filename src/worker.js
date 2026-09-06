@@ -4,6 +4,13 @@ const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
 };
 
+// Test environments (beta.orbi.build, *.workers.dev) must stay out of search
+// engines and AI crawlers: robots.txt is served as a blanket Disallow and every
+// response carries X-Robots-Tag. Prod hosts keep the public robots.txt.
+const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build"]);
+const TEST_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
+const TEST_NOINDEX = "noindex, nofollow, noarchive";
+
 // Server-side DataFast website id: the same id used by the browser tracking
 // script in the HTML head, here feeding AI-crawler traffic to the Bot traffic
 // card. The wrapper only fires for known crawler user agents and never for
@@ -230,6 +237,16 @@ async function handleFetch(request, env) {
       );
     }
 
+    if (!PROD_HOSTS.has(url.hostname) && url.pathname === "/robots.txt") {
+      return new Response(TEST_ROBOTS_TXT, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Robots-Tag": TEST_NOINDEX,
+          ...SECURITY_HEADERS,
+        },
+      });
+    }
+
     if (url.pathname === "/stats") {
       try {
         return await statsResponse(request, env.GITHUB_TOKEN);
@@ -262,5 +279,11 @@ async function handleFetch(request, env) {
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
   // ctx.waitUntil, so tracking never delays the response.
-  fetch: withAICrawlerTracking(handleFetch, { websiteId: DATAFAST_WEBSITE_ID }),
+  fetch: withAICrawlerTracking(async (request, env, ctx) => {
+    const response = await handleFetch(request, env, ctx);
+    if (PROD_HOSTS.has(new URL(request.url).hostname)) return response;
+    const stamped = new Response(response.body, response);
+    stamped.headers.set("X-Robots-Tag", TEST_NOINDEX);
+    return stamped;
+  }, { websiteId: DATAFAST_WEBSITE_ID }),
 };
