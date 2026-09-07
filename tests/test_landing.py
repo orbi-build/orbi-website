@@ -431,14 +431,42 @@ class LandingTests(unittest.TestCase):
                 floor = attrs.get("data-floor", "")
                 self.assertTrue(floor.isdigit() and int(floor) > 0, attrs)
 
-    def test_install_path_is_concrete_not_just_a_link(self) -> None:
-        """"Install it yourself" should show what installing actually costs,
-        not send the reader to the docs to find out."""
+    def test_install_is_one_published_command_with_a_manual_fallback(self) -> None:
+        """"Install it yourself" is one curl line; the four hand-run steps
+        survive only as the collapsed manual fallback, so nobody faces them
+        up front."""
+        command = "curl -fsSL https://beta.orbi.build/install.sh | bash"
         for html in (self.en_html, self.zh_html):
+            # exactly once: the primary install path, not repeated per locale
+            self.assertEqual(html.count(command), 1)
             self.assertIn("git clone https://github.com/orbi-build/orbi.git", html)
             self.assertIn("orbi setup --config orbi.toml", html)
+            # the fallback stays collapsed and secondary, behind the one-liner
+            self.assertIn("<details", html)
+            self.assertLess(html.index("<details"), html.index("git clone https://github.com"))
             # the honest prerequisites, so nobody discovers systemd halfway in
             self.assertIn("systemd", html)
+
+    def test_install_sh_is_published_from_the_orbi_repo(self) -> None:
+        """/install.sh must be the orbi repo's script byte for byte, with a
+        documented repeatable sync path — two unattended copies drift."""
+        published = (ROOT / "public" / "install.sh").read_text(encoding="utf-8")
+        self.assertTrue(published.startswith("#!/usr/bin/env bash"), published[:60])
+        self.assertIn("orbi setup", published)
+
+        sync = (ROOT / "scripts" / "sync-install-sh.sh").read_text(encoding="utf-8")
+        # the single named source of truth, and where it lands
+        self.assertIn(
+            "https://raw.githubusercontent.com/orbi-build/orbi/main/install.sh", sync,
+        )
+        self.assertIn("public/install.sh", sync)
+
+        ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        # CI red-lights any drift between the published copy and the source
+        self.assertIn(
+            "https://raw.githubusercontent.com/orbi-build/orbi/main/install.sh", ci,
+        )
+        self.assertIn("public/install.sh", ci)
 
     def test_install_commands_are_copyable_in_one_click(self) -> None:
         """Four lines with long flags are miserable to select by hand."""
@@ -756,6 +784,9 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("secrets.CLOUDFLARE_ACCOUNT_ID", workflow)
         self.assertIn("beta.orbi.build/compare/", workflow)
         self.assertIn("beta.orbi.build/zh/compare/", workflow)
+        # the install one-liner's host is the host CI actually deploys, so the
+        # published script must be smoke-tested there after every release
+        self.assertIn('check_page "https://beta.orbi.build/install.sh"', workflow)
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
 

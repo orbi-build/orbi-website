@@ -95,6 +95,7 @@ jobs:
             echo "Smoke test passed: $url returned HTTP 200 and contains $expected"
           }
           check_page "https://beta.orbi.build/" "Turn GitHub Issues"
+          check_page "https://beta.orbi.build/install.sh" "Install Orbi from its source checkout"
           check_page "https://beta.orbi.build/compare/" "OpenClaw"
           check_page "https://beta.orbi.build/compare/openclaw/" "OpenClaw"
           check_page "https://beta.orbi.build/zh/compare/openclaw/" "OpenClaw"
