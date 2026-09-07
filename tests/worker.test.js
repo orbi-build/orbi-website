@@ -49,6 +49,17 @@ describe("Worker request helpers", () => {
   it("fails clearly when Cloud is not configured", async () => {
     const response = cloudLoginResponse(new Request("https://orbi.build/api/login"));
     expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Cloud is temporarily unavailable" });
+  });
+
+  it.each([
+    "not-a-url",
+    "http://cloud.orbi.build/api/login",
+    "https://cloud.orbi.build/login",
+    "https://user:password@cloud.orbi.build/api/login",
+  ])("fails closed for invalid Cloud URL: %s", (value) => {
+    const response = cloudLoginResponse(new Request("https://orbi.build/api/login"), value);
+    expect(response.status).toBe(503);
   });
 
   it("builds authenticated GitHub API headers", () => {

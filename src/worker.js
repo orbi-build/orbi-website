@@ -153,6 +153,29 @@ async function fetchAsset(request, assets) {
   return response;
 }
 
+function configuredCloudLoginUrl(value) {
+  if (!value) {
+    return { error: "not configured" };
+  }
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== "https:" ||
+      !url.hostname ||
+      url.pathname !== CLOUD_LOGIN_ROUTE ||
+      url.username ||
+      url.password
+    ) {
+      return { error: "must be an absolute HTTPS /api/login URL" };
+    }
+    url.search = "";
+    url.hash = "";
+    return { url };
+  } catch (err) {
+    return { error: "must be an absolute HTTPS /api/login URL" };
+  }
+}
+
 function cloudLoginResponse(request, cloudBaseUrl) {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "method not allowed" }), {
@@ -160,19 +183,17 @@ function cloudLoginResponse(request, cloudBaseUrl) {
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
-  if (!cloudBaseUrl) {
-    console.error("cloud_login_unavailable: CLOUD_LOGIN_URL is not configured");
+  const configured = configuredCloudLoginUrl(cloudBaseUrl);
+  if (configured.error) {
+    console.error(`cloud_login_unavailable: ${configured.error}`);
     return new Response(JSON.stringify({ error: "Cloud is temporarily unavailable" }), {
       status: 503,
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
   // Cloud owns OAuth state/session. Do not forward arbitrary query parameters
-  // (in particular tenant) from an unauthenticated website request. The
-  // configured value is the verified Cloud login URL, including its route.
-  const target = new URL(cloudBaseUrl);
-  target.search = "";
-  return Response.redirect(target.toString(), 302);
+  // (in particular tenant) from an unauthenticated website request.
+  return Response.redirect(configured.url.toString(), 302);
 }
 
 async function handleApply(request, env) {

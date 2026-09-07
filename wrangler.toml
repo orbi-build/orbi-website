@@ -5,7 +5,7 @@ account_id = "9d4b74d3dc4247dfcd4b3ca77869cbdf"
 workers_dev = true
 
 # The website only hands OAuth off to Cloud; Cloud owns state, sessions, and onboarding.
-vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login" }
+vars = { CLOUD_LOGIN_URL = "https://cloud.orbi.build/api/login" }
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }

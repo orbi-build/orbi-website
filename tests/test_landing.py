@@ -358,13 +358,16 @@ class LandingTests(unittest.TestCase):
         import tomllib
         with open(ROOT / "wrangler.toml", "rb") as handle:
             config = tomllib.load(handle)
-        self.assertEqual(config["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
+        self.assertEqual(config["vars"]["CLOUD_LOGIN_URL"], "https://cloud.orbi.build/api/login")
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("https://cloud.orbi.build/api/login", readme)
+        self.assertIn("https://beta.orbi.build/api/login", readme)
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("new URL(cloudBaseUrl)", worker)
+        self.assertIn("configuredCloudLoginUrl", worker)
         self.assertIn("CLOUD_LOGIN_URL", worker)
-        self.assertNotIn("cloud.orbi.build", worker)
-        self.assertNotIn("beta-cloud.orbi.build", worker)
+        self.assertIn("must be an absolute HTTPS /api/login URL", worker)
+        self.assertNotIn("beta.orbi.build/api/login", worker)
 
     def test_cloud_faq_matches_pilot_reality(self) -> None:
         for html, not_yet in (
