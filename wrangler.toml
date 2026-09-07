@@ -30,13 +30,19 @@ head_sampling_rate = 1
 # unchanged when deploying with `wrangler deploy --env beta`.
 [env.beta]
 name = "orbi-website-beta"
+# Keep a deploy target so routine releases update the Worker used by the
+# existing beta Custom Domain, without managing that domain or its DNS.
 workers_dev = false
-
+# Route through the existing proxied DNS record without asking Wrangler to
+# create/manage a Custom Domain (which would conflict with that record).
 [[env.beta.routes]]
-pattern = "beta.orbi.build"
-custom_domain = true
+pattern = "beta.orbi.build/*"
+custom_domain = false
+zone_name = "orbi.build"
 
+# beta.orbi.build's DNS record is existing infrastructure; this ordinary
+# Worker route only selects the beta Worker for that hostname.
 [[env.beta.d1_databases]]
 binding = "orbi_applications"
-database_name = "orbi-applications"
-database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
+database_name = "orbi-applications-test"
+database_id = "3c254d65-e5c6-4488-9b83-dabc3433f092"

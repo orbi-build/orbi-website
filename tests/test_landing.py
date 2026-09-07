@@ -695,8 +695,32 @@ class LandingTests(unittest.TestCase):
             config = tomllib.load(handle)
         beta = config["env"]["beta"]
         self.assertEqual(beta["name"], "orbi-website-beta")
-        self.assertEqual(beta["routes"], [{"pattern": "beta.orbi.build", "custom_domain": True}])
+        self.assertFalse(beta["workers_dev"])
+        # This is an ordinary Worker route through the existing proxied DNS
+        # record, not a Custom Domain declaration that Wrangler would manage.
+        self.assertEqual(
+            beta["routes"],
+            [
+                {
+                    "pattern": "beta.orbi.build/*",
+                    "custom_domain": False,
+                    "zone_name": "orbi.build",
+                }
+            ],
+        )
         self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
+        self.assertEqual(beta["d1_databases"][0]["database_name"], "orbi-applications-test")
+        self.assertEqual(
+            beta["d1_databases"][0]["database_id"],
+            "3c254d65-e5c6-4488-9b83-dabc3433f092",
+        )
+        self.assertEqual(
+            config["d1_databases"][0]["database_name"], "orbi-applications"
+        )
+        self.assertEqual(
+            config["d1_databases"][0]["database_id"],
+            "9df2048e-004e-48e1-b81e-16826bd49d8a",
+        )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
             ["orbi.build", "www.orbi.build"],
