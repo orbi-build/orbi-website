@@ -695,11 +695,19 @@ class LandingTests(unittest.TestCase):
             config = tomllib.load(handle)
         beta = config["env"]["beta"]
         self.assertEqual(beta["name"], "orbi-website-beta")
-        self.assertTrue(beta["workers_dev"])
-        # The beta Custom Domain is provisioned infrastructure, not part of a
-        # routine deploy. An explicit empty list also prevents production
-        # custom-domain routes from being inherited by the beta deploy.
-        self.assertEqual(beta["routes"], [])
+        self.assertFalse(beta["workers_dev"])
+        # This is an ordinary Worker route through the existing proxied DNS
+        # record, not a Custom Domain declaration that Wrangler would manage.
+        self.assertEqual(
+            beta["routes"],
+            [
+                {
+                    "pattern": "beta.orbi.build/*",
+                    "custom_domain": False,
+                    "zone_name": "orbi.build",
+                }
+            ],
+        )
         self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
         self.assertEqual(beta["d1_databases"][0]["database_name"], "orbi-applications-test")
         self.assertEqual(

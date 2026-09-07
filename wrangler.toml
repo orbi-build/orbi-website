@@ -32,12 +32,16 @@ head_sampling_rate = 1
 name = "orbi-website-beta"
 # Keep a deploy target so routine releases update the Worker used by the
 # existing beta Custom Domain, without managing that domain or its DNS.
-workers_dev = true
-# Prevent production custom-domain routes from being inherited by beta.
-routes = []
+workers_dev = false
+# Route through the existing proxied DNS record without asking Wrangler to
+# create/manage a Custom Domain (which would conflict with that record).
+[[env.beta.routes]]
+pattern = "beta.orbi.build/*"
+custom_domain = false
+zone_name = "orbi.build"
 
-# beta.orbi.build is an existing Custom Domain. Keep its binding in Cloudflare;
-# routine deploys must only publish this Worker and its assets.
+# beta.orbi.build's DNS record is existing infrastructure; this ordinary
+# Worker route only selects the beta Worker for that hostname.
 [[env.beta.d1_databases]]
 binding = "orbi_applications"
 database_name = "orbi-applications-test"
