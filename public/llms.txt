@@ -111,3 +111,5 @@ and not yet purchasable.
 - Licence: Sustainable Use License v1.0 (fair-code) — https://github.com/orbi-build/orbi/blob/main/LICENSE.md
 - Comparison — Orbi vs Claude Managed Agents (English): https://orbi.build/compare/managed-agents/
 - Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
+- Comparison — Orbi vs OpenAI Codex (English): https://orbi.build/compare/codex/
+- Comparison — Orbi vs OpenAI Codex (Chinese): https://orbi.build/zh/compare/codex/
