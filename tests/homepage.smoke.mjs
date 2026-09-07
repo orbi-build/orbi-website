@@ -14,7 +14,7 @@ function startServer() {
   });
 }
 
-async function assertHomepage(browser, path, label, comparisonPath, size, screenshot) {
+async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
@@ -44,11 +44,21 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
-  const entry = page.getByRole("link", { name: label, exact: true }).first();
-  await entry.scrollIntoViewIfNeeded();
-  if (!(await entry.isVisible())) throw new Error(`${path}: comparison entry is not visible`);
+  const hero = page.locator(".hero");
+  const paths = {
+    apply: "/apply",
+    install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
+    comparisons: comparisonPath,
+  };
+  if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
+  for (const [cta, href] of Object.entries(paths)) {
+    const link = hero.locator(`[data-cta="${cta}"]`);
+    await link.scrollIntoViewIfNeeded();
+    if (!(await link.isVisible())) throw new Error(`${path}: ${cta} CTA is not visible`);
+    if ((await link.getAttribute("href")) !== href) throw new Error(`${path}: ${cta} CTA has wrong href`);
+  }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
-  await entry.click();
+  await hero.locator('[data-cta="comparisons"]').click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
     throw new Error(`${path}: expected ${comparisonPath}, got ${page.url()}`);
@@ -78,10 +88,10 @@ async function main() {
         });
       });
     }
-    await assertHomepage(browser, "/", "Compare Orbi ↗", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
-    await assertHomepage(browser, "/", "Compare Orbi ↗", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
-    await assertHomepage(browser, "/zh/", "查看竞品对比 ↗", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
-    await assertHomepage(browser, "/zh/", "查看竞品对比 ↗", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
+    await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
+    await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
+    await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
 
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
