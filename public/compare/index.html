@@ -81,20 +81,20 @@
       <p class="section-lede">Managed agents put the delivery line in a vendor cloud. Orbi runs the same issue → agent → PR loop on your machine, with GitHub as the source of truth and your model choice intact.</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
-          <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th><th scope="col">Hermes Agent*</th></tr></thead>
+          <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th><th scope="col">OpenHands</th><th scope="col">Hermes Agent*</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Runs where</th><td>Your machine</td><td>Anthropic cloud</td><td>GitHub cloud</td><td>OpenAI cloud</td><td>Cognition cloud</td><td>Operator machine/VPS</td></tr>
-            <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code></td><td>API call</td><td>Issue + <code>@copilot</code></td><td>ChatGPT, CLI, or GitHub</td><td>Slack or web</td><td>Gateway/CLI or cron</td></tr>
-            <tr><th scope="row">State</th><td>GitHub Issues, labels, branches, PRs</td><td>Anthropic Session log</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>Memory, sessions, skills</td></tr>
-            <tr><th scope="row">Models</th><td>BYOK, any endpoint</td><td>Claude</td><td>GitHub’s available models</td><td>OpenAI</td><td>Cognition</td><td>Multiple providers</td></tr>
-            <tr><th scope="row">Isolation</th><td>Git worktree</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud environment</td><td>Local/container/SSH backends</td></tr>
-            <tr><th scope="row">Delivery</th><td>Reviewed PR + merge</td><td>API response</td><td>PR</td><td>PR</td><td>PR</td><td>GitHub skill; not a documented autonomous Issue→PR queue*</td></tr>
+            <tr><th scope="row">Runs where</th><td>Your machine</td><td>Anthropic cloud</td><td>GitHub cloud</td><td>OpenAI cloud</td><td>Cognition cloud</td><td>Local/Docker/VM/cloud</td><td>Operator machine/VPS</td></tr>
+            <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code></td><td>API call</td><td>Issue + <code>@copilot</code></td><td>ChatGPT, CLI, or GitHub</td><td>Slack or web</td><td>Web UI/CLI/webhook/API</td><td>Gateway/CLI or cron</td></tr>
+            <tr><th scope="row">State</th><td>GitHub Issues, labels, branches, PRs</td><td>Anthropic Session log</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>Conversations, workspaces, events</td><td>Memory, sessions, skills</td></tr>
+            <tr><th scope="row">Models</th><td>BYOK, any endpoint</td><td>Claude</td><td>GitHub’s available models</td><td>OpenAI</td><td>Cognition</td><td>BYOK, any LLM</td><td>Multiple providers</td></tr>
+            <tr><th scope="row">Isolation</th><td>Git worktree</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud environment</td><td>Docker/VM/cloud backends</td><td>Local/container/SSH backends</td></tr>
+            <tr><th scope="row">Delivery</th><td>Reviewed PR + merge</td><td>API response</td><td>PR</td><td>PR</td><td>PR</td><td>GitHub automation; not presented as the sole queue</td><td>GitHub skill; not a documented autonomous Issue→PR queue*</td></tr>
             <tr><th scope="row">Cost</th><td>Hardware; model can be free</td><td>Tokens + $0.08/session-hour</td><td>Copilot subscription</td><td>ChatGPT subscription/API</td><td>Subscription + credits</td></tr>
-            <tr><th scope="row">Open / self-hosted</th><td>Yes / Yes</td><td>No / No</td><td>No / No</td><td>No / No</td><td>No / No</td><td>Yes / Yes</td></tr>
+            <tr><th scope="row">Open / self-hosted</th><td>Yes / Yes</td><td>No / No</td><td>No / No</td><td>No / No</td><td>No / No</td><td>MIT / Yes</td><td>Yes / Yes</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">*Hermes is a general assistant; its GitHub skill is not equivalent to a GitHub-native software delivery queue. Sources: <a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent official repository</a>; <a href="https://docs.orbi.build">Orbi documentation</a>; <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>; <a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub Docs</a>; <a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>; <a href="https://devin.ai/" rel="noopener">Devin</a> — all verified 2026-09-07. See each linked deep dive below for scope and sources.</p>
+      <p class="src-note">*Hermes is a general assistant; its GitHub skill is not equivalent to a GitHub-native software delivery queue. OpenHands sources: <a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">official repository</a> and <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">official docs</a>. Sources: <a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent official repository</a>; <a href="https://docs.orbi.build">Orbi documentation</a>; <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>; <a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub Docs</a>; <a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>; <a href="https://devin.ai/" rel="noopener">Devin</a> — all verified 2026-09-07. See each linked deep dive below for scope and sources.</p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
@@ -139,6 +139,13 @@
             <strong>Orbi vs Claude Managed Agents (Anthropic)</strong>
             <span class="dive-status is-live">Live</span>
             <p>Anthropic-hosted Agent API at token rates plus $0.08/session-hour.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/openhands/">
+            <strong>Orbi vs OpenHands</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Open-source AI development platform with Docker, cloud, BYOK, and broad automation surfaces.</p>
           </a>
         </li>
         <li>

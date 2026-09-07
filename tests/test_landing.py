@@ -1200,7 +1200,7 @@ class CompareIndexTests(unittest.TestCase):
 
     def test_the_epics_competitors_are_all_named(self) -> None:
         for page in (self.en, self.zh):
-            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "Hermes Agent"):
+            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "OpenHands", "Hermes Agent"):
                 self.assertIn(name, page.text, name)
 
     def test_live_dive_statuses_match_the_published_pages(self) -> None:
@@ -1214,12 +1214,12 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 5, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 6, statuses
             )
         # A published or research entry must not become a dead end.
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
-            self.assertEqual(len(entries), 6, entries)
+            self.assertEqual(len(entries), 7, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
 
@@ -1254,6 +1254,51 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
                 if path == COMPARE_INDEX_EN_PATH:
                     self.assertIn(href, [link for _, link in page.hrefs])
             self.assertIn("https://github.com/orbi-build/orbi-website/issues/8", [link for _, link in page.hrefs])
+
+
+OPENHANDS_EN_PATH = ROOT / "public" / "compare" / "openhands" / "index.html"
+OPENHANDS_ZH_PATH = ROOT / "public" / "zh" / "compare" / "openhands" / "index.html"
+
+
+class OpenHandsComparisonTests(unittest.TestCase):
+    """Issue #12: bilingual, sourced OpenHands comparison."""
+
+    def test_pages_are_canonical_bilingual_and_dated(self) -> None:
+        for path, canonical, alternate, date in (
+            (OPENHANDS_EN_PATH, "/compare/openhands/", "/zh/compare/openhands/", "verified 2026-09-07"),
+            (OPENHANDS_ZH_PATH, "/zh/compare/openhands/", "/compare/openhands/", "核实于 2026-09-07"),
+        ):
+            html, page = parse(path)
+            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
+            self.assertIn(f'hreflang="{"zh-CN" if path == OPENHANDS_EN_PATH else "en"}"', html)
+            self.assertIn(f"href=\"https://orbi.build{alternate}\"", html)
+            self.assertIn(date, page.text)
+
+    def test_openhands_contract_is_sourced(self) -> None:
+        for path in (OPENHANDS_EN_PATH, OPENHANDS_ZH_PATH):
+            html, page = parse(path)
+            self.assertIn("OpenHands", page.text)
+            for fact in ("Docker", "BYOK", "GitHub", "REST API", "MIT"):
+                self.assertIn(fact, page.text, fact)
+            for source in (
+                "https://github.com/All-Hands-AI/OpenHands",
+                "https://github.com/OpenHands/software-agent-sdk",
+                "https://github.com/OpenHands/automation",
+            ):
+                self.assertIn(source, html, source)
+
+    def test_overviews_and_indexes_publish_the_pages(self) -> None:
+        for index_path, href in (
+            (COMPARE_INDEX_EN_PATH, "/compare/openhands/"),
+            (COMPARE_INDEX_ZH_PATH, "/zh/compare/openhands/"),
+        ):
+            _, page = parse(index_path)
+            self.assertIn(href, [link for _, link in page.hrefs])
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        for url in ("https://orbi.build/compare/openhands/", "https://orbi.build/zh/compare/openhands/"):
+            self.assertIn(url, sitemap)
+            self.assertIn(url, llms)
 
 
 if __name__ == "__main__":

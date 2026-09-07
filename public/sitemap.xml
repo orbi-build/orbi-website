@@ -129,4 +129,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/codex/"/>
     <lastmod>2026-09-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://orbi.build/compare/openhands/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/openhands/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openhands/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/openhands/"/>
+    <lastmod>2026-09-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/openhands/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/openhands/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openhands/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/openhands/"/>
+    <lastmod>2026-09-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
 </urlset>

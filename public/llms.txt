@@ -115,3 +115,5 @@ and not yet purchasable.
 - Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
 - Comparison — Orbi vs OpenAI Codex (English): https://orbi.build/compare/codex/
 - Comparison — Orbi vs OpenAI Codex (Chinese): https://orbi.build/zh/compare/codex/
+- Comparison — Orbi vs OpenHands (English): https://orbi.build/compare/openhands/
+- Comparison — Orbi vs OpenHands (Chinese): https://orbi.build/zh/compare/openhands/
