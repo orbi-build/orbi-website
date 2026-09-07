@@ -35,6 +35,9 @@ jobs:
       - name: Run landing and deployment contract tests
         run: timeout 300s python3 -m unittest tests.test_landing -v
 
+      - name: Install Chromium for browser smoke tests
+        run: timeout 300s npx playwright install --with-deps chromium
+
       - name: Require Cloudflare credentials
         shell: bash
         env:
@@ -81,3 +84,5 @@ jobs:
           check_page "https://beta.orbi.build/compare/" "OpenClaw"
           check_page "https://beta.orbi.build/compare/openclaw/" "OpenClaw"
           check_page "https://beta.orbi.build/zh/compare/openclaw/" "OpenClaw"
+      - name: Smoke-test beta in a real browser
+        run: timeout 300s env BASE_URL=https://beta.orbi.build npm run test:browser
