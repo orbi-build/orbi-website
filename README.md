@@ -33,12 +33,12 @@ landing/deployment contract tests，再部署 beta，并检查首页、`/compare
 OpenClaw 页面。也可以在
 Actions 中使用 `workflow_dispatch` 手动触发。
 
-GitHub Actions 需要配置 Repository Secrets：
+GitHub Actions 需要配置以下 Repository 设置：
 
-- `CLOUDFLARE_API_TOKEN`：仅授予目标 Cloudflare account 的 Worker 部署权限；
-- `CLOUDFLARE_ACCOUNT_ID`：目标 Cloudflare account ID。
+- Secret `CLOUDFLARE_API_TOKEN`：仅授予目标 Cloudflare account 的 Worker 部署权限；
+- Variable `CLOUDFLARE_ACCOUNT_ID`：目标 Cloudflare account ID。
 
-Workflow 不包含凭据；任一 secret 缺失都会在部署前明确失败。
+Workflow 不包含凭据；任一设置缺失都会在部署前明确失败。
 
 自定义域名 `orbi.build` / `www.orbi.build`：
 

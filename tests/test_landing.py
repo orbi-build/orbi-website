@@ -726,6 +726,8 @@ class LandingTests(unittest.TestCase):
             "beta.orbi.build",
             "CLOUDFLARE_API_TOKEN",
             "CLOUDFLARE_ACCOUNT_ID",
+            "Secret `CLOUDFLARE_API_TOKEN`",
+            "Variable `CLOUDFLARE_ACCOUNT_ID`",
             "wrangler deploy --env beta",
             "orbi.build",
             "production",
