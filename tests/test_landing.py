@@ -903,6 +903,181 @@ class OpenClawComparisonTests(unittest.TestCase):
         self.assertIn("https://orbi.build/zh/compare/openclaw/", llms)
 
 
+DEVIN_EN_PATH = ROOT / "public" / "compare" / "devin" / "index.html"
+DEVIN_ZH_PATH = ROOT / "public" / "zh" / "compare" / "devin" / "index.html"
+
+
+class DevinComparisonTests(unittest.TestCase):
+    """The Devin deep dive (Issue #9): every claim sourced, both languages,
+    interlinked with the comparison overview, no disparagement."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(DEVIN_EN_PATH)
+        cls.zh_html, cls.zh = parse(DEVIN_ZH_PATH)
+
+    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/compare/devin/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/"', self.en_html)
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/devin/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/compare/devin/"', self.zh_html)
+
+    def test_titles_carry_the_search_terms(self) -> None:
+        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
+        self.assertLessEqual(len(en_title), 65, en_title)
+        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
+        self.assertLessEqual(len(en_desc), 260, len(en_desc))
+        for term in ("Orbi", "Devin", "Cognition"):
+            self.assertIn(term, en_title + " " + en_desc, term)
+
+        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
+        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
+        for term in ("Orbi", "Devin", "Cognition"):
+            self.assertIn(term, zh_title + " " + zh_desc, term)
+
+    def test_share_cards_are_complete(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for meta in (
+                'property="og:title"',
+                'property="og:image"',
+                'name="twitter:card"',
+                'name="twitter:site" content="@xqliu"',
+            ):
+                self.assertIn(meta, html, meta)
+
+    def test_every_page_states_the_verification_date(self) -> None:
+        self.assertIn("2026-09-07", self.en.text)
+        self.assertIn("2026-09-07", self.zh.text)
+
+    def test_the_named_sources_are_cited(self) -> None:
+        for page in (self.en, self.zh):
+            hrefs = [href for _, href in page.hrefs]
+            # the competitor's own materials, linked — including the two
+            # billing pages the pricing facts come from
+            self.assertIn("https://cognition.com", hrefs)
+            self.assertIn("https://docs.devin.ai", hrefs)
+            self.assertIn("https://docs.devin.ai/admin/billing/self-serve", hrefs)
+            self.assertIn("https://docs.devin.ai/admin/billing/usage", hrefs)
+            for quote in (
+                "the first autonomous software engineer",
+                "from prompt to PR",
+            ):
+                self.assertIn(quote, page.text, quote)
+        # devin.ai's pricing page was not directly reachable at verification;
+        # the page must say so instead of pretending it checked the prices
+        self.assertIn("not directly reachable at verification time", self.en.text)
+        self.assertIn("无法直接访问", self.zh.text)
+
+    def test_competitor_facts_match_the_verified_research(self) -> None:
+        # The verified research notes (2026-09-07, cognition.com and
+        # docs.devin.ai) as the page states them
+        for page in (self.en, self.zh):
+            for fact in (
+                "Slack",
+                "Teams",
+                "Linear/Jira",
+                "Agent Compute Units",
+                "ACU",
+                "on-demand credits" if page is self.en else "按需积分",
+                "$20/month" if page is self.en else "$20/月",
+                "$80/month" if page is self.en else "$80/月",
+                "Automations stop running",
+                "Legacy Core plan users have been migrated to the Free plan",
+                "SWE",
+                "ai-ready",
+            ):
+                self.assertIn(fact, page.text, fact)
+
+    def test_the_differences_table_covers_the_deciding_dimensions(self) -> None:
+        for page, terms in (
+            (
+                self.en,
+                ("Task entry", "Models", "Runs where", "Cost", "Auditability"),
+            ),
+            (
+                self.zh,
+                ("任务入口", "模型", "运行位置", "成本", "可审计"),
+            ),
+        ):
+            for term in terms:
+                self.assertIn(term, page.text, term)
+            # the lock-in and sovereignty claims both appear
+            self.assertIn("no bring-your-own-key option", self.en.text)
+            self.assertIn("无自带 key 选项", self.zh.text)
+            self.assertIn("BYOK", page.text)
+
+    def test_honest_choice_names_both_products(self) -> None:
+        self.assertIn("CHOOSE DEVIN IF", self.en.text)
+        self.assertIn("CHOOSE ORBI IF", self.en.text)
+        self.assertIn("选 DEVIN，如果你要", self.zh.text)
+        self.assertIn("选 ORBI，如果你要", self.zh.text)
+
+    def test_does_not_disparage_the_competitor(self) -> None:
+        """Devin is described as the serious managed product it is — with its
+        enterprise deployments credited — or the comparison reads as a hit
+        piece."""
+        self.assertIn("serious managed product", self.en.text)
+        self.assertIn("一个严肃的托管产品", self.zh.text)
+
+    def test_interlinks_with_the_overview_page(self) -> None:
+        # A link to a 404 is not an interlink: the target page must exist,
+        # and it must link back to the deep dive.
+        for page, overview in ((self.en, "/compare/"), (self.zh, "/zh/compare/")):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn(overview, hrefs)
+            target = ROOT / "public" / overview.lstrip("/")
+            self.assertTrue((target / "index.html").is_file(), target)
+
+        for index_path, dive in (
+            (COMPARE_INDEX_EN_PATH, "/compare/devin/"),
+            (COMPARE_INDEX_ZH_PATH, "/zh/compare/devin/"),
+        ):
+            _, index = parse(index_path)
+            self.assertIn(dive, [href for _, href in index.hrefs])
+
+    def test_language_switch_crosses_to_the_counterpart(self) -> None:
+        self.assertIn("/zh/compare/devin/", [href for _, href in self.en.hrefs])
+        self.assertIn("/compare/devin/", [href for _, href in self.zh.hrefs])
+
+    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            for crawler, rendered in zip(page.headings, page.headings_rendered):
+                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
+            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
+            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            self.assertTrue(plain)
+            self.assertFalse(
+                [heading for heading in plain if heading.endswith((".", "。"))],
+                plain,
+            )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        """English pages do not ship the CJK webfont (REVIEW.md P1-3)."""
+        self.assertNotIn("Noto+Sans+SC", self.en_html)
+        self.assertIn("Noto+Sans+SC", self.zh_html)
+
+    def test_no_third_party_analytics(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for tracker in (
+                "google-analytics", "googletagmanager", "gtag(",
+                "plausible.io", "umami", "segment.com", "hotjar",
+            ):
+                self.assertNotIn(tracker, html.lower(), tracker)
+
+    def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        for loc in (
+            "https://orbi.build/compare/devin/",
+            "https://orbi.build/zh/compare/devin/",
+        ):
+            self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        self.assertIn("https://orbi.build/compare/devin/", llms)
+        self.assertIn("https://orbi.build/zh/compare/devin/", llms)
+
+
 class CompareIndexTests(unittest.TestCase):
     """The /compare/ section index: the overview entry point while the full
     overview table (Issue #5) is still in delivery."""
@@ -923,7 +1098,10 @@ class CompareIndexTests(unittest.TestCase):
             for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin"):
                 self.assertIn(name, page.text, name)
 
-    def test_only_openclaw_claims_to_be_live(self) -> None:
+    def test_live_dive_statuses_match_the_published_pages(self) -> None:
+        """OpenClaw (Issue #10) and Devin (Issue #9) are live; the rest are
+        still research entries, so exactly two is-live badges — and both live
+        entries must be links, not plain divs."""
         for page in (self.en, self.zh):
             statuses = [
                 attrs.get("class", "")
@@ -932,8 +1110,19 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 1, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 2, statuses
             )
+        # A "Live" badge that links nowhere is a dead entry: a live dive is
+        # an <a href> block, a research entry a plain <div>.
+        for html in (self.en_html, self.zh_html):
+            live_entries = [
+                entry
+                for entry in re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
+                if "is-live" in entry
+            ]
+            self.assertEqual(len(live_entries), 2, live_entries)
+            for entry in live_entries:
+                self.assertIn('<a href="', entry, entry)
 
 
 if __name__ == "__main__":

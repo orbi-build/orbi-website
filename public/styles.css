@@ -1524,7 +1524,9 @@ h2 {
 
 .compare-table thead th:nth-child(2) { color: var(--ink); }
 
-/* Timeline: one row per dated event, mono date rail on the left. */
+/* Timeline: one row per dated event, mono date rail on the left. Deep dives
+   without verified dates (Devin's billing eras) use .event-era spans in the
+   same rail — never an invented <time datetime>. */
 .event-list {
   margin: 48px 0 0;
   padding: 0;
@@ -1540,7 +1542,8 @@ h2 {
   border-bottom: 1px solid var(--line);
 }
 
-.event-list time {
+.event-list time,
+.event-list .event-era {
   padding-top: 5px;
   color: #4b615d;
   font-family: var(--mono);

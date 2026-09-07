@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi vs Devin：自托管交付 vs Cognition 托管 AI 工程师 | Orbi</title>
+  <meta name="description" content="经过核实的事实对比：Devin 是 Cognition 的托管自主工程师——Slack/网页指派任务、云端执行、订阅加积分计费、模型锁定；与自托管的 Orbi 差在哪、各自适合谁。每条事实标注来源与核实日期。">
+  <link rel="canonical" href="https://orbi.build/zh/compare/devin/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/devin/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/compare/devin/">
+  <meta property="og:title" content="Orbi vs Devin：自托管交付 vs Cognition 托管 AI 工程师">
+  <meta property="og:description" content="Devin 是订阅加积分计费的托管自主工程师；Orbi 跑在你自己的机器上、用你自己的 key。各自适合谁，每条都有来源。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi vs Devin——经过核实的竞品对比。">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi vs Devin：自托管交付 vs Cognition 托管 AI 工程师">
+  <meta name="twitter:description" content="vendor 云上的托管工程师，还是你自己机器上的交付产线。各自适合谁。">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh-compare-devin" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh-compare-devin" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/apply">报名</a>
+        <span class="language" role="group" aria-label="语言">
+          <a href="/compare/devin/" lang="en">EN</a>
+          <span aria-current="page">中文</span>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-title">
+        <p class="eyebrow">竞品对比 · 事实核实于 2026-09-07</p>
+        <h1 id="compare-title">Orbi vs Devin</h1>
+        <p class="hero-lede"><strong>雇一个工程师，还是运营一条交付产线。</strong>Devin 是 Cognition 的托管自主工程师：你在 Slack 或网页里派活，它在 Cognition 的云里干活，交回 pull request。Orbi 是自托管的交付系统：你自己的机器、你自己的模型 key、你自己的 GitHub 队列。两者最终都产出一个经过审查的 PR——真正的对比在于：机器、模型和计价器握在谁手里。本页每条陈述都标注来源。</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="https://docs.orbi.build/zh">自托管 Orbi</a>
+          <a class="button button-ghost" href="/zh/compare/">全部对比</a>
+          <a class="hero-proof-link" href="#sources">来源与日期 →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="what-title">
+      <p class="section-tag">竞品，按其官方材料描述</p>
+      <h2 id="what-title">Devin 是什么</h2>
+      <p class="section-lede">Devin 是 Cognition 推出的商业化自主软件工程 agent——Cognition 以「the first autonomous software engineer」（首个自主软件工程师）运营它：一个能「plans, writes, tests, and ships production code on its own」（自己规划、编写、测试并上线生产代码）的 agent。你像招呼同事一样给它派活：在 Slack 或 Teams 的讨论串里 @ 它、在网页应用里托付更大的任务、或者把 Linear/Jira 工单交给它。CLI 版本用于本地快速修补，更长的任务则交接给云端的 Devin。每个会话都运行在 Devin 自己的云端工作区里——shell、编辑器、浏览器——官方将其描述为「from prompt to PR」（从提示词到 PR）。它是一个严肃的托管产品，部署在大型机构（Mercedes-Benz、Goldman Sachs、Anduril 都在其点名客户之列），并提供企业采购、SSO 与用量治理。模型与基础设施都是 Cognition 的——该公司自研 SWE 系列模型——任何套餐或文档都没有提供自带模型 key（BYOK）的选项。</p>
+      <p class="src-note">来源：<a href="https://cognition.com" rel="noopener">cognition.com</a>（产品描述、自研 SWE 模型、客户）；<a href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a>（任务入口、工作区、prompt-to-PR）——核实于 2026-09-07。</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="meter-title">
+      <div class="shell">
+        <p class="section-tag">为什么这个对比有一台计价器</p>
+        <h2 id="meter-title">计费模型——以及它被改写的那一天</h2>
+        <p class="section-lede">Devin 的定价不是一个数字，而是一个结构——而且这个结构在客户使用期间已经被整体替换过一次。这段历史，是你在把代码交付托付给一台计价器之前最值得读的部分。下列阶段不标日期，因为 Cognition 的文档没有给出日期；引语出自这些文档原文。</p>
+        <ol class="event-list">
+          <li>
+            <span class="event-era">ACU 时代</span>
+            <div>
+              <strong>用量按 Agent Compute Units 计量</strong>
+              <p>自助套餐按「订阅 + Agent Compute Units（ACU）消耗」付费。这个单位至今仍在企业合同中使用：客户「consume Agent Compute Units (ACUs) against the volume in their order form」（按订单量消耗 ACU）。</p>
+              <p class="src-note">来源：<a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">docs.devin.ai——用量计量</a>——核实于 2026-09-07。</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">改写</span>
+            <div>
+              <strong>套餐结构在存量用户身上被替换</strong>
+              <p>自助计费被重写为「额度 + 积分」模型：「Legacy Core plan users have been migrated to the Free plan」（旧 Core 套餐用户已被迁移到 Free 套餐），而今天的按需积分「the same dollar value as the ACUs you're used to」（与你习惯的 ACU 等值）。这个决定不是 Cognition 之外的任何人做的。</p>
+              <p class="src-note">来源：<a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai——自助套餐</a>——核实于 2026-09-07。</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">今天</span>
+            <div>
+              <strong>先扣额度，再烧积分——然后功能停摆</strong>
+              <p>Free、Pro $20/月、Max $200/月、Teams 最低 $80/月（全席位 $40/月）。套餐额度覆盖会话；按需积分「fund any work past your plan's included quota」（为超出额度的部分付费），按月滚存、购买后永不过期。额度用尽时，「Automations stop running and Devin Review switches to its smart diff viewer」（自动化停止运行，Devin Review 降级为只读 diff 视图）。用量按 Devin 实际执行的工作计量——动作的数量与复杂度、机器时间、网络流量——文档本身也为此提供了按成员封顶和标记低效提示词的 Coach 来治理。</p>
+              <p class="src-note">来源：<a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai——自助套餐</a>；<a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">用量计量</a>——价格为文档于 2026-09-07 的数字。</p>
+            </div>
+          </li>
+        </ol>
+        <p class="thesis-punch">一台读数你无法完全预测的计价器，以 vendor 可以改写的结构计价——它已经被改写过一次。可预测的成本，是单位握在你手里的成本：你的机器，你的模型，你的计价器。</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="differences-title">
+      <p class="section-tag">决定选择的差异</p>
+      <h2 id="differences-title">Orbi 与 Devin 的关键差异</h2>
+      <p class="section-lede">重合是真实的：两者都接收被指派的任务，都交回经过审查的 pull request。差异在于代码在哪里跑、模型归谁、工作花多少钱、以及你能验证什么。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th scope="col">维度</th>
+              <th scope="col">Orbi</th>
+              <th scope="col">Devin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">任务入口</th>
+              <td>GitHub Issue + <code>ai-ready</code> label——仓库就是队列</td>
+              <td>Slack/Teams @、网页应用、Linear/Jira、CLI 交接、API</td>
+            </tr>
+            <tr>
+              <th scope="row">模型</th>
+              <td>BYOK——任意 OpenAI 兼容端点（含免费额度），换模型只改配置</td>
+              <td>Cognition 自研 SWE 模型跑在 Cognition 基础设施上；无自带 key 选项</td>
+            </tr>
+            <tr>
+              <th scope="row">运行位置</th>
+              <td>你自己的机器——代码和 key 不出本地</td>
+              <td>Cognition 的云端工作区</td>
+            </tr>
+            <tr>
+              <th scope="row">成本</th>
+              <td>你的硬件 + 你的模型；无按任务计价器，自托管永久免费</td>
+              <td>订阅 + 额度，之后按需积分（核实时 Pro $20/月、Teams 最低 $80/月）</td>
+            </tr>
+            <tr>
+              <th scope="row">可审计</th>
+              <td>fair-code 开源——整条交付链路可读</td>
+              <td>闭源——你审计的是 vendor 的承诺，不是代码</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Orbi 列依据 <a href="https://docs.orbi.build/zh">docs.orbi.build</a> 与 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 仓库；Devin 列依据 <a href="https://cognition.com" rel="noopener">cognition.com</a> 与 <a href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a>（计费文档）——核实于 2026-09-07。</p>
+    </section>
+
+    <section class="compare-section compare-section-tint compare-choice" aria-labelledby="choice-title">
+      <div class="shell">
+        <p class="section-tag">诚实的判断</p>
+        <h2 id="choice-title">该选哪一个？</h2>
+        <p class="section-lede">两者都从被指派的任务产出到经过审查的 PR。选择取决于你买的是什么：把别人的工程师当服务租用，还是拥有一条自己的产线。</p>
+        <div class="run-options">
+          <article class="run-option run-option-live">
+            <p class="option-state">选 DEVIN，如果你要</p>
+            <h3>一个托管的人工智能工程师</h3>
+            <ul>
+              <li>无需安装、运行、维护任何东西——机器、模型、升级都由 vendor 承担</li>
+              <li>在团队已经在用的地方派活：Slack、Teams、Linear、Jira</li>
+              <li>你的现实是企业采购：SSO、按订单的 ACU 额度、用量治理、联邦部署</li>
+              <li>你接受计价成本与闭源实现作为这一切的代价</li>
+            </ul>
+            <a class="button button-dark" href="https://devin.ai" rel="noopener">访问 Devin ↗</a>
+          </article>
+          <article class="run-option run-option-cloud">
+            <p class="option-state">选 ORBI，如果你要</p>
+            <h3>一条自己拥有的交付产线</h3>
+            <ul>
+              <li>成本由你自己的硬件和模型封顶——免费额度可以做到零成本，且没有按任务计价器</li>
+              <li>整条链路开源可审计；每次运行都在 GitHub 留下证据</li>
+              <li>GitHub 原生队列：一个 <code>ai-ready</code> label 就开工；branch protection 和人工审批依然说了算</li>
+              <li>BYOK 任意 OpenAI 兼容端点——模型是一个配置项，不是一个 vendor</li>
+            </ul>
+            <a class="button button-outline" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
+      <p class="section-tag">事实来源</p>
+      <h2 id="sources-title">来源与核实日期</h2>
+      <p class="section-lede">本页每一条事实都对应下列来源之一，全部于 2026-09-07 核实；本页是一个快照，做架构决策前请再查一次来源。有一处如实说明：devin.ai 自己的定价页在核实时无法直接访问（被一道访问墙挡住），因此以上计费事实取自 Devin 官方文档。</p>
+      <ul class="source-list">
+        <li>
+          <strong><a href="https://cognition.com" rel="noopener">Cognition 官网</a>——「the first autonomous software engineer」、自研 SWE 模型线、点名客户</strong>
+          <span class="source-date">核实于 2026-09-07</span>
+          <small>cognition.com</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai" rel="noopener">Devin 官方文档</a>——任务入口（Slack/Teams、网页应用、Linear/Jira、CLI 交接、API）、云端工作区、「from prompt to PR」</strong>
+          <span class="source-date">核实于 2026-09-07</span>
+          <small>docs.devin.ai</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin 官方文档——自助套餐</a>——套餐价格、额度与按需积分、ACU 迁移、积分用尽后停摆的功能</strong>
+          <span class="source-date">核实于 2026-09-07</span>
+          <small>docs.devin.ai/admin/billing/self-serve</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">Devin 官方文档——用量计量</a>——企业 ACU、消耗依据什么计量、用量策略与 Devin Coach</strong>
+          <span class="source-date">核实于 2026-09-07</span>
+          <small>docs.devin.ai/admin/billing/usage</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.orbi.build/zh">Orbi 文档</a>与 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 仓库——对比中的 Orbi 列</strong>
+          <span class="source-date">核实于 2026-09-07</span>
+          <small>docs.orbi.build · github.com/orbi-build/orbi</small>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">开源核心</p>
+      <h2 id="closing-title">委托的两种形状</h2>
+      <p>按你委托的东西选：在 vendor 云里租用的工程师，还是在自己仓库里运营的产线。如果是后者，Orbi 自托管免费——给一个 Issue 打上 <code>ai-ready</code> label，key 留在你手里。</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build/zh">安装 Orbi <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="/zh/compare/">全部对比</a>
+        <a class="text-link" href="/zh/#faq">先看常见问题 →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/compare/">竞品对比</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <a href="/compare/devin/" lang="en">EN</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics：隐私优先，无 cookie，无同意横幅。 -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
