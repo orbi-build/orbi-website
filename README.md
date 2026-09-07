@@ -13,10 +13,32 @@ npx wrangler dev
 
 ## 部署
 
+生产（production）环境使用顶层 Wrangler 配置，域名为 `orbi.build` / `www.orbi.build`：
+
 ```bash
 set -a; source ~/.cloudflare.env; set +a
 npx wrangler deploy
 ```
+
+Beta 使用隔离的 `beta` environment、Worker `orbi-website-beta` 和域名
+`beta.orbi.build`，不会修改生产路由：
+
+```bash
+set -a; source ~/.cloudflare.env; set +a
+npx wrangler deploy --env beta
+```
+
+合并到 `main` 后，`.github/workflows/deploy-beta.yml` 会先运行 `npm test` 和
+landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
+OpenClaw 页面。也可以在
+Actions 中使用 `workflow_dispatch` 手动触发。
+
+GitHub Actions 需要配置 Repository Secrets：
+
+- `CLOUDFLARE_API_TOKEN`：仅授予目标 Cloudflare account 的 Worker 部署权限；
+- `CLOUDFLARE_ACCOUNT_ID`：目标 Cloudflare account ID。
+
+Workflow 不包含凭据；任一 secret 缺失都会在部署前明确失败。
 
 自定义域名 `orbi.build` / `www.orbi.build`：
 

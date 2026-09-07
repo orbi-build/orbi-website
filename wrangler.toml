@@ -25,3 +25,18 @@ database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
 [observability]
 enabled = true
 head_sampling_rate = 1
+
+# Beta is an isolated Worker environment. Production routes above remain
+# unchanged when deploying with `wrangler deploy --env beta`.
+[env.beta]
+name = "orbi-website-beta"
+workers_dev = false
+
+[[env.beta.routes]]
+pattern = "beta.orbi.build"
+custom_domain = true
+
+[[env.beta.d1_databases]]
+binding = "orbi_applications"
+database_name = "orbi-applications"
+database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
