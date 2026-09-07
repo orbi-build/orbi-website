@@ -34,7 +34,7 @@ describe("Worker request helpers", () => {
       "https://cloud.orbi.build",
     );
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/api/login");
+    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/login");
   });
 
   it("fails clearly when Cloud is not configured", async () => {

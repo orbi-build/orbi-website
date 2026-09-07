@@ -76,7 +76,7 @@ async function assertCloudLogin(browser) {
   await page.locator('[data-cta="cloud-start"]').click();
   await page.waitForLoadState("domcontentloaded");
   const login = new URL(page.url());
-  if (login.pathname !== "/api/login" || login.hostname === new URL(targetURL).hostname) {
+  if (login.pathname !== "/login" || login.hostname === new URL(targetURL).hostname) {
     throw new Error(`Cloud CTA did not reach Cloud login: ${page.url()}`);
   }
   await page.close();

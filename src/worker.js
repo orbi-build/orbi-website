@@ -26,7 +26,7 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
-const CLOUD_LOGIN_PATH = "/api/login";
+const CLOUD_LOGIN_PATH = "/login";
 
 // /api/apply is an unauthenticated write into D1: bound the body and every
 // column so a script cannot fill the table with oversized rows.
