@@ -227,6 +227,87 @@ async function handleApply(request, env) {
   });
 }
 
+// Issue #16: orbi-cloud's model-config contract path, proxied. The browser
+// never calls orbi-cloud directly (its base URL is deploy-time configuration
+// and no credential may live in page code), so the Worker forwards the same
+// path bytes to env.ORBI_CLOUD_API. Status and JSON body pass through
+// untouched: 400/404/500 semantics — including details.field/reason — belong
+// to orbi-cloud.
+const MODEL_CONFIG_PATH = /^\/api\/tenants\/([^/]+)\/model-config$/;
+
+async function handleModelConfig(request, env, url) {
+  if (request.method !== "GET" && request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const base = String(env.ORBI_CLOUD_API || "").replace(/\/+$/, "");
+  if (!base) {
+    return new Response(JSON.stringify({ error: "orbi-cloud API is not configured" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  // The POST body carries the tenant's apiKey: bound it like /api/apply and
+  // forward it verbatim — this path never parses, logs, or rewrites it.
+  let body = null;
+  if (request.method === "POST") {
+    const declared = Number(request.headers.get("content-length") || 0);
+    if (declared > MAX_BODY_BYTES) {
+      return new Response(JSON.stringify({ error: "payload too large" }), {
+        status: 413,
+        headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+      });
+    }
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_BYTES) {
+      return new Response(JSON.stringify({ error: "payload too large" }), {
+        status: 413,
+        headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+      });
+    }
+    body = raw;
+  }
+  const headers = { Accept: "application/json", "Cache-Control": "no-cache" };
+  // orbi-cloud authorizes its tenant APIs; when it wants a service caller to
+  // identify itself (the /dispatch DISPATCH_SECRET pattern), the token is a
+  // Worker secret, never page code.
+  if (env.ORBI_CLOUD_TOKEN) {
+    headers.Authorization = `Bearer ${env.ORBI_CLOUD_TOKEN}`;
+  }
+  if (body !== null) {
+    headers["Content-Type"] = "application/json";
+  }
+  let upstream;
+  try {
+    upstream = await fetch(base + url.pathname, {
+      method: request.method,
+      headers,
+      body,
+    });
+  } catch (err) {
+    // Method and path only — the body is the tenant's API key and must
+    // never reach the Worker logs.
+    console.error("model_config_upstream_failed " + request.method + " " + url.pathname);
+    return new Response(JSON.stringify({ error: "orbi-cloud unreachable" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const payload = await upstream.text();
+  // no-store: GET responses carry the (masked) config and must not be cached
+  // at any layer.
+  return new Response(payload, {
+    status: upstream.status,
+    headers: {
+      "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
 async function handleFetch(request, env) {
     const url = new URL(request.url);
     const canonicalHost = HOST_ALIASES[url.hostname];
@@ -266,6 +347,10 @@ async function handleFetch(request, env) {
 
     if (url.pathname === "/api/apply") {
       return await handleApply(request, env);
+    }
+
+    if (MODEL_CONFIG_PATH.test(url.pathname)) {
+      return await handleModelConfig(request, env, url);
     }
 
     const asset = await env.ASSETS.fetch(request);

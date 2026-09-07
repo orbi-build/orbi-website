@@ -29,5 +29,7 @@ Worker 会把 `www.orbi.build` 301 到 `orbi.build`。
 ## 检查
 
 ```bash
-python3 -m unittest tests.test_landing -v
+python3 -m unittest tests.test_landing tests.test_configure -v
 ```
+
+`/configure`（模型配置）需要 orbi-cloud API：本地在 `.dev.vars` 配 `ORBI_CLOUD_API=<base url>`（部署时配成 Worker secret/var）。

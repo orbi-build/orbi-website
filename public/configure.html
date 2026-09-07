@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模型配置 | Orbi</title>
+  <meta name="description" content="配置 Orbi 任务的模型 provider：API key、自定义 endpoint（OpenAI 兼容）与模型 ID，保存到你的租户，Runner 启动时使用。">
+  <link rel="canonical" href="https://orbi.build/configure">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+  <!-- Tool page behind a ?tenant= parameter: keep it out of the index so it
+       does not compete with / and /zh/ for the same queries. -->
+  <meta name="robots" content="noindex, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:url" content="https://orbi.build/configure">
+  <meta property="og:title" content="配置模型 provider | Orbi">
+  <meta property="og:description" content="配置 Orbi 任务的模型 provider：API key、自定义 endpoint（OpenAI 兼容）与模型 ID。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .configure-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 200px); padding:56px 18px 96px; }
+    .configure-card { width:100%; max-width:880px; }
+    .title-row { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin:0 0 12px; }
+    .configure-title { flex:1 1 auto; max-width:none; font:700 clamp(30px,6vw,54px)/1.08 var(--display); letter-spacing:-.01em; margin:0; color:#e6ecf7; }
+    .lang-switch { flex:none; margin-top:6px; background:none; border:1px solid #27324a; color:#aab8d4; font:500 14px "Instrument Sans","Noto Sans SC",sans-serif; padding:7px 14px; border-radius:20px; cursor:pointer; }
+    .lang-switch:hover { border-color:#3b4a6e; color:#e6ecf7; }
+    .configure-sub { color:#8ea0c0; font-size:16px; line-height:1.65; margin:0 0 34px; }
+    .status-row { margin:0 0 22px; }
+    .badge { display:inline-block; padding:8px 16px; border-radius:20px; border:1px solid #27324a; background:#171f2e; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; }
+    .badge-ok { background:#0d1f14; border-color:#1e5134; color:#7ee0a3; }
+    #guide { margin:0 0 36px; padding:18px 22px; border:1px solid #27324a; border-radius:10px; }
+    #guide[hidden] { display:none; }
+    #guide h2 { margin:0 0 10px; font:600 16px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; color:#e6ecf7; }
+    #guide ol { margin:0; padding-left:20px; color:#8ea0c0; font-size:14.5px; line-height:1.9; }
+    #guide a { color:#9db7e8; }
+    .configure-form { display:flex; flex-direction:column; }
+    .configure-form[hidden] { display:none; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; }
+    .field { margin-bottom:22px; }
+    .field label { display:block; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; margin:0 0 8px; }
+    .field label .req { color:#ff6b6b; }
+    .field input { width:100%; box-sizing:border-box; padding:14px 16px; background:#101724; color:#e6ecf7; border:1px solid #27324a; border-radius:10px; font:400 16px/1.5 "Instrument Sans","Noto Sans SC",sans-serif; }
+    .field input:focus { outline:none; border-color:#3b4a6e; }
+    .field .hint { color:#8698ba; font-size:12.5px; margin-top:6px; line-height:1.5; }
+    .configure-nav { width:100%; max-width:880px; margin:0 auto 34px; }
+    .configure-nav .wordmark { color:#e6ecf7; text-decoration:none; }
+    .submit { width:100%; padding:15px 24px; font:600 16px "Instrument Sans","Noto Sans SC",sans-serif; border:0; border-radius:10px; cursor:pointer; }
+    #result { margin:0; padding:14px 16px; border-radius:10px; font-size:15px; line-height:1.5; display:none; }
+    #result.ok { display:block; background:#0d1f14; color:#7ee0a3; border:1px solid #1e5134; }
+    #result.err { display:block; background:#230f0f; color:#ff9b9b; border:1px solid #5c2424; }
+    @media (max-width: 640px) {
+      .configure-wrap { padding:48px 18px 80px; }
+      .field-row { grid-template-columns:1fr; gap:0; }
+    }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到表单</a>
+  <div class="night" style="position:relative;min-height:100vh">
+    <div class="configure-wrap" style="min-height:0;padding-bottom:0">
+      <nav class="configure-nav" aria-label="Orbi">
+        <a class="wordmark" href="/" aria-label="Orbi">
+          <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+          <span>Orbi</span>
+        </a>
+      </nav>
+    </div>
+    <main id="main-content" class="configure-wrap" style="padding-top:0">
+      <div class="configure-card">
+        <div class="title-row">
+          <h1 class="configure-title" data-zh="配置你的模型 provider" data-en="Configure your model provider">配置你的模型 provider</h1>
+          <button class="lang-switch" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+        </div>
+        <p class="configure-sub" data-zh="任务的模型由你的租户配置决定：OpenAI 兼容的 API key、自定义 endpoint 和模型 ID 保存在 orbi-cloud，Runner 启动时使用这份配置。" data-en="Your tenant decides which model deliveries run on: the OpenAI-compatible API key, custom endpoint and model ID are stored in orbi-cloud and used when the Runner starts.">任务的模型由你的租户配置决定：OpenAI 兼容的 API key、自定义 endpoint 和模型 ID 保存在 orbi-cloud，Runner 启动时使用这份配置。</p>
+
+        <div class="status-row">
+          <p id="status-badge" class="badge">未配置</p>
+        </div>
+
+        <section id="guide" aria-labelledby="guide-title">
+          <h2 id="guide-title" data-zh="配置引导" data-en="Get configured">配置引导</h2>
+          <ol>
+            <li data-zh="安装 Orbi GitHub App 完成 onboarding，取得租户 ID。" data-en="Install the Orbi GitHub App to finish onboarding and get your tenant ID.">安装 <a href="https://docs.orbi.build">Orbi GitHub App</a> 完成 onboarding，取得租户 ID。</li>
+            <li data-zh="带上租户参数打开本页：/configure?tenant=&lt;租户 ID&gt;。" data-en="Open this page with your tenant: /configure?tenant=&lt;tenant ID&gt;.">带上租户参数打开本页：/configure?tenant=&lt;租户 ID&gt;。</li>
+            <li data-zh="填写 provider、endpoint、API key 和模型，点击保存；保存后即可修改重存。" data-en="Fill in the provider, endpoint, API key and model, then save; you can change and re-save any time.">填写 provider、endpoint、API key 和模型，点击保存；保存后即可修改重存。</li>
+          </ol>
+        </section>
+
+        <form id="model-config" class="configure-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}" data-msg-sending="正在保存…" data-msg-sending-en="Saving…">
+          <div class="field-row">
+            <div class="field">
+              <label for="f-provider"><span data-zh="Provider ID" data-en="Provider ID">Provider ID</span> <span class="req">*</span></label>
+              <input id="f-provider" name="provider_id" type="text" required placeholder="groq">
+              <p class="hint" data-zh="OpenAI 兼容 provider 标识，如 groq、local。" data-en="OpenAI-compatible provider id, e.g. groq, local.">OpenAI 兼容 provider 标识，如 groq、local。</p>
+            </div>
+
+            <div class="field">
+              <label for="f-baseurl"><span data-zh="Endpoint（baseUrl）" data-en="Endpoint (baseUrl)">Endpoint（baseUrl）</span> <span class="req">*</span></label>
+              <input id="f-baseurl" name="baseUrl" type="text" required placeholder="https://api.groq.com/openai/v1">
+              <p class="hint" data-zh="自定义 endpoint，如 https://api.groq.com/openai/v1 或 http://127.0.0.1:8080/v1。" data-en="Custom endpoint, e.g. https://api.groq.com/openai/v1 or http://127.0.0.1:8080/v1.">自定义 endpoint，如 https://api.groq.com/openai/v1 或 http://127.0.0.1:8080/v1。</p>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-apikey" data-zh="API key（本地可留空）" data-en="API key (optional locally)">API key（本地可留空）</label>
+              <input id="f-apikey" name="apiKey" type="text" autocomplete="off" placeholder="sk-…">
+              <p class="hint" data-zh="本地 endpoint 可留空；保存后只显示脱敏值。" data-en="Optional for a local endpoint; after saving only an abbreviated value is shown.">本地 endpoint 可留空；保存后只显示脱敏值。</p>
+            </div>
+
+            <div class="field">
+              <label for="f-model"><span data-zh="模型 ID" data-en="Model ID">模型 ID</span> <span class="req">*</span></label>
+              <input id="f-model" name="model_id" type="text" required placeholder="qwen/qwen3.8-27b">
+              <p class="hint" data-zh="如 qwen/qwen3.8-27b。" data-en="e.g. qwen/qwen3.8-27b.">如 qwen/qwen3.8-27b。</p>
+            </div>
+          </div>
+
+          <button type="submit" class="button button-signal submit" data-zh="保存" data-en="Save">保存</button>
+          <p id="result" role="status" aria-live="polite" tabindex="-1"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const langBtn = document.getElementById("langBtn");
+    const els = [...document.querySelectorAll("[data-zh]")];
+    let en = false;
+    function setLang(toEn) {
+      en = toEn;
+      langBtn.textContent = en ? "中文" : "EN";
+      document.documentElement.lang = en ? "en" : "zh-CN";
+      document.title = en ? "Model configuration — Orbi" : "模型配置 | Orbi";
+      for (const el of els) {
+        if (el.tagName === "TEXTAREA") el.placeholder = en ? el.dataset.en : el.dataset.zh;
+        else el.innerHTML = en ? el.dataset.en : el.dataset.zh;
+      }
+      renderStatus();
+    }
+    langBtn.addEventListener("click", () => setLang(!en));
+
+    // orbi-website has no tenant session of its own: the tenant context IS
+    // the ?tenant= parameter, and it is encoded into the path so a tenant id
+    // containing / or ? cannot rewrite the request onto another endpoint.
+    const tenant = new URLSearchParams(location.search).get("tenant");
+    const apiPath = tenant
+      ? "/api/tenants/" + encodeURIComponent(tenant) + "/model-config"
+      : null;
+
+    const form = document.getElementById("model-config");
+    const result = document.getElementById("result");
+    const badge = document.getElementById("status-badge");
+    const guide = document.getElementById("guide");
+    const submit = form.querySelector("button[type=submit]");
+    const submitLabel = { zh: submit.dataset.zh, en: submit.dataset.en };
+    const fields = {
+      provider_id: document.getElementById("f-provider"),
+      baseUrl: document.getElementById("f-baseurl"),
+      apiKey: document.getElementById("f-apikey"),
+      model_id: document.getElementById("f-model"),
+    };
+
+    // Three states, one renderer: the language switch re-renders the badge
+    // from the state instead of a second copy of the strings.
+    let state = "loading";
+    function renderStatus() {
+      if (state === "configured") {
+        badge.textContent = en ? "Model configured" : "模型已配置";
+        badge.className = "badge badge-ok";
+        guide.hidden = true;
+      } else if (state === "unconfigured") {
+        badge.textContent = en ? "Not configured" : "未配置";
+        badge.className = "badge";
+        guide.hidden = false;
+      } else {
+        badge.textContent = en ? "Loading configuration…" : "正在读取配置…";
+        badge.className = "badge";
+      }
+    }
+    function setState(next) {
+      state = next;
+      renderStatus();
+    }
+
+    // Put the outcome in front of the person who just submitted, wherever
+    // they had scrolled to, and move focus so a screen reader lands on it.
+    function showResult() {
+      result.scrollIntoView({ block: "center", behavior: "smooth" });
+      result.focus({ preventScroll: true });
+    }
+
+    // A 400 carries details (field, reason) — surface them: the user can act
+    // on "baseUrl: must be a valid URL", never on a bare status code.
+    function upstreamError(json, status) {
+      const code = json && json.error ? json.error : String(status || "network");
+      const details = json && json.details && json.details.field
+        ? "（" + json.details.field + ": " + (json.details.reason || "") + "）"
+        : "";
+      return en ? "Something went wrong: " + code + details : "出错了：" + code + details;
+    }
+
+    async function load() {
+      if (!apiPath) {
+        // No tenant context: nothing here can load or save. The guide says
+        // how onboarding produces the tenant id; the form stays hidden so
+        // nobody fills four fields into a guaranteed-failing submit.
+        form.hidden = true;
+        setState("unconfigured");
+        return;
+      }
+      try {
+        const res = await fetch(apiPath, { headers: { Accept: "application/json" } });
+        if (res.ok) {
+          const cfg = await res.json().catch(() => null);
+          if (cfg && cfg.provider_id) {
+            // The apiKey arrives already redacted by orbi-cloud; the page
+            // adds nothing of its own and never learns the real key.
+            fields.provider_id.value = cfg.provider_id || "";
+            fields.baseUrl.value = cfg.baseUrl || "";
+            fields.apiKey.value = cfg.apiKey || "";
+            fields.model_id.value = cfg.model_id || "";
+            setState("configured");
+          } else {
+            // 200 with no provider: nothing stored for this tenant yet.
+            setState("unconfigured");
+          }
+          return;
+        }
+        if (res.status === 404) {
+          // A fresh tenant — or a mistyped tenant id, which is why the guide
+          // repeats the ?tenant= step.
+          setState("unconfigured");
+          return;
+        }
+        const json = await res.json().catch(() => ({}));
+        result.className = "err";
+        result.textContent = upstreamError(json, res.status);
+        showResult();
+      } catch (err) {
+        result.className = "err";
+        result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
+        showResult();
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      // The form is novalidate so the browser will not flag anything itself.
+      // Check here instead: a missing field should not cost a round-trip and
+      // come back as a raw error string that never names the field. Trim
+      // first — the server trims nothing for us here.
+      for (const el of form.elements) {
+        if (el.value && typeof el.value === "string" && el.type !== "submit") {
+          el.value = el.value.trim();
+        }
+      }
+      const missing = Array.from(form.elements).find(
+        (el) => el.required && el.willValidate && !el.checkValidity(),
+      );
+      if (missing) {
+        // setLang() rewrites each label's innerHTML, which drops the inner
+        // spans, so read the label itself and strip the required marker.
+        const label = form.querySelector('label[for="' + missing.id + '"]');
+        const fieldName = label
+          ? label.textContent
+              .replace(/[*＊]/g, "")
+              .replace(/[（(][^）)]*[）)]/g, "")
+              .trim()
+          : missing.name;
+        const empty = missing.validity.valueMissing;
+        const key = empty
+          ? (en ? "data-msg-required-en" : "data-msg-required")
+          : (en ? "data-msg-invalid-en" : "data-msg-invalid");
+        result.className = "err";
+        result.textContent = form.getAttribute(key).replace("{field}", fieldName);
+        missing.focus();
+        missing.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+
+      // Exactly the four contract fields — the form has no other named
+      // control, so the POST body is the contract body.
+      const data = Object.fromEntries(new FormData(form));
+      result.className = "";
+
+      // Nothing else signals that the request is in flight, so on a slow
+      // connection the button just gets clicked again. Hold it closed until
+      // the round-trip finishes.
+      submit.disabled = true;
+      submit.textContent = en
+        ? form.getAttribute("data-msg-sending-en")
+        : form.getAttribute("data-msg-sending");
+
+      try {
+        const res = await fetch(apiPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (res.ok && json.success) {
+          result.className = "ok";
+          result.textContent = en ? "Configuration saved." : "配置已保存";
+          setState("configured");
+          showResult();
+        } else {
+          result.className = "err";
+          result.textContent = upstreamError(json, res.status);
+          showResult();
+        }
+      } catch (err) {
+        result.className = "err";
+        result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
+        showResult();
+      } finally {
+        submit.disabled = false;
+        submit.textContent = en ? submitLabel.en : submitLabel.zh;
+      }
+    });
+
+    renderStatus();
+    load();
+  </script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
