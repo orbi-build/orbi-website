@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi vs Devin — self-hosted vs Cognition's AI engineer</title>
+  <meta name="description" content="A fact-checked comparison of Orbi and Devin, Cognition's managed autonomous engineer: Slack-driven task assignment, cloud execution, subscription-and-credit billing, model lock-in — and when each one wins. Every claim sourced and dated.">
+  <link rel="canonical" href="https://orbi.build/compare/devin/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/devin/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/compare/devin/">
+  <meta property="og:title" content="Orbi vs Devin — self-hosted vs Cognition's AI engineer">
+  <meta property="og:description" content="Devin is a managed autonomous engineer billed by subscription and credits. Orbi runs on your machine with your keys. Which fits which job, with a source on every claim.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi vs Devin — a fact-checked comparison.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi vs Devin — self-hosted vs Cognition's AI engineer">
+  <meta name="twitter:description" content="A managed engineer in the vendor's cloud, or a delivery line on your machine. Which fits which job.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC: the only CJK on this page is the 中文 language link,
+       which the system CJK face covers. The Chinese page still loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/apply">Apply</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/compare/devin/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-title">
+        <p class="eyebrow">Comparison · facts verified 2026-09-07</p>
+        <h1 id="compare-title">Orbi vs Devin</h1>
+        <p class="hero-lede"><strong>Hire an engineer, or run a delivery line.</strong> Devin is Cognition's managed autonomous engineer: you delegate from Slack or the web, it works in Cognition's cloud, and it returns pull requests. Orbi is a self-hosted delivery system: your machine, your model keys, your GitHub queue. Both end in a reviewed PR — the real comparison is who owns the machine, the model, and the meter. Every claim below carries a source.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="https://docs.orbi.build">Self-host Orbi</a>
+          <a class="button button-ghost" href="/compare/">All comparisons</a>
+          <a class="hero-proof-link" href="#sources">Sources &amp; dates →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="what-title">
+      <p class="section-tag">THE COMPETITOR, FROM ITS OWN MATERIALS</p>
+      <h2 id="what-title">What Devin is</h2>
+      <p class="section-lede">Devin is a commercial autonomous software-engineering agent from Cognition, which operates it as "the first autonomous software engineer" — an agent that "plans, writes, tests, and ships production code on its own." You assign work the way you'd ping a teammate: tag Devin on a Slack or Teams thread, delegate a bigger task from the web app, or hand it Linear/Jira tickets. A CLI exists for local quick fixes, and longer tasks hand off to cloud Devin. Each session runs in Devin's own cloud workspace — a shell, an editor, a browser — and is described as running "from prompt to PR." It is a serious managed product, deployed at large institutions (Mercedes-Benz, Goldman Sachs, and Anduril are among the named customers), with enterprise procurement, SSO, and usage governance on offer. The models and the infrastructure are Cognition's — the company builds its own SWE model line in-house — and no plan or documentation offers a bring-your-own-key option.</p>
+      <p class="src-note">Sources: <a href="https://cognition.com" rel="noopener">cognition.com</a> (product description, in-house SWE models, customers); <a href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a> (task entry, workspace, prompt-to-PR) — verified 2026-09-07.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="meter-title">
+      <div class="shell">
+        <p class="section-tag">WHY THIS COMPARISON HAS A METER</p>
+        <h2 id="meter-title">The billing model — and the day it was rewritten</h2>
+        <p class="section-lede">Devin's pricing is not a number, it is a structure — and the structure has already been replaced once while customers were on it. That history is the part worth reading before you commit code delivery to a meter. The eras below carry no dates because Cognition's docs don't date them; the wording is quoted from those docs.</p>
+        <ol class="event-list">
+          <li>
+            <span class="event-era">ACU era</span>
+            <div>
+              <strong>Usage metered in Agent Compute Units</strong>
+              <p>Self-serve plans paid a subscription plus consumption in Agent Compute Units (ACUs). The unit still exists in enterprise contracts: customers "consume Agent Compute Units (ACUs) against the volume in their order form."</p>
+              <p class="src-note">Source: <a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">docs.devin.ai — usage metering</a> — verified 2026-09-07.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">The rewrite</span>
+            <div>
+              <strong>The plan structure is replaced under existing users</strong>
+              <p>Self-serve billing was restructured to a quota-plus-credits model: "Legacy Core plan users have been migrated to the Free plan," and today's on-demand credits are "the same dollar value as the ACUs you're used to." Nobody outside Cognition decided that.</p>
+              <p class="src-note">Source: <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai — self-serve plans</a> — verified 2026-09-07.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">Today</span>
+            <div>
+              <strong>Quota first, then credits — then features stop</strong>
+              <p>Free, Pro at $20/month, Max at $200/month, Teams from $80/month ($40 per full seat). The plan quota covers sessions; on-demand credits "fund any work past your plan's included quota," roll over month to month, and never expire once purchased. When the allowance is used up, "Automations stop running and Devin Review switches to its smart diff viewer." Usage is metered on the work Devin performs — the number and complexity of actions, machine time, networking — which the docs themselves manage with per-member caps and a coach that flags inefficient prompts.</p>
+              <p class="src-note">Sources: <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai — self-serve plans</a>; <a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">usage metering</a> — prices are the docs' figures as of 2026-09-07.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="thesis-punch">A meter that reads work you cannot fully predict, priced in a structure the vendor can rewrite — it already has been rewritten once. Predictable cost is cost whose unit you control: your machine, your model, your meter.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="differences-title">
+      <p class="section-tag">DIFFERENCES THAT DECIDE THE CHOICE</p>
+      <h2 id="differences-title">Where Orbi and Devin differ</h2>
+      <p class="section-lede">The overlap is real: both take a delegated task and return a reviewed pull request. The differences are about where the code runs, who owns the model, what the work costs, and what you can verify.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th scope="col">Dimension</th>
+              <th scope="col">Orbi</th>
+              <th scope="col">Devin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Task entry</th>
+              <td>GitHub Issue + <code>ai-ready</code> label — the repository is the queue</td>
+              <td>Slack or Teams tag, web app, Linear/Jira, CLI handoff, API</td>
+            </tr>
+            <tr>
+              <th scope="row">Models</th>
+              <td>BYOK — any OpenAI-compatible endpoint, free tiers included; switching is a config change</td>
+              <td>Cognition's in-house SWE models on Cognition's infrastructure; no bring-your-own-key option</td>
+            </tr>
+            <tr>
+              <th scope="row">Runs where</th>
+              <td>Your machine — code and keys never leave it</td>
+              <td>Cognition's cloud workspace</td>
+            </tr>
+            <tr>
+              <th scope="row">Cost</th>
+              <td>Your hardware + your model; no per-task meter, self-hosting free forever</td>
+              <td>Subscription + quota, then on-demand credits (Pro $20/month, Teams from $80/month at verification)</td>
+            </tr>
+            <tr>
+              <th scope="row">Auditability</th>
+              <td>Fair-code open source — the whole delivery chain is readable</td>
+              <td>Closed source — you audit the vendor's promises, not the code</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Orbi column per <a href="https://docs.orbi.build">docs.orbi.build</a> and the <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository; Devin column per <a href="https://cognition.com" rel="noopener">cognition.com</a> and <a href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a> (billing pages) — verified 2026-09-07.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint compare-choice" aria-labelledby="choice-title">
+      <div class="shell">
+        <p class="section-tag">AN HONEST READ</p>
+        <h2 id="choice-title">Which one should you run?</h2>
+        <p class="section-lede">Both deliver reviewed PRs from delegated tasks. The choice is what you are buying: someone else's engineer as a service, or a production line you own.</p>
+        <div class="run-options">
+          <article class="run-option run-option-live">
+            <p class="option-state">CHOOSE DEVIN IF</p>
+            <h3>You want a managed AI engineer</h3>
+            <ul>
+              <li>Nothing to install, run, or patch — the vendor carries the machines, the models, and the updates</li>
+              <li>Delegation where your team already talks: Slack, Teams, Linear, Jira</li>
+              <li>Enterprise procurement is your reality: SSO, order-form ACU volumes, usage governance, federal deployments</li>
+              <li>You accept metered cost and a closed implementation as the price of that</li>
+            </ul>
+            <a class="button button-dark" href="https://devin.ai" rel="noopener">Visit Devin ↗</a>
+          </article>
+          <article class="run-option run-option-cloud">
+            <p class="option-state">CHOOSE ORBI IF</p>
+            <h3>You want the delivery line you own</h3>
+            <ul>
+              <li>Cost bounded by your own hardware and model — free tiers make it zero, and there is no per-task meter</li>
+              <li>The whole chain is open source and auditable; every run leaves its evidence in GitHub</li>
+              <li>GitHub-native queue: an <code>ai-ready</code> label starts the work; branch protection and human approvals stay in charge</li>
+              <li>BYOK any OpenAI-compatible endpoint — the model is a config value, not a vendor</li>
+            </ul>
+            <a class="button button-outline" href="https://docs.orbi.build">Self-host Orbi ↗</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
+      <p class="section-tag">PROVENANCE</p>
+      <h2 id="sources-title">Sources and verification dates</h2>
+      <p class="section-lede">Every factual claim on this page maps to one of these. All were checked on 2026-09-07; this page is a snapshot, so re-check the sources before you bet architecture on them. One caveat we state openly: devin.ai's own pricing page was not directly reachable at verification time (it sat behind an access wall), so the billing facts above come from Devin's official documentation instead.</p>
+      <ul class="source-list">
+        <li>
+          <strong><a href="https://cognition.com" rel="noopener">Cognition official site</a> — "the first autonomous software engineer," in-house SWE model line, named customers</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>cognition.com</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai" rel="noopener">Devin documentation</a> — task entry (Slack/Teams, web app, Linear/Jira, CLI handoff, API), cloud workspace, "from prompt to PR"</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>docs.devin.ai</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin documentation — self-serve plans</a> — plan prices, quota and on-demand credits, the ACU migration, what stops when credits run out</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>docs.devin.ai/admin/billing/self-serve</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.devin.ai/admin/billing/usage" rel="noopener">Devin documentation — usage metering</a> — enterprise ACUs, what consumption is based on, usage policies and Devin Coach</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>docs.devin.ai/admin/billing/usage</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.orbi.build">Orbi documentation</a> and the <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository — the Orbi column of the comparison</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>docs.orbi.build · github.com/orbi-build/orbi</small>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">OPEN SOURCE CORE</p>
+      <h2 id="closing-title">Delegation, two ways</h2>
+      <p>Pick by what you're delegating: an engineer you rent in the vendor's cloud, or a production line you run in your own repository. If it's the second, Orbi is free to self-host — label an Issue <code>ai-ready</code> and keep the keys.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="/compare/">All comparisons</a>
+        <a class="text-link" href="/#faq">Questions first? Read the FAQ →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/compare/devin/" lang="zh-CN">中文</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
