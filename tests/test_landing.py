@@ -713,6 +713,8 @@ class LandingTests(unittest.TestCase):
         self.assertIn("command: deploy --env beta", workflow)
         self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
         self.assertIn("CLOUDFLARE_ACCOUNT_ID", workflow)
+        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
+        self.assertNotIn("secrets.CLOUDFLARE_ACCOUNT_ID", workflow)
         self.assertIn("beta.orbi.build/compare/", workflow)
         self.assertIn("beta.orbi.build/zh/compare/", workflow)
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
