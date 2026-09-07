@@ -192,11 +192,11 @@ async function main() {
     page.on("requestfailed", (request) => { if (!isTelemetry(request.url())) failures.push(request.url()); });
     await page.goto(`${targetURL}/compare/`, { waitUntil: "networkidle" });
     await assertFooterDeepDives(page, "/compare/");
-    await page.getByRole("link", { name: "Read the OpenClaw deep dive", exact: true }).click();
+    await page.getByRole("link", { name: "Read the OpenHands deep dive", exact: true }).click();
     await page.waitForLoadState("networkidle");
-    if (new URL(page.url()).pathname !== "/compare/openclaw/") throw new Error(`detail route: ${page.url()}`);
-    await assertFooterDeepDives(page, "/compare/openclaw/");
-    if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/openclaw/") throw new Error("detail language switch is wrong");
+    if (new URL(page.url()).pathname !== "/compare/openhands/") throw new Error(`detail route: ${page.url()}`);
+    await assertFooterDeepDives(page, "/compare/openhands/");
+    if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/openhands/") throw new Error("detail language switch is wrong");
     await page.screenshot({ path: `${artifacts}/comparison-detail.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();

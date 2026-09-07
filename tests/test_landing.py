@@ -1217,6 +1217,20 @@ class CompareIndexTests(unittest.TestCase):
             for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "OpenHands", "Hermes Agent"):
                 self.assertIn(name, page.text, name)
 
+    def test_hero_leads_with_the_most_similar_competitor(self) -> None:
+        """Issue #56: the hero primary deep dive is the closest peer, OpenHands;
+        OpenClaw stays reachable as the hero secondary, Hermes from the page."""
+        for html, page, primary, secondary, hermes in (
+            (self.en_html, self.en, "/compare/openhands/", "/compare/openclaw/", "/compare/hermes-agent/"),
+            (self.zh_html, self.zh, "/zh/compare/openhands/", "/zh/compare/openclaw/", "/zh/compare/hermes-agent/"),
+        ):
+            hero = re.search(r'<section class="compare-hero.*?</section>', html, re.DOTALL)
+            self.assertIsNotNone(hero, "compare hero section not found")
+            hero_html = hero.group(0)
+            self.assertIn(f'class="button button-signal" href="{primary}"', hero_html)
+            self.assertIn(f'class="button button-ghost" href="{secondary}"', hero_html)
+            self.assertIn(hermes, [href for _, href in page.hrefs])
+
     def test_live_dive_statuses_match_the_published_pages(self) -> None:
         """Published deep dives are live, and every published or research
         entry points to its page or research ticket."""
