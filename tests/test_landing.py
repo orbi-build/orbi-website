@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 EN_PATH = ROOT / "public" / "index.html"
 ZH_PATH = ROOT / "public" / "zh" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
+CLOUD_CONTEXT_PATH = ROOT / "docs" / "cloud-endpoints.md"
+AGENTS_PATH = ROOT / "AGENTS.md"
 
 FACTORY_SLOGAN = "软件工厂的工厂"
 GITHUB = "https://github.com/orbi-build/orbi"
@@ -365,6 +367,33 @@ class LandingTests(unittest.TestCase):
         self.assertIn("CLOUD_LOGIN_URL", worker)
         self.assertNotIn("cloud.orbi.build", worker)
         self.assertNotIn("beta-cloud.orbi.build", worker)
+
+    def test_cloud_context_is_the_only_verified_endpoint_source(self) -> None:
+        context = CLOUD_CONTEXT_PATH.read_text(encoding="utf-8")
+        agents = AGENTS_PATH.read_text(encoding="utf-8")
+        self.assertIn("docs/cloud-endpoints.md", agents)
+        self.assertIn("Never guess, create, or replace a Cloud hostname", agents)
+        self.assertIn("Cloud beta", context)
+        self.assertIn("Cloud production", context)
+        self.assertIn("Cloud e2e", context)
+        self.assertIn("HTTP/2 302", context)
+        self.assertIn("github.com/login/oauth/authorize", context)
+        self.assertIn("No verified endpoint is deployed or recorded", context)
+        self.assertIn("cloud.orbi.build", context)
+        self.assertIn("curl DNS error", context)
+        self.assertIn("orbi.build/api/login", context)
+        self.assertIn("HTTP/2 404", context)
+        self.assertNotIn("beta-cloud.orbi.build", context)
+
+    def test_cloud_config_rejects_known_guessed_fallbacks(self) -> None:
+        import tomllib
+        with open(ROOT / "wrangler.toml", "rb") as handle:
+            config = tomllib.load(handle)
+        values = [config["vars"]["CLOUD_LOGIN_URL"], config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"]]
+        self.assertNotIn("https://cloud.orbi.build", values)
+        self.assertNotIn("https://beta-cloud.orbi.build/api/login", values)
+        self.assertNotIn("https://orbi.build/api/login", values)
+        self.assertTrue(all(value == "https://beta.orbi.build/api/login" for value in values))
 
     def test_cloud_faq_matches_pilot_reality(self) -> None:
         for html, not_yet in (
