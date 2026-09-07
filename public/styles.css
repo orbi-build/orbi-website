@@ -1250,6 +1250,19 @@ h2 {
 .site-footer nav a { text-decoration: none; }
 .site-footer nav a:hover { color: var(--ink); }
 
+/* .site-footer is a 3-column grid (wordmark/tagline/nav): the compare row must
+   span every column, or the auto wordmark column grows to fit it. */
+.site-footer .footer-compare {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+}
+
+.site-footer .footer-compare span { color: var(--ink); font-weight: 600; }
+
 /* The hero keeps two columns far longer than the prose sections do: it needs
    ~913px (480px trace + 81px gap + 271px headline + 80px shell padding), so
    collapsing it at 1160px stranded every viewport between 980 and 1160 —
