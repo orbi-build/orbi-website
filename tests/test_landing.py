@@ -982,6 +982,12 @@ class HermesComparisonTests(unittest.TestCase):
             self.assertIn("A documented, unattended GitHub Issue queue" if path == HERMES_EN_PATH else "没有文档证明它提供一个无人值守", page.text)
             self.assertIn("always-on" if path == HERMES_EN_PATH else "常驻", page.text)
 
+    def test_hermes_page_covers_openclaw_relationship(self) -> None:
+        for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
+            html, page = parse(path)
+            self.assertIn("OpenClaw", page.text)
+            self.assertIn("openclaw.ai", html)
+
 
 class DevinComparisonTests(unittest.TestCase):
     """The Devin deep dive (Issue #9): every claim sourced, both languages,
