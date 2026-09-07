@@ -726,5 +726,215 @@ class LandingTests(unittest.TestCase):
         self.assertIn("upstream unavailable", worker)
 
 
+COMPARE_EN_PATH = ROOT / "public" / "compare" / "openclaw" / "index.html"
+COMPARE_ZH_PATH = ROOT / "public" / "zh" / "compare" / "openclaw" / "index.html"
+COMPARE_INDEX_EN_PATH = ROOT / "public" / "compare" / "index.html"
+COMPARE_INDEX_ZH_PATH = ROOT / "public" / "zh" / "compare" / "index.html"
+
+
+class OpenClawComparisonTests(unittest.TestCase):
+    """The OpenClaw deep dive (Issue #10): every claim sourced, both languages,
+    interlinked with the comparison overview, no disparagement."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(COMPARE_EN_PATH)
+        cls.zh_html, cls.zh = parse(COMPARE_ZH_PATH)
+
+    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/compare/openclaw/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/"', self.en_html)
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/openclaw/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/compare/openclaw/"', self.zh_html)
+
+    def test_titles_carry_the_search_terms(self) -> None:
+        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
+        self.assertLessEqual(len(en_title), 65, en_title)
+        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
+        self.assertLessEqual(len(en_desc), 260, len(en_desc))
+        for term in ("Orbi", "OpenClaw", "Anthropic"):
+            self.assertIn(term, en_title + " " + en_desc, term)
+
+        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
+        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
+        for term in ("Orbi", "OpenClaw", "Anthropic"):
+            self.assertIn(term, zh_title + " " + zh_desc, term)
+
+    def test_share_cards_are_complete(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for meta in (
+                'property="og:title"',
+                'property="og:image"',
+                'name="twitter:card"',
+                'name="twitter:site" content="@xqliu"',
+            ):
+                self.assertIn(meta, html, meta)
+
+    def test_every_page_states_the_verification_date(self) -> None:
+        self.assertIn("2026-09-07", self.en.text)
+        self.assertIn("2026-09-07", self.zh.text)
+
+    def test_the_named_sources_are_cited(self) -> None:
+        for page in (self.en, self.zh):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn("https://openclaw.ai", hrefs)
+            # cited by name and date; the April post itself is no longer
+            # retrievable, so the page must not link a guessed post URL
+            self.assertIn("https://x.com/bcherny", hrefs)
+            self.assertIn("Boris Cherny", page.text)
+            self.assertIn(
+                "Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters",
+                page.text,
+            )
+            self.assertIn("2026-04-11", page.text)
+            self.assertIn("Medium", page.text)
+
+    def test_competitor_facts_match_the_verified_research(self) -> None:
+        # The Issue's research notes (verified 2026-09-07) as the page states them
+        for page, launch, instances in (
+            (self.en, "November 2025", "135,000"),
+            (self.zh, "2025 年 11 月", "13.5 万"),
+        ):
+            text = page.text
+            for fact in (
+                "Clawdbot",
+                "Peter Steinberger",
+                launch,
+                "WhatsApp",
+                "Telegram",
+                instances,
+                "$236",
+                "12x–36x",
+                "Extra Usage",
+                "2026-02-14",
+                "2026-04-04",
+                "2026-04-08",
+                "$0.08",
+            ):
+                self.assertIn(fact, text, fact)
+
+    def test_the_differences_table_covers_the_deciding_dimensions(self) -> None:
+        for page, terms in (
+            (
+                self.en,
+                ("Task loop", "Where state lives", "Scheduling", "Model policy risk"),
+            ),
+            (
+                self.zh,
+                ("任务闭环", "状态存于", "调度", "模型政策风险"),
+            ),
+        ):
+            for term in terms:
+                self.assertIn(term, page.text, term)
+            # the scheduling row names both mechanisms
+            self.assertIn("Heartbeat", page.text)
+            self.assertIn("systemd timer", page.text)
+
+    def test_honest_choice_names_both_products(self) -> None:
+        self.assertIn("CHOOSE OPENCLAW IF", self.en.text)
+        self.assertIn("CHOOSE ORBI IF", self.en.text)
+        self.assertIn("选 OPENCLAW，如果你要", self.zh.text)
+        self.assertIn("选 ORBI，如果你要", self.zh.text)
+
+    def test_does_not_disparage_the_competitor(self) -> None:
+        """The cutoff repriced a usage pattern, not the framework — the page
+        has to say so, or the comparison reads as a hit piece."""
+        self.assertIn("still runs fine on API keys and local models", self.en.text)
+        self.assertIn("跑 API key 和本地模型依然没问题", self.zh.text)
+
+    def test_interlinks_with_the_overview_page(self) -> None:
+        # A link to a 404 is not an interlink: the target page must exist,
+        # and it must link back to the deep dive.
+        for page, overview in ((self.en, "/compare/"), (self.zh, "/zh/compare/")):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn(overview, hrefs)
+            target = ROOT / "public" / overview.lstrip("/")
+            self.assertTrue((target / "index.html").is_file(), target)
+
+        for index_path, dive in (
+            (COMPARE_INDEX_EN_PATH, "/compare/openclaw/"),
+            (COMPARE_INDEX_ZH_PATH, "/zh/compare/openclaw/"),
+        ):
+            _, index = parse(index_path)
+            self.assertIn(dive, [href for _, href in index.hrefs])
+
+    def test_language_switch_crosses_to_the_counterpart(self) -> None:
+        self.assertIn("/zh/compare/openclaw/", [href for _, href in self.en.hrefs])
+        self.assertIn("/compare/openclaw/", [href for _, href in self.zh.hrefs])
+
+    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            for crawler, rendered in zip(page.headings, page.headings_rendered):
+                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
+            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
+            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            self.assertTrue(plain)
+            self.assertFalse(
+                [heading for heading in plain if heading.endswith((".", "。"))],
+                plain,
+            )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        """English pages do not ship the CJK webfont (REVIEW.md P1-3)."""
+        self.assertNotIn("Noto+Sans+SC", self.en_html)
+        self.assertIn("Noto+Sans+SC", self.zh_html)
+
+    def test_no_third_party_analytics(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for tracker in (
+                "google-analytics", "googletagmanager", "gtag(",
+                "plausible.io", "umami", "segment.com", "hotjar",
+            ):
+                self.assertNotIn(tracker, html.lower(), tracker)
+
+    def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        for loc in (
+            "https://orbi.build/compare/",
+            "https://orbi.build/zh/compare/",
+            "https://orbi.build/compare/openclaw/",
+            "https://orbi.build/zh/compare/openclaw/",
+        ):
+            self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        self.assertIn("https://orbi.build/compare/openclaw/", llms)
+        self.assertIn("https://orbi.build/zh/compare/openclaw/", llms)
+
+
+class CompareIndexTests(unittest.TestCase):
+    """The /compare/ section index: the overview entry point while the full
+    overview table (Issue #5) is still in delivery."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(COMPARE_INDEX_EN_PATH)
+        cls.zh_html, cls.zh = parse(COMPARE_INDEX_ZH_PATH)
+
+    def test_declare_canonicals_and_alternates(self) -> None:
+        self.assertIn('rel="canonical" href="https://orbi.build/compare/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/compare/"', self.zh_html)
+
+    def test_the_epics_competitors_are_all_named(self) -> None:
+        for page in (self.en, self.zh):
+            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin"):
+                self.assertIn(name, page.text, name)
+
+    def test_only_openclaw_claims_to_be_live(self) -> None:
+        for page in (self.en, self.zh):
+            statuses = [
+                attrs.get("class", "")
+                for tag, attrs in page.elements
+                if tag == "span" and "dive-status" in attrs.get("class", "")
+            ]
+            self.assertTrue(statuses)
+            self.assertEqual(
+                len([cls for cls in statuses if "is-live" in cls]), 1, statuses
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

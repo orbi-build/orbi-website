@@ -99,6 +99,8 @@ and not yet purchasable.
 
 - Landing page (English): https://orbi.build/
 - Landing page (Chinese): https://orbi.build/zh/
+- Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
+- Comparison — Orbi vs OpenClaw (Chinese): https://orbi.build/zh/compare/openclaw/
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones

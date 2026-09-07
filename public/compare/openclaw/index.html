@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi vs OpenClaw — self-hosted AI agents compared</title>
+  <meta name="description" content="A fact-checked comparison of Orbi and OpenClaw: what changed when Anthropic cut third-party harnesses off Claude subscriptions in April 2026, where the two open-source agents differ, and which fits which job.">
+  <link rel="canonical" href="https://orbi.build/compare/openclaw/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/openclaw/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/openclaw/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/compare/openclaw/">
+  <meta property="og:title" content="Orbi vs OpenClaw — self-hosted AI agents compared">
+  <meta property="og:description" content="What the April 2026 Anthropic subscription cutoff changed, where the two open-source agents differ, and which fits which job. Every claim sourced.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi vs OpenClaw — a fact-checked comparison.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi vs OpenClaw — self-hosted AI agents compared">
+  <meta name="twitter:description" content="What the April 2026 Anthropic subscription cutoff changed, where the two open-source agents differ, and which fits which job.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC: the only CJK on this page is the 中文 language link,
+       which the system CJK face covers. The Chinese page still loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/apply">Apply</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/compare/openclaw/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-title">
+        <p class="eyebrow">Comparison · facts verified 2026-09-07</p>
+        <h1 id="compare-title">Orbi vs OpenClaw</h1>
+        <p class="hero-lede"><strong>Same instinct, different jobs.</strong> Both projects are open-source, self-hosted agents that keep the model keys in your hands. OpenClaw is an always-on personal assistant you talk to through WhatsApp or Telegram. Orbi is a GitHub-native delivery system: it picks up Issues, writes and reviews the code, and merges the pull request. This page lays out the facts — including the April 2026 Anthropic cutoff that reshaped OpenClaw's economics — with a source on every claim.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="https://docs.orbi.build">Self-host Orbi</a>
+          <a class="button button-ghost" href="/compare/">All comparisons</a>
+          <a class="hero-proof-link" href="#sources">Sources &amp; dates →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="what-title">
+      <p class="section-tag">THE COMPETITOR, FROM ITS OWN MATERIALS</p>
+      <h2 id="what-title">What OpenClaw is</h2>
+      <p class="section-lede">OpenClaw is an open-source, always-on agent framework that runs locally on your machine. First released in November 2025 under the name Clawdbot, it was created by Peter Steinberger and grew into one of the most-starred repositories on GitHub. You reach it where you already talk: it lists WhatsApp, Telegram, Discord, Slack, iMessage, and Signal among its 29 channels, and it takes hosted, subscription-backed, gateway, or local models — Claude, GPT, or open weights. It is run as an independent project, not affiliated with Anthropic.</p>
+      <p class="src-note">Source: <a href="https://openclaw.ai" rel="noopener">openclaw.ai</a> (project description, launch and name history, channels, model support) — verified 2026-09-07.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="timeline-title">
+      <div class="shell">
+        <p class="section-tag">WHY THIS COMPARISON HAS A TIMELINE</p>
+        <h2 id="timeline-title">April 2026: the week the subscription door closed</h2>
+        <p class="section-lede">OpenClaw's defining event was not a feature or a release — it was a pricing decision made by someone else. This is the sequence, and why it matters to anyone running an agent on someone else's quota policy.</p>
+        <ol class="event-list">
+          <li>
+            <time datetime="2026-02-14">2026-02-14</time>
+            <div>
+              <strong>The creator moves on</strong>
+              <p>Peter Steinberger joins OpenAI. OpenClaw continues under the OpenClaw Foundation as an independent open-source project.</p>
+              <p class="src-note">Public announcement, 2026-02-14; project status per openclaw.ai — verified 2026-09-07.</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-04-04">2026-04-04</time>
+            <div>
+              <strong>Anthropic cuts the subscription channel for third-party harnesses</strong>
+              <p>Claude Pro and Max subscriptions can no longer drive agents through OpenClaw. The change reaches about 135,000 running instances. The background: the heaviest users were drawing $236+ of tokens on a $20 subscription — a 12x–36x gap between what was paid and what was consumed. Boris Cherny, who leads Claude Code, framed the decision as capacity management.</p>
+              <p class="src-note">Sources: Boris Cherny on X, April 2026; <em>Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters</em>, Medium, 2026-04-11 — verified 2026-09-07.</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-04-08">2026-04-08</time>
+            <div>
+              <strong>Four days later, Anthropic opens the official road</strong>
+              <p>Managed Agents launches: agents hosted on Anthropic's own infrastructure, priced at standard token rates plus $0.08 per session-hour. Within one week, the unofficial route was closed and the official, metered route was open.</p>
+              <p class="src-note">Source: Anthropic launch, 2026-04-08, reported in the same Medium piece — verified 2026-09-07.</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-04">Aftermath</time>
+            <div>
+              <strong>OpenClaw on Claude runs at API rates</strong>
+              <p>Users who stayed with Claude moved to full-rate API billing or Extra Usage. OpenClaw itself still runs fine on API keys and local models — the cutoff repriced a usage pattern, not the framework.</p>
+              <p class="src-note">Sources: Medium, 2026-04-11; openclaw.ai — verified 2026-09-07.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="thesis-punch">A vendor can close a quota channel in a day. The architecture that cannot be closed is the one where the quota was never the vendor's to manage: your keys, your machine, your provider — switchable in a config file.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="differences-title">
+      <p class="section-tag">DIFFERENCES THAT DECIDE THE CHOICE</p>
+      <h2 id="differences-title">Where Orbi and OpenClaw differ</h2>
+      <p class="section-lede">The shared DNA is real — both are self-hosted, open source, and model-agnostic in principle. The differences are about what the agent is for, where its state lives, and how exposed its economics are to one vendor's policy.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th scope="col">Dimension</th>
+              <th scope="col">Orbi</th>
+              <th scope="col">OpenClaw</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Task loop</th>
+              <td>GitHub Issue → agent → reviewed PR → merge</td>
+              <td>Personal assistant, message-driven; no Issue→PR delivery loop</td>
+            </tr>
+            <tr>
+              <th scope="row">Where state lives</th>
+              <td>GitHub Issues + labels — the repository is the ledger</td>
+              <td>The framework's own state store</td>
+            </tr>
+            <tr>
+              <th scope="row">Scheduling</th>
+              <td>systemd timer polling</td>
+              <td>Heartbeat</td>
+            </tr>
+            <tr>
+              <th scope="row">Model policy risk</th>
+              <td>BYOK any OpenAI-compatible endpoint, free tiers included; switching providers is a config change</td>
+              <td>Multi-model (Claude, GPT, local); heavy community reliance on Claude subscriptions until the 2026-04 cutoff</td>
+            </tr>
+            <tr>
+              <th scope="row">Runs where</th>
+              <td>Your machine — self-hosted, open source</td>
+              <td>Your machine — self-hosted, open source</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Orbi column per <a href="https://docs.orbi.build">docs.orbi.build</a> and the <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository; OpenClaw column per <a href="https://openclaw.ai" rel="noopener">openclaw.ai</a> and the Medium piece above — verified 2026-09-07.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint compare-choice" aria-labelledby="choice-title">
+      <div class="shell">
+        <p class="section-tag">AN HONEST READ</p>
+        <h2 id="choice-title">Which one should you run?</h2>
+        <p class="section-lede">Both are free to self-host and both keep your data local. The choice is the job you want done.</p>
+        <div class="run-options">
+          <article class="run-option run-option-live">
+            <p class="option-state">CHOOSE OPENCLAW IF</p>
+            <h3>You want an always-on personal assistant</h3>
+            <ul>
+              <li>A 24/7 assistant you reach in WhatsApp, Telegram, or your other chats</li>
+              <li>Message-driven personal work: inboxes, calendars, emails, errands</li>
+              <li>Multi-model conversation, local models included</li>
+            </ul>
+            <a class="button button-dark" href="https://openclaw.ai" rel="noopener">Visit OpenClaw ↗</a>
+          </article>
+          <article class="run-option run-option-cloud">
+            <p class="option-state">CHOOSE ORBI IF</p>
+            <h3>You want software delivered, not conversation</h3>
+            <ul>
+              <li>GitHub Issue → agent → reviewed PR, with branch protection and human approvals still in charge</li>
+              <li>No new workspace: the repo, its Issues, labels, and releases are the whole system</li>
+              <li>An auditable delivery trail — every run leaves its evidence in GitHub, not in a chat history</li>
+            </ul>
+            <a class="button button-outline" href="https://docs.orbi.build">Self-host Orbi ↗</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
+      <p class="section-tag">PROVENANCE</p>
+      <h2 id="sources-title">Sources and verification dates</h2>
+      <p class="section-lede">Every factual claim on this page maps to one of these. All were checked on 2026-09-07; this page is a snapshot, so re-check the sources before you bet architecture on them.</p>
+      <ul class="source-list">
+        <li>
+          <strong><a href="https://openclaw.ai" rel="noopener">OpenClaw official site</a> — project description, channels, model support, foundation status</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>openclaw.ai</small>
+        </li>
+        <li>
+          <strong>Boris Cherny (Claude Code lead), X announcement — the subscription-channel cutoff</strong>
+          <span class="source-date">April 2026 · verified 2026-09-07</span>
+          <small><a href="https://x.com/bcherny" rel="noopener">x.com/bcherny</a></small>
+        </li>
+        <li>
+          <strong><em>Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters</em> — cutoff background and Managed Agents launch</strong>
+          <span class="source-date">Medium, 2026-04-11 · verified 2026-09-07</span>
+          <small>Instance counts, $236+ usage on a $20 subscription, 12x–36x gap, $0.08/session-hour</small>
+        </li>
+        <li>
+          <strong>Peter Steinberger's move to OpenAI</strong>
+          <span class="source-date">2026-02-14 · verified 2026-09-07</span>
+          <small>Public announcement</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.orbi.build">Orbi documentation</a> and the <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository — the Orbi column of the comparison</strong>
+          <span class="source-date">verified 2026-09-07</span>
+          <small>docs.orbi.build · github.com/orbi-build/orbi</small>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">OPEN SOURCE CORE</p>
+      <h2 id="closing-title">Two roads, both self-hosted</h2>
+      <p>Pick by the job, not by the pitch: an assistant that lives in your chats, or a delivery line that lives in your repository. If it's the second, Orbi is free to self-host — point it at an Issue and keep the keys.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="/compare/">All comparisons</a>
+        <a class="text-link" href="/#faq">Questions first? Read the FAQ →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/compare/openclaw/" lang="zh-CN">中文</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
