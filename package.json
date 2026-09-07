@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:browser": "node tests/homepage.smoke.mjs"
+    "test:browser": "node tests/homepage.smoke.mjs",
+    "postinstall": "playwright install chromium"
   },
   "dependencies": {
     "@datafast/ai-crawl": "^1.0.9"
