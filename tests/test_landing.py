@@ -695,8 +695,23 @@ class LandingTests(unittest.TestCase):
             config = tomllib.load(handle)
         beta = config["env"]["beta"]
         self.assertEqual(beta["name"], "orbi-website-beta")
-        self.assertEqual(beta["routes"], [{"pattern": "beta.orbi.build", "custom_domain": True}])
+        # The beta Custom Domain is provisioned infrastructure, not part of a
+        # routine deploy. An explicit empty list also prevents production
+        # custom-domain routes from being inherited by the beta deploy.
+        self.assertEqual(beta["routes"], [])
         self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
+        self.assertEqual(beta["d1_databases"][0]["database_name"], "orbi-applications-test")
+        self.assertEqual(
+            beta["d1_databases"][0]["database_id"],
+            "3c254d65-e5c6-4488-9b83-dabc3433f092",
+        )
+        self.assertEqual(
+            config["d1_databases"][0]["database_name"], "orbi-applications"
+        )
+        self.assertEqual(
+            config["d1_databases"][0]["database_id"],
+            "9df2048e-004e-48e1-b81e-16826bd49d8a",
+        )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
             ["orbi.build", "www.orbi.build"],

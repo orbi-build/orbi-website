@@ -20,8 +20,8 @@ set -a; source ~/.cloudflare.env; set +a
 npx wrangler deploy
 ```
 
-Beta 使用隔离的 `beta` environment、Worker `orbi-website-beta` 和域名
-`beta.orbi.build`，不会修改生产路由：
+Beta 使用隔离的 `beta` environment、Worker `orbi-website-beta` 和已配置的域名
+`beta.orbi.build`，不会修改生产路由或 DNS。域名绑定是一次性基础设施配置，日常部署只发布已绑定的 Worker/assets：
 
 ```bash
 set -a; source ~/.cloudflare.env; set +a
@@ -30,7 +30,8 @@ npx wrangler deploy --env beta
 
 合并到 `main` 后，`.github/workflows/deploy-beta.yml` 会先运行 `npm test` 和
 landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
-OpenClaw 页面。也可以在
+OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1 数据库，不会写入生产库。
+也可以在
 Actions 中使用 `workflow_dispatch` 手动触发。
 
 GitHub Actions 需要配置以下 Repository 设置：

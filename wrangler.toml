@@ -31,12 +31,12 @@ head_sampling_rate = 1
 [env.beta]
 name = "orbi-website-beta"
 workers_dev = false
+# Prevent production custom-domain routes from being inherited by beta.
+routes = []
 
-[[env.beta.routes]]
-pattern = "beta.orbi.build"
-custom_domain = true
-
+# beta.orbi.build is an existing Custom Domain. Keep its binding in Cloudflare;
+# routine deploys must only publish this Worker and its assets.
 [[env.beta.d1_databases]]
 binding = "orbi_applications"
-database_name = "orbi-applications"
-database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
+database_name = "orbi-applications-test"
+database_id = "3c254d65-e5c6-4488-9b83-dabc3433f092"
