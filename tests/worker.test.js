@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { field, fetchAsset, githubHeaders } from "../src/worker.js";
+import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -26,6 +26,29 @@ describe("Worker request helpers", () => {
       "https://beta.orbi.build/compare/",
       "https://beta.orbi.build/compare/index.html",
     ]);
+  });
+
+  it("redirects Cloud login without forwarding tenant query parameters", async () => {
+    const response = cloudLoginResponse(
+      new Request("https://orbi.build/api/login?tenant=untrusted"),
+      "https://beta.orbi.build/api/login",
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+  });
+
+  it("routes the public API login path to the Cloud handoff", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/api/login?tenant=untrusted"),
+      { CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+  });
+
+  it("fails clearly when Cloud is not configured", async () => {
+    const response = cloudLoginResponse(new Request("https://orbi.build/api/login"));
+    expect(response.status).toBe(503);
   });
 
   it("builds authenticated GitHub API headers", () => {

@@ -46,7 +46,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
   const paths = {
-    apply: "/apply",
+    "cloud-start": "/api/login",
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
     comparisons: comparisonPath,
   };
@@ -92,7 +92,6 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
