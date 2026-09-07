@@ -178,6 +178,21 @@ class LandingTests(unittest.TestCase):
         self.assertTrue(any(text == "Roadmap" and href == ROADMAP for text, href in self.en.hrefs))
         self.assertTrue(any(text == "路线图" and href == ROADMAP for text, href in self.zh.hrefs))
 
+    def test_homepage_exposes_localized_comparisons_entry(self) -> None:
+        for page, label, href in (
+            (self.en, "Comparisons", "/compare/"),
+            (self.zh, "竞品对比", "/zh/compare/"),
+        ):
+            matching = [(text, target) for text, target in page.hrefs if text == label]
+            self.assertIn((label, href), matching)
+            self.assertTrue(
+                any(
+                    text == label and target == href
+                    for text, target in page.hrefs
+                ),
+                f"missing visible homepage entry: {label} -> {href}",
+            )
+
     def test_primary_navigation_keeps_only_first_visit_actions(self) -> None:
         for html, labels in (
             (
