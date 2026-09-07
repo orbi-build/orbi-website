@@ -1570,7 +1570,21 @@ h2 {
 .compare-table tbody tr:last-child th,
 .compare-table tbody tr:last-child td { border-bottom: 0; }
 
-.compare-table thead th:nth-child(2) { color: var(--ink); }
+/* Orbi column emphasis: a mint tint, a --run rail on both edges, and a weight
+   bump mark the Orbi column in every .compare-table without moving cell text
+   or touching competitor cells. Dimension tables carry Orbi in column 2 by
+   default; risk tables mark .compare-table-orbi-last when the Orbi trade-off
+   sits in column 3, and tables with no Orbi column (the hermes sources table)
+   mark .compare-table-no-orbi to opt out. Text stays --ink for contrast. */
+.compare-table:not(.compare-table-no-orbi):not(.compare-table-orbi-last) thead th:nth-child(2),
+.compare-table:not(.compare-table-no-orbi):not(.compare-table-orbi-last) tbody td:nth-child(2),
+.compare-table-orbi-last thead th:nth-child(3),
+.compare-table-orbi-last tbody td:nth-child(3) {
+  background: rgba(92, 214, 181, 0.13);
+  box-shadow: inset 2px 0 0 var(--run), inset -2px 0 0 var(--run);
+  color: var(--ink);
+  font-weight: 600;
+}
 
 /* Timeline: one row per dated event, mono date rail on the left. Deep dives
    without verified dates (Devin's billing eras) use .event-era spans in the

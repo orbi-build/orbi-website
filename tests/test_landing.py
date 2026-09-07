@@ -2,6 +2,7 @@
 """Read the shipped landing HTML, not a fixture."""
 
 from html.parser import HTMLParser
+from html import unescape
 from pathlib import Path
 import re
 import unittest
@@ -1344,6 +1345,106 @@ class OpenHandsComparisonTests(unittest.TestCase):
         for url in ("https://orbi.build/compare/openhands/", "https://orbi.build/zh/compare/openhands/"):
             self.assertIn(url, sitemap)
             self.assertIn(url, llms)
+
+
+def compare_tables(html: str) -> list[tuple[str, list[str]]]:
+    """(class attribute, header texts) for every shipped .compare-table."""
+    tables = []
+    for match in re.finditer(r'<table class="([^"]*)">(.*?)</table>', html, re.DOTALL):
+        head = re.search(r"<thead>(.*?)</thead>", match.group(2), re.DOTALL)
+        headers = []
+        if head:
+            headers = [
+                unescape(re.sub(r"<[^>]+>", "", cell)).strip()
+                for cell in re.findall(r"<th[^>]*>(.*?)</th>", head.group(1), re.DOTALL)
+            ]
+        tables.append((match.group(1), headers))
+    return tables
+
+
+class CompareTableOrbiColumnTests(unittest.TestCase):
+    """Issue #53: every .compare-table marks its Orbi column for the CSS.
+
+    The stylesheet tints column 2 by default; risk tables carry the Orbi
+    trade-off in column 3 and mark .compare-table-orbi-last; the hermes
+    sources table has no Orbi column and marks .compare-table-no-orbi.
+    Assertions read the shipped markup so a table rework that moves or drops
+    the Orbi column fails here instead of silently losing the highlight.
+    """
+
+    ORBI_LAST_PAGES = (
+        COMPARE_INDEX_EN_PATH,
+        COMPARE_INDEX_ZH_PATH,
+        ROOT / "public" / "compare" / "codex" / "index.html",
+        ROOT / "public" / "zh" / "compare" / "codex" / "index.html",
+    )
+    NO_ORBI_PAGES = (HERMES_EN_PATH, HERMES_ZH_PATH)
+    ALL_PAGES = sorted(
+        {
+            COMPARE_INDEX_EN_PATH,
+            COMPARE_INDEX_ZH_PATH,
+            *ROOT.glob("public/compare/*/index.html"),
+            *ROOT.glob("public/zh/compare/*/index.html"),
+        }
+    )
+
+    def test_stylesheet_marks_the_orbi_column(self) -> None:
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(
+            ".compare-table:not(.compare-table-no-orbi):not(.compare-table-orbi-last) thead th:nth-child(2)",
+            css,
+        )
+        self.assertIn(
+            ".compare-table:not(.compare-table-no-orbi):not(.compare-table-orbi-last) tbody td:nth-child(2)",
+            css,
+        )
+        self.assertIn(".compare-table-orbi-last thead th:nth-child(3)", css)
+        self.assertIn(".compare-table-orbi-last tbody td:nth-child(3)", css)
+        self.assertIn("background: rgba(92, 214, 181, 0.13);", css)
+        self.assertIn("box-shadow: inset 2px 0 0 var(--run), inset -2px 0 0 var(--run);", css)
+
+    def test_every_compare_table_marks_its_orbi_column(self) -> None:
+        for path in self.ALL_PAGES:
+            with self.subTest(page=str(path)):
+                html = path.read_text(encoding="utf-8")
+                tables = compare_tables(html)
+                self.assertTrue(tables, f"{path} ships no compare-table")
+                for classes, headers in tables:
+                    names = classes.split()
+                    self.assertEqual(names[0], "compare-table", (path, names))
+                    if "compare-table-orbi-last" in names:
+                        self.assertGreaterEqual(len(headers), 3, (path, headers))
+                        self.assertIn("Orbi", headers[2], (path, headers))
+                        self.assertNotIn("Orbi", headers[1], (path, headers))
+                    elif "compare-table-no-orbi" in names:
+                        self.assertTrue(headers, path)
+                        for header in headers:
+                            self.assertNotIn("Orbi", header, (path, headers))
+                    else:
+                        self.assertGreaterEqual(len(headers), 2, (path, headers))
+                        self.assertEqual(headers[1], "Orbi", (path, headers))
+
+    def test_the_risk_tables_carry_the_orbi_last_mark(self) -> None:
+        for path in self.ORBI_LAST_PAGES:
+            with self.subTest(page=str(path)):
+                html = path.read_text(encoding="utf-8")
+                marked = [
+                    classes
+                    for classes, _ in compare_tables(html)
+                    if "compare-table-orbi-last" in classes.split()
+                ]
+                self.assertEqual(len(marked), 1, path)
+
+    def test_the_hermes_sources_table_opts_out(self) -> None:
+        for path in self.NO_ORBI_PAGES:
+            with self.subTest(page=str(path)):
+                html = path.read_text(encoding="utf-8")
+                marked = [
+                    classes
+                    for classes, _ in compare_tables(html)
+                    if "compare-table-no-orbi" in classes.split()
+                ]
+                self.assertEqual(len(marked), 1, path)
 
 
 if __name__ == "__main__":
