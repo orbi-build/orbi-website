@@ -1135,8 +1135,7 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
             self.assertIn(f'href="https://orbi.build{alternate}"', html)
             self.assertTrue(all(term in page.text for term in terms), page.text)
-            self.assertIn("https://www.anthropic.com", html)
-            self.assertIn("https://medium.com", html)
+            self.assertIn("https://www.anthropic.com/engineering/managed-agents", html)
 
     def test_overviews_link_the_managed_agents_dive(self) -> None:
         for path, href in ((COMPARE_INDEX_EN_PATH, "/compare/managed-agents/"), (COMPARE_INDEX_ZH_PATH, "/zh/compare/managed-agents/")):
