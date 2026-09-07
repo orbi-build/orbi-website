@@ -942,17 +942,51 @@ class OpenClawComparisonTests(unittest.TestCase):
             "https://orbi.build/zh/compare/",
             "https://orbi.build/compare/openclaw/",
             "https://orbi.build/zh/compare/openclaw/",
+            "https://orbi.build/compare/hermes-agent/",
+            "https://orbi.build/zh/compare/hermes-agent/",
         ):
             self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
         llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
         self.assertIn("https://orbi.build/compare/openclaw/", llms)
         self.assertIn("https://orbi.build/zh/compare/openclaw/", llms)
+        self.assertIn("https://orbi.build/compare/hermes-agent/", llms)
+        self.assertIn("https://orbi.build/zh/compare/hermes-agent/", llms)
 
 
 DEVIN_EN_PATH = ROOT / "public" / "compare" / "devin" / "index.html"
 DEVIN_ZH_PATH = ROOT / "public" / "zh" / "compare" / "devin" / "index.html"
 MANAGED_EN_PATH = ROOT / "public" / "compare" / "managed-agents" / "index.html"
 MANAGED_ZH_PATH = ROOT / "public" / "zh" / "compare" / "managed-agents" / "index.html"
+HERMES_EN_PATH = ROOT / "public" / "compare" / "hermes-agent" / "index.html"
+HERMES_ZH_PATH = ROOT / "public" / "zh" / "compare" / "hermes-agent" / "index.html"
+
+
+class HermesComparisonTests(unittest.TestCase):
+    def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
+        for path, canonical, alternate, date in (
+            (HERMES_EN_PATH, "/compare/hermes-agent/", "/zh/compare/hermes-agent/", "verified 2026-09-07"),
+            (HERMES_ZH_PATH, "/zh/compare/hermes-agent/", "/compare/hermes-agent/", "核实于 2026-09-07"),
+        ):
+            html, page = parse(path)
+            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
+            self.assertIn(f'href="https://orbi.build{alternate}"', html)
+            self.assertIn(date, page.text)
+            self.assertIn("NousResearch/hermes-agent", html)
+            self.assertIn("GitHub", page.text)
+            self.assertIn("Issue", page.text)
+            self.assertIn("MIT", page.text)
+
+    def test_hermes_is_not_misrepresented_as_orbis_delivery_loop(self) -> None:
+        for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
+            _, page = parse(path)
+            self.assertIn("A documented, unattended GitHub Issue queue" if path == HERMES_EN_PATH else "没有文档证明它提供一个无人值守", page.text)
+            self.assertIn("always-on" if path == HERMES_EN_PATH else "常驻", page.text)
+
+    def test_hermes_page_covers_openclaw_relationship(self) -> None:
+        for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
+            html, page = parse(path)
+            self.assertIn("OpenClaw", page.text)
+            self.assertIn("openclaw.ai", html)
 
 
 class DevinComparisonTests(unittest.TestCase):
@@ -1142,7 +1176,7 @@ class CompareIndexTests(unittest.TestCase):
 
     def test_the_epics_competitors_are_all_named(self) -> None:
         for page in (self.en, self.zh):
-            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin"):
+            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "Hermes Agent"):
                 self.assertIn(name, page.text, name)
 
     def test_live_dive_statuses_match_the_published_pages(self) -> None:
@@ -1156,12 +1190,12 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 4, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 5, statuses
             )
         # A published or research entry must not become a dead end.
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
-            self.assertEqual(len(entries), 5, entries)
+            self.assertEqual(len(entries), 6, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
 

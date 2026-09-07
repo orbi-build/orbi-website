@@ -101,6 +101,8 @@ and not yet purchasable.
 - Landing page (Chinese): https://orbi.build/zh/
 - Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
 - Comparison — Orbi vs OpenClaw (Chinese): https://orbi.build/zh/compare/openclaw/
+- Comparison — Orbi vs Hermes Agent (English): https://orbi.build/compare/hermes-agent/
+- Comparison — Orbi vs Hermes Agent (Chinese): https://orbi.build/zh/compare/hermes-agent/
 - Comparison — Orbi vs Devin (English): https://orbi.build/compare/devin/
 - Comparison — Orbi vs GitHub Copilot coding agent (English): https://orbi.build/compare/github-copilot-coding-agent/
 - Comparison — Orbi vs Devin (Chinese): https://orbi.build/zh/compare/devin/
