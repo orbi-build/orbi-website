@@ -276,6 +276,8 @@ async function handleFetch(request, env) {
     return response;
 }
 
+export { field, githubHeaders };
+
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
   // ctx.waitUntil, so tracking never delays the response.
