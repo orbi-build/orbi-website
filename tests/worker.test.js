@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cloudLoginResponse, field, fetchAsset, githubHeaders } from "../src/worker.js";
+import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -32,6 +32,15 @@ describe("Worker request helpers", () => {
     const response = cloudLoginResponse(
       new Request("https://orbi.build/api/login?tenant=untrusted"),
       "https://cloud.orbi.build",
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/login");
+  });
+
+  it("routes the public API login path to the Cloud handoff", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/api/login?tenant=untrusted"),
+      { CLOUD_BASE_URL: "https://cloud.orbi.build", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
     );
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("https://cloud.orbi.build/login");

@@ -26,6 +26,7 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
+const CLOUD_LOGIN_ROUTE = "/api/login";
 const CLOUD_LOGIN_PATH = "/login";
 
 // /api/apply is an unauthenticated write into D1: bound the body and every
@@ -295,7 +296,7 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (url.pathname === CLOUD_LOGIN_PATH) {
+    if (url.pathname === CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_BASE_URL);
     }
 
@@ -311,7 +312,7 @@ async function handleFetch(request, env) {
     return response;
 }
 
-export { cloudLoginResponse, field, fetchAsset, githubHeaders };
+export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
