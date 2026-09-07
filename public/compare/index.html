@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/compare/">
   <meta property="og:title" content="Orbi compared — vs managed and coding agents">
-  <meta property="og:description" content="Fact-checked comparisons with sources and verification dates. Deep dives: OpenClaw and the Anthropic cutoff; Devin and the credit meter.">
+  <meta property="og:description" content="Fact-checked comparisons with sources and verification dates. Deep dives: OpenClaw and the Anthropic policy change; Devin and the credit meter.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -34,6 +34,26 @@
   <link rel="stylesheet" href="/styles.css">
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Orbi comparison",
+  "inLanguage": "en",
+  "url": "https://orbi.build/compare/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -99,19 +119,19 @@
 
     <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
       <div class="shell">
-        <p class="section-tag">THE VENDOR BACKDOOR RISK</p>
+        <p class="section-tag">THE OWNERSHIP BOUNDARY</p>
         <h2 id="risk-title">Convenience should not mean surrendering the boundary</h2>
-        <p class="section-lede">Hosted agents can be the right choice when zero operations is the priority. They also leave five consequential decisions with a vendor: pricing, model capacity, data handling, supply, and account access.</p>
+        <p class="section-lede">Hosted agents can be the right choice when minimal operations is the priority. They also leave five consequential decisions with a vendor: pricing, model capacity, data handling, supply, and account access.</p>
         <div class="compare-table-wrap">
           <table class="compare-table"><thead><tr><th scope="col">Risk</th><th scope="col">Observed case</th><th scope="col">Orbi’s trade-off</th></tr></thead><tbody>
             <tr><th scope="row">Pricing</th><td>Managed Agents adds $0.08/session-hour to token pricing.</td><td>Choose hardware and provider; no session-hour fee.</td></tr>
             <tr><th scope="row">Degradation</th><td>Anthropic’s OpenClaw explanation said: “Capacity is a resource we manage thoughtfully.”</td><td>Switch provider or model in configuration.</td></tr>
             <tr><th scope="row">Audit / data</th><td>Cloud agents execute with code, credentials, and task context in vendor infrastructure.</td><td>Keep code, keys, and run evidence local.</td></tr>
-            <tr><th scope="row">Supply / policy</th><td>On 2026-04-04 Anthropic cut OpenClaw’s subscription route, forcing API pricing or Extra Usage.</td><td>BYOK across providers avoids one supply cut.</td></tr>
+            <tr><th scope="row">Supply / policy</th><td>On 2026-04-04 Anthropic changed the OpenClaw subscription route; users may need API billing or Extra Usage.</td><td>BYOK across providers avoids one supply cut.</td></tr>
             <tr><th scope="row">Account access</th><td>Hosted service access and ToS interpretation remain vendor-controlled.</td><td>No agent-vendor account is required.</td></tr>
           </tbody></table>
         </div>
-        <p class="thesis-punch">Hosted-agent convenience is collateralized by vendor change power. Orbi leaves that five-part risk with you; the price is operating a machine, and the benefit is that nobody can unilaterally change your runtime.</p>
+        <p class="thesis-punch">Hosted-agent convenience is collateralized by vendor change power. Orbi leaves that five-part risk with you; the price is operating a machine, and the benefit is that you can change your own runtime without waiting for a hosted vendor.</p>
         <p class="src-note">Sources: <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>; <a href="https://x.com/bcherny" rel="noopener">Boris Cherny’s public statements</a>; <a href="/compare/openclaw/">OpenClaw deep dive</a>; <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison research epic</a> — verified 2026-09-07. These are ownership trade-offs, not claims about service quality.</p>
       </div>
     </section>
@@ -124,7 +144,7 @@
           <a href="/compare/openclaw/">
             <strong>Orbi vs OpenClaw</strong>
             <span class="dive-status is-live">Live</span>
-            <p>The open-source always-on personal agent — and the April 2026 Anthropic subscription cutoff that repriced it overnight.</p>
+            <p>The open-source always-on personal agent — and the April 2026 Anthropic subscription policy change that affected its subscription route.</p>
           </a>
         </li>
         <li>
