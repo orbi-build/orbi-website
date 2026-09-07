@@ -4,6 +4,7 @@ import { mkdir } from "node:fs/promises";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
+const targetURL = process.env.BASE_URL || baseURL;
 const artifacts = ".orbi";
 
 function startServer() {
@@ -20,11 +21,13 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
   let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
-  await page.route("**/stats", (route) => route.fulfill({
-    status: 200,
-    contentType: "application/json",
-    body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] }),
-  }));
+  if (!process.env.BASE_URL) {
+    await page.route("**/stats", (route) => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] }),
+    }));
+  }
   page.on("request", (request) => {
     if (new URL(request.url()).pathname === "/stats") statsRequested = true;
   });
@@ -35,7 +38,7 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
     if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${baseURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
@@ -58,7 +61,7 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
 
 async function main() {
   await mkdir(artifacts, { recursive: true });
-  const server = startServer();
+  const server = process.env.BASE_URL ? null : startServer();
   const browser = await chromium.launch({
     ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
       ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
@@ -66,13 +69,15 @@ async function main() {
     headless: true,
   });
   try {
-    await new Promise((resolve, reject) => {
-      const timer = setTimeout(resolve, 1000);
-      server.stderr.once("data", (data) => {
-        clearTimeout(timer);
-        reject(new Error(data.toString()));
+    if (server) {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 1000);
+        server.stderr.once("data", (data) => {
+          clearTimeout(timer);
+          reject(new Error(data.toString()));
+        });
       });
-    });
+    }
     await assertHomepage(browser, "/", "Compare Orbi ↗", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
     await assertHomepage(browser, "/", "Compare Orbi ↗", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "查看竞品对比 ↗", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
@@ -83,14 +88,16 @@ async function main() {
     const failures = [];
     const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
-    await page.route("**/stats", (route) => route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] }),
-    }));
+    if (!process.env.BASE_URL) {
+      await page.route("**/stats", (route) => route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] }),
+      }));
+    }
     page.on("console", (message) => { if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) errors.push(`${message.location().url}: ${message.text()}`); });
     page.on("requestfailed", (request) => { if (!isTelemetry(request.url())) failures.push(request.url()); });
-    await page.goto(`${baseURL}/compare/`, { waitUntil: "networkidle" });
+    await page.goto(`${targetURL}/compare/`, { waitUntil: "networkidle" });
     await page.getByRole("link", { name: "Read the OpenClaw deep dive", exact: true }).click();
     await page.waitForLoadState("networkidle");
     if (new URL(page.url()).pathname !== "/compare/openclaw/") throw new Error(`detail route: ${page.url()}`);
@@ -100,7 +107,7 @@ async function main() {
     await page.close();
   } finally {
     await browser.close();
-    server.kill();
+    if (server) server.kill();
   }
 }
 
