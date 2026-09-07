@@ -905,6 +905,8 @@ class OpenClawComparisonTests(unittest.TestCase):
 
 DEVIN_EN_PATH = ROOT / "public" / "compare" / "devin" / "index.html"
 DEVIN_ZH_PATH = ROOT / "public" / "zh" / "compare" / "devin" / "index.html"
+MANAGED_EN_PATH = ROOT / "public" / "compare" / "managed-agents" / "index.html"
+MANAGED_ZH_PATH = ROOT / "public" / "zh" / "compare" / "managed-agents" / "index.html"
 
 
 class DevinComparisonTests(unittest.TestCase):
@@ -1079,8 +1081,7 @@ class DevinComparisonTests(unittest.TestCase):
 
 
 class CompareIndexTests(unittest.TestCase):
-    """The /compare/ section index: the overview entry point while the full
-    overview table (Issue #5) is still in delivery."""
+    """The /compare/ section index links every published deep dive."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1099,9 +1100,8 @@ class CompareIndexTests(unittest.TestCase):
                 self.assertIn(name, page.text, name)
 
     def test_live_dive_statuses_match_the_published_pages(self) -> None:
-        """OpenClaw (Issue #10) and Devin (Issue #9) are live; the rest are
-        still research entries, so exactly two is-live badges — and both live
-        entries must be links, not plain divs."""
+        """Published deep dives are live; research entries remain unlinked, and
+        every live entry must be a link."""
         for page in (self.en, self.zh):
             statuses = [
                 attrs.get("class", "")
@@ -1110,7 +1110,7 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 2, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 3, statuses
             )
         # A "Live" badge that links nowhere is a dead entry: a live dive is
         # an <a href> block, a research entry a plain <div>.
@@ -1120,9 +1120,27 @@ class CompareIndexTests(unittest.TestCase):
                 for entry in re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
                 if "is-live" in entry
             ]
-            self.assertEqual(len(live_entries), 2, live_entries)
+            self.assertEqual(len(live_entries), 3, live_entries)
             for entry in live_entries:
                 self.assertIn('<a href="', entry, entry)
+
+
+class ManagedAgentsComparisonTests(unittest.TestCase):
+    def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
+        for path, canonical, alternate, terms in (
+            (MANAGED_EN_PATH, "/compare/managed-agents/", "/zh/compare/managed-agents/", ("Brain", "Hands", "$0.08/session-hour", "verified 2026-09-07")),
+            (MANAGED_ZH_PATH, "/zh/compare/managed-agents/", "/compare/managed-agents/", ("Brain", "Hands", "$0.08/session-hour", "核实于 2026-09-07")),
+        ):
+            html, page = parse(path)
+            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
+            self.assertIn(f'href="https://orbi.build{alternate}"', html)
+            self.assertTrue(all(term in page.text for term in terms), page.text)
+            self.assertIn("https://www.anthropic.com/engineering/managed-agents", html)
+
+    def test_overviews_link_the_managed_agents_dive(self) -> None:
+        for path, href in ((COMPARE_INDEX_EN_PATH, "/compare/managed-agents/"), (COMPARE_INDEX_ZH_PATH, "/zh/compare/managed-agents/")):
+            html, page = parse(path)
+            self.assertIn(href, [link for _, link in page.hrefs])
 
 
 if __name__ == "__main__":

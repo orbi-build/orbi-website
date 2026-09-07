@@ -107,3 +107,5 @@ and not yet purchasable.
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones
 - Licence: Sustainable Use License v1.0 (fair-code) — https://github.com/orbi-build/orbi/blob/main/LICENSE.md
+- Comparison — Orbi vs Claude Managed Agents (English): https://orbi.build/compare/managed-agents/
+- Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
