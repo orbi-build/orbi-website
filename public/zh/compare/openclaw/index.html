@@ -35,6 +35,28 @@
   <link rel="stylesheet" href="/styles.css">
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Orbi vs OpenClaw：开源自托管 agent 对比 | Orbi",
+  "description": "经过核实的事实对比：OpenClaw 是什么、2026 年 4 月 Anthropic 切断第三方 harness 的 Claude 订阅通道改变了什么、两个开源 agent 的关键差异，以及各自适合谁。全部事实标注来源与核实日期。",
+  "inLanguage": "zh-CN",
+  "url": "https://orbi.build/zh/compare/openclaw/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>
@@ -67,7 +89,7 @@
       <section class="compare-hero shell" aria-labelledby="compare-title">
         <p class="eyebrow">竞品对比 · 事实核实于 2026-09-07</p>
         <h1 id="compare-title">Orbi vs OpenClaw</h1>
-        <p class="hero-lede"><strong>同一种信念，两种工作。</strong>两个项目都是开源自托管 agent，模型 key 都握在你自己手里。OpenClaw 是一个在 WhatsApp、Telegram 里随叫随到的常驻个人助理；Orbi 是 GitHub 原生的交付系统：领取 Issue、写代码、独立审查、合并 PR。本页逐条给出事实——包括 2026 年 4 月那场重塑 OpenClaw 经济模型的 Anthropic 封禁——每条都标注来源。</p>
+        <p class="hero-lede"><strong>同一种信念，两种工作。</strong>两个项目都是开源自托管 agent，模型 key 都握在你自己手里。OpenClaw 是一个在 WhatsApp、Telegram 里随叫随到的常驻个人助理；Orbi 是 GitHub 原生的交付系统：领取 Issue、写代码、独立审查、合并 PR。本页逐条给出事实——包括 2026 年 4 月那场重塑 OpenClaw 经济模型的 Anthropic 订阅通道调整——每条都标注来源。</p>
         <div class="cta-row">
           <a class="button button-signal" href="https://docs.orbi.build/zh">自托管 Orbi</a>
           <a class="button button-ghost" href="/zh/compare/">全部对比</a>
@@ -117,7 +139,7 @@
             <time datetime="2026-04">之后</time>
             <div>
               <strong>OpenClaw 上的 Claude 转向 API 计费</strong>
-              <p>留在 Claude 上的用户转向全额 API 计费或 Extra Usage。OpenClaw 本身跑 API key 和本地模型依然没问题——封禁重新定价的是一种用法，不是框架本身。</p>
+              <p>留在 Claude 上的用户转向全额 API 计费或 Extra Usage。OpenClaw 本身跑 API key 和本地模型依然没问题——订阅通道调整重新定价的是一种用法，不是框架本身。</p>
               <p class="src-note">来源：Medium（2026-04-11）；openclaw.ai——核实于 2026-09-07。</p>
             </div>
           </li>
@@ -157,7 +179,7 @@
             </tr>
             <tr>
               <th scope="row">模型政策风险</th>
-              <td>BYOK 任意 OpenAI 兼容端点（含免费额度），换 provider 只改配置</td>
+              <td>BYOK 任意 OpenAI 兼容端点（含provider 额度（如有）），换 provider 只改配置</td>
               <td>多模型（Claude、GPT、本地）；社区曾重度依赖 Claude 订阅，直到 2026-04 被切断</td>
             </tr>
             <tr>
@@ -217,7 +239,7 @@
           <small><a href="https://x.com/bcherny" rel="noopener">x.com/bcherny</a></small>
         </li>
         <li>
-          <strong>Medium《Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters》——OpenClaw 首发与改名历史、封禁背景与 Managed Agents 发布</strong>
+          <strong>Medium《Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters》——OpenClaw 首发与改名历史、订阅通道调整背景与 Managed Agents 发布</strong>
           <span class="source-date">Medium, 2026-04-11 · 核实于 2026-09-07</span>
           <small>Clawdbot 首发、实例数、$20 订阅跑出 $236+ 用量、12x–36x 差距、$0.08/session-hour</small>
         </li>

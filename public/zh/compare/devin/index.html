@@ -35,6 +35,28 @@
   <link rel="stylesheet" href="/styles.css">
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Orbi vs Devin：自托管交付 vs Cognition 托管 AI 工程师 | Orbi",
+  "description": "经过核实的事实对比：Devin 是 Cognition 的托管自主工程师——Slack/网页指派任务、云端执行、订阅加积分计费、模型锁定；与自托管的 Orbi 差在哪、各自适合谁。每条事实标注来源与核实日期。",
+  "inLanguage": "zh-CN",
+  "url": "https://orbi.build/zh/compare/devin/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>
@@ -139,7 +161,7 @@
             </tr>
             <tr>
               <th scope="row">模型</th>
-              <td>BYOK——任意 OpenAI 兼容端点（含免费额度），换模型只改配置</td>
+              <td>BYOK——任意 OpenAI 兼容端点（含provider 额度（如有）），换模型只改配置</td>
               <td>Cognition 自研 SWE 模型跑在 Cognition 基础设施上；无自带 key 选项</td>
             </tr>
             <tr>
@@ -184,7 +206,7 @@
             <p class="option-state">选 ORBI，如果你要</p>
             <h3>一条自己拥有的交付产线</h3>
             <ul>
-              <li>成本由你自己的硬件和模型封顶——免费额度可以做到零成本，且没有按任务计价器</li>
+              <li>成本由你自己的硬件和模型封顶——provider 额度（如有）可以做到零成本，且没有按任务计价器</li>
               <li>整条链路开源可审计；每次运行都在 GitHub 留下证据</li>
               <li>GitHub 原生队列：一个 <code>ai-ready</code> label 就开工；branch protection 和人工审批依然说了算</li>
               <li>BYOK 任意 OpenAI 兼容端点——模型是一个配置项，不是一个 vendor</li>
