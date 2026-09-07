@@ -30,6 +30,23 @@ async function stopServer(server) {
   });
 }
 
+async function assertCloudLoginRedirect(browser) {
+  if (!process.env.BASE_URL) return;
+  const context = await browser.newContext();
+  try {
+    const response = await context.request.get(`${targetURL}/api/login`, { maxRedirects: 0 });
+    if (response.status() !== 302) {
+      throw new Error(`Cloud login expected 302, got ${response.status()}`);
+    }
+    const location = response.headers().location || "";
+    if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
+      throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
@@ -105,6 +122,7 @@ async function main() {
         });
       });
     }
+    await assertCloudLoginRedirect(browser);
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
