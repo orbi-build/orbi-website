@@ -1149,6 +1149,7 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
                 if path == COMPARE_INDEX_EN_PATH:
                     self.assertIn(href, [link for _, link in page.hrefs])
+            self.assertIn("https://github.com/orbi-build/orbi-website/issues/8", [link for _, link in page.hrefs])
 
 
 if __name__ == "__main__":
