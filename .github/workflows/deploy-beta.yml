@@ -62,6 +62,20 @@ jobs:
           wranglerVersion: "4.34.0"
           command: deploy --env beta
 
+      - name: Bind beta GitHub API token
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          ORBI_GITHUB_TOKEN: ${{ secrets.ORBI_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$ORBI_GITHUB_TOKEN" ]]; then
+            echo "::error::ORBI_GITHUB_TOKEN secret is required for the beta /stats endpoint"
+            exit 1
+          fi
+          printf '%s' "$ORBI_GITHUB_TOKEN" | npx wrangler@4.34.0 secret put GITHUB_TOKEN --env beta
+
       - name: Smoke-test beta deployment
         shell: bash
         run: |
