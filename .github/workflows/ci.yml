@@ -18,6 +18,6 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: timeout 300s npm ci
       - name: Run unit tests
-        run: npm test
+        run: timeout 300s npm test
