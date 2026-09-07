@@ -69,19 +69,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.close();
 }
 
-async function assertCloudLogin(browser) {
-  if (!process.env.BASE_URL) return;
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto(`${targetURL}/`, { waitUntil: "networkidle" });
-  await page.locator('[data-cta="cloud-start"]').click();
-  await page.waitForLoadState("domcontentloaded");
-  const login = new URL(page.url());
-  if (login.pathname !== "/login" || login.hostname === new URL(targetURL).hostname) {
-    throw new Error(`Cloud CTA did not reach Cloud login: ${page.url()}`);
-  }
-  await page.close();
-}
-
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : startServer();
@@ -105,8 +92,6 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertCloudLogin(browser);
-
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];

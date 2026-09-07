@@ -31,19 +31,19 @@ describe("Worker request helpers", () => {
   it("redirects Cloud login without forwarding tenant query parameters", async () => {
     const response = cloudLoginResponse(
       new Request("https://orbi.build/api/login?tenant=untrusted"),
-      "https://cloud.orbi.build",
+      "https://beta.orbi.build/api/login",
     );
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/login");
+    expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
   it("routes the public API login path to the Cloud handoff", async () => {
     const response = await handleFetch(
       new Request("https://orbi.build/api/login?tenant=untrusted"),
-      { CLOUD_BASE_URL: "https://cloud.orbi.build", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+      { CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
     );
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/login");
+    expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
   it("fails clearly when Cloud is not configured", async () => {

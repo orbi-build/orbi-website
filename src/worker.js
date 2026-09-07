@@ -27,7 +27,6 @@ const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
 const CLOUD_LOGIN_ROUTE = "/api/login";
-const CLOUD_LOGIN_PATH = "/login";
 
 // /api/apply is an unauthenticated write into D1: bound the body and every
 // column so a script cannot fill the table with oversized rows.
@@ -162,15 +161,17 @@ function cloudLoginResponse(request, cloudBaseUrl) {
     });
   }
   if (!cloudBaseUrl) {
-    console.error("cloud_login_unavailable: CLOUD_BASE_URL is not configured");
+    console.error("cloud_login_unavailable: CLOUD_LOGIN_URL is not configured");
     return new Response(JSON.stringify({ error: "Cloud is temporarily unavailable" }), {
       status: 503,
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
   // Cloud owns OAuth state/session. Do not forward arbitrary query parameters
-  // (in particular tenant) from an unauthenticated website request.
-  const target = new URL(CLOUD_LOGIN_PATH, cloudBaseUrl);
+  // (in particular tenant) from an unauthenticated website request. The
+  // configured value is the verified Cloud login URL, including its route.
+  const target = new URL(cloudBaseUrl);
+  target.search = "";
   return Response.redirect(target.toString(), 302);
 }
 
@@ -297,7 +298,7 @@ async function handleFetch(request, env) {
     }
 
     if (url.pathname === CLOUD_LOGIN_ROUTE) {
-      return cloudLoginResponse(request, env.CLOUD_BASE_URL);
+      return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
     if (url.pathname === "/api/apply") {
