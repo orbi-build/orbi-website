@@ -14,6 +14,22 @@ function startServer() {
   });
 }
 
+async function stopServer(server) {
+  if (!server || server.exitCode !== null) return;
+  await new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      server.kill("SIGKILL");
+      resolve();
+    }, 1000);
+    timer.unref();
+    server.once("exit", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    server.kill();
+  });
+}
+
 async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
@@ -72,13 +88,14 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : startServer();
-  const browser = await chromium.launch({
-    ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
-      ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
-      : {}),
-    headless: true,
-  });
+  let browser;
   try {
+    browser = await chromium.launch({
+      ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+        : {}),
+      headless: true,
+    });
     if (server) {
       await new Promise((resolve, reject) => {
         const timer = setTimeout(resolve, 1000);
@@ -115,8 +132,11 @@ async function main() {
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();
   } finally {
-    await browser.close();
-    if (server) server.kill();
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await stopServer(server);
+    }
   }
 }
 
