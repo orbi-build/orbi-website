@@ -7,6 +7,17 @@ const baseURL = `http://127.0.0.1:${port}`;
 const targetURL = process.env.BASE_URL || baseURL;
 const artifacts = ".orbi";
 
+// Same order as the /compare/ grid; anchor text matches each page's own title.
+const deepDives = [
+  ["Orbi vs OpenClaw", "/compare/openclaw/"],
+  ["Orbi vs GitHub Copilot coding agent", "/compare/github-copilot-coding-agent/"],
+  ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
+  ["Orbi vs OpenHands", "/compare/openhands/"],
+  ["Orbi vs Hermes Agent", "/compare/hermes-agent/"],
+  ["Orbi vs OpenAI Codex", "/compare/codex/"],
+  ["Orbi vs Devin", "/compare/devin/"],
+];
+
 function startServer() {
   return spawn("python3", ["-m", "http.server", String(port)], {
     cwd: "public",
@@ -28,6 +39,17 @@ async function stopServer(server) {
     });
     server.kill();
   });
+}
+
+async function assertFooterDeepDives(page, label) {
+  const links = await page.locator(".site-footer .footer-compare a").evaluateAll((nodes) =>
+    nodes.map((a) => [a.textContent.trim(), a.getAttribute("href")])
+  );
+  for (const [text, href] of deepDives) {
+    const match = links.find(([, linkHref]) => linkHref === href);
+    if (!match) throw new Error(`${label}: footer is missing deep dive ${href}`);
+    if (match[0] !== text) throw new Error(`${label}: ${href} anchor is "${match[0]}", expected "${text}"`);
+  }
 }
 
 async function assertCloudLoginRedirect(browser) {
@@ -90,7 +112,21 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!(await link.isVisible())) throw new Error(`${path}: ${cta} CTA is not visible`);
     if ((await link.getAttribute("href")) !== href) throw new Error(`${path}: ${cta} CTA has wrong href`);
   }
+  const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
+    nodes.map((a) => a.getAttribute("href"))
+  );
+  if (path === "/") {
+    await assertFooterDeepDives(page, path);
+  } else {
+    if (!footerHrefs.includes("/zh/compare/")) throw new Error(`${path}: ZH footer must link /zh/compare/`);
+    if (footerHrefs.some((href) => href && href.startsWith("/compare/"))) {
+      throw new Error(`${path}: ZH footer must not link EN deep dives: ${JSON.stringify(footerHrefs)}`);
+    }
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.locator(".site-footer").screenshot({ path: `${artifacts}/footer-${screenshot}` });
   await hero.locator('[data-cta="comparisons"]').click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
@@ -127,6 +163,19 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    const assetContext = await browser.newContext();
+    try {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/"]) {
+        const response = await assetContext.request.get(`${targetURL}${path}`);
+        if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
+      }
+      const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
+      for (const [, href] of deepDives) {
+        if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
+      }
+    } finally {
+      await assetContext.close();
+    }
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
@@ -142,9 +191,11 @@ async function main() {
     page.on("console", (message) => { if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) errors.push(`${message.location().url}: ${message.text()}`); });
     page.on("requestfailed", (request) => { if (!isTelemetry(request.url())) failures.push(request.url()); });
     await page.goto(`${targetURL}/compare/`, { waitUntil: "networkidle" });
+    await assertFooterDeepDives(page, "/compare/");
     await page.getByRole("link", { name: "Read the OpenClaw deep dive", exact: true }).click();
     await page.waitForLoadState("networkidle");
     if (new URL(page.url()).pathname !== "/compare/openclaw/") throw new Error(`detail route: ${page.url()}`);
+    await assertFooterDeepDives(page, "/compare/openclaw/");
     if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/openclaw/") throw new Error("detail language switch is wrong");
     await page.screenshot({ path: `${artifacts}/comparison-detail.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
