@@ -46,7 +46,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
   const paths = {
-    apply: "/apply",
+    "cloud-start": "/api/login",
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
     comparisons: comparisonPath,
   };
@@ -65,6 +65,19 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   if (consoleErrors.length || failedRequests.length) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
+async function assertCloudLogin(browser) {
+  if (!process.env.BASE_URL) return;
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${targetURL}/`, { waitUntil: "networkidle" });
+  await page.locator('[data-cta="cloud-start"]').click();
+  await page.waitForLoadState("domcontentloaded");
+  const login = new URL(page.url());
+  if (login.pathname !== "/api/login" || login.hostname === new URL(targetURL).hostname) {
+    throw new Error(`Cloud CTA did not reach Cloud login: ${page.url()}`);
   }
   await page.close();
 }
@@ -92,6 +105,7 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertCloudLogin(browser);
 
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];

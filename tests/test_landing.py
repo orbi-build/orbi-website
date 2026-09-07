@@ -197,11 +197,11 @@ class LandingTests(unittest.TestCase):
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Docs", "GitHub", "Apply"),
+                ("How it works", "Docs", "GitHub", "Start Cloud"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "文档", "GitHub", "报名"),
+                ("产品怎么运作", "文档", "GitHub", "开始 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
@@ -281,6 +281,7 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
+            self.assertEqual(ctas["cloud-start"], "/api/login")
             self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
@@ -344,28 +345,25 @@ class LandingTests(unittest.TestCase):
         self.assertIn("商业托管服务", self.zh.text)
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
-    def test_cloud_entry_names_founding_pilot_and_apply(self) -> None:
-        for page, state, apply_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply for the Founding Pilot"),
-            (self.zh, "创始试点 · 席位有限", "申请创始试点"),
+    def test_cloud_entry_separates_start_from_application(self) -> None:
+        for page, state, start_label, apply_label in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us"),
+            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            self.assertIn(apply_label, page.text)
-            self.assertTrue(
-                any(
-                    href == "/apply" and text.startswith(apply_label)
-                    for text, href in page.hrefs
-                ),
-                page.hrefs,
-            )
+            self.assertTrue(any(href == "/api/login" and text.startswith(start_label) for text, href in page.hrefs))
+            self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
-    def test_accepted_partners_get_connect_and_status_links(self) -> None:
-        cloud_login = "https://beta.orbi.build/api/login"
-        cloud_status = "https://beta.orbi.build/api/"
-        for page in (self.en, self.zh):
-            hrefs = [href for _, href in page.hrefs]
-            self.assertIn(cloud_login, hrefs)
-            self.assertIn(cloud_status, hrefs)
+    def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
+        import tomllib
+        with open(ROOT / "wrangler.toml", "rb") as handle:
+            config = tomllib.load(handle)
+        self.assertEqual(config["vars"]["CLOUD_BASE_URL"], "https://cloud.orbi.build")
+        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_BASE_URL"], "https://beta-cloud.orbi.build")
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertIn("new URL(CLOUD_LOGIN_PATH, cloudBaseUrl)", worker)
+        self.assertIn("CLOUD_BASE_URL", worker)
+        self.assertNotIn("https://beta-cloud.orbi.build/api/login", worker)
 
     def test_cloud_faq_matches_pilot_reality(self) -> None:
         for html, not_yet in (

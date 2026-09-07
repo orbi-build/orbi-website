@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { field, fetchAsset, githubHeaders } from "../src/worker.js";
+import { cloudLoginResponse, field, fetchAsset, githubHeaders } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -26,6 +26,20 @@ describe("Worker request helpers", () => {
       "https://beta.orbi.build/compare/",
       "https://beta.orbi.build/compare/index.html",
     ]);
+  });
+
+  it("redirects Cloud login without forwarding tenant query parameters", async () => {
+    const response = cloudLoginResponse(
+      new Request("https://orbi.build/api/login?tenant=untrusted"),
+      "https://cloud.orbi.build",
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://cloud.orbi.build/api/login");
+  });
+
+  it("fails clearly when Cloud is not configured", async () => {
+    const response = cloudLoginResponse(new Request("https://orbi.build/api/login"));
+    expect(response.status).toBe(503);
   });
 
   it("builds authenticated GitHub API headers", () => {
