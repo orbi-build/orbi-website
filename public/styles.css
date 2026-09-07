@@ -1142,6 +1142,28 @@ h2 {
   font-size: 0.95em;
 }
 
+/* The four hand-run steps stay available but collapsed, clearly secondary to
+ * the one-line install. The nested pre drops the copy-button padding. */
+.install-manual {
+  border-top: 1px solid var(--line);
+}
+
+.install-manual summary {
+  padding: 12px 20px;
+  color: #8ba39d;
+  font-family: var(--body);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.install-manual summary:hover {
+  color: #dbe9e4;
+}
+
+.install-manual pre {
+  padding: 0 20px 16px;
+}
+
 .faq {
   padding-top: clamp(100px, 10vw, 168px);
   padding-bottom: clamp(100px, 10vw, 168px);

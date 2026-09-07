@@ -12,6 +12,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Keep public/install.sh synced with the orbi repo
+        # The homepage's one-line install downloads this file, so a stale copy
+        # would install something other than the current orbi. Sync with
+        # scripts/sync-install-sh.sh whenever the source script changes.
+        run: |
+          set -euo pipefail
+          timeout 120s curl --fail --silent --show-error --location \
+            https://raw.githubusercontent.com/orbi-build/orbi/main/install.sh \
+            -o /tmp/orbi-install.sh
+          diff -u /tmp/orbi-install.sh public/install.sh
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

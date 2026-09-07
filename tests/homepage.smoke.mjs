@@ -7,6 +7,10 @@ const baseURL = `http://127.0.0.1:${port}`;
 const targetURL = process.env.BASE_URL || baseURL;
 const artifacts = ".orbi";
 
+// The homepage's one-line install command. Its host is beta.orbi.build, the
+// host CI actually deploys; see test_landing.py's workflow assertions.
+const installCommand = "curl -fsSL https://beta.orbi.build/install.sh | bash";
+
 // Same order as the /compare/ grid; anchor text matches each page's own title.
 const deepDives = [
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
@@ -125,6 +129,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  const shownCommand = (await page.locator(".install-block [data-copy-source]").textContent()).trim();
+  if (shownCommand !== installCommand) {
+    throw new Error(`${path}: install block shows ${JSON.stringify(shownCommand)}, expected the one-liner`);
+  }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.locator(".site-footer").screenshot({ path: `${artifacts}/footer-${screenshot}` });
   await hero.locator('[data-cta="comparisons"]').click();
@@ -136,6 +144,47 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
   await page.close();
+}
+
+async function assertInstallCopiesOneLiner(browser, path) {
+  const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+  try {
+    const page = await context.newPage();
+    await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    await page.locator(".install-copy").click();
+    // is-copied flips exactly when the write promise resolved, so the
+    // clipboard read below cannot race the copy.
+    await page.waitForFunction(() => document.querySelector(".install-copy").classList.contains("is-copied"));
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    if (copied !== installCommand) {
+      throw new Error(`${path}: copy button produced ${JSON.stringify(copied)}, expected ${JSON.stringify(installCommand)}`);
+    }
+    await page.close();
+  } finally {
+    await context.close();
+  }
+}
+
+async function assertPublishedInstallScript(browser) {
+  const context = await browser.newContext();
+  try {
+    const response = await context.request.get(`${targetURL}/install.sh`);
+    if (response.status() !== 200) throw new Error(`/install.sh returned ${response.status()}`);
+    const body = await response.text();
+    if (!body.startsWith("#!/usr/bin/env bash") || !body.includes("orbi setup")) {
+      throw new Error("/install.sh does not look like the orbi install script");
+    }
+    // Locally the served bytes must equal the published file; remotely the
+    // drift check in CI owns the equality, so a shape check is enough.
+    if (!process.env.BASE_URL) {
+      const { readFile } = await import("node:fs/promises");
+      if (body !== await readFile("public/install.sh", "utf8")) {
+        throw new Error("/install.sh is not served from public/install.sh verbatim");
+      }
+    }
+  } finally {
+    await context.close();
+  }
 }
 
 async function main() {
@@ -159,6 +208,8 @@ async function main() {
       });
     }
     await assertCloudLoginRedirect(browser);
+    await assertPublishedInstallScript(browser);
+    await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
