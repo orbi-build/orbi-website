@@ -30,7 +30,9 @@ head_sampling_rate = 1
 # unchanged when deploying with `wrangler deploy --env beta`.
 [env.beta]
 name = "orbi-website-beta"
-workers_dev = false
+# Keep a deploy target so routine releases update the Worker used by the
+# existing beta Custom Domain, without managing that domain or its DNS.
+workers_dev = true
 # Prevent production custom-domain routes from being inherited by beta.
 routes = []
 

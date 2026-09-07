@@ -695,6 +695,7 @@ class LandingTests(unittest.TestCase):
             config = tomllib.load(handle)
         beta = config["env"]["beta"]
         self.assertEqual(beta["name"], "orbi-website-beta")
+        self.assertTrue(beta["workers_dev"])
         # The beta Custom Domain is provisioned infrastructure, not part of a
         # routine deploy. An explicit empty list also prevents production
         # custom-domain routes from being inherited by the beta deploy.
