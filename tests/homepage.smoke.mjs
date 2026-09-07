@@ -104,17 +104,25 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
-  const paths = {
+  const heroPaths = {
     "cloud-start": "/api/login",
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
-    comparisons: comparisonPath,
   };
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
-  for (const [cta, href] of Object.entries(paths)) {
+  // Issue #51: the compare entry belongs to the top navigation; the hero
+  // must not carry a competing focus.
+  if (await hero.locator('[data-cta="comparisons"]').count() !== 0) {
+    throw new Error(`${path}: compare CTA must not live in the hero`);
+  }
+  for (const [cta, href] of Object.entries(heroPaths)) {
     const link = hero.locator(`[data-cta="${cta}"]`);
     await link.scrollIntoViewIfNeeded();
     if (!(await link.isVisible())) throw new Error(`${path}: ${cta} CTA is not visible`);
     if ((await link.getAttribute("href")) !== href) throw new Error(`${path}: ${cta} CTA has wrong href`);
+  }
+  const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
+  if ((await navCompare.getAttribute("href")) !== comparisonPath) {
+    throw new Error(`${path}: nav comparisons link has wrong href`);
   }
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
@@ -135,7 +143,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.locator(".site-footer").screenshot({ path: `${artifacts}/footer-${screenshot}` });
-  await hero.locator('[data-cta="comparisons"]').click();
+  // Below 900px the navigation is collapsed; open it before clicking through.
+  const menuToggle = page.locator("[data-menu-toggle]");
+  if (await menuToggle.isVisible()) await menuToggle.click();
+  await navCompare.click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
     throw new Error(`${path}: expected ${comparisonPath}, got ${page.url()}`);
