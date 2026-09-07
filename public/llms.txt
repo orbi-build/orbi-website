@@ -102,7 +102,9 @@ and not yet purchasable.
 - Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
 - Comparison — Orbi vs OpenClaw (Chinese): https://orbi.build/zh/compare/openclaw/
 - Comparison — Orbi vs Devin (English): https://orbi.build/compare/devin/
+- Comparison — Orbi vs GitHub Copilot coding agent (English): https://orbi.build/compare/github-copilot-coding-agent/
 - Comparison — Orbi vs Devin (Chinese): https://orbi.build/zh/compare/devin/
+- Comparison — Orbi vs GitHub Copilot coding agent (Chinese): https://orbi.build/zh/compare/github-copilot-coding-agent/
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones

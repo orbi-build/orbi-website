@@ -1110,7 +1110,7 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 3, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 4, statuses
             )
         # A "Live" badge that links nowhere is a dead entry: a live dive is
         # an <a href> block, a research entry a plain <div>.
@@ -1120,7 +1120,7 @@ class CompareIndexTests(unittest.TestCase):
                 for entry in re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
                 if "is-live" in entry
             ]
-            self.assertEqual(len(live_entries), 3, live_entries)
+            self.assertEqual(len(live_entries), 4, live_entries)
             for entry in live_entries:
                 self.assertIn('<a href="', entry, entry)
 
