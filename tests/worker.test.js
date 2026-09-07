@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch } from "../src/worker.js";
+import { cloudLoginResponse, configuredCloudLoginUrl, field, fetchAsset, githubHeaders, handleFetch } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -46,10 +46,23 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
-  it("fails clearly when Cloud is not configured", async () => {
-    const response = cloudLoginResponse(new Request("https://orbi.build/api/login"));
-    expect(response.status).toBe(503);
+  it.each([
+    ["production", "https://cloud.orbi.build/api/login"],
+    ["beta", "https://beta.orbi.build/api/login"],
+  ])("redirects the %s Cloud login URL", async (_environment, loginUrl) => {
+    const response = cloudLoginResponse(new Request("https://orbi.build/api/login"), loginUrl);
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(loginUrl);
   });
+
+  it.each([undefined, "not a URL", "http://cloud.orbi.build/api/login", "https://cloud.orbi.build/login"])(
+    "fails closed for invalid Cloud login configuration (%s)", async (loginUrl) => {
+      expect(configuredCloudLoginUrl(loginUrl).error).toBeTruthy();
+      const response = cloudLoginResponse(new Request("https://orbi.build/api/login"), loginUrl);
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ error: "Cloud is temporarily unavailable" });
+    },
+  );
 
   it("builds authenticated GitHub API headers", () => {
     expect(githubHeaders("token")).toEqual({

@@ -13,15 +13,14 @@ npx wrangler dev
 
 ## 部署
 
-生产（production）环境使用顶层 Wrangler 配置，域名为 `orbi.build` / `www.orbi.build`：
+生产（production）环境使用顶层 Wrangler 配置，域名为 `orbi.build` / `www.orbi.build`，Cloud 注册入口为 `https://cloud.orbi.build/api/login`：
 
 ```bash
 set -a; source ~/.cloudflare.env; set +a
 npx wrangler deploy
 ```
 
-Beta 使用隔离的 `beta` environment、Worker `orbi-website-beta` 和已配置的域名
-`beta.orbi.build`，不会修改生产路由或 DNS。域名绑定是一次性基础设施配置，日常部署只发布已绑定的 Worker/assets：
+Beta 使用隔离的 `beta` environment、Worker `orbi-website-beta` 和已配置的域名 `beta.orbi.build`；Cloud 注册入口为 `https://beta.orbi.build/api/login`，不会修改生产路由或 DNS。域名绑定是一次性基础设施配置，日常部署只发布已绑定的 Worker/assets：
 
 ```bash
 set -a; source ~/.cloudflare.env; set +a

@@ -358,12 +358,13 @@ class LandingTests(unittest.TestCase):
         import tomllib
         with open(ROOT / "wrangler.toml", "rb") as handle:
             config = tomllib.load(handle)
-        self.assertEqual(config["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
+        self.assertEqual(config["vars"]["CLOUD_LOGIN_URL"], "https://cloud.orbi.build/api/login")
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("new URL(cloudBaseUrl)", worker)
+        self.assertIn("configuredCloudLoginUrl", worker)
         self.assertIn("CLOUD_LOGIN_URL", worker)
-        self.assertNotIn("cloud.orbi.build", worker)
+        self.assertNotIn("https://cloud.orbi.build/api/login", worker)
+        self.assertNotIn("https://beta.orbi.build/api/login", worker)
         self.assertNotIn("beta-cloud.orbi.build", worker)
 
     def test_cloud_faq_matches_pilot_reality(self) -> None:
@@ -762,6 +763,8 @@ class LandingTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         for text in (
             "beta.orbi.build",
+            "https://beta.orbi.build/api/login",
+            "https://cloud.orbi.build/api/login",
             "CLOUDFLARE_API_TOKEN",
             "CLOUDFLARE_ACCOUNT_ID",
             "Secret `CLOUDFLARE_API_TOKEN`",
