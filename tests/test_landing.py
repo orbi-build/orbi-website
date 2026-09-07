@@ -688,6 +688,52 @@ class LandingTests(unittest.TestCase):
         for token in ("name", "tg", "scenario", "email"):
             self.assertIn(token, worker)
 
+    def test_beta_wrangler_environment_isolated_from_production(self) -> None:
+        import tomllib
+
+        with open(ROOT / "wrangler.toml", "rb") as handle:
+            config = tomllib.load(handle)
+        beta = config["env"]["beta"]
+        self.assertEqual(beta["name"], "orbi-website-beta")
+        self.assertEqual(beta["routes"], [{"pattern": "beta.orbi.build", "custom_domain": True}])
+        self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
+        self.assertEqual(
+            [route["pattern"] for route in config["routes"]],
+            ["orbi.build", "www.orbi.build"],
+        )
+
+    def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
+        self.assertIn("branches:\n      - main", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("cloudflare/wrangler-action@v3", workflow)
+        self.assertIn('node-version: "20.19.0"', workflow)
+        self.assertIn('wranglerVersion: "4.34.0"', workflow)
+        self.assertIn("npm test", workflow)
+        self.assertIn("command: deploy --env beta", workflow)
+        self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
+        self.assertIn("CLOUDFLARE_ACCOUNT_ID", workflow)
+        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
+        self.assertNotIn("secrets.CLOUDFLARE_ACCOUNT_ID", workflow)
+        self.assertIn("beta.orbi.build/compare/", workflow)
+        self.assertIn("beta.orbi.build/zh/compare/", workflow)
+        self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
+        self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
+
+    def test_beta_deployment_docs_name_secrets_and_environments(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        for text in (
+            "beta.orbi.build",
+            "CLOUDFLARE_API_TOKEN",
+            "CLOUDFLARE_ACCOUNT_ID",
+            "Secret `CLOUDFLARE_API_TOKEN`",
+            "Variable `CLOUDFLARE_ACCOUNT_ID`",
+            "wrangler deploy --env beta",
+            "orbi.build",
+            "production",
+        ):
+            self.assertIn(text, readme)
+
     def test_wrangler_config_keeps_every_binding_at_top_level(self) -> None:
         """A table header claims every key after it, so a stray [section]
         above `assets` swallows the binding and env.ASSETS goes undefined —
