@@ -17,13 +17,17 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
+  let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   await page.route("**/stats", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] }),
+    body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] }),
   }));
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/stats") statsRequested = true;
+  });
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
@@ -32,6 +36,11 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
   });
 
   await page.goto(`${baseURL}${path}`, { waitUntil: "networkidle" });
+  const stats = page.locator("[data-stat]");
+  await stats.last().scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
+    .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
+  if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const entry = page.getByRole("link", { name: label, exact: true }).first();
   await entry.scrollIntoViewIfNeeded();
   if (!(await entry.isVisible())) throw new Error(`${path}: comparison entry is not visible`);
@@ -50,7 +59,12 @@ async function assertHomepage(browser, path, label, comparisonPath, size, screen
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = startServer();
-  const browser = await chromium.launch({ executablePath: "/usr/bin/chromium", headless: true });
+  const browser = await chromium.launch({
+    ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+      : {}),
+    headless: true,
+  });
   try {
     await new Promise((resolve, reject) => {
       const timer = setTimeout(resolve, 1000);
