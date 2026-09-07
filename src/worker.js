@@ -142,6 +142,16 @@ async function statsResponse(request, token) {
   return response;
 }
 
+async function fetchAsset(request, assets) {
+  const response = await assets.fetch(request);
+  const url = new URL(request.url);
+  if (response.status === 404 && url.pathname.endsWith("/")) {
+    url.pathname += "index.html";
+    return assets.fetch(new Request(url, request));
+  }
+  return response;
+}
+
 async function handleApply(request, env) {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "method not allowed" }), {
@@ -268,7 +278,7 @@ async function handleFetch(request, env) {
       return await handleApply(request, env);
     }
 
-    const asset = await env.ASSETS.fetch(request);
+    const asset = await fetchAsset(request, env.ASSETS);
     const response = new Response(asset.body, asset);
     for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
       response.headers.set(key, value);
@@ -276,7 +286,7 @@ async function handleFetch(request, env) {
     return response;
 }
 
-export { field, githubHeaders };
+export { field, fetchAsset, githubHeaders };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
