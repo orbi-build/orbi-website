@@ -74,7 +74,7 @@ jobs:
             echo "::error::ORBI_GITHUB_TOKEN secret is required for the beta /stats endpoint"
             exit 1
           fi
-          printf '%s' "$ORBI_GITHUB_TOKEN" | npx wrangler@4.34.0 secret put GITHUB_TOKEN --env beta
+          printf '%s' "$ORBI_GITHUB_TOKEN" | timeout 120s npx wrangler@4.34.0 secret put GITHUB_TOKEN --env beta
 
       - name: Smoke-test beta deployment
         shell: bash
