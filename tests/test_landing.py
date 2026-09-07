@@ -1251,6 +1251,23 @@ class CompareIndexTests(unittest.TestCase):
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
 
+    def test_the_closing_heading_names_the_choice_dimension(self) -> None:
+        """Issue #54: the closing H2 states the real decision axis — where
+        the thing runs — in both languages, and the retired "Pick by the
+        job" wording has no residual copies on the compare pages."""
+        retired = ("Pick by the job", "按活选工具")
+        for html, page, heading in (
+            (self.en_html, self.en, "Choose by where it runs"),
+            (self.zh_html, self.zh, "按运行位置选择"),
+        ):
+            self.assertIn(heading, page.headings)
+            for phrase in retired:
+                self.assertNotIn(phrase, html)
+        for path in (COMPARE_EN_PATH, COMPARE_ZH_PATH):
+            html = path.read_text(encoding="utf-8")
+            for phrase in retired:
+                self.assertNotIn(phrase, html)
+
 
 class ManagedAgentsComparisonTests(unittest.TestCase):
     def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
