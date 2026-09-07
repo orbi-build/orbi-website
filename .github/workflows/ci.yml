@@ -19,5 +19,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: timeout 300s npm ci
+      - name: Install Chromium for browser smoke tests
+        run: timeout 300s npx playwright install --with-deps chromium
       - name: Run unit tests
         run: timeout 300s npm test
+      - name: Run browser smoke tests
+        run: timeout 300s npm run test:browser
