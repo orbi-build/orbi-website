@@ -1100,8 +1100,8 @@ class CompareIndexTests(unittest.TestCase):
                 self.assertIn(name, page.text, name)
 
     def test_live_dive_statuses_match_the_published_pages(self) -> None:
-        """Published deep dives are live; research entries remain unlinked, and
-        every live entry must be a link."""
+        """Published deep dives are live, and every published or research
+        entry points to its page or research ticket."""
         for page in (self.en, self.zh):
             statuses = [
                 attrs.get("class", "")
@@ -1112,16 +1112,11 @@ class CompareIndexTests(unittest.TestCase):
             self.assertEqual(
                 len([cls for cls in statuses if "is-live" in cls]), 4, statuses
             )
-        # A "Live" badge that links nowhere is a dead entry: a live dive is
-        # an <a href> block, a research entry a plain <div>.
+        # A published or research entry must not become a dead end.
         for html in (self.en_html, self.zh_html):
-            live_entries = [
-                entry
-                for entry in re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
-                if "is-live" in entry
-            ]
-            self.assertEqual(len(live_entries), 4, live_entries)
-            for entry in live_entries:
+            entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
+            self.assertEqual(len(entries), 5, entries)
+            for entry in entries:
                 self.assertIn('<a href="', entry, entry)
 
 
@@ -1141,6 +1136,19 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
         for path, href in ((COMPARE_INDEX_EN_PATH, "/compare/managed-agents/"), (COMPARE_INDEX_ZH_PATH, "/zh/compare/managed-agents/")):
             html, page = parse(path)
             self.assertIn(href, [link for _, link in page.hrefs])
+
+    def test_overviews_have_the_complete_matrix_and_vendor_risk_section(self) -> None:
+        for path, terms in (
+            (COMPARE_INDEX_EN_PATH, ("Same destination, different ownership", "OpenAI Codex", "Pricing", "Degradation", "Audit / data", "Supply / policy", "Account access", "verified 2026-09-07")),
+            (COMPARE_INDEX_ZH_PATH, ("终点相同，所有权不同", "OpenAI Codex", "涨价", "降级", "审计 / 数据", "断供 / 政策", "账号访问", "核实于 2026-09-07")),
+        ):
+            html, page = parse(path)
+            self.assertTrue(all(term in page.text for term in terms), page.text)
+            tables = [tag for tag, _ in page.elements if tag == "table"]
+            self.assertGreaterEqual(len(tables), 2)
+            for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
+                if path == COMPARE_INDEX_EN_PATH:
+                    self.assertIn(href, [link for _, link in page.hrefs])
 
 
 if __name__ == "__main__":

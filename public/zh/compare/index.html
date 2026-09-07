@@ -74,6 +74,47 @@
       </section>
     </div>
 
+    <section class="compare-section shell" aria-labelledby="overview-title">
+      <p class="section-tag">一页总览</p>
+      <h2 id="overview-title">终点相同，所有权不同</h2>
+      <p class="section-lede">托管 agent 把交付产线放在 vendor 云上。Orbi 在你的机器上跑同一个 issue → agent → PR 闭环，GitHub 是事实源，模型选择权也在你手里。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">维度</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">运行位置</th><td>用户自己的机器</td><td>Anthropic 云</td><td>GitHub 云</td><td>OpenAI 云</td><td>Cognition 云</td></tr>
+            <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code></td><td>API 调用</td><td>Issue + <code>@copilot</code></td><td>ChatGPT、CLI 或 GitHub</td><td>Slack 或网页</td></tr>
+            <tr><th scope="row">状态存储</th><td>GitHub Issues、labels、分支、PR</td><td>Anthropic Session 日志</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td></tr>
+            <tr><th scope="row">模型</th><td>BYOK，任意端点</td><td>Claude</td><td>GitHub 提供的模型</td><td>OpenAI</td><td>Cognition 锁定</td></tr>
+            <tr><th scope="row">隔离</th><td>Git worktree</td><td>云沙箱</td><td>云沙箱</td><td>云沙箱</td><td>云环境</td></tr>
+            <tr><th scope="row">交付</th><td>审查后的 PR + merge</td><td>API 返回</td><td>PR</td><td>PR</td><td>PR</td></tr>
+            <tr><th scope="row">成本</th><td>自备硬件，模型可零成本</td><td>token + $0.08/session-hour</td><td>Copilot 订阅</td><td>ChatGPT 订阅/API</td><td>订阅 + 积分</td></tr>
+            <tr><th scope="row">开源 / 自托管</th><td>是 / 是</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">来源：<a href="https://docs.orbi.build/zh">Orbi 文档</a>；<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>；<a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub 文档</a>；<a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>；<a href="https://devin.ai/" rel="noopener">Devin</a>——均核实于 2026-09-07。各家的范围与来源见下方深度对比。</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
+      <div class="shell">
+        <p class="section-tag">VENDOR 背刺风险</p>
+        <h2 id="risk-title">便利不该等于交出边界</h2>
+        <p class="section-lede">当零运维是第一优先级时，托管 agent 可以是正确选择。但它也把五个关键决定留给 vendor：定价、模型容量、数据接触、供给和账号访问。</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table"><thead><tr><th scope="col">风险</th><th scope="col">已发生的案例</th><th scope="col">Orbi 的取舍</th></tr></thead><tbody>
+            <tr><th scope="row">涨价</th><td>Managed Agents 在 token 价格之外增加 $0.08/session-hour。</td><td>硬件和 provider 自选，无 session-hour 费用。</td></tr>
+            <tr><th scope="row">降级</th><td>Anthropic 解释 OpenClaw 事件时说：“Capacity is a resource we manage thoughtfully。”</td><td>在配置里切换 provider 或模型。</td></tr>
+            <tr><th scope="row">审计 / 数据</th><td>云端 agent 执行时，代码、凭证和任务上下文经过 vendor 基础设施。</td><td>代码、密钥和运行证据留在本地。</td></tr>
+            <tr><th scope="row">断供 / 政策</th><td>2026-04-04 Anthropic 切断 OpenClaw 的订阅通道，用户只能转 API 计费或 Extra Usage。</td><td>BYOK 跨 provider，避免单一供给切断。</td></tr>
+            <tr><th scope="row">账号访问</th><td>托管服务的访问权和 ToS 解释权由 vendor 控制。</td><td>不需要任何 agent vendor 账号。</td></tr>
+          </tbody></table>
+        </div>
+        <p class="thesis-punch">托管 agent 的便利，以 vendor 的单方变更权作抵押。Orbi 把这五项风险留在你手里；代价是维护一台机器，收益是没有任何人能单方改变你的运行方式。</p>
+        <p class="src-note">来源：<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>；<a href="https://x.com/bcherny" rel="noopener">Boris Cherny 公开声明</a>；<a href="/zh/compare/openclaw/">OpenClaw 深度对比</a>；<a href="https://github.com/orbi-build/orbi-website/issues/4">竞品调研 epic</a>——核实于 2026-09-07。这些是所有权取舍，不是对服务质量的判断。</p>
+      </div>
+    </section>
+
     <section class="compare-section shell" aria-labelledby="dives-title">
       <p class="section-tag">对比版图</p>
       <h2 id="dives-title">深度对比</h2>
@@ -100,11 +141,11 @@
           </a>
         </li>
         <li>
-          <div>
+          <a href="https://github.com/orbi-build/orbi-website/issues/4">
             <strong>OpenAI Codex（cloud）</strong>
-            <span class="dive-status">调研中</span>
+            <span class="dive-status">调研 ticket</span>
             <p>ChatGPT 侧的云端软件工程 agent，每个任务一个独立沙箱。</p>
-          </div>
+          </a>
         </li>
         <li>
           <a href="/zh/compare/devin/">

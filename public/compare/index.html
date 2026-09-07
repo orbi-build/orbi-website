@@ -74,6 +74,47 @@
       </section>
     </div>
 
+    <section class="compare-section shell" aria-labelledby="overview-title">
+      <p class="section-tag">THE ONE-PAGE VIEW</p>
+      <h2 id="overview-title">Same destination, different ownership</h2>
+      <p class="section-lede">Managed agents put the delivery line in a vendor cloud. Orbi runs the same issue → agent → PR loop on your machine, with GitHub as the source of truth and your model choice intact.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Runs where</th><td>Your machine</td><td>Anthropic cloud</td><td>GitHub cloud</td><td>OpenAI cloud</td><td>Cognition cloud</td></tr>
+            <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code></td><td>API call</td><td>Issue + <code>@copilot</code></td><td>ChatGPT, CLI, or GitHub</td><td>Slack or web</td></tr>
+            <tr><th scope="row">State</th><td>GitHub Issues, labels, branches, PRs</td><td>Anthropic Session log</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td></tr>
+            <tr><th scope="row">Models</th><td>BYOK, any endpoint</td><td>Claude</td><td>GitHub’s available models</td><td>OpenAI</td><td>Cognition</td></tr>
+            <tr><th scope="row">Isolation</th><td>Git worktree</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud environment</td></tr>
+            <tr><th scope="row">Delivery</th><td>Reviewed PR + merge</td><td>API response</td><td>PR</td><td>PR</td><td>PR</td></tr>
+            <tr><th scope="row">Cost</th><td>Hardware; model can be free</td><td>Tokens + $0.08/session-hour</td><td>Copilot subscription</td><td>ChatGPT subscription/API</td><td>Subscription + credits</td></tr>
+            <tr><th scope="row">Open / self-hosted</th><td>Yes / Yes</td><td>No / No</td><td>No / No</td><td>No / No</td><td>No / No</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Sources: <a href="https://docs.orbi.build">Orbi documentation</a>; <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>; <a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub Docs</a>; <a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>; <a href="https://devin.ai/" rel="noopener">Devin</a> — all verified 2026-09-07. See each linked deep dive below for scope and sources.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
+      <div class="shell">
+        <p class="section-tag">THE VENDOR BACKDOOR RISK</p>
+        <h2 id="risk-title">Convenience should not mean surrendering the boundary</h2>
+        <p class="section-lede">Hosted agents can be the right choice when zero operations is the priority. They also leave five consequential decisions with a vendor: pricing, model capacity, data handling, supply, and account access.</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table"><thead><tr><th scope="col">Risk</th><th scope="col">Observed case</th><th scope="col">Orbi’s trade-off</th></tr></thead><tbody>
+            <tr><th scope="row">Pricing</th><td>Managed Agents adds $0.08/session-hour to token pricing.</td><td>Choose hardware and provider; no session-hour fee.</td></tr>
+            <tr><th scope="row">Degradation</th><td>Anthropic’s OpenClaw explanation said: “Capacity is a resource we manage thoughtfully.”</td><td>Switch provider or model in configuration.</td></tr>
+            <tr><th scope="row">Audit / data</th><td>Cloud agents execute with code, credentials, and task context in vendor infrastructure.</td><td>Keep code, keys, and run evidence local.</td></tr>
+            <tr><th scope="row">Supply / policy</th><td>On 2026-04-04 Anthropic cut OpenClaw’s subscription route, forcing API pricing or Extra Usage.</td><td>BYOK across providers avoids one supply cut.</td></tr>
+            <tr><th scope="row">Account access</th><td>Hosted service access and ToS interpretation remain vendor-controlled.</td><td>No agent-vendor account is required.</td></tr>
+          </tbody></table>
+        </div>
+        <p class="thesis-punch">Hosted-agent convenience is collateralized by vendor change power. Orbi leaves that five-part risk with you; the price is operating a machine, and the benefit is that nobody can unilaterally change your runtime.</p>
+        <p class="src-note">Sources: <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>; <a href="https://x.com/bcherny" rel="noopener">Boris Cherny’s public statements</a>; <a href="/compare/openclaw/">OpenClaw deep dive</a>; <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison research epic</a> — verified 2026-09-07. These are ownership trade-offs, not claims about service quality.</p>
+      </div>
+    </section>
+
     <section class="compare-section shell" aria-labelledby="dives-title">
       <p class="section-tag">THE LANDSCAPE</p>
       <h2 id="dives-title">Deep dives</h2>
@@ -100,11 +141,11 @@
           </a>
         </li>
         <li>
-          <div>
+          <a href="https://github.com/orbi-build/orbi-website/issues/4">
             <strong>OpenAI Codex (cloud)</strong>
-            <span class="dive-status">In research</span>
+            <span class="dive-status">Research ticket</span>
             <p>Cloud software-engineering agent from the ChatGPT side, one sandbox per task.</p>
-          </div>
+          </a>
         </li>
         <li>
           <a href="/compare/devin/">
