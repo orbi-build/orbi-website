@@ -28,12 +28,21 @@ set -a; source ~/.cloudflare.env; set +a
 npx wrangler deploy --env beta
 ```
 
-日常开发合并进 `beta` 分支：合并到 `beta` 后，`.github/workflows/deploy-beta.yml` 会先
-运行 `npm test` 和 landing/deployment contract tests，再部署 beta，并检查首页、
-`/compare/` 及英文/中文 OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1
-数据库，不会写入生产库。push 到 `main` 不再触发 beta 部署（`main` 保留为后续生产发布
-分支）。也可以在
-Actions 中使用 `workflow_dispatch` 手动触发。
+分支流：`beta` 是开发部署分支，`main` 是生产晋升分支。
+
+合并进 `beta` 后，`.github/workflows/deploy-beta.yml` 会先运行 `npm test` 和
+landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
+OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1 数据库，不会写入生产库。
+
+合并进 `main` 后，`.github/workflows/deploy-production.yml` 在 GitHub Environment
+`production` 的 required reviewer 审批通过后自动部署生产（`orbi.build` /
+`www.orbi.build`）：部署前运行完整测试，部署后对线上做 HTTP 内容 smoke（期望文案取自
+部署 commit 的页面本身）与真实浏览器 smoke，任一 smoke 失败会自动 `wrangler rollback`
+回部署前的生产版本并让 job 红灯。D1 迁移不在部署路径，生产库 schema 变更仍需显式手工执行。
+两个 workflow 都可在 Actions 中用 `workflow_dispatch` 手动触发。
+
+以上自动化依赖的仓库设置（GitHub 设置，非 git 交付）：Environment `production` 配置
+required reviewers；`main` 分支保护 require PR + required check。
 
 GitHub Actions 需要配置以下 Repository 设置：
 
