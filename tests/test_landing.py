@@ -198,11 +198,11 @@ class LandingTests(unittest.TestCase):
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Docs", "GitHub", "Start Cloud"),
+                ("How it works", "Docs", "GitHub", "Apply"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "文档", "GitHub", "开始 Cloud"),
+                ("产品怎么运作", "文档", "GitHub", "申请试点"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
@@ -274,7 +274,10 @@ class LandingTests(unittest.TestCase):
             self.assertTrue(expected.issubset(capabilities), capabilities)
 
     def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
-        for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
+        for page, docs, repo_label in (
+            (self.en, DOCS_EN, "Get Orbi on GitHub"),
+            (self.zh, DOCS_ZH, "到 GitHub 获取 Orbi"),
+        ):
             ctas = {
                 attrs.get("data-cta"): attrs.get("href")
                 for tag, attrs in page.elements
@@ -282,8 +285,13 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud-start"], "/api/login")
+            self.assertEqual(ctas["github-repo"], GITHUB)
             self.assertEqual(ctas["cloud-apply"], "/apply")
+            self.assertEqual(ctas["cloud-apply-card"], "/apply")
+            self.assertTrue(
+                any(href == GITHUB and text.startswith(repo_label) for text, href in page.hrefs),
+                page.hrefs,
+            )
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -346,14 +354,23 @@ class LandingTests(unittest.TestCase):
         self.assertIn("商业托管服务", self.zh.text)
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
-    def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, state, start_label, apply_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us"),
-            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
+    def test_cloud_entry_routes_to_the_pilot_application(self) -> None:
+        """Cloud sign-up is closed, so the Managed Cloud card asks for the pilot."""
+        for page, state, card_label, contact_label in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply for the Founding Pilot", "Apply / contact us"),
+            (self.zh, "创始试点 · 席位有限", "申请创始试点", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            self.assertTrue(any(href == "/api/login" and text.startswith(start_label) for text, href in page.hrefs))
-            self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
+            self.assertTrue(any(href == "/apply" and text.startswith(card_label) for text, href in page.hrefs))
+            self.assertTrue(any(href == "/apply" and text.startswith(contact_label) for text, href in page.hrefs))
+
+    def test_closed_cloud_signup_is_gone_from_the_shipped_pages(self) -> None:
+        """No shipped page may link /api/login or promise Cloud registration."""
+        for page in (self.en, self.zh):
+            self.assertNotIn("Register with GitHub and continue onboarding", page.text)
+        self.assertNotIn("用 GitHub 注册，然后在 Cloud 继续完成 onboarding", self.zh.text)
+        for html_path in sorted((ROOT / "public").rglob("*.html")):
+            self.assertNotIn("/api/login", html_path.read_text(encoding="utf-8"), html_path)
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
