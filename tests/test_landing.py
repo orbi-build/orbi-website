@@ -788,7 +788,12 @@ class LandingTests(unittest.TestCase):
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
-        self.assertIn("branches:\n      - main", workflow)
+        self.assertIn("branches:\n      - beta", workflow)
+        # merging into beta deploys beta; a push to main must never deploy it
+        self.assertNotIn("branches:\n      - main", workflow)
+        # the log must name the branch and commit the deployment was built from
+        self.assertIn("git rev-parse HEAD", workflow)
+        self.assertIn("GITHUB_REF_NAME", workflow)
         self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("cloudflare/wrangler-action@v3", workflow)
         self.assertIn('node-version: "20.19.0"', workflow)
@@ -806,6 +811,12 @@ class LandingTests(unittest.TestCase):
         self.assertIn('check_page "https://beta.orbi.build/install.sh"', workflow)
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
+
+    def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        self.assertIn("branches:\n      - beta", workflow)
+        self.assertNotIn("branches:\n      - main", workflow)
+        self.assertIn("pull_request:", workflow)
 
     def test_beta_deployment_docs_name_secrets_and_environments(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
