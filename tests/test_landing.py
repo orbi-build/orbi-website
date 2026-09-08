@@ -832,11 +832,9 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("playwright install"), workflow.index("command: deploy\n"))
         self.assertLess(workflow.index("command: deploy\n"), workflow.index("https://orbi.build/"))
         self.assertIn("BASE_URL=https://orbi.build", workflow)
-        # Issue #74: the browser smoke's login contract is injected per
-        # environment. The deployed site Worker hands /api/login off to the
-        # verified Cloud login endpoint from wrangler.toml; expecting 404 here
-        # would fail every promotion and re-trigger the 2026-09-08 rollback.
-        self.assertIn("CLOUD_LOGIN_EXPECT=cloud-handoff-302", workflow)
+        # Issue #74: production remains fail-closed until a separately
+        # reviewed Cloud login handoff is deployed.
+        self.assertIn("CLOUD_LOGIN_EXPECT=fail-closed-404", workflow)
         # the smoke asserts the deployed commit's real copy, parsed from the
         # checked-out pages — never hardcoded wording that will drift
         self.assertIn("public/index.html", workflow)

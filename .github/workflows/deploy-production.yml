@@ -226,12 +226,9 @@ jobs:
           check_page "https://orbi.build/zh/" "public/zh/index.html"
 
       - name: Smoke-test production in a real browser
-        # Issue #74: the login contract is declared per environment, never
-        # guessed in the test. The deployed site Worker hands /api/login off
-        # to the one verified Cloud login endpoint from wrangler.toml
-        # (CLOUD_LOGIN_URL). When production gets its own Cloud login, flipping
-        # this to oauth-302 is a reviewed diff.
-        run: timeout 300s env BASE_URL=https://orbi.build CLOUD_LOGIN_EXPECT=cloud-handoff-302 npm run test:browser
+        # Issue #74: production has no Cloud login endpoint; keep the smoke
+        # contract fail-closed until a separately reviewed production handoff.
+        run: timeout 300s env BASE_URL=https://orbi.build CLOUD_LOGIN_EXPECT=fail-closed-404 npm run test:browser
 
       - name: Roll back production on smoke failure
         if: failure()
