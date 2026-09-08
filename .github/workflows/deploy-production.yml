@@ -1,0 +1,248 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_soak:
+        description: "Hotfix only: skip the beta soak check. The production environment approval is still required."
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  # The soak gate runs as a separate job BEFORE the approval-gated deploy job,
+  # so a promotion rejected for fresh commits fails without ever requesting
+  # the approver's attention.
+  soak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require promoted commits to have soaked on beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PROD_MIN_SOAK_HOURS: ${{ vars.PROD_MIN_SOAK_HOURS }}
+          SKIP_SOAK: ${{ inputs.skip_soak }}
+        run: |
+          set -euo pipefail
+          if [[ "$SKIP_SOAK" == "true" ]]; then
+            echo "skip_soak requested (hotfix); the production environment approval still applies."
+            exit 0
+          fi
+          required="${PROD_MIN_SOAK_HOURS:-4}"
+          if ! [[ "$required" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+            echo "::error::PROD_MIN_SOAK_HOURS must be a non-negative number, got: ${required}"
+            exit 1
+          fi
+          if [[ "$required" == "0" ]]; then
+            echo "PROD_MIN_SOAK_HOURS=0: soak check disabled."
+            exit 0
+          fi
+          # The previous production version is the last successful run of this
+          # workflow; the promotion is what beta has that it does not.
+          previous="$(timeout 120s gh run list --workflow deploy-production.yml --status success --limit 1 --json headSha --jq '.[0].headSha // empty')"
+          if [[ -z "$previous" ]]; then
+            echo "No previous successful production deployment; nothing to soak-check against yet."
+            exit 0
+          fi
+          timeout 120s git fetch origin beta
+          newest="$(git log --format=%ct origin/beta --not "$previous" | sort -nr | head -1)"
+          if [[ -z "$newest" ]]; then
+            echo "No new beta commits since the previous production version ${previous}; soak satisfied."
+            exit 0
+          fi
+          age="$(awk -v now="$(date +%s)" -v t="$newest" 'BEGIN {printf "%.1f", (now - t) / 3600}')"
+          if awk -v a="$age" -v r="$required" 'BEGIN {exit !(a + 0 >= r + 0)}'; then
+            echo "Soak check passed: the newest promoted commit has been on origin/beta for ${age}h (required: ${required}h)."
+          else
+            remaining="$(awk -v a="$age" -v r="$required" 'BEGIN {printf "%.1f", r - a}')"
+            echo "::error::Soak check failed: the promotion contains commit(s) that have been on origin/beta for only ${age}h; PROD_MIN_SOAK_HOURS requires ${required}h. Retry in about ${remaining}h, or dispatch this workflow with skip_soak for a hotfix."
+            exit 1
+          fi
+
+  deploy:
+    needs: soak
+    runs-on: ubuntu-latest
+    # The human gate: the `production` environment's required reviewers must
+    # approve before this job runs (repo Settings, not git).
+    environment: production
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Record deployed source commit
+        run: |
+          echo "production deploy source branch: ${GITHUB_REF_NAME}"
+          echo "production deploy source commit: $(git rev-parse HEAD)"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: timeout 300s npm ci
+
+      - name: Run tests before deployment
+        run: timeout 300s npm test
+
+      - name: Run landing and deployment contract tests
+        run: timeout 300s python3 -m unittest tests.test_landing -v
+
+      - name: Install Chromium for browser smoke tests
+        run: timeout 300s npx playwright install --with-deps chromium
+
+      - name: Require Cloudflare credentials
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is required for production deployment"
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID secret is required for production deployment"
+            exit 1
+          fi
+
+      - name: Record current production version as the rollback target
+        id: previous_version
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # deployments list is oldest-first, so the live version is the last entry
+          previous="$(timeout 120s npx wrangler@4.34.0 deployments list --json | jq -r '.[-1].versions[0].version_id // empty')"
+          if [[ -z "$previous" ]]; then
+            echo "::warning::No existing production deployment found; a smoke failure cannot roll back automatically."
+          fi
+          echo "Rollback target (current production version): ${previous:-<none>}"
+          echo "version=$previous" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy production Worker and assets
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.34.0"
+          command: deploy
+
+      - name: Record deployed production version
+        id: deployed_version
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          deployed="$(timeout 120s npx wrangler@4.34.0 deployments list --json | jq -r '.[-1].versions[0].version_id')"
+          echo "Deployed production version: $deployed"
+          echo "version=$deployed" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke-test production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The expected copy comes from the deployed commit itself: parse the
+          # first h1 out of the checked-out page and out of the live response,
+          # both as rendered text, so markup or injected analytics cannot
+          # break the comparison and no wording is hardcoded here.
+          cat > first_h1.py <<'PY'
+          import sys
+          from html.parser import HTMLParser
+
+          class FirstH1(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.inside = False
+                  self.done = False
+                  self.chunks = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag == "h1" and not self.done:
+                      self.inside = True
+
+              def handle_endtag(self, tag):
+                  if tag == "h1" and self.inside:
+                      self.inside = False
+                      self.done = True
+
+              def handle_data(self, data):
+                  if self.inside:
+                      self.chunks.append(data)
+
+          parser = FirstH1()
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              parser.feed(handle.read())
+          text = " ".join("".join(parser.chunks).split())
+          if not text:
+              sys.exit(f"no h1 text found in {sys.argv[1]}")
+          print(text)
+          PY
+          first_h1() {
+            python3 first_h1.py "$1"
+          }
+          check_page() {
+            local url="$1"
+            local local_html="$2"
+            local body
+            body="$(mktemp)"
+            trap 'rm -f "$body"' RETURN
+            echo "Smoke testing $url against $local_html"
+            timeout 60s curl --fail --silent --show-error --location --retry 2 --retry-delay 5 "$url" -o "$body"
+            local expected actual
+            expected="$(first_h1 "$local_html")"
+            actual="$(first_h1 "$body")"
+            if [[ "$expected" != "$actual" ]]; then
+              echo "::error::${url} did not match the deployed commit: expected h1 ${expected}, got ${actual}"
+              return 1
+            fi
+            echo "Smoke test passed: $url returned HTTP 200 with h1 ${actual}"
+          }
+          # www is served by the Worker too (it 301s to the apex)
+          check_page "https://orbi.build/" "public/index.html"
+          check_page "https://www.orbi.build/" "public/index.html"
+          check_page "https://orbi.build/compare/" "public/compare/index.html"
+          check_page "https://orbi.build/zh/" "public/zh/index.html"
+
+      - name: Smoke-test production in a real browser
+        run: timeout 300s env BASE_URL=https://orbi.build npm run test:browser
+
+      - name: Roll back production on smoke failure
+        if: failure()
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIOUS_VERSION: ${{ steps.previous_version.outputs.version }}
+          DEPLOYED_VERSION: ${{ steps.deployed_version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$PREVIOUS_VERSION" ]]; then
+            echo "::error::Smoke failed but no previous production version was recorded; production is still on $DEPLOYED_VERSION. Investigate https://orbi.build/ now."
+            exit 1
+          fi
+          echo "Rolling production back from $DEPLOYED_VERSION to $PREVIOUS_VERSION"
+          timeout 120s npx wrangler@4.34.0 rollback "$PREVIOUS_VERSION" --message "Automatic rollback: production smoke failed for commit ${GITHUB_SHA}" -y
+          rolled_back="$(timeout 120s npx wrangler@4.34.0 deployments list --json | jq -r '.[-1].versions[0].version_id')"
+          echo "Rollback requested: $DEPLOYED_VERSION (failed deploy) -> $PREVIOUS_VERSION; latest deployment now reports $rolled_back"

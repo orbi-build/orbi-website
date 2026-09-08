@@ -812,6 +812,72 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
 
+    def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
+        """Issue #68: merging into main deploys orbi.build behind the
+        `production` environment approval gate, smokes the real site against
+        the deployed commit's own copy, and rolls back automatically when any
+        smoke fails."""
+        workflow = (ROOT / ".github" / "workflows" / "deploy-production.yml").read_text(encoding="utf-8")
+        self.assertIn("branches:\n      - main", workflow)
+        # production deploys come from main only; beta keeps its own workflow
+        self.assertNotIn("branches:\n      - beta", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        # the one-confirmation human gate: the workflow must declare the
+        # environment whose required reviewers hold the deployment
+        self.assertIn("environment: production", workflow)
+        self.assertIn("group: deploy-production", workflow)
+        self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("cloudflare/wrangler-action@v3", workflow)
+        self.assertIn('node-version: "20.19.0"', workflow)
+        self.assertIn('wranglerVersion: "4.34.0"', workflow)
+        self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
+        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
+        # top-level environment = the production Worker serving orbi.build;
+        # the beta environment must stay untouched by this workflow
+        self.assertIn("command: deploy\n", workflow)
+        self.assertNotIn("--env beta", workflow)
+        self.assertNotIn("beta.orbi.build", workflow)
+        # no D1 migration may ever ride the deploy path
+        self.assertNotIn("d1 migrations", workflow)
+        # the pipeline order: full tests before the deploy, smoke after
+        self.assertLess(workflow.index("npm ci"), workflow.index("npm test"))
+        self.assertLess(workflow.index("npm test"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("tests.test_landing"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("playwright install"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("command: deploy\n"), workflow.index("https://orbi.build/"))
+        self.assertIn("BASE_URL=https://orbi.build", workflow)
+        # the smoke asserts the deployed commit's real copy, parsed from the
+        # checked-out pages — never hardcoded wording that will drift
+        self.assertIn("public/index.html", workflow)
+        self.assertIn("public/compare/index.html", workflow)
+        self.assertIn("public/zh/index.html", workflow)
+        # rollback: smoke failure triggers wrangler rollback to the recorded
+        # pre-deploy version, and both version IDs land in the log
+        self.assertIn("rollback", workflow)
+        self.assertLess(workflow.index("deployments list"), workflow.index("command: deploy\n"))
+        rollback_at = workflow.index("wrangler@4.34.0 rollback")
+        self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
+        self.assertIn("if: failure()", workflow)
+        self.assertLess(workflow.index("if: failure()"), rollback_at)
+        # the soak gate: promoted commits must have aged on origin/beta before
+        # the approval-gated deploy job starts, so a rejected promotion never
+        # requests the approver's attention; the hotfix escape skips soak but
+        # never the environment approval
+        self.assertIn("actions: read", workflow)
+        soak_at = workflow.index("  soak:")
+        deploy_at = workflow.index("  deploy:")
+        self.assertLess(soak_at, deploy_at)
+        # the first `environment: production` declaration belongs to the
+        # deploy job — the soak job must run without waiting for approval
+        self.assertLess(deploy_at, workflow.index("environment: production"))
+        self.assertIn("needs: soak", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("skip_soak", workflow)
+        self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
+        self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
+        self.assertIn("gh run list", workflow)
+        self.assertIn("git fetch origin beta", workflow)
+
     def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("branches:\n      - beta", workflow)
