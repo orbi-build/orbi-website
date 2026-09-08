@@ -5,16 +5,77 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      skip_soak:
+        description: "Hotfix only: skip the beta soak check. The production environment approval is still required."
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: deploy-production
   cancel-in-progress: true
 
 jobs:
+  # The soak gate runs as a separate job BEFORE the approval-gated deploy job,
+  # so a promotion rejected for fresh commits fails without ever requesting
+  # the approver's attention.
+  soak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require promoted commits to have soaked on beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PROD_MIN_SOAK_HOURS: ${{ vars.PROD_MIN_SOAK_HOURS }}
+          SKIP_SOAK: ${{ inputs.skip_soak }}
+        run: |
+          set -euo pipefail
+          if [[ "$SKIP_SOAK" == "true" ]]; then
+            echo "skip_soak requested (hotfix); the production environment approval still applies."
+            exit 0
+          fi
+          required="${PROD_MIN_SOAK_HOURS:-4}"
+          if ! [[ "$required" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+            echo "::error::PROD_MIN_SOAK_HOURS must be a non-negative number, got: ${required}"
+            exit 1
+          fi
+          if [[ "$required" == "0" ]]; then
+            echo "PROD_MIN_SOAK_HOURS=0: soak check disabled."
+            exit 0
+          fi
+          # The previous production version is the last successful run of this
+          # workflow; the promotion is what beta has that it does not.
+          previous="$(timeout 120s gh run list --workflow deploy-production.yml --status success --limit 1 --json headSha --jq '.[0].headSha // empty')"
+          if [[ -z "$previous" ]]; then
+            echo "No previous successful production deployment; nothing to soak-check against yet."
+            exit 0
+          fi
+          timeout 120s git fetch origin beta
+          newest="$(git log --format=%ct origin/beta --not "$previous" | sort -nr | head -1)"
+          if [[ -z "$newest" ]]; then
+            echo "No new beta commits since the previous production version ${previous}; soak satisfied."
+            exit 0
+          fi
+          age="$(awk -v now="$(date +%s)" -v t="$newest" 'BEGIN {printf "%.1f", (now - t) / 3600}')"
+          if awk -v a="$age" -v r="$required" 'BEGIN {exit !(a + 0 >= r + 0)}'; then
+            echo "Soak check passed: the newest promoted commit has been on origin/beta for ${age}h (required: ${required}h)."
+          else
+            remaining="$(awk -v a="$age" -v r="$required" 'BEGIN {printf "%.1f", r - a}')"
+            echo "::error::Soak check failed: the promotion contains commit(s) that have been on origin/beta for only ${age}h; PROD_MIN_SOAK_HOURS requires ${required}h. Retry in about ${remaining}h, or dispatch this workflow with skip_soak for a hotfix."
+            exit 1
+          fi
+
   deploy:
+    needs: soak
     runs-on: ubuntu-latest
     # The human gate: the `production` environment's required reviewers must
     # approve before this job runs (repo Settings, not git).

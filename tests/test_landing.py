@@ -859,6 +859,24 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
+        # the soak gate: promoted commits must have aged on origin/beta before
+        # the approval-gated deploy job starts, so a rejected promotion never
+        # requests the approver's attention; the hotfix escape skips soak but
+        # never the environment approval
+        self.assertIn("actions: read", workflow)
+        soak_at = workflow.index("  soak:")
+        deploy_at = workflow.index("  deploy:")
+        self.assertLess(soak_at, deploy_at)
+        # the first `environment: production` declaration belongs to the
+        # deploy job — the soak job must run without waiting for approval
+        self.assertLess(deploy_at, workflow.index("environment: production"))
+        self.assertIn("needs: soak", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("skip_soak", workflow)
+        self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
+        self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
+        self.assertIn("gh run list", workflow)
+        self.assertIn("git fetch origin beta", workflow)
 
     def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
