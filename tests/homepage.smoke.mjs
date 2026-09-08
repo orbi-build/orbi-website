@@ -1,6 +1,7 @@
-import { chromium } from "@playwright/test";
+import { chromium, request } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -56,20 +57,69 @@ async function assertFooterDeepDives(page, label) {
   }
 }
 
-async function assertCloudLoginRedirect(browser) {
+// Issue #74: the Cloud login contract differs per environment and is declared
+// by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
+// The one verified Cloud login endpoint (docs/cloud-endpoints.md); the website
+// Worker's /api/login hands off to it (wrangler.toml CLOUD_LOGIN_URL, pinned
+// by tests/worker.test.js).
+export const CLOUD_LOGIN_HANDOFF_URL = "https://beta.orbi.build/api/login";
+
+export function resolveCloudLoginExpect(raw) {
+  if (raw === undefined) return "fail-closed-404";
+  if (raw !== "oauth-302" && raw !== "cloud-handoff-302" && raw !== "fail-closed-404") {
+    throw new Error(
+      `CLOUD_LOGIN_EXPECT must be oauth-302, cloud-handoff-302, or fail-closed-404, got ${JSON.stringify(raw)}`
+    );
+  }
+  return raw;
+}
+
+export async function assertCloudLoginRedirect(targetURL) {
   if (!process.env.BASE_URL) return;
-  const context = await browser.newContext();
+  const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
+  const context = await request.newContext();
   try {
-    const response = await context.request.get(`${targetURL}/api/login`, { maxRedirects: 0 });
-    if (response.status() !== 302) {
-      throw new Error(`Cloud login expected 302, got ${response.status()}`);
-    }
-    const location = response.headers().location || "";
-    if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
-      throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
+    const response = await context.get(`${targetURL}/api/login`, { maxRedirects: 0 });
+    const headers = response.headers();
+    if (expectation === "oauth-302") {
+      // beta: the Cloud control plane answers with the GitHub OAuth redirect.
+      if (response.status() !== 302) {
+        throw new Error(`Cloud login expected 302, got ${response.status()}`);
+      }
+      const location = headers.location || "";
+      if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
+        throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
+      }
+    } else if (expectation === "cloud-handoff-302") {
+      // production: the site Worker hands the visitor to the verified Cloud
+      // login endpoint configured in wrangler.toml.
+      if (response.status() !== 302) {
+        throw new Error(`Cloud login expected the Cloud handoff 302, got ${response.status()}`);
+      }
+      if (headers.location !== CLOUD_LOGIN_HANDOFF_URL) {
+        throw new Error(
+          `Cloud login must hand off to the verified Cloud endpoint ${CLOUD_LOGIN_HANDOFF_URL}, got ${headers.location}`
+        );
+      }
+    } else {
+      // fail-closed-404: the strict default for an environment that declared
+      // no contract. The site Worker's own 404 carries its security-header
+      // stamp, which the Cloud control plane's responses do not.
+      if (response.status() !== 404) {
+        throw new Error(`Cloud login expected fail-closed 404, got ${response.status()}`);
+      }
+      const stamped =
+        headers["x-content-type-options"] === "nosniff" &&
+        headers["x-frame-options"] === "DENY" &&
+        headers["referrer-policy"] === "strict-origin-when-cross-origin";
+      if (!stamped) {
+        throw new Error(
+          `Cloud login 404 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
+        );
+      }
     }
   } finally {
-    await context.close();
+    await context.dispose();
   }
 }
 
@@ -218,7 +268,7 @@ async function main() {
         });
       });
     }
-    await assertCloudLoginRedirect(browser);
+    await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
@@ -271,7 +321,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error.stack || error);
-  process.exitCode = 1;
-});
+// Run only when executed directly, so vitest can import the contract helpers
+// above without starting the browser or the local server.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  main().catch((error) => {
+    console.error(error.stack || error);
+    process.exitCode = 1;
+  });
+}

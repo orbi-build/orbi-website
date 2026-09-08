@@ -105,4 +105,7 @@ jobs:
           check_page "https://beta.orbi.build/compare/openclaw/" "OpenClaw"
           check_page "https://beta.orbi.build/zh/compare/openclaw/" "OpenClaw"
       - name: Smoke-test beta in a real browser
-        run: timeout 300s env BASE_URL=https://beta.orbi.build npm run test:browser
+        # Issue #74: the login contract is declared per environment, never
+        # guessed in the test. beta's /api/login is served by the Cloud
+        # control plane: 302 straight to GitHub OAuth (docs/cloud-endpoints.md).
+        run: timeout 300s env BASE_URL=https://beta.orbi.build CLOUD_LOGIN_EXPECT=oauth-302 npm run test:browser
