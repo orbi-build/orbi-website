@@ -28,10 +28,11 @@ set -a; source ~/.cloudflare.env; set +a
 npx wrangler deploy --env beta
 ```
 
-合并到 `main` 后，`.github/workflows/deploy-beta.yml` 会先运行 `npm test` 和
-landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
-OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1 数据库，不会写入生产库。
-也可以在
+日常开发合并进 `beta` 分支：合并到 `beta` 后，`.github/workflows/deploy-beta.yml` 会先
+运行 `npm test` 和 landing/deployment contract tests，再部署 beta，并检查首页、
+`/compare/` 及英文/中文 OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1
+数据库，不会写入生产库。push 到 `main` 不再触发 beta 部署（`main` 保留为后续生产发布
+分支）。也可以在
 Actions 中使用 `workflow_dispatch` 手动触发。
 
 GitHub Actions 需要配置以下 Repository 设置：

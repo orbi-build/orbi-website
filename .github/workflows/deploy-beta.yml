@@ -3,7 +3,7 @@ name: Deploy beta
 on:
   push:
     branches:
-      - main
+      - beta
   workflow_dispatch:
 
 permissions:
@@ -19,6 +19,11 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Record deployed source commit
+        run: |
+          echo "beta deploy source branch: ${GITHUB_REF_NAME}"
+          echo "beta deploy source commit: $(git rev-parse HEAD)"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
