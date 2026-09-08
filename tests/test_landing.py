@@ -198,11 +198,11 @@ class LandingTests(unittest.TestCase):
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Docs", "GitHub", "Apply"),
+                ("How it works", "Docs", "GitHub", "Start Cloud"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "文档", "GitHub", "申请试点"),
+                ("产品怎么运作", "文档", "GitHub", "开始 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
@@ -274,10 +274,7 @@ class LandingTests(unittest.TestCase):
             self.assertTrue(expected.issubset(capabilities), capabilities)
 
     def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
-        for page, docs, repo_label in (
-            (self.en, DOCS_EN, "Get Orbi on GitHub"),
-            (self.zh, DOCS_ZH, "到 GitHub 获取 Orbi"),
-        ):
+        for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
             ctas = {
                 attrs.get("data-cta"): attrs.get("href")
                 for tag, attrs in page.elements
@@ -285,13 +282,8 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["github-repo"], GITHUB)
+            self.assertEqual(ctas["cloud-start"], "/api/login")
             self.assertEqual(ctas["cloud-apply"], "/apply")
-            self.assertEqual(ctas["cloud-apply-card"], "/apply")
-            self.assertTrue(
-                any(href == GITHUB and text.startswith(repo_label) for text, href in page.hrefs),
-                page.hrefs,
-            )
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -354,23 +346,14 @@ class LandingTests(unittest.TestCase):
         self.assertIn("商业托管服务", self.zh.text)
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
-    def test_cloud_entry_routes_to_the_pilot_application(self) -> None:
-        """Cloud sign-up is closed, so the Managed Cloud card asks for the pilot."""
-        for page, state, card_label, contact_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply for the Founding Pilot", "Apply / contact us"),
-            (self.zh, "创始试点 · 席位有限", "申请创始试点", "申请 / 联系我们"),
+    def test_cloud_entry_separates_start_from_application(self) -> None:
+        for page, state, start_label, apply_label in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us"),
+            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            self.assertTrue(any(href == "/apply" and text.startswith(card_label) for text, href in page.hrefs))
-            self.assertTrue(any(href == "/apply" and text.startswith(contact_label) for text, href in page.hrefs))
-
-    def test_closed_cloud_signup_is_gone_from_the_shipped_pages(self) -> None:
-        """No shipped page may link /api/login or promise Cloud registration."""
-        for page in (self.en, self.zh):
-            self.assertNotIn("Register with GitHub and continue onboarding", page.text)
-        self.assertNotIn("用 GitHub 注册，然后在 Cloud 继续完成 onboarding", self.zh.text)
-        for html_path in sorted((ROOT / "public").rglob("*.html")):
-            self.assertNotIn("/api/login", html_path.read_text(encoding="utf-8"), html_path)
+            self.assertTrue(any(href == "/api/login" and text.startswith(start_label) for text, href in page.hrefs))
+            self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -811,6 +794,72 @@ class LandingTests(unittest.TestCase):
         self.assertIn('check_page "https://beta.orbi.build/install.sh"', workflow)
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
+
+    def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
+        """Issue #68: merging into main deploys orbi.build behind the
+        `production` environment approval gate, smokes the real site against
+        the deployed commit's own copy, and rolls back automatically when any
+        smoke fails."""
+        workflow = (ROOT / ".github" / "workflows" / "deploy-production.yml").read_text(encoding="utf-8")
+        self.assertIn("branches:\n      - main", workflow)
+        # production deploys come from main only; beta keeps its own workflow
+        self.assertNotIn("branches:\n      - beta", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        # the one-confirmation human gate: the workflow must declare the
+        # environment whose required reviewers hold the deployment
+        self.assertIn("environment: production", workflow)
+        self.assertIn("group: deploy-production", workflow)
+        self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("cloudflare/wrangler-action@v3", workflow)
+        self.assertIn('node-version: "20.19.0"', workflow)
+        self.assertIn('wranglerVersion: "4.34.0"', workflow)
+        self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
+        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
+        # top-level environment = the production Worker serving orbi.build;
+        # the beta environment must stay untouched by this workflow
+        self.assertIn("command: deploy\n", workflow)
+        self.assertNotIn("--env beta", workflow)
+        self.assertNotIn("beta.orbi.build", workflow)
+        # no D1 migration may ever ride the deploy path
+        self.assertNotIn("d1 migrations", workflow)
+        # the pipeline order: full tests before the deploy, smoke after
+        self.assertLess(workflow.index("npm ci"), workflow.index("npm test"))
+        self.assertLess(workflow.index("npm test"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("tests.test_landing"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("playwright install"), workflow.index("command: deploy\n"))
+        self.assertLess(workflow.index("command: deploy\n"), workflow.index("https://orbi.build/"))
+        self.assertIn("BASE_URL=https://orbi.build", workflow)
+        # the smoke asserts the deployed commit's real copy, parsed from the
+        # checked-out pages — never hardcoded wording that will drift
+        self.assertIn("public/index.html", workflow)
+        self.assertIn("public/compare/index.html", workflow)
+        self.assertIn("public/zh/index.html", workflow)
+        # rollback: smoke failure triggers wrangler rollback to the recorded
+        # pre-deploy version, and both version IDs land in the log
+        self.assertIn("rollback", workflow)
+        self.assertLess(workflow.index("deployments list"), workflow.index("command: deploy\n"))
+        rollback_at = workflow.index("wrangler@4.34.0 rollback")
+        self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
+        self.assertIn("if: failure()", workflow)
+        self.assertLess(workflow.index("if: failure()"), rollback_at)
+        # the soak gate: promoted commits must have aged on origin/beta before
+        # the approval-gated deploy job starts, so a rejected promotion never
+        # requests the approver's attention; the hotfix escape skips soak but
+        # never the environment approval
+        self.assertIn("actions: read", workflow)
+        soak_at = workflow.index("  soak:")
+        deploy_at = workflow.index("  deploy:")
+        self.assertLess(soak_at, deploy_at)
+        # the first `environment: production` declaration belongs to the
+        # deploy job — the soak job must run without waiting for approval
+        self.assertLess(deploy_at, workflow.index("environment: production"))
+        self.assertIn("needs: soak", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("skip_soak", workflow)
+        self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
+        self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
+        self.assertIn("gh run list", workflow)
+        self.assertIn("git fetch origin beta", workflow)
 
     def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")

@@ -56,20 +56,17 @@ async function assertFooterDeepDives(page, label) {
   }
 }
 
-// Issue #63: Cloud sign-up is closed, so the homepage CTAs point at the
-// GitHub repo and /apply. Both destinations are user-facing absolute URLs
-// (orbi.build serves /apply; the beta hostname's /apply is answered by the
-// Cloud control plane, outside this repo), so reachability is asserted
-// against the destinations themselves on a deployed target.
-async function assertCtaTargetsReachable(browser) {
+async function assertCloudLoginRedirect(browser) {
   if (!process.env.BASE_URL) return;
   const context = await browser.newContext();
   try {
-    for (const target of ["https://orbi.build/apply", "https://github.com/orbi-build/orbi"]) {
-      const response = await context.request.get(target);
-      if (response.status() !== 200) {
-        throw new Error(`CTA target ${target} expected 200, got ${response.status()}`);
-      }
+    const response = await context.request.get(`${targetURL}/api/login`, { maxRedirects: 0 });
+    if (response.status() !== 302) {
+      throw new Error(`Cloud login expected 302, got ${response.status()}`);
+    }
+    const location = response.headers().location || "";
+    if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
+      throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
     }
   } finally {
     await context.close();
@@ -108,7 +105,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
   const heroPaths = {
-    "github-repo": "https://github.com/orbi-build/orbi",
+    "cloud-start": "/api/login",
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
   };
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
@@ -126,14 +123,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
-  }
-  const navApply = page.locator('[data-primary-nav] .nav-apply');
-  if ((await navApply.getAttribute("href")) !== "/apply") {
-    throw new Error(`${path}: nav apply link has wrong href`);
-  }
-  const cloudCard = page.locator('[data-cta="cloud-apply-card"]');
-  if ((await cloudCard.getAttribute("href")) !== "/apply") {
-    throw new Error(`${path}: cloud card CTA has wrong href`);
   }
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
@@ -229,7 +218,7 @@ async function main() {
         });
       });
     }
-    await assertCtaTargetsReachable(browser);
+    await assertCloudLoginRedirect(browser);
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
