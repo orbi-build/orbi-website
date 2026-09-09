@@ -4,6 +4,7 @@
 from html.parser import HTMLParser
 from html import unescape
 from pathlib import Path
+import json
 import re
 import unittest
 
@@ -282,7 +283,7 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud-start"], "/cloud/login")
+            self.assertEqual(ctas["cloud-start"], "/cloud/")
             self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
@@ -352,7 +353,9 @@ class LandingTests(unittest.TestCase):
             (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            self.assertTrue(any(href == "/cloud/login" and text.startswith(start_label) for text, href in page.hrefs))
+            # Issue #79: the homepage Cloud CTA leads with the explainer page,
+            # never straight into the OAuth handoff.
+            self.assertTrue(any(href == "/cloud/" and text.startswith(start_label) for text, href in page.hrefs))
             self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
@@ -964,6 +967,114 @@ class LandingTests(unittest.TestCase):
 
 COMPARE_EN_PATH = ROOT / "public" / "compare" / "openclaw" / "index.html"
 COMPARE_ZH_PATH = ROOT / "public" / "zh" / "compare" / "openclaw" / "index.html"
+CLOUD_EN_PATH = ROOT / "public" / "cloud" / "index.html"
+CLOUD_ZH_PATH = ROOT / "public" / "zh" / "cloud" / "index.html"
+
+
+class CloudLandingPageTests(unittest.TestCase):
+    """Issue #79: /cloud/ and /zh/cloud/ — the indexable page the homepage
+    Cloud CTA leads with, before anyone reaches an OAuth consent screen.
+
+    Three segments: what Cloud is, the Founding Pilot price, and the three
+    steps after the click. Only this page's buttons reach the /cloud/login
+    handoff."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(CLOUD_EN_PATH)
+        cls.zh_html, cls.zh = parse(CLOUD_ZH_PATH)
+
+    def test_both_languages_declare_canonical_and_the_hreflang_triple(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/cloud/"', self.en_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/cloud/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/cloud/"', self.en_html)
+        self.assertIn('hreflang="x-default" href="https://orbi.build/cloud/"', self.en_html)
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/cloud/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/cloud/"', self.zh_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/cloud/"', self.zh_html)
+        self.assertIn('hreflang="x-default" href="https://orbi.build/cloud/"', self.zh_html)
+
+    def test_each_page_has_exactly_one_h1(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            self.assertEqual(len(re.findall(r"<h1[\s>]", html)), 1)
+
+    def test_share_cards_and_jsonld_name_webpage_and_offer(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for meta in (
+                'property="og:title"',
+                'property="og:image"',
+                'name="twitter:card"',
+                'name="twitter:site" content="@xqliu"',
+            ):
+                self.assertIn(meta, html, meta)
+            scripts = re.findall(
+                r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL
+            )
+            self.assertTrue(scripts, "no JSON-LD on the page")
+            types = []
+            for script in scripts:
+                data = json.loads(script)
+                nodes = data.get("@graph", [data])
+                types += [node.get("@type") for node in nodes]
+            self.assertIn("WebPage", types, types)
+            self.assertIn("Offer", types, types)
+
+    def test_body_states_the_founding_pilot_price(self) -> None:
+        """The price must be readable body text, not only structured data."""
+        for page, pilot in ((self.en, "Founding Pilot"), (self.zh, "创始试点")):
+            self.assertIn("US$15", page.text)
+            self.assertIn("Private Beta", page.text)
+            self.assertIn(pilot, page.text)
+
+    def test_page_names_what_cloud_is(self) -> None:
+        for page, terms in (
+            (self.en, ("hosted runner", "GitHub Issue", "model key")),
+            (self.zh, ("托管", "GitHub Issue", "模型 key")),
+        ):
+            for term in terms:
+                self.assertIn(term, page.text, term)
+
+    def test_the_three_steps_appear_in_order_and_end_at_the_login_button(self) -> None:
+        for page, steps in (
+            (
+                self.en,
+                ("Sign in with GitHub", "Install the Orbi GitHub App", "Subscribe and connect a repository"),
+            ),
+            (
+                self.zh,
+                ("用 GitHub 登录", "安装 Orbi GitHub App", "订阅并连接仓库"),
+            ),
+        ):
+            positions = [page.text.index(step) for step in steps]
+            self.assertEqual(positions, sorted(positions), steps)
+            self.assertIn("/cloud/login", [href for _, href in page.hrefs])
+
+    def test_pages_interlink_with_homepage_and_counterpart(self) -> None:
+        self.assertIn("/zh/cloud/", [href for _, href in self.en.hrefs])
+        self.assertIn("/cloud/", [href for _, href in self.zh.hrefs])
+        for page, home in ((self.en, "/"), (self.zh, "/zh/")):
+            self.assertIn(home, [href for _, href in page.hrefs])
+
+    def test_sitemap_lists_both_cloud_pages(self) -> None:
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        for loc in ("https://orbi.build/cloud/", "https://orbi.build/zh/cloud/"):
+            self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
+
+    def test_homepage_cloud_ctas_lead_with_this_page(self) -> None:
+        """All three homepage Cloud CTAs (nav, hero, card) point here, and no
+        homepage link reaches the OAuth handoff directly any more."""
+        for path in (EN_PATH, ZH_PATH):
+            _, page = parse(path)
+            hrefs = [href for _, href in page.hrefs]
+            self.assertGreaterEqual(hrefs.count("/cloud/"), 3, hrefs)
+            self.assertNotIn("/cloud/login", hrefs)
+
+    def test_font_loading_follows_the_language(self) -> None:
+        """English pages do not ship the CJK webfont (REVIEW.md P1-3)."""
+        self.assertNotIn("Noto+Sans+SC", self.en_html)
+        self.assertIn("Noto+Sans+SC", self.zh_html)
 COMPARE_INDEX_EN_PATH = ROOT / "public" / "compare" / "index.html"
 COMPARE_INDEX_ZH_PATH = ROOT / "public" / "zh" / "compare" / "index.html"
 
