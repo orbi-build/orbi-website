@@ -29,6 +29,17 @@ const siteWorker404 = (_request, response) => {
   response.end();
 };
 
+// Same stamp, 503: production's fail-closed /api/login answer while no
+// CLOUD_LOGIN_URL is configured (Issue #77).
+const siteWorker503 = (_request, response) => {
+  response.writeHead(503, {
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "strict-origin-when-cross-origin",
+  });
+  response.end();
+};
+
 const redirect = (location) => (_request, response) => {
   response.writeHead(302, { location });
   response.end();
@@ -104,25 +115,25 @@ describe("cloud login smoke contract (Issue #74)", () => {
       expect(assertCloudLoginRedirect(url)).rejects.toThrow(/did not redirect to GitHub OAuth/));
   });
 
-  it("cloud-handoff-302 accepts the one verified Cloud login endpoint", async () => {
+  it("fail-closed-503 accepts the site Worker's stamped 503 (Issue #77 production contract)", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "cloud-handoff-302";
-    await withLoginServer(redirect("https://beta.orbi.build/api/login"), (url) =>
+    process.env.CLOUD_LOGIN_EXPECT = "fail-closed-503";
+    await withLoginServer(siteWorker503, (url) =>
       expect(assertCloudLoginRedirect(url)).resolves.toBeUndefined());
   });
 
-  it("cloud-handoff-302 rejects any other handoff target", async () => {
+  it("fail-closed-503 rejects a 503 from something other than the site Worker", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "cloud-handoff-302";
-    await withLoginServer(redirect("https://guessed.example/api/login"), (url) =>
-      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/verified Cloud endpoint/));
+    process.env.CLOUD_LOGIN_EXPECT = "fail-closed-503";
+    await withLoginServer((_request, response) => response.writeHead(503).end(), (url) =>
+      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/security-header stamp/));
   });
 
-  it("cloud-handoff-302 rejects a fail-closed 404", async () => {
+  it("fail-closed-503 rejects a live login handoff", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "cloud-handoff-302";
-    await withLoginServer(siteWorker404, (url) =>
-      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/Cloud handoff 302, got 404/));
+    process.env.CLOUD_LOGIN_EXPECT = "fail-closed-503";
+    await withLoginServer(redirect("https://github.com/login/oauth/authorize?client_id=x"), (url) =>
+      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/fail-closed 503, got 302/));
   });
 
   it("skips the check entirely without BASE_URL (local run)", async () => {
@@ -132,10 +143,13 @@ describe("cloud login smoke contract (Issue #74)", () => {
 
   it("fails fast on an unknown CLOUD_LOGIN_EXPECT value", () => {
     expect(resolveCloudLoginExpect("oauth-302")).toBe("oauth-302");
-    expect(resolveCloudLoginExpect("cloud-handoff-302")).toBe("cloud-handoff-302");
+    expect(resolveCloudLoginExpect("fail-closed-503")).toBe("fail-closed-503");
     expect(resolveCloudLoginExpect("fail-closed-404")).toBe("fail-closed-404");
     expect(() => resolveCloudLoginExpect("")).toThrow(/CLOUD_LOGIN_EXPECT/);
     expect(() => resolveCloudLoginExpect("302")).toThrow(/CLOUD_LOGIN_EXPECT/);
+    // Issue #77 removed production's CLOUD_LOGIN_URL, so the handoff 302 is
+    // no longer a contract any environment can declare.
+    expect(() => resolveCloudLoginExpect("cloud-handoff-302")).toThrow(/CLOUD_LOGIN_EXPECT/);
   });
 });
 

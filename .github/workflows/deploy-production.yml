@@ -227,11 +227,13 @@ jobs:
 
       - name: Smoke-test production in a real browser
         # Issue #74: the login contract is declared per environment, never
-        # guessed in the test. The deployed site Worker hands /api/login off
-        # to the one verified Cloud login endpoint from wrangler.toml
-        # (CLOUD_LOGIN_URL). When production gets its own Cloud login, flipping
-        # this to oauth-302 is a reviewed diff.
-        run: timeout 300s env BASE_URL=https://orbi.build CLOUD_LOGIN_EXPECT=cloud-handoff-302 npm run test:browser
+        # guessed in the test. Issue #77: production configures no
+        # CLOUD_LOGIN_URL before a production control plane exists, so
+        # /api/login fail-closes with the site Worker's stamped 503 and the
+        # served pages send the Cloud CTA to /apply. When production gets its
+        # own Cloud login, set the verified endpoint in wrangler.toml and flip
+        # this to oauth-302 as a reviewed diff.
+        run: timeout 300s env BASE_URL=https://orbi.build CLOUD_LOGIN_EXPECT=fail-closed-503 npm run test:browser
 
       - name: Roll back production on smoke failure
         if: failure()
