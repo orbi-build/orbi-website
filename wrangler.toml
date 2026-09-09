@@ -6,9 +6,12 @@ workers_dev = true
 
 # The website only hands OAuth off to Cloud; Cloud owns state, sessions, and
 # onboarding. Production configures no Cloud login URL: until a production
-# control plane exists, /api/login fail-closes with 503 (cloud_login_unavailable)
-# and the Worker serves the pages with their Cloud CTAs rewritten to /apply
-# (Issue #77). Only [env.beta] below names the one verified Cloud endpoint.
+# control plane exists, /cloud/login fail-closes with 503
+# (cloud_login_unavailable) and the Worker serves the pages with their Cloud
+# CTAs rewritten to /apply (Issue #77). Only [env.beta] below names the one
+# verified Cloud endpoint. The website defines its endpoints outside the
+# cloud control plane's beta route prefixes — /cloud/login and /cloud/apply
+# (Issue #76; see docs/cloud-endpoints.md).
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }

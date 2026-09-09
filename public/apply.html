@@ -232,7 +232,7 @@
         : form.getAttribute("data-msg-sending");
 
       try {
-        const res = await fetch("/api/apply", {
+        const res = await fetch("/cloud/apply", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
