@@ -133,15 +133,39 @@ class LandingTests(unittest.TestCase):
         """
         en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
         en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        self.assertLessEqual(len(en_title), 65, en_title)
+        # Issue #78: the licence-accurate title ("Self-hosted, fair-code …")
+        # runs 75 chars; keeping the licence wording intact is worth more than
+        # the old 65-char cap, so the cap moves rather than the wording.
+        self.assertLessEqual(len(en_title), 80, en_title)
         self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("AI coding agent", "GitHub Issues", "open-source"):
+        for term in ("AI coding agent", "GitHub Issues", "fair-code"):
             self.assertIn(term.lower(), (en_title + " " + en_desc).lower(), term)
 
         zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
         zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
         for term in ("AI 编程 Agent", "GitHub Issue", "自托管"):
             self.assertIn(term, zh_title + " " + zh_desc, term)
+
+    def test_titles_never_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
+        """Issue #78: llms.txt tells LLMs never to describe Orbi as OSI open
+        source, while <title>/og:title/twitter:title said "Open-source" (zh
+        "开源") in the same breath. The licence summary must use one wording
+        everywhere: self-hosted, fair-code."""
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        licence = llms.split("## Licence", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("Do not describe Orbi as OSI open source", licence)
+        self.assertIn("self-hosted and fair-code", llms)
+        for html in (self.en_html, self.zh_html):
+            slots = [
+                ("title", re.search(r"<title>([^<]+)</title>", html).group(1)),
+                ("og:title", re.search(r'property="og:title" content="([^"]+)"', html).group(1)),
+                ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
+            ]
+            for slot, text in slots:
+                self.assertNotIn("open-source", text.lower(), (slot, text))
+                self.assertNotIn("open source", text.lower(), (slot, text))
+                self.assertNotIn("开源", text, (slot, text))
+                self.assertIn("fair-code", text, (slot, text))
 
     def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:
         """At least half the H2s should contain a term someone would search."""
