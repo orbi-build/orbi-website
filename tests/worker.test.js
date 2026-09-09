@@ -51,6 +51,52 @@ describe("Worker request helpers", () => {
     expect(response.status).toBe(503);
   });
 
+  it("fail-closes the login route with 503 when CLOUD_LOGIN_URL is absent (Issue #77)", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/api/login"),
+      { ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+    );
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Cloud is temporarily unavailable" });
+  });
+
+  it("serves pages with the Cloud CTA rewritten to /apply when Cloud is not configured", async () => {
+    const html = '<a class="nav-apply" href="/api/login">Start Cloud</a>'
+      + '<a data-cta="cloud-start" href="/api/login">Start Cloud with GitHub</a>';
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      {
+        ASSETS: {
+          fetch: () => Promise.resolve(new Response(html, {
+            headers: { "Content-Type": "text/html; charset=utf-8", Etag: '"asset-1"' },
+          })),
+        },
+      },
+    );
+    const body = await response.text();
+    expect(body).not.toContain('href="/api/login"');
+    expect(body).toContain('href="/apply"');
+    // A rewritten body is a new representation: the asset file's validators
+    // must not answer conditional requests for it.
+    expect(response.headers.get("etag")).toBeNull();
+  });
+
+  it("serves pages unchanged when Cloud login is configured", async () => {
+    const html = '<a data-cta="cloud-start" href="/api/login">Start Cloud with GitHub</a>';
+    const response = await handleFetch(
+      new Request("https://beta.orbi.build/"),
+      {
+        CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+        ASSETS: {
+          fetch: () => Promise.resolve(new Response(html, {
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          })),
+        },
+      },
+    );
+    expect(await response.text()).toContain('href="/api/login"');
+  });
+
   it("builds authenticated GitHub API headers", () => {
     expect(githubHeaders("token")).toEqual({
       Accept: "application/vnd.github+json",

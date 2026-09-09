@@ -359,7 +359,11 @@ class LandingTests(unittest.TestCase):
         import tomllib
         with open(ROOT / "wrangler.toml", "rb") as handle:
             config = tomllib.load(handle)
-        self.assertEqual(config["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
+        # Issue #77: production configures no CLOUD_LOGIN_URL before a
+        # production control plane exists — its /api/login fail-closes with
+        # 503 and the served pages send the Cloud CTA to /apply. Only the beta
+        # environment names the one verified endpoint.
+        self.assertNotIn("CLOUD_LOGIN_URL", config.get("vars", {}))
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn("new URL(cloudBaseUrl)", worker)
@@ -833,10 +837,13 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("command: deploy\n"), workflow.index("https://orbi.build/"))
         self.assertIn("BASE_URL=https://orbi.build", workflow)
         # Issue #74: the browser smoke's login contract is injected per
-        # environment. The deployed site Worker hands /api/login off to the
-        # verified Cloud login endpoint from wrangler.toml; expecting 404 here
-        # would fail every promotion and re-trigger the 2026-09-08 rollback.
-        self.assertIn("CLOUD_LOGIN_EXPECT=cloud-handoff-302", workflow)
+        # environment. Issue #77: production configures no CLOUD_LOGIN_URL, so
+        # its /api/login fail-closes with the site Worker's stamped 503 and
+        # the served pages send the Cloud CTA to /apply; expecting the old
+        # handoff 302 here would fail every promotion. When production gets
+        # its own Cloud login, set the verified endpoint in wrangler.toml and
+        # flip this to oauth-302 as a reviewed diff.
+        self.assertIn("CLOUD_LOGIN_EXPECT=fail-closed-503", workflow)
         # the smoke asserts the deployed commit's real copy, parsed from the
         # checked-out pages — never hardcoded wording that will drift
         self.assertIn("public/index.html", workflow)

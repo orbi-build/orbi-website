@@ -59,16 +59,17 @@ async function assertFooterDeepDives(page, label) {
 
 // Issue #74: the Cloud login contract differs per environment and is declared
 // by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
-// The one verified Cloud login endpoint (docs/cloud-endpoints.md); the website
-// Worker's /api/login hands off to it (wrangler.toml CLOUD_LOGIN_URL, pinned
-// by tests/worker.test.js).
-export const CLOUD_LOGIN_HANDOFF_URL = "https://beta.orbi.build/api/login";
-
+// Issue #77: production configures no CLOUD_LOGIN_URL until a production
+// control plane exists, so its /api/login fail-closes with the site Worker's
+// stamped 503 and the served pages send the Cloud CTA to /apply. beta keeps
+// the one verified Cloud login endpoint (docs/cloud-endpoints.md): its
+// /api/login is answered by the Cloud control plane with the GitHub OAuth
+// redirect.
 export function resolveCloudLoginExpect(raw) {
   if (raw === undefined) return "fail-closed-404";
-  if (raw !== "oauth-302" && raw !== "cloud-handoff-302" && raw !== "fail-closed-404") {
+  if (raw !== "oauth-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
     throw new Error(
-      `CLOUD_LOGIN_EXPECT must be oauth-302, cloud-handoff-302, or fail-closed-404, got ${JSON.stringify(raw)}`
+      `CLOUD_LOGIN_EXPECT must be oauth-302, fail-closed-503, or fail-closed-404, got ${JSON.stringify(raw)}`
     );
   }
   return raw;
@@ -90,15 +91,19 @@ export async function assertCloudLoginRedirect(targetURL) {
       if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
         throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
       }
-    } else if (expectation === "cloud-handoff-302") {
-      // production: the site Worker hands the visitor to the verified Cloud
-      // login endpoint configured in wrangler.toml.
-      if (response.status() !== 302) {
-        throw new Error(`Cloud login expected the Cloud handoff 302, got ${response.status()}`);
+    } else if (expectation === "fail-closed-503") {
+      // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
+      // fail-closes the login route with its stamped 503.
+      if (response.status() !== 503) {
+        throw new Error(`Cloud login expected the fail-closed 503, got ${response.status()}`);
       }
-      if (headers.location !== CLOUD_LOGIN_HANDOFF_URL) {
+      const stamped =
+        headers["x-content-type-options"] === "nosniff" &&
+        headers["x-frame-options"] === "DENY" &&
+        headers["referrer-policy"] === "strict-origin-when-cross-origin";
+      if (!stamped) {
         throw new Error(
-          `Cloud login must hand off to the verified Cloud endpoint ${CLOUD_LOGIN_HANDOFF_URL}, got ${headers.location}`
+          `Cloud login 503 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
         );
       }
     } else {
@@ -154,8 +159,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
+  // The Cloud CTA follows the environment's declared login contract: a
+  // fail-closed-503 deployment (no CLOUD_LOGIN_URL, Issue #77) serves the
+  // pages with the CTA rewritten to /apply, everywhere else the shipped
+  // /api/login links are live.
+  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/api/login";
   const heroPaths = {
-    "cloud-start": "/api/login",
+    "cloud-start": cloudCtaHref,
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
   };
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);

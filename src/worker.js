@@ -153,6 +153,31 @@ async function fetchAsset(request, assets) {
   return response;
 }
 
+// The landing pages ship with their Cloud CTAs pointing at /api/login. That
+// link is only honest where this environment configures CLOUD_LOGIN_URL (beta
+// today): without it the route fail-closes with 503, so serving the shipped
+// links would send visitors to a dead end and the pages are served with every
+// Cloud CTA rewritten to the application page instead (Issue #77). The
+// rewrite is driven by the configuration, so giving production its own
+// control plane later is a wrangler.toml change, not a page change.
+async function assetResponse(asset, cloudLoginConfigured) {
+  const headers = new Headers(asset.headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(key, value);
+  }
+  if (cloudLoginConfigured || asset.status !== 200
+      || !(headers.get("Content-Type") || "").startsWith("text/html")) {
+    return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
+  }
+  // A rewritten body is a new representation: the asset file's validators
+  // must not answer conditional requests for these bytes.
+  headers.delete("etag");
+  headers.delete("last-modified");
+  headers.delete("content-length");
+  const html = (await asset.text()).replaceAll('href="/api/login"', 'href="/apply"');
+  return new Response(html, { status: asset.status, statusText: asset.statusText, headers });
+}
+
 function cloudLoginResponse(request, cloudBaseUrl) {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "method not allowed" }), {
@@ -305,12 +330,7 @@ async function handleFetch(request, env) {
       return await handleApply(request, env);
     }
 
-    const asset = await fetchAsset(request, env.ASSETS);
-    const response = new Response(asset.body, asset);
-    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-      response.headers.set(key, value);
-    }
-    return response;
+    return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
 export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch };
