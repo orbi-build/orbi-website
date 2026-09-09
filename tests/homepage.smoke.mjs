@@ -169,13 +169,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   const hero = page.locator(".hero");
-  // The Cloud CTA follows the environment's declared login contract: a
-  // fail-closed-503 deployment (no CLOUD_LOGIN_URL, Issue #77) serves the
-  // pages with the CTA rewritten to /apply, everywhere else the shipped
-  // /cloud/login links are live (Issue #76).
-  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
+  // Issue #79: the homepage Cloud CTA leads with the /cloud/ explainer page,
+  // a static asset served identically in every environment — the login
+  // handoff now lives only on /cloud/ itself.
   const heroPaths = {
-    "cloud-start": cloudCtaHref,
+    "cloud-start": "/cloud/",
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
   };
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
@@ -223,6 +221,41 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   if (consoleErrors.length || failedRequests.length) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
+// Issue #79: /cloud/ is the indexable page the homepage Cloud CTA leads
+// with. The page must render cleanly at phone and desktop widths, and its
+// login buttons keep the environment's declared login contract: the shipped
+// /cloud/login handoff everywhere except a fail-closed-503 deployment (no
+// CLOUD_LOGIN_URL, Issue #77), where the Worker serves them rewritten to
+// /apply.
+async function assertCloudPage(browser, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}/cloud/`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`/cloud/: expected exactly one h1, got ${h1Count}`);
+  if ((await page.getByText("US$15").count()) < 1) throw new Error("/cloud/: the Founding Pilot price US$15 is not on the page");
+  const loginHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
+  const loginButton = page.locator(`a.button-signal[href="${loginHref}"]`).first();
+  if (!(await loginButton.isVisible())) throw new Error(`/cloud/: no visible Cloud CTA to ${loginHref}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`/cloud/: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`/cloud/: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
   await page.close();
 }
@@ -295,6 +328,8 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertCloudPage(browser, { width: 1440, height: 900 }, "cloud-en-desktop.png");
+    await assertCloudPage(browser, { width: 390, height: 844 }, "cloud-en-mobile.png");
     const assetContext = await browser.newContext();
     try {
       for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/"]) {
