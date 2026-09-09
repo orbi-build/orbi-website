@@ -29,7 +29,7 @@ const siteWorker404 = (_request, response) => {
   response.end();
 };
 
-// Same stamp, 503: production's fail-closed /api/login answer while no
+// Same stamp, 503: production's fail-closed /cloud/login answer while no
 // CLOUD_LOGIN_URL is configured (Issue #77).
 const siteWorker503 = (_request, response) => {
   response.writeHead(503, {
@@ -43,6 +43,28 @@ const siteWorker503 = (_request, response) => {
 const redirect = (location) => (_request, response) => {
   response.writeHead(302, { location });
   response.end();
+};
+
+// Issue #76: the full beta login chain is /cloud/login (the website's
+// handoff, 302) -> /api/login (the Cloud control plane, 302) -> GitHub
+// OAuth. A hijacked handoff leads somewhere that answers the site Worker's
+// stamped 404, which the smoke must reject.
+const oauthChain = (hijackHandoff = false) => (request, response) => {
+  const { pathname } = new URL(request.url, "http://x");
+  if (pathname === "/cloud/login") {
+    const base = `http://${request.headers.host}`;
+    response.writeHead(302, {
+      location: hijackHandoff ? `${base}/not-the-handoff` : `${base}/api/login`,
+    });
+    response.end();
+    return;
+  }
+  if (pathname === "/api/login" && !hijackHandoff) {
+    response.writeHead(302, { location: "https://github.com/login/oauth/authorize?client_id=x" });
+    response.end();
+    return;
+  }
+  siteWorker404(request, response);
 };
 
 afterEach(() => {
@@ -94,10 +116,10 @@ describe("cloud login smoke contract (Issue #74)", () => {
       expect(assertCloudLoginRedirect(url)).rejects.toThrow(/fail-closed 404, got 302/));
   });
 
-  it("oauth-302 accepts the GitHub OAuth redirect", async () => {
+  it("oauth-302 accepts the full handoff chain ending in the GitHub OAuth redirect", async () => {
     process.env.BASE_URL = "https://smoke.example";
     process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
-    await withLoginServer(redirect("https://github.com/login/oauth/authorize?client_id=x"), (url) =>
+    await withLoginServer(oauthChain(), (url) =>
       expect(assertCloudLoginRedirect(url)).resolves.toBeUndefined());
   });
 
@@ -108,10 +130,10 @@ describe("cloud login smoke contract (Issue #74)", () => {
       expect(assertCloudLoginRedirect(url)).rejects.toThrow("Cloud login expected 302, got 404"));
   });
 
-  it("oauth-302 rejects a redirect elsewhere", async () => {
+  it("oauth-302 rejects a handoff that never reaches the GitHub OAuth redirect", async () => {
     process.env.BASE_URL = "https://smoke.example";
     process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
-    await withLoginServer(redirect("https://evil.example/login"), (url) =>
+    await withLoginServer(oauthChain(true), (url) =>
       expect(assertCloudLoginRedirect(url)).rejects.toThrow(/did not redirect to GitHub OAuth/));
   });
 

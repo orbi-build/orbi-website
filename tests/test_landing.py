@@ -282,7 +282,7 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud-start"], "/api/login")
+            self.assertEqual(ctas["cloud-start"], "/cloud/login")
             self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
@@ -352,7 +352,7 @@ class LandingTests(unittest.TestCase):
             (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            self.assertTrue(any(href == "/api/login" and text.startswith(start_label) for text, href in page.hrefs))
+            self.assertTrue(any(href == "/cloud/login" and text.startswith(start_label) for text, href in page.hrefs))
             self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
@@ -360,9 +360,10 @@ class LandingTests(unittest.TestCase):
         with open(ROOT / "wrangler.toml", "rb") as handle:
             config = tomllib.load(handle)
         # Issue #77: production configures no CLOUD_LOGIN_URL before a
-        # production control plane exists — its /api/login fail-closes with
+        # production control plane exists — its /cloud/login fail-closes with
         # 503 and the served pages send the Cloud CTA to /apply. Only the beta
-        # environment names the one verified endpoint.
+        # environment names the one verified endpoint, which stays on Cloud's
+        # own /api/ path because Cloud owns /api*.
         self.assertNotIn("CLOUD_LOGIN_URL", config.get("vars", {}))
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
         worker = WORKER_PATH.read_text(encoding="utf-8")
@@ -370,6 +371,33 @@ class LandingTests(unittest.TestCase):
         self.assertIn("CLOUD_LOGIN_URL", worker)
         self.assertNotIn("cloud.orbi.build", worker)
         self.assertNotIn("beta-cloud.orbi.build", worker)
+
+    def test_website_defines_no_endpoint_inside_a_cloud_route_prefix(self) -> None:
+        """Issue #76: on the shared beta hostname the cloud control plane owns
+        /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
+        (orbi-cloud discussion 120 §2 C2, confirmed live 2026-09-09), so a
+        website endpoint under those prefixes never runs there — measured:
+        beta answered POST /api/apply with cloud's 404. Both website-owned
+        Cloud-entry endpoints live under /cloud/, which none of the cloud
+        prefixes covers."""
+        worker = WORKER_PATH.read_text(encoding="utf-8")
+        self.assertNotIn("/api/apply", worker)
+        self.assertNotIn("/api/login", worker)
+        self.assertIn('"/cloud/apply"', worker)
+        self.assertIn('"/cloud/login"', worker)
+
+    def test_robots_disallows_the_website_endpoints(self) -> None:
+        """The submit and handoff endpoints are actions, not pages: keep
+        crawlers off them now that they no longer sit under /api/."""
+        robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
+        self.assertIn("Disallow: /cloud/apply", robots)
+        self.assertIn("Disallow: /cloud/login", robots)
+        self.assertNotIn("Disallow: /api/", robots)
+
+    def test_apply_posts_to_the_website_owned_submit_path(self) -> None:
+        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+        self.assertIn('fetch("/cloud/apply"', apply_html)
+        self.assertNotIn("/api/apply", apply_html)
 
     def test_cloud_faq_matches_pilot_reality(self) -> None:
         for html, not_yet in (
@@ -838,7 +866,7 @@ class LandingTests(unittest.TestCase):
         self.assertIn("BASE_URL=https://orbi.build", workflow)
         # Issue #74: the browser smoke's login contract is injected per
         # environment. Issue #77: production configures no CLOUD_LOGIN_URL, so
-        # its /api/login fail-closes with the site Worker's stamped 503 and
+        # its /cloud/login fail-closes with the site Worker's stamped 503 and
         # the served pages send the Cloud CTA to /apply; expecting the old
         # handoff 302 here would fail every promotion. When production gets
         # its own Cloud login, set the verified endpoint in wrangler.toml and

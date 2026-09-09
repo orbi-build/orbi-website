@@ -2,14 +2,36 @@
 
 This document is the source of truth for the website beta-to-Cloud API boundary. It records beta only; production endpoints and DNS are outside its scope.
 
-## Verified beta routing
+## Ownership on the shared beta hostname
+
+`beta.orbi.build` is shared by two Workers: this website (`beta.orbi.build/*`) and the cloud control plane. The cloud Worker owns seven route prefixes on that hostname (orbi-cloud `wrangler.toml [env.e2e].routes`, pinned by its own route test; orbi-cloud discussion 120 §2 C2):
+
+`/api*`, `/auth*`, `/login*`, `/app*`, `/connect*`, `/checkout*`, `/stripe*`
+
+**The website owns no path under `/api/` — or under any of the prefixes above.** A website route defined there never runs on the shared hostname: the cloud Worker intercepts it. Measured live on 2026-09-09 (ownership read from the `x-orbi-worker` response header):
+
+```text
+POST https://beta.orbi.build/api/apply       → 404  x-orbi-worker: orbi-cloud-control-plane-e2e
+POST https://beta.orbi.build/apply/submit    → 404  x-orbi-worker: orbi-cloud-control-plane-e2e  (/app* owns it)
+GET  https://beta.orbi.build/apply           → 404  x-orbi-worker: orbi-cloud-control-plane-e2e  (/app* owns it)
+GET  https://beta.orbi.build/cloud/login     → website (no x-orbi-worker)
+```
+
+(The `/apply` page gap on beta is caused by cloud's `/app*` prefix and closes when cloud shrinks its routes to `beta.orbi.build/api*` per discussion 120 §2 C2 recommendation 3; production `orbi.build` serves `/apply` itself.)
+
+Website endpoints therefore live outside those prefixes:
+
+- Application submit: `POST /cloud/apply` — answered by this website's Worker, writing to its own D1.
+- Cloud login handoff: `GET /cloud/login` — answered by this website's Worker with a 302 to `CLOUD_LOGIN_URL`.
+
+## Cloud entry configuration
+
+The Cloud login URL is configured per environment in `wrangler.toml` as `CLOUD_LOGIN_URL`; the Worker adds no route of its own beyond the `/cloud/login` handoff. The verified beta value:
 
 - Cloud beta login: `https://beta.orbi.build/api/login`
 - Cloud beta health check: `https://beta.orbi.build/api/healthz`
-- Requests to `https://beta.orbi.build/api/*` are served by the Cloud routing service.
-- The website beta page is served from the same beta hostname. Its page links and browser requests use the Cloud beta API paths above; `/api/*` is not a website-page or asset path.
 
-Do not infer a Cloud hostname from a repository name, an environment name, or a hostname pattern. Use the endpoint above only when the beta Cloud API is the target. No other Cloud hostname is established by this document.
+Do not infer a Cloud hostname from a repository name, an environment name, or a hostname pattern. Use the endpoints above only when the beta Cloud API is the target. No other Cloud hostname is established by this document.
 
 ## HTTP verification
 

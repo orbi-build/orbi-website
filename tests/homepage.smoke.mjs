@@ -59,12 +59,14 @@ async function assertFooterDeepDives(page, label) {
 
 // Issue #74: the Cloud login contract differs per environment and is declared
 // by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
+// Issue #76: the website's own login handoff is /cloud/login (never /api/ or
+// any other prefix the Cloud control plane owns on the shared beta hostname).
 // Issue #77: production configures no CLOUD_LOGIN_URL until a production
-// control plane exists, so its /api/login fail-closes with the site Worker's
-// stamped 503 and the served pages send the Cloud CTA to /apply. beta keeps
-// the one verified Cloud login endpoint (docs/cloud-endpoints.md): its
-// /api/login is answered by the Cloud control plane with the GitHub OAuth
-// redirect.
+// control plane exists, so its /cloud/login fail-closes with the site
+// Worker's stamped 503 and the served pages send the Cloud CTA to /apply.
+// beta keeps the one verified Cloud login endpoint (docs/cloud-endpoints.md):
+// its /cloud/login 302s to CLOUD_LOGIN_URL — Cloud's /api/login — which
+// answers with the GitHub OAuth redirect.
 export function resolveCloudLoginExpect(raw) {
   if (raw === undefined) return "fail-closed-404";
   if (raw !== "oauth-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
@@ -80,16 +82,24 @@ export async function assertCloudLoginRedirect(targetURL) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
   const context = await request.newContext();
   try {
-    const response = await context.get(`${targetURL}/api/login`, { maxRedirects: 0 });
+    const response = await context.get(`${targetURL}/cloud/login`, { maxRedirects: 0 });
     const headers = response.headers();
     if (expectation === "oauth-302") {
-      // beta: the Cloud control plane answers with the GitHub OAuth redirect.
+      // beta: the website's handoff must 302 to the configured Cloud login
+      // URL, and that URL must answer with the GitHub OAuth redirect. One
+      // manual hop each: the responses themselves are the contract, not
+      // where a browser would finally land.
       if (response.status() !== 302) {
         throw new Error(`Cloud login expected 302, got ${response.status()}`);
       }
-      const location = headers.location || "";
-      if (!location.startsWith("https://github.com/login/oauth/authorize?")) {
-        throw new Error(`Cloud login did not redirect to GitHub OAuth: ${location}`);
+      const handoff = new URL(headers.location || "", targetURL).toString();
+      const cloud = await context.get(handoff, { maxRedirects: 0 });
+      const cloudLocation = cloud.headers().location || "";
+      if (cloud.status() !== 302
+          || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
+        throw new Error(
+          `Cloud login did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
+        );
       }
     } else if (expectation === "fail-closed-503") {
       // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
@@ -162,8 +172,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // The Cloud CTA follows the environment's declared login contract: a
   // fail-closed-503 deployment (no CLOUD_LOGIN_URL, Issue #77) serves the
   // pages with the CTA rewritten to /apply, everywhere else the shipped
-  // /api/login links are live.
-  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/api/login";
+  // /cloud/login links are live (Issue #76).
+  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
   const heroPaths = {
     "cloud-start": cloudCtaHref,
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
