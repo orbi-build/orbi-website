@@ -300,6 +300,109 @@ async function assertCloudPage(browser, size, screenshot) {
   await page.close();
 }
 
+// Issue #90: the cost-transparency pages must carry the measured dataset
+// (2026-09-10, n=47), the money math, all three stated limits, and the
+// competitor non-disclosure sources with their verification date — in both
+// languages, with the numbers identical across the two.
+const costPages = {
+  "/cost/": {
+    zh: "/zh/cost/",
+    h1: "What one Issue delivery actually costs",
+    text: [
+      // measurement date + sample size
+      "2026-09-10", "n=47",
+      // the full measured distribution
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      // composition
+      "95.9%", "3.4%", "0.7%",
+      // DeepSeek list prices and the money math
+      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      // the three limits
+      "not a promise to everyone", "order of magnitude", "totalTokens",
+      // competitor non-disclosure, verified
+      "Quota not published", "~10x Pro usage", "verified 2026-09-11",
+    ],
+    hrefs: [
+      "https://docs.devin.ai/admin/billing/self-serve",
+      "https://docs.factory.ai/pricing/individuals",
+      "https://api-docs.deepseek.com/quick_start/pricing",
+    ],
+    verified: "verified 2026-09-11",
+  },
+  "/zh/cost/": {
+    zh: "/cost/",
+    h1: "跑一个 Issue 到底花多少钱",
+    text: [
+      "2026-09-10", "n=47",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "95.9%", "3.4%", "0.7%",
+      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "不是对所有人的承诺", "一个数量级", "totalTokens",
+      "额度未公布", "~10x Pro usage", "核实于 2026-09-11",
+    ],
+    hrefs: [
+      "https://docs.devin.ai/admin/billing/self-serve",
+      "https://docs.factory.ai/pricing/individuals",
+      "https://api-docs.deepseek.com/quick_start/pricing",
+    ],
+    verified: "核实于 2026-09-11",
+  },
+};
+
+async function assertCostPage(browser, path, size, screenshot) {
+  const claim = costPages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.text) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
+    }
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a link to the source ${href}`);
+    }
+  }
+  // The verification date belongs to the source notes specifically, not
+  // just anywhere on the page.
+  if (!text.includes(claim.verified)) throw new Error(`${path}: sources carry no ${JSON.stringify(claim.verified)} date`);
+  // Navigation consistency: the page is its own nav's current entry, and the
+  // language switch leads to the counterpart page.
+  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
+  if ((await navSelf.getAttribute("aria-current")) !== "page") {
+    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  }
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -370,14 +473,19 @@ async function main() {
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
     await assertCloudPage(browser, { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, { width: 390, height: 844 }, "cloud-en-mobile.png");
+    // Issue #90: both cost pages, both languages, phone and desktop widths.
+    await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
+    await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
+    await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
+    await assertCostPage(browser, "/zh/cost/", { width: 390, height: 844 }, "cost-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/", "/cost/", "/zh/cost/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const [, href] of deepDives) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cost/", "/zh/cost/"]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
