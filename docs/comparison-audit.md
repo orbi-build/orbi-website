@@ -1,6 +1,7 @@
 # Comparison content audit
 
 审查日期：2026-09-07 · Review date: 2026-09-07
+Delivery 矩阵行核实于 2026-09-10（Issue #89）；引用原句 2026-09-11 在活页复核 · Delivery-matrix rows audited 2026-09-10; quotes re-verified live 2026-09-11.
 
 This ledger is the review record for `/compare/` and every published comparison detail page. It deliberately records the claim class so a vendor statement is not presented as an Orbi measurement. “Official” means the vendor's own product, documentation, or repository material; “inference” means a bounded reading of that material; “Orbi” means a statement about this repository's documented behavior.
 
@@ -20,6 +21,12 @@ This ledger is the review record for `/compare/` and every published comparison 
 | All detail pages | Orbi self-hosted delivery flow and licence | Orbi | https://docs.orbi.build · https://github.com/orbi-build/orbi/blob/main/LICENSE.md | Kept; fair-code/Sustainable Use wording used instead of OSI “open source” for Orbi |
 | All detail pages | Page title, description, canonical, hreflang, OG, Twitter and schema | Site implementation | https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls · https://ogp.me/ · https://schema.org/Article | Normalized and checked in source; dates remain visible on page |
 
+| `/compare/` | Delivery split rows (Issue #89): Copilot PR chain needs human approval — the assigner cannot approve the Copilot-raised PR; sessions hard-capped at 59 minutes | Official | https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews · https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent | Verified live 2026-09-11, quoted verbatim on page. The URL audited on 2026-09-10 (`…/copilot/concepts/agents/coding-agent/about-coding-agent`) now 301-redirects to the reorganized “Copilot cloud agent” page and no longer carries the sentence quoted in the 09-10 audit (“The agent cannot merge or approve its own PRs.”), so the page quotes the live sentences instead of publishing an unreadable snapshot. |
+| `/compare/` | Claude Code review findings don’t approve or block the PR; the check run always completes neutral | Official | https://code.claude.com/docs/en/code-review | Verified 2026-09-10, re-verified 2026-09-11; quoted verbatim. Attributed to Claude Code — the matrix’s Managed Agents column is a different product whose docs cover none of the three steps, so it reads “Not verified” rather than borrowing Claude Code’s cells. |
+| `/compare/` | Devin Review ships an auto-merge toggle (GitHub: Yes) | Official | https://docs.devin.ai/work-with-devin/devin-review | Verified 2026-09-11; Devin’s auto-merge cell honestly reads “Yes” — not downplayed because Devin is a competitor. |
+| `/compare/` | Devin GitHub integration documents @mention (Core/Teams) and Enterprise repository delegation only | Bounded inference | https://docs.devin.ai/integrations/gh | Automatic Issue triggering kept as “not verified”, not as a negative capability claim; verified 2026-09-11. |
+| `/compare/` | Tag / Release row: no competitor’s official documentation describes Issue→tag→Release as part of delivery | Official absence (11 vendors’ official docs) | Per-vendor URLs in the rows above and in the page’s source notes | All non-Orbi cells read “Not verified” (never “No”); audited 2026-09-10, Orbi is the only “Yes”. |
+
 ## Positioning and conversion decisions
 
 - **Self-hosted Orbi:** the comparison pages link to the documentation to install/run it on the reader's infrastructure. Model and hardware costs remain the operator's responsibility.
@@ -32,5 +39,6 @@ This ledger is the review record for `/compare/` and every published comparison 
 1. Added Article JSON-LD and complete per-page OG/Twitter URL/title/description metadata to all 14 bilingual detail pages.
 2. Added the missing `twitter:site` metadata to pages that lacked it.
 3. Preserved dated source notes and added this claim ledger for reviewability.
+4. 2026-09-10/11 — the `/compare/` Delivery row was split into independent review / auto-merge / tag+Release (Issue #89), Orbi being the only “Yes” on Release; the new rows’ quotes and the GitHub docs-reorg substitution are recorded in the ledger above.
 
 The ledger is a dated snapshot. Vendor prices, availability, model lists, and policies must be checked again before procurement or architecture decisions.
