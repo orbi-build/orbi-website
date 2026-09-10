@@ -888,22 +888,19 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("npm ci"), workflow.index("npm test"))
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy\n"))
         self.assertLess(workflow.index("tests.test_landing"), workflow.index("command: deploy\n"))
-        self.assertLess(workflow.index("playwright install"), workflow.index("command: deploy\n"))
         self.assertLess(workflow.index("command: deploy\n"), workflow.index("https://orbi.build/"))
-        self.assertIn("BASE_URL=https://orbi.build", workflow)
-        # Issue #74: the browser smoke's login contract is injected per
-        # environment. Issue #77: production configures no CLOUD_LOGIN_URL, so
-        # its /cloud/login fail-closes with the site Worker's stamped 503 and
-        # the served pages send the Cloud CTA to /apply; expecting the old
-        # handoff 302 here would fail every promotion. When production gets
-        # its own Cloud login, set the verified endpoint in wrangler.toml and
-        # flip this to oauth-302 as a reviewed diff.
-        self.assertIn("CLOUD_LOGIN_EXPECT=fail-closed-503", workflow)
+        # 2026-09-10: the browser smoke was removed from this workflow. It
+        # asserted design contracts (CTA placement, footer link sets, anchor
+        # wording) that a deploy gate must not own: three times in one day it
+        # rolled a correct production build back to a three-day-old version
+        # because a CTA had moved between the hero and the nav. Those checks
+        # belong to CI, where failing is free; a deploy smoke answers only
+        # "is the deployment alive", which the HTTP smoke below covers.
+        self.assertNotIn("playwright install", workflow)
+        self.assertNotIn("npm run test:browser", workflow)
         # the smoke asserts the deployed commit's real copy, parsed from the
         # checked-out pages — never hardcoded wording that will drift
         self.assertIn("public/index.html", workflow)
-        self.assertIn("public/compare/index.html", workflow)
-        self.assertIn("public/zh/index.html", workflow)
         # rollback: smoke failure triggers wrangler rollback to the recorded
         # pre-deploy version, and both version IDs land in the log
         self.assertIn("rollback", workflow)
