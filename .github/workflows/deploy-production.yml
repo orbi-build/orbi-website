@@ -159,6 +159,44 @@ jobs:
           echo "Deployed production version: $deployed"
           echo "version=$deployed" >> "$GITHUB_OUTPUT"
 
+      - name: Wait for the deployed build to reach the edge
+        # A successful `wrangler deploy` is not the same as the edge serving
+        # the new build: the Worker version flips before its static assets
+        # finish propagating, and the smoke steps below run within seconds.
+        # Twice on 2026-09-10 a correct build was deployed, failed the browser
+        # smoke ~8s later on stale HTML, and was rolled back to a version from
+        # three days earlier. Poll for the deployed commit's own marker instead
+        # of sleeping a fixed amount.
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          expected="$(python3 - <<'PY'
+          import re, pathlib
+          html = pathlib.Path("public/index.html").read_text(encoding="utf-8")
+          m = re.search(r'<code data-copy-source>(.*?)</code>', html, re.S)
+          print((m.group(1).strip() if m else ""))
+          PY
+          )"
+          if [ -z "$expected" ]; then
+            echo "::warning::no data-copy-source marker in public/index.html; skipping propagation gate"
+            exit 0
+          fi
+          for attempt in $(seq 1 30); do
+            live="$(curl --fail --silent --show-error --location \
+              -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
+              "https://orbi.build/?cachebust=${EXPECTED_SHA}-${attempt}" || true)"
+            if printf '%s' "$live" | grep -qF "$expected"; then
+              echo "edge is serving the deployed build (attempt ${attempt})"
+              exit 0
+            fi
+            echo "attempt ${attempt}: edge still serving the previous build; retrying in 10s"
+            sleep 10
+          done
+          echo "::error::the edge did not serve the deployed build within 300s"
+          exit 1
+
       - name: Smoke-test production deployment
         shell: bash
         run: |
