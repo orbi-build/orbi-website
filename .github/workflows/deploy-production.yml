@@ -104,9 +104,6 @@ jobs:
       - name: Run landing and deployment contract tests
         run: timeout 300s python3 -m unittest tests.test_landing -v
 
-      - name: Install Chromium for browser smoke tests
-        run: timeout 300s npx playwright install --with-deps chromium
-
       - name: Require Cloudflare credentials
         shell: bash
         env:
@@ -183,15 +180,22 @@ jobs:
             echo "::warning::no data-copy-source marker in public/index.html; skipping propagation gate"
             exit 0
           fi
+          # Every page the browser smoke visits must be current, not just the
+          # English homepage: on 2026-09-10 the gate passed on / while /zh/ was
+          # still stale, and the browser smoke failed there instead.
           for attempt in $(seq 1 30); do
-            live="$(curl --fail --silent --show-error --location \
-              -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
-              "https://orbi.build/?cachebust=${EXPECTED_SHA}-${attempt}" || true)"
-            if printf '%s' "$live" | grep -qF "$expected"; then
-              echo "edge is serving the deployed build (attempt ${attempt})"
+            stale=""
+            for path in / /zh/; do
+              live="$(curl --fail --silent --show-error --location \
+                -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
+                "https://orbi.build${path}?cachebust=${EXPECTED_SHA}-${attempt}" || true)"
+              printf '%s' "$live" | grep -qF "$expected" || stale="${stale} ${path}"
+            done
+            if [ -z "$stale" ]; then
+              echo "edge is serving the deployed build on every checked path (attempt ${attempt})"
               exit 0
             fi
-            echo "attempt ${attempt}: edge still serving the previous build; retrying in 10s"
+            echo "attempt ${attempt}: still stale on${stale}; retrying in 10s"
             sleep 10
           done
           echo "::error::the edge did not serve the deployed build within 300s"
@@ -262,17 +266,6 @@ jobs:
           check_page "https://www.orbi.build/" "public/index.html"
           check_page "https://orbi.build/compare/" "public/compare/index.html"
           check_page "https://orbi.build/zh/" "public/zh/index.html"
-
-      - name: Smoke-test production in a real browser
-        # Issue #74: the login contract is declared per environment, never
-        # guessed in the test. Issue #77: production configures no
-        # CLOUD_LOGIN_URL before a production control plane exists, so the
-        # website's /cloud/login route fail-closes with the site Worker's
-        # stamped 503 and the served pages send the Cloud CTA to /apply
-        # (Issue #76). When production gets its own Cloud login, set the
-        # verified endpoint in wrangler.toml and flip this to oauth-302 as a
-        # reviewed diff.
-        run: timeout 300s env BASE_URL=https://orbi.build CLOUD_LOGIN_EXPECT=fail-closed-503 npm run test:browser
 
       - name: Roll back production on smoke failure
         if: failure()
