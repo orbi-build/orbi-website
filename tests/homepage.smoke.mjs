@@ -8,9 +8,11 @@ const baseURL = `http://127.0.0.1:${port}`;
 const targetURL = process.env.BASE_URL || baseURL;
 const artifacts = ".orbi";
 
-// The homepage's one-line install command. Its host is beta.orbi.build, the
-// host CI actually deploys; see test_landing.py's workflow assertions.
-const installCommand = "curl -fsSL https://beta.orbi.build/install.sh | bash";
+// The homepage's one-line install command. Its host is the canonical
+// orbi.build: a visitor on any environment must be told to fetch the script
+// from production, never from a preview host. install.sh itself carries no
+// environment-specific values, so the same line is correct on beta.
+const installCommand = "curl -fsSL https://orbi.build/install.sh | bash";
 
 // Same order as the /compare/ grid; anchor text matches each page's own title.
 const deepDives = [
