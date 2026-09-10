@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>跑一个 Issue 到底花多少钱 —— 实测摊开 | Orbi</title>
+  <meta name="description" content="对 orbi 自己的仓库实测 47 次真实交付:单次中位 222 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.11,跑 100 个 issue 约 $6–11。完整 token 分布、钱的算法、三条限定,以及竞品不公布的额度 —— 全部附出处。">
+  <link rel="canonical" href="https://orbi.build/zh/cost/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/cost/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/cost/">
+  <meta property="og:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
+  <meta property="og:description" content="实测 47 次交付:单次中位 222 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.11。我们不在你的 token 上赚差价。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
+  <meta name="twitter:description" content="实测 47 次:单次中位 222 万 tokens ≈ $0.06–0.11(DeepSeek 官方牌价)。你的 key、你的账单。">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "name": "跑一个 Issue 到底花多少钱 —— 实测摊开",
+        "url": "https://orbi.build/zh/cost/",
+        "inLanguage": "zh-CN",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Orbi",
+          "url": "https://orbi.build/"
+        },
+        "about": { "@id": "https://orbi.build/#software" }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cost/" aria-current="page">成本</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <a href="/cost/" lang="en">EN</a>
+          <span aria-current="page">中文</span>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="cost-title">
+        <p class="eyebrow"><span class="live-dot"></span>成本透明 · 2026-09-10 实测 · n=47</p>
+        <h1 id="cost-title">跑一个 Issue 到底花多少钱</h1>
+        <p class="hero-lede"><strong>我们不在你的 token 上赚差价。</strong>对我们自己的仓库实测 47 次真实交付:单次中位 <strong>2,220,637 tokens</strong>;按 DeepSeek V4.1 Flash 官方牌价约 <strong>$0.06–0.11</strong>,跑 <strong>100 个 issue 约 $6–11</strong>。你的 key、你的账单、你在 Provider 后台看得见每一分钱。</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+          <p class="hero-alt">想自己部署?交付核心永久免费 —— <a data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="measured-title">
+      <p class="section-tag">实测数据</p>
+      <h2 id="measured-title">47 次真实交付,在我们自己的仓库上实测</h2>
+      <p class="section-lede">Orbi 的每次交付跑两个 Agent session —— 实现,外加一个能修分支、能重跑测试的独立审查。<strong>2026-09-10</strong>,我们聚合了 orbi 仓库自身 <strong>n=47 次交付</strong>(Python、完整 CI、Issue 写得规范)的 session 日志。下面是按次统计的 <code>totalTokens</code> 完整分布 —— 也就是 Provider 实际计费的口径,含缓存读取:</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">分位</th><th scope="col">单次 totalTokens</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">p50(中位)</th><td>2,220,637</td></tr>
+            <tr><th scope="row">p75</th><td>3,961,248</td></tr>
+            <tr><th scope="row">p90</th><td>13,290,932</td></tr>
+            <tr><th scope="row">p95</th><td>16,555,250</td></tr>
+            <tr><th scope="row">最大</th><td>37,627,783</td></tr>
+            <tr><th scope="row">均值</th><td>4,667,630</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">数据来源:orbi-build/orbi 仓库 47 次 Orbi 交付的 implement + review session 日志聚合,2026-09-10。token 的去向:<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="money-title">
+      <div class="shell">
+        <p class="section-tag">折算成钱</p>
+        <h2 id="money-title">按 DeepSeek V4.1 Flash 官方牌价,一次交付几分钱</h2>
+        <p class="section-lede">DeepSeek 公布价格 —— <code>deepseek-flash</code>(DeepSeek-V4.1-Flash):off-peak 时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。peak 时段(工作日 01:00–04:00 与 06:00–10:00 UTC)恰好翻倍。把官方牌价套到实测分布上:</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col">场景</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">单次交付(均值,467 万 tokens)</th><td>$0.057</td><td>$0.113</td></tr>
+              <tr><th scope="row">单次交付(实测最大,3760 万 tokens)</th><td>$0.46</td><td>$0.92</td></tr>
+              <tr><th scope="row">100 个 issue(按均值结构)</th><td>~$5.70</td><td>~$11.30</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">金额按实测 token 构成(95.9% / 3.4% / 0.7%)对照 DeepSeek 公布的 deepseek-flash 官方牌价计算 —— <a href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">api-docs.deepseek.com/quick_start/pricing</a>,核实于 2026-09-11。</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="limits-title">
+      <p class="section-tag">先说清楚三条限定</p>
+      <h2 id="limits-title">这一页不承诺的三件事</h2>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">只测了我们自己</span>
+          <div>
+            <strong>这是我们仓库的实测区间,不是对所有人的承诺</strong>
+            <p>Python、完整 CI、Issue 写得规范,让我们的上下文保持很短。上下文更长、测试更慢、Issue 更模糊的仓库,分布会落在别处。上面的表格是什么就是什么:我们仓库的实测区间。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">缓存是承重墙</span>
+          <div>
+            <strong>95.9% 缓存读取,前提是 Provider 支持 prompt caching</strong>
+            <p>整个成本结构压在缓存命中上。换到不支持 prompt caching 的端点 —— 每个 token 都按 miss 计价 —— 同样的工作成本大约要涨一个数量级。外推之前先查你的 Provider。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">按计费口径统计</span>
+          <div>
+            <strong>数字是 totalTokens,含缓存读取</strong>
+            <p>这才是 Provider 实际计费的口径。只算 input + output 会漏掉约 96% 的真实消耗,把数字做好看 —— 那恰恰是这一页反对的事。</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="why-title">
+      <p class="section-tag">为什么这么便宜</p>
+      <h2 id="why-title">缓存命中单价是 miss 的 1/50,而 95.9% 的工作都是命中</h2>
+      <p class="section-lede">每次交付都在重读同一批仓库上下文:目录树、约定、Issue、失败的测试。prompt caching 把这些重复阅读变成按 $0.003/1M 计价的命中,而不是按 $0.15/1M 计价的 miss。就这一个比值,让一整次交付 —— 实现加上能修能重跑的独立审查 —— 只要几分钱。这也是问任何 BYOK Agent 厂商时唯一诚实的问题:<strong>你的 token 里命中占比多少?你的 Provider 对命中收多少钱?</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="comparison-title">
+      <div class="shell">
+        <p class="section-tag">$200 档,供对照</p>
+        <h2 id="comparison-title">竞品报的是额度,我们报的是 token 和价格</h2>
+        <p class="section-lede">$200 档的托管 Agent 不公布你的钱买到了什么。以下说法对照他们的官方文档核实:</p>
+        <ul class="event-list">
+          <li>
+            <span class="event-era">DEVIN</span>
+            <div>
+              <strong>"A daily and weekly usage quota" —— 没有数量,没有单价</strong>
+              <p>Pro($20/月)包含 "a daily and weekly usage quota";Max($200/月)是 "a significantly larger weekly usage quota (with no daily cap)"。整个页面上,Cognition 没有写出任一档包含多少 ACU、一个 ACU 值多少钱。</p>
+              <p class="src-note">来源:<a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> —— 核实于 2026-09-11。</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">FACTORY</span>
+            <div>
+              <strong>"~5x Pro usage" / "~10x Pro usage" —— 没有任何绝对值</strong>
+              <p>Plus($100/月)是 "~5x Pro usage";Max($200/月)是 "~10x Pro usage"。页面上找不到任何绝对 token 量,也没有 per-token 价格。</p>
+              <p class="src-note">来源:<a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> —— 核实于 2026-09-11。</p>
+            </div>
+          </li>
+        </ul>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col"></th><th scope="col">订阅</th><th scope="col">模型费</th><th scope="col">总计</th><th scope="col">产出打 Tag 的 Release</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Orbi + DeepSeek</th><td>自托管 $0;Cloud 创始试点 $15/月</td><td>实测约 $6–11</td><td>$6–26</td><td>是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td>$200</td><td>额度未公布</td><td>$200+</td><td>文档止于 PR("from prompt to PR")</td></tr>
+              <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage",无绝对值</td><td>$200+</td><td>无打 Tag/Release 流程记载</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Devin 行依据 <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>;Factory 行依据 <a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> —— 均核实于 2026-09-11。Orbi 模型费即上文的实测区间。</p>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">你的 key,你的账单</p>
+      <h2 id="start-title">拿你自己的后台对一遍这些数字</h2>
+      <p>用你自己的 DeepSeek key 跑 Orbi,Provider 的用量页会显示每一次交付、每一个 token、每一分钱。这就是全部主张:我们和你和账单之间,什么都没有。</p>
+      <div class="cta-row">
+        <a class="button button-signal" href="/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/zh/compare/">看附出处的竞品对比 →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/compare/">竞品对比</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <a href="/cost/" lang="en">EN</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

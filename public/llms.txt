@@ -93,7 +93,10 @@ pull request, labels, and run ID live in GitHub rather than in a process, so a
 restart reconstructs the same run, branch, worktree, and PR.
 
 **What does it cost?** Self-hosting is free forever. Managed Cloud is in design
-and not yet purchasable.
+and not yet purchasable. What the model usage itself costs is measured, not
+estimated: 47 real deliveries aggregated on 2026-09-10 put the median delivery
+at 2,220,637 totalTokens, roughly $0.06–0.11 at DeepSeek V4.1 Flash list
+prices. Full data and limits: https://orbi.build/cost/
 
 ## Links
 
@@ -115,5 +118,7 @@ and not yet purchasable.
 - Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
 - Comparison — Orbi vs OpenAI Codex (English): https://orbi.build/compare/codex/
 - Comparison — Orbi vs OpenAI Codex (Chinese): https://orbi.build/zh/compare/codex/
+- Cost transparency — what one delivery costs (English): https://orbi.build/cost/
+- Cost transparency — what one delivery costs (Chinese): https://orbi.build/zh/cost/
 - Comparison — Orbi vs OpenHands (English): https://orbi.build/compare/openhands/
 - Comparison — Orbi vs OpenHands (Chinese): https://orbi.build/zh/compare/openhands/

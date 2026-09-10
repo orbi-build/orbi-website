@@ -38,6 +38,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/cost/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/cost/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/cost/"/>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/cost/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/cost/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/cost/"/>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/compare/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
