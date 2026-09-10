@@ -25,6 +25,30 @@ const deepDives = [
   ["Orbi vs Devin", "/compare/devin/"],
 ];
 
+// Issue #91: the hero claims delivery to a tagged release, and the lede
+// names the three segments no competitor covers — independent review that
+// repairs and reruns, the exact-head merge, the tag + Release.
+const releaseClaims = {
+  "/": {
+    h1: "Turn GitHub Issues into tagged releases",
+    lede: [
+      "independent review that repairs code and reruns the suite",
+      "merges the exact reviewed head",
+      "publishes the result as a tagged Release",
+    ],
+    title: "tagged releases",
+  },
+  "/zh/": {
+    h1: "让 GitHub Issue 变成打 Tag 的发布",
+    lede: [
+      "能改代码、会重跑测试的独立审查",
+      "只合并审过的那个 Head",
+      "冻结 SHA、打 Tag、发正式 Release",
+    ],
+    title: "打 Tag 的 Release",
+  },
+};
+
 function startServer() {
   return spawn("python3", ["-m", "http.server", String(port)], {
     cwd: "public",
@@ -165,12 +189,26 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const hero = page.locator(".hero");
+  const claim = releaseClaims[path];
+  const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: hero h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
+  }
+  const lede = await hero.locator(".hero-lede").textContent();
+  for (const segment of claim.lede) {
+    if (!lede.includes(segment)) {
+      throw new Error(`${path}: hero lede is missing the segment ${JSON.stringify(segment)}: ${JSON.stringify(lede)}`);
+    }
+  }
+  if (!(await page.title()).includes(claim.title)) {
+    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
+  }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
-  const hero = page.locator(".hero");
   // Issue #79: the homepage Cloud CTA leads with the /cloud/ explainer page,
   // a static asset served identically in every environment — the login
   // handoff now lives only on /cloud/ itself.

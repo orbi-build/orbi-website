@@ -349,11 +349,48 @@ class LandingTests(unittest.TestCase):
                     f"heading loses a word boundary for crawlers: {crawler!r}",
                 )
 
-    def test_hero_leads_with_github_issues_without_a_second_workspace(self) -> None:
-        self.assertIn("Turn GitHub Issues into reviewed software", self.en.text)
+    def test_hero_claims_delivery_to_release_not_just_review(self) -> None:
+        """Issue #91: independent review is table stakes (Devin, Claude Code,
+        OpenHands, Codex, Factory all have it), so a hero that stops at
+        "reviewed" parks Orbi in a crowded grid. The hero claims the end of
+        the delivery line — the exact-head merge, the tag, the Release — and
+        the lede names all three uncovered segments."""
+        self.assertIn("Turn GitHub Issues into tagged releases", self.en.text)
+        self.assertNotIn("into reviewed software", self.en.text)
         self.assertIn("No new workspace", self.en.text)
-        self.assertIn("让 GitHub Issue 变成经过审查的软件", self.zh.text)
+        self.assertIn("independent review that repairs code and reruns the suite", self.en.text)
+        self.assertIn("merges the exact reviewed head", self.en.text)
+        self.assertIn("publishes the result as a tagged Release", self.en.text)
+        self.assertIn("让 GitHub Issue 变成打 Tag 的发布", self.zh.text)
+        self.assertNotIn("变成经过审查的软件", self.zh.text)
         self.assertIn("不用迁移工作流", self.zh.text)
+        self.assertIn("能改代码、会重跑测试的独立审查", self.zh.text)
+        self.assertIn("只合并审过的那个 Head", self.zh.text)
+        self.assertIn("冻结 SHA、打 Tag、发正式 Release", self.zh.text)
+
+    def test_title_and_cards_claim_the_release_not_the_review(self) -> None:
+        """Issue #91: every search/share slot carries the delivery-to-release
+        claim; none of them still stops at reviewed. title, og:title and
+        twitter:title stay one sentence in three slots."""
+        for html, claim, alt_claim, old in (
+            (self.en_html, "tagged releases", "tagged releases", "reviewed software"),
+            (self.zh_html, "打 Tag 的 Release", "打 Tag 的发布", "经过审查的软件"),
+        ):
+            slots = [
+                ("title", re.search(r"<title>([^<]+)</title>", html).group(1)),
+                ("description", re.search(r'name="description" content="([^"]+)"', html).group(1)),
+                ("og:title", re.search(r'property="og:title" content="([^"]+)"', html).group(1)),
+                ("og:description", re.search(r'property="og:description" content="([^"]+)"', html).group(1)),
+                ("og:image:alt", re.search(r'property="og:image:alt" content="([^"]+)"', html).group(1)),
+                ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
+                ("twitter:description", re.search(r'name="twitter:description" content="([^"]+)"', html).group(1)),
+            ]
+            self.assertEqual(slots[0][1], slots[2][1], slots)
+            self.assertEqual(slots[0][1], slots[5][1], slots)
+            for slot, text in slots:
+                self.assertNotIn(old, text, (slot, text))
+                expected = alt_claim if slot == "og:image:alt" else claim
+                self.assertIn(expected, text, (slot, text))
 
     def test_cloud_is_a_direction_not_a_shipping_claim(self) -> None:
         for page in (self.en, self.zh):

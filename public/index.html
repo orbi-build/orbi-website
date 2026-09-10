@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi — Self-hosted, fair-code AI coding agent that ships from GitHub Issues</title>
-  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model — Claude, GPT, or local.">
+  <title>Orbi — Self-hosted, fair-code AI coding agent: Issues in, tagged releases out</title>
+  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent that turns GitHub Issues into tagged releases: independent review repairs the code, the exact reviewed head merges, then the SHA is frozen and the tag published. Bring your own model — Claude, GPT, or local.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -17,17 +17,17 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/">
-  <meta property="og:title" content="Orbi — Self-hosted, fair-code AI coding agent that ships from GitHub Issues">
-  <meta property="og:description" content="A self-hosted, fair-code AI coding agent. It picks up GitHub Issues, writes the code, runs an independent AI code review that repairs its own work, and merges the exact reviewed commit. Bring your own model.">
+  <meta property="og:title" content="Orbi — Self-hosted, fair-code AI coding agent: Issues in, tagged releases out">
+  <meta property="og:description" content="A self-hosted, fair-code AI coding agent. It turns GitHub Issues into tagged releases: independent review repairs the code, the exact reviewed head merges, and the frozen SHA ships as a published tag. Bring your own model.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Orbi — turn GitHub Issues into reviewed software.">
+  <meta property="og:image:alt" content="Orbi — turn GitHub Issues into tagged releases.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
-  <meta name="twitter:title" content="Orbi — Self-hosted, fair-code AI coding agent that ships from GitHub Issues">
-  <meta name="twitter:description" content="A GitHub-native software production system: Issues in, reviewed and released software out. Fair-code, self-hosted, free forever.">
+  <meta name="twitter:title" content="Orbi — Self-hosted, fair-code AI coding agent: Issues in, tagged releases out">
+  <meta name="twitter:description" content="A GitHub-native software production system: GitHub Issues in, tagged releases out. Fair-code, self-hosted, free forever.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +68,7 @@
         "downloadUrl": "https://github.com/orbi-build/orbi",
         "license": "https://github.com/orbi-build/orbi/blob/main/LICENSE.md",
         "isAccessibleForFree": true,
-        "description": "Orbi is a GitHub-native software production system. It runs the Issues, dependencies, Epics, milestones, and releases already in a repository through implementation, independent review, recovery, and exact-head merge, keeping GitHub as the source of truth.",
+        "description": "Orbi is a GitHub-native software production system. It runs the Issues, dependencies, Epics, milestones, and releases already in a repository through implementation, independent review, recovery, exact-head merge, and tagged releases, keeping GitHub as the source of truth.",
         "featureList": [
           "Epic and milestone scoping",
           "Native GitHub blockedBy dependency ordering",
@@ -177,8 +177,8 @@
         <div class="hero-copy">
           <p class="eyebrow"><span class="live-dot"></span>GitHub-native software production</p>
           <h1>Turn GitHub Issues
-            <br><span>into reviewed software</span></h1>
-          <p class="hero-lede"><strong>No new workspace.</strong> Orbi runs the Issues, dependencies, milestones, and releases already in your repository through implementation, independent review, recovery, and exact-head merge. GitHub remains the source of truth.</p>
+            <br><span>into tagged releases</span></h1>
+          <p class="hero-lede"><strong>No new workspace.</strong> Orbi takes the Issues, dependencies, and milestones already in your repository through independent review that repairs code and reruns the suite, merges the exact reviewed head, then freezes the SHA and publishes the result as a tagged Release. GitHub remains the source of truth.</p>
           <div class="cta-row hero-ctas">
             <div class="hero-primary">
               <a class="button button-signal" data-cta="cloud-start" href="/cloud/">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
@@ -227,7 +227,7 @@
           </div>
           <figcaption id="trace-caption">
             <span>RECOVERABLE STATE</span>
-            <strong>GitHub is the ledger. The reviewed commit is the product.</strong>
+            <strong>GitHub is the ledger. The tagged release is the product.</strong>
           </figcaption>
         </figure>
       </section>
@@ -501,7 +501,7 @@ orbi setup --config orbi.toml</code></pre>
         <p class="section-tag">FAIR-CODE CORE</p>
         <h2 id="closing-title">Install the self-hosted agent
           <br>and turn the lights off</h2>
-        <p>Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a reviewed result.</p>
+        <p>Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a tagged release.</p>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" href="https://github.com/orbi-build/orbi">View the source</a>
