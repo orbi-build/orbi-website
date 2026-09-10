@@ -403,6 +403,116 @@ async function assertCostPage(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #89: the /compare/ matrix splits Delivery into three rows —
+// independent review / auto-merge / tag + Release — and the vendors' verbatim
+// quotes for those rows must render in both languages, with Orbi the only
+// "Yes" in the Release row.
+const compareMatrix = {
+  "/compare/": {
+    zh: "/zh/compare/",
+    rows: ["Independent review (can edit code and rerun tests)", "Auto-merge", "Tag / Release"],
+    yes: "Yes",
+    quotes: [
+      "Pull request authors cannot approve their own pull requests.",
+      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
+      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
+      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
+      "toggle auto-merge directly from Devin Review without leaving the page",
+    ],
+    hrefs: [
+      "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
+      "https://code.claude.com/docs/en/code-review",
+      "https://docs.devin.ai/work-with-devin/devin-review",
+    ],
+    dates: ["2026-09-10", "2026-09-11"],
+  },
+  "/zh/compare/": {
+    zh: "/compare/",
+    rows: ["独立评审（能改代码重跑测试）", "自动 merge", "打 Tag / 发 Release"],
+    yes: "是",
+    quotes: [
+      "Pull request authors cannot approve their own pull requests.",
+      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
+      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
+      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
+      "toggle auto-merge directly from Devin Review without leaving the page",
+    ],
+    hrefs: [
+      "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
+      "https://code.claude.com/docs/en/code-review",
+      "https://docs.devin.ai/work-with-devin/devin-review",
+    ],
+    dates: ["2026-09-10", "2026-09-11"],
+  },
+};
+
+async function assertCompareMatrix(browser, path, size, screenshot) {
+  const claim = compareMatrix[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The three new rows must render, and the Tag / Release row must carry
+  // exactly one "Yes" — in the Orbi column.
+  const matrix = page.locator("table.compare-table").first();
+  const rowHeads = await matrix.locator("tbody th").evaluateAll((nodes) =>
+    nodes.map((th) => th.textContent.replace(/\s+/g, " ").trim())
+  );
+  for (const row of claim.rows) {
+    if (!rowHeads.includes(row)) {
+      throw new Error(`${path}: matrix is missing the delivery row ${JSON.stringify(row)}; has ${JSON.stringify(rowHeads)}`);
+    }
+  }
+  const releaseRow = matrix.locator("tbody tr", { has: page.locator("th", { hasText: claim.rows[2] }) });
+  const releaseCells = await releaseRow.locator("td").evaluateAll((nodes) =>
+    nodes.map((td) => td.textContent.replace(/\s+/g, " ").trim())
+  );
+  const yesCount = releaseCells.filter((cell) => cell === claim.yes).length;
+  if (yesCount !== 1 || releaseCells[0] !== claim.yes) {
+    throw new Error(`${path}: Release row must carry exactly one ${JSON.stringify(claim.yes)} in the Orbi column, got ${JSON.stringify(releaseCells)}`);
+  }
+  // The verbatim vendor quotes, their URLs, and the verification dates.
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const quote of claim.quotes) {
+    if (!text.includes(quote)) {
+      throw new Error(`${path}: the verbatim vendor quote is missing: ${JSON.stringify(quote)}`);
+    }
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a link to the official source ${href}`);
+    }
+  }
+  for (const date of claim.dates) {
+    if (!text.includes(date)) throw new Error(`${path}: missing the verification date ${date}`);
+  }
+  // Navigation consistency, same contract as the cost pages.
+  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
+  if ((await navSelf.getAttribute("aria-current")) !== "page") {
+    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  }
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -478,6 +588,11 @@ async function main() {
     await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
     await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
     await assertCostPage(browser, "/zh/cost/", { width: 390, height: 844 }, "cost-zh-mobile.png");
+    // Issue #89: both compare indexes, both languages, phone and desktop widths.
+    await assertCompareMatrix(browser, "/compare/", { width: 1440, height: 900 }, "compare-en-desktop.png");
+    await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
+    await assertCompareMatrix(browser, "/zh/compare/", { width: 1440, height: 900 }, "compare-zh-desktop.png");
+    await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
       for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/", "/cost/", "/zh/cost/"]) {
