@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /apply
-Disallow: /api/
+Disallow: /cloud/apply
+Disallow: /cloud/login
 
 Sitemap: https://orbi.build/sitemap.xml

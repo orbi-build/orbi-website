@@ -26,9 +26,16 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATS_TTL_MS = 300000;
-const CLOUD_LOGIN_ROUTE = "/api/login";
+// On the shared beta hostname the cloud control plane owns the route
+// prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
+// (orbi-cloud discussion 120 §2 C2), so a website route under any of them
+// never runs there — the cloud Worker intercepts it. Both website-owned
+// Cloud-entry endpoints therefore live under /cloud/: the login handoff and
+// the application submit (Issue #76).
+const CLOUD_LOGIN_ROUTE = "/cloud/login";
+const APPLY_ROUTE = "/cloud/apply";
 
-// /api/apply is an unauthenticated write into D1: bound the body and every
+// /cloud/apply is an unauthenticated write into D1: bound the body and every
 // column so a script cannot fill the table with oversized rows.
 const MAX_BODY_BYTES = 16384;
 const MAX_FIELD = {
@@ -151,6 +158,31 @@ async function fetchAsset(request, assets) {
     return assets.fetch(new Request(url, request));
   }
   return response;
+}
+
+// The landing pages ship with their Cloud CTAs pointing at /cloud/login.
+// That link is only honest where this environment configures CLOUD_LOGIN_URL
+// (beta today): without it the route fail-closes with 503, so serving the
+// shipped links would send visitors to a dead end and the pages are served
+// with every Cloud CTA rewritten to the application page instead (Issue #77).
+// The rewrite is driven by the configuration, so giving production its own
+// control plane later is a wrangler.toml change, not a page change.
+async function assetResponse(asset, cloudLoginConfigured) {
+  const headers = new Headers(asset.headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(key, value);
+  }
+  if (cloudLoginConfigured || asset.status !== 200
+      || !(headers.get("Content-Type") || "").startsWith("text/html")) {
+    return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
+  }
+  // A rewritten body is a new representation: the asset file's validators
+  // must not answer conditional requests for these bytes.
+  headers.delete("etag");
+  headers.delete("last-modified");
+  headers.delete("content-length");
+  const html = (await asset.text()).replaceAll('href="/cloud/login"', 'href="/apply"');
+  return new Response(html, { status: asset.status, statusText: asset.statusText, headers });
 }
 
 function cloudLoginResponse(request, cloudBaseUrl) {
@@ -301,16 +333,11 @@ async function handleFetch(request, env) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
-    if (url.pathname === "/api/apply") {
+    if (url.pathname === APPLY_ROUTE) {
       return await handleApply(request, env);
     }
 
-    const asset = await fetchAsset(request, env.ASSETS);
-    const response = new Response(asset.body, asset);
-    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-      response.headers.set(key, value);
-    }
-    return response;
+    return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
 export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch };
