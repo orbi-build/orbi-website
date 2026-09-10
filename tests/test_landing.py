@@ -494,7 +494,7 @@ class LandingTests(unittest.TestCase):
         """"Install it yourself" is one curl line; the four hand-run steps
         survive only as the collapsed manual fallback, so nobody faces them
         up front."""
-        command = "curl -fsSL https://beta.orbi.build/install.sh | bash"
+        command = "curl -fsSL https://orbi.build/install.sh | bash"
         for html in (self.en_html, self.zh_html):
             # exactly once: the primary install path, not repeated per locale
             self.assertEqual(html.count(command), 1)
