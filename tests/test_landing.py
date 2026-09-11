@@ -412,15 +412,19 @@ class LandingTests(unittest.TestCase):
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
     def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, state, apply_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply / contact us"),
-            (self.zh, "创始试点 · 席位有限", "申请 / 联系我们"),
+        for page, state, apply_label, price, explainer in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply / contact us", "US$15/month", "/cloud/"),
+            (self.zh, "创始试点 · 席位有限", "申请 / 联系我们", "US$15/月", "/zh/cloud/"),
         ):
             self.assertIn(state, page.text)
-            # The homepage always offers the application path; the Start Cloud
-            # CTA's own target is a product decision (#99 sends it straight to
-            # /cloud/login) and the served href is additionally rewritten per
-            # environment by the Worker, so no page test pins it (Issue #103).
+            # Issue #99: the price sits on the card before the click, and the
+            # /cloud/ explainer stays reachable from the footer. The Start
+            # Cloud CTA's own target is a product decision (#99 sends it
+            # straight to /cloud/login) and the served href is additionally
+            # rewritten per environment by the Worker, so no page test pins it
+            # (Issue #103).
+            self.assertIn(price, page.text)
+            self.assertIn(explainer, [href for _, href in page.hrefs])
             self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
