@@ -271,7 +271,53 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 // /cloud/login handoff everywhere except a fail-closed-503 deployment (no
 // CLOUD_LOGIN_URL, Issue #77), where the Worker serves them rewritten to
 // /apply.
-async function assertCloudPage(browser, size, screenshot) {
+// Issue #97: the claim advances to the end of the delivery line — the three
+// segments no competitor covers — and the release boundary is stated
+// honestly: the human opens the release Issue and applies ai-release, CI is
+// what the release is tested against. Never "automatic releases".
+const cloudPages = {
+  "/cloud/": {
+    zh: "/zh/cloud/",
+    title: "GitHub Issues in, tagged releases out",
+    h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
+    loop: "GitHub Issue in, tagged release out",
+    metaNeedle: ["tagged GitHub Release"],
+    oldClaim: "reviewed pull request",
+    text: [
+      "exact-head merge",
+      "tagged GitHub Release",
+      "cuts the tag",
+      "closes the milestone",
+      // the release boundary: you start it, Orbi runs it
+      "never automatic",
+      "ai-release",
+      "only humans",
+      "GitHub Actions",
+    ],
+  },
+  "/zh/cloud/": {
+    zh: "/cloud/",
+    title: "GitHub Issue 进，打好 Tag 的 Release 出",
+    h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
+    loop: "GitHub Issue 进，打好 Tag 的 Release 出",
+    metaNeedle: ["打 Tag", "GitHub Release"],
+    oldClaim: "审查过的 PR",
+    text: [
+      "exact-head merge",
+      "冻结 SHA",
+      "打 Tag",
+      "GitHub Release",
+      "关闭 milestone",
+      "从不是全自动",
+      "ai-release",
+      "只有人能打",
+      "GitHub Actions",
+    ],
+  },
+};
+
+async function assertCloudPage(browser, path, size, screenshot) {
+  const claim = cloudPages[path];
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
@@ -284,18 +330,55 @@ async function assertCloudPage(browser, size, screenshot) {
     if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${targetURL}/cloud/`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
   const h1Count = await page.locator("h1").count();
-  if (h1Count !== 1) throw new Error(`/cloud/: expected exactly one h1, got ${h1Count}`);
-  if ((await page.getByText("US$15").count()) < 1) throw new Error("/cloud/: the Founding Pilot price US$15 is not on the page");
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
+  }
+  const pageTitle = await page.title();
+  if (!pageTitle.includes(claim.title)) {
+    throw new Error(`${path}: title ${JSON.stringify(pageTitle)} does not carry the release claim`);
+  }
+  // The three meta descriptions carry the same advanced claim.
+  const metaDescriptions = await Promise.all([
+    'meta[name="description"]',
+    'meta[property="og:description"]',
+    'meta[name="twitter:description"]',
+  ].map((selector) => page.locator(selector).getAttribute("content")));
+  for (const needle of claim.metaNeedle) {
+    for (const content of metaDescriptions) {
+      if (!content.includes(needle)) {
+        throw new Error(`${path}: meta description ${JSON.stringify(content)} is missing ${JSON.stringify(needle)}`);
+      }
+    }
+  }
+  // The stop-at-the-PR claim is gone — from the title, the h1, the loop
+  // heading, and the body.
+  for (const [label, value] of [["title", pageTitle], ["h1", heroH1]]) {
+    if (value.includes(claim.oldClaim)) {
+      throw new Error(`${path}: ${label} still stops at the old claim ${JSON.stringify(claim.oldClaim)}: ${JSON.stringify(value)}`);
+    }
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  if (text.includes(claim.oldClaim)) {
+    throw new Error(`${path}: main still stops at the old claim ${JSON.stringify(claim.oldClaim)}`);
+  }
+  for (const needle of [claim.loop, ...claim.text]) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
+    }
+  }
+  if ((await page.getByText("US$15").count()) < 1) throw new Error(`${path}: the Founding Pilot price US$15 is not on the page`);
   const loginHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
   const loginButton = page.locator(`a.button-signal[href="${loginHref}"]`).first();
-  if (!(await loginButton.isVisible())) throw new Error(`/cloud/: no visible Cloud CTA to ${loginHref}`);
+  if (!(await loginButton.isVisible())) throw new Error(`${path}: no visible Cloud CTA to ${loginHref}`);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  if (overflow > 1) throw new Error(`/cloud/: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   if (consoleErrors.length || failedRequests.length) {
-    throw new Error(`/cloud/: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
   await page.close();
 }
@@ -581,8 +664,11 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertCloudPage(browser, { width: 1440, height: 900 }, "cloud-en-desktop.png");
-    await assertCloudPage(browser, { width: 390, height: 844 }, "cloud-en-mobile.png");
+    // Issue #97: both Cloud pages, both languages, phone and desktop widths.
+    await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
+    await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
+    await assertCloudPage(browser, "/zh/cloud/", { width: 1440, height: 900 }, "cloud-zh-desktop.png");
+    await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
     await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
@@ -595,12 +681,12 @@ async function main() {
     await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/", "/cost/", "/zh/cost/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cost/", "/zh/cost/"]) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/"]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
