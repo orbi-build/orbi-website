@@ -307,7 +307,8 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud-start"], "/cloud/")
+            self.assertEqual(ctas["cloud-start"], "/cloud/login")
+            self.assertEqual(ctas["cloud-start-card"], "/cloud/login")
             self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
@@ -409,15 +410,18 @@ class LandingTests(unittest.TestCase):
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
     def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, state, start_label, apply_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us"),
-            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
+        for page, state, start_label, apply_label, price, explainer in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us", "US$15/month", "/cloud/"),
+            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们", "US$15/月", "/zh/cloud/"),
         ):
             self.assertIn(state, page.text)
-            # Issue #79: the homepage Cloud CTA leads with the explainer page,
-            # never straight into the OAuth handoff.
-            self.assertTrue(any(href == "/cloud/" and text.startswith(start_label) for text, href in page.hrefs))
+            # Issue #99: the main CTA honors its copy — one click into the
+            # login handoff — and the price sits on the card before the
+            # click; the /cloud/ explainer stays reachable from the footer.
+            self.assertTrue(any(href == "/cloud/login" and text.startswith(start_label) for text, href in page.hrefs))
             self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
+            self.assertIn(price, page.text)
+            self.assertIn(explainer, [href for _, href in page.hrefs])
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -1123,14 +1127,15 @@ class CloudLandingPageTests(unittest.TestCase):
         for loc in ("https://orbi.build/cloud/", "https://orbi.build/zh/cloud/"):
             self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
 
-    def test_homepage_cloud_ctas_lead_with_this_page(self) -> None:
-        """All three homepage Cloud CTAs (nav, hero, card) point here, and no
-        homepage link reaches the OAuth handoff directly any more."""
-        for path in (EN_PATH, ZH_PATH):
+    def test_homepage_cloud_ctas_go_straight_to_login(self) -> None:
+        """Issue #99: all three homepage Cloud CTAs (nav, hero, card) go
+        straight to the login handoff; the /cloud/ explainer stays reachable
+        through the single footer link instead of blocking the main CTA."""
+        for path, explainer in ((EN_PATH, "/cloud/"), (ZH_PATH, "/zh/cloud/")):
             _, page = parse(path)
             hrefs = [href for _, href in page.hrefs]
-            self.assertGreaterEqual(hrefs.count("/cloud/"), 3, hrefs)
-            self.assertNotIn("/cloud/login", hrefs)
+            self.assertEqual(hrefs.count("/cloud/login"), 3, hrefs)
+            self.assertEqual(hrefs.count(explainer), 1, hrefs)
 
     def test_font_loading_follows_the_language(self) -> None:
         """English pages do not ship the CJK webfont (REVIEW.md P1-3)."""

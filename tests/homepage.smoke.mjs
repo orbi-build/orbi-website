@@ -209,11 +209,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
-  // Issue #79: the homepage Cloud CTA leads with the /cloud/ explainer page,
-  // a static asset served identically in every environment — the login
-  // handoff now lives only on /cloud/ itself.
+  // Issue #99: the homepage Cloud CTA honors its own copy — one click goes
+  // to the /cloud/login handoff (302 to GitHub OAuth where CLOUD_LOGIN_URL
+  // is configured; rewritten to /apply by the Worker where it is not,
+  // Issue #77 — the same environment contract as the /cloud/ page buttons).
+  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
   const heroPaths = {
-    "cloud-start": "/cloud/",
+    "cloud-start": cloudCtaHref,
     install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
   };
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
@@ -228,6 +230,19 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!(await link.isVisible())) throw new Error(`${path}: ${cta} CTA is not visible`);
     if ((await link.getAttribute("href")) !== href) throw new Error(`${path}: ${cta} CTA has wrong href`);
   }
+  // Issue #99: the card CTA and the nav "Start Cloud" keep the same promise
+  // as the hero CTA — one click into the login handoff, never a second
+  // identical button — and the card discloses the price before the click.
+  const cardCta = page.locator('[data-cta="cloud-start-card"]');
+  if ((await cardCta.getAttribute("href")) !== cloudCtaHref) {
+    throw new Error(`${path}: cloud-start-card CTA has wrong href`);
+  }
+  const navStart = page.locator("[data-primary-nav] .nav-apply");
+  if ((await navStart.getAttribute("href")) !== cloudCtaHref) {
+    throw new Error(`${path}: nav Start Cloud has wrong href`);
+  }
+  const cardText = await page.locator(".run-option-cloud").textContent();
+  if (!cardText.includes("US$15")) throw new Error(`${path}: the Managed Cloud card hides the US$15 price`);
   const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
@@ -235,6 +250,12 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
   );
+  // Issue #99: with the main CTAs going straight to the login handoff, the
+  // /cloud/ explainer stays reachable from the footer.
+  const explainerHref = path.startsWith("/zh") ? "/zh/cloud/" : "/cloud/";
+  if (!footerHrefs.includes(explainerHref)) {
+    throw new Error(`${path}: footer lost the ${explainerHref} explainer link`);
+  }
   if (path === "/") {
     await assertFooterDeepDives(page, path);
   } else {
