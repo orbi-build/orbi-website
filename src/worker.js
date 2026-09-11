@@ -162,11 +162,11 @@ async function fetchAsset(request, assets) {
 
 // The landing pages ship with their Cloud CTAs pointing at /cloud/login.
 // That link is only honest where this environment configures CLOUD_LOGIN_URL
-// (beta today): without it the route fail-closes with 503, so serving the
-// shipped links would send visitors to a dead end and the pages are served
-// with every Cloud CTA rewritten to the application page instead (Issue #77).
-// The rewrite is driven by the configuration, so giving production its own
-// control plane later is a wrangler.toml change, not a page change.
+// (production and beta both do): without it the route fail-closes with 503,
+// so serving the shipped links would send visitors to a dead end and the
+// pages are served with every Cloud CTA rewritten to the application page
+// instead (Issue #77). The rewrite is driven by the configuration, so opening
+// production was a wrangler.toml change, not a page change (Issue #96).
 async function assetResponse(asset, cloudLoginConfigured) {
   const headers = new Headers(asset.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
