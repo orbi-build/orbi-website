@@ -307,7 +307,10 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
             self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
-            self.assertEqual(ctas["cloud-start"], "/cloud/")
+            # The Start Cloud CTA must exist; where it points is a product and
+            # configuration decision (Issue #99 sends it straight to
+            # /cloud/login), so no test pins its target (Issue #103).
+            self.assertIn("cloud-start", ctas)
             self.assertEqual(ctas["cloud-apply"], "/apply")
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
@@ -409,26 +412,30 @@ class LandingTests(unittest.TestCase):
         self.assertIn("平台订阅 + 托管运行时 + 模型用量", self.zh.text)
 
     def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, state, start_label, apply_label in (
-            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Start Cloud with GitHub", "Apply / contact us"),
-            (self.zh, "创始试点 · 席位有限", "用 GitHub 开始 Cloud", "申请 / 联系我们"),
+        for page, state, apply_label in (
+            (self.en, "FOUNDING PILOT · LIMITED SEATS", "Apply / contact us"),
+            (self.zh, "创始试点 · 席位有限", "申请 / 联系我们"),
         ):
             self.assertIn(state, page.text)
-            # Issue #79: the homepage Cloud CTA leads with the explainer page,
-            # never straight into the OAuth handoff.
-            self.assertTrue(any(href == "/cloud/" and text.startswith(start_label) for text, href in page.hrefs))
+            # The homepage always offers the application path; the Start Cloud
+            # CTA's own target is a product decision (#99 sends it straight to
+            # /cloud/login) and the served href is additionally rewritten per
+            # environment by the Worker, so no page test pins it (Issue #103).
             self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
         with open(ROOT / "wrangler.toml", "rb") as handle:
             config = tomllib.load(handle)
-        # Issue #77: production configures no CLOUD_LOGIN_URL before a
-        # production control plane exists — its /cloud/login fail-closes with
-        # 503 and the served pages send the Cloud CTA to /apply. Only the beta
-        # environment names the one verified endpoint, which stays on Cloud's
-        # own /api/ path because Cloud owns /api*.
-        self.assertNotIn("CLOUD_LOGIN_URL", config.get("vars", {}))
+        # CLOUD_LOGIN_URL is a per-environment configuration decision, not a
+        # contract: Issue #96 opened production with its verified control-plane
+        # endpoint, and the assertNotIn here that locked the old unconfigured
+        # state broke the beta deploy (Issue #103). The behavior under either
+        # configuration — configured: /cloud/login 302s to the value and the
+        # served pages keep their CTAs; unconfigured: 503 with every Cloud CTA
+        # rewritten to /apply — is locked where it runs, in
+        # tests/worker.test.js. Only beta's value is pinned: it must stay the
+        # one verified beta Cloud endpoint (docs/cloud-endpoints.md).
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn("new URL(cloudBaseUrl)", worker)
@@ -973,6 +980,11 @@ class LandingTests(unittest.TestCase):
         self.assertIn("branches:\n      - beta", workflow)
         self.assertNotIn("branches:\n      - main", workflow)
         self.assertIn("pull_request:", workflow)
+        # Issue #103: PR CI must run the same contract tests the deploy
+        # workflows run. This suite used to execute only at deploy time,
+        # so a contract violation passed PR review green and broke the
+        # beta deploy after the merge instead of failing the PR.
+        self.assertIn("python3 -m unittest tests.test_landing", workflow)
 
     def test_beta_deployment_docs_name_secrets_and_environments(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -1033,12 +1045,14 @@ CLOUD_ZH_PATH = ROOT / "public" / "zh" / "cloud" / "index.html"
 
 
 class CloudLandingPageTests(unittest.TestCase):
-    """Issue #79: /cloud/ and /zh/cloud/ — the indexable page the homepage
-    Cloud CTA leads with, before anyone reaches an OAuth consent screen.
+    """Issue #79: /cloud/ and /zh/cloud/ — the indexable explainer page for
+    anyone not ready to hit an OAuth consent screen directly.
 
     Three segments: what Cloud is, the Founding Pilot price, and the three
-    steps after the click. Only this page's buttons reach the /cloud/login
-    handoff."""
+    steps after the click. Its buttons reach the /cloud/login handoff, whose
+    behavior (302 to CLOUD_LOGIN_URL when configured, fail-closed 503 with
+    every Cloud CTA rewritten to /apply otherwise) is locked where it runs,
+    in tests/worker.test.js — not by page-target assertions (Issue #103)."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1122,15 +1136,6 @@ class CloudLandingPageTests(unittest.TestCase):
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
         for loc in ("https://orbi.build/cloud/", "https://orbi.build/zh/cloud/"):
             self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
-
-    def test_homepage_cloud_ctas_lead_with_this_page(self) -> None:
-        """All three homepage Cloud CTAs (nav, hero, card) point here, and no
-        homepage link reaches the OAuth handoff directly any more."""
-        for path in (EN_PATH, ZH_PATH):
-            _, page = parse(path)
-            hrefs = [href for _, href in page.hrefs]
-            self.assertGreaterEqual(hrefs.count("/cloud/"), 3, hrefs)
-            self.assertNotIn("/cloud/login", hrefs)
 
     def test_font_loading_follows_the_language(self) -> None:
         """English pages do not ship the CJK webfont (REVIEW.md P1-3)."""
