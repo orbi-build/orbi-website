@@ -242,7 +242,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: nav Start Cloud has wrong href`);
   }
   const cardText = await page.locator(".run-option-cloud").textContent();
-  if (!cardText.includes("US$15")) throw new Error(`${path}: the Managed Cloud card hides the US$15 price`);
+  if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
+  if (!cardText.includes("100% off")) throw new Error(`${path}: the Managed Cloud card hides the Founding coupon terms`);
   const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
@@ -302,7 +303,7 @@ const cloudPages = {
     title: "GitHub Issues in, tagged releases out",
     h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
     loop: "GitHub Issue in, tagged release out",
-    metaNeedle: ["tagged GitHub Release"],
+    metaNeedle: ["tagged GitHub Release", "US$79"],
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
@@ -314,6 +315,12 @@ const cloudPages = {
       "ai-release",
       "only humans",
       "GitHub Actions",
+      // Issue #108: the $79 regular price with the 2B-token inclusion
+      "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
+      // and the measured cost section with its three limits
+      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      "not a promise to everyone", "order of magnitude", "totalTokens",
+      "a significantly larger weekly usage quota", "~10x Pro usage",
     ],
   },
   "/zh/cloud/": {
@@ -321,7 +328,7 @@ const cloudPages = {
     title: "GitHub Issue 进，打好 Tag 的 Release 出",
     h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
-    metaNeedle: ["打 Tag", "GitHub Release"],
+    metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
     oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
@@ -333,6 +340,11 @@ const cloudPages = {
       "ai-release",
       "只有人能打",
       "GitHub Actions",
+      // Issue #108: the $79 regular price with the 2B-token inclusion
+      "US$79", "20 亿 token", "$0.10", "100% off",
+      // and the measured cost section with its three limits
+      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
     ],
   },
 };
@@ -391,7 +403,15 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
     }
   }
-  if ((await page.getByText("US$15").count()) < 1) throw new Error(`${path}: the Founding Pilot price US$15 is not on the page`);
+  if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
+  // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
+  // its description — never the retired US$15.
+  const offers = (await Promise.all(
+    (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s))
+  )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
+  if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes("100% off")) {
+    throw new Error(`${path}: JSON-LD Offer must price the regular plan at 79 with the coupon terms, got ${JSON.stringify(offers)}`);
+  }
   const loginHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
   const loginButton = page.locator(`a.button-signal[href="${loginHref}"]`).first();
   if (!(await loginButton.isVisible())) throw new Error(`${path}: no visible Cloud CTA to ${loginHref}`);
