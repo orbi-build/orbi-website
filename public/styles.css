@@ -1542,6 +1542,33 @@ h2 {
 
 .src-note a { color: inherit; }
 
+/* Issue #89: the delivery rows' verbatim vendor quotes, rendered as a
+   footnote block directly under the matrix so every 是/No in the three new
+   rows points at the vendor's own sentence. Same quiet mono voice as
+   .src-note; the run-colored spine keeps it visually part of the table. */
+.claim-quotes {
+  margin-top: 16px;
+  border-left: 2px solid var(--run);
+  padding-left: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.claim-quotes-lede,
+.claim-quote-text,
+.claim-quote-src {
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+.claim-quote-text { color: var(--ink); }
+
+.claim-quote-src a { color: inherit; }
+
 /* The differences table scrolls inside its own box on narrow screens, per the
    .install-block precedent: a table in a shell must never drag the page. */
 .compare-table-wrap {

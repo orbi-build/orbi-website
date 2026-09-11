@@ -25,6 +25,30 @@ const deepDives = [
   ["Orbi vs Devin", "/compare/devin/"],
 ];
 
+// Issue #91: the hero claims delivery to a tagged release, and the lede
+// names the three segments no competitor covers — independent review that
+// repairs and reruns, the exact-head merge, the tag + Release.
+const releaseClaims = {
+  "/": {
+    h1: "Turn GitHub Issues into tagged releases",
+    lede: [
+      "independent review that repairs code and reruns the suite",
+      "merges the exact reviewed head",
+      "publishes the result as a tagged Release",
+    ],
+    title: "tagged releases",
+  },
+  "/zh/": {
+    h1: "让 GitHub Issue 变成打 Tag 的发布",
+    lede: [
+      "能改代码、会重跑测试的独立审查",
+      "只合并审过的那个 Head",
+      "冻结 SHA、打 Tag、发正式 Release",
+    ],
+    title: "打 Tag 的 Release",
+  },
+};
+
 function startServer() {
   return spawn("python3", ["-m", "http.server", String(port)], {
     cwd: "public",
@@ -165,12 +189,26 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const hero = page.locator(".hero");
+  const claim = releaseClaims[path];
+  const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: hero h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
+  }
+  const lede = await hero.locator(".hero-lede").textContent();
+  for (const segment of claim.lede) {
+    if (!lede.includes(segment)) {
+      throw new Error(`${path}: hero lede is missing the segment ${JSON.stringify(segment)}: ${JSON.stringify(lede)}`);
+    }
+  }
+  if (!(await page.title()).includes(claim.title)) {
+    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
+  }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
-  const hero = page.locator(".hero");
   // Issue #79: the homepage Cloud CTA leads with the /cloud/ explainer page,
   // a static asset served identically in every environment — the login
   // handoff now lives only on /cloud/ itself.
@@ -262,6 +300,219 @@ async function assertCloudPage(browser, size, screenshot) {
   await page.close();
 }
 
+// Issue #90: the cost-transparency pages must carry the measured dataset
+// (2026-09-10, n=47), the money math, all three stated limits, and the
+// competitor non-disclosure sources with their verification date — in both
+// languages, with the numbers identical across the two.
+const costPages = {
+  "/cost/": {
+    zh: "/zh/cost/",
+    h1: "What one Issue delivery actually costs",
+    text: [
+      // measurement date + sample size
+      "2026-09-10", "n=47",
+      // the full measured distribution
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      // composition
+      "95.9%", "3.4%", "0.7%",
+      // DeepSeek list prices and the money math
+      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      // the three limits
+      "not a promise to everyone", "order of magnitude", "totalTokens",
+      // competitor non-disclosure, verified
+      "Quota not published", "~10x Pro usage", "verified 2026-09-11",
+    ],
+    hrefs: [
+      "https://docs.devin.ai/admin/billing/self-serve",
+      "https://docs.factory.ai/pricing/individuals",
+      "https://api-docs.deepseek.com/quick_start/pricing",
+    ],
+    verified: "verified 2026-09-11",
+  },
+  "/zh/cost/": {
+    zh: "/cost/",
+    h1: "跑一个 Issue 到底花多少钱",
+    text: [
+      "2026-09-10", "n=47",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "95.9%", "3.4%", "0.7%",
+      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "不是对所有人的承诺", "一个数量级", "totalTokens",
+      "额度未公布", "~10x Pro usage", "核实于 2026-09-11",
+    ],
+    hrefs: [
+      "https://docs.devin.ai/admin/billing/self-serve",
+      "https://docs.factory.ai/pricing/individuals",
+      "https://api-docs.deepseek.com/quick_start/pricing",
+    ],
+    verified: "核实于 2026-09-11",
+  },
+};
+
+async function assertCostPage(browser, path, size, screenshot) {
+  const claim = costPages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.text) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
+    }
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a link to the source ${href}`);
+    }
+  }
+  // The verification date belongs to the source notes specifically, not
+  // just anywhere on the page.
+  if (!text.includes(claim.verified)) throw new Error(`${path}: sources carry no ${JSON.stringify(claim.verified)} date`);
+  // Navigation consistency: the page is its own nav's current entry, and the
+  // language switch leads to the counterpart page.
+  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
+  if ((await navSelf.getAttribute("aria-current")) !== "page") {
+    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  }
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
+// Issue #89: the /compare/ matrix splits Delivery into three rows —
+// independent review / auto-merge / tag + Release — and the vendors' verbatim
+// quotes for those rows must render in both languages, with Orbi the only
+// "Yes" in the Release row.
+const compareMatrix = {
+  "/compare/": {
+    zh: "/zh/compare/",
+    rows: ["Independent review (can edit code and rerun tests)", "Auto-merge", "Tag / Release"],
+    yes: "Yes",
+    quotes: [
+      "Pull request authors cannot approve their own pull requests.",
+      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
+      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
+      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
+      "toggle auto-merge directly from Devin Review without leaving the page",
+    ],
+    hrefs: [
+      "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
+      "https://code.claude.com/docs/en/code-review",
+      "https://docs.devin.ai/work-with-devin/devin-review",
+    ],
+    dates: ["2026-09-10", "2026-09-11"],
+  },
+  "/zh/compare/": {
+    zh: "/compare/",
+    rows: ["独立评审（能改代码重跑测试）", "自动 merge", "打 Tag / 发 Release"],
+    yes: "是",
+    quotes: [
+      "Pull request authors cannot approve their own pull requests.",
+      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
+      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
+      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
+      "toggle auto-merge directly from Devin Review without leaving the page",
+    ],
+    hrefs: [
+      "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
+      "https://code.claude.com/docs/en/code-review",
+      "https://docs.devin.ai/work-with-devin/devin-review",
+    ],
+    dates: ["2026-09-10", "2026-09-11"],
+  },
+};
+
+async function assertCompareMatrix(browser, path, size, screenshot) {
+  const claim = compareMatrix[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The three new rows must render, and the Tag / Release row must carry
+  // exactly one "Yes" — in the Orbi column.
+  const matrix = page.locator("table.compare-table").first();
+  const rowHeads = await matrix.locator("tbody th").evaluateAll((nodes) =>
+    nodes.map((th) => th.textContent.replace(/\s+/g, " ").trim())
+  );
+  for (const row of claim.rows) {
+    if (!rowHeads.includes(row)) {
+      throw new Error(`${path}: matrix is missing the delivery row ${JSON.stringify(row)}; has ${JSON.stringify(rowHeads)}`);
+    }
+  }
+  const releaseRow = matrix.locator("tbody tr", { has: page.locator("th", { hasText: claim.rows[2] }) });
+  const releaseCells = await releaseRow.locator("td").evaluateAll((nodes) =>
+    nodes.map((td) => td.textContent.replace(/\s+/g, " ").trim())
+  );
+  const yesCount = releaseCells.filter((cell) => cell === claim.yes).length;
+  if (yesCount !== 1 || releaseCells[0] !== claim.yes) {
+    throw new Error(`${path}: Release row must carry exactly one ${JSON.stringify(claim.yes)} in the Orbi column, got ${JSON.stringify(releaseCells)}`);
+  }
+  // The verbatim vendor quotes, their URLs, and the verification dates.
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const quote of claim.quotes) {
+    if (!text.includes(quote)) {
+      throw new Error(`${path}: the verbatim vendor quote is missing: ${JSON.stringify(quote)}`);
+    }
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a link to the official source ${href}`);
+    }
+  }
+  for (const date of claim.dates) {
+    if (!text.includes(date)) throw new Error(`${path}: missing the verification date ${date}`);
+  }
+  // Navigation consistency, same contract as the cost pages.
+  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
+  if ((await navSelf.getAttribute("aria-current")) !== "page") {
+    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  }
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -332,14 +583,24 @@ async function main() {
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
     await assertCloudPage(browser, { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, { width: 390, height: 844 }, "cloud-en-mobile.png");
+    // Issue #90: both cost pages, both languages, phone and desktop widths.
+    await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
+    await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
+    await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
+    await assertCostPage(browser, "/zh/cost/", { width: 390, height: 844 }, "cost-zh-mobile.png");
+    // Issue #89: both compare indexes, both languages, phone and desktop widths.
+    await assertCompareMatrix(browser, "/compare/", { width: 1440, height: 900 }, "compare-en-desktop.png");
+    await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
+    await assertCompareMatrix(browser, "/zh/compare/", { width: 1440, height: 900 }, "compare-zh-desktop.png");
+    await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/", "/cost/", "/zh/cost/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const [, href] of deepDives) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cost/", "/zh/cost/"]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {

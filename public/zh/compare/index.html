@@ -70,6 +70,7 @@
       <nav id="primary-navigation-zh-compare-index" aria-label="主导航" data-primary-nav>
         <a href="/zh/#system">产品怎么运作</a>
         <a href="/zh/compare/" aria-current="page">竞品对比</a>
+        <a href="/zh/cost/">成本</a>
         <a href="https://docs.orbi.build/zh">文档</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a class="nav-apply" href="/apply">报名</a>
@@ -108,13 +109,30 @@
             <tr><th scope="row">状态存储</th><td>GitHub Issues、labels、分支、PR</td><td>Anthropic Session 日志</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>对话、workspace、事件</td><td>记忆、Session、技能</td></tr>
             <tr><th scope="row">模型</th><td>BYOK，任意端点</td><td>Claude</td><td>GitHub 提供的模型</td><td>OpenAI</td><td>Cognition 锁定</td><td>BYOK，任意 LLM</td><td>多个 provider</td></tr>
             <tr><th scope="row">隔离</th><td>Git worktree</td><td>云沙箱</td><td>云沙箱</td><td>云沙箱</td><td>云环境</td><td>Docker/VM/云后端</td><td>本地/容器/SSH 后端</td></tr>
-            <tr><th scope="row">交付</th><td>审查后的 PR + merge</td><td>API 返回</td><td>PR</td><td>PR</td><td>PR</td><td>GitHub 自动化；没有把它描述为唯一队列</td><td>GitHub skill；没有文档证明自主 Issue→PR 队列*</td></tr>
+            <tr><th scope="row">独立评审（能改代码重跑测试）</th><td>是</td><td>未能核实</td><td>否</td><td>未能核实</td><td>是</td><td>是（独立 workflow）</td><td>未能核实</td></tr>
+            <tr><th scope="row">自动 merge</th><td>是</td><td>未见文档支持</td><td>否（官方明示）</td><td>未见文档支持</td><td>是</td><td>未见文档支持</td><td>未见文档支持</td></tr>
+            <tr><th scope="row">打 Tag / 发 Release</th><td>是</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td></tr>
             <tr><th scope="row">成本</th><td>自备硬件，模型可零成本</td><td>token + $0.08/session-hour</td><td>Copilot 订阅</td><td>ChatGPT 订阅/API</td><td>订阅 + 积分</td><td>自托管；模型费用</td><td>模型/API 费用</td></tr>
             <tr><th scope="row">开源 / 自托管</th><td>fair-code / 是</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td><td>MIT / 是</td><td>是 / 是</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">*Hermes 是通用助理，其 GitHub skill 不等同于 GitHub 原生软件交付队列。OpenHands 来源：<a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">官方仓库</a> 和 <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">官方文档</a>。来源：<a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent 官方仓库</a>；<a href="https://docs.orbi.build/zh">Orbi 文档</a>；<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>；<a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub 文档</a>；<a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>；<a href="https://devin.ai/" rel="noopener">Devin</a>——均核实于 2026-09-07。各家的范围与来源见下方深度对比。</p>
+      <div class="claim-quotes">
+        <p class="claim-quotes-lede">交付三行的 vendor 原话。上表每个「是/否」都指向官方页面；读不到的格子写「未能核实」，不写「否」。没有任何一家的官方文档描述「独立评审 → 自动 merge → 打 Tag 发 Release」的完整链路——「发 Release」一格，只有 Orbi 是「是」。三行核实于 2026-09-10（逐家官方文档）；原句 2026-09-11 在活页复核。</p>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Pull request authors cannot approve their own pull requests. You will also not be able to approve a pull request that was raised by GitHub Copilot if it was you who assigned Copilot to the issue to which the pull request relates.”</p>
+          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub 文档 — Approving a pull request with required reviews</a>；关于 session 上限：“Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.”——<a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · 核实于 2026-09-11。GitHub 在 2026-09-10 审计之后重组了 coding agent 文档（原审计 URL 现已重定向到 cloud-agent 页），两句原句均为当天在活页重新核对。</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.” · “The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.”</p>
+          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · 核实于 2026-09-10，2026-09-11 复核。Claude Code 是 Anthropic 的编程 agent；矩阵中的 Managed Agents 是另一款产品，其官方文档未描述这三步中的任何一步，故标「未能核实」。</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Merge, close, convert to draft, mark ready for review, and toggle auto-merge directly from Devin Review without leaving the page.”</p>
+          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin 文档 — Devin Review</a> · 核实于 2026-09-11。auto-merge 开关真实存在，Devin 的格子如实标「是」。Devin 的 <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub 集成页</a>只描述 @提及（Core/Teams）与 Enterprise 仓库委托；issue 自动触发未能核实——Devin 同样没有文档化的无人值守 Issue→merge→Release 链路。</p>
+        </div>
+      </div>
+      <p class="src-note">*Hermes 是通用助理，其 GitHub skill 不等同于 GitHub 原生软件交付队列。OpenHands 来源：<a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">官方仓库</a> 和 <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">官方文档</a>。来源：<a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent 官方仓库</a>；<a href="https://docs.orbi.build/zh">Orbi 文档</a>；<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>；<a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub 文档</a>；<a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>；<a href="https://devin.ai/" rel="noopener">Devin</a>——均核实于 2026-09-07；交付三行核实于 2026-09-10，2026-09-11 复核。各家的范围与来源见下方深度对比。</p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
