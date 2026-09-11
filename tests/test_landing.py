@@ -399,8 +399,8 @@ class LandingTests(unittest.TestCase):
 
     def test_cloud_entry_separates_start_from_application(self) -> None:
         for page, apply_label, price, explainer in (
-            (self.en, "Apply / contact us", "US$15/month", "/cloud/"),
-            (self.zh, "申请 / 联系我们", "US$15/月", "/zh/cloud/"),
+            (self.en, "Apply / contact us", "US$79/month", "/cloud/"),
+            (self.zh, "申请 / 联系我们", "US$79/月", "/zh/cloud/"),
         ):
             # Issue #99: the price sits on the card before the click, and the
             # /cloud/ explainer stays reachable from the footer. The Start
@@ -998,12 +998,104 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("WebPage", types, types)
             self.assertIn("Offer", types, types)
 
-    def test_body_states_the_founding_pilot_price(self) -> None:
-        """The price must be readable body text, not only structured data."""
-        for page, pilot in ((self.en, "Founding Pilot"), (self.zh, "创始试点")):
-            self.assertIn("US$15", page.text)
+    def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
+        """Issue #108: the regular US$79 price, the 2B-token inclusion, and the
+        coupon mechanism must be readable body text, not only structured data."""
+        for page, coupon, tokens in (
+            (self.en, "Founding coupon", "2 billion tokens"),
+            (self.zh, "Founding 券", "20 亿 token"),
+        ):
+            self.assertIn("US$79", page.text)
+            self.assertIn(tokens, page.text)
+            self.assertIn("100% off", page.text)
             self.assertIn("Private Beta", page.text)
-            self.assertIn(pilot, page.text)
+            self.assertIn(coupon, page.text)
+
+    def test_pricing_section_states_price_tokens_overage_and_coupon_mechanism(self) -> None:
+        """Issue #108: $79 regular, 2B tokens included, the published overage,
+        and the coupon mechanism — the terms a subscriber agrees to must be
+        readable before subscribing. The framing around them stays unpinned
+        (Issue #112)."""
+        for page, needles in (
+            (
+                self.en,
+                (
+                    "US$79 per month",
+                    "2 billion tokens of model usage",
+                    "$0.10 per additional 1M tokens",
+                    "100% off",
+                ),
+            ),
+            (
+                self.zh,
+                (
+                    "US$79",
+                    "20 亿 token",
+                    "$0.10",
+                    "100% off",
+                    "限量",
+                ),
+            ),
+        ):
+            for needle in needles:
+                self.assertIn(needle, page.text, needle)
+
+    def test_cloud_states_the_measured_token_cost_with_all_three_limits(self) -> None:
+        """Issue #108: the measured cost section carries the date, the sample
+        size, the distribution, and the three qualifying statements — our repo
+        only, caching load-bearing, totalTokens as billed — plus the competitor
+        non-disclosure quotes with their sources."""
+        competitors = (
+            "a significantly larger weekly usage quota",
+            "~10x Pro usage",
+        )
+        competitor_hrefs = (
+            "https://docs.devin.ai/admin/billing/self-serve",
+            "https://docs.factory.ai/pricing/individuals",
+        )
+        for page, needles in (
+            (
+                self.en,
+                (
+                    "2026-09-10", "n=46",
+                    "2,220,637", "4,667,630", "37,627,783",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "not a promise to everyone", "order of magnitude", "totalTokens",
+                ),
+            ),
+            (
+                self.zh,
+                (
+                    "2026-09-10", "n=46",
+                    "2,220,637", "4,667,630", "37,627,783",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "不是对所有人的承诺", "一个数量级", "totalTokens",
+                ),
+            ),
+        ):
+            for needle in needles:
+                self.assertIn(needle, page.text, needle)
+            for needle in competitors:
+                self.assertIn(needle, page.text, needle)
+            for href in competitor_hrefs:
+                self.assertIn(href, [h for _, h in page.hrefs], href)
+
+    def test_offer_jsonld_prices_the_regular_plan(self) -> None:
+        """Issue #108: JSON-LD prices the regular plan at 79 with the coupon in
+        the description — a wrong Offer price reaches search engines and
+        checkout previews without anyone scrolling the page. The meta
+        descriptions' wording stays unpinned (Issue #112)."""
+        for html in (self.en_html, self.zh_html):
+            scripts = re.findall(
+                r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL
+            )
+            offers = []
+            for script in scripts:
+                data = json.loads(script)
+                offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "Offer"]
+            self.assertEqual(len(offers), 1, offers)
+            self.assertEqual(offers[0]["price"], "79", offers[0])
+            self.assertIn("100% off", offers[0]["description"], offers[0])
 
     def test_the_three_steps_appear_in_order_and_end_at_the_login_button(self) -> None:
         for page, steps in (
