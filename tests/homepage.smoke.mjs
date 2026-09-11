@@ -164,6 +164,101 @@ export async function assertCloudLoginRedirect(targetURL) {
   }
 }
 
+// Issue #107: a Cloud CTA's contract is where its click lands — the endpoint
+// CLOUD_LOGIN_EXPECT declares (Issue #74) — never the href literal. The
+// shipped href="/cloud/login" is rewritten to /apply by the site Worker
+// where CLOUD_LOGIN_URL is unset (Issue #77), so deriving the expected href
+// from CLOUD_LOGIN_EXPECT copied that rewrite into the test and broke on
+// implementation changes while the site was fine. What each expectation
+// declares is the landing:
+//   oauth-302        → the GitHub OAuth authorize page (beta; the handoff
+//                      chain is pinned by assertCloudLoginRedirect)
+//   fail-closed-503  → the /apply application page (production, Issue #77)
+//   fail-closed-404  → the /cloud/login handoff route itself (local static
+//                      serving: no worker completes the chain, the click
+//                      must still reach the handoff)
+// The landing must also answer with the status its contract promises: the
+// OAuth pages render (<400), and the fail-closed handoff answers 404 — a
+// static server locally, the site Worker's stamped 404 where one is
+// deployed (assertCloudLoginRedirect checks the stamp).
+export function expectedCtaLanding(expectation) {
+  if (expectation === "oauth-302") {
+    return {
+      describe: "GitHub's OAuth authorize flow",
+      statusOk: (status) => status < 400,
+      matches: (url) =>
+        url.hostname === "github.com" &&
+        (url.pathname === "/login/oauth/authorize" ||
+          // A signed-out visitor is bounced once more by GitHub to its
+          // sign-in page, which preserves the authorize request in
+          // return_to (observed live 2026-09-12 against beta). A bare
+          // /login without it is not the OAuth flow.
+          (url.pathname === "/login"
+            && (url.searchParams.get("return_to") || "").startsWith("/login/oauth/authorize"))),
+    };
+  }
+  if (expectation === "fail-closed-503") {
+    return {
+      describe: "the /apply application page",
+      statusOk: (status) => status < 400,
+      matches: (url) => url.pathname === "/apply",
+    };
+  }
+  return {
+    describe: "the /cloud/login handoff",
+    statusOk: (status) => status === 404,
+    matches: (url) => url.pathname === "/cloud/login",
+  };
+}
+
+// Click every listed Cloud CTA and follow the navigation to the endpoint
+// CLOUD_LOGIN_EXPECT declares. Runs in its own context (desktop width, where
+// the nav is not collapsed) so the external landing pages — GitHub's OAuth
+// page on beta — cannot pollute the homepage assertions' console/request
+// gates. The smoke never fills anything in: it stops at the landing the
+// contract declares.
+async function assertCtaLandsAtEndpoint(browser, path, ctas) {
+  const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  try {
+    const page = await context.newPage();
+    // The landing document must actually answer: GitHub serves a 404 at the
+    // very authorize URL when the client_id is wrong, and the fail-closed
+    // routes answer their status codes — the URL alone cannot see that.
+    const landingStatuses = new Map();
+    page.on("response", (response) => {
+      if (response.request().resourceType() === "document") {
+        landingStatuses.set(response.url(), response.status());
+      }
+    });
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    for (const [label, selector] of ctas) {
+      const links = page.locator(selector);
+      const count = await links.count();
+      if (count < 1) throw new Error(`${path}: no ${label} CTA on the page`);
+      for (let i = 0; i < count; i += 1) {
+        const cta = links.nth(i);
+        await cta.scrollIntoViewIfNeeded();
+        if (!(await cta.isVisible())) throw new Error(`${path}: ${label} CTA is not visible`);
+        await cta.click();
+        try {
+          await page.waitForURL(landing.matches, { timeout: 15000 });
+        } catch {
+          throw new Error(`${path}: ${label} CTA landed at ${page.url()}, expected ${landing.describe}`);
+        }
+        const status = landingStatuses.get(page.url());
+        if (status !== undefined && !landing.statusOk(status)) {
+          throw new Error(`${path}: ${label} CTA landing answered ${status} at ${page.url()}`);
+        }
+        await page.goBack();
+      }
+    }
+    await page.close();
+  } finally {
+    await context.close();
+  }
+}
+
 async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
@@ -209,37 +304,35 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
-  // Issue #99: the homepage Cloud CTA honors its own copy — one click goes
-  // to the /cloud/login handoff (302 to GitHub OAuth where CLOUD_LOGIN_URL
-  // is configured; rewritten to /apply by the Worker where it is not,
-  // Issue #77 — the same environment contract as the /cloud/ page buttons).
-  const cloudCtaHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
-  const heroPaths = {
-    "cloud-start": cloudCtaHref,
-    install: path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build",
-  };
+  // Issue #99: the homepage carries exactly one primary hero CTA, visible,
+  // plus the card CTA and the nav "Start Cloud" keeping the same promise —
+  // one click into the login handoff, never a second identical button.
+  // Issue #107: where that click lands is the environment contract
+  // (assertCtaLandsAtEndpoint), never a pinned href — the Worker rewrites
+  // the shipped href where CLOUD_LOGIN_URL is unset (Issue #77).
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
+  const cloudCta = hero.locator('[data-cta="cloud-start"]');
+  await cloudCta.scrollIntoViewIfNeeded();
+  if (!(await cloudCta.isVisible())) throw new Error(`${path}: cloud-start CTA is not visible`);
   // Issue #51: the compare entry belongs to the top navigation; the hero
   // must not carry a competing focus.
   if (await hero.locator('[data-cta="comparisons"]').count() !== 0) {
     throw new Error(`${path}: compare CTA must not live in the hero`);
   }
-  for (const [cta, href] of Object.entries(heroPaths)) {
-    const link = hero.locator(`[data-cta="${cta}"]`);
-    await link.scrollIntoViewIfNeeded();
-    if (!(await link.isVisible())) throw new Error(`${path}: ${cta} CTA is not visible`);
-    if ((await link.getAttribute("href")) !== href) throw new Error(`${path}: ${cta} CTA has wrong href`);
+  // The install alt-CTA's target is a real page contract of its own: a
+  // visitor on any environment is sent to the canonical docs host.
+  const installCta = hero.locator('[data-cta="install"]');
+  await installCta.scrollIntoViewIfNeeded();
+  if (!(await installCta.isVisible())) throw new Error(`${path}: install CTA is not visible`);
+  const installHref = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
+  if ((await installCta.getAttribute("href")) !== installHref) {
+    throw new Error(`${path}: install CTA has wrong href`);
   }
-  // Issue #99: the card CTA and the nav "Start Cloud" keep the same promise
-  // as the hero CTA — one click into the login handoff, never a second
-  // identical button — and the card discloses the price before the click.
-  const cardCta = page.locator('[data-cta="cloud-start-card"]');
-  if ((await cardCta.getAttribute("href")) !== cloudCtaHref) {
-    throw new Error(`${path}: cloud-start-card CTA has wrong href`);
+  if ((await page.locator('[data-cta="cloud-start-card"]').count()) !== 1) {
+    throw new Error(`${path}: expected exactly one cloud-start-card CTA`);
   }
-  const navStart = page.locator("[data-primary-nav] .nav-apply");
-  if ((await navStart.getAttribute("href")) !== cloudCtaHref) {
-    throw new Error(`${path}: nav Start Cloud has wrong href`);
+  if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
+    throw new Error(`${path}: expected exactly one nav Start Cloud`);
   }
   const cardText = await page.locator(".run-option-cloud").textContent();
   if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
@@ -289,10 +382,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 
 // Issue #79: /cloud/ is the indexable page the homepage Cloud CTA leads
 // with. The page must render cleanly at phone and desktop widths, and its
-// login buttons keep the environment's declared login contract: the shipped
-// /cloud/login handoff everywhere except a fail-closed-503 deployment (no
-// CLOUD_LOGIN_URL, Issue #77), where the Worker serves them rewritten to
-// /apply.
+// login buttons keep the environment's declared login contract: a click
+// lands at the endpoint CLOUD_LOGIN_EXPECT declares (assertCtaLandsAtEndpoint,
+// Issue #107) — never a pinned href, which the site Worker may rewrite where
+// CLOUD_LOGIN_URL is unset (Issue #77).
 // Issue #97: the claim advances to the end of the delivery line — the three
 // segments no competitor covers — and the release boundary is stated
 // honestly: the human opens the release Issue and applies ai-release, CI is
@@ -412,9 +505,13 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes("100% off")) {
     throw new Error(`${path}: JSON-LD Offer must price the regular plan at 79 with the coupon terms, got ${JSON.stringify(offers)}`);
   }
-  const loginHref = process.env.CLOUD_LOGIN_EXPECT === "fail-closed-503" ? "/apply" : "/cloud/login";
-  const loginButton = page.locator(`a.button-signal[href="${loginHref}"]`).first();
-  if (!(await loginButton.isVisible())) throw new Error(`${path}: no visible Cloud CTA to ${loginHref}`);
+  // Issue #107: the login buttons' contract is the click's landing
+  // (assertCtaLandsAtEndpoint); here the buttons must exist and be visible.
+  const loginButtons = page.locator("a.button-signal");
+  if ((await loginButtons.count()) < 1) throw new Error(`${path}: no Cloud CTA on the page`);
+  for (let i = 0; i < (await loginButtons.count()); i += 1) {
+    if (!(await loginButtons.nth(i).isVisible())) throw new Error(`${path}: Cloud CTA is not visible`);
+  }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
@@ -705,11 +802,23 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    // Issue #107: follow a real click from every Cloud CTA — hero, card and
+    // nav share one promise — to the endpoint CLOUD_LOGIN_EXPECT declares.
+    const homepageCloudCtas = [
+      ["cloud-start", '[data-cta="cloud-start"]'],
+      ["cloud-start-card", '[data-cta="cloud-start-card"]'],
+      ["nav Start Cloud", "[data-primary-nav] .nav-apply"],
+    ];
+    await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);
+    await assertCtaLandsAtEndpoint(browser, "/zh/", homepageCloudCtas);
     // Issue #97: both Cloud pages, both languages, phone and desktop widths.
     await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 1440, height: 900 }, "cloud-zh-desktop.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
+    // Issue #107: the /cloud/ page's login buttons land at the same contract.
+    await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
+    await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
     await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
