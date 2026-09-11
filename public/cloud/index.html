@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orbi Cloud — GitHub Issues in, reviewed PRs out | Orbi</title>
-  <meta name="description" content="Orbi Cloud is the hosted way to run Orbi: a managed runner turns GitHub Issues into reviewed pull requests on your repositories, with your own model key. Founding Pilot US$15/month — Private Beta.">
+  <title>Orbi Cloud — GitHub Issues in, tagged releases out | Orbi</title>
+  <meta name="description" content="Orbi Cloud is the hosted way to run Orbi: a managed runner takes GitHub Issues through independent review, exact-head merge, and a tagged GitHub Release on your repositories, with your own model key. Founding Pilot US$15/month — Private Beta.">
   <link rel="canonical" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/">
@@ -17,8 +17,8 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
-  <meta property="og:title" content="Orbi Cloud — GitHub Issues in, reviewed PRs out">
-  <meta property="og:description" content="A hosted runner that turns GitHub Issues into reviewed pull requests, with your own model key. Founding Pilot US$15/month — Private Beta.">
+  <meta property="og:title" content="Orbi Cloud — GitHub Issues in, tagged releases out">
+  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed — with your own model key. Founding Pilot US$15/month — Private Beta.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -26,8 +26,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
-  <meta name="twitter:title" content="Orbi Cloud — GitHub Issues in, reviewed PRs out">
-  <meta name="twitter:description" content="A hosted runner that turns GitHub Issues into reviewed pull requests. Founding Pilot US$15/month — Private Beta.">
+  <meta name="twitter:title" content="Orbi Cloud — GitHub Issues in, tagged releases out">
+  <meta name="twitter:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases. Founding Pilot US$15/month — Private Beta.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +42,7 @@
     "@graph": [
       {
         "@type": "WebPage",
-        "name": "Orbi Cloud — GitHub Issues in, reviewed PRs out",
+        "name": "Orbi Cloud — GitHub Issues in, tagged releases out",
         "url": "https://orbi.build/cloud/",
         "inLanguage": "en",
         "isPartOf": {
@@ -95,8 +95,8 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cloud-title">
         <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud · Private Beta</p>
-        <h1 id="cloud-title">Orbi Cloud: GitHub Issues in, reviewed pull requests out</h1>
-        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, runs the independent review-and-repair gate, and opens a reviewed pull request. You keep your own model key; we operate the delivery line.</p>
+        <h1 id="cloud-title">Orbi Cloud: GitHub Issues in, tagged releases out</h1>
+        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, and runs the independent review-and-repair gate — then merges the exact reviewed head, publishes a tagged GitHub Release, and closes the milestone. You keep your own model key; we operate the delivery line.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">Prefer to self-host? <a data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
@@ -112,8 +112,8 @@
         <li>
           <span class="event-era">THE LOOP</span>
           <div>
-            <strong>GitHub Issue in, reviewed pull request out</strong>
-            <p>The loop your repository already speaks — no second workspace to adopt.</p>
+            <strong>GitHub Issue in, tagged release out</strong>
+            <p>Independent review that repairs code and reruns tests, the exact-head merge, then the frozen SHA, the tag, the GitHub Release, and the closed milestone — the loop your repository already speaks, with no second workspace to adopt.</p>
           </div>
         </li>
         <li>
@@ -128,6 +128,13 @@
           <div>
             <strong>Recovery, merge gates, independent review</strong>
             <p>The operational layers of the delivery line, run for you.</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">RELEASES</span>
+          <div>
+            <strong>You start the release, Orbi runs it</strong>
+            <p>Releases are never automatic. You open the release Issue and apply the ai-release label — a label only humans set — and your repository needs GitHub Actions, because CI is what the release is tested against. Orbi then freezes the SHA, cuts the tag, publishes the GitHub Release, and closes the milestone.</p>
           </div>
         </li>
       </ul>
