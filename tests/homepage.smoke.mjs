@@ -211,27 +211,28 @@ export function expectedCtaLanding(expectation) {
   };
 }
 
-// Click every listed Cloud CTA and follow the navigation to the endpoint
-// CLOUD_LOGIN_EXPECT declares. Runs in its own context (desktop width, where
-// the nav is not collapsed) so the external landing pages — GitHub's OAuth
-// page on beta — cannot pollute the homepage assertions' console/request
-// gates. The smoke never fills anything in: it stops at the landing the
-// contract declares.
+// Follow every listed Cloud CTA to the endpoint CLOUD_LOGIN_EXPECT declares.
+// Issue #110: the CTA is never clicked. A click on beta navigates across
+// documents into GitHub's OAuth flow, and locators that survive that
+// navigation die with "Execution context was destroyed" — a failure the
+// local static serving (whose /cloud/login is a plain 404, no navigation)
+// cannot reproduce. Instead each href is read from the served DOM — the page
+// itself never navigates, so no locator crosses one — and followed with the
+// context's API request through the redirect chain, arriving at the same
+// landing a click reaches, with that landing's real status: GitHub serves a
+// 404 at the very authorize URL when the client_id is wrong, and the
+// fail-closed routes answer their status codes — the URL alone cannot see
+// that. Runs in its own context (desktop width, where the nav is not
+// collapsed) so nothing external touches the homepage assertions'
+// console/request gates. The smoke never signs in: it stops at the landing
+// the contract declares.
 async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   try {
     const page = await context.newPage();
-    // The landing document must actually answer: GitHub serves a 404 at the
-    // very authorize URL when the client_id is wrong, and the fail-closed
-    // routes answer their status codes — the URL alone cannot see that.
-    const landingStatuses = new Map();
-    page.on("response", (response) => {
-      if (response.request().resourceType() === "document") {
-        landingStatuses.set(response.url(), response.status());
-      }
-    });
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const targets = [];
     for (const [label, selector] of ctas) {
       const links = page.locator(selector);
       const count = await links.count();
@@ -240,20 +241,21 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
         const cta = links.nth(i);
         await cta.scrollIntoViewIfNeeded();
         if (!(await cta.isVisible())) throw new Error(`${path}: ${label} CTA is not visible`);
-        await cta.click();
-        try {
-          await page.waitForURL(landing.matches, { timeout: 15000 });
-        } catch {
-          throw new Error(`${path}: ${label} CTA landed at ${page.url()}, expected ${landing.describe}`);
-        }
-        const status = landingStatuses.get(page.url());
-        if (status !== undefined && !landing.statusOk(status)) {
-          throw new Error(`${path}: ${label} CTA landing answered ${status} at ${page.url()}`);
-        }
-        await page.goBack();
+        const href = await cta.getAttribute("href");
+        if (!href) throw new Error(`${path}: the ${label} CTA carries no href`);
+        targets.push([label, new URL(href, `${targetURL}${path}`).toString()]);
       }
     }
     await page.close();
+    for (const [label, href] of targets) {
+      const response = await context.request.get(href);
+      if (!landing.matches(new URL(response.url()))) {
+        throw new Error(`${path}: ${label} CTA landed at ${response.url()}, expected ${landing.describe}`);
+      }
+      if (!landing.statusOk(response.status())) {
+        throw new Error(`${path}: ${label} CTA landing answered ${response.status()} at ${response.url()}`);
+      }
+    }
   } finally {
     await context.close();
   }
