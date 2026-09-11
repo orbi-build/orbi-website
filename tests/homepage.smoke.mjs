@@ -211,27 +211,28 @@ export function expectedCtaLanding(expectation) {
   };
 }
 
-// Click every listed Cloud CTA and follow the navigation to the endpoint
-// CLOUD_LOGIN_EXPECT declares. Runs in its own context (desktop width, where
-// the nav is not collapsed) so the external landing pages — GitHub's OAuth
-// page on beta — cannot pollute the homepage assertions' console/request
-// gates. The smoke never fills anything in: it stops at the landing the
-// contract declares.
+// Follow every listed Cloud CTA to the endpoint CLOUD_LOGIN_EXPECT declares.
+// Issue #110: the CTA is never clicked. A click on beta navigates across
+// documents into GitHub's OAuth flow, and locators that survive that
+// navigation die with "Execution context was destroyed" — a failure the
+// local static serving (whose /cloud/login is a plain 404, no navigation)
+// cannot reproduce. Instead each href is read from the served DOM — the page
+// itself never navigates, so no locator crosses one — and followed with the
+// context's API request through the redirect chain, arriving at the same
+// landing a click reaches, with that landing's real status: GitHub serves a
+// 404 at the very authorize URL when the client_id is wrong, and the
+// fail-closed routes answer their status codes — the URL alone cannot see
+// that. Runs in its own context (desktop width, where the nav is not
+// collapsed) so nothing external touches the homepage assertions'
+// console/request gates. The smoke never signs in: it stops at the landing
+// the contract declares.
 async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   try {
     const page = await context.newPage();
-    // The landing document must actually answer: GitHub serves a 404 at the
-    // very authorize URL when the client_id is wrong, and the fail-closed
-    // routes answer their status codes — the URL alone cannot see that.
-    const landingStatuses = new Map();
-    page.on("response", (response) => {
-      if (response.request().resourceType() === "document") {
-        landingStatuses.set(response.url(), response.status());
-      }
-    });
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const targets = [];
     for (const [label, selector] of ctas) {
       const links = page.locator(selector);
       const count = await links.count();
@@ -240,20 +241,21 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
         const cta = links.nth(i);
         await cta.scrollIntoViewIfNeeded();
         if (!(await cta.isVisible())) throw new Error(`${path}: ${label} CTA is not visible`);
-        await cta.click();
-        try {
-          await page.waitForURL(landing.matches, { timeout: 15000 });
-        } catch {
-          throw new Error(`${path}: ${label} CTA landed at ${page.url()}, expected ${landing.describe}`);
-        }
-        const status = landingStatuses.get(page.url());
-        if (status !== undefined && !landing.statusOk(status)) {
-          throw new Error(`${path}: ${label} CTA landing answered ${status} at ${page.url()}`);
-        }
-        await page.goBack();
+        const href = await cta.getAttribute("href");
+        if (!href) throw new Error(`${path}: the ${label} CTA carries no href`);
+        targets.push([label, new URL(href, `${targetURL}${path}`).toString()]);
       }
     }
     await page.close();
+    for (const [label, href] of targets) {
+      const response = await context.request.get(href);
+      if (!landing.matches(new URL(response.url()))) {
+        throw new Error(`${path}: ${label} CTA landed at ${response.url()}, expected ${landing.describe}`);
+      }
+      if (!landing.statusOk(response.status())) {
+        throw new Error(`${path}: ${label} CTA landing answered ${response.status()} at ${response.url()}`);
+      }
+    }
   } finally {
     await context.close();
   }
@@ -335,7 +337,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: expected exactly one nav Start Cloud`);
   }
   const cardText = await page.locator(".run-option-cloud").textContent();
-  if (!cardText.includes("US$15")) throw new Error(`${path}: the Managed Cloud card hides the US$15 price`);
+  if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
+  if (!cardText.includes("100% off")) throw new Error(`${path}: the Managed Cloud card hides the Founding coupon terms`);
   const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
@@ -395,7 +398,7 @@ const cloudPages = {
     title: "GitHub Issues in, tagged releases out",
     h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
     loop: "GitHub Issue in, tagged release out",
-    metaNeedle: ["tagged GitHub Release"],
+    metaNeedle: ["tagged GitHub Release", "US$79"],
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
@@ -407,6 +410,12 @@ const cloudPages = {
       "ai-release",
       "only humans",
       "GitHub Actions",
+      // Issue #108: the $79 regular price with the 2B-token inclusion
+      "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
+      // and the measured cost section with its three limits
+      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      "not a promise to everyone", "order of magnitude", "totalTokens",
+      "a significantly larger weekly usage quota", "~10x Pro usage",
     ],
   },
   "/zh/cloud/": {
@@ -414,7 +423,7 @@ const cloudPages = {
     title: "GitHub Issue 进，打好 Tag 的 Release 出",
     h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
-    metaNeedle: ["打 Tag", "GitHub Release"],
+    metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
     oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
@@ -426,6 +435,11 @@ const cloudPages = {
       "ai-release",
       "只有人能打",
       "GitHub Actions",
+      // Issue #108: the $79 regular price with the 2B-token inclusion
+      "US$79", "20 亿 token", "$0.10", "100% off",
+      // and the measured cost section with its three limits
+      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
     ],
   },
 };
@@ -484,7 +498,15 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
     }
   }
-  if ((await page.getByText("US$15").count()) < 1) throw new Error(`${path}: the Founding Pilot price US$15 is not on the page`);
+  if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
+  // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
+  // its description — never the retired US$15.
+  const offers = (await Promise.all(
+    (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s))
+  )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
+  if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes("100% off")) {
+    throw new Error(`${path}: JSON-LD Offer must price the regular plan at 79 with the coupon terms, got ${JSON.stringify(offers)}`);
+  }
   // Issue #107: the login buttons' contract is the click's landing
   // (assertCtaLandsAtEndpoint); here the buttons must exist and be visible.
   const loginButtons = page.locator("a.button-signal");
