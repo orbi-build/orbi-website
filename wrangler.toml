@@ -5,13 +5,16 @@ account_id = "9d4b74d3dc4247dfcd4b3ca77869cbdf"
 workers_dev = true
 
 # The website only hands OAuth off to Cloud; Cloud owns state, sessions, and
-# onboarding. Production configures no Cloud login URL: until a production
-# control plane exists, /cloud/login fail-closes with 503
-# (cloud_login_unavailable) and the Worker serves the pages with their Cloud
-# CTAs rewritten to /apply (Issue #77). Only [env.beta] below names the one
-# verified Cloud endpoint. The website defines its endpoints outside the
-# cloud control plane's beta route prefixes — /cloud/login and /cloud/apply
-# (Issue #76; see docs/cloud-endpoints.md).
+# onboarding. The production control plane exists and is live-verified
+# (orbi.build/api/healthz answers from orbi-cloud-control-plane; /api/login
+# 302s to GitHub OAuth with the production GitHub App), so production
+# configures CLOUD_LOGIN_URL and /cloud/login opens: it 302s to the control
+# plane and the pages keep their shipped Cloud CTAs (Issue #96 — the #77
+# fail-closed premise, "no production control plane", no longer holds).
+# [env.beta] names its own verified Cloud endpoint below. The website defines
+# its endpoints outside the cloud control plane's route prefixes —
+# /cloud/login and /cloud/apply (Issue #76; see docs/cloud-endpoints.md).
+vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login" }
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }

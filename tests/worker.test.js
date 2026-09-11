@@ -46,6 +46,32 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
+  it("opens the production gate: 302s /cloud/login to the production control plane and keeps the shipped CTAs (Issue #96)", async () => {
+    const cloudLoginUrl = "https://orbi.build/api/login";
+    const login = await handleFetch(
+      new Request("https://orbi.build/cloud/login"),
+      { CLOUD_LOGIN_URL: cloudLoginUrl, ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+    );
+    expect(login.status).toBe(302);
+    expect(login.headers.get("location")).toBe(cloudLoginUrl);
+
+    const html = '<a data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub</a>';
+    const page = await handleFetch(
+      new Request("https://orbi.build/"),
+      {
+        CLOUD_LOGIN_URL: cloudLoginUrl,
+        ASSETS: {
+          fetch: () => Promise.resolve(new Response(html, {
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          })),
+        },
+      },
+    );
+    const body = await page.text();
+    expect(body).toContain('href="/cloud/login"');
+    expect(body).not.toContain('href="/apply"');
+  });
+
   it("fails clearly when Cloud is not configured", async () => {
     const response = cloudLoginResponse(new Request("https://orbi.build/cloud/login"));
     expect(response.status).toBe(503);
