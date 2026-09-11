@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { assertCloudLoginRedirect, resolveCloudLoginExpect } from "./homepage.smoke.mjs";
+import { assertCloudLoginRedirect, expectedCtaLanding, resolveCloudLoginExpect } from "./homepage.smoke.mjs";
 
 const port = 4173;
 const processes = [];
@@ -172,6 +172,55 @@ describe("cloud login smoke contract (Issue #74)", () => {
     // Issue #77 removed production's CLOUD_LOGIN_URL, so the handoff 302 is
     // no longer a contract any environment can declare.
     expect(() => resolveCloudLoginExpect("cloud-handoff-302")).toThrow(/CLOUD_LOGIN_EXPECT/);
+  });
+});
+
+// Issue #107: a Cloud CTA's contract is where its click lands — the endpoint
+// CLOUD_LOGIN_EXPECT declares — never the href literal, which the site Worker
+// rewrites where CLOUD_LOGIN_URL is unset (Issue #77). Pinning the href copied
+// that rewrite into the test and broke beta's deploy smoke while the site
+// itself was fine.
+describe("Cloud CTA landing contract (Issue #107)", () => {
+  it("oauth-302 lands the click in GitHub's OAuth authorize flow", () => {
+    const landing = expectedCtaLanding("oauth-302");
+    // A signed-in browser renders the authorize prompt at its own URL.
+    expect(landing.matches(new URL("https://github.com/login/oauth/authorize?client_id=x"))).toBe(true);
+    // A signed-out browser is bounced once more by GitHub to its sign-in
+    // page, which preserves the authorize request in return_to — the real
+    // landing observed live 2026-09-12 against beta (run 8ba73105).
+    expect(landing.matches(new URL(
+      "https://github.com/login?client_id=Iv23lihVKDs2CXkoaLg2"
+      + "&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DIv23lihVKDs2CXkoaLg2"
+      + "%26redirect_uri%3Dhttps%253A%252F%252Fbeta.orbi.build%252Fapi%252Fauth%252Fcallback"
+    ))).toBe(true);
+    expect(landing.matches(new URL("https://beta.orbi.build/cloud/login"))).toBe(false);
+    expect(landing.matches(new URL("https://beta.orbi.build/apply"))).toBe(false);
+    // A bare sign-in page carries no authorize request: not the OAuth flow.
+    expect(landing.matches(new URL("https://github.com/login"))).toBe(false);
+  });
+
+  it("fail-closed-503 lands the click on the /apply application page", () => {
+    const landing = expectedCtaLanding("fail-closed-503");
+    expect(landing.matches(new URL("https://orbi.build/apply"))).toBe(true);
+    expect(landing.matches(new URL("https://orbi.build/cloud/login"))).toBe(false);
+  });
+
+  it("fail-closed-404 (local, no worker) lands the click on the /cloud/login handoff route", () => {
+    const landing = expectedCtaLanding("fail-closed-404");
+    expect(landing.matches(new URL("http://127.0.0.1:4173/cloud/login"))).toBe(true);
+    expect(landing.matches(new URL("http://127.0.0.1:4173/apply"))).toBe(false);
+  });
+
+  it("each landing must answer with the status its contract promises", () => {
+    expect(expectedCtaLanding("oauth-302").statusOk(200)).toBe(true);
+    expect(expectedCtaLanding("oauth-302").statusOk(404)).toBe(false);
+    expect(expectedCtaLanding("fail-closed-503").statusOk(200)).toBe(true);
+    expect(expectedCtaLanding("fail-closed-503").statusOk(503)).toBe(false);
+    // The fail-closed handoff answers 404 — statically locally, stamped by
+    // the site Worker where one is deployed.
+    expect(expectedCtaLanding("fail-closed-404").statusOk(404)).toBe(true);
+    expect(expectedCtaLanding("fail-closed-404").statusOk(200)).toBe(false);
+    expect(expectedCtaLanding("fail-closed-404").statusOk(503)).toBe(false);
   });
 });
 
