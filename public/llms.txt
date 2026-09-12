@@ -94,9 +94,10 @@ restart reconstructs the same run, branch, worktree, and PR.
 
 **What does it cost?** Self-hosting is free forever. Managed Cloud is in design
 and not yet purchasable. What the model usage itself costs is measured, not
-estimated: 47 real deliveries aggregated on 2026-09-10 put the median delivery
-at 2,220,637 totalTokens and the mean at 4,667,630 — roughly $0.06–0.11 per
-delivery at DeepSeek V4.1 Flash list prices. Full data and limits:
+estimated: 46 real deliveries aggregated as of 2026-09-12 put the median delivery
+at 2,220,637 totalTokens and the mean at 4,742,066 — roughly $0.06–0.12 per
+delivery at DeepSeek V4.1 Flash list prices. The sample moves as worktrees are
+cleaned up. Full data and limits:
 https://orbi.build/cost/
 
 ## Links
