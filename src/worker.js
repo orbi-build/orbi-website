@@ -185,6 +185,43 @@ async function assetResponse(asset, cloudLoginConfigured) {
   return new Response(html, { status: asset.status, statusText: asset.statusText, headers });
 }
 
+// Self-contained on purpose: this page must render even though the visitor
+// reached it from a cached page, a bookmark, or a search result — none of
+// those paths pass through assetResponse, and the page must not depend on
+// static assets or on Cloud being up. Colors are the site theme (--night,
+// --paper, --run). API clients asking for JSON keep the machine-readable
+// error via content negotiation.
+const CLOUD_UNAVAILABLE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Cloud is temporarily unavailable | Orbi</title>
+<style>
+body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#06151b; color:#e8eeeb; font:400 16px/1.6 system-ui,sans-serif; }
+main { max-width:34rem; padding:48px 24px; }
+h1 { font-size:26px; line-height:1.2; margin:0 0 14px; }
+p { color:#8ea0c0; margin:0 0 28px; }
+ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px; }
+a { color:#5cd6b5; text-underline-offset:3px; }
+span { color:#8ea0c0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Cloud is temporarily unavailable</h1>
+<p>Orbi Cloud sign-in is down for the moment. Meanwhile:</p>
+<ul>
+<li><a href="/apply">Apply to build with us</a> <span>报名首批共建用户</span></li>
+<li><a href="/">Back to the homepage</a> <span>回首页</span></li>
+<li><a href="https://docs.orbi.build">Self-host Orbi yourself</a> <span>自托管文档</span></li>
+</ul>
+</main>
+</body>
+</html>
+`;
+
 function cloudLoginResponse(request, cloudBaseUrl) {
   if (request.method !== "GET") {
     return new Response(JSON.stringify({ error: "method not allowed" }), {
@@ -194,9 +231,15 @@ function cloudLoginResponse(request, cloudBaseUrl) {
   }
   if (!cloudBaseUrl) {
     console.error("cloud_login_unavailable: CLOUD_LOGIN_URL is not configured");
-    return new Response(JSON.stringify({ error: "Cloud is temporarily unavailable" }), {
+    if ((request.headers.get("accept") || "").includes("application/json")) {
+      return new Response(JSON.stringify({ error: "Cloud is temporarily unavailable" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+      });
+    }
+    return new Response(CLOUD_UNAVAILABLE_HTML, {
       status: 503,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+      headers: { "Content-Type": "text/html; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
   // Cloud owns OAuth state/session. Do not forward arbitrary query parameters
