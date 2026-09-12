@@ -188,10 +188,10 @@
             <p class="hero-alt">Prefer to self-host? <a data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
             <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">Inspect a real delivery →</a>
           </div>
-          <ul class="trust-line" aria-label="Product attributes">
-            <li>Fair-code, free forever</li>
-            <li>Self-hosted — code never leaves your machine</li>
-            <li>Bring your own model</li>
+          <ul class="trust-line" aria-label="What only Orbi does">
+            <li>Independent review that fixes and re-tests</li>
+            <li>Only the reviewed commit merges</li>
+            <li>Frozen SHA, tag, release</li>
           </ul>
         </div>
 
@@ -303,6 +303,14 @@
               <p>Process killed. Test failed. Commit not pushed. The same run, branch, worktree, and PR remain the scene for the next tick.</p>
             </div>
           </div>
+          <!-- Issue #119: fair-code, self-hosting, and BYOK are decision-stage
+               concerns (licence, data boundary, model lock-in), not 5-second
+               scan material, so they moved here from the hero. -->
+          <ul class="trust-line trust-line-paper" aria-label="Product attributes">
+            <li>Fair-code, free forever</li>
+            <li>Self-hosted — code never leaves your machine</li>
+            <li>Bring your own model</li>
+          </ul>
         </div>
       </section>
 
@@ -399,7 +407,7 @@ orbi setup --config orbi.toml</code></pre>
             <article class="run-option run-option-cloud">
               <p class="option-state">FOUNDING PILOT · LIMITED SEATS</p>
               <h3>Managed Cloud</h3>
-              <p>Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>US$79/month — 2 billion tokens of model usage included</strong>, overage $0.10 per 1M. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
+              <p>Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>US$__CLOUD_MONTHLY_USD__/month — 2 billion tokens of model usage included</strong>, overage $0.10 per 1M. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
               <ul>
                 <li>Platform subscription pays for orchestration, recovery, and evidence</li>
                 <li>Managed runtime is charged only when Orbi provides it</li>
@@ -511,33 +519,35 @@ orbi setup --config orbi.toml</code></pre>
     </main>
 
     <footer class="site-footer shell">
-      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
-        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
-        <span>Orbi</span>
-      </a>
-      <p>Software production that survives the session.</p>
-      <nav aria-label="Footer navigation">
-        <a href="https://docs.orbi.build">Docs</a>
-        <a href="/cloud/">Cloud</a>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="https://x.com/xqliu" rel="me">X</a>
-        <a href="#faq">FAQ</a>
-        <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">Releases</a>
-        <a href="#direction">Direction</a>
-        <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
-        <a href="/zh/" lang="zh-CN">中文</a>
-      </nav>
-      <nav class="footer-compare" aria-label="Compare deep dives">
-        <span>Compare</span>
-        <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
-        <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
-        <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
-        <a href="/compare/openhands/">Orbi vs OpenHands</a>
-        <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
-        <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
-        <a href="/compare/devin/">Orbi vs Devin</a>
-      </nav>
-    </footer>
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/cloud/">Cloud</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
+      <a href="#direction">Direction</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+    </nav>
+  </footer>
 
   <script src="/demo.js" defer></script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>跑一个 Issue 到底花多少钱 —— 实测摊开 | Orbi</title>
-  <meta name="description" content="对 orbi 自己的仓库实测 47 次真实交付:单次中位 222 万、均值 467 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.11,跑 100 个 issue 约 $6–11。完整 token 分布、钱的算法、三条限定,以及竞品不公布的额度 —— 全部附出处。">
+  <meta name="description" content="对 orbi 自己的仓库实测 46 次真实交付:单次中位 222 万、均值 474 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.12,跑 100 个 issue 约 $6–12。完整 token 分布、钱的算法、三条限定,以及竞品不公布的额度 —— 全部附出处。">
   <link rel="canonical" href="https://orbi.build/zh/cost/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cost/">
   <meta property="og:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
-  <meta property="og:description" content="实测 47 次交付:单次均值 467 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.11。我们不在你的 token 上赚差价。">
+  <meta property="og:description" content="实测 46 次交付:单次均值 474 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.12。我们不在你的 token 上赚差价。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
-  <meta name="twitter:description" content="实测 47 次:单次均值 467 万 tokens ≈ $0.06–0.11(DeepSeek 官方牌价)。你的 key、你的账单。">
+  <meta name="twitter:description" content="实测 46 次:单次均值 474 万 tokens ≈ $0.06–0.12(DeepSeek 官方牌价)。你的 key、你的账单。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,9 +84,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
-        <p class="eyebrow"><span class="live-dot"></span>成本透明 · 2026-09-10 实测 · n=47</p>
+        <p class="eyebrow"><span class="live-dot"></span>成本透明 · 截至 2026-09-12 实测 · n=46</p>
         <h1 id="cost-title">跑一个 Issue 到底花多少钱</h1>
-        <p class="hero-lede"><strong>我们不在你的 token 上赚差价。</strong>对我们自己的仓库实测 47 次真实交付:单次中位 <strong>2,220,637 tokens</strong>、均值 <strong>4,667,630</strong>;按 DeepSeek V4.1 Flash 官方牌价,均值单次约 <strong>$0.06–0.11</strong>,跑 <strong>100 个 issue 约 $6–11</strong>。你的 key、你的账单、你在 Provider 后台看得见每一分钱。</p>
+        <p class="hero-lede"><strong>我们不在你的 token 上赚差价。</strong>对我们自己的仓库实测 46 次真实交付:单次中位 <strong>2,220,637 tokens</strong>、均值 <strong>4,742,066</strong>;按 DeepSeek V4.1 Flash 官方牌价,均值单次约 <strong>$0.06–0.12</strong>,跑 <strong>100 个 issue 约 $6–12</strong>。你的 key、你的账单、你在 Provider 后台看得见每一分钱。</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">想自己部署?交付核心永久免费 —— <a data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
@@ -96,8 +96,8 @@
 
     <section class="compare-section shell" aria-labelledby="measured-title">
       <p class="section-tag">实测数据</p>
-      <h2 id="measured-title">47 次真实交付,在我们自己的仓库上实测</h2>
-      <p class="section-lede">Orbi 的每次交付跑两个 Agent session —— 实现,外加一个能修分支、能重跑测试的独立审查。<strong>2026-09-10</strong>,我们聚合了 orbi 仓库自身 <strong>n=47 次交付</strong>(Python、完整 CI、Issue 写得规范)的 session 日志。下面是按次统计的 <code>totalTokens</code> 完整分布 —— 也就是 Provider 实际计费的口径,含缓存读取:</p>
+      <h2 id="measured-title">46 次真实交付,在我们自己的仓库上实测</h2>
+      <p class="section-lede">Orbi 的每次交付跑两个 Agent session —— 实现,外加一个能修分支、能重跑测试的独立审查。截至 <strong>2026-09-12</strong>,我们聚合了 orbi 仓库自身 <strong>n=46 次交付</strong>(Python、完整 CI、Issue 写得规范)的 session 日志。样本就是当天磁盘上还在的 worktree —— 会随 worktree 清理而变化 —— 所以 <strong>n 是截至标注日期的快照,不是永久事实</strong>。下面是按次统计的 <code>totalTokens</code> 完整分布 —— 也就是 Provider 实际计费的口径,含缓存读取:</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">分位</th><th scope="col">单次 totalTokens</th></tr></thead>
@@ -107,11 +107,11 @@
             <tr><th scope="row">p90</th><td>13,290,932</td></tr>
             <tr><th scope="row">p95</th><td>16,555,250</td></tr>
             <tr><th scope="row">最大</th><td>37,627,783</td></tr>
-            <tr><th scope="row">均值</th><td>4,667,630</td></tr>
+            <tr><th scope="row">均值</th><td>4,742,066</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">数据来源:orbi-build/orbi 仓库 47 次 Orbi 交付的 implement + review session 日志聚合,2026-09-10。token 的去向:<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
+      <p class="src-note">数据来源,任何人可按此复核:orbi-build/orbi 仓库各 git worktree 的 Agent session 日志(<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>),聚合于 2026-09-12。一次交付 = 一个 worktree 的 implement + review session;单次 totalTokens = 该 worktree 全部记录的 <code>usage.totalTokens</code> 之和;n = 日志中含至少一条 usage 记录的 worktree 数(不记 usage 的新旧 session 不计);分位用 nearest-rank。样本会随 worktree 清理而变化。token 的去向:<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="money-title">
@@ -123,9 +123,9 @@
           <table class="compare-table">
             <thead><tr><th scope="col">场景</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
             <tbody>
-              <tr><th scope="row">单次交付(均值,467 万 tokens)</th><td>$0.057</td><td>$0.113</td></tr>
+              <tr><th scope="row">单次交付(均值,474 万 tokens)</th><td>$0.058</td><td>$0.115</td></tr>
               <tr><th scope="row">单次交付(实测最大,3760 万 tokens)</th><td>$0.46</td><td>$0.92</td></tr>
-              <tr><th scope="row">100 个 issue(按均值结构)</th><td>~$5.70</td><td>~$11.30</td></tr>
+              <tr><th scope="row">100 个 issue(按均值结构)</th><td>~$5.77</td><td>~$11.55</td></tr>
             </tbody>
           </table>
         </div>
@@ -194,7 +194,7 @@
           <table class="compare-table">
             <thead><tr><th scope="col"></th><th scope="col">订阅</th><th scope="col">模型费</th><th scope="col">总计</th><th scope="col">产出打 Tag 的 Release</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Orbi + DeepSeek</th><td>自托管 $0;Cloud $79/月，含 20 亿 token（Founding 券 100% off，限量）</td><td>实测约 $6–11（自托管）;Cloud 已含</td><td>自托管 $6–11;Cloud $79</td><td>是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
+              <tr><th scope="row">Orbi + DeepSeek</th><td>自托管 $0;Cloud US$__CLOUD_MONTHLY_USD__/月，含 20 亿 token（Founding 券 100% off，限量）</td><td>实测约 $6–12（自托管）;Cloud 已含</td><td>自托管 $6–12;Cloud US$__CLOUD_MONTHLY_USD__</td><td>是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
               <tr><th scope="row">Devin Max</th><td>$200</td><td>额度未公布</td><td>$200+</td><td>文档止于 PR("from prompt to PR")</td></tr>
               <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage",无绝对值</td><td>$200+</td><td>无打 Tag/Release 流程记载</td></tr>
             </tbody>
@@ -223,12 +223,26 @@
     <p>不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
       <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/cloud/">Cloud</a>
       <a href="/zh/compare/">竞品对比</a>
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
       <a href="https://x.com/xqliu" rel="me">X</a>
       <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
+      <a href="/zh/#direction">方向</a>
       <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
       <a href="/cost/" lang="en">EN</a>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
     </nav>
   </footer>
 

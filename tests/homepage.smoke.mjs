@@ -1,6 +1,7 @@
 import { chromium, request } from "@playwright/test";
-import { spawn } from "node:child_process";
-import { mkdir } from "node:fs/promises";
+import { createServer } from "node:http";
+import { mkdir, readFile } from "node:fs/promises";
+import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const port = 4173;
@@ -16,6 +17,7 @@ const installCommand = "curl -fsSL https://orbi.build/install.sh | bash";
 
 // Same order as the /compare/ grid; anchor text matches each page's own title.
 const deepDives = [
+  ["Orbi vs Orca", "/compare/orca/"],
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
   ["Orbi vs GitHub Copilot coding agent", "/compare/github-copilot-coding-agent/"],
   ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
@@ -49,27 +51,99 @@ const releaseClaims = {
   },
 };
 
+// Issue #119: the hero trust line is the 5-second scan zone and must carry
+// exactly the three delivery capabilities no competitor documents. The
+// fair-code / self-host / BYOK attributes every competitor shares moved to
+// the end of the How-it-works section — decision-stage (licence, data
+// boundary, model lock-in), not first-glance, information.
+const heroTrustLine = {
+  "/": [
+    "Independent review that fixes and re-tests",
+    "Only the reviewed commit merges",
+    "Frozen SHA, tag, release",
+  ],
+  "/zh/": [
+    "独立审查能改代码并重跑测试",
+    "只合并审过的那个 commit",
+    "冻结 SHA、打 Tag、发 Release",
+  ],
+};
+const sharedAttributes = {
+  "/": [
+    "Fair-code, free forever",
+    "Self-hosted — code never leaves your machine",
+    "Bring your own model",
+  ],
+  "/zh/": [
+    "Fair-code，永久免费",
+    "自托管 — 代码不离开你的机器",
+    "自带模型",
+  ],
+};
+
+// Issue #102: the shipped files carry the monthly price as a token and the
+// site Worker resolves it while serving (src/worker.js). This local server is
+// the stand-in for that Worker, so it applies the same substitution from the
+// same single source before a page reaches the browser.
+const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+
+const CONTENT_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+};
+
+async function serveFile(pathname) {
+  const relative = normalize(decodeURIComponent(pathname)).replace(/^(\/|\\)+/, "");
+  if (relative.split("/").includes("..")) return null;
+  const base = join("public", relative);
+  const direct = await readFile(base).catch(() => null);
+  if (direct !== null) return { path: base, body: direct };
+  if (!extname(base)) {
+    const index = await readFile(join(base, "index.html")).catch(() => null);
+    if (index !== null) return { path: join(base, "index.html"), body: index };
+  }
+  return null;
+}
+
 function startServer() {
-  return spawn("python3", ["-m", "http.server", String(port)], {
-    cwd: "public",
-    stdio: ["ignore", "ignore", "pipe"],
+  const server = createServer(async (request, response) => {
+    try {
+      const { pathname } = new URL(request.url, "http://127.0.0.1");
+      const file = await serveFile(pathname);
+      if (!file) {
+        response.writeHead(404);
+        response.end();
+        return;
+      }
+      const type = CONTENT_TYPES[extname(file.path).toLowerCase()] ?? "application/octet-stream";
+      const body = type.startsWith("text/html")
+        ? Buffer.from(
+            file.body.toString("utf8").replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd)),
+          )
+        : file.body;
+      response.writeHead(200, { "content-type": type });
+      response.end(body);
+    } catch {
+      response.writeHead(500);
+      response.end();
+    }
+  });
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", () => resolve(server));
   });
 }
 
 async function stopServer(server) {
-  if (!server || server.exitCode !== null) return;
-  await new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      server.kill("SIGKILL");
-      resolve();
-    }, 1000);
-    timer.unref();
-    server.once("exit", () => {
-      clearTimeout(timer);
-      resolve();
-    });
-    server.kill();
-  });
+  if (!server || !server.listening) return;
+  server.closeAllConnections();
+  await new Promise((resolve) => server.close(resolve));
 }
 
 async function assertFooterDeepDives(page, label) {
@@ -301,6 +375,21 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
+  // Issue #119: the rendered hero trust line is exactly the three unmatched
+  // capabilities, and the shared attributes still render in How-it-works.
+  const trustTexts = (await hero.locator(".trust-line li").allTextContents())
+    .map((item) => item.replace(/\s+/g, " ").trim());
+  const expectedTrust = heroTrustLine[path];
+  if (trustTexts.length !== expectedTrust.length
+      || expectedTrust.some((item, i) => trustTexts[i] !== item)) {
+    throw new Error(`${path}: hero trust line is ${JSON.stringify(trustTexts)}, expected exactly ${JSON.stringify(expectedTrust)}`);
+  }
+  const systemText = await page.locator("#system").textContent();
+  for (const attribute of sharedAttributes[path]) {
+    if (!systemText.includes(attribute)) {
+      throw new Error(`${path}: the How-it-works section lost the shared attribute ${JSON.stringify(attribute)}`);
+    }
+  }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
@@ -523,23 +612,30 @@ async function assertCloudPage(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #90: the cost-transparency pages must carry the measured dataset
-// (2026-09-10, n=47), the money math, all three stated limits, and the
-// competitor non-disclosure sources with their verification date — in both
-// languages, with the numbers identical across the two.
+// Issue #90: the cost-transparency pages must carry the measured dataset, the
+// money math, all three stated limits, and the competitor non-disclosure
+// sources with their verification date — in both languages, with the numbers
+// identical across the two.
+// Issue #118: the dataset is a snapshot as of a stated date (the sample moves
+// as worktrees are cleaned up), so the page pins "measured 2026-09-12 · n=46"
+// with the re-derivation recipe in the source note; the smoke reads the n
+// each rendered page actually shows and asserts the two languages agree.
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
     h1: "What one Issue delivery actually costs",
     text: [
-      // measurement date + sample size
-      "2026-09-10", "n=47",
+      // measurement date + sample size (a snapshot, not a permanent fact)
+      "measured 2026-09-12", "n=46",
+      "n is a snapshot as of the stated date, not a permanent fact",
+      // the re-derivation recipe: which files, which grouping, which field
+      ".pi-session/*.jsonl", "usage.totalTokens", "nearest rank",
       // the full measured distribution
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
       // composition
       "95.9%", "3.4%", "0.7%",
       // DeepSeek list prices and the money math
-      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
       // the three limits
       "not a promise to everyone", "order of magnitude", "totalTokens",
       // competitor non-disclosure, verified
@@ -556,10 +652,12 @@ const costPages = {
     zh: "/cost/",
     h1: "跑一个 Issue 到底花多少钱",
     text: [
-      "2026-09-10", "n=47",
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "截至 2026-09-12 实测", "n=46",
+      "n 是截至标注日期的快照,不是永久事实",
+      ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
       "95.9%", "3.4%", "0.7%",
-      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
       "不是对所有人的承诺", "一个数量级", "totalTokens",
       "额度未公布", "~10x Pro usage", "核实于 2026-09-11",
     ],
@@ -599,6 +697,10 @@ async function assertCostPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
   }
+  // Issue #118: the sample size each rendered page actually shows — the main
+  // text, not a pinned constant — so the two languages can be compared.
+  const shownN = text.match(/n=(\d+)/);
+  if (!shownN) throw new Error(`${path}: no n=<sample size> annotation in the rendered page`);
   for (const href of claim.hrefs) {
     if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
       throw new Error(`${path}: missing a link to the source ${href}`);
@@ -624,6 +726,7 @@ async function assertCostPage(browser, path, size, screenshot) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
   await page.close();
+  return shownN[1];
 }
 
 // Issue #89: the /compare/ matrix splits Delivery into three rows —
@@ -736,6 +839,90 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #117: the Orca deep dive answers the first external positioning test
+// (“我今天安装了 Orca，好像和你的项目差不多”). The rendered page must carry
+// the verbatim official self-descriptions, at least four honest "Not
+// verified"/「未能核实」 cells (the undocumented delivery capabilities never
+// written as "No"), the plainly stated licence disadvantage, and the measured
+// GitHub-API counts with their measurement date — in both languages.
+const orcaPages = {
+  "/compare/orca/": {
+    zh: "/zh/compare/orca/",
+    h1: "Orbi vs Orca",
+    quotes: [
+      "The AI Orchestrator for 100x builders",
+      "ADE for working with a fleet of parallel agents",
+      "Drop comments on any diff line and ship them back to the agent",
+    ],
+    unverified: "Not verified",
+    licence: ["MIT", "fair-code", "Sustainable Use"],
+    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "measured 2026-09-12"],
+  },
+  "/zh/compare/orca/": {
+    zh: "/compare/orca/",
+    h1: "Orbi vs Orca",
+    quotes: [
+      "The AI Orchestrator for 100x builders",
+      "ADE for working with a fleet of parallel agents",
+      "Drop comments on any diff line and ship them back to the agent",
+    ],
+    unverified: "未能核实",
+    licence: ["MIT", "fair-code", "Sustainable Use"],
+    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "实测于 2026-09-12"],
+  },
+};
+
+async function assertOrcaPage(browser, path, size, screenshot) {
+  const claim = orcaPages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const quote of claim.quotes) {
+    if (!text.includes(quote)) {
+      throw new Error(`${path}: the verbatim official quote is missing: ${JSON.stringify(quote)}`);
+    }
+  }
+  const unverifiedCount = text.split(claim.unverified).length - 1;
+  if (unverifiedCount < 4) {
+    throw new Error(`${path}: expected at least 4 ${JSON.stringify(claim.unverified)} cells, got ${unverifiedCount}`);
+  }
+  for (const term of claim.licence) {
+    if (!text.includes(term)) throw new Error(`${path}: the licence section is missing ${JSON.stringify(term)}`);
+  }
+  for (const count of claim.counts) {
+    if (!text.includes(count)) throw new Error(`${path}: missing the measured count ${JSON.stringify(count)}`);
+  }
+  // Navigation consistency, same contract as the cost pages.
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -835,7 +1022,7 @@ async function assertApplyForm(browser) {
 
 async function main() {
   await mkdir(artifacts, { recursive: true });
-  const server = process.env.BASE_URL ? null : startServer();
+  const server = process.env.BASE_URL ? null : await startServer();
   let browser;
   try {
     browser = await chromium.launch({
@@ -844,15 +1031,6 @@ async function main() {
         : {}),
       headless: true,
     });
-    if (server) {
-      await new Promise((resolve, reject) => {
-        const timer = setTimeout(resolve, 1000);
-        server.stderr.once("data", (data) => {
-          clearTimeout(timer);
-          reject(new Error(data.toString()));
-        });
-      });
-    }
     await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
     if (!process.env.BASE_URL) await assertApplyForm(browser);
@@ -879,18 +1057,28 @@ async function main() {
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
     // Issue #90: both cost pages, both languages, phone and desktop widths.
-    await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
+    // Issue #118: the two languages' rendered sample sizes must agree — the
+    // page's whole credibility is that the numbers reconcile.
+    const costEnN = await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
     await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
-    await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
+    const costZhN = await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
     await assertCostPage(browser, "/zh/cost/", { width: 390, height: 844 }, "cost-zh-mobile.png");
+    if (costEnN !== costZhN) {
+      throw new Error(`cost pages disagree on the sample size: /cost/ shows n=${costEnN}, /zh/cost/ shows n=${costZhN}`);
+    }
     // Issue #89: both compare indexes, both languages, phone and desktop widths.
     await assertCompareMatrix(browser, "/compare/", { width: 1440, height: 900 }, "compare-en-desktop.png");
     await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 1440, height: 900 }, "compare-zh-desktop.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
+    // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
+    await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
+    await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
+    await assertOrcaPage(browser, "/zh/compare/orca/", { width: 1440, height: 900 }, "compare-orca-zh-desktop.png");
+    await assertOrcaPage(browser, "/zh/compare/orca/", { width: 390, height: 844 }, "compare-orca-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }

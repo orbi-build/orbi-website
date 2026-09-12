@@ -190,10 +190,10 @@
           <p class="hero-alt">想自己部署？<a data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
           <a class="hero-proof-link" data-cta="proof" href="https://github.com/orbi-build/orbi/issues/48">查看真实交付 →</a>
         </div>
-        <ul class="trust-line" aria-label="产品属性">
-          <li>Fair-code，永久免费</li>
-          <li>自托管 — 代码不离开你的机器</li>
-          <li>自带模型</li>
+        <ul class="trust-line" aria-label="只有 Orbi 做到的事">
+          <li>独立审查能改代码并重跑测试</li>
+          <li>只合并审过的那个 commit</li>
+          <li>冻结 SHA、打 Tag、发 Release</li>
         </ul>
       </div>
 
@@ -301,6 +301,14 @@
             <p>进程被杀、测试失败、提交没推出去——下一拍仍然回到同一个 Run、分支、Worktree 和 PR。</p>
           </div>
         </div>
+        <!-- Issue #119：Fair-code、自托管、自带模型是决策后期才展开的考量
+             （许可、数据边界、锁定风险），不是 5 秒扫视区的内容，
+             因此从首屏移到这里。 -->
+        <ul class="trust-line trust-line-paper" aria-label="产品属性">
+          <li>Fair-code，永久免费</li>
+          <li>自托管 — 代码不离开你的机器</li>
+          <li>自带模型</li>
+        </ul>
       </div>
     </section>
 
@@ -397,7 +405,7 @@ orbi setup --config orbi.toml</code></pre>
           <article class="run-option run-option-cloud">
             <p class="option-state">创始试点 · 席位有限</p>
             <h3>托管 Cloud</h3>
-            <p>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>正价 US$79/月，含 20 亿 token 模型用量</strong>，超额 $0.10/100 万 token。Founding 券 100% off，限量发放；券发完即正价，不是涨价。交付可靠性继续留在 fair-code 核心。</p>
+            <p>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>正价 US$__CLOUD_MONTHLY_USD__/月，含 20 亿 token 模型用量</strong>，超额 $0.10/100 万 token。Founding 券 100% off，限量发放；券发完即正价，不是涨价。交付可靠性继续留在 fair-code 核心。</p>
             <ul>
               <li>平台订阅支付协调、恢复和交付证据</li>
               <li>只有使用 Orbi 托管环境时才收运行时费用</li>
@@ -521,10 +529,21 @@ orbi setup --config orbi.toml</code></pre>
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
       <a href="https://x.com/xqliu" rel="me">X</a>
       <a href="#faq">常见问题</a>
-      <a href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">发布记录</a>
+      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
       <a href="#direction">方向</a>
       <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
       <a href="/" lang="en">EN</a>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
     </nav>
   </footer>
 

@@ -12,6 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 EN_PATH = ROOT / "public" / "index.html"
 ZH_PATH = ROOT / "public" / "zh" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
+# Issue #102: the shipped files carry the price token; every reader below
+# asserts what the Worker actually serves, so parse() resolves the token to
+# the constant first. src/pricing.json is the single source of truth for the
+# price.
+PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
 GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
@@ -105,6 +110,7 @@ class PageParser(HTMLParser):
 
 def parse(path: Path) -> tuple[str, PageParser]:
     html = path.read_text(encoding="utf-8")
+    html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
     page = PageParser()
     page.feed(html)
     return html, page
@@ -310,6 +316,50 @@ class LandingTests(unittest.TestCase):
                 if "data-capability" in attrs
             }
             self.assertTrue(expected.issubset(capabilities), capabilities)
+
+    def test_hero_trust_line_carries_the_unmatched_capabilities(self) -> None:
+        """Issue #119: the first screen's scannable line spent its 5 seconds
+        on three attributes every competitor shares (fair-code, self-hosted,
+        BYOK), so a glance filed Orbi under "another Issue-to-PR tool". The
+        hero line must carry exactly the three delivery capabilities no
+        competitor documents, and the shared attributes must survive below
+        the hero — inside the How-it-works section, where decision-stage
+        concerns (licence, data boundary, model lock-in) belong."""
+        claims = {
+            self.en_html: (
+                "Independent review that fixes and re-tests",
+                "Only the reviewed commit merges",
+                "Frozen SHA, tag, release",
+            ),
+            self.zh_html: (
+                "独立审查能改代码并重跑测试",
+                "只合并审过的那个 commit",
+                "冻结 SHA、打 Tag、发 Release",
+            ),
+        }
+        shared = {
+            self.en_html: (
+                "Fair-code, free forever",
+                "Self-hosted — code never leaves your machine",
+                "Bring your own model",
+            ),
+            self.zh_html: (
+                "Fair-code，永久免费",
+                "自托管 — 代码不离开你的机器",
+                "自带模型",
+            ),
+        }
+        for html in (self.en_html, self.zh_html):
+            hero_start = html.index('class="trust-line"')
+            hero_line = html[hero_start:html.index("</ul>", hero_start)]
+            for claim in claims[html]:
+                self.assertIn(f"<li>{claim}</li>", hero_line, claim)
+            for attribute in shared[html]:
+                self.assertNotIn(attribute, hero_line, attribute)
+            system_at = html.index('id="system"')
+            below_fold = html[system_at:html.index("</section>", system_at)]
+            for attribute in shared[html]:
+                self.assertIn(attribute, below_fold, attribute)
 
     def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
         for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
@@ -1319,6 +1369,8 @@ MANAGED_EN_PATH = ROOT / "public" / "compare" / "managed-agents" / "index.html"
 MANAGED_ZH_PATH = ROOT / "public" / "zh" / "compare" / "managed-agents" / "index.html"
 HERMES_EN_PATH = ROOT / "public" / "compare" / "hermes-agent" / "index.html"
 HERMES_ZH_PATH = ROOT / "public" / "zh" / "compare" / "hermes-agent" / "index.html"
+ORCA_EN_PATH = ROOT / "public" / "compare" / "orca" / "index.html"
+ORCA_ZH_PATH = ROOT / "public" / "zh" / "compare" / "orca" / "index.html"
 
 
 class HermesComparisonTests(unittest.TestCase):
@@ -1525,6 +1577,167 @@ class DevinComparisonTests(unittest.TestCase):
         self.assertIn("https://orbi.build/zh/compare/devin/", llms)
 
 
+class OrcaComparisonTests(unittest.TestCase):
+    """The Orca deep dive (Issue #117): the first external positioning test
+    (“我今天安装了 Orca，好像和你的项目差不多”) answered in Orca's own
+    category language — operator-centered ADE vs unattended delivery line —
+    with every claim sourced and dated, unverified capabilities never written
+    as "No", and the licence disadvantage stated plainly."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(ORCA_EN_PATH)
+        cls.zh_html, cls.zh = parse(ORCA_ZH_PATH)
+
+    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/compare/orca/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/"', self.en_html)
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/orca/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/compare/orca/"', self.zh_html)
+
+    def test_titles_carry_the_search_terms(self) -> None:
+        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
+        self.assertLessEqual(len(en_title), 65, en_title)
+        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
+        self.assertLessEqual(len(en_desc), 260, len(en_desc))
+        for term in ("Orbi", "Orca", "ADE"):
+            self.assertIn(term, en_title + " " + en_desc, term)
+
+        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
+        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
+        for term in ("Orbi", "Orca", "ADE"):
+            self.assertIn(term, zh_title + " " + zh_desc, term)
+
+    def test_share_cards_are_complete(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for meta in (
+                'property="og:title"',
+                'property="og:image"',
+                'name="twitter:card"',
+                'name="twitter:site" content="@xqliu"',
+            ):
+                self.assertIn(meta, html, meta)
+
+    def test_every_page_states_the_verification_date(self) -> None:
+        self.assertIn("2026-09-12", self.en.text)
+        self.assertIn("2026-09-12", self.zh.text)
+
+    def test_the_named_sources_are_cited(self) -> None:
+        for html, page in ((self.en_html, self.en), (self.zh_html, self.zh)):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn("https://github.com/stablyai/orca", hrefs)
+            self.assertIn("https://github.com/stablyai/orca/blob/main/README.md", hrefs)
+            self.assertIn("https://api.github.com/repos/stablyai/orca", hrefs)
+            self.assertIn("https://www.onorca.dev", hrefs)
+
+    def test_the_official_self_descriptions_are_quoted_verbatim(self) -> None:
+        for page in (self.en, self.zh):
+            for quote in (
+                "The AI Orchestrator for 100x builders",
+                "each in its own worktree, tracked in one place",
+                "ADE for working with a fleet of parallel agents",
+                "Drop comments on any diff line and ship them back to the agent",
+            ):
+                self.assertIn(quote, page.text, quote)
+
+    def test_the_page_explains_orbi_in_orcas_language(self) -> None:
+        # the misreading this page exists to dismantle, and the one-line answer
+        self.assertIn("差不多", self.zh.text)
+        self.assertIn("你用 Orca 管一队 agent；Orbi 是让你不用管", self.zh.text)
+        self.assertIn("Both projects put agents in git worktrees", self.en.text)
+        self.assertIn("Orca is how you run a fleet of agents; Orbi is how you stop having to", self.en.text)
+
+    def test_unverified_capabilities_never_read_no(self) -> None:
+        """开 PR / 独立评审 / 自动 merge / 发版 are undocumented in Orca's
+        official materials — the cells must say so, never fake a "No"."""
+        for page, unverified in ((self.en, "Not verified"), (self.zh, "未能核实")):
+            self.assertGreaterEqual(page.text.count(unverified), 4, unverified)
+        # the one documented near-miss is named for what it is, not inflated
+        self.assertIn("merge the winner", self.en.text)
+        self.assertIn("merge the winner", self.zh.text)
+
+    def test_the_licence_difference_is_stated_plainly(self) -> None:
+        for page in (self.en, self.zh):
+            self.assertIn("MIT", page.text)
+            self.assertIn("fair-code", page.text)
+            self.assertIn("Sustainable Use", page.text)
+        # the disadvantage is conceded, not spun
+        self.assertIn("Orca's MIT wins", self.en.text)
+        self.assertIn("Orca 的 MIT 赢", self.zh.text)
+
+    def test_the_density_numbers_carry_the_measurement_date(self) -> None:
+        for page, measured in (
+            (self.en, "measured 2026-09-12"),
+            (self.zh, "实测于 2026-09-12"),
+        ):
+            self.assertIn(measured, page.text, measured)
+            for count in ("66,832", "4,391", "5,867", "2,815", "294", "18"):
+                self.assertIn(count, page.text, count)
+            # restraint: no quality judgment on the competitor's tracker
+            self.assertIn("No quality judgment" if page is self.en else "不做质量判断", page.text)
+
+    def test_interlinks_with_the_overview_page(self) -> None:
+        for page, overview in ((self.en, "/compare/"), (self.zh, "/zh/compare/")):
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn(overview, hrefs)
+            target = ROOT / "public" / overview.lstrip("/")
+            self.assertTrue((target / "index.html").is_file(), target)
+
+        for index_path, dive in (
+            (COMPARE_INDEX_EN_PATH, "/compare/orca/"),
+            (COMPARE_INDEX_ZH_PATH, "/zh/compare/orca/"),
+        ):
+            _, index = parse(index_path)
+            self.assertIn(dive, [href for _, href in index.hrefs])
+
+    def test_language_switch_crosses_to_the_counterpart(self) -> None:
+        self.assertIn("/zh/compare/orca/", [href for _, href in self.en.hrefs])
+        self.assertIn("/compare/orca/", [href for _, href in self.zh.hrefs])
+
+    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            for crawler, rendered in zip(page.headings, page.headings_rendered):
+                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
+            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
+            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            self.assertTrue(plain)
+            self.assertFalse(
+                [heading for heading in plain if heading.endswith((".", "。"))],
+                plain,
+            )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        """English pages do not load the CJK webfont (REVIEW.md P1-3),
+        stated without pinning font names (Issue #112): see
+        LandingTests.test_font_loading_follows_the_language."""
+        en, zh = (
+            sorted(set(font_families(html)))
+            for html in (self.en_html, self.zh_html)
+        )
+        self.assertLess(len(en), len(zh), (en, zh))
+
+    def test_no_third_party_analytics(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            for tracker in (
+                "google-analytics", "googletagmanager", "gtag(",
+                "plausible.io", "umami", "segment.com", "hotjar",
+            ):
+                self.assertNotIn(tracker, html.lower(), tracker)
+
+    def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        for loc in (
+            "https://orbi.build/compare/orca/",
+            "https://orbi.build/zh/compare/orca/",
+        ):
+            self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        self.assertIn("https://orbi.build/compare/orca/", llms)
+        self.assertIn("https://orbi.build/zh/compare/orca/", llms)
+
+
 class CompareIndexTests(unittest.TestCase):
     """The /compare/ section index links every published deep dive."""
 
@@ -1541,7 +1754,7 @@ class CompareIndexTests(unittest.TestCase):
 
     def test_the_epics_competitors_are_all_named(self) -> None:
         for page in (self.en, self.zh):
-            for name in ("OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "OpenHands", "Hermes Agent"):
+            for name in ("Orca", "OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "OpenHands", "Hermes Agent"):
                 self.assertIn(name, page.text, name)
 
     def test_hero_leads_with_the_most_similar_competitor(self) -> None:
@@ -1569,12 +1782,12 @@ class CompareIndexTests(unittest.TestCase):
             ]
             self.assertTrue(statuses)
             self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 6, statuses
+                len([cls for cls in statuses if "is-live" in cls]), 7, statuses
             )
         # A published or research entry must not become a dead end.
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
-            self.assertEqual(len(entries), 7, entries)
+            self.assertEqual(len(entries), 8, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
 

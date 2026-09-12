@@ -5,6 +5,7 @@
   "description": "orbi.build Cloudflare Worker + assets",
   "type": "module",
   "scripts": {
+    "build": "node scripts/build-pages.mjs",
     "test": "vitest run",
     "test:browser": "node tests/homepage.smoke.mjs",
     "postinstall": "playwright install chromium"

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>What one Issue delivery actually costs — measured | Orbi</title>
-  <meta name="description" content="Measured across 47 real Orbi deliveries of our own repository: median 2.22M, mean 4.67M tokens per delivery, about $0.06–0.11 at DeepSeek V4.1 Flash list prices, 100 issues ≈ $6–11. Full token distribution, the money math, the limits, and the competitors' unpublished quotas — with sources.">
+  <meta name="description" content="Measured across 46 real Orbi deliveries of our own repository: median 2.22M, mean 4.74M tokens per delivery, about $0.06–0.12 at DeepSeek V4.1 Flash list prices, 100 issues ≈ $6–12. Full token distribution, the money math, the limits, and the competitors' unpublished quotas — with sources.">
   <link rel="canonical" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cost/">
   <meta property="og:title" content="What one Issue delivery actually costs — measured">
-  <meta property="og:description" content="47 real deliveries measured: mean 4.67M tokens per delivery, about $0.06–0.11 at DeepSeek V4.1 Flash list prices. We don't take a margin on your tokens.">
+  <meta property="og:description" content="46 real deliveries measured: mean 4.74M tokens per delivery, about $0.06–0.12 at DeepSeek V4.1 Flash list prices. We don't take a margin on your tokens.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="What one Issue delivery actually costs — measured">
-  <meta name="twitter:description" content="47 real deliveries: mean 4.67M tokens ≈ $0.06–0.11 at DeepSeek list prices. Your key, your bill.">
+  <meta name="twitter:description" content="46 real deliveries: mean 4.74M tokens ≈ $0.06–0.12 at DeepSeek list prices. Your key, your bill.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,9 +85,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
-        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-10 · n=47</p>
+        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-12 · n=46</p>
         <h1 id="cost-title">What one Issue delivery actually costs</h1>
-        <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 47 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,667,630</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.11</strong>, and <strong>100 issues ≈ $6–11</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
+        <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 46 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,742,066</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.12</strong>, and <strong>100 issues ≈ $6–12</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">Self-hosting? The delivery core is free forever — <a data-cta="install" href="https://docs.orbi.build">run Orbi yourself ↗</a></p>
@@ -97,8 +97,8 @@
 
     <section class="compare-section shell" aria-labelledby="measured-title">
       <p class="section-tag">THE MEASUREMENT</p>
-      <h2 id="measured-title">47 real deliveries, measured on our own repository</h2>
-      <p class="section-lede">Every Orbi delivery runs two agent sessions — the implementation, then an independent review that can repair the branch and rerun the suite. On <strong>2026-09-10</strong> we aggregated the session logs of <strong>n=47 deliveries</strong> of the orbi repository itself (Python, full CI, issues written to spec). Here is the complete per-delivery distribution of <code>totalTokens</code> — the count the provider actually bills, cache reads included:</p>
+      <h2 id="measured-title">46 real deliveries, measured on our own repository</h2>
+      <p class="section-lede">Every Orbi delivery runs two agent sessions — the implementation, then an independent review that can repair the branch and rerun the suite. As of <strong>2026-09-12</strong> we aggregated the session logs of <strong>n=46 deliveries</strong> of the orbi repository itself (Python, full CI, issues written to spec). The sample is whatever worktrees are on disk that day — it moves as worktrees get cleaned up — so <strong>n is a snapshot as of the stated date, not a permanent fact</strong>. Here is the complete per-delivery distribution of <code>totalTokens</code> — the count the provider actually bills, cache reads included:</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">Quantile</th><th scope="col">totalTokens per delivery</th></tr></thead>
@@ -108,11 +108,11 @@
             <tr><th scope="row">p90</th><td>13,290,932</td></tr>
             <tr><th scope="row">p95</th><td>16,555,250</td></tr>
             <tr><th scope="row">Max</th><td>37,627,783</td></tr>
-            <tr><th scope="row">Mean</th><td>4,667,630</td></tr>
+            <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">Source: aggregated from the implement + review session logs of 47 Orbi deliveries of the orbi-build/orbi repository, 2026-09-10. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
+      <p class="src-note">Source, so anyone can re-derive it: the agent session logs of the orbi-build/orbi repository's git worktrees (<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>), aggregated 2026-09-12. One delivery = one worktree's implement + review sessions; a delivery's totalTokens = the sum of <code>usage.totalTokens</code> over every logged record; n = worktrees whose logs carry at least one usage record (older or newer sessions without usage logging are not countable); percentiles by nearest rank. The sample moves as worktrees are cleaned up. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="money-title">
@@ -124,9 +124,9 @@
           <table class="compare-table">
             <thead><tr><th scope="col">Scenario</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
             <tbody>
-              <tr><th scope="row">One delivery (mean, 4.67M tokens)</th><td>$0.057</td><td>$0.113</td></tr>
+              <tr><th scope="row">One delivery (mean, 4.74M tokens)</th><td>$0.058</td><td>$0.115</td></tr>
               <tr><th scope="row">One delivery (max observed, 37.6M tokens)</th><td>$0.46</td><td>$0.92</td></tr>
-              <tr><th scope="row">100 issues (mean mix)</th><td>~$5.70</td><td>~$11.30</td></tr>
+              <tr><th scope="row">100 issues (mean mix)</th><td>~$5.77</td><td>~$11.55</td></tr>
             </tbody>
           </table>
         </div>
@@ -195,7 +195,7 @@
           <table class="compare-table">
             <thead><tr><th scope="col"></th><th scope="col">Subscription</th><th scope="col">Model fee</th><th scope="col">Total</th><th scope="col">Tagged Release out</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Orbi + DeepSeek</th><td>$0 self-hosted; or $79/mo Cloud — 2B tokens included (Founding coupon 100% off, limited)</td><td>~$6–11 measured self-hosted; included in Cloud</td><td>$6–11 self-hosted; $79 Cloud</td><td>Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
+              <tr><th scope="row">Orbi + DeepSeek</th><td>$0 self-hosted; or US$__CLOUD_MONTHLY_USD__/mo Cloud — 2B tokens included (Founding coupon 100% off, limited)</td><td>~$6–12 measured self-hosted; included in Cloud</td><td>$6–12 self-hosted; US$__CLOUD_MONTHLY_USD__ Cloud</td><td>Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
               <tr><th scope="row">Devin Max</th><td>$200</td><td>Quota not published</td><td>$200+</td><td>Docs stop at PR ("from prompt to PR")</td></tr>
               <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage", no absolute value</td><td>$200+</td><td>No tag/Release step documented</td></tr>
             </tbody>
@@ -224,12 +224,26 @@
     <p>Software production that survives the session.</p>
     <nav aria-label="Footer navigation">
       <a href="https://docs.orbi.build">Docs</a>
+      <a href="/cloud/">Cloud</a>
       <a href="/compare/">Compare</a>
       <a href="https://github.com/orbi-build/orbi">GitHub</a>
       <a href="https://x.com/xqliu" rel="me">X</a>
       <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
+      <a href="/#direction">Direction</a>
       <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
       <a href="/zh/cost/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
     </nav>
   </footer>
 
