@@ -1,4 +1,4 @@
-// Issue #106 gates: the 25 shipped pages stay in lockstep with their sources,
+// Issue #106 gates: the 27 shipped pages stay in lockstep with their sources,
 // and the two language trees cannot silently drift apart again.
 //
 // These tests read the shipped bytes in public/ — the same files the Worker
@@ -121,7 +121,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 10-item footer nav on all 24 content pages", () => {
+  it("carries the 10-item footer nav on all 26 content pages", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")

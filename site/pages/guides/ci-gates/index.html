@@ -1,0 +1,304 @@
+<!--orbi:page
+{
+  "output": "guides/ci-gates/index.html",
+  "lang": "en",
+  "mirror": "zh/guides/ci-gates/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/cost/",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "applyHref": "/apply",
+    "applyLabel": "Apply",
+    "langSwitchHref": "/zh/guides/ci-gates/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CI gates — what you put in CI is what Orbi guarantees | Orbi</title>
+  <meta name="description" content="Orbi's review and release gates read GitHub check-run conclusions — nothing else. They don't know pytest from Playwright: success, neutral or skipped passes, anything else blocks the merge. So the suite you put in CI is the promise Orbi enforces on every delivery. Two copyable workflows, four boundaries, every claim traced to the engine's code.">
+  <link rel="canonical" href="https://orbi.build/guides/ci-gates/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/guides/ci-gates/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/ci-gates/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/ci-gates/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/guides/ci-gates/">
+  <meta property="og:title" content="CI gates — what you put in CI is what Orbi guarantees">
+  <meta property="og:description" content="The gates read check-run conclusions, not test frameworks. pytest in CI → Orbi guarantees code logic; Playwright business flows in CI → Orbi guarantees the loop closes. Four boundaries, every claim traced to code.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="What you put in CI is what Orbi guarantees.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="CI gates — what you put in CI is what Orbi guarantees">
+  <meta name="twitter:description" content="The gates read check-run conclusions, not test frameworks. What lives in CI decides what every Orbi delivery proves.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC here: this page is English-only; the Chinese page loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Page-scoped: dark code blocks for the engine quotes and the two
+     * workflow files (same aesthetic as the homepage install block). */
+    .code-block { margin: 30px 0 10px; background: var(--night); border: 1px solid var(--line-dark); border-radius: 10px; overflow: hidden; }
+    .code-block figcaption { padding: 12px 20px; border-bottom: 1px solid var(--line-dark); color: #8ba39d; font-family: var(--mono); font-size: 0.8rem; }
+    .code-block pre { margin: 0; padding: 18px 20px; overflow-x: auto; color: #dbe9e4; font-family: var(--mono); font-size: 0.78rem; line-height: 1.8; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "CI gates — what you put in CI is what Orbi guarantees",
+    "description": "Orbi's review and release gates read GitHub check-run conclusions — nothing else. What lives in CI decides what every delivery proves. Two copyable workflows, four boundaries, every claim traced to the engine's code.",
+    "inLanguage": "en",
+    "url": "https://orbi.build/guides/ci-gates/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Orbi",
+      "url": "https://orbi.build/"
+    },
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "Orbi",
+      "applicationCategory": "DeveloperApplication",
+      "url": "https://orbi.build/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="cigates-title">
+        <p class="eyebrow">Guide · how Orbi's CI gates work · engine source verified 2026-09-12</p>
+        <h1 id="cigates-title">What you put in CI is what Orbi guarantees</h1>
+        <p class="hero-lede"><strong>Orbi's two gates — the review gate and the release gate — read one thing: the conclusion of each GitHub check run.</strong> They do not know pytest from Playwright: <code>success</code>, <code>neutral</code> or <code>skipped</code> passes, anything else blocks. So the suite you put in CI is exactly the promise Orbi enforces on every delivery — and <strong>with no check runs at all, both gates pass</strong>, which is the first boundary below. Here is the mechanism, two copyable workflows, and the four boundaries, each traced to the engine's code.</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="#boundaries">The four boundaries first</a>
+          <a class="text-link" href="/cloud/">How a release runs, end to end →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="mechanism-title">
+      <p class="section-tag">THE MECHANISM</p>
+      <h2 id="mechanism-title">Two gates, one input: check-run conclusions</h2>
+      <p class="section-lede">The <strong>review gate</strong> holds a clean review against the PR head's check runs before anything merges; the <strong>release gate</strong> holds the release against the release commit's check runs before Orbi freezes the SHA and cuts the tag. Both ask GitHub's Checks API for the commit's check runs and decide on the <code>conclusion</code> field — quoted here verbatim from the delivery engine, <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener"><code>src/orbi/runner.py</code></a> (<code>check_review_ci</code>) and <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener"><code>src/orbi/release.py</code></a> (<code>check_release_gates</code>):</p>
+      <figure class="code-block">
+        <figcaption>src/orbi/runner.py — check_review_ci (the review gate)</figcaption>
+<pre><code>failed = [
+    check for check in check_runs
+    if check.get("conclusion") not in ("success", "neutral", "skipped")
+]
+if failed:
+    check = failed[0]
+    reference = check.get("html_url") or check.get("details_url") or "no run URL"
+    raise RuntimeError(
+        f"review gate: CI check '{check.get('name')}' failed on PR head "
+        f"{commit} ({reference})"
+    )
+if not check_runs:
+    evidence = f"CI on review head {commit}: no check runs (nothing to gate)"</code></pre>
+      </figure>
+      <figure class="code-block">
+        <figcaption>src/orbi/release.py — check_release_gates (the release gate)</figcaption>
+<pre><code>for check in check_runs:
+    name = check.get("name")
+    status = check.get("status")
+    conclusion = check.get("conclusion")
+    if status != "completed" or conclusion not in (
+        "success", "neutral", "skipped",
+    ):
+        raise RuntimeError(
+            f"release gate: CI check '{name}' is {status}/{conclusion} "
+            f"on the release commit {release_commit}"
+        )</code></pre>
+      </figure>
+      <p class="src-note">Both quotes verbatim, verified 2026-09-12. Pending checks are never judged early: each gate polls until every check run completes, and a wait that exceeds the budget fails the gate — a queued suite blocks, it does not pass. The <code>conclusion</code> values are GitHub's own enum (<a href="https://docs.github.com/en/rest/checks/runs" rel="noopener">Checks API</a>): <code>success, failure, neutral, cancelled, skipped, timed_out, action_required, stale</code>; the gates' pass set is the subset <code>success, neutral, skipped</code>.</p>
+      <p class="thesis-punch">The gate never sees a test name, a framework, or a coverage number. It sees one bit per check run — pass or not — which is why the contents of your CI, not Orbi, define the guarantee.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="ladder-title">
+      <div class="shell">
+        <p class="section-tag">WHAT THAT MAKES ORBI GUARANTEE</p>
+        <h2 id="ladder-title">Your tests decide what &ldquo;guaranteed&rdquo; means</h2>
+        <p class="section-lede">The gate enforces whatever verification lives in CI — no more, and importantly no less. The layers stack: each one widens what a green delivery proves.</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col">What lives in CI</th><th scope="col">What Orbi then guarantees on every delivery</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Unit tests only</th><td>The code logic those tests cover passes. A delivery that breaks them cannot merge — and that is the whole guarantee.</td></tr>
+              <tr><th scope="row">+ integration tests</th><td>Modules also agree at the boundaries the integration tests exercise.</td></tr>
+              <tr><th scope="row">+ business-flow e2e (Playwright)</th><td><strong>The business loop closes.</strong> The flow a user actually runs — open the app, do the thing, see the result — is exercised and green on every single delivery.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="thesis-punch">Put pytest unit tests in CI and Orbi guarantees code logic. Put Playwright business flows in CI and Orbi guarantees the loop closes. That is not a metaphor — it is a literal reading of the code above.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="workflows-title">
+      <p class="section-tag">COPY, PASTE, DONE</p>
+      <h2 id="workflows-title">Two complete workflows, ready to commit</h2>
+      <p class="section-lede">Full files, not fragments — either one is a complete <code>.github/workflows/*.yml</code>. Each triggers on <code>pull_request</code> (so the review gate sees the PR head) and on <code>push</code> to the delivery branch (so the release gate sees the release commit). <code>push.branches</code> must include the branch Orbi delivers to; the Playwright file assumes your <code>playwright.config</code> starts the app itself (<code>webServer</code>) — the Playwright docs own that part.</p>
+      <figure class="code-block">
+        <figcaption>.github/workflows/ci.yml — pytest</figcaption>
+<pre><code>name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    name: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest</code></pre>
+      </figure>
+      <figure class="code-block">
+        <figcaption>.github/workflows/e2e.yml — Playwright business flows</figcaption>
+<pre><code>name: E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    name: playwright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test</code></pre>
+      </figure>
+      <p class="src-note">From the next delivery on, Orbi checks these runs on every PR head and every release commit — and refuses to merge or tag past a red one. What running them costs per delivery is measured, not guessed: <a href="/cost/">the cost page</a> puts the mean delivery at about $0.06–0.12 at DeepSeek list prices.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" id="boundaries" aria-labelledby="boundaries-title">
+      <div class="shell">
+        <p class="section-tag">READ THE BOUNDARIES FIRST</p>
+        <h2 id="boundaries-title">Four things this page does not claim</h2>
+        <ul class="event-list">
+          <li>
+            <span class="event-era">BOUNDARY 1 · FAIL-OPEN</span>
+            <div>
+              <strong>No check runs, nothing to gate — both gates pass</strong>
+              <p>A repository without CI runs deliveries end to end. The engine's own evidence line says it plainly: <code>no check runs (nothing to gate)</code>. Nothing blocks — and nothing is verified, because the only automated acceptance gate is the one that isn't installed. One refinement, same code: on a just-pushed release commit in a repository whose frozen base already showed checks, an empty list means &ldquo;not registered yet&rdquo;, and the gate waits for the first check instead of passing. Fail-open is for repositories without CI — not for CI that hasn't spoken yet.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">BOUNDARY 2 · SKIPPED ≠ RAN</span>
+            <div>
+              <strong>Neutral and skipped conclusions count as passing</strong>
+              <p>The pass set is literally <code>success, neutral, skipped</code>. An e2e job skipped by an <code>if:</code> condition, or filtered out by a <code>paths:</code> filter, concludes <code>skipped</code> — and does not block the merge. A job that didn't run is a job that didn't fail. Point the triggers at the right paths and keep conditions off the jobs a merge depends on.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">BOUNDARY 3 · THE AGENT WRITES THE TESTS</span>
+            <div>
+              <strong>Coverage proves the tests touch the code — not that the code is right</strong>
+              <p>The same agent that writes the feature writes the tests. Playwright can prove the button renders and responds; it cannot prove the button belongs on that screen, or that the error message is kind. Small UX drift is exactly what these gates do not catch — judgment about feel stays with a human reviewer, and a green check run is not a UX sign-off.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">BOUNDARY 4 · REPORTING, KNOWN LIMIT</span>
+            <div>
+              <strong>The progress comment's tests line is pytest-specific</strong>
+              <p>The <code>tests passed / tests failed</code> line in a delivery's progress comment is parsed from the repository's test log, and the parser is tuned to pytest's summary line (<code>1 failed, 155 passed in 4.43s</code>). A Playwright run's summary is not parsed into counts, so a non-Python repository may show no tests line at all. That is a reporting limitation, not a gate change: the gates decide on check runs and never read the test log.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="sources-title">
+      <p class="section-tag">PROVENANCE</p>
+      <h2 id="sources-title">Sources and verification dates</h2>
+      <p class="section-lede">Every engine claim on this page was checked against the delivery engine's source on 2026-09-12 — quoted from the code, not paraphrased from documentation.</p>
+      <ul class="source-list">
+        <li>
+          <strong><a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>check_review_ci</code></a> — the review gate: pass set <code>success/neutral/skipped</code>, one failing check raises, no check runs recorded as &ldquo;nothing to gate&rdquo;</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>github.com/orbi-build/orbi</small>
+        </li>
+        <li>
+          <strong><a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener">orbi-build/orbi — src/orbi/release.py, <code>check_release_gates</code></a> — the release gate: same conclusion test, the wait when a known-CI repository's checks have not registered, and the &ldquo;nothing to gate&rdquo; evidence line</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>github.com/orbi-build/orbi</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.github.com/en/rest/checks/runs" rel="noopener">GitHub Checks API — check runs</a> — the <code>conclusion</code> enum the gates filter</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>docs.github.com</small>
+        </li>
+        <li>
+          <strong><a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>read_test_result</code></a> — the pytest-specific progress-comment parser (boundary 4)</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>github.com/orbi-build/orbi</small>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">ONE COMMIT AWAY</p>
+      <h2 id="start-title">Install the gate you want Orbi to enforce</h2>
+      <p>Pick the layer you want guaranteed — logic, integration, or the business loop — and put its suite in CI. From the next delivery on, Orbi checks it on every PR head and every release commit, and refuses to merge or tag past a red run.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Set up Orbi <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/cloud/">Or let Cloud run the line →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
