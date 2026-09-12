@@ -311,6 +311,50 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(expected.issubset(capabilities), capabilities)
 
+    def test_hero_trust_line_carries_the_unmatched_capabilities(self) -> None:
+        """Issue #119: the first screen's scannable line spent its 5 seconds
+        on three attributes every competitor shares (fair-code, self-hosted,
+        BYOK), so a glance filed Orbi under "another Issue-to-PR tool". The
+        hero line must carry exactly the three delivery capabilities no
+        competitor documents, and the shared attributes must survive below
+        the hero — inside the How-it-works section, where decision-stage
+        concerns (licence, data boundary, model lock-in) belong."""
+        claims = {
+            self.en_html: (
+                "Independent review that fixes and re-tests",
+                "Only the reviewed commit merges",
+                "Frozen SHA, tag, release",
+            ),
+            self.zh_html: (
+                "独立审查能改代码并重跑测试",
+                "只合并审过的那个 commit",
+                "冻结 SHA、打 Tag、发 Release",
+            ),
+        }
+        shared = {
+            self.en_html: (
+                "Fair-code, free forever",
+                "Self-hosted — code never leaves your machine",
+                "Bring your own model",
+            ),
+            self.zh_html: (
+                "Fair-code，永久免费",
+                "自托管 — 代码不离开你的机器",
+                "自带模型",
+            ),
+        }
+        for html in (self.en_html, self.zh_html):
+            hero_start = html.index('class="trust-line"')
+            hero_line = html[hero_start:html.index("</ul>", hero_start)]
+            for claim in claims[html]:
+                self.assertIn(f"<li>{claim}</li>", hero_line, claim)
+            for attribute in shared[html]:
+                self.assertNotIn(attribute, hero_line, attribute)
+            system_at = html.index('id="system"')
+            below_fold = html[system_at:html.index("</section>", system_at)]
+            for attribute in shared[html]:
+                self.assertIn(attribute, below_fold, attribute)
+
     def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
         for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
             ctas = {

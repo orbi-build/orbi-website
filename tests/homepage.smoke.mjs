@@ -50,6 +50,36 @@ const releaseClaims = {
   },
 };
 
+// Issue #119: the hero trust line is the 5-second scan zone and must carry
+// exactly the three delivery capabilities no competitor documents. The
+// fair-code / self-host / BYOK attributes every competitor shares moved to
+// the end of the How-it-works section — decision-stage (licence, data
+// boundary, model lock-in), not first-glance, information.
+const heroTrustLine = {
+  "/": [
+    "Independent review that fixes and re-tests",
+    "Only the reviewed commit merges",
+    "Frozen SHA, tag, release",
+  ],
+  "/zh/": [
+    "独立审查能改代码并重跑测试",
+    "只合并审过的那个 commit",
+    "冻结 SHA、打 Tag、发 Release",
+  ],
+};
+const sharedAttributes = {
+  "/": [
+    "Fair-code, free forever",
+    "Self-hosted — code never leaves your machine",
+    "Bring your own model",
+  ],
+  "/zh/": [
+    "Fair-code，永久免费",
+    "自托管 — 代码不离开你的机器",
+    "自带模型",
+  ],
+};
+
 function startServer() {
   return spawn("python3", ["-m", "http.server", String(port)], {
     cwd: "public",
@@ -301,6 +331,21 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
+  }
+  // Issue #119: the rendered hero trust line is exactly the three unmatched
+  // capabilities, and the shared attributes still render in How-it-works.
+  const trustTexts = (await hero.locator(".trust-line li").allTextContents())
+    .map((item) => item.replace(/\s+/g, " ").trim());
+  const expectedTrust = heroTrustLine[path];
+  if (trustTexts.length !== expectedTrust.length
+      || expectedTrust.some((item, i) => trustTexts[i] !== item)) {
+    throw new Error(`${path}: hero trust line is ${JSON.stringify(trustTexts)}, expected exactly ${JSON.stringify(expectedTrust)}`);
+  }
+  const systemText = await page.locator("#system").textContent();
+  for (const attribute of sharedAttributes[path]) {
+    if (!systemText.includes(attribute)) {
+      throw new Error(`${path}: the How-it-works section lost the shared attribute ${JSON.stringify(attribute)}`);
+    }
   }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
