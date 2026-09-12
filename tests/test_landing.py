@@ -551,7 +551,7 @@ class LandingTests(unittest.TestCase):
     def test_stats_never_render_a_hollow_record(self) -> None:
         """The live counters are the page's only social proof. When /stats is
         unreachable they must fall back to conservative real numbers, not to
-        four em-dashes that read as a broken page."""
+        em-dashes that read as a broken page."""
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("data-floor", js)
         for page in (self.en, self.zh):
@@ -559,10 +559,51 @@ class LandingTests(unittest.TestCase):
                 attrs for tag, attrs in page.elements
                 if tag == "strong" and "data-stat" in attrs
             ]
-            self.assertEqual(len(stats), 4, stats)
+            # Issue #101: three repositories, four counters each.
+            self.assertEqual(len(stats), 12, stats)
+            by_repo: dict[str, list[str]] = {}
             for attrs in stats:
                 floor = attrs.get("data-floor", "")
                 self.assertTrue(floor.isdigit() and int(floor) > 0, attrs)
+                by_repo.setdefault(attrs.get("data-repo"), []).append(attrs.get("data-stat"))
+            self.assertEqual(sorted(by_repo), ["orbi", "orbi-cloud", "orbi-website"], by_repo)
+            for repo, stat_names in by_repo.items():
+                # orbi-website ships by deploying, not tagging — deploys is
+                # its fourth counter in place of releases.
+                fourth = "deploys" if repo == "orbi-website" else "releases"
+                self.assertEqual(
+                    sorted(stat_names), sorted(["days", "issues", "prs", fourth]), by_repo,
+                )
+
+    def test_stats_show_three_repos_and_never_link_the_private_one(self) -> None:
+        """Issue #101: the LIVE block argues "Orbi builds Orbi" per repo —
+        website, Cloud control plane, and Orbi itself, each on its own
+        numbers. orbi-cloud is private: a clickable 404 is a broken promise,
+        a visible「私有仓库 / Private」label is honesty, so the group is
+        shown but never linked."""
+        for page, html, lang, private_label in (
+            (self.en, self.en_html, "en", "Private"),
+            (self.zh, self.zh_html, "zh", "私有仓库"),
+        ):
+            groups = [
+                attrs.get("data-repo-group")
+                for tag, attrs in page.elements
+                if tag == "div" and "data-repo-group" in attrs
+            ]
+            self.assertEqual(groups, ["orbi", "orbi-website", "orbi-cloud"], groups)
+            hrefs = [href for _, href in page.hrefs]
+            self.assertIn("https://github.com/orbi-build/orbi", hrefs)
+            self.assertIn("https://github.com/orbi-build/orbi-website", hrefs)
+            self.assertNotIn("https://github.com/orbi-build/orbi-cloud", hrefs)
+            # The private label is visible inside the stats section, and the
+            # purposes read as the bootstrap loop in the page's language.
+            self.assertIn(f'<span class="stat-private">{private_label}</span>', html)
+            purposes = {
+                "en": ["Orbi itself", "This website", "Cloud control plane"],
+                "zh": ["Orbi 本身", "这个网站", "Cloud 控制面"],
+            }[lang]
+            for purpose in purposes:
+                self.assertIn(purpose, page.text)
 
     def test_install_is_one_published_command_with_a_manual_fallback(self) -> None:
         """"Install it yourself" is one curl line; the four hand-run steps
