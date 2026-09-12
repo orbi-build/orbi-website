@@ -136,7 +136,7 @@ describe("one unified footer on every content page", () => {
         "https://github.com/orbi-build/orbi",
         "https://x.com/xqliu",
         `${anchor}#faq`,
-        "https://github.com/orbi-build/orbi/releases/tag/v0.2.0",
+        "https://github.com/orbi-build/orbi/releases",
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
