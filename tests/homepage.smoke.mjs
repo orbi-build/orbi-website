@@ -1,6 +1,7 @@
 import { chromium, request } from "@playwright/test";
-import { spawn } from "node:child_process";
-import { mkdir } from "node:fs/promises";
+import { createServer } from "node:http";
+import { mkdir, readFile } from "node:fs/promises";
+import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const port = 4173;
@@ -80,27 +81,69 @@ const sharedAttributes = {
   ],
 };
 
+// Issue #102: the shipped files carry the monthly price as a token and the
+// site Worker resolves it while serving (src/worker.js). This local server is
+// the stand-in for that Worker, so it applies the same substitution from the
+// same single source before a page reaches the browser.
+const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+
+const CONTENT_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+};
+
+async function serveFile(pathname) {
+  const relative = normalize(decodeURIComponent(pathname)).replace(/^(\/|\\)+/, "");
+  if (relative.split("/").includes("..")) return null;
+  const base = join("public", relative);
+  const direct = await readFile(base).catch(() => null);
+  if (direct !== null) return { path: base, body: direct };
+  if (!extname(base)) {
+    const index = await readFile(join(base, "index.html")).catch(() => null);
+    if (index !== null) return { path: join(base, "index.html"), body: index };
+  }
+  return null;
+}
+
 function startServer() {
-  return spawn("python3", ["-m", "http.server", String(port)], {
-    cwd: "public",
-    stdio: ["ignore", "ignore", "pipe"],
+  const server = createServer(async (request, response) => {
+    try {
+      const { pathname } = new URL(request.url, "http://127.0.0.1");
+      const file = await serveFile(pathname);
+      if (!file) {
+        response.writeHead(404);
+        response.end();
+        return;
+      }
+      const type = CONTENT_TYPES[extname(file.path).toLowerCase()] ?? "application/octet-stream";
+      const body = type.startsWith("text/html")
+        ? Buffer.from(
+            file.body.toString("utf8").replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd)),
+          )
+        : file.body;
+      response.writeHead(200, { "content-type": type });
+      response.end(body);
+    } catch {
+      response.writeHead(500);
+      response.end();
+    }
+  });
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", () => resolve(server));
   });
 }
 
 async function stopServer(server) {
-  if (!server || server.exitCode !== null) return;
-  await new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      server.kill("SIGKILL");
-      resolve();
-    }, 1000);
-    timer.unref();
-    server.once("exit", () => {
-      clearTimeout(timer);
-      resolve();
-    });
-    server.kill();
-  });
+  if (!server || !server.listening) return;
+  server.closeAllConnections();
+  await new Promise((resolve) => server.close(resolve));
 }
 
 async function assertFooterDeepDives(page, label) {
@@ -979,7 +1022,7 @@ async function assertApplyForm(browser) {
 
 async function main() {
   await mkdir(artifacts, { recursive: true });
-  const server = process.env.BASE_URL ? null : startServer();
+  const server = process.env.BASE_URL ? null : await startServer();
   let browser;
   try {
     browser = await chromium.launch({
@@ -988,15 +1031,6 @@ async function main() {
         : {}),
       headless: true,
     });
-    if (server) {
-      await new Promise((resolve, reject) => {
-        const timer = setTimeout(resolve, 1000);
-        server.stderr.once("data", (data) => {
-          clearTimeout(timer);
-          reject(new Error(data.toString()));
-        });
-      });
-    }
     await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
     if (!process.env.BASE_URL) await assertApplyForm(browser);

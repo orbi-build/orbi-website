@@ -1,4 +1,11 @@
 import { withAICrawlerTracking } from "@datafast/ai-crawl";
+import pricing from "./pricing.json";
+
+// Single source of truth for the Cloud monthly price (Issue #102). The shipped
+// HTML carries monthlyUsdToken wherever that price appears — including the
+// head tags (meta/og/twitter/JSON-LD) that crawlers read without running
+// JavaScript — and serving replaces it with cloudMonthlyUsd below.
+const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -167,22 +174,34 @@ async function fetchAsset(request, assets) {
 // pages are served with every Cloud CTA rewritten to the application page
 // instead (Issue #77). The rewrite is driven by the configuration, so opening
 // production was a wrangler.toml change, not a page change (Issue #96).
+// The price token replacement above it is unconditional: the monthly price
+// must read the same on every environment, in every carrier a crawler reads.
 async function assetResponse(asset, cloudLoginConfigured) {
   const headers = new Headers(asset.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(key, value);
   }
-  if (cloudLoginConfigured || asset.status !== 200
-      || !(headers.get("Content-Type") || "").startsWith("text/html")) {
+  const isHtml = asset.status === 200
+    && (headers.get("Content-Type") || "").startsWith("text/html");
+  if (!isHtml) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
+  }
+  const html = await asset.text();
+  let body = html.replaceAll(pricing.monthlyUsdToken, MONTHLY_USD);
+  if (!cloudLoginConfigured) {
+    body = body.replaceAll('href="/cloud/login"', 'href="/apply"');
+  }
+  if (body === html) {
+    // Nothing changed: the bytes are the asset's own representation, so the
+    // file's validators stay valid for conditional requests.
+    return new Response(html, { status: asset.status, statusText: asset.statusText, headers });
   }
   // A rewritten body is a new representation: the asset file's validators
   // must not answer conditional requests for these bytes.
   headers.delete("etag");
   headers.delete("last-modified");
   headers.delete("content-length");
-  const html = (await asset.text()).replaceAll('href="/cloud/login"', 'href="/apply"');
-  return new Response(html, { status: asset.status, statusText: asset.statusText, headers });
+  return new Response(body, { status: asset.status, statusText: asset.statusText, headers });
 }
 
 // Self-contained on purpose: this page must render even though the visitor
