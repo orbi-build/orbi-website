@@ -74,6 +74,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/compare/orca/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/orca/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/orca/"/>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/orca/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/orca/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/orca/"/>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/compare/openclaw/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/openclaw/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/"/>

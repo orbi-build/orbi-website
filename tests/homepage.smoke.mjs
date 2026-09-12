@@ -16,6 +16,7 @@ const installCommand = "curl -fsSL https://orbi.build/install.sh | bash";
 
 // Same order as the /compare/ grid; anchor text matches each page's own title.
 const deepDives = [
+  ["Orbi vs Orca", "/compare/orca/"],
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
   ["Orbi vs GitHub Copilot coding agent", "/compare/github-copilot-coding-agent/"],
   ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
@@ -750,6 +751,90 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #117: the Orca deep dive answers the first external positioning test
+// (“我今天安装了 Orca，好像和你的项目差不多”). The rendered page must carry
+// the verbatim official self-descriptions, at least four honest "Not
+// verified"/「未能核实」 cells (the undocumented delivery capabilities never
+// written as "No"), the plainly stated licence disadvantage, and the measured
+// GitHub-API counts with their measurement date — in both languages.
+const orcaPages = {
+  "/compare/orca/": {
+    zh: "/zh/compare/orca/",
+    h1: "Orbi vs Orca",
+    quotes: [
+      "The AI Orchestrator for 100x builders",
+      "ADE for working with a fleet of parallel agents",
+      "Drop comments on any diff line and ship them back to the agent",
+    ],
+    unverified: "Not verified",
+    licence: ["MIT", "fair-code", "Sustainable Use"],
+    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "measured 2026-09-12"],
+  },
+  "/zh/compare/orca/": {
+    zh: "/compare/orca/",
+    h1: "Orbi vs Orca",
+    quotes: [
+      "The AI Orchestrator for 100x builders",
+      "ADE for working with a fleet of parallel agents",
+      "Drop comments on any diff line and ship them back to the agent",
+    ],
+    unverified: "未能核实",
+    licence: ["MIT", "fair-code", "Sustainable Use"],
+    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "实测于 2026-09-12"],
+  },
+};
+
+async function assertOrcaPage(browser, path, size, screenshot) {
+  const claim = orcaPages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const quote of claim.quotes) {
+    if (!text.includes(quote)) {
+      throw new Error(`${path}: the verbatim official quote is missing: ${JSON.stringify(quote)}`);
+    }
+  }
+  const unverifiedCount = text.split(claim.unverified).length - 1;
+  if (unverifiedCount < 4) {
+    throw new Error(`${path}: expected at least 4 ${JSON.stringify(claim.unverified)} cells, got ${unverifiedCount}`);
+  }
+  for (const term of claim.licence) {
+    if (!text.includes(term)) throw new Error(`${path}: the licence section is missing ${JSON.stringify(term)}`);
+  }
+  for (const count of claim.counts) {
+    if (!text.includes(count)) throw new Error(`${path}: missing the measured count ${JSON.stringify(count)}`);
+  }
+  // Navigation consistency, same contract as the cost pages.
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -907,9 +992,14 @@ async function main() {
     await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 1440, height: 900 }, "compare-zh-desktop.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
+    // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
+    await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
+    await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
+    await assertOrcaPage(browser, "/zh/compare/orca/", { width: 1440, height: 900 }, "compare-orca-zh-desktop.png");
+    await assertOrcaPage(browser, "/zh/compare/orca/", { width: 390, height: 844 }, "compare-orca-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }

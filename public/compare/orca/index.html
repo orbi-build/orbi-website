@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi vs Orca — parallel-agent workbench vs delivery line</title>
+  <meta name="description" content="A sourced comparison of Orbi and Orca (Stably): the ADE where you operate a fleet of parallel agents, versus the unattended line that turns GitHub Issues into tagged releases. Verified 2026-09-12.">
+  <link rel="canonical" href="https://orbi.build/compare/orca/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/orca/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/orca/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/compare/orca/">
+  <meta property="og:title" content="Orbi vs Orca — parallel-agent workbench vs delivery line">
+  <meta property="og:description" content="Orca is the ADE for running a fleet of parallel agents while you stay in the loop. Orbi is the line that delivers without one. Complements, not competitors — with a source on every claim.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi vs Orca — a sourced comparison.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi vs Orca — parallel-agent workbench vs delivery line">
+  <meta name="twitter:description" content="You run a fleet of agents with Orca. Orbi runs the delivery line so you don't have to. Verified 2026-09-12.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC: the only CJK on this page is the 中文 language link,
+       which the system CJK face covers. The Chinese page still loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Orbi vs Orca — parallel-agent workbench vs delivery line",
+  "description": "A sourced comparison of Orbi and Orca (Stably): the ADE where you operate a fleet of parallel agents, versus the unattended line that turns GitHub Issues into tagged releases. Verified 2026-09-12.",
+  "inLanguage": "en",
+  "url": "https://orbi.build/compare/orca/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a><a href="/cost/">Cost</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/apply">Apply</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/compare/orca/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-title">
+        <p class="eyebrow">Comparison · facts verified 2026-09-12</p>
+        <h1 id="compare-title">Orbi vs Orca</h1>
+        <p class="hero-lede"><strong>“About the same as your project” — that is how a user who had just installed Orca described us on 2026-09-12, and this page exists to take the misreading apart.</strong> Both projects put agents in git worktrees — that is where the similarity ends. Orca, from Stably, is the category's head project: "The AI Orchestrator for 100x builders," an ADE where <em>you</em> run a fleet of coding agents side by side and stay in the loop. Orbi is an unattended delivery line: a GitHub Issue goes in, a reviewed PR and a tagged Release come out, and nobody operates the middle. In Orca's own terms: Orca is how you run a fleet of agents; Orbi is how you stop having to.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="https://github.com/stablyai/orca" rel="noopener">Read Orca's README ↗</a>
+          <a class="button button-ghost" href="/compare/">All comparisons</a>
+          <a class="hero-proof-link" href="#sources">Sources &amp; dates →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="what-title">
+      <p class="section-tag">THE COMPETITOR, FROM ITS OWN MATERIALS</p>
+      <h2 id="what-title">What Orca is</h2>
+      <p class="section-lede">Orca is built by Stably (the <code>stablyai</code> organization on GitHub) and describes itself, verbatim, as:</p>
+      <div class="claim-quotes">
+        <div class="claim-quote">
+          <p class="claim-quote-text">“The AI Orchestrator for 100x builders. Run Codex, ClaudeCode, OpenCode or Pi side-by-side — each in its own worktree, tracked in one place.”</p>
+          <p class="claim-quote-src"><a href="https://github.com/stablyai/orca/blob/main/README.md" rel="noopener">Orca README</a> · verified 2026-09-12</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.”</p>
+          <p class="claim-quote-src"><a href="https://github.com/stablyai/orca" rel="noopener">Orca repository “About” description</a>, same wording on <a href="https://www.onorca.dev" rel="noopener">onorca.dev</a> · verified 2026-09-12</p>
+        </div>
+      </div>
+      <p class="section-lede">The scale is real and worth respecting: the repository was created on 2026-03-17 and reached <strong>66,832 stars and 4,391 forks within six months</strong> (GitHub API, measured 2026-09-12) — the fastest-growing project in this comparison set, under an MIT licence. The documented surface matches the self-description: a desktop app for macOS, Windows and Linux, a mobile companion for iOS and Android, a CLI (“Agents drive Orca too — script every workflow with <code>orca worktree create</code>, <code>snapshot</code>, <code>click</code>, and <code>fill</code>”), and parallel git worktrees so several agents can work at once. The review loop is operator-centered by design: “Drop comments on any diff line and ship them back to the agent — review, edit, and commit without leaving Orca.”</p>
+      <p class="src-note">Sources: <a href="https://github.com/stablyai/orca/blob/main/README.md" rel="noopener">Orca README</a> (self-description, CLI, worktrees, platforms, diff annotation); <a href="https://api.github.com/repos/stablyai/orca" rel="noopener">GitHub API repository record</a> (stars, forks, creation date, MIT licence) — verified/measured 2026-09-12.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="surface-title">
+      <div class="shell">
+        <p class="section-tag">THE OPERATING SURFACE</p>
+        <h2 id="surface-title">A workbench you operate, or a line that delivers</h2>
+        <p class="section-lede">The two products agree on one thing — agents isolated in git worktrees — and diverge on who does the operating. Cells we could not verify in Orca's official materials read “Not verified”, never “No”.</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Positioning</th><td>Unattended delivery line: GitHub Issues in, tagged Releases out</td><td>“The AI Orchestrator for 100x builders” — the ADE for a fleet of parallel agents (official)</td></tr>
+              <tr><th scope="row">The human's place</th><td>Outside the loop: open the Issue, apply <code>ai-ready</code>, read the evidence</td><td>In the middle, operating: annotate diffs, steer agents, “review, edit, and commit without leaving Orca” (official)</td></tr>
+              <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code> label</td><td>Desktop app, mobile companion, and CLI (<code>orca worktree create</code>); no unattended queue documented</td></tr>
+              <tr><th scope="row">Opens the delivery PR</th><td>Yes</td><td>Not verified — browsing PRs in-app is documented; an agent opening the delivery PR is not</td></tr>
+              <tr><th scope="row">Independent review (can edit code and rerun tests)</th><td>Yes — an independent session repairs the code and reruns the suite</td><td>Not verified — the documented review is a human annotating the diff</td></tr>
+              <tr><th scope="row">Auto-merge</th><td>Yes — merges the exact reviewed head</td><td>Not verified — “merge the winner” refers to comparing parallel agent outputs, not a documented PR auto-merge</td></tr>
+              <tr><th scope="row">Tag / Release</th><td>Yes — freezes the SHA, tags, publishes the Release</td><td>Not verified</td></tr>
+              <tr><th scope="row">Form factor</th><td>Self-hosted CLI + systemd on your machine; hosted Cloud pilot</td><td>Desktop (macOS/Windows/Linux), mobile (iOS/Android), remote runtime; CLI</td></tr>
+              <tr><th scope="row">Licence</th><td>fair-code (Sustainable Use License)</td><td>MIT</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Sources: <a href="https://github.com/stablyai/orca/blob/main/README.md" rel="noopener">Orca README</a>; <a href="https://www.onorca.dev" rel="noopener">onorca.dev</a>; <a href="https://docs.orbi.build">Orbi documentation</a> — verified 2026-09-12. “Not verified” = we found no official statement, not a statement of absence.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="density-title">
+      <p class="section-tag">A DIMENSION YOU CAN COUNT</p>
+      <h2 id="density-title">Delivery density, stated with care</h2>
+      <p class="section-lede">Two repositories can both be active and still mean different things by it. These are the counts on verification day — they move daily; the shape is the point. No quality judgment is implied in either direction: the numbers describe different design goals.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Count (GitHub API, 2026-09-12)</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Stars / forks</th><td>95 / 10</td><td>66,832 / 4,391</td></tr>
+            <tr><th scope="row">Open issues + PRs (open issues)</th><td>34 (32)</td><td>5,867 (2,815)</td></tr>
+            <tr><th scope="row">Merged PRs in the 19 days to 2026-09-12</th><td>294 merged since its first commit day (2026-08-24)</td><td>Not measured — its issue tracker serves a 66.8k-person community as a product front door, so raw counts are not comparable</td></tr>
+            <tr><th scope="row">Releases</th><td>18 GitHub Releases in the same 19 days</td><td>Ships near-daily (the README says “we ship daily”)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="thesis-punch">“Busy” and “converged” are different things. A 66.8k-star project's tracker is a community commons; a delivery line's tracker is a work queue. Each number is what its design wants it to be.</p>
+      <p class="src-note">Sources: <a href="https://api.github.com/repos/stablyai/orca" rel="noopener">GitHub API — stablyai/orca</a>; <a href="https://api.github.com/repos/orbi-build/orbi" rel="noopener">GitHub API — orbi-build/orbi</a>; GitHub search API for open-issue counts — measured 2026-09-12.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="licence-title">
+      <div class="shell">
+        <p class="section-tag">STATED PLAINLY, BECAUSE IT MATTERS</p>
+        <h2 id="licence-title">The licence difference is real: Orca is MIT, Orbi is fair-code</h2>
+        <p class="section-lede">If your requirement is an OSI-defined open-source licence, Orca's MIT wins and no comparison copy should blur that. Orbi is fair-code — the Sustainable Use License: you can self-host it, inspect it, and run it on your own infrastructure, but commercial redistribution is restricted so the project can keep being maintained. For a self-hosting audience that is a genuine Orbi disadvantage on paper; we state it here rather than around it. The trade it buys is the one every fair-code project bets on: continued maintenance of the tool your delivery line depends on.</p>
+        <p class="src-note">Sources: <a href="https://github.com/stablyai/orca/blob/main/README.md" rel="noopener">Orca README (MIT badge)</a> and <a href="https://api.github.com/repos/stablyai/orca" rel="noopener">GitHub API licence record</a>; <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md" rel="noopener">Orbi LICENSE.md (Sustainable Use License)</a> — verified 2026-09-12.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="choice-title">
+      <p class="section-tag">AN HONEST READ</p>
+      <h2 id="choice-title">Which one fits the job?</h2>
+      <p class="section-lede">This is not a ranking. The two products answer different questions, and many teams will reasonably want both.</p>
+      <div class="run-options">
+        <article class="run-option run-option-live">
+          <p class="option-state">CHOOSE ORCA IF</p>
+          <h3>You want to run the fleet yourself</h3>
+          <ul>
+            <li>You want Codex, ClaudeCode, OpenCode or Pi side-by-side, each in its own worktree, and you personally steer them</li>
+            <li>You review by annotating diffs and shipping comments back to the agent</li>
+            <li>You want the desktop app, mobile steering, and a CLI to script the workflows</li>
+            <li>An MIT licence is a hard requirement for you</li>
+          </ul>
+          <a class="button button-dark" href="https://github.com/stablyai/orca" rel="noopener">Visit Orca ↗</a>
+        </article>
+        <article class="run-option run-option-cloud">
+          <p class="option-state">CHOOSE ORBI IF</p>
+          <h3>You want the delivery to run unattended</h3>
+          <ul>
+            <li>A GitHub Issue with <code>ai-ready</code> should become a reviewed PR — with an independent session repairing code and rerunning tests</li>
+            <li>You want the exact reviewed head merged and published as a tagged Release, without anyone operating the middle</li>
+            <li>You want BYOK, your own machine, and GitHub as the queue and the evidence ledger</li>
+            <li>You accept a fair-code licence in exchange for a maintained delivery line</li>
+          </ul>
+          <a class="button button-outline" href="https://docs.orbi.build">Self-host Orbi ↗</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
+      <p class="section-tag">PROVENANCE</p>
+      <h2 id="sources-title">Sources and verification dates</h2>
+      <p class="section-lede">This page is a dated snapshot: every factual claim above was checked on 2026-09-12. Star, fork and issue counts move daily; re-read the linked sources before you bet architecture on them.</p>
+      <ul class="source-list">
+        <li>
+          <strong><a href="https://github.com/stablyai/orca/blob/main/README.md" rel="noopener">Orca README</a> — “The AI Orchestrator for 100x builders”, parallel worktrees, diff annotation, CLI, platforms, “we ship daily”, MIT</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>github.com/stablyai/orca</small>
+        </li>
+        <li>
+          <strong><a href="https://api.github.com/repos/stablyai/orca" rel="noopener">GitHub API — stablyai/orca</a> — 66,832 stars, 4,391 forks, created 2026-03-17, MIT, the ADE “About” description</strong>
+          <span class="source-date">measured 2026-09-12</span>
+          <small>api.github.com/repos/stablyai/orca</small>
+        </li>
+        <li>
+          <strong><a href="https://www.onorca.dev" rel="noopener">onorca.dev</a> — Orca's official site: “the agent development environment”, desktop/mobile/remote runtime</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>onorca.dev</small>
+        </li>
+        <li>
+          <strong><a href="https://api.github.com/repos/orbi-build/orbi" rel="noopener">GitHub API — orbi-build/orbi</a> — Orbi-side counts: stars, open issues, 294 merged PRs and 18 Releases in the first 19 days</strong>
+          <span class="source-date">measured 2026-09-12</span>
+          <small>api.github.com/repos/orbi-build/orbi</small>
+        </li>
+        <li>
+          <strong><a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md" rel="noopener">Orbi LICENSE.md</a> — Sustainable Use License (fair-code)</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>github.com/orbi-build/orbi</small>
+        </li>
+        <li>
+          <strong><a href="https://docs.orbi.build">Orbi documentation</a> — the Orbi column: Issue + <code>ai-ready</code>, independent review, exact-head merge, tag + Release</strong>
+          <span class="source-date">verified 2026-09-12</span>
+          <small>docs.orbi.build</small>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">FAIR-CODE CORE</p>
+      <h2 id="closing-title">Two different jobs</h2>
+      <p>Run a fleet of agents with Orca; hand the delivery line to Orbi. If the second is the job — GitHub Issues becoming reviewed PRs and tagged releases while you do something else — Orbi is free to self-host, and the keys stay yours.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="/compare/">All comparisons</a>
+        <a class="text-link" href="/#faq">Questions first? Read the FAQ →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/compare/orca/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
