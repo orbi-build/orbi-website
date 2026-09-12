@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 EN_PATH = ROOT / "public" / "index.html"
 ZH_PATH = ROOT / "public" / "zh" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
+# Issue #102: the shipped files carry the price token; every reader below
+# asserts what the Worker actually serves, so parse() resolves the token to
+# the constant first. This file is the single source of truth for the price.
+PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
 GITHUB = "https://github.com/orbi-build/orbi"
 DOCS_EN = "https://docs.orbi.build"
@@ -105,6 +109,7 @@ class PageParser(HTMLParser):
 
 def parse(path: Path) -> tuple[str, PageParser]:
     html = path.read_text(encoding="utf-8")
+    html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
     page = PageParser()
     page.feed(html)
     return html, page
