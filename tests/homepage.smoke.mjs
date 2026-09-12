@@ -587,6 +587,7 @@ const cloudPages = {
       "not a promise to everyone", "order of magnitude", "totalTokens",
       "a significantly larger weekly usage quota", "~10x Pro usage",
     ],
+    guideHref: "/guides/ci-gates/",
   },
   "/zh/cloud/": {
     zh: "/cloud/",
@@ -611,6 +612,7 @@ const cloudPages = {
       "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
       "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
     ],
+    guideHref: "/zh/guides/ci-gates/",
   },
 };
 
@@ -683,6 +685,11 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await loginButtons.count()) < 1) throw new Error(`${path}: no Cloud CTA on the page`);
   for (let i = 0; i < (await loginButtons.count()); i += 1) {
     if (!(await loginButtons.nth(i).isVisible())) throw new Error(`${path}: Cloud CTA is not visible`);
+  }
+  // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
+  // guide — the explanation of what that requirement actually buys.
+  if ((await page.locator(`main a[href="${claim.guideHref}"]`).count()) !== 1) {
+    throw new Error(`${path}: expected exactly one link to ${claim.guideHref}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
@@ -1004,6 +1011,152 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #128: the CI-gates guide states the engine contract on the page —
+// what the gates read (check-run conclusions, quoted verbatim from
+// runner.py / release.py), what that makes Orbi guarantee (whatever CI
+// runs: pytest in → code logic; Playwright business flows in → the loop
+// closes), and the four boundaries with the fail-open stated prominently —
+// the hero carries it, not just the body. Both complete workflow files
+// must render as text (verbatim copyable), and the cross links to the
+// cost page and the cloud page must exist in the page's own language tree.
+const ciGatesPages = {
+  "/guides/ci-gates/": {
+    zh: "/zh/guides/ci-gates/",
+    title: "what you put in CI is what Orbi guarantees",
+    h1: "What you put in CI is what Orbi guarantees",
+    hero: [
+      "with no check runs at all, both gates pass",
+      "do not know pytest from Playwright",
+    ],
+    text: [
+      // the verbatim engine quotes and their decision rule
+      '("success", "neutral", "skipped")',
+      "no check runs (nothing to gate)",
+      // the ladder
+      "Unit tests only",
+      "+ integration tests",
+      "+ business-flow e2e (Playwright)",
+      "The business loop closes",
+      // the four boundaries
+      "No check runs, nothing to gate — both gates pass",
+      "Neutral and skipped conclusions count as passing",
+      "Coverage proves the tests touch the code — not that the code is right",
+      "pytest-specific",
+      "never read the test log",
+      // both complete workflow files render
+      "name: CI",
+      "runs-on: ubuntu-latest",
+      "actions/setup-python@v5",
+      "npx playwright install --with-deps chromium",
+      "npx playwright test",
+      // provenance
+      "verified 2026-09-12",
+    ],
+    hrefs: [
+      "https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py",
+      "https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py",
+      "https://docs.github.com/en/rest/checks/runs",
+    ],
+    localHrefs: ["/cost/", "/cloud/"],
+  },
+  "/zh/guides/ci-gates/": {
+    zh: "/guides/ci-gates/",
+    title: "CI 里放什么，Orbi 就保证什么",
+    h1: "CI 里放什么，Orbi 就保证什么",
+    hero: [
+      "一个 check run 都没有时，两道门禁都放行",
+      "不认识 pytest，也不认识 Playwright",
+    ],
+    text: [
+      '("success", "neutral", "skipped")',
+      "no check runs (nothing to gate)",
+      "只有单测",
+      "+ 集成测试",
+      "+ 业务流程 e2e（Playwright）",
+      "业务闭环是通的",
+      "一个 check run 都没有，两道门禁都放行",
+      "neutral 和 skipped 同样算通过",
+      "覆盖率证明测试碰过这些代码，不证明代码做对了业务",
+      "pytest 专属",
+      "从不读测试日志",
+      "name: CI",
+      "runs-on: ubuntu-latest",
+      "actions/setup-python@v5",
+      "npx playwright install --with-deps chromium",
+      "npx playwright test",
+      "核实于 2026-09-12",
+    ],
+    hrefs: [
+      "https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py",
+      "https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py",
+      "https://docs.github.com/en/rest/checks/runs",
+    ],
+    localHrefs: ["/zh/cost/", "/zh/cloud/"],
+  },
+};
+
+async function assertCiGatesPage(browser, path, size, screenshot) {
+  const claim = ciGatesPages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  if (!(await page.title()).includes(claim.title)) {
+    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the claim`);
+  }
+  // The fail-open boundary is prominent: carried by the hero itself, not
+  // only the boundaries section further down.
+  const heroText = (await page.locator(".compare-hero").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.hero) {
+    if (!heroText.includes(needle)) {
+      throw new Error(`${path}: the hero is missing the prominent claim ${JSON.stringify(needle)}: ${JSON.stringify(heroText)}`);
+    }
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.text) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
+    }
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`main a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a link to the engine source ${href}`);
+    }
+  }
+  for (const href of claim.localHrefs) {
+    if ((await page.locator(`main a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing the cross link ${href}`);
+    }
+  }
+  // Navigation consistency: the language switch leads to the counterpart page.
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
@@ -1157,14 +1310,19 @@ async function main() {
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
     await assertOrcaPage(browser, "/zh/compare/orca/", { width: 1440, height: 900 }, "compare-orca-zh-desktop.png");
     await assertOrcaPage(browser, "/zh/compare/orca/", { width: 390, height: 844 }, "compare-orca-zh-mobile.png");
+    // Issue #128: the CI-gates guide, both languages, phone and desktop widths.
+    await assertCiGatesPage(browser, "/guides/ci-gates/", { width: 1440, height: 900 }, "ci-gates-en-desktop.png");
+    await assertCiGatesPage(browser, "/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-en-mobile.png");
+    await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 1440, height: 900 }, "ci-gates-zh-desktop.png");
+    await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/"]) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/"]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
