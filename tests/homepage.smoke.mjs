@@ -569,23 +569,30 @@ async function assertCloudPage(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #90: the cost-transparency pages must carry the measured dataset
-// (2026-09-10, n=47), the money math, all three stated limits, and the
-// competitor non-disclosure sources with their verification date — in both
-// languages, with the numbers identical across the two.
+// Issue #90: the cost-transparency pages must carry the measured dataset, the
+// money math, all three stated limits, and the competitor non-disclosure
+// sources with their verification date — in both languages, with the numbers
+// identical across the two.
+// Issue #118: the dataset is a snapshot as of a stated date (the sample moves
+// as worktrees are cleaned up), so the page pins "measured 2026-09-12 · n=46"
+// with the re-derivation recipe in the source note; the smoke reads the n
+// each rendered page actually shows and asserts the two languages agree.
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
     h1: "What one Issue delivery actually costs",
     text: [
-      // measurement date + sample size
-      "2026-09-10", "n=47",
+      // measurement date + sample size (a snapshot, not a permanent fact)
+      "measured 2026-09-12", "n=46",
+      "n is a snapshot as of the stated date, not a permanent fact",
+      // the re-derivation recipe: which files, which grouping, which field
+      ".pi-session/*.jsonl", "usage.totalTokens", "nearest rank",
       // the full measured distribution
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
       // composition
       "95.9%", "3.4%", "0.7%",
       // DeepSeek list prices and the money math
-      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
       // the three limits
       "not a promise to everyone", "order of magnitude", "totalTokens",
       // competitor non-disclosure, verified
@@ -602,10 +609,12 @@ const costPages = {
     zh: "/cost/",
     h1: "跑一个 Issue 到底花多少钱",
     text: [
-      "2026-09-10", "n=47",
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,667,630",
+      "截至 2026-09-12 实测", "n=46",
+      "n 是截至标注日期的快照,不是永久事实",
+      ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
+      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
       "95.9%", "3.4%", "0.7%",
-      "$0.003", "$0.15", "$0.60", "$0.057", "$0.113", "$0.46", "$0.92", "~$5.70", "~$11.30", "$6–11",
+      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
       "不是对所有人的承诺", "一个数量级", "totalTokens",
       "额度未公布", "~10x Pro usage", "核实于 2026-09-11",
     ],
@@ -645,6 +654,10 @@ async function assertCostPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
   }
+  // Issue #118: the sample size each rendered page actually shows — the main
+  // text, not a pinned constant — so the two languages can be compared.
+  const shownN = text.match(/n=(\d+)/);
+  if (!shownN) throw new Error(`${path}: no n=<sample size> annotation in the rendered page`);
   for (const href of claim.hrefs) {
     if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
       throw new Error(`${path}: missing a link to the source ${href}`);
@@ -670,6 +683,7 @@ async function assertCostPage(browser, path, size, screenshot) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
   await page.close();
+  return shownN[1];
 }
 
 // Issue #89: the /compare/ matrix splits Delivery into three rows —
@@ -1009,10 +1023,15 @@ async function main() {
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
     // Issue #90: both cost pages, both languages, phone and desktop widths.
-    await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
+    // Issue #118: the two languages' rendered sample sizes must agree — the
+    // page's whole credibility is that the numbers reconcile.
+    const costEnN = await assertCostPage(browser, "/cost/", { width: 1440, height: 900 }, "cost-en-desktop.png");
     await assertCostPage(browser, "/cost/", { width: 390, height: 844 }, "cost-en-mobile.png");
-    await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
+    const costZhN = await assertCostPage(browser, "/zh/cost/", { width: 1440, height: 900 }, "cost-zh-desktop.png");
     await assertCostPage(browser, "/zh/cost/", { width: 390, height: 844 }, "cost-zh-mobile.png");
+    if (costEnN !== costZhN) {
+      throw new Error(`cost pages disagree on the sample size: /cost/ shows n=${costEnN}, /zh/cost/ shows n=${costZhN}`);
+    }
     // Issue #89: both compare indexes, both languages, phone and desktop widths.
     await assertCompareMatrix(browser, "/compare/", { width: 1440, height: 900 }, "compare-en-desktop.png");
     await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
