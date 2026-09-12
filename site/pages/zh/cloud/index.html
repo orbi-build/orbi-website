@@ -1,0 +1,255 @@
+<!--orbi:page
+{
+  "output": "zh/cloud/index.html",
+  "lang": "zh",
+  "mirror": "cloud/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation-zh",
+    "systemHref": "/zh/#system",
+    "compareHref": "/zh/compare/",
+    "compareLabel": "竞品对比",
+    "compareDataCta": true,
+    "compareCurrent": false,
+    "costHref": "/zh/cost/",
+    "costCurrent": false,
+    "compareCostSameLine": true,
+    "docsHref": "https://docs.orbi.build/zh",
+    "applyHref": "/cloud/login",
+    "applyLabel": "开始 Cloud",
+    "langSwitchHref": "/cloud/",
+    "langCurrentFirst": false
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi Cloud — GitHub Issue 进，打好 Tag 的 Release 出 | Orbi</title>
+  <meta name="description" content="Orbi Cloud 是 Orbi 的托管运行方式：托管 Runner 从你的仓库领取 GitHub Issue，实现、独立审查并修复，只合并审过的那个 Head，最后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。含 20 亿 token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off（Private Beta）。">
+  <link rel="canonical" href="https://orbi.build/zh/cloud/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/cloud/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/cloud/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/cloud/">
+  <meta property="og:title" content="Orbi Cloud — GitHub Issue 进，打好 Tag 的 Release 出">
+  <meta property="og:description" content="托管 Runner 把 GitHub Issue 变成打 Tag 的 GitHub Release——独立审查、exact-head merge、关闭 milestone，含 20 亿 token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off（Private Beta）。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Orbi Cloud — 运行 GitHub Issue 的托管 Runner。">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi Cloud — GitHub Issue 进，打好 Tag 的 Release 出">
+  <meta name="twitter:description" content="托管 Runner 把 GitHub Issue 变成打 Tag 的 GitHub Release。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off（Private Beta）。">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "name": "Orbi Cloud — GitHub Issue 进，打好 Tag 的 Release 出",
+        "url": "https://orbi.build/zh/cloud/",
+        "inLanguage": "zh-CN",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Orbi",
+          "url": "https://orbi.build/"
+        },
+        "about": { "@id": "https://orbi.build/zh/cloud/#offer" }
+      },
+      {
+        "@type": "Offer",
+        "@id": "https://orbi.build/zh/cloud/#offer",
+        "name": "Orbi Cloud — 创始试点",
+        "price": "__CLOUD_MONTHLY_USD__",
+        "priceCurrency": "USD",
+        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 20 亿 token 模型用量，超出部分每 100 万 token $0.10。Founding 券 100% off，限量发放——券发完即正价。",
+        "url": "https://orbi.build/zh/cloud/"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="cloud-title">
+        <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud · Private Beta</p>
+        <h1 id="cloud-title">Orbi Cloud：<br>GitHub Issue 进，打好 Tag 的 Release 出</h1>
+        <p class="hero-lede"><strong>同一条 GitHub 账本上的托管 Runner。</strong>Orbi Cloud 从你的仓库领取 Issue，完成实现，跑独立审查与修复门禁，只合并审过的那个 Head，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。模型用量包含在计划内——每月 20 亿 token；交付产线由我们来运营。</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+          <p class="hero-alt">想自己部署？<a data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="what-title">
+      <p class="section-tag">ORBI CLOUD 是什么</p>
+      <h2 id="what-title">托管 Runner，GitHub 仍是唯一事实源</h2>
+      <p class="section-lede">Orbi Cloud 跑的是与自托管 Orbi 相同的 GitHub 原生产线——Issue 进，Worktree、测试、独立审查与修复、精确合并——只是运行在由我们维护的基础设施上。你的工作流一点不变：Issue、PR 和发布证据都留在你自己的仓库里。</p>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">交付闭环</span>
+          <div>
+            <strong>GitHub Issue 进，打好 Tag 的 Release 出</strong>
+            <p>能改代码、会重跑测试的独立审查，exact-head merge（只合并审过的那个 Head），再到冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">模型</span>
+          <div>
+            <strong>模型用量包含在内，成本摊在明面上</strong>
+            <p>计划内含每月 20 亿 token；超出部分按公开的 $0.10/100 万 token 计费。我们不在你的 token 上赚差价——单次交付的实测成本就写在下面。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">运营</span>
+          <div>
+            <strong>恢复、合并门禁、独立审查</strong>
+            <p>交付产线的运营层，由我们承担。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">发版</span>
+          <div>
+            <strong>发版由你发起，Orbi 来执行</strong>
+            <p>发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打——而且目标仓库要有 GitHub Actions，因为发版的测试验收就是 CI 结果。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="pricing-title">
+      <div class="shell">
+        <p class="section-tag">价格</p>
+        <h2 id="pricing-title">正价 US$__CLOUD_MONTHLY_USD__/月，含 20 亿 token</h2>
+        <p class="section-lede">正价为<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，包含托管 Runner——协调、恢复和合并门禁都在内——并含 <strong>20 亿 token 的模型用量</strong>（按我们实测的均值约 430 次交付），超额价格公开：<strong>每追加 100 万 token $0.10</strong>。</p>
+        <p><strong>Founding 券 100% off，限量发放。</strong>创始成员凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。想先聊聊是否适合？<a href="/apply">申请 / 联系我们</a>。</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="cost-title">
+      <p class="section-tag">成本，实测</p>
+      <h2 id="cost-title">我们不在你的 token 上赚差价</h2>
+      <p class="section-lede">实测于 <strong>2026-09-10</strong>，样本为我们自己仓库的 <strong>n=46 次真实交付</strong>（Python、完整 CI、Issue 写得规范）：单次交付中位 <strong>2,220,637 tokens</strong>，均值 <strong>4,667,630</strong>——按 DeepSeek V4.1 Flash 官方牌价约 <strong>$0.04–0.11 一次</strong>。token 构成：<strong>92.7% cacheRead、3.4% input、0.7% output</strong>。按实测均值，计划内的 20 亿 token 约够 <strong>430 次交付/月</strong>。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">分位</th><th scope="col">单次交付 totalTokens</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">p50（中位）</th><td>2,220,637</td></tr>
+            <tr><th scope="row">均值</th><td>4,667,630</td></tr>
+            <tr><th scope="row">最大观测</th><td>37,627,783</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">来源：orbi-build/orbi 仓库 46 次 Orbi 交付的 implement + review session 日志聚合，2026-09-10。套用的是 DeepSeek 公布的 V4.1 Flash 官方牌价。</p>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">只测了我们自己的仓库</span>
+          <div>
+            <strong>这是我们仓库的实测区间——不是对所有人的承诺</strong>
+            <p>Python、完整 CI、Issue 写得规范，让我们的 context 偏短。context 更长、测试更慢、Issue 更模糊的仓库会落在分布的其他位置。这些数字只说明一件事：我们仓库的实测区间。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">缓存是承重墙</span>
+          <div>
+            <strong>92.7% cacheRead 依赖 provider 支持 prompt caching</strong>
+            <p>整套成本结构建立在缓存命中上。换到不支持 prompt caching 的端点——每个 token 都按 miss 计价——同样的工作成本大约要涨一个数量级。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">按 totalTokens 计</span>
+          <div>
+            <strong>数字是 totalTokens，含 cacheRead</strong>
+            <p>这是 provider 实际计费的口径。只算 input + output 会藏掉大部分真实消耗，把数字做好看——和这一段的目的正好相反。</p>
+          </div>
+        </li>
+      </ul>
+      <p class="section-lede">$200 档的托管 Agent 不公布你的钱买到了什么。以下对照其官方文档核实：</p>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">DEVIN</span>
+          <div>
+            <strong>Pro 是 "a daily and weekly usage quota"；Max 加 "a significantly larger weekly usage quota (with no daily cap)"</strong>
+            <p>Cognition 没有任何地方写明两个计划各含多少 ACU、一个 ACU 值多少钱。</p>
+            <p class="src-note">来源：<a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>——核实于 2026-09-11。</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">FACTORY</span>
+          <div>
+            <strong>"~5x Pro usage" / "~10x Pro usage"——没有任何绝对值</strong>
+            <p>Plus（$100/月）是 "~5x Pro usage"；Max（$200/月）是 "~10x Pro usage"。页面上找不到任何绝对 token 量，也没有 per-token 价格。</p>
+            <p class="src-note">来源：<a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a>——核实于 2026-09-11。</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="steps-title">
+      <p class="section-tag">点击之后</p>
+      <h2 id="steps-title">从登录到交付第一个 Issue，只有三步</h2>
+      <p class="section-lede">不用注册新密码，也不用迁移工作区。整条路径都在 GitHub 上：</p>
+      <ol class="proof-ledger">
+        <li>
+          <span>01</span>
+          <strong>用 GitHub 登录</strong>
+          <p>一次 OAuth 点击。仓库和账号都是你的，不需要单独的 Orbi 凭证。</p>
+        </li>
+        <li>
+          <span>02</span>
+          <strong>安装 Orbi GitHub App</strong>
+          <p>选择允许 Runner 工作的仓库；随时可以在 GitHub 一侧撤销授权。</p>
+        </li>
+        <li>
+          <span>03</span>
+          <strong>订阅并连接仓库</strong>
+          <p>支付订阅（Founding 券限量，100% off），连接第一个仓库，随后我们开通你的 Runner——第一个 Issue 就能开工。</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">创始试点 · PRIVATE BETA</p>
+      <h2 id="start-title">从第一个 Issue 开始</h2>
+      <p>用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
+      <div class="cta-row">
+        <a class="button button-signal" href="/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/zh/">Orbi 本身能做什么 →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
