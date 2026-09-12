@@ -374,6 +374,11 @@ h1 span { color: var(--signal); }
   color: var(--run);
 }
 
+/* Issue #119: the variant used at the end of the How-it-works section,
+   where the fair-code / self-host / BYOK attributes moved from the hero.
+   Same list; only the text color lifts for the light paper background. */
+.trust-line-paper { color: var(--ink-soft); }
+
 .factory-trace {
   position: relative;
   margin: 0;
