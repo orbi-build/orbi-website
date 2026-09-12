@@ -136,7 +136,7 @@
           <span class="event-era">发版</span>
           <div>
             <strong>发版由你发起，Orbi 来执行</strong>
-            <p>发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打——而且目标仓库要有 GitHub Actions，因为发版的测试验收就是 CI 结果——<a href="/zh/guides/ci-gates/">CI 里放什么，决定了 Orbi 替你保证什么</a>。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
+            <p>发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打。发版的测试验收就是你仓库的 CI 结果——release commit 上的 GitHub Actions check run——所以 <a href="/zh/guides/ci-gates/">CI 里放什么，决定了 Orbi 替你保证什么</a>：放单测，它保证代码逻辑；放业务流程的 e2e，它保证业务闭环。不放 CI 也是一种选择：没有任何 check run 时，两道门禁都放行，release 照样能发——只是失去了唯一的测试验收闸门。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
           </div>
         </li>
       </ul>
