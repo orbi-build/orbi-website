@@ -511,17 +511,27 @@ h1 span { color: var(--signal); }
 .stats {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1.45fr repeat(4, 1fr);
-  min-height: 148px;
   border-top: 1px solid var(--line-dark);
   border-bottom: 1px solid var(--line-dark);
 }
 
-/* The label cell was 1.45fr of empty space next to four numbers; the star
-   curve lives there so the record shows acceleration, not just totals. */
+/* The label row: the LIVE heading on the left, the flagship repo's star
+   curve on the right, so the record shows acceleration, not just totals.
+   Star stays a side note (Issue #101): delivery counts carry the argument. */
 .stats-label {
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 22px 30px;
+  border-bottom: 1px solid var(--line-dark);
+  color: #829a96;
+}
+
+.stats-label [data-star-chart] {
+  flex: 0 1 340px;
+  min-width: 180px;
 }
 
 .star-chart {
@@ -573,18 +583,66 @@ h1 span { color: var(--signal); }
   letter-spacing: -0.02em;
 }
 
-.stats-label,
+/* Three repo groups side by side (Issue #101): the bootstrap claim is
+   per-repository, so each column stands on its own numbers. orbi-cloud is
+   private by decision — labelled, never linked into a 404. */
+.stats-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.stat-group {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 30px;
+  border-right: 1px solid var(--line-dark);
+}
+
+.stat-group:last-child { border-right: 0; }
+
+.stat-repo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 10px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.stat-repo a { color: #edf5f0; text-underline-offset: 3px; }
+.stat-repo a:hover { color: var(--run); }
+.stat-repo b { color: #edf5f0; font-weight: 600; }
+.stat-purpose { color: #9aada9; }
+
+.stat-private {
+  padding: 2px 8px;
+  border: 1px solid rgba(92, 214, 181, 0.45);
+  border-radius: 999px;
+  color: var(--run);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.stat-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+}
+
 .stat {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin: 0;
-  padding: 25px 30px;
-  border-right: 1px solid var(--line-dark);
+  padding: 16px 0;
 }
 
-.stats-label { color: #829a96; }
-.stat:last-child { border-right: 0; }
+.stat-grid .stat:nth-child(even) { border-left: 1px solid var(--line-dark); padding-left: 22px; }
+.stat-grid .stat:nth-child(n+3) { border-top: 1px solid var(--line-dark); }
 
 .stat strong {
   font-family: var(--display);
@@ -1302,9 +1360,6 @@ h2 {
   .shell,
   .site-header { width: min(1400px, calc(100% - 48px)); }
 
-  .stats { grid-template-columns: repeat(4, 1fr); }
-  .stats-label { grid-column: 1 / -1; min-height: 64px; border-bottom: 1px solid var(--line-dark); }
-
   .thesis,
   .section-heading,
   .proof-heading,
@@ -1420,10 +1475,12 @@ h2 {
   .trace-node strong { font-size: 1rem; }
   .factory-trace figcaption { grid-template-columns: 1fr; gap: 5px; padding: 15px; }
 
-  .stats { grid-template-columns: 1fr 1fr; }
-  .stats-label { grid-column: 1 / -1; }
-  .stat { min-height: 120px; padding: 20px 16px; border-bottom: 1px solid var(--line-dark); }
-  .stat:nth-child(3) { border-right: 0; }
+  /* Three columns no longer fit a phone: stack one repo group per row and
+     keep the 2x2 stat grid inside each. */
+  .stat-group { padding: 20px 20px; border-right: 0; border-bottom: 1px solid var(--line-dark); }
+  .stat-group:last-child { border-bottom: 0; }
+  .stats-groups { grid-template-columns: 1fr; }
+  .stats-label { padding: 18px 20px; }
 
   .thesis,
   .proof,

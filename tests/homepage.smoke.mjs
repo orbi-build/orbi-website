@@ -342,11 +342,18 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  // Issue #101: /stats answers one group per repository, and the mock leaves
+  // orbi-cloud null on purpose — a repo that fails must degrade only its own
+  // group to the HTML floors while the other two still show live numbers.
   if (!process.env.BASE_URL) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] }),
+      body: JSON.stringify({ repos: {
+        orbi: { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] },
+        "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
+        "orbi-cloud": null,
+      } }),
     }));
   }
   page.on("request", (request) => {
@@ -395,6 +402,26 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
+  // Issue #101: the degraded group must land exactly on its HTML floors
+  // (orbi-cloud is null in the mock) while the live groups land on the
+  // mock's values — one repo's failure must not blur the other two.
+  const degradationReady = () => {
+    const value = (selector) => document.querySelector(selector).textContent.trim();
+    const floor = (selector) => document.querySelector(selector).getAttribute("data-floor");
+    return value('[data-repo="orbi"][data-stat="issues"]') === "1"
+      && value('[data-repo="orbi-website"][data-stat="deploys"]') === "1"
+      && value('[data-repo="orbi"][data-stat="days"]') === String(Math.max(0,
+        Math.floor((Date.now() - Date.parse("2025-01-01T00:00:00Z")) / 86400000)))
+      && value('[data-repo="orbi-cloud"][data-stat="issues"]') === floor('[data-repo="orbi-cloud"][data-stat="issues"]')
+      && value('[data-repo="orbi-cloud"][data-stat="days"]') === floor('[data-repo="orbi-cloud"][data-stat="days"]');
+  };
+  await page.waitForFunction(degradationReady).catch(async () => {
+    // Timeout with no diff is undiagnosable: rethrow with what actually rendered.
+    const dump = await page.evaluate(() => [...document.querySelectorAll("#orbi-stats [data-stat]")]
+      .map((el) => `${el.getAttribute("data-repo")}/${el.getAttribute("data-stat")}=${el.textContent.trim()}(floor ${el.getAttribute("data-floor")})`)
+      .join(" "));
+    throw new Error(`${path}: stats degradation wait timed out: ${dump}`);
+  });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
   // one click into the login handoff, never a second identical button.
@@ -1098,7 +1125,11 @@ async function main() {
       await page.route("**/stats", (route) => route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] }),
+        body: JSON.stringify({ repos: {
+          orbi: { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] },
+          "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
+          "orbi-cloud": null,
+        } }),
       }));
     }
     page.on("console", (message) => { if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) errors.push(`${message.location().url}: ${message.text()}`); });

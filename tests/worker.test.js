@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch } from "../src/worker.js";
+import { afterEach, describe, expect, it } from "vitest";
+import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -156,6 +156,134 @@ describe("Worker request helpers", () => {
 
   it("rejects a missing GitHub token", () => {
     expect(() => githubHeaders()).toThrow("GITHUB_TOKEN is not configured");
+  });
+});
+
+// Issue #101: the LIVE block proves "Orbi builds Orbi" per repository, so
+// /stats must answer one group per repo — never a merged total. The shape
+// below is the frontend contract demo.js renders.
+describe("per-repo GitHub stats (Issue #101)", () => {
+  const realFetch = globalThis.fetch;
+  const realCaches = globalThis.caches;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    globalThis.caches = realCaches;
+  });
+
+  function jsonResponse(data) {
+    return new Response(JSON.stringify(data), { status: 200 });
+  }
+
+  // Route-matched GitHub double: every call the worker makes is served from
+  // the per-repo fixtures, and the calls are recorded so tests can assert
+  // exactly which endpoints a (cache) state touched.
+  function mockGitHub(overrides = {}) {
+    const calls = [];
+    globalThis.fetch = async (url) => {
+      calls.push(String(url));
+      const path = new URL(url).pathname;
+      const query = new URL(url).searchParams.get("q") || "";
+      const fail = (repo) => overrides.fail && overrides.fail.includes(repo);
+      if (path.startsWith("/search/issues")) {
+        const repo = query.includes("orbi-website") ? "orbi-website" : query.includes("orbi-cloud") ? "orbi-cloud" : "orbi";
+        if (fail(repo)) return new Response("rate limited", { status: 403 });
+        return jsonResponse({ total_count: query.includes("is:pr") ? 296 : 372 });
+      }
+      for (const repo of ["orbi-website", "orbi-cloud", "orbi"]) {
+        if (path === `/repos/orbi-build/${repo}`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse({ created_at: "2026-08-24T16:08:33Z", stargazers_count: 95 });
+        }
+        if (path === `/repos/orbi-build/${repo}/releases`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse([{ id: 1 }, { id: 2 }, { id: 3 }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/stargazers`) {
+          return jsonResponse([{ starred_at: "2026-09-01T00:00:00Z" }, { starred_at: "2026-09-02T00:00:00Z" }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-beta.yml/runs`) {
+          return jsonResponse({ total_count: 37 });
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-production.yml/runs`) {
+          return jsonResponse({ total_count: 4 });
+        }
+      }
+      throw new Error("unexpected GitHub call: " + url);
+    };
+    return calls;
+  }
+
+  it("answers with one group per repository, each repo on its own real numbers", async () => {
+    const calls = mockGitHub();
+    const stats = await loadStats("token");
+    expect(Object.keys(stats.repos).sort()).toEqual(["orbi", "orbi-cloud", "orbi-website"]);
+    for (const repo of ["orbi", "orbi-website", "orbi-cloud"]) {
+      expect(stats.repos[repo]).toMatchObject({
+        started: "2026-08-24T16:08:33Z",
+        issues_closed: 372,
+        prs_merged: 296,
+        releases: 3,
+        stars: 95,
+      });
+    }
+    // The bootstrap argument needs the search API's merged-PR counts from all
+    // three repos, so the queries must name each one.
+    const searchQueries = calls
+      .filter((url) => url.includes("/search/issues"))
+      .map((url) => new URL(url).searchParams.get("q"));
+    for (const repo of ["orbi", "orbi-website", "orbi-cloud"]) {
+      expect(searchQueries.some((q) => q.includes(`repo:orbi-build/${repo} is:pr is:merged`))).toBe(true);
+    }
+  });
+
+  it("counts orbi-website's successful deploy workflow runs, its fourth metric in place of releases", async () => {
+    const calls = mockGitHub();
+    const stats = await loadStats("token");
+    expect(stats.repos["orbi-website"].deploys).toBe(41);
+    expect(calls.some((url) => url.includes("deploy-beta.yml/runs") && url.includes("status=success"))).toBe(true);
+    expect(calls.some((url) => url.includes("deploy-production.yml/runs") && url.includes("status=success"))).toBe(true);
+  });
+
+  it("keeps the star-history curve on the flagship repo only", async () => {
+    const calls = mockGitHub();
+    const stats = await loadStats("token");
+    expect(stats.repos.orbi.star_history).toHaveLength(2);
+    expect(stats.repos["orbi-website"].star_history).toEqual([]);
+    expect(stats.repos["orbi-cloud"].star_history).toEqual([]);
+    expect(calls.filter((url) => url.includes("/stargazers")).every((url) => url.includes("/repos/orbi-build/orbi/"))).toBe(true);
+  });
+
+  it("degrades only the failing repo to null; the other two groups stay live", async () => {
+    mockGitHub({ fail: ["orbi-cloud"] });
+    const stats = await loadStats("token");
+    expect(stats.repos["orbi-cloud"]).toBeNull();
+    expect(stats.repos.orbi.issues_closed).toBe(372);
+    expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+  });
+
+  it("serves a cache hit without calling GitHub again", async () => {
+    const calls = mockGitHub();
+    const store = new Map();
+    // Cache.match hands back a fresh Response every time — model that, or a
+    // second read of the same body would fail where the real cache succeeds.
+    globalThis.caches = {
+      default: {
+        match: (key) => {
+          const body = store.get(String(key));
+          return Promise.resolve(body === undefined ? undefined : new Response(body));
+        },
+        put: async (key, response) => {
+          store.set(String(key), await response.text());
+        },
+      },
+    };
+    const request = new Request("https://orbi.build/stats");
+    const first = await statsResponse(request, "token");
+    const callsAfterFirst = calls.length;
+    expect(callsAfterFirst).toBeGreaterThan(0);
+    const second = await statsResponse(request, "token");
+    expect(calls).toHaveLength(callsAfterFirst);
+    expect(await second.json()).toEqual(await first.json());
   });
 });
 
