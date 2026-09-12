@@ -14,7 +14,8 @@ ZH_PATH = ROOT / "public" / "zh" / "index.html"
 WORKER_PATH = ROOT / "src" / "worker.js"
 # Issue #102: the shipped files carry the price token; every reader below
 # asserts what the Worker actually serves, so parse() resolves the token to
-# the constant first. This file is the single source of truth for the price.
+# the constant first. src/pricing.json is the single source of truth for the
+# price.
 PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
 GITHUB = "https://github.com/orbi-build/orbi"

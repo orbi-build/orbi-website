@@ -29,6 +29,14 @@ function literalPrice(value) {
   return new RegExp(`\\$${value}(?![\\d,])|"price":\\s*"${value}"`, "g");
 }
 
+// A "$79" without the US prefix: the cost tables used to write the monthly
+// price that way while every other carrier wrote "US$79" (Issue #102), and
+// the fork made any text-based price check misfire. One prefix site-wide,
+// and it is the one the meta/JSON-LD carriers already use.
+function barePrice(value) {
+  return new RegExp(`(?<!US)\\$${value}(?![\\d,])`, "g");
+}
+
 async function listHtmlFiles(dir = PUBLIC_DIR) {
   const files = await Promise.all(
     (await readdir(dir, { withFileTypes: true })).map(async (entry) => {
@@ -80,6 +88,15 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       // A rewritten body is a new representation: the asset file's validators
       // must not answer conditional requests for it.
       expect(response.headers.get("etag"), relativePath).toBeNull();
+    }
+  });
+
+  it("shows one currency prefix for the monthly price on every served page", async () => {
+    for (const path of await listHtmlFiles()) {
+      const relativePath = path.slice(PUBLIC_DIR.length);
+      const response = await serve(await readFile(path, "utf8"), `/${relativePath}`);
+      const body = await response.text();
+      expect(body.match(barePrice(USD)), relativePath).toBeNull();
     }
   });
 
