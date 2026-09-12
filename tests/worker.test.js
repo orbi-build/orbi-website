@@ -72,9 +72,32 @@ describe("Worker request helpers", () => {
     expect(body).not.toContain('href="/apply"');
   });
 
-  it("fails clearly when Cloud is not configured", async () => {
-    const response = cloudLoginResponse(new Request("https://orbi.build/cloud/login"));
+  // Links already in the wild (cached HTML, bookmarks, shares, search index)
+  // reach this route directly and never pass through the assetResponse CTA
+  // rewrite, so the 503 itself must carry the exits a browser needs.
+  it("answers a browser hit on /cloud/login with a readable 503 page, not bare JSON (Issue #115)", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/cloud/login", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      { ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+    );
     expect(response.status).toBe(503);
+    expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
+    const html = await response.text();
+    expect(html).toContain("Cloud is temporarily unavailable");
+    expect(html).toContain('href="/apply"');
+    expect(html).toContain('href="/"');
+    expect(html).toContain('href="https://docs.orbi.build"');
+  });
+
+  it("keeps the JSON 503 for API clients via content negotiation (Issue #115)", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/cloud/login", { headers: { Accept: "application/json" } }),
+      { ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+    );
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Cloud is temporarily unavailable" });
   });
 
   it("fail-closes the login route with 503 when CLOUD_LOGIN_URL is absent (Issue #77)", async () => {
@@ -83,7 +106,7 @@ describe("Worker request helpers", () => {
       { ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
     );
     expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ error: "Cloud is temporarily unavailable" });
+    expect(response.headers.get("Content-Type")).toContain("text/html");
   });
 
   it("serves pages with the Cloud CTA rewritten to /apply when Cloud is not configured", async () => {
