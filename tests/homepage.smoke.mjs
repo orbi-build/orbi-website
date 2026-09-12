@@ -562,6 +562,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 // segments no competitor covers — and the release boundary is stated
 // honestly: the human opens the release Issue and applies ai-release, CI is
 // what the release is tested against. Never "automatic releases".
+// Issue #129: the GitHub Actions fact is framed as the lever it is — what
+// you put in CI decides what Orbi guarantees — and the boundary survives:
+// with no check runs both gates pass, and the release ships minus its only
+// test-acceptance gate.
 const cloudPages = {
   "/cloud/": {
     zh: "/zh/cloud/",
@@ -580,6 +584,11 @@ const cloudPages = {
       "ai-release",
       "only humans",
       "GitHub Actions",
+      // Issue #129: the lever framing and the no-CI boundary
+      "what you put in CI decides what Orbi guarantees",
+      "business-flow e2e",
+      "no check runs, both gates pass",
+      "test-acceptance gate",
       // Issue #108: the $79 regular price with the 2B-token inclusion
       "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
       // and the measured cost section with its three limits
@@ -605,6 +614,11 @@ const cloudPages = {
       "ai-release",
       "只有人能打",
       "GitHub Actions",
+      // Issue #129: the lever framing and the no-CI boundary
+      "CI 里放什么，决定了 Orbi 替你保证什么",
+      "业务闭环",
+      "两道门禁都放行",
+      "测试验收闸门",
       // Issue #108: the $79 regular price with the 2B-token inclusion
       "US$79", "20 亿 token", "$0.10", "100% off",
       // and the measured cost section with its three limits

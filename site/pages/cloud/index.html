@@ -137,7 +137,7 @@
           <span class="event-era">RELEASES</span>
           <div>
             <strong>You start the release, Orbi runs it</strong>
-            <p>Releases are never automatic. You open the release Issue and apply the ai-release label — a label only humans set — and your repository needs GitHub Actions, because CI is what the release is tested against. Orbi then freezes the SHA, cuts the tag, publishes the GitHub Release, and closes the milestone.</p>
+            <p>Releases are never automatic. You open the release Issue and apply the ai-release label — a label only humans set. The release's test acceptance is your repository's CI result — the GitHub Actions check runs on the release commit — so what you put in CI decides what Orbi guarantees: put unit tests there and it guarantees your code logic; put a business-flow e2e there and it guarantees the loop closes. No CI is a choice too: with no check runs, both gates pass and the release still ships — minus its only test-acceptance gate. Orbi then freezes the SHA, cuts the tag, publishes the GitHub Release, and closes the milestone.</p>
           </div>
         </li>
       </ul>
