@@ -1,0 +1,232 @@
+<!--orbi:page
+{
+  "output": "zh/compare/index.html",
+  "lang": "zh",
+  "mirror": "compare/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation-zh-compare-index",
+    "systemHref": "/zh/#system",
+    "compareHref": "/zh/compare/",
+    "compareLabel": "竞品对比",
+    "compareDataCta": false,
+    "compareCurrent": true,
+    "costHref": "/zh/cost/",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build/zh",
+    "applyHref": "/apply",
+    "applyLabel": "报名",
+    "langSwitchHref": "/compare/",
+    "langCurrentFirst": false
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi 竞品对比：vs 各家托管 / 编程 agent | Orbi</title>
+  <meta name="description" content="Orbi 与 managed agent / coding agent 阵营的逐家事实对比：每个竞品一篇深度分析，全部事实标注来源与核实日期，不写营销话术。">
+  <link rel="canonical" href="https://orbi.build/zh/compare/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/compare/">
+  <meta property="og:title" content="Orbi 竞品对比：vs 各家托管 / 编程 agent">
+  <meta property="og:description" content="逐家事实对比，每条标注来源与核实日期。深度分析：OpenClaw 与 Anthropic 订阅通道调整事件；Devin 与积分计费。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi 竞品对比：vs 各家托管 / 编程 agent">
+  <meta name="twitter:description" content="逐家事实对比，每条标注来源与核实日期。">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Orbi 竞品对比",
+  "inLanguage": "zh-CN",
+  "url": "https://orbi.build/zh/compare/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-index-title">
+        <p class="eyebrow">竞品对比 · 事实核实于 2026-09-07</p>
+        <h1 id="compare-index-title">Orbi，与各家对比</h1>
+        <p class="hero-lede"><strong>自托管交付，诚实对比。</strong>每个竞品一篇深度分析：它是什么（按其官方材料）、与 Orbi 差在哪、各自适合什么活。每条事实都标注来源与核实日期——事实变了就重写页面，不玩话术。</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/zh/compare/openhands/">读 OpenHands 深度对比</a>
+          <a class="button button-ghost" href="/zh/compare/openclaw/">读 OpenClaw 深度对比</a>
+          <a class="hero-proof-link" href="/zh/">Orbi 先做什么 →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="overview-title">
+      <p class="section-tag">一页总览</p>
+      <h2 id="overview-title">终点相同，所有权不同</h2>
+      <p class="section-lede">托管 agent 把交付产线放在 vendor 云上。Orbi 在你的机器上跑同一个 issue → agent → PR 闭环，GitHub 是事实源，模型选择权也在你手里。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">维度</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th><th scope="col">OpenHands</th><th scope="col">Hermes Agent*</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">运行位置</th><td>用户自己的机器</td><td>Anthropic 云</td><td>GitHub 云</td><td>OpenAI 云</td><td>Cognition 云</td><td>本地/Docker/VM/云</td><td>操作者机器/VPS</td></tr>
+            <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code></td><td>API 调用</td><td>Issue + <code>@copilot</code></td><td>ChatGPT、CLI 或 GitHub</td><td>Slack 或网页</td><td>Web UI/CLI/webhook/API</td><td>Gateway/CLI 或 cron</td></tr>
+            <tr><th scope="row">状态存储</th><td>GitHub Issues、labels、分支、PR</td><td>Anthropic Session 日志</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>对话、workspace、事件</td><td>记忆、Session、技能</td></tr>
+            <tr><th scope="row">模型</th><td>BYOK，任意端点</td><td>Claude</td><td>GitHub 提供的模型</td><td>OpenAI</td><td>Cognition 锁定</td><td>BYOK，任意 LLM</td><td>多个 provider</td></tr>
+            <tr><th scope="row">隔离</th><td>Git worktree</td><td>云沙箱</td><td>云沙箱</td><td>云沙箱</td><td>云环境</td><td>Docker/VM/云后端</td><td>本地/容器/SSH 后端</td></tr>
+            <tr><th scope="row">独立评审（能改代码重跑测试）</th><td>是</td><td>未能核实</td><td>否</td><td>未能核实</td><td>是</td><td>是（独立 workflow）</td><td>未能核实</td></tr>
+            <tr><th scope="row">自动 merge</th><td>是</td><td>未见文档支持</td><td>否（官方明示）</td><td>未见文档支持</td><td>是</td><td>未见文档支持</td><td>未见文档支持</td></tr>
+            <tr><th scope="row">打 Tag / 发 Release</th><td>是</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td><td>未能核实</td></tr>
+            <tr><th scope="row">成本</th><td>自备硬件，模型可零成本</td><td>token + $0.08/session-hour</td><td>Copilot 订阅</td><td>ChatGPT 订阅/API</td><td>订阅 + 积分</td><td>自托管；模型费用</td><td>模型/API 费用</td></tr>
+            <tr><th scope="row">开源 / 自托管</th><td>fair-code / 是</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td><td>否 / 否</td><td>MIT / 是</td><td>是 / 是</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="claim-quotes">
+        <p class="claim-quotes-lede">交付三行的 vendor 原话。上表每个「是/否」都指向官方页面；读不到的格子写「未能核实」，不写「否」。没有任何一家的官方文档描述「独立评审 → 自动 merge → 打 Tag 发 Release」的完整链路——「发 Release」一格，只有 Orbi 是「是」。三行核实于 2026-09-10（逐家官方文档）；原句 2026-09-11 在活页复核。</p>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Pull request authors cannot approve their own pull requests. You will also not be able to approve a pull request that was raised by GitHub Copilot if it was you who assigned Copilot to the issue to which the pull request relates.”</p>
+          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub 文档 — Approving a pull request with required reviews</a>；关于 session 上限：“Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.”——<a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · 核实于 2026-09-11。GitHub 在 2026-09-10 审计之后重组了 coding agent 文档（原审计 URL 现已重定向到 cloud-agent 页），两句原句均为当天在活页重新核对。</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.” · “The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.”</p>
+          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · 核实于 2026-09-10，2026-09-11 复核。Claude Code 是 Anthropic 的编程 agent；矩阵中的 Managed Agents 是另一款产品，其官方文档未描述这三步中的任何一步，故标「未能核实」。</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Merge, close, convert to draft, mark ready for review, and toggle auto-merge directly from Devin Review without leaving the page.”</p>
+          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin 文档 — Devin Review</a> · 核实于 2026-09-11。auto-merge 开关真实存在，Devin 的格子如实标「是」。Devin 的 <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub 集成页</a>只描述 @提及（Core/Teams）与 Enterprise 仓库委托；issue 自动触发未能核实——Devin 同样没有文档化的无人值守 Issue→merge→Release 链路。</p>
+        </div>
+      </div>
+      <p class="src-note">*Hermes 是通用助理，其 GitHub skill 不等同于 GitHub 原生软件交付队列。OpenHands 来源：<a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">官方仓库</a> 和 <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">官方文档</a>。来源：<a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent 官方仓库</a>；<a href="https://docs.orbi.build/zh">Orbi 文档</a>；<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>；<a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub 文档</a>；<a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>；<a href="https://devin.ai/" rel="noopener">Devin</a>——均核实于 2026-09-07；交付三行核实于 2026-09-10，2026-09-11 复核。各家的范围与来源见下方深度对比。</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
+      <div class="shell">
+        <p class="section-tag">VENDOR 背刺风险</p>
+        <h2 id="risk-title">便利不该等于交出边界</h2>
+        <p class="section-lede">当零运维是第一优先级时，托管 agent 可以是正确选择。但它也把五个关键决定留给 vendor：定价、模型容量、数据接触、供给和账号访问。</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table compare-table-orbi-last"><thead><tr><th scope="col">风险</th><th scope="col">已发生的案例</th><th scope="col">Orbi 的取舍</th></tr></thead><tbody>
+            <tr><th scope="row">涨价</th><td>Managed Agents 在 token 价格之外增加 $0.08/session-hour。</td><td>硬件和 provider 自选，无 session-hour 费用。</td></tr>
+            <tr><th scope="row">降级</th><td>Anthropic 解释 OpenClaw 事件时说：“Capacity is a resource we manage thoughtfully。”</td><td>在配置里切换 provider 或模型。</td></tr>
+            <tr><th scope="row">审计 / 数据</th><td>云端 agent 执行时，代码、凭证和任务上下文经过 vendor 基础设施。</td><td>代码、密钥和运行证据留在本地。</td></tr>
+            <tr><th scope="row">断供 / 政策</th><td>2026-04-04 Anthropic 调整了 OpenClaw 的订阅通道；用户可能需要改用 API 计费或 Extra Usage。</td><td>BYOK 跨 provider，避免单一供给切断。</td></tr>
+            <tr><th scope="row">账号访问</th><td>托管服务的访问权和 ToS 解释权由 vendor 控制。</td><td>不需要任何 agent vendor 账号。</td></tr>
+          </tbody></table>
+        </div>
+        <p class="thesis-punch">托管 agent 的便利，以 vendor 的单方变更权作抵押。Orbi 把这五项风险留在你手里；代价是维护一台机器，收益是你可以自行改变运行方式，不必等待托管 vendor。</p>
+        <p class="src-note">来源：<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>；<a href="https://x.com/bcherny" rel="noopener">Boris Cherny 公开声明</a>；<a href="/zh/compare/openclaw/">OpenClaw 深度对比</a>；<a href="https://github.com/orbi-build/orbi-website/issues/4">竞品调研 epic</a>——核实于 2026-09-07。这些是所有权取舍，不是对服务质量的判断。</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="dives-title">
+      <p class="section-tag">对比版图</p>
+      <h2 id="dives-title">深度对比</h2>
+      <ul class="dive-list">
+        <li>
+          <a href="/zh/compare/orca/"><strong>Orbi vs Orca</strong><span class="dive-status is-live">已上线</span><p>6.68 万 star 的头部 ADE：一队并行 agent 的工作台——以及这一页要拆掉的「和 Orbi 差不多」误读。</p></a>
+        </li>
+        <li>
+          <a href="/zh/compare/openclaw/">
+            <strong>Orbi vs OpenClaw</strong>
+            <span class="dive-status is-live">已上线</span>
+            <p>开源常驻个人助理 agent——以及 2026 年 4 月那场一夜之间重新定价的 Anthropic 订阅通道调整。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/github-copilot-coding-agent/">
+            <strong>Orbi vs GitHub Copilot coding agent</strong>
+            <span class="dive-status is-live">已上线</span>
+            <p>在 Issue 里 @copilot，云沙箱跑完交回 PR——与 Orbi 任务闭环重合度最高的对手。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/managed-agents/">
+            <strong>Orbi vs Claude Managed Agents（Anthropic）</strong>
+            <span class="dive-status is-live">已上线</span>
+            <p>Anthropic 托管的 Agent API：按 token 价加 $0.08/session-hour 计费。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/openhands/"><strong>Orbi vs OpenHands</strong><span class="dive-status is-live">已上线</span><p>支持 Docker、云端、BYOK 和广泛自动化入口的开源 AI 开发平台。</p></a>
+        </li>
+        <li>
+          <a href="/zh/compare/hermes-agent/">
+            <strong>Orbi vs Hermes Agent</strong>
+            <span class="dive-status is-live">已上线</span>
+            <p>Nous Research 的开源常驻个人助理——有 GitHub 工具，但定位不是软件工程交付 agent。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/codex/">
+            <strong>Orbi vs OpenAI Codex（cloud）</strong>
+            <span class="dive-status">调研 ticket</span>
+            <p>ChatGPT 侧的云端软件工程 agent，每个任务一个独立沙箱。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/devin/">
+            <strong>Orbi vs Devin</strong>
+            <span class="dive-status is-live">已上线</span>
+            <p>Cognition 的托管自主工程师——Slack 派活、云端执行、以及一套已被整体改写过一次的计费结构。</p>
+          </a>
+        </li>
+      </ul>
+      <p class="src-note">每篇已上线深度对比都有自己的官方来源和核实日期。Codex 页面对应已交付的调研 ticket <a href="https://github.com/orbi-build/orbi-website/issues/8">#8</a>；对比集合见<a href="https://github.com/orbi-build/orbi-website/issues/4">竞品对比 epic</a>。</p>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">fair-code 核心</p>
+      <h2 id="closing-title">按运行位置选择</h2>
+      <p>聊天里的助理、vendor 云上的 agent，还是你自己仓库里的交付产线。Orbi 是第三种——自托管、GitHub 原生、永久免费。</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build/zh">安装 Orbi <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/zh/">Orbi 先做什么 →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics：隐私优先，无 cookie，无同意横幅。 -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

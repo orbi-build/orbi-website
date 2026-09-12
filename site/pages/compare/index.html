@@ -1,0 +1,242 @@
+<!--orbi:page
+{
+  "output": "compare/index.html",
+  "lang": "en",
+  "mirror": "zh/compare/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": true,
+    "costHref": "/cost/",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "applyHref": "/apply",
+    "applyLabel": "Apply",
+    "langSwitchHref": "/zh/compare/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi compared — vs managed and coding agents | Orbi</title>
+  <meta name="description" content="Fact-checked comparisons of Orbi against the managed-agent and coding-agent landscape. Every claim carries a source and a verification date; no marketing gloss.">
+  <link rel="canonical" href="https://orbi.build/compare/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/compare/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/compare/">
+  <meta property="og:title" content="Orbi compared — vs managed and coding agents">
+  <meta property="og:description" content="Fact-checked comparisons with sources and verification dates. Deep dives: OpenClaw and the Anthropic policy change; Devin and the credit meter.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="Orbi compared — vs managed and coding agents">
+  <meta name="twitter:description" content="Fact-checked comparisons with sources and verification dates.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Orbi comparison",
+  "inLanguage": "en",
+  "url": "https://orbi.build/compare/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Orbi",
+    "url": "https://orbi.build/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Orbi",
+    "applicationCategory": "DeveloperApplication",
+    "url": "https://orbi.build/"
+  }
+}
+</script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="compare-index-title">
+        <p class="eyebrow">Comparison · facts verified 2026-09-07</p>
+        <h1 id="compare-index-title">Orbi, compared</h1>
+        <p class="hero-lede"><strong>Self-hosted delivery, honestly benchmarked.</strong> One deep dive per competitor: what it is from its own materials, where it differs from Orbi, and which job each one is right for. Every factual claim carries a source and a verification date — when the facts change, these pages get rewritten, not spun.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/compare/openhands/">Read the OpenHands deep dive</a>
+          <a class="button button-ghost" href="/compare/openclaw/">Read the OpenClaw deep dive</a>
+          <a class="hero-proof-link" href="https://orbi.build">What Orbi does first →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="overview-title">
+      <p class="section-tag">THE ONE-PAGE VIEW</p>
+      <h2 id="overview-title">Same destination, different ownership</h2>
+      <p class="section-lede">Managed agents put the delivery line in a vendor cloud. Orbi runs the same issue → agent → PR loop on your machine, with GitHub as the source of truth and your model choice intact.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot coding agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th><th scope="col">OpenHands</th><th scope="col">Hermes Agent*</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Runs where</th><td>Your machine</td><td>Anthropic cloud</td><td>GitHub cloud</td><td>OpenAI cloud</td><td>Cognition cloud</td><td>Local/Docker/VM/cloud</td><td>Operator machine/VPS</td></tr>
+            <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code></td><td>API call</td><td>Issue + <code>@copilot</code></td><td>ChatGPT, CLI, or GitHub</td><td>Slack or web</td><td>Web UI/CLI/webhook/API</td><td>Gateway/CLI or cron</td></tr>
+            <tr><th scope="row">State</th><td>GitHub Issues, labels, branches, PRs</td><td>Anthropic Session log</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>Conversations, workspaces, events</td><td>Memory, sessions, skills</td></tr>
+            <tr><th scope="row">Models</th><td>BYOK, any endpoint</td><td>Claude</td><td>GitHub’s available models</td><td>OpenAI</td><td>Cognition</td><td>BYOK, any LLM</td><td>Multiple providers</td></tr>
+            <tr><th scope="row">Isolation</th><td>Git worktree</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud sandbox</td><td>Cloud environment</td><td>Docker/VM/cloud backends</td><td>Local/container/SSH backends</td></tr>
+            <tr><th scope="row">Independent review (can edit code and rerun tests)</th><td>Yes</td><td>Not verified</td><td>No</td><td>Not verified</td><td>Yes</td><td>Yes (standalone workflow)</td><td>Not verified</td></tr>
+            <tr><th scope="row">Auto-merge</th><td>Yes</td><td>Not documented</td><td>No (stated in official docs)</td><td>Not documented</td><td>Yes</td><td>Not documented</td><td>Not documented</td></tr>
+            <tr><th scope="row">Tag / Release</th><td>Yes</td><td>Not verified</td><td>Not verified</td><td>Not verified</td><td>Not verified</td><td>Not verified</td><td>Not verified</td></tr>
+            <tr><th scope="row">Cost</th><td>Hardware; model can be free</td><td>Tokens + $0.08/session-hour</td><td>Copilot subscription</td><td>ChatGPT subscription/API</td><td>Subscription + credits</td><td>Self-hosted; model costs</td><td>Model/API costs</td></tr>
+            <tr><th scope="row">Open / self-hosted</th><td>Fair-code / Yes</td><td>No / No</td><td>No / No</td><td>No / No</td><td>No / No</td><td>MIT / Yes</td><td>Yes / Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="claim-quotes">
+        <p class="claim-quotes-lede">The three delivery rows, in the vendors’ own words. Every Yes/No above points at an official page; a cell we could not verify reads “Not verified”, never “No”. No competitor’s official documentation describes the full chain — independent review, auto-merge, and a tagged Release; the Tag / Release cell is Orbi’s alone. Rows audited 2026-09-10 across the vendors’ official docs; quotes re-read on the live pages 2026-09-11.</p>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Pull request authors cannot approve their own pull requests. You will also not be able to approve a pull request that was raised by GitHub Copilot if it was you who assigned Copilot to the issue to which the pull request relates.”</p>
+          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub Docs — Approving a pull request with required reviews</a>; and, on the session cap: “Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.” — <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · verified 2026-09-11. GitHub reorganized its coding-agent docs after the 2026-09-10 audit (the audited URL now redirects to the cloud-agent page), so both quotes were re-read on the live pages that day.</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.” · “The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.”</p>
+          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · verified 2026-09-10, re-verified 2026-09-11. Claude Code is Anthropic’s coding agent; the matrix’s Managed Agents column tracks a different product whose documentation covers none of the three steps, so its cells read “Not verified”.</p>
+        </div>
+        <div class="claim-quote">
+          <p class="claim-quote-text">“Merge, close, convert to draft, mark ready for review, and toggle auto-merge directly from Devin Review without leaving the page.”</p>
+          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin Docs — Devin Review</a> · verified 2026-09-11. The auto-merge toggle is real, so Devin’s cell honestly reads “Yes”. Devin’s <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub integration page</a> documents @mentions (Core/Teams) and Enterprise repository delegation only; automatic Issue triggering is not verified — Devin also does not document an unattended Issue→merge→Release chain.</p>
+        </div>
+      </div>
+      <p class="src-note">*Hermes is a general assistant; its GitHub skill is not equivalent to a GitHub-native software delivery queue. OpenHands sources: <a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">official repository</a> and <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">official docs</a>. Sources: <a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent official repository</a>; <a href="https://docs.orbi.build">Orbi documentation</a>; <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>; <a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub Docs</a>; <a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>; <a href="https://devin.ai/" rel="noopener">Devin</a> — all verified 2026-09-07; the delivery rows verified 2026-09-10, re-verified 2026-09-11. See each linked deep dive below for scope and sources.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="risk-title">
+      <div class="shell">
+        <p class="section-tag">THE OWNERSHIP BOUNDARY</p>
+        <h2 id="risk-title">Convenience should not mean surrendering the boundary</h2>
+        <p class="section-lede">Hosted agents can be the right choice when minimal operations is the priority. They also leave five consequential decisions with a vendor: pricing, model capacity, data handling, supply, and account access.</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table compare-table-orbi-last"><thead><tr><th scope="col">Risk</th><th scope="col">Observed case</th><th scope="col">Orbi’s trade-off</th></tr></thead><tbody>
+            <tr><th scope="row">Pricing</th><td>Managed Agents adds $0.08/session-hour to token pricing.</td><td>Choose hardware and provider; no session-hour fee.</td></tr>
+            <tr><th scope="row">Degradation</th><td>Anthropic’s OpenClaw explanation said: “Capacity is a resource we manage thoughtfully.”</td><td>Switch provider or model in configuration.</td></tr>
+            <tr><th scope="row">Audit / data</th><td>Cloud agents execute with code, credentials, and task context in vendor infrastructure.</td><td>Keep code, keys, and run evidence local.</td></tr>
+            <tr><th scope="row">Supply / policy</th><td>On 2026-04-04 Anthropic changed the OpenClaw subscription route; users may need API billing or Extra Usage.</td><td>BYOK across providers avoids one supply cut.</td></tr>
+            <tr><th scope="row">Account access</th><td>Hosted service access and ToS interpretation remain vendor-controlled.</td><td>No agent-vendor account is required.</td></tr>
+          </tbody></table>
+        </div>
+        <p class="thesis-punch">Hosted-agent convenience is collateralized by vendor change power. Orbi leaves that five-part risk with you; the price is operating a machine, and the benefit is that you can change your own runtime without waiting for a hosted vendor.</p>
+        <p class="src-note">Sources: <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>; <a href="https://x.com/bcherny" rel="noopener">Boris Cherny’s public statements</a>; <a href="/compare/openclaw/">OpenClaw deep dive</a>; <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison research epic</a> — verified 2026-09-07. These are ownership trade-offs, not claims about service quality.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="dives-title">
+      <p class="section-tag">THE LANDSCAPE</p>
+      <h2 id="dives-title">Deep dives</h2>
+      <ul class="dive-list">
+        <li>
+          <a href="/compare/orca/">
+            <strong>Orbi vs Orca</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>The category's 66.8k-star ADE for running a fleet of parallel agents — and why "similar to Orca" is the misreading this page dismantles.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/openclaw/">
+            <strong>Orbi vs OpenClaw</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>The open-source always-on personal agent — and the April 2026 Anthropic subscription policy change that affected its subscription route.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/github-copilot-coding-agent/">
+            <strong>Orbi vs GitHub Copilot coding agent</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Assign an Issue to @copilot and a cloud sandbox returns a PR — the closest overlap with Orbi's task loop.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/managed-agents/">
+            <strong>Orbi vs Claude Managed Agents (Anthropic)</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Anthropic-hosted Agent API at token rates plus $0.08/session-hour.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/openhands/">
+            <strong>Orbi vs OpenHands</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Open-source AI development platform with Docker, cloud, BYOK, and broad automation surfaces.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/hermes-agent/">
+            <strong>Orbi vs Hermes Agent</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Nous Research's open-source always-on personal assistant — with GitHub tools, but not positioned as a software delivery agent.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/codex/">
+            <strong>Orbi vs OpenAI Codex (cloud)</strong>
+            <span class="dive-status">Research ticket</span>
+            <p>Cloud software-engineering agent from the ChatGPT side, one sandbox per task.</p>
+          </a>
+        </li>
+        <li>
+          <a href="/compare/devin/">
+            <strong>Orbi vs Devin</strong>
+            <span class="dive-status is-live">Live</span>
+            <p>Cognition's managed autonomous engineer — Slack-driven tasks, cloud execution, and a billing structure that has already been rewritten once.</p>
+          </a>
+        </li>
+      </ul>
+      <p class="src-note">Every live deep dive includes its own official sources and verification date. The Codex page is the delivered research ticket <a href="https://github.com/orbi-build/orbi-website/issues/8">#8</a>; the comparison set is tracked in the <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison epic</a>.</p>
+    </section>
+
+    <section class="closing shell" aria-labelledby="closing-title">
+      <p class="section-tag">FAIR-CODE CORE</p>
+      <h2 id="closing-title">Choose by where it runs</h2>
+      <p>An assistant in your chats, an agent in a vendor's cloud, or a delivery line in your own repository. Orbi is the third one — self-hosted, GitHub-native, free forever.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/">What Orbi does first →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

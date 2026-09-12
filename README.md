@@ -11,6 +11,14 @@ set -a; source ~/.cloudflare.env; set +a
 npx wrangler dev
 ```
 
+## 页面（Issue #106）
+
+25 个 HTML 一律由构建产生，**不要手改 `public/*.html`**：改 `site/partials/`（共享的
+nav / footer 片段，全站一处生效）或 `site/pages/`（单页源：JSON 头里的 lang、mirror、
+nav 参数 + 页面正文），然后 `npm run build` 重新生成 `public/`。
+`tests/pages.test.js` 是门禁：构建产物与 `public/` 逐字节比对，中英镜像的
+nav/footer 项数、CTA 数量、语言切换目标、锚点前缀不一致会直接红。
+
 ## 部署
 
 生产（production）环境使用顶层 Wrangler 配置，域名为 `orbi.build` / `www.orbi.build`：
