@@ -335,6 +335,49 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   }
 }
 
+// Issue #101: /stats answers one group per repository, and this fixture
+// leaves orbi-cloud null on purpose — a repo that fails must degrade only its
+// own group to the HTML floors while the other two still show live numbers.
+// Locally the static server has no /stats at all, so without the fixture the
+// page could only ever render the all-floors fallback.
+export const localStatsFixture = {
+  repos: {
+    orbi: { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] },
+    "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
+    "orbi-cloud": null,
+  },
+};
+
+// Issue #126: the stats wait holds the render against the exact payload the
+// page received — the Worker's real /stats response where BASE_URL is set,
+// the local fixture everywhere else — never against the fixture's specific
+// numbers, so the same assertion stands in both environments. It mirrors
+// demo.js's contract: a repo's days come from its started date, each count
+// from its mapped field, and a repo that is null (or missing the field for a
+// stat) degrades exactly its own element to the HTML data-floor; a /stats
+// that never delivered a payload degrades every group. One repo's failure
+// must never blur the values another group was served (Issue #101).
+export function statsMatchServedStats(served, root = document) {
+  const statFields = { issues: "issues_closed", prs: "prs_merged", releases: "releases", deploys: "deploys" };
+  const repos = (served && served.repos) || {};
+  return Array.from(root.querySelectorAll("[data-repo-group]")).every((group) => {
+    const repo = repos[group.getAttribute("data-repo-group")];
+    return Array.from(group.querySelectorAll("[data-stat]")).every((element) => {
+      let value;
+      if (repo) {
+        const field = element.getAttribute("data-stat");
+        if (field === "days") {
+          value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
+        } else {
+          value = repo[statFields[field]];
+        }
+      }
+      if (!Number.isFinite(value)) value = element.getAttribute("data-floor");
+      return element.textContent.trim() === String(value);
+    });
+  });
+}
+
 async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
@@ -342,13 +385,40 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
-  if (!process.env.BASE_URL) {
-    await page.route("**/stats", (route) => route.fulfill({
+  // Issue #101: /stats answers one group per repository, and the local
+  // fixture leaves orbi-cloud null on purpose — a repo that fails must
+  // degrade only its own group to the HTML floors while the other two still
+  // show live numbers. Issue #126: where BASE_URL is set the route passes the
+  // real Worker response through and records it; without BASE_URL the static
+  // server has no /stats, so the same handler fulfills the request with the
+  // fixture. Either way servedStats carries the exact payload the page
+  // received, and the wait below asserts the render against that payload —
+  // the pre-check above can only pass once a payload was rendered, so the
+  // recorded payload can never miss the window.
+  let servedStats = null;
+  await page.route("**/stats", async (route) => {
+    if (process.env.BASE_URL) {
+      const response = await route.fetch();
+      const body = await response.text();
+      try {
+        servedStats = JSON.parse(body);
+      } catch {
+        servedStats = null;
+      }
+      await route.fulfill({
+        status: response.status(),
+        contentType: response.headers()["content-type"] || "application/json",
+        body,
+      });
+      return;
+    }
+    servedStats = localStatsFixture;
+    await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2, star_history: [{ stars: 1 }, { stars: 2 }] }),
-    }));
-  }
+      body: JSON.stringify(localStatsFixture),
+    });
+  });
   page.on("request", (request) => {
     if (new URL(request.url()).pathname === "/stats") statsRequested = true;
   });
@@ -395,6 +465,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
     .every((element) => element.textContent.trim() && element.textContent.trim() !== "0"));
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
+  // Issue #101: one repo's failure must not blur the other two. Issue #126:
+  // the wait asserts that contract against whatever payload the page actually
+  // received (the real Worker response on beta, the fixture locally), so the
+  // same wait stands in both environments.
+  await page.waitForFunction(statsMatchServedStats, servedStats).catch(async () => {
+    // Timeout with no diff is undiagnosable: rethrow with what actually rendered.
+    const dump = await page.evaluate(() => [...document.querySelectorAll("#orbi-stats [data-stat]")]
+      .map((el) => `${el.getAttribute("data-repo")}/${el.getAttribute("data-stat")}=${el.textContent.trim()}(floor ${el.getAttribute("data-floor")})`)
+      .join(" "));
+    throw new Error(`${path}: stats render did not match the served /stats payload: ${dump}`);
+  });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
   // one click into the login handoff, never a second identical button.
@@ -1098,7 +1179,11 @@ async function main() {
       await page.route("**/stats", (route) => route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] }),
+        body: JSON.stringify({ repos: {
+          orbi: { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 1, star_history: [] },
+          "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
+          "orbi-cloud": null,
+        } }),
       }));
     }
     page.on("console", (message) => { if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) errors.push(`${message.location().url}: ${message.text()}`); });

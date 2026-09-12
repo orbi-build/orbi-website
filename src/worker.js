@@ -118,16 +118,33 @@ async function loadStarHistory(repo, token) {
   });
 }
 
-async function loadStats(token) {
-  const repo = "orbi-build/orbi";
+// The LIVE block argues "Orbi builds Orbi" per repository: each group must
+// stand on its own real numbers, and a merged total would blur exactly that
+// (Issue #101). A repo that fails to load answers null so one outage degrades
+// only its own group to the HTML floor values instead of blanking the block.
+const STAT_REPOS = ["orbi", "orbi-website", "orbi-cloud"];
+
+// Successful runs of the two deploy workflows are orbi-website's fourth
+// delivery metric: the site ships by deploying, not by tagging (no releases).
+// The filename is a valid workflow_id; status=success keeps failed runs out.
+async function deployRunCount(repo, workflow, token) {
+  const runs = await ghJson(
+    `/repos/${repo}/actions/workflows/${workflow}/runs?per_page=1&status=success`,
+    token,
+  );
+  return runs.total_count || 0;
+}
+
+async function loadRepoStats(name, token) {
+  const repo = `orbi-build/${name}`;
   const [meta, closed, merged, releases, stars] = await Promise.all([
     ghJson(`/repos/${repo}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`, token),
     ghJson(`/repos/${repo}/releases?per_page=100`, token),
-    loadStarHistory(repo, token).catch(() => []),
+    name === "orbi" ? loadStarHistory(repo, token).catch(() => []) : Promise.resolve([]),
   ]);
-  return {
+  const stats = {
     started: meta.created_at,
     issues_closed: closed.total_count,
     prs_merged: merged.total_count,
@@ -135,6 +152,20 @@ async function loadStats(token) {
     stars: meta.stargazers_count,
     star_history: stars,
   };
+  if (name === "orbi-website") {
+    stats.deploys = (await Promise.all([
+      deployRunCount(repo, "deploy-beta.yml", token),
+      deployRunCount(repo, "deploy-production.yml", token),
+    ])).reduce((sum, count) => sum + count, 0);
+  }
+  return stats;
+}
+
+async function loadStats(token) {
+  const groups = await Promise.all(
+    STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)),
+  );
+  return { repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])) };
 }
 
 async function statsResponse(request, token) {
@@ -402,7 +433,7 @@ async function handleFetch(request, env) {
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch };
+export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to

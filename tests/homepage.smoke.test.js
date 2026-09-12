@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { assertCloudLoginRedirect, expectedCtaLanding, resolveCloudLoginExpect } from "./homepage.smoke.mjs";
+import {
+  assertCloudLoginRedirect,
+  expectedCtaLanding,
+  localStatsFixture,
+  resolveCloudLoginExpect,
+  statsMatchServedStats,
+} from "./homepage.smoke.mjs";
 
 const port = 4173;
 const processes = [];
@@ -221,6 +227,106 @@ describe("Cloud CTA landing contract (Issue #107)", () => {
     expect(expectedCtaLanding("fail-closed-404").statusOk(404)).toBe(true);
     expect(expectedCtaLanding("fail-closed-404").statusOk(200)).toBe(false);
     expect(expectedCtaLanding("fail-closed-404").statusOk(503)).toBe(false);
+  });
+});
+
+// Issue #126: the smoke's stats wait must hold against whatever /stats the
+// page actually receives — the Worker's real response on beta, the local
+// fixture (orbi-cloud null) locally — never against the fixture's specific
+// numbers. The predicate mirrors demo.js's render contract: a repo's days
+// come from its started date, each count from its mapped field, and a repo
+// that is null (or missing the field for a stat) degrades exactly its own
+// element to the HTML floor. These tests drive it through a minimal fake of
+// the queried DOM instead of a real browser.
+describe("stats render matches the served /stats payload (Issue #126)", () => {
+  const daysSince = (iso) => String(Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 86400000)));
+
+  const stat = (name, floor, text) => ({
+    getAttribute: (attr) => (attr === "data-stat" ? name : attr === "data-floor" ? floor : null),
+    textContent: text,
+  });
+  const group = (name, stats) => ({
+    getAttribute: (attr) => (attr === "data-repo-group" ? name : null),
+    querySelectorAll: () => stats,
+  });
+  const rootOf = (groups) => ({ querySelectorAll: () => groups });
+
+  // The three groups' HTML floors (site/pages/index.html).
+  const orbiGroup = (days, issues, prs, releases) =>
+    group("orbi", [stat("days", "12", days), stat("issues", "150", issues), stat("prs", "150", prs), stat("releases", "8", releases)]);
+  const websiteGroup = (days, issues, prs, deploys) =>
+    group("orbi-website", [stat("days", "7", days), stat("issues", "30", issues), stat("prs", "28", prs), stat("deploys", "20", deploys)]);
+  const cloudGroup = (days, issues, prs, releases) =>
+    group("orbi-cloud", [stat("days", "7", days), stat("issues", "60", issues), stat("prs", "60", prs), stat("releases", "2", releases)]);
+
+  it("accepts the real beta payload whose render timed out the failing run (regression)", () => {
+    // The shape run 34673771698 rendered before the fix (orbi/issues=376,
+    // orbi-website/deploys=43, orbi-cloud/issues=122 …): the old assertion
+    // pinned the fixture's 1s and could never accept this.
+    const served = { repos: {
+      orbi: { started: "2026-08-25T00:00:00Z", issues_closed: 376, prs_merged: 298, releases: 19, stars: 623, star_history: [{ stars: 1 }, { stars: 623 }] },
+      "orbi-website": { started: "2026-09-01T00:00:00Z", issues_closed: 62, prs_merged: 59, releases: 6, stars: 0, star_history: [], deploys: 43 },
+      "orbi-cloud": { started: "2026-09-01T00:00:00Z", issues_closed: 122, prs_merged: 125, releases: 3, stars: 0, star_history: [], deploys: 5 },
+    } };
+    const rendered = [
+      orbiGroup(daysSince("2026-08-25T00:00:00Z"), "376", "298", "19"),
+      websiteGroup(daysSince("2026-09-01T00:00:00Z"), "62", "59", "43"),
+      cloudGroup(daysSince("2026-09-01T00:00:00Z"), "122", "125", "3"),
+    ];
+    expect(statsMatchServedStats(served, rootOf(rendered))).toBe(true);
+  });
+
+  it("accepts the local fixture: null orbi-cloud degrades exactly its floors while the live groups show the served values (Issue #101)", () => {
+    const days = daysSince(localStatsFixture.repos.orbi.started);
+    const rendered = [
+      orbiGroup(days, "1", "1", "1"),
+      websiteGroup(days, "1", "1", "1"),
+      cloudGroup("7", "60", "60", "2"),
+    ];
+    expect(statsMatchServedStats(localStatsFixture, rootOf(rendered))).toBe(true);
+  });
+
+  it("rejects blur in both directions: floors leaking into a served group, live values into the degraded group", () => {
+    const served = { repos: {
+      orbi: { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 1, stars: 2 },
+      "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, deploys: 1 },
+      "orbi-cloud": null,
+    } };
+    const days = daysSince("2025-01-01T00:00:00Z");
+    const cloudShowsLive = [
+      orbiGroup(days, "1", "1", "1"),
+      websiteGroup(days, "1", "1", "1"),
+      cloudGroup(days, "122", "60", "2"),
+    ];
+    expect(statsMatchServedStats(served, rootOf(cloudShowsLive))).toBe(false);
+    const orbiShowsFloors = [
+      orbiGroup("12", "150", "150", "8"),
+      websiteGroup(days, "1", "1", "1"),
+      cloudGroup("7", "60", "60", "2"),
+    ];
+    expect(statsMatchServedStats(served, rootOf(orbiShowsFloors))).toBe(false);
+  });
+
+  it("degrades exactly the elements whose served field is missing and holds the rest on the served values", () => {
+    const served = { repos: {
+      orbi: { started: "2026-08-25T00:00:00Z", issues_closed: 376, prs_merged: 298 },
+      "orbi-website": { started: "2026-09-01T00:00:00Z", issues_closed: 62, prs_merged: 59, deploys: 43 },
+      "orbi-cloud": { started: "2026-09-01T00:00:00Z", issues_closed: 122, prs_merged: 125, releases: 3 },
+    } };
+    const rendered = [
+      orbiGroup(daysSince("2026-08-25T00:00:00Z"), "376", "298", "8"),
+      websiteGroup(daysSince("2026-09-01T00:00:00Z"), "62", "59", "43"),
+      cloudGroup(daysSince("2026-09-01T00:00:00Z"), "122", "125", "3"),
+    ];
+    expect(statsMatchServedStats(served, rootOf(rendered))).toBe(true);
+  });
+
+  it("degrades every group to its floors when no payload reached the page (failed or unparseable /stats)", () => {
+    const floors = [orbiGroup("12", "150", "150", "8"), websiteGroup("7", "30", "28", "20"), cloudGroup("7", "60", "60", "2")];
+    expect(statsMatchServedStats(null, rootOf(floors))).toBe(true);
+    expect(statsMatchServedStats(undefined, rootOf(floors))).toBe(true);
+    const live = [orbiGroup("18", "376", "298", "19"), websiteGroup("7", "30", "28", "20"), cloudGroup("7", "60", "60", "2")];
+    expect(statsMatchServedStats(null, rootOf(live))).toBe(false);
   });
 });
 

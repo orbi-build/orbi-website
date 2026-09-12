@@ -204,9 +204,57 @@
     box.hidden = false;
   }
 
+  /* The /stats response answers one group per repository (Issue #101), so
+     each group fills from its own repo object and degrades on its own: a
+     repo that came back null (GitHub failed for that one repo) shows its
+     conservative floor values while the other groups still show live
+     numbers. Only a failed /stats call itself raises the error note. */
   function bootStats(root) {
     const lang = root.getAttribute("data-lang") === "zh" ? "zh" : "en";
+    // Staggered durations keep the four counters settling at different
+    // moments, as before; deploys inherits releases' slot.
+    const statFields = {
+      issues: ["issues_closed", 2600],
+      prs: ["prs_merged", 2400],
+      releases: ["releases", 1800],
+      deploys: ["deploys", 1800],
+    };
     let startedCounting = false;
+
+    function fallBackToFloors(scope) {
+      scope.querySelectorAll("[data-stat]").forEach(function (element) {
+        const floor = element.getAttribute("data-floor");
+        if (floor) {
+          countUp(element, floor, 2000);
+        }
+      });
+    }
+
+    function fillGroup(group, repo) {
+      group.querySelectorAll("[data-stat]").forEach(function (element) {
+        const stat = element.getAttribute("data-stat");
+        let value;
+        let duration = 2000;
+        if (repo) {
+          if (stat === "days") {
+            value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
+          } else {
+            const [field, statDuration] = statFields[stat];
+            value = repo[field];
+            duration = statDuration;
+          }
+        }
+        if (Number.isFinite(value)) {
+          countUp(element, value, duration);
+        } else {
+          fallBackToFloors(element.parentElement);
+        }
+      });
+      const started = group.querySelector("[data-started]");
+      if (started) {
+        started.textContent = repo && repo.started ? formatStarted(repo.started, lang) : "";
+      }
+    }
 
     function startStats() {
       if (startedCounting) {
@@ -221,31 +269,22 @@
           return response.json();
         })
         .then(function (stats) {
-          const days = Math.max(0, Math.floor((Date.now() - Date.parse(stats.started)) / 86400000));
-          const started = root.querySelector("[data-started]");
-          if (started) {
-            started.textContent = formatStarted(stats.started, lang);
-          }
-          countUp(root.querySelector('[data-stat="days"]'), days, 2000);
-          countUp(root.querySelector('[data-stat="issues"]'), stats.issues_closed, 2600);
-          countUp(root.querySelector('[data-stat="prs"]'), stats.prs_merged, 2400);
-          countUp(root.querySelector('[data-stat="releases"]'), stats.releases, 1800);
-          drawStarChart(root, stats);
+          const repos = (stats && stats.repos) || {};
+          root.querySelectorAll("[data-repo-group]").forEach(function (group) {
+            fillGroup(group, repos[group.getAttribute("data-repo-group")]);
+          });
+          drawStarChart(root, repos.orbi);
         })
         .catch(function () {
           const error = root.querySelector("[data-stats-error]");
           if (error) {
             error.hidden = false;
           }
-          // The counters are the page's only social proof. Four em-dashes read
-          // as a broken page, so fall back to the conservative floor values in
-          // the HTML, which under-state the real record and need no network.
-          root.querySelectorAll("[data-stat]").forEach(function (element) {
-            const floor = element.getAttribute("data-floor");
-            if (floor) {
-              countUp(element, floor, 2000);
-            }
-          });
+          // The counters are the page's only social proof. Twelve em-dashes
+          // read as a broken page, so fall back to the conservative floor
+          // values in the HTML, which under-state the real record and need
+          // no network.
+          fallBackToFloors(root);
         });
     }
 
