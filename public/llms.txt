@@ -103,6 +103,8 @@ https://orbi.build/cost/
 
 - Landing page (English): https://orbi.build/
 - Landing page (Chinese): https://orbi.build/zh/
+- Comparison — Orbi vs Orca (English): https://orbi.build/compare/orca/
+- Comparison — Orbi vs Orca (Chinese): https://orbi.build/zh/compare/orca/
 - Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
 - Comparison — Orbi vs OpenClaw (Chinese): https://orbi.build/zh/compare/openclaw/
 - Comparison — Orbi vs Hermes Agent (English): https://orbi.build/compare/hermes-agent/
