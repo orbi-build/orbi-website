@@ -1,0 +1,290 @@
+<!--orbi:page
+{
+  "output": "apply.html",
+  "lang": "zh",
+  "mirror": "",
+  "layout": "pretty",
+  "standalone": true
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我们陪你把 Orbi 跑通第一个 Issue | Orbi</title>
+  <meta name="description" content="Orbi 自托管永远免费、不限任务数。报名后我们陪你把它配起来、跑通第一个真实 Issue，遇到问题优先修。">
+  <link rel="canonical" href="https://orbi.build/apply">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+  <!-- Conversion endpoint, not a landing page: keep it out of the index so it
+       does not compete with / and /zh/ for the same queries. -->
+  <meta name="robots" content="noindex, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:url" content="https://orbi.build/apply">
+  <meta property="og:title" content="报名 Orbi 首批共建用户">
+  <meta property="og:description" content="加入 Orbi 首批共建用户，在自己仓库里跑一个真实任务，一起把 Orbi 做可靠。">
+  <meta property="og:image" content="https://orbi.build/img/og-zh.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .apply-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 200px); padding:56px 18px 96px; }
+    .apply-card { width:100%; max-width:880px; }
+    .title-row { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin:0 0 12px; }
+    .apply-title { flex:1 1 auto; max-width:none; font:700 clamp(30px,6vw,54px)/1.08 var(--display); letter-spacing:-.01em; margin:0; color:#e6ecf7; }
+    .lang-switch { flex:none; margin-top:6px; background:none; border:1px solid #27324a; color:#aab8d4; font:500 14px "Instrument Sans","Noto Sans SC",sans-serif; padding:7px 14px; border-radius:20px; cursor:pointer; }
+    .lang-switch:hover { border-color:#3b4a6e; color:#e6ecf7; }
+    .apply-sub { color:#8ea0c0; font-size:16px; line-height:1.65; margin:0 0 42px; }
+    .apply-form { display:flex; flex-direction:column; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; }
+    .field { margin-bottom:22px; }
+    .field label { display:block; color:#aab8d4; font:500 14px/1.4 "Instrument Sans","Noto Sans SC",sans-serif; margin:0 0 8px; }
+    .field label .req { color:#ff6b6b; }
+    .field input, .field textarea, .field select { width:100%; box-sizing:border-box; padding:14px 16px; background:#101724; color:#e6ecf7; border:1px solid #27324a; border-radius:10px; font:400 16px/1.5 "Instrument Sans","Noto Sans SC",sans-serif; }
+    .field input:focus, .field textarea:focus, .field select:focus { outline:none; border-color:#3b4a6e; }
+    .field select { appearance:none; cursor:pointer; background-image:linear-gradient(45deg,transparent 50%,#8698ba 50%),linear-gradient(135deg,#8698ba 50%,transparent 50%); background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px; background-size:6px 6px,6px 6px; background-repeat:no-repeat; padding-right:44px; }
+    .field textarea { resize:vertical; min-height:110px; }
+    .field .hint { color:#8698ba; font-size:12.5px; margin-top:6px; line-height:1.5; }
+    .apply-nav { width:100%; max-width:880px; margin:0 auto 34px; }
+    .apply-nav .wordmark { color:#e6ecf7; text-decoration:none; }
+    .submit { width:100%; padding:15px 24px; font:600 16px "Instrument Sans","Noto Sans SC",sans-serif; border:0; border-radius:10px; cursor:pointer; }
+    #result { margin:0; padding:14px 16px; border-radius:10px; font-size:15px; line-height:1.5; display:none; }
+    #result.ok { display:block; background:#0d1f14; color:#7ee0a3; border:1px solid #1e5134; }
+    #result.err { display:block; background:#230f0f; color:#ff9b9b; border:1px solid #5c2424; }
+    @media (max-width: 640px) {
+      .apply-wrap { padding:48px 18px 80px; }
+      .field-row { grid-template-columns:1fr; gap:0; }
+    }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到表单</a>
+  <div class="night" style="position:relative;min-height:100vh">
+    <div class="apply-wrap" style="min-height:0;padding-bottom:0">
+      <nav class="apply-nav" aria-label="Orbi">
+        <a class="wordmark" href="/" aria-label="Orbi">
+          <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+          <span>Orbi</span>
+        </a>
+      </nav>
+    </div>
+    <main id="main-content" class="apply-wrap" style="padding-top:0">
+      <div class="apply-card">
+        <div class="title-row">
+          <h1 class="apply-title" data-zh="我们陪你把 Orbi 跑通第一个 Issue" data-en="We will sit with you until Orbi ships your first Issue">我们陪你把 Orbi 跑通第一个 Issue</h1>
+          <button class="lang-switch" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+        </div>
+        <p class="apply-sub" data-zh="Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。" data-en="Running Orbi on your own repos is free forever, with no cap on tasks — that is written into the license. This form is for something else: tell us your repo and one real Issue, and we will sit with you until it ships, fixing whatever breaks along the way. No cost, no commitment — right now we need real repos more than you need us.">Orbi 在你自己仓库上跑永远免费，不限任务数量——这是 license 写死的。这里报名的是另一件事：告诉我们你的仓库和一个真实 Issue，我们陪你把它配起来、跑通，遇到问题优先修。不收费、无承诺——现阶段我们比你更需要真实仓库。</p>
+
+        <form id="apply" class="apply-form" novalidate data-msg-required="还差「{field}」没填" data-msg-required-en="Please fill in {field}" data-msg-invalid="「{field}」格式不对" data-msg-invalid-en="Check the format of {field}" data-msg-sending="正在提交…" data-msg-sending-en="Sending…" data-msg-email-hint="这个邮箱地址看起来不完整，我们主要用 Telegram 联系你" data-msg-email-hint-en="That email looks incomplete — we mainly reach out on Telegram">
+          <div class="field-row">
+            <div class="field">
+              <label for="f-name" data-zh="昵称或团队" data-en="Name or team"><span data-zh="昵称或团队" data-en="Name or team">昵称或团队</span></label>
+              <input id="f-name" name="name" type="text" autocomplete="name">
+            </div>
+
+            <div class="field">
+              <label for="f-tg"><span data-zh="Telegram 账号" data-en="Telegram handle">Telegram 账号</span> <span class="req">*</span></label>
+              <input id="f-tg" name="tg" type="text" required placeholder="@yourhandle">
+              <p class="hint" data-zh="首批共建在 Telegram 群里进行，需要用它拉你进群。" data-en="The early-adopter cohort runs in a Telegram group — we need this to invite you.">首批共建在 Telegram 群里进行，需要用它拉你进群。</p>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-email" data-zh="Email（选填）" data-en="Email (optional)"><span data-zh="Email（选填）" data-en="Email (optional)">Email（选填）</span></label>
+              <input id="f-email" name="email" type="email" autocomplete="email">
+            </div>
+
+            <div class="field">
+              <label for="f-agent" data-zh="当前使用的 Agent / AI 工具" data-en="Agent / AI tools you currently use"><span data-zh="当前使用的 Agent / AI 工具" data-en="Agent / AI tools you currently use">当前使用的 Agent / AI 工具</span></label>
+              <input id="f-agent" name="agent_tools" type="text" placeholder="Claude Code, Codex, Cursor, Pi, DeepSeek…">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-scenario"><span data-zh="你的仓库 & 想先交给 Orbi 跑通的部分" data-en="Your repo & what Orbi should run first">你的仓库 & 想先交给 Orbi 跑通的部分</span> <span class="req">*</span></label>
+            <textarea id="f-scenario" name="scenario" rows="4" required data-zh="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue" data-en="One line about your repo; which delivery you want Orbi to automate (Issue claim, dependency order, review/merge…), or the first real Issue to run" placeholder="一句话介绍你的仓库；想让 Orbi 自动处理哪类交付（领 Issue、依赖顺序、review/merge…），或先跑哪个真实 Issue"></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-ai-spend" data-zh="每月在 AI 编程工具上的花费" data-en="Monthly spend on AI coding tools"><span data-zh="每月在 AI 编程工具上的花费" data-en="Monthly spend on AI coding tools">每月在 AI 编程工具上的花费</span></label>
+              <select id="f-ai-spend" name="ai_spend" data-zh="&lt;option value=&quot;&quot;&gt;选一个区间&lt;/option&gt;&lt;option&gt;还没花钱&lt;/option&gt;&lt;option&gt;$1-20&lt;/option&gt;&lt;option&gt;$20-100&lt;/option&gt;&lt;option&gt;$100-500&lt;/option&gt;&lt;option&gt;$500+&lt;/option&gt;" data-en="&lt;option value=&quot;&quot;&gt;Pick a range&lt;/option&gt;&lt;option&gt;Nothing yet&lt;/option&gt;&lt;option&gt;$1-20&lt;/option&gt;&lt;option&gt;$20-100&lt;/option&gt;&lt;option&gt;$100-500&lt;/option&gt;&lt;option&gt;$500+&lt;/option&gt;">
+                <option value="">选一个区间</option>
+                <option>还没花钱</option>
+                <option>$1-20</option>
+                <option>$20-100</option>
+                <option>$100-500</option>
+                <option>$500+</option>
+              </select>
+              <p class="hint" data-zh="Claude、Cursor、Copilot 等加起来。用来判断 Orbi 该定什么价位。" data-en="Claude, Cursor, Copilot and the rest combined — it tells us what Orbi should cost.">Claude、Cursor、Copilot 等加起来。用来判断 Orbi 该定什么价位。</p>
+            </div>
+
+            <div class="field">
+              <label for="f-volume" data-zh="每周想交给 Orbi 跑几个 Issue" data-en="Issues you would hand to Orbi per week"><span data-zh="每周想交给 Orbi 跑几个 Issue" data-en="Issues you would hand to Orbi per week">每周想交给 Orbi 跑几个 Issue</span></label>
+              <select id="f-volume" name="issue_volume" data-zh="&lt;option value=&quot;&quot;&gt;选一个区间&lt;/option&gt;&lt;option&gt;1-3 个&lt;/option&gt;&lt;option&gt;4-10 个&lt;/option&gt;&lt;option&gt;10-30 个&lt;/option&gt;&lt;option&gt;30 个以上&lt;/option&gt;&lt;option&gt;还不确定&lt;/option&gt;" data-en="&lt;option value=&quot;&quot;&gt;Pick a range&lt;/option&gt;&lt;option&gt;1-3&lt;/option&gt;&lt;option&gt;4-10&lt;/option&gt;&lt;option&gt;10-30&lt;/option&gt;&lt;option&gt;30+&lt;/option&gt;&lt;option&gt;Not sure yet&lt;/option&gt;">
+                <option value="">选一个区间</option>
+                <option>1-3 个</option>
+                <option>4-10 个</option>
+                <option>10-30 个</option>
+                <option>30 个以上</option>
+                <option>还不确定</option>
+              </select>
+              <p class="hint" data-zh="按你现在的 Backlog 估个数就行，不用精确。" data-en="A rough guess from your current backlog is fine.">按你现在的 Backlog 估个数就行，不用精确。</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-pain" data-zh="现在你用 AI 干活最大的痛点" data-en="Your biggest pain delegating work to AI today"><span data-zh="现在你用 AI 干活最大的痛点" data-en="Your biggest pain delegating work to AI today">现在你用 AI 干活最大的痛点</span></label>
+            <textarea id="f-pain" name="pain" rows="3" data-zh="比如：上下文总断、没人盯着不放心、并发任务乱、review 不靠谱、离无人值守还差什么…" data-en="e.g. lost context, needs babysitting, parallel tasks get messy, unreliable review, what is missing for unattended runs…" placeholder="比如：上下文总断、没人盯着不放心、并发任务乱、review 不靠谱、离无人值守还差什么…"></textarea>
+          </div>
+
+          <button type="submit" class="button button-signal submit" data-zh="提交报名" data-en="Submit application">提交报名</button>
+          <p id="result" role="status" aria-live="polite" tabindex="-1"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const langBtn = document.getElementById("langBtn");
+    const els = [...document.querySelectorAll("[data-zh]")];
+    let en = false;
+    function setLang(toEn) {
+      en = toEn;
+      langBtn.textContent = en ? "中文" : "EN";
+      document.documentElement.lang = en ? "en" : "zh-CN";
+      document.title = en
+        ? "Apply — Orbi early adopter"
+        : "报名 Orbi 首批共建用户";
+      for (const el of els) {
+        if (el.tagName === "TEXTAREA") el.placeholder = en ? el.dataset.en : el.dataset.zh;
+        else el.innerHTML = en ? el.dataset.en : el.dataset.zh;
+      }
+    }
+    langBtn.addEventListener("click", () => setLang(!en));
+
+    const form = document.getElementById("apply");
+    const result = document.getElementById("result");
+    const submit = form.querySelector("button[type=submit]");
+    const submitLabel = { zh: submit.dataset.zh, en: submit.dataset.en };
+
+    // Put the outcome in front of the person who just submitted, wherever
+    // they had scrolled to, and move focus so a screen reader lands on it.
+    function showResult() {
+      result.scrollIntoView({ block: "center", behavior: "smooth" });
+      result.focus({ preventScroll: true });
+    }
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      // The form is novalidate so the browser will not flag anything itself.
+      // Check here instead: a missing field should not cost a round-trip and
+      // come back as an English API string that never names the field.
+      // Trim first: the Worker trims before its own required check, so a
+      // field of spaces passes checkValidity() here and still comes back 400.
+      for (const el of form.elements) {
+        if (el.value && typeof el.value === "string" && el.type !== "submit") {
+          el.value = el.value.trim();
+        }
+      }
+      // Only required fields gate the submit. Nothing is ever sent to the
+      // optional email — Telegram is how people get contacted — so rejecting
+      // a complete application over its format is pure friction.
+      const missing = Array.from(form.elements).find(
+        (el) => el.required && el.willValidate && !el.checkValidity(),
+      );
+      if (missing) {
+        // setLang() rewrites each label's innerHTML, which drops the inner
+        // spans, so read the label itself and strip the required marker.
+        const label = form.querySelector('label[for="' + missing.id + '"]');
+        // Labels carry a required marker and a parenthetical aside; the
+        // message wants the field's name on its own.
+        const fieldName = label
+          ? label.textContent
+              .replace(/[*＊]/g, "")
+              .replace(/[（(][^）)]*[）)]/g, "")
+              .trim()
+          : missing.name;
+        // A filled-but-malformed field is not a missing one; telling someone
+        // an optional email they did fill is "not filled in" is just wrong.
+        const empty = missing.validity.valueMissing;
+        const key = empty
+          ? (en ? "data-msg-required-en" : "data-msg-required")
+          : (en ? "data-msg-invalid-en" : "data-msg-invalid");
+        result.className = "err";
+        result.textContent = form.getAttribute(key).replace("{field}", fieldName);
+        missing.focus();
+        missing.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form));
+      result.className = "";
+
+      // Nothing else signals that the request is in flight, so on a slow
+      // connection the button just gets clicked again — three clicks made
+      // three records. Hold it closed until the round-trip finishes.
+      submit.disabled = true;
+      submit.textContent = en
+        ? form.getAttribute("data-msg-sending-en")
+        : form.getAttribute("data-msg-sending");
+
+      try {
+        const res = await fetch("/cloud/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          result.className = "ok";
+          result.textContent = en
+            ? "Got it. We will follow up shortly."
+            : "已收到。如果匹配，我们会尽快拉你进共建群。";
+          // Clearing the form is the right end state for a one-off action, but
+          // on its own it reads as "nothing happened" when the confirmation is
+          // below the fold — someone who scrolled up to re-read their answers
+          // sees only the emptied fields and submits again.
+          const email = form.querySelector("#f-email");
+          const emailOff = email && email.value && !email.checkValidity();
+          form.reset();
+          if (emailOff) {
+            result.textContent += " " + (en
+              ? form.getAttribute("data-msg-email-hint-en")
+              : form.getAttribute("data-msg-email-hint"));
+          }
+          showResult();
+        } else {
+          result.className = "err";
+          result.textContent = en
+            ? "Something went wrong: " + (json.error || res.status)
+            : "出错了：" + (json.error || res.status);
+          showResult();
+        }
+      } catch (err) {
+        result.className = "err";
+        result.textContent = en ? "Something went wrong. Please retry." : "出错了，请重试。";
+        showResult();
+      } finally {
+        submit.disabled = false;
+        submit.textContent = en ? submitLabel.en : submitLabel.zh;
+      }
+    });
+  </script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

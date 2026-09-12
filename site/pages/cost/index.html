@@ -1,0 +1,229 @@
+<!--orbi:page
+{
+  "output": "cost/index.html",
+  "lang": "en",
+  "mirror": "zh/cost/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/cost/",
+    "costCurrent": true,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "applyHref": "/cloud/login",
+    "applyLabel": "Start Cloud",
+    "langSwitchHref": "/zh/cost/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What one Issue delivery actually costs — measured | Orbi</title>
+  <meta name="description" content="Measured across 46 real Orbi deliveries of our own repository: median 2.22M, mean 4.74M tokens per delivery, about $0.06–0.12 at DeepSeek V4.1 Flash list prices, 100 issues ≈ $6–12. Full token distribution, the money math, the limits, and the competitors' unpublished quotas — with sources.">
+  <link rel="canonical" href="https://orbi.build/cost/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/cost/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/cost/">
+  <meta property="og:title" content="What one Issue delivery actually costs — measured">
+  <meta property="og:description" content="46 real deliveries measured: mean 4.74M tokens per delivery, about $0.06–0.12 at DeepSeek V4.1 Flash list prices. We don't take a margin on your tokens.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="What one Issue delivery actually costs — measured">
+  <meta name="twitter:description" content="46 real deliveries: mean 4.74M tokens ≈ $0.06–0.12 at DeepSeek list prices. Your key, your bill.">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC here: this page is English-only; the Chinese page loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "name": "What one Issue delivery actually costs — measured",
+        "url": "https://orbi.build/cost/",
+        "inLanguage": "en",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Orbi",
+          "url": "https://orbi.build/"
+        },
+        "about": { "@id": "https://orbi.build/#software" }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="cost-title">
+        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-12 · n=46</p>
+        <h1 id="cost-title">What one Issue delivery actually costs</h1>
+        <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 46 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,742,066</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.12</strong>, and <strong>100 issues ≈ $6–12</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+          <p class="hero-alt">Self-hosting? The delivery core is free forever — <a data-cta="install" href="https://docs.orbi.build">run Orbi yourself ↗</a></p>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="measured-title">
+      <p class="section-tag">THE MEASUREMENT</p>
+      <h2 id="measured-title">46 real deliveries, measured on our own repository</h2>
+      <p class="section-lede">Every Orbi delivery runs two agent sessions — the implementation, then an independent review that can repair the branch and rerun the suite. As of <strong>2026-09-12</strong> we aggregated the session logs of <strong>n=46 deliveries</strong> of the orbi repository itself (Python, full CI, issues written to spec). The sample is whatever worktrees are on disk that day — it moves as worktrees get cleaned up — so <strong>n is a snapshot as of the stated date, not a permanent fact</strong>. Here is the complete per-delivery distribution of <code>totalTokens</code> — the count the provider actually bills, cache reads included:</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Quantile</th><th scope="col">totalTokens per delivery</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">p50 (median)</th><td>2,220,637</td></tr>
+            <tr><th scope="row">p75</th><td>3,961,248</td></tr>
+            <tr><th scope="row">p90</th><td>13,290,932</td></tr>
+            <tr><th scope="row">p95</th><td>16,555,250</td></tr>
+            <tr><th scope="row">Max</th><td>37,627,783</td></tr>
+            <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Source, so anyone can re-derive it: the agent session logs of the orbi-build/orbi repository's git worktrees (<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>), aggregated 2026-09-12. One delivery = one worktree's implement + review sessions; a delivery's totalTokens = the sum of <code>usage.totalTokens</code> over every logged record; n = worktrees whose logs carry at least one usage record (older or newer sessions without usage logging are not countable); percentiles by nearest rank. The sample moves as worktrees are cleaned up. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="money-title">
+      <div class="shell">
+        <p class="section-tag">WHAT THAT MEANS IN MONEY</p>
+        <h2 id="money-title">Cents per delivery at DeepSeek V4.1 Flash list prices</h2>
+        <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. Apply those list prices to the measured distribution:</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col">Scenario</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">One delivery (mean, 4.74M tokens)</th><td>$0.058</td><td>$0.115</td></tr>
+              <tr><th scope="row">One delivery (max observed, 37.6M tokens)</th><td>$0.46</td><td>$0.92</td></tr>
+              <tr><th scope="row">100 issues (mean mix)</th><td>~$5.77</td><td>~$11.55</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Money computed at the measured token mix (95.9% / 3.4% / 0.7%) against DeepSeek's published deepseek-flash list prices — <a href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">api-docs.deepseek.com/quick_start/pricing</a>, verified 2026-09-11.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="limits-title">
+      <p class="section-tag">READ THE LIMITS FIRST</p>
+      <h2 id="limits-title">Three things this page does not claim</h2>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">OUR REPO ONLY</span>
+          <div>
+            <strong>This is our repository's measured range — not a promise to everyone</strong>
+            <p>Python, a full CI suite, and issues written to spec keep our context short. A repository with longer context, slower tests, or vaguer issues lands elsewhere in the distribution. Treat the tables above as what they are: our repo's measured range.</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">CACHING IS LOAD-BEARING</span>
+          <div>
+            <strong>95.9% cache reads assumes the provider supports prompt caching</strong>
+            <p>The whole cost structure rests on cache hits. On an endpoint without prompt caching — where every token bills as a miss — the same work costs roughly an order of magnitude more. Check your provider before extrapolating.</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">TOTAL TOKENS, AS BILLED</span>
+          <div>
+            <strong>Numbers are totalTokens, cache reads included</strong>
+            <p>That is the line the provider actually bills. Counting only input + output would hide about 96% of the real consumption and flatter the number — the opposite of what this page is for.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="why-title">
+      <p class="section-tag">WHY IT'S SO CHEAP</p>
+      <h2 id="why-title">A cache hit costs 1/50 of a miss — and 95.9% of the work is cache hits</h2>
+      <p class="section-lede">Each delivery re-reads the same repository context: the tree, the conventions, the issue, the failing tests. Prompt caching turns that repeated reading into billed hits at $0.003/1M instead of misses at $0.15/1M. That single ratio is why a full delivery — implementation plus independent review that can repair and rerun — costs cents. It is also the honest question to ask any BYOK agent vendor: <strong>what share of your tokens are cache hits, and what does your provider charge for each?</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="comparison-title">
+      <div class="shell">
+        <p class="section-tag">THE $200 TIER, FOR REFERENCE</p>
+        <h2 id="comparison-title">Competitors quote quotas. We quote tokens and prices.</h2>
+        <p class="section-lede">The managed agents at the $200 tier do not publish what your money buys. Verified against their own documentation:</p>
+        <ul class="event-list">
+          <li>
+            <span class="event-era">DEVIN</span>
+            <div>
+              <strong>"A daily and weekly usage quota" — no quantity, no unit price</strong>
+              <p>Pro ($20/month) includes "a daily and weekly usage quota"; Max ($200/month) adds "a significantly larger weekly usage quota (with no daily cap)". Nowhere on the page does Cognition state how many ACUs either plan includes or what one ACU costs.</p>
+              <p class="src-note">Source: <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> — verified 2026-09-11.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">FACTORY</span>
+            <div>
+              <strong>"~5x Pro usage" / "~10x Pro usage" — no absolute values</strong>
+              <p>Plus ($100/month) is "~5x Pro usage"; Max ($200/month) is "~10x Pro usage". The page states no absolute token quantity and no per-token price anywhere.</p>
+              <p class="src-note">Source: <a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> — verified 2026-09-11.</p>
+            </div>
+          </li>
+        </ul>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col"></th><th scope="col">Subscription</th><th scope="col">Model fee</th><th scope="col">Total</th><th scope="col">Tagged Release out</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Orbi + DeepSeek</th><td>$0 self-hosted; or $79/mo Cloud — 2B tokens included (Founding coupon 100% off, limited)</td><td>~$6–12 measured self-hosted; included in Cloud</td><td>$6–12 self-hosted; $79 Cloud</td><td>Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td>$200</td><td>Quota not published</td><td>$200+</td><td>Docs stop at PR ("from prompt to PR")</td></tr>
+              <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage", no absolute value</td><td>$200+</td><td>No tag/Release step documented</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Devin row per <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>; Factory row per <a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> — both verified 2026-09-11. Orbi model fee: the measured range above.</p>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">YOUR KEY, YOUR BILL</p>
+      <h2 id="start-title">Check these numbers against your own dashboard</h2>
+      <p>Run Orbi with your own DeepSeek key and the provider's usage page shows every delivery, every token, every cent. That is the whole pitch: nothing sits between you and your bill.</p>
+      <div class="cta-row">
+        <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/compare/">Read the sourced competitor comparisons →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
