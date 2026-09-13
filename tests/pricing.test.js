@@ -167,13 +167,16 @@ describe("Included tokens constant (Issue #138)", () => {
   // orbi-cloud is the system that enforces this quota, and the two repos
   // cannot reference each other, so the expected value is pinned here with
   // its source: orbi-build/orbi-cloud (branch beta) wrangler.toml [vars]
-  // MONTHLY_TOKEN_LIMITS = '{ "default": 300000000 }', read at runtime by
+  // MONTHLY_TOKEN_LIMITS = '{ "default": 2000000000 }', read at runtime by
   // that repo's src/guard.ts monthlyTokenLimit(). If orbi-cloud changes its
   // default, this assertion goes red and pricing.json must move in the same
   // change — the drift that shipped "2 billion" here against the cloud's
-  // 3 亿 (website#137) is what this pin exists to stop.
+  // 3 亿 (website#137) is what this pin exists to stop. The default has
+  // moved once already (orbi-cloud#339, 2026-09-13): 300000000 → 2000000000,
+  // raising the enforcement to the US$79 / 2B pilot promise, and this pin
+  // moved in the same change.
   it("matches orbi-cloud's MONTHLY_TOKEN_LIMITS.default", () => {
-    expect(pricing.includedTokens).toBe(300000000);
+    expect(pricing.includedTokens).toBe(2000000000);
   });
 
   it("ships every quota occurrence as the token, never as a literal", async () => {
