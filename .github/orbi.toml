@@ -1,0 +1,4 @@
+# Orbi repository delivery policy (orbi-build/orbi#731 step 1, website Issue #132).
+# Whitelist v1 keys only (see orbi repo src/orbi/repo_config.py); host-only
+# keys here fail the claim fast with repo_config_invalid.
+test_command = "npm test"

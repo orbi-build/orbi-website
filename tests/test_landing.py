@@ -15,7 +15,8 @@ WORKER_PATH = ROOT / "src" / "worker.js"
 # Issue #102: the shipped files carry the price token; every reader below
 # asserts what the Worker actually serves, so parse() resolves the token to
 # the constant first. src/pricing.json is the single source of truth for the
-# price.
+# price. Issue #138 put the included-token quota on the same seam, so parse()
+# resolves that token too.
 PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
 GITHUB = "https://github.com/orbi-build/orbi"
@@ -111,6 +112,8 @@ class PageParser(HTMLParser):
 def parse(path: Path) -> tuple[str, PageParser]:
     html = path.read_text(encoding="utf-8")
     html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
+    html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
+    html = html.replace(PRICING["foundingTokensToken"], str(PRICING["foundingTokensLabel"]))
     page = PageParser()
     page.feed(html)
     return html, page
@@ -1087,11 +1090,13 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Offer", types, types)
 
     def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
-        """Issue #108: the regular US$79 price, the 2B-token inclusion, and the
-        coupon mechanism must be readable body text, not only structured data."""
+        """Issue #108 + #137 + #138 (#145 relabeled the quota): the regular
+        US$79 price, the included-token quota (rendered from the pricing.json
+        label, so zh rides "300M" too), and the coupon mechanism must be
+        readable body text, not only structured data."""
         for page, coupon, tokens in (
-            (self.en, "Founding coupon", "2 billion tokens"),
-            (self.zh, "Founding 券", "20 亿 token"),
+            (self.en, "Founding coupon", "300M tokens"),
+            (self.zh, "Founding 券", "300M token"),
         ):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
@@ -1099,18 +1104,21 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Private Beta", page.text)
             self.assertIn(coupon, page.text)
 
-    def test_pricing_section_states_price_tokens_overage_and_coupon_mechanism(self) -> None:
-        """Issue #108: $79 regular, 2B tokens included, the published overage,
-        and the coupon mechanism — the terms a subscriber agrees to must be
-        readable before subscribing. The framing around them stays unpinned
-        (Issue #112)."""
+    def test_pricing_section_states_price_tokens_pause_and_coupon_mechanism(self) -> None:
+        """Issue #108 + #137 + #138: $79 regular, the included-token quota
+        (rendered from the pricing.json label), and the honest over-limit
+        behavior — new deliveries pause; no overage price is promised because
+        no per-token billing is implemented (cloud removes `ai-ready` instead)
+        — plus the coupon mechanism: the terms a subscriber agrees to
+        must be readable before subscribing. The framing around them stays
+        unpinned (Issue #112)."""
         for page, needles in (
             (
                 self.en,
                 (
                     "US$79 per month",
-                    "2 billion tokens of model usage",
-                    "$0.10 per additional 1M tokens",
+                    "300M tokens of model usage",
+                    "when the allowance runs out, new deliveries pause",
                     "100% off",
                 ),
             ),
@@ -1118,8 +1126,8 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.zh,
                 (
                     "US$79",
-                    "20 亿 token",
-                    "$0.10",
+                    "300M token",
+                    "新交付暂停",
                     "100% off",
                     "限量",
                 ),
@@ -1127,6 +1135,60 @@ class CloudLandingPageTests(unittest.TestCase):
         ):
             for needle in needles:
                 self.assertIn(needle, page.text, needle)
+
+    def test_founding_partner_block_states_identity_benefits_and_condition(self) -> None:
+        """Issue #143 (orbi-cloud#338): the Founding Partner identity — limited
+        to 10, subscription free forever, Orbi covers 300M tokens a month,
+        accepted Issues steer the product — and the explicit entry
+        condition (one accepted Issue per month) must be readable body text on
+        both language pages. A concrete condition can be self-screened; a vague
+        "give us feedback" cannot. The grant's mechanism is stated in the open:
+        issued monthly, renewed in step with the accepted Issue. The 300M rides
+        the pricing.json foundingTokens seam (since website#145 it equals the
+        plan's included quota — the tiers differ in price, not quota), so the
+        needles here match the rendered label — zh rides "300M" the same way."""
+        for page, needles in (
+            (
+                self.en,
+                (
+                    "FOUNDING PARTNER · LIMITED TO 10",
+                    "subscription is free forever",
+                    "300M tokens are covered by Orbi each month",
+                    "accepted Issues steer the product",
+                    "one Issue per month that we accept",
+                    "granted a month at a time",
+                    "renews in step with that contribution",
+                ),
+            ),
+            (
+                self.zh,
+                (
+                    "FOUNDING PARTNER · 限 10 位",
+                    "订阅永久免费",
+                    "每月 300M token 由 Orbi 承担",
+                    "被采纳的 Issue 直接影响产品方向",
+                    "每月提交 1 个被采纳的 Issue",
+                    "按月发放",
+                    "同步续期",
+                ),
+            ),
+        ):
+            for needle in needles:
+                self.assertIn(needle, page.text, needle)
+            self.assertNotRegex(page.text, r"限时\s*\d", "no fixed month cap on the grant")
+
+    def test_forever_words_never_attach_to_the_token_grant(self) -> None:
+        """Issue #143 red line: 「永久」/forever is written only on commitments
+        that are real — the subscription (Stripe coupon duration=forever) and
+        the free self-hosted core. The token grant is month to month, so no
+        sentence may couple a forever word to it: asked "how long do the
+        tokens last?", the page must answer with the monthly mechanism, not a
+        permanence claim."""
+        for page in (self.en, self.zh):
+            sentences = [s for s in re.split(r"[。；.!;?]", page.text) if s.strip()]
+            for sentence in sentences:
+                if re.search(r"永久|forever|permanently|permanent", sentence, re.IGNORECASE):
+                    self.assertNotIn("token", sentence.lower(), sentence)
 
     def test_cloud_states_the_measured_token_cost_with_all_three_limits(self) -> None:
         """Issue #108: the measured cost section carries the date, the sample
@@ -1145,18 +1207,27 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "2026-09-10", "n=46",
-                    "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    # Issue #147: the measured block is aligned to the
+                    # /cost/ page's snapshot of the same measurement.
+                    "2026-09-12", "n=46",
+                    "2,220,637", "4,742,066", "37,627,783",
+                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
+                    # website#145: the plan quota is 300M on both tiers; the
+                    # derived deliveries figure uses the median (2,220,637),
+                    # not the mean — 300M / median ≈ 135, stated conservatively
+                    # as about 100.
+                    "100 deliveries a month",
                     "not a promise to everyone", "order of magnitude", "totalTokens",
                 ),
             ),
             (
                 self.zh,
                 (
-                    "2026-09-10", "n=46",
-                    "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "2026-09-12", "n=46",
+                    "2,220,637", "4,742,066", "37,627,783",
+                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
+                    # website#145: same median caliber as the EN page above.
+                    "100 次交付/月",
                     "不是对所有人的承诺", "一个数量级", "totalTokens",
                 ),
             ),

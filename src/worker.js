@@ -1,11 +1,19 @@
 import { withAICrawlerTracking } from "@datafast/ai-crawl";
 import pricing from "./pricing.json";
 
-// Single source of truth for the Cloud monthly price (Issue #102). The shipped
-// HTML carries monthlyUsdToken wherever that price appears — including the
-// head tags (meta/og/twitter/JSON-LD) that crawlers read without running
-// JavaScript — and serving replaces it with cloudMonthlyUsd below.
+// Single source of truth for the Cloud monthly price and the included token
+// quota (Issues #102, #138). The shipped HTML carries monthlyUsdToken and
+// includedTokensToken wherever those values appear — including the head tags
+// (meta/og/twitter/JSON-LD) that crawlers read without running JavaScript —
+// and serving replaces them with cloudMonthlyUsd / includedTokensLabel below.
+// includedTokens itself is the contract value (orbi-cloud's
+// MONTHLY_TOKEN_LIMITS.default); the label is its human form on the pages.
+// foundingTokensLabel rides the same seam: the Founding Partner token
+// coverage (orbi-cloud#338) is a quota mention, so it ships as a token too,
+// never as a round literal the quota-literal gate would reject.
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
+const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
+const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -205,8 +213,9 @@ async function fetchAsset(request, assets) {
 // pages are served with every Cloud CTA rewritten to the application page
 // instead (Issue #77). The rewrite is driven by the configuration, so opening
 // production was a wrangler.toml change, not a page change (Issue #96).
-// The price token replacement above it is unconditional: the monthly price
-// must read the same on every environment, in every carrier a crawler reads.
+// The price and quota token replacements above it are unconditional: those
+// values must read the same on every environment, in every carrier a crawler
+// reads.
 async function assetResponse(asset, cloudLoginConfigured) {
   const headers = new Headers(asset.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -218,7 +227,10 @@ async function assetResponse(asset, cloudLoginConfigured) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
-  let body = html.replaceAll(pricing.monthlyUsdToken, MONTHLY_USD);
+  let body = html
+    .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
+    .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
+    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS);
   if (!cloudLoginConfigured) {
     body = body.replaceAll('href="/cloud/login"', 'href="/apply"');
   }
@@ -405,7 +417,15 @@ async function handleFetch(request, env) {
       });
     }
 
-    if (url.pathname === "/stats") {
+    // Issue #134: every page on this site lives at a trailing-slash path, so
+    // users and clients append one naturally. The worker-owned routes answer
+    // both spellings; the original pathname still reaches the static assets,
+    // whose directory routing is slash-sensitive.
+    const route = url.pathname !== "/" && url.pathname.endsWith("/")
+      ? url.pathname.slice(0, -1)
+      : url.pathname;
+
+    if (route === "/stats") {
       try {
         return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
@@ -422,11 +442,11 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (url.pathname === CLOUD_LOGIN_ROUTE) {
+    if (route === CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
-    if (url.pathname === APPLY_ROUTE) {
+    if (route === APPLY_ROUTE) {
       return await handleApply(request, env);
     }
 

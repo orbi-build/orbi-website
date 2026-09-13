@@ -82,9 +82,10 @@ const sharedAttributes = {
 };
 
 // Issue #102: the shipped files carry the monthly price as a token and the
-// site Worker resolves it while serving (src/worker.js). This local server is
-// the stand-in for that Worker, so it applies the same substitution from the
-// same single source before a page reaches the browser.
+// site Worker resolves it while serving (src/worker.js). Issue #138 added the
+// included-token quota to the same seam. This local server is the stand-in
+// for that Worker, so it applies the same substitutions from the same single
+// source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
 
 const CONTENT_TYPES = {
@@ -124,7 +125,9 @@ function startServer() {
       const type = CONTENT_TYPES[extname(file.path).toLowerCase()] ?? "application/octet-stream";
       const body = type.startsWith("text/html")
         ? Buffer.from(
-            file.body.toString("utf8").replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd)),
+            file.body.toString("utf8")
+              .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
+              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel)),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -182,55 +185,60 @@ export async function assertCloudLoginRedirect(targetURL) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
   const context = await request.newContext();
   try {
-    const response = await context.get(`${targetURL}/cloud/login`, { maxRedirects: 0 });
-    const headers = response.headers();
-    if (expectation === "oauth-302") {
-      // beta: the website's handoff must 302 to the configured Cloud login
-      // URL, and that URL must answer with the GitHub OAuth redirect. One
-      // manual hop each: the responses themselves are the contract, not
-      // where a browser would finally land.
-      if (response.status() !== 302) {
-        throw new Error(`Cloud login expected 302, got ${response.status()}`);
-      }
-      const handoff = new URL(headers.location || "", targetURL).toString();
-      const cloud = await context.get(handoff, { maxRedirects: 0 });
-      const cloudLocation = cloud.headers().location || "";
-      if (cloud.status() !== 302
-          || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
-        throw new Error(
-          `Cloud login did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
-        );
-      }
-    } else if (expectation === "fail-closed-503") {
-      // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
-      // fail-closes the login route with its stamped 503.
-      if (response.status() !== 503) {
-        throw new Error(`Cloud login expected the fail-closed 503, got ${response.status()}`);
-      }
-      const stamped =
-        headers["x-content-type-options"] === "nosniff" &&
-        headers["x-frame-options"] === "DENY" &&
-        headers["referrer-policy"] === "strict-origin-when-cross-origin";
-      if (!stamped) {
-        throw new Error(
-          `Cloud login 503 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
-        );
-      }
-    } else {
-      // fail-closed-404: the strict default for an environment that declared
-      // no contract. The site Worker's own 404 carries its security-header
-      // stamp, which the Cloud control plane's responses do not.
-      if (response.status() !== 404) {
-        throw new Error(`Cloud login expected fail-closed 404, got ${response.status()}`);
-      }
-      const stamped =
-        headers["x-content-type-options"] === "nosniff" &&
-        headers["x-frame-options"] === "DENY" &&
-        headers["referrer-policy"] === "strict-origin-when-cross-origin";
-      if (!stamped) {
-        throw new Error(
-          `Cloud login 404 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
-        );
+    // Issue #134: users and clients append the site's natural trailing slash,
+    // so the environment's declared contract must hold on both spellings of
+    // the handoff — neither form may fall through to the static-asset 404.
+    for (const path of ["/cloud/login", "/cloud/login/"]) {
+      const response = await context.get(`${targetURL}${path}`, { maxRedirects: 0 });
+      const headers = response.headers();
+      if (expectation === "oauth-302") {
+        // beta: the website's handoff must 302 to the configured Cloud login
+        // URL, and that URL must answer with the GitHub OAuth redirect. One
+        // manual hop each: the responses themselves are the contract, not
+        // where a browser would finally land.
+        if (response.status() !== 302) {
+          throw new Error(`Cloud login ${path} expected 302, got ${response.status()}`);
+        }
+        const handoff = new URL(headers.location || "", targetURL).toString();
+        const cloud = await context.get(handoff, { maxRedirects: 0 });
+        const cloudLocation = cloud.headers().location || "";
+        if (cloud.status() !== 302
+            || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
+          throw new Error(
+            `Cloud login ${path} did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
+          );
+        }
+      } else if (expectation === "fail-closed-503") {
+        // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
+        // fail-closes the login route with its stamped 503.
+        if (response.status() !== 503) {
+          throw new Error(`Cloud login ${path} expected the fail-closed 503, got ${response.status()}`);
+        }
+        const stamped =
+          headers["x-content-type-options"] === "nosniff" &&
+          headers["x-frame-options"] === "DENY" &&
+          headers["referrer-policy"] === "strict-origin-when-cross-origin";
+        if (!stamped) {
+          throw new Error(
+            `Cloud login ${path} 503 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
+          );
+        }
+      } else {
+        // fail-closed-404: the strict default for an environment that declared
+        // no contract. The site Worker's own 404 carries its security-header
+        // stamp, which the Cloud control plane's responses do not.
+        if (response.status() !== 404) {
+          throw new Error(`Cloud login ${path} expected fail-closed 404, got ${response.status()}`);
+        }
+        const stamped =
+          headers["x-content-type-options"] === "nosniff" &&
+          headers["x-frame-options"] === "DENY" &&
+          headers["referrer-policy"] === "strict-origin-when-cross-origin";
+        if (!stamped) {
+          throw new Error(
+            `Cloud login ${path} 404 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
+          );
+        }
       }
     }
   } finally {
@@ -589,10 +597,14 @@ const cloudPages = {
       "business-flow e2e",
       "no check runs, both gates pass",
       "test-acceptance gate",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
-      // and the measured cost section with its three limits
-      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      // Issue #108 + #137 + #138 + #145: the $79 regular price with the
+      // included-token quota (rendered from the pricing.json label; since #145
+      // that is 300M, the same quota the Founder plan carries); the
+      // over-limit behavior is the pause, not a $0.10 overage price
+      "US$79", "300M tokens", "new deliveries pause", "100% off",
+      // and the measured cost section with its three limits (Issue #147:
+      // aligned to the /cost/ page's numbers)
+      "2026-09-12", "n=46", "2,220,637", "4,742,066", "$0.06–0.12", "95.9%",
       "not a promise to everyone", "order of magnitude", "totalTokens",
       "a significantly larger weekly usage quota", "~10x Pro usage",
     ],
@@ -620,10 +632,13 @@ const cloudPages = {
       "业务闭环",
       "两道门禁都放行",
       "测试验收闸门",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "20 亿 token", "$0.10", "100% off",
-      // and the measured cost section with its three limits
-      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      // Issue #108 + #137 + #138 + #145: the $79 regular price with the
+      // included-token quota (rendered from the pricing.json label; zh rides
+      // the same label, 300M since #145)
+      "US$79", "300M token", "新交付暂停", "100% off",
+      // and the measured cost section with its three limits (Issue #147:
+      // aligned to the /cost/ page's numbers)
+      "2026-09-12", "n=46", "2,220,637", "4,742,066", "$0.06–0.12", "95.9%",
       "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
     ],
     guideHref: "/zh/guides/ci-gates/",
