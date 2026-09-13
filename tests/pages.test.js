@@ -298,3 +298,97 @@ describe("pricing nav entry (Issue #165)", () => {
     expect(shipped.get("zh/cloud/index.html")).toMatch(/href="\/zh\/cost\/"/);
   });
 });
+
+// Issue #166: buyer-facing FAQ on /cloud/ — last click-blocking questions,
+// not the homepage's self-host FAQ. JSON-LD must parse and stay in lockstep
+// with the visible <details>; a trailing comma is a silent SEO failure.
+const CLOUD_FAQ_PAGES = [
+  { output: "cloud/index.html", faqId: "https://orbi.build/cloud/#faq" },
+  { output: "zh/cloud/index.html", faqId: "https://orbi.build/zh/cloud/#faq" },
+];
+
+const stripTags = (html) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+
+const cloudFaqItems = (html) => {
+  const section = region(html, '<section class="faq" id="faq"', "</section>");
+  return [...section.matchAll(/<details class="faq-item"( open)?>([\s\S]*?)<\/details>/g)].map(
+    (match) => {
+      const body = match[2];
+      const question = stripTags(
+        (body.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] ?? "").replace(/<span>[^<]*<\/span>/, ""),
+      );
+      const answer = stripTags(body.match(/<div class="faq-answer">([\s\S]*?)<\/div>/)?.[1] ?? "");
+      return { open: match[1] === " open", question, answer };
+    },
+  );
+};
+
+const jsonLdGraph = (html) => {
+  const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(
+    (match) => JSON.parse(match[1]),
+  );
+  return scripts.flatMap((data) => data["@graph"] ?? [data]);
+};
+
+describe("cloud buyer FAQ (Issue #166)", () => {
+  it("sits between the three-step section and the closing CTA on both languages", () => {
+    for (const { output } of CLOUD_FAQ_PAGES) {
+      const main = mainRegion(shipped.get(output));
+      const steps = main.indexOf('aria-labelledby="steps-title"');
+      const faq = main.indexOf('<section class="faq" id="faq"');
+      const closing = main.indexOf('class="closing');
+      expect(steps, `${output}: three-step section missing`).toBeGreaterThan(-1);
+      expect(faq, `${output}: FAQ section missing`).toBeGreaterThan(steps);
+      expect(closing, `${output}: FAQ must precede the closing CTA`).toBeGreaterThan(faq);
+    }
+  });
+
+  it("keeps the same item count on EN and ZH, first two open", () => {
+    const counts = CLOUD_FAQ_PAGES.map(({ output }) => {
+      const items = cloudFaqItems(shipped.get(output));
+      expect(items.length, `${output}: need 5–6 buyer questions`).toBeGreaterThanOrEqual(5);
+      expect(items.length, `${output}: need 5–6 buyer questions`).toBeLessThanOrEqual(6);
+      expect(
+        items.map((item) => item.open),
+        `${output}: first two open, the rest collapsed (homepage pattern)`,
+      ).toEqual(items.map((_, i) => i < 2));
+      for (const [i, item] of items.entries()) {
+        expect(item.question, `${output} FAQ ${i + 1} summary`).not.toBe("");
+        expect(item.answer, `${output} FAQ ${i + 1} answer`).not.toBe("");
+      }
+      return items.length;
+    });
+    expect(counts[0], "EN/ZH FAQ counts drifted").toBe(counts[1]);
+  });
+
+  it("parses JSON-LD and keeps FAQPage mainEntity in lockstep with the visible items", () => {
+    for (const { output, faqId } of CLOUD_FAQ_PAGES) {
+      const html = shipped.get(output);
+      const items = cloudFaqItems(html);
+      const graph = jsonLdGraph(html);
+      const faqPages = graph.filter((node) => node["@type"] === "FAQPage");
+      expect(faqPages, `${output}: one FAQPage node`).toHaveLength(1);
+      expect(faqPages[0]["@id"], output).toBe(faqId);
+      const entities = faqPages[0].mainEntity;
+      expect(entities, `${output}: mainEntity count`).toHaveLength(items.length);
+      for (const [i, entity] of entities.entries()) {
+        expect(entity["@type"], `${output} Q${i + 1} type`).toBe("Question");
+        expect(entity.name, `${output} Q${i + 1} name`).toBe(items[i].question);
+        const schemaText = String(entity.acceptedAnswer?.text ?? "").replace(/\s+/g, " ").trim();
+        expect(schemaText, `${output} Q${i + 1} schema`).toBe(items[i].answer);
+      }
+    }
+  });
+
+  it("does not copy the homepage self-host FAQ onto /cloud/", () => {
+    const home = cloudFaqItems(shipped.get("index.html")).map((item) => item.question);
+    expect(home.length, "homepage FAQ missing").toBeGreaterThan(0);
+    for (const { output } of CLOUD_FAQ_PAGES) {
+      const questions = cloudFaqItems(shipped.get(output)).map((item) => item.question);
+      expect(questions, `${output} reused a homepage question`).not.toEqual(home);
+      for (const question of questions) {
+        expect(home, `${output}: ${question}`).not.toContain(question);
+      }
+    }
+  });
+});
