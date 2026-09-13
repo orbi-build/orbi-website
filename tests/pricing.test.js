@@ -200,6 +200,18 @@ describe("Included tokens constant (Issue #138)", () => {
     }
   });
 
+  // Issue #143: the Founding Partner gift (orbi-cloud#338, 300M/month) rides
+  // the same token seam — only the two cloud pages carry it, and a visitor
+  // must read the rendered label, never the token or a literal.
+  it("serves the Founding Partner gift label through the same seam", async () => {
+    for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).not.toContain(pricing.foundingTokensToken);
+      expect(body, relativePath).toContain(pricing.foundingTokensLabel);
+    }
+  });
+
   it("catches the exact literals this gate exists for", () => {
     for (const sample of ["2B tokens", "2 billion tokens", "300M tokens", "20 亿 token", "3 亿 tokens"]) {
       expect(quotaLiterals(sample).length, sample).toBeGreaterThan(0);

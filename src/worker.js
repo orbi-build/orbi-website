@@ -8,8 +8,12 @@ import pricing from "./pricing.json";
 // and serving replaces them with cloudMonthlyUsd / includedTokensLabel below.
 // includedTokens itself is the contract value (orbi-cloud's
 // MONTHLY_TOKEN_LIMITS.default); the label is its human form on the pages.
+// foundingTokensLabel rides the same seam: the Founding Partner token
+// coverage (orbi-cloud#338) is a quota mention, so it ships as a token too,
+// never as a round literal the quota-literal gate would reject.
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
+const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -225,7 +229,8 @@ async function assetResponse(asset, cloudLoginConfigured) {
   const html = await asset.text();
   let body = html
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
-    .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS);
+    .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
+    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS);
   if (!cloudLoginConfigured) {
     body = body.replaceAll('href="/cloud/login"', 'href="/apply"');
   }
