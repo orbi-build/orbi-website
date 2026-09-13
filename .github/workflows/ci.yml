@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Keep public/install.sh synced with the orbi repo
         # The homepage's one-line install downloads this file, so a stale copy
         # would install something other than the current orbi. Sync with
@@ -23,7 +23,7 @@ jobs:
             -o /tmp/orbi-install.sh
           diff -u /tmp/orbi-install.sh public/install.sh
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
