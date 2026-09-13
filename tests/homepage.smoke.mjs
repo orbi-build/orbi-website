@@ -580,6 +580,8 @@ const cloudPages = {
     title: "GitHub Issues in, tagged releases out",
     h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
     loop: "GitHub Issue in, tagged release out",
+    // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
+    ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
     metaNeedle: ["tagged GitHub Release", "US$79"],
     oldClaim: "reviewed pull request",
     text: [
@@ -615,6 +617,8 @@ const cloudPages = {
     title: "GitHub Issue 进，打好 Tag 的 Release 出",
     h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
+    // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
+    ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
     metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
     oldClaim: "审查过的 PR",
     text: [
@@ -714,6 +718,20 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await loginButtons.count()) < 1) throw new Error(`${path}: no Cloud CTA on the page`);
   for (let i = 0; i < (await loginButtons.count()); i += 1) {
     if (!(await loginButtons.nth(i).isVisible())) throw new Error(`${path}: Cloud CTA is not visible`);
+  }
+  // Issue #156: the handoff is three redirects into GitHub's password box,
+  // and the microcopy under the hero CTA is the only warning the user gets
+  // (no intermediate screen by design). It must render below the button and
+  // carry the three layers — where the next step happens, that repositories
+  // are chosen, that the choice is revisable — without adding a jump.
+  const ctaBlock = page.locator(".compare-hero .hero-primary");
+  if ((await ctaBlock.count()) !== 1) throw new Error(`${path}: expected one hero-primary CTA block in the hero`);
+  const microcopy = (await ctaBlock.locator("p").first().textContent()).replace(/\s+/g, " ").trim();
+  if (microcopy !== claim.ctaMicrocopy) {
+    throw new Error(`${path}: hero CTA microcopy is ${JSON.stringify(microcopy)}, expected ${JSON.stringify(claim.ctaMicrocopy)}`);
+  }
+  if ((await ctaBlock.locator("p a").count()) !== 0) {
+    throw new Error(`${path}: the CTA microcopy must not carry links of its own`);
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.

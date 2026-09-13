@@ -206,6 +206,45 @@ describe("per-page head parameters (title / description / canonical)", () => {
   });
 });
 
+describe("cloud hero CTA microcopy (Issue #156)", () => {
+  // The hero CTA fires three instant redirects into GitHub's password box.
+  // With no intermediate screen by design, the line under the button is the
+  // only warning the user gets: it must say where the next step happens,
+  // that repositories are chosen there, and that the choice is revisable —
+  // and it must add no jump of its own.
+  const microcopyExpectations = {
+    "cloud/index.html":
+      "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
+    "zh/cloud/index.html":
+      "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
+  };
+
+  const heroCtaBlock = (output) => {
+    const hero = region(shipped.get(output), '<section class="compare-hero', "</section>");
+    return hero.match(/<div class="hero-primary">([\s\S]*?)<\/div>/)?.[1] ?? "";
+  };
+
+  it("carries the handoff warning directly under the hero CTA on both languages", () => {
+    for (const [output, expected] of Object.entries(microcopyExpectations)) {
+      const block = heroCtaBlock(output);
+      const button = block.indexOf('href="/cloud/login"');
+      expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
+      const paragraph = block.indexOf("<p>");
+      expect(paragraph, `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
+      const text = block.match(/<p>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
+      expect(text, `${output}: CTA microcopy drifted`).toBe(expected);
+    }
+  });
+
+  it("adds no link of its own", () => {
+    for (const output of Object.keys(microcopyExpectations)) {
+      const block = heroCtaBlock(output);
+      const paragraph = block.slice(block.indexOf("<p>"));
+      expect(paragraph, `${output}: CTA microcopy must not carry links`).not.toContain("<a ");
+    }
+  });
+});
+
 describe("anchor prefixes (home-relative only on the homes)", () => {
   it("uses bare #section anchors only on the language homes", () => {
     for (const page of pages.filter((p) => !p.standalone)) {
