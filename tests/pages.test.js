@@ -265,3 +265,36 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
     }
   });
 });
+
+// Issue #165: buyers looking for the subscription price get Pricing in the
+// primary nav (the /cloud/ PRICING section), not the measured-cost essay.
+describe("pricing nav entry (Issue #165)", () => {
+  it("anchors the PRICING section on both Cloud pages", () => {
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const hits = countMatches(shipped.get(output), /id="pricing"/g);
+      expect(hits, `${output}: expected exactly one id=\"pricing\"`).toBe(1);
+    }
+  });
+
+  it("points every page's Cost/Pricing nav item at the Cloud pricing section", () => {
+    for (const page of pages.filter((p) => p.nav)) {
+      const nav = navRegion(shipped.get(page.output));
+      const href = page.lang === "zh" ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+      const label = page.lang === "zh" ? "价格" : "Pricing";
+      expect(nav, `${page.output}: nav missing ${href}`).toContain(`href="${href}"`);
+      expect(nav, `${page.output}: nav missing label ${label}`).toContain(`>${label}<`);
+      const marked = `href="${href}" aria-current="page"`;
+      const isCloud = page.output === "cloud/index.html" || page.output === "zh/cloud/index.html";
+      if (isCloud) {
+        expect(nav, `${page.output}: Pricing should be aria-current on /cloud/`).toContain(marked);
+      } else {
+        expect(nav, `${page.output}: Pricing must not be aria-current here`).not.toContain(marked);
+      }
+    }
+  });
+
+  it("keeps a /cost/ entry from the Cloud pricing copy", () => {
+    expect(shipped.get("cloud/index.html")).toMatch(/href="\/cost\/"/);
+    expect(shipped.get("zh/cloud/index.html")).toMatch(/href="\/zh\/cost\/"/);
+  });
+});

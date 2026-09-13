@@ -521,6 +521,31 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
   }
+  // Issue #165: Pricing in the primary nav is the subscription-price entry,
+  // not the measured-cost essay. A real click must land on #pricing.
+  const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+  const pricingLabel = path.startsWith("/zh") ? "价格" : "Pricing";
+  const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
+  if ((await navPricing.count()) !== 1) {
+    throw new Error(`${path}: nav missing Pricing link ${pricingHref}`);
+  }
+  if ((await navPricing.textContent()).trim() !== pricingLabel) {
+    throw new Error(`${path}: Pricing label is ${JSON.stringify((await navPricing.textContent()).trim())}`);
+  }
+  // Desktop nav is visible; below 900px the menu is collapsed. Click the
+  // real entry only where the visitor can see it without opening the menu.
+  if (size.width > 900) {
+    await navPricing.click();
+    await page.waitForURL((url) => url.hash === "#pricing" && url.pathname.endsWith("/cloud/"));
+    const pricingSection = page.locator("#pricing");
+    if ((await pricingSection.count()) !== 1) {
+      throw new Error(`${path}: click on Pricing did not reach #pricing`);
+    }
+    if (!(await pricingSection.isVisible())) {
+      throw new Error(`${path}: #pricing is not visible after the Pricing click`);
+    }
+    await page.goBack({ waitUntil: "networkidle" });
+  }
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
   );
@@ -738,6 +763,20 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await page.locator(`main a[href="${claim.guideHref}"]`).count()) !== 1) {
     throw new Error(`${path}: expected exactly one link to ${claim.guideHref}`);
   }
+  // Issue #165: the PRICING section is the nav target; it must be on the page
+  // and keep a door to the measured-cost essay.
+  if ((await page.locator("#pricing").count()) !== 1) {
+    throw new Error(`${path}: missing id=pricing on the PRICING section`);
+  }
+  const costHref = path.startsWith("/zh") ? "/zh/cost/" : "/cost/";
+  if ((await page.locator(`#pricing a[href="${costHref}"]`).count()) < 1) {
+    throw new Error(`${path}: PRICING section lost the ${costHref} link`);
+  }
+  const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+  const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
+  if ((await navPricing.getAttribute("aria-current")) !== "page") {
+    throw new Error(`${path}: Pricing is not aria-current on /cloud/`);
+  }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
@@ -844,11 +883,16 @@ async function assertCostPage(browser, path, size, screenshot) {
   // The verification date belongs to the source notes specifically, not
   // just anywhere on the page.
   if (!text.includes(claim.verified)) throw new Error(`${path}: sources carry no ${JSON.stringify(claim.verified)} date`);
-  // Navigation consistency: the page is its own nav's current entry, and the
-  // language switch leads to the counterpart page.
-  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
-  if ((await navSelf.getAttribute("aria-current")) !== "page") {
-    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  // Issue #165: the primary-nav price item now points at /cloud/#pricing, so
+  // /cost/ is no longer a current nav entry. Language switch still leads to
+  // the counterpart cost page.
+  const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+  const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
+  if ((await navPricing.count()) !== 1) {
+    throw new Error(`${path}: nav lost the Pricing link to ${pricingHref}`);
+  }
+  if ((await navPricing.getAttribute("aria-current")) === "page") {
+    throw new Error(`${path}: Pricing must not be aria-current on the cost page`);
   }
   const navSwitch = page.locator("[data-primary-nav] .language a");
   if ((await navSwitch.getAttribute("href")) !== claim.zh) {

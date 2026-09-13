@@ -450,6 +450,13 @@ async function handleFetch(request, env) {
       return await handleApply(request, env);
     }
 
+    // Issue #165: /pricing is a permanent alias of the /cloud/ PRICING
+    // section. Host comes from the request so beta stays on beta.
+    if (route === "/pricing" || route === "/zh/pricing") {
+      const prefix = route.startsWith("/zh") ? "/zh" : "";
+      return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
+    }
+
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
