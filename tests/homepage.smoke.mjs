@@ -594,8 +594,9 @@ const cloudPages = {
       "business-flow e2e",
       "no check runs, both gates pass",
       "test-acceptance gate",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
+      // Issue #108 + #137: the $79 regular price with the 300M-token inclusion;
+      // the over-limit behavior is the pause, not a $0.10 overage price
+      "US$79", "300M tokens", "new deliveries pause", "100% off",
       // and the measured cost section with its three limits
       "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
       "not a promise to everyone", "order of magnitude", "totalTokens",
@@ -625,8 +626,8 @@ const cloudPages = {
       "业务闭环",
       "两道门禁都放行",
       "测试验收闸门",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "20 亿 token", "$0.10", "100% off",
+      // Issue #108 + #137: the $79 regular price with the 3 亿-token inclusion
+      "US$79", "3 亿 token", "新交付暂停", "100% off",
       // and the measured cost section with its three limits
       "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
       "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
