@@ -415,3 +415,28 @@ describe("application submit endpoint (Issue #76)", () => {
     expect(await response.text()).toBe("missing");
   });
 });
+
+// Issue #165: /pricing is the URL visitors type and crawlers guess. It is a
+// permanent alias of the /cloud/ PRICING section — never its own page.
+describe("/pricing alias (Issue #165)", () => {
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+
+  it.each([
+    ["https://orbi.build/pricing", "https://orbi.build/cloud/#pricing"],
+    ["https://orbi.build/pricing/", "https://orbi.build/cloud/#pricing"],
+    ["https://beta.orbi.build/pricing", "https://beta.orbi.build/cloud/#pricing"],
+    ["https://beta.orbi.build/pricing/", "https://beta.orbi.build/cloud/#pricing"],
+    ["https://orbi.build/zh/pricing", "https://orbi.build/zh/cloud/#pricing"],
+    ["https://orbi.build/zh/pricing/", "https://orbi.build/zh/cloud/#pricing"],
+    ["https://beta.orbi.build/zh/pricing", "https://beta.orbi.build/zh/cloud/#pricing"],
+    ["https://beta.orbi.build/zh/pricing/", "https://beta.orbi.build/zh/cloud/#pricing"],
+  ])("301s %s to the pricing section on the same host", async (from, to) => {
+    const response = await handleFetch(new Request(from), env);
+    expect(response.status).toBe(301);
+    const location = response.headers.get("location");
+    expect(location).toBe(to);
+    expect(location.endsWith(from.includes("/zh/") ? "/zh/cloud/#pricing" : "/cloud/#pricing")).toBe(true);
+  });
+});
