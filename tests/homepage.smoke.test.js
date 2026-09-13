@@ -57,7 +57,9 @@ const redirect = (location) => (_request, response) => {
 // stamped 404, which the smoke must reject.
 const oauthChain = (hijackHandoff = false) => (request, response) => {
   const { pathname } = new URL(request.url, "http://x");
-  if (pathname === "/cloud/login") {
+  // Issue #134: the handoff contract covers both spellings of the route, so
+  // the stub chain answers the trailing-slash form exactly like the bare one.
+  if (pathname === "/cloud/login" || pathname === "/cloud/login/") {
     const base = `http://${request.headers.host}`;
     response.writeHead(302, {
       location: hijackHandoff ? `${base}/not-the-handoff` : `${base}/api/login`,
@@ -133,7 +135,7 @@ describe("cloud login smoke contract (Issue #74)", () => {
     process.env.BASE_URL = "https://smoke.example";
     process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
     await withLoginServer(siteWorker404, (url) =>
-      expect(assertCloudLoginRedirect(url)).rejects.toThrow("Cloud login expected 302, got 404"));
+      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/expected 302, got 404/));
   });
 
   it("oauth-302 rejects a handoff that never reaches the GitHub OAuth redirect", async () => {

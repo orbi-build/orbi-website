@@ -182,55 +182,60 @@ export async function assertCloudLoginRedirect(targetURL) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
   const context = await request.newContext();
   try {
-    const response = await context.get(`${targetURL}/cloud/login`, { maxRedirects: 0 });
-    const headers = response.headers();
-    if (expectation === "oauth-302") {
-      // beta: the website's handoff must 302 to the configured Cloud login
-      // URL, and that URL must answer with the GitHub OAuth redirect. One
-      // manual hop each: the responses themselves are the contract, not
-      // where a browser would finally land.
-      if (response.status() !== 302) {
-        throw new Error(`Cloud login expected 302, got ${response.status()}`);
-      }
-      const handoff = new URL(headers.location || "", targetURL).toString();
-      const cloud = await context.get(handoff, { maxRedirects: 0 });
-      const cloudLocation = cloud.headers().location || "";
-      if (cloud.status() !== 302
-          || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
-        throw new Error(
-          `Cloud login did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
-        );
-      }
-    } else if (expectation === "fail-closed-503") {
-      // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
-      // fail-closes the login route with its stamped 503.
-      if (response.status() !== 503) {
-        throw new Error(`Cloud login expected the fail-closed 503, got ${response.status()}`);
-      }
-      const stamped =
-        headers["x-content-type-options"] === "nosniff" &&
-        headers["x-frame-options"] === "DENY" &&
-        headers["referrer-policy"] === "strict-origin-when-cross-origin";
-      if (!stamped) {
-        throw new Error(
-          `Cloud login 503 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
-        );
-      }
-    } else {
-      // fail-closed-404: the strict default for an environment that declared
-      // no contract. The site Worker's own 404 carries its security-header
-      // stamp, which the Cloud control plane's responses do not.
-      if (response.status() !== 404) {
-        throw new Error(`Cloud login expected fail-closed 404, got ${response.status()}`);
-      }
-      const stamped =
-        headers["x-content-type-options"] === "nosniff" &&
-        headers["x-frame-options"] === "DENY" &&
-        headers["referrer-policy"] === "strict-origin-when-cross-origin";
-      if (!stamped) {
-        throw new Error(
-          `Cloud login 404 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
-        );
+    // Issue #134: users and clients append the site's natural trailing slash,
+    // so the environment's declared contract must hold on both spellings of
+    // the handoff — neither form may fall through to the static-asset 404.
+    for (const path of ["/cloud/login", "/cloud/login/"]) {
+      const response = await context.get(`${targetURL}${path}`, { maxRedirects: 0 });
+      const headers = response.headers();
+      if (expectation === "oauth-302") {
+        // beta: the website's handoff must 302 to the configured Cloud login
+        // URL, and that URL must answer with the GitHub OAuth redirect. One
+        // manual hop each: the responses themselves are the contract, not
+        // where a browser would finally land.
+        if (response.status() !== 302) {
+          throw new Error(`Cloud login ${path} expected 302, got ${response.status()}`);
+        }
+        const handoff = new URL(headers.location || "", targetURL).toString();
+        const cloud = await context.get(handoff, { maxRedirects: 0 });
+        const cloudLocation = cloud.headers().location || "";
+        if (cloud.status() !== 302
+            || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
+          throw new Error(
+            `Cloud login ${path} did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
+          );
+        }
+      } else if (expectation === "fail-closed-503") {
+        // production (Issue #77): no CLOUD_LOGIN_URL, so the site Worker
+        // fail-closes the login route with its stamped 503.
+        if (response.status() !== 503) {
+          throw new Error(`Cloud login ${path} expected the fail-closed 503, got ${response.status()}`);
+        }
+        const stamped =
+          headers["x-content-type-options"] === "nosniff" &&
+          headers["x-frame-options"] === "DENY" &&
+          headers["referrer-policy"] === "strict-origin-when-cross-origin";
+        if (!stamped) {
+          throw new Error(
+            `Cloud login ${path} 503 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
+          );
+        }
+      } else {
+        // fail-closed-404: the strict default for an environment that declared
+        // no contract. The site Worker's own 404 carries its security-header
+        // stamp, which the Cloud control plane's responses do not.
+        if (response.status() !== 404) {
+          throw new Error(`Cloud login ${path} expected fail-closed 404, got ${response.status()}`);
+        }
+        const stamped =
+          headers["x-content-type-options"] === "nosniff" &&
+          headers["x-frame-options"] === "DENY" &&
+          headers["referrer-policy"] === "strict-origin-when-cross-origin";
+        if (!stamped) {
+          throw new Error(
+            `Cloud login ${path} 404 carries not the site Worker's security-header stamp, so it is not the site's fail-closed answer: ${JSON.stringify(headers)}`
+          );
+        }
       }
     }
   } finally {
