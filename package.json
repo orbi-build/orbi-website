@@ -14,7 +14,7 @@
     "@datafast/ai-crawl": "^1.0.9"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.63.0",
     "vitest": "^5.0.0"
   }
 }
