@@ -1134,6 +1134,57 @@ class CloudLandingPageTests(unittest.TestCase):
             for needle in needles:
                 self.assertIn(needle, page.text, needle)
 
+    def test_founding_partner_block_states_identity_benefits_and_condition(self) -> None:
+        """Issue #143 (orbi-cloud#338): the Founding Partner identity — limited
+        to 10, subscription free forever, Orbi covers the plan's 300M tokens
+        monthly, accepted Issues steer the product — and the explicit entry
+        condition (one accepted Issue per month) must be readable body text on
+        both language pages. A concrete condition can be self-screened; a vague
+        "give us feedback" cannot. The grant's mechanism is stated in the open:
+        issued monthly, renewed in step with the accepted Issue."""
+        for page, needles in (
+            (
+                self.en,
+                (
+                    "FOUNDING PARTNER · LIMITED TO 10",
+                    "subscription is free forever",
+                    "covered by Orbi each month",
+                    "accepted Issues steer the product",
+                    "one Issue per month that we accept",
+                    "granted a month at a time",
+                    "renews in step with that contribution",
+                ),
+            ),
+            (
+                self.zh,
+                (
+                    "FOUNDING PARTNER · 限 10 位",
+                    "订阅永久免费",
+                    "每月 3 亿 token 由 Orbi 承担",
+                    "被采纳的 Issue 直接影响产品方向",
+                    "每月提交 1 个被采纳的 Issue",
+                    "按月发放",
+                    "同步续期",
+                ),
+            ),
+        ):
+            for needle in needles:
+                self.assertIn(needle, page.text, needle)
+            self.assertNotRegex(page.text, r"限时\s*\d", "no fixed month cap on the grant")
+
+    def test_forever_words_never_attach_to_the_token_grant(self) -> None:
+        """Issue #143 red line: 「永久」/forever is written only on commitments
+        that are real — the subscription (Stripe coupon duration=forever) and
+        the free self-hosted core. The token grant is month to month, so no
+        sentence may couple a forever word to it: asked "how long do the
+        tokens last?", the page must answer with the monthly mechanism, not a
+        permanence claim."""
+        for page in (self.en, self.zh):
+            sentences = [s for s in re.split(r"[。；.!;?]", page.text) if s.strip()]
+            for sentence in sentences:
+                if re.search(r"永久|forever|permanently|permanent", sentence, re.IGNORECASE):
+                    self.assertNotIn("token", sentence.lower(), sentence)
+
     def test_cloud_states_the_measured_token_cost_with_all_three_limits(self) -> None:
         """Issue #108: the measured cost section carries the date, the sample
         size, the distribution, and the three qualifying statements — our repo
