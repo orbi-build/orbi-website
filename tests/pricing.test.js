@@ -29,24 +29,20 @@ const TOKEN_PAGES = PRICE_PAGES;
 
 // An included-quota literal: a round token count sitting next to the word
 // "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
-// the exact forms the 2B-vs-3 亿 drift of website#137 shipped). Three kinds
-// of number+token text stay allowed:
-//   - the published overage "$0.10 per (additional) 1M tokens": a unit
-//     price, not the quota, so a match right after "per [additional] " is
-//     skipped (the Chinese overage "每 100 万 token" counts in 万, which is
-//     not a quota-scale unit here and never matches in the first place);
+// the exact forms the 2B-vs-3 亿 drift of website#137 shipped). Two kinds of
+// number+token text stay allowed:
 //   - measured usage figures, written as decimal M ("mean 4.74M tokens per
 //     delivery", "max observed, 37.6M tokens"): a drift quota is round, so
 //     the M-unit branch only matches integers (the lookbehind keeps a
 //     decimal fraction's tail like ".74M" from matching);
 //   - measured figures without a unit word ("2,220,637 tokens").
+// The overage unit price ("$0.10 per 1M tokens") is deliberately NOT exempted:
+// since website#137 the plan promises no per-token overage billing, so that
+// form must trip the gate if it ever ships again.
 function quotaLiterals(html) {
   return [...html.matchAll(
     /(?<![\d.])(\d+(?:\.\d+)?)\s*(?:billion|b|亿)\s*tokens?|(?<![\d.])(\d+)\s*m\s*tokens?/gi,
-  )]
-    .map((match) => ({ literal: match[0], index: match.index }))
-    .filter(({ index }) =>
-      !/per\s+(?:additional\s+)?$/i.test(html.slice(Math.max(0, index - 24), index)));
+  )].map((match) => ({ literal: match[0], index: match.index }));
 }
 
 // "$79" as OUR monthly price, not as a substring of another figure ($790,
@@ -205,14 +201,16 @@ describe("Included tokens constant (Issue #138)", () => {
     for (const sample of ["2B tokens", "2 billion tokens", "300M tokens", "20 亿 token", "3 亿 tokens"]) {
       expect(quotaLiterals(sample).length, sample).toBeGreaterThan(0);
     }
-    // The published overage and the measured stats are legitimate numbers,
-    // not quota carriers: the gate must stay green on them.
-    expect(quotaLiterals("overage is a published $0.10 per 1M tokens")).toEqual([]);
-    expect(quotaLiterals("$0.10 per additional 1M tokens")).toEqual([]);
+    // The measured stats are legitimate numbers, not quota carriers: the gate
+    // must stay green on them.
     expect(quotaLiterals("超出部分按公开的 $0.10/100 万 token 计费")).toEqual([]);
     expect(quotaLiterals("the median delivery runs 2,220,637 tokens")).toEqual([]);
     expect(quotaLiterals("mean 4.74M tokens per delivery")).toEqual([]);
     expect(quotaLiterals("One delivery (max observed, 37.6M tokens)")).toEqual([]);
+    // Since website#137 the plan promises no per-token overage billing, so the
+    // old overage unit-price form must trip the gate too, not stay exempted.
+    expect(quotaLiterals("$0.10 per 1M tokens").length, "per 1M").toBeGreaterThan(0);
+    expect(quotaLiterals("$0.10 per additional 1M tokens").length, "per additional 1M").toBeGreaterThan(0);
     // The same scan keeps the monthly price literal banned.
     expect("US$79".match(literalPrice(USD)), "US$79").not.toBeNull();
     expect("$79".match(literalPrice(USD)), "$79").not.toBeNull();
