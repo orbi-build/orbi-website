@@ -164,18 +164,18 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">成本，实测</p>
       <h2 id="cost-title">我们不在你的 token 上赚差价</h2>
-      <p class="section-lede">实测于 <strong>2026-09-10</strong>，样本为我们自己仓库的 <strong>n=46 次真实交付</strong>（Python、完整 CI、Issue 写得规范）：单次交付中位 <strong>2,220,637 tokens</strong>，均值 <strong>4,667,630</strong>——按 DeepSeek V4.1 Flash 官方牌价约 <strong>$0.04–0.11 一次</strong>。token 构成：<strong>92.7% cacheRead、3.4% input、0.7% output</strong>。按实测中位数，计划内的 __INCLUDED_TOKENS__ token 约够 <strong>100 次交付/月</strong>。</p>
+      <p class="section-lede">实测于 <strong>2026-09-12</strong>，样本为我们自己仓库的 <strong>n=46 次真实交付</strong>（Python、完整 CI、Issue 写得规范）：单次交付中位 <strong>2,220,637 tokens</strong>，均值 <strong>4,742,066</strong>——按 DeepSeek V4.1 Flash 官方牌价约 <strong>$0.06–0.12 一次</strong>。token 构成：<strong>95.9% cacheRead、3.4% input、0.7% output</strong>。按实测中位数，计划内的 __INCLUDED_TOKENS__ token 约够 <strong>100 次交付/月</strong>。</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">分位</th><th scope="col">单次交付 totalTokens</th></tr></thead>
           <tbody>
             <tr><th scope="row">p50（中位）</th><td>2,220,637</td></tr>
-            <tr><th scope="row">均值</th><td>4,667,630</td></tr>
+            <tr><th scope="row">均值</th><td>4,742,066</td></tr>
             <tr><th scope="row">最大观测</th><td>37,627,783</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">来源：orbi-build/orbi 仓库 46 次 Orbi 交付的 implement + review session 日志聚合，2026-09-10。套用的是 DeepSeek 公布的 V4.1 Flash 官方牌价。</p>
+      <p class="src-note">来源：orbi-build/orbi 仓库 46 次 Orbi 交付的 implement + review session 日志聚合，2026-09-12。套用的是 DeepSeek 公布的 V4.1 Flash 官方牌价。</p>
       <ul class="event-list">
         <li>
           <span class="event-era">只测了我们自己的仓库</span>
@@ -187,7 +187,7 @@
         <li>
           <span class="event-era">缓存是承重墙</span>
           <div>
-            <strong>92.7% cacheRead 依赖 provider 支持 prompt caching</strong>
+            <strong>95.9% cacheRead 依赖 provider 支持 prompt caching</strong>
             <p>整套成本结构建立在缓存命中上。换到不支持 prompt caching 的端点——每个 token 都按 miss 计价——同样的工作成本大约要涨一个数量级。</p>
           </div>
         </li>

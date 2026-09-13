@@ -162,18 +162,18 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">COST, MEASURED</p>
       <h2 id="cost-title">We don't take a margin on your tokens</h2>
-      <p class="section-lede">Measured on <strong>2026-09-10</strong> across <strong>n=46 real deliveries of our own repository</strong> (Python, full CI, issues written to spec): the median delivery runs <strong>2,220,637 tokens</strong> and the mean <strong>4,667,630</strong> — roughly <strong>$0.04–0.11 per delivery</strong> at DeepSeek V4.1 Flash list prices. The token mix: <strong>92.7% cache reads, 3.4% input, 0.7% output</strong>. At the measured median, the plan's __INCLUDED_TOKENS__ tokens cover about <strong>100 deliveries a month</strong>.</p>
+      <p class="section-lede">Measured on <strong>2026-09-12</strong> across <strong>n=46 real deliveries of our own repository</strong> (Python, full CI, issues written to spec): the median delivery runs <strong>2,220,637 tokens</strong> and the mean <strong>4,742,066</strong> — roughly <strong>$0.06–0.12 per delivery</strong> at DeepSeek V4.1 Flash list prices. The token mix: <strong>95.9% cache reads, 3.4% input, 0.7% output</strong>. At the measured median, the plan's __INCLUDED_TOKENS__ tokens cover about <strong>100 deliveries a month</strong>.</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">Quantile</th><th scope="col">totalTokens per delivery</th></tr></thead>
           <tbody>
             <tr><th scope="row">p50 (median)</th><td>2,220,637</td></tr>
-            <tr><th scope="row">Mean</th><td>4,667,630</td></tr>
+            <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
             <tr><th scope="row">Max observed</th><td>37,627,783</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="src-note">Source: aggregated from the implement + review session logs of 46 Orbi deliveries of the orbi-build/orbi repository, 2026-09-10. Prices applied: DeepSeek's published V4.1 Flash list prices.</p>
+      <p class="src-note">Source: aggregated from the implement + review session logs of 46 Orbi deliveries of the orbi-build/orbi repository, 2026-09-12. Prices applied: DeepSeek's published V4.1 Flash list prices.</p>
       <ul class="event-list">
         <li>
           <span class="event-era">OUR REPO ONLY</span>
@@ -185,7 +185,7 @@
         <li>
           <span class="event-era">CACHING IS LOAD-BEARING</span>
           <div>
-            <strong>92.7% cache reads assumes the provider supports prompt caching</strong>
+            <strong>95.9% cache reads assumes the provider supports prompt caching</strong>
             <p>The cost structure rests on cache hits. On an endpoint without prompt caching — every token billed as a miss — the same work costs roughly an order of magnitude more.</p>
           </div>
         </li>

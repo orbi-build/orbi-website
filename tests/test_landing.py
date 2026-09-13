@@ -1210,9 +1210,11 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "2026-09-10", "n=46",
-                    "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%",
+                    # Issue #147: the measured block is aligned to the
+                    # /cost/ page's snapshot of the same measurement.
+                    "2026-09-12", "n=46",
+                    "2,220,637", "4,742,066", "37,627,783",
+                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
                     # website#145: the plan quota is 300M on both tiers; the
                     # derived deliveries figure uses the median (2,220,637),
                     # not the mean — 300M / median ≈ 135, stated conservatively
@@ -1224,9 +1226,9 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    "2026-09-10", "n=46",
-                    "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%",
+                    "2026-09-12", "n=46",
+                    "2,220,637", "4,742,066", "37,627,783",
+                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
                     # website#145: same median caliber as the EN page above.
                     "100 次交付/月",
                     "不是对所有人的承诺", "一个数量级", "totalTokens",
