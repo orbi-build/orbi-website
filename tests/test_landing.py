@@ -1093,13 +1093,13 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Offer", types, types)
 
     def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
-        """Issue #108 + #137 + #138: the regular US$79 price, the included-token
-        quota (rendered from the pricing.json label, so zh rides "2B" too),
-        and the coupon mechanism must be readable body text, not only structured
-        data."""
+        """Issue #108 + #137 + #138 (#145 relabeled the quota): the regular
+        US$79 price, the included-token quota (rendered from the pricing.json
+        label, so zh rides "300M" too), and the coupon mechanism must be
+        readable body text, not only structured data."""
         for page, coupon, tokens in (
-            (self.en, "Founding coupon", "2B tokens"),
-            (self.zh, "Founding 券", "2B token"),
+            (self.en, "Founding coupon", "300M tokens"),
+            (self.zh, "Founding 券", "300M token"),
         ):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
@@ -1120,7 +1120,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.en,
                 (
                     "US$79 per month",
-                    "2B tokens of model usage",
+                    "300M tokens of model usage",
                     "when the allowance runs out, new deliveries pause",
                     "100% off",
                 ),
@@ -1129,7 +1129,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.zh,
                 (
                     "US$79",
-                    "2B token",
+                    "300M token",
                     "新交付暂停",
                     "100% off",
                     "限量",
@@ -1147,9 +1147,9 @@ class CloudLandingPageTests(unittest.TestCase):
         both language pages. A concrete condition can be self-screened; a vague
         "give us feedback" cannot. The grant's mechanism is stated in the open:
         issued monthly, renewed in step with the accepted Issue. The 300M rides
-        the pricing.json foundingTokens seam (it is the orbi-cloud#338 gift,
-        not the plan's included quota, which is 2B), so the needles here match
-        the rendered label — zh rides "300M" the way it rides "2B"."""
+        the pricing.json foundingTokens seam (since website#145 it equals the
+        plan's included quota — the tiers differ in price, not quota), so the
+        needles here match the rendered label — zh rides "300M" the same way."""
         for page, needles in (
             (
                 self.en,
@@ -1215,7 +1215,11 @@ class CloudLandingPageTests(unittest.TestCase):
                     "2026-09-12", "n=46",
                     "2,220,637", "4,742,066", "37,627,783",
                     "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    "428 deliveries a month",
+                    # website#145: the plan quota is 300M on both tiers; the
+                    # derived deliveries figure uses the median (2,220,637),
+                    # not the mean — 300M / median ≈ 135, stated conservatively
+                    # as about 100.
+                    "100 deliveries a month",
                     "not a promise to everyone", "order of magnitude", "totalTokens",
                 ),
             ),
@@ -1225,7 +1229,8 @@ class CloudLandingPageTests(unittest.TestCase):
                     "2026-09-12", "n=46",
                     "2,220,637", "4,742,066", "37,627,783",
                     "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    "428 次交付/月",
+                    # website#145: same median caliber as the EN page above.
+                    "100 次交付/月",
                     "不是对所有人的承诺", "一个数量级", "totalTokens",
                 ),
             ),
