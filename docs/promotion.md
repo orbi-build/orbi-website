@@ -4,8 +4,9 @@ Beta is the default branch and serves beta.orbi.build; main serves production
 (orbi.build). The two branches are permanently diverged — every promotion is a
 true merge, never a fast-forward. This file records the convention that until
 2026-09-13 (Issue #151) lived only in PR history (#73, #84, #86–#88) and the
-workflow sources; every command below was executed for real during that
-promotion.
+workflow sources; the pre-flight checks and the anti-drift drill below were
+executed for real during that promotion, and the post-deploy checks are that
+promotion's acceptance items.
 
 ## The promotion
 
