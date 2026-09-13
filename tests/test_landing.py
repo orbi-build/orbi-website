@@ -1090,11 +1090,12 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Offer", types, types)
 
     def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
-        """Issue #108: the regular US$79 price, the 2B-token inclusion, and the
-        coupon mechanism must be readable body text, not only structured data."""
+        """Issue #108 + #137: the regular US$79 price, the 300M-token inclusion,
+        and the coupon mechanism must be readable body text, not only structured
+        data."""
         for page, coupon, tokens in (
-            (self.en, "Founding coupon", "2 billion tokens"),
-            (self.zh, "Founding 券", "20 亿 token"),
+            (self.en, "Founding coupon", "300M tokens"),
+            (self.zh, "Founding 券", "3 亿 token"),
         ):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
@@ -1102,18 +1103,20 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Private Beta", page.text)
             self.assertIn(coupon, page.text)
 
-    def test_pricing_section_states_price_tokens_overage_and_coupon_mechanism(self) -> None:
-        """Issue #108: $79 regular, 2B tokens included, the published overage,
-        and the coupon mechanism — the terms a subscriber agrees to must be
-        readable before subscribing. The framing around them stays unpinned
-        (Issue #112)."""
+    def test_pricing_section_states_price_tokens_pause_and_coupon_mechanism(self) -> None:
+        """Issue #108 + #137: $79 regular, 300M tokens included, and the honest
+        over-limit behavior — new deliveries pause; no overage price is promised
+        because no per-token billing is implemented (cloud removes `ai-ready`
+        instead) — plus the coupon mechanism: the terms a subscriber agrees to
+        must be readable before subscribing. The framing around them stays
+        unpinned (Issue #112)."""
         for page, needles in (
             (
                 self.en,
                 (
                     "US$79 per month",
-                    "2 billion tokens of model usage",
-                    "$0.10 per additional 1M tokens",
+                    "300M tokens of model usage",
+                    "when the allowance runs out, new deliveries pause",
                     "100% off",
                 ),
             ),
@@ -1121,8 +1124,8 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.zh,
                 (
                     "US$79",
-                    "20 亿 token",
-                    "$0.10",
+                    "3 亿 token",
+                    "新交付暂停",
                     "100% off",
                     "限量",
                 ),
@@ -1150,7 +1153,8 @@ class CloudLandingPageTests(unittest.TestCase):
                 (
                     "2026-09-10", "n=46",
                     "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%",
+                    "64 deliveries a month",
                     "not a promise to everyone", "order of magnitude", "totalTokens",
                 ),
             ),
@@ -1159,7 +1163,8 @@ class CloudLandingPageTests(unittest.TestCase):
                 (
                     "2026-09-10", "n=46",
                     "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%",
+                    "64 次交付/月",
                     "不是对所有人的承诺", "一个数量级", "totalTokens",
                 ),
             ),
