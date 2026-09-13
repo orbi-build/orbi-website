@@ -601,8 +601,9 @@ const cloudPages = {
       // quota (rendered from the pricing.json label); the over-limit behavior is
       // the pause, not a $0.10 overage price
       "US$79", "2B tokens", "new deliveries pause", "100% off",
-      // and the measured cost section with its three limits
-      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      // and the measured cost section with its three limits (Issue #147:
+      // aligned to the /cost/ page's numbers)
+      "2026-09-12", "n=46", "2,220,637", "4,742,066", "$0.06–0.12", "95.9%",
       "not a promise to everyone", "order of magnitude", "totalTokens",
       "a significantly larger weekly usage quota", "~10x Pro usage",
     ],
@@ -633,8 +634,9 @@ const cloudPages = {
       // Issue #108 + #137 + #138: the $79 regular price with the included-token
       // quota (rendered from the pricing.json label; zh rides the same label)
       "US$79", "2B token", "新交付暂停", "100% off",
-      // and the measured cost section with its three limits
-      "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
+      // and the measured cost section with its three limits (Issue #147:
+      // aligned to the /cost/ page's numbers)
+      "2026-09-12", "n=46", "2,220,637", "4,742,066", "$0.06–0.12", "95.9%",
       "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",
     ],
     guideHref: "/zh/guides/ci-gates/",

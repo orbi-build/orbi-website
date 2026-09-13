@@ -231,3 +231,92 @@ describe("Included tokens constant (Issue #138)", () => {
     expect("$79".match(literalPrice(USD)), "$79").not.toBeNull();
   });
 });
+
+// Issue #147: the measured delivery stats are bare literals — the quota gate
+// above deliberately exempts them — so nothing stopped /cloud/ from telling an
+// older snapshot (92.7% / 4,667,630 / $0.04–0.11 / 2026-09-10) of the very
+// measurement /cost/ had already restated as 95.9% / 4,742,066 / $0.06–0.12 /
+// 2026-09-12. Both pages tell one measurement: extract the same metric from
+// each telling and require equality, so a number can only move everywhere at
+// once. The mix must also sum to 100% — 92.7+3.4+0.7 = 96.8 shipped for days
+// as arithmetic a reader could falsify in their head — and /cloud/'s
+// per-delivery dollar range must re-derive from the cost page's own mean, mix,
+// and published list prices, so a range no page's numbers support cannot ship.
+function measuredStats(html) {
+  const row = (label) =>
+    html.match(new RegExp(`<tr><th scope="row">(?:${label})</th><td>([\\d,]+)</td></tr>`))?.[1];
+  return {
+    measuredOn: html.match(/<strong>(\d{4}-\d{2}-\d{2})<\/strong>/)?.[1],
+    n: html.match(/<strong>n=(\d+)/)?.[1],
+    median: row("p50 \\(median\\)|p50[（(]中位[)）]"),
+    mean: row("Mean|均值"),
+    max: row("Max(?: observed)?|最大(?:观测)?"),
+    mix: html.match(/(\d+(?:\.\d+)?)% (?:cache reads|cacheRead|缓存读取)[,、] ?(\d+(?:\.\d+)?)% (?:input|输入)[,、] ?(\d+(?:\.\d+)?)% (?:output|输出)/)?.slice(1),
+  };
+}
+
+describe("Measured delivery stats agree across pages (Issue #147)", () => {
+  const MEASURED_PAGES = [
+    "cost/index.html",
+    "zh/cost/index.html",
+    "cloud/index.html",
+    "zh/cloud/index.html",
+  ];
+
+  it("extracts every metric from all four pages, so the gate cannot pass vacuously", async () => {
+    for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
+      for (const relativePath of MEASURED_PAGES) {
+        const stats = measuredStats(await readFile(`${dir}${relativePath}`, "utf8"));
+        for (const [metric, value] of Object.entries(stats)) {
+          expect(value, `${dir}${relativePath}: ${metric} not found`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it("tells the same measurement on /cloud/ as on /cost/, EN and ZH", async () => {
+    for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
+      for (const [costPage, cloudPage] of [
+        ["cost/index.html", "cloud/index.html"],
+        ["zh/cost/index.html", "zh/cloud/index.html"],
+      ]) {
+        const cost = measuredStats(await readFile(`${dir}${costPage}`, "utf8"));
+        const cloud = measuredStats(await readFile(`${dir}${cloudPage}`, "utf8"));
+        expect(cloud, `${cloudPage} disagrees with ${costPage} in ${dir}`).toEqual(cost);
+      }
+    }
+  });
+
+  it("sums the token mix to 100% on every page that states it", async () => {
+    for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
+      for (const relativePath of MEASURED_PAGES) {
+        const { mix } = measuredStats(await readFile(`${dir}${relativePath}`, "utf8"));
+        const [reads, input, output] = mix.map(Number);
+        expect(reads + input + output, `${dir}${relativePath}: ${mix.join(" + ")}`).toBeCloseTo(100, 10);
+      }
+    }
+  });
+
+  it("re-derives the cloud page's per-delivery cost range from the cost page", async () => {
+    for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
+      for (const [costPage, cloudPage, rangeRe] of [
+        ["cost/index.html", "cloud/index.html", /\$([\d.]+)–([\d.]+) per delivery/],
+        ["zh/cost/index.html", "zh/cloud/index.html", /\$([\d.]+)–([\d.]+) 一次/],
+      ]) {
+        const costHtml = await readFile(`${dir}${costPage}`, "utf8");
+        const cloudHtml = await readFile(`${dir}${cloudPage}`, "utf8");
+        // The cost page publishes the deepseek-flash list prices as
+        // hit/miss/output per 1M and states peak hours are exactly double.
+        const [hit, miss, out] = [...costHtml.matchAll(/<strong>\$([\d.]+)\/1M<\/strong>/g)]
+          .slice(0, 3).map((m) => Number(m[1]));
+        const { mean, mix } = measuredStats(costHtml);
+        const [reads, input, output] = mix.map(Number);
+        const per1M = (reads / 100) * hit + (input / 100) * miss + (output / 100) * out;
+        const offPeak = (Number(mean.replaceAll(",", "")) / 1e6) * per1M;
+        const cents = (usd) => Math.round(usd * 100) / 100;
+        const stated = cloudHtml.match(rangeRe)?.slice(1, 3).map(Number);
+        expect(stated, `${cloudPage} in ${dir}`).toEqual([cents(offPeak), cents(offPeak * 2)]);
+      }
+    }
+  });
+});
