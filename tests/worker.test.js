@@ -46,6 +46,31 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
+  // Issue #134: users and clients append the site's natural trailing slash
+  // (every page lives at /…/), so /cloud/login/ must behave exactly like
+  // /cloud/login — the configured 302 when CLOUD_LOGIN_URL exists, the same
+  // fail-closed 503 page where it does not — never the asset fallback's 404.
+  it("serves /cloud/login/ identically to /cloud/login in both configurations (Issue #134)", async () => {
+    for (const pathname of ["/cloud/login", "/cloud/login/"]) {
+      const configured = await handleFetch(
+        new Request(`https://beta.orbi.build${pathname}?tenant=untrusted`),
+        { CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+      );
+      expect(configured.status).toBe(302);
+      expect(configured.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+
+      const unconfigured = await handleFetch(
+        new Request(`https://beta.orbi.build${pathname}`, {
+          headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+        }),
+        { ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },
+      );
+      expect(unconfigured.status).toBe(503);
+      expect(unconfigured.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
+      expect(await unconfigured.text()).toContain("Cloud is temporarily unavailable");
+    }
+  });
+
   it("opens the production gate: 302s /cloud/login to the production control plane and keeps the shipped CTAs (Issue #96)", async () => {
     const cloudLoginUrl = "https://orbi.build/api/login";
     const login = await handleFetch(
@@ -285,6 +310,27 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(calls).toHaveLength(callsAfterFirst);
     expect(await second.json()).toEqual(await first.json());
   });
+
+  // Issue #134: /stats/ is the same endpoint with the site's natural trailing
+  // slash; it must answer the same JSON, never fall through to the assets 404.
+  it("answers /stats/ with the same payload as /stats, without touching assets", async () => {
+    mockGitHub();
+    globalThis.caches = {
+      default: {
+        match: () => Promise.resolve(undefined),
+        put: async () => {},
+      },
+    };
+    const env = {
+      GITHUB_TOKEN: "token",
+      ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+    };
+    const bare = await handleFetch(new Request("https://orbi.build/stats"), env);
+    const slashed = await handleFetch(new Request("https://orbi.build/stats/"), env);
+    expect(bare.status).toBe(200);
+    expect(slashed.status).toBe(bare.status);
+    expect(await slashed.json()).toEqual(await bare.json());
+  });
 });
 
 describe("application submit endpoint (Issue #76)", () => {
@@ -322,6 +368,21 @@ describe("application submit endpoint (Issue #76)", () => {
     expect(await response.json()).toEqual({ ok: true });
     expect(statements).toHaveLength(1);
     expect(statements[0]).toContain("INSERT INTO applications");
+  });
+
+  it("stores an application and answers 201 on the trailing-slash form /cloud/apply/ (Issue #134)", async () => {
+    const { env, statements } = d1Env();
+    const response = await handleFetch(
+      new Request("https://beta.orbi.build/cloud/apply/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tg: "@ada", scenario: "ship our first Issue" }),
+      }),
+      env,
+    );
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(statements).toHaveLength(1);
   });
 
   it("rejects a submission without the required fields with 400", async () => {

@@ -405,7 +405,15 @@ async function handleFetch(request, env) {
       });
     }
 
-    if (url.pathname === "/stats") {
+    // Issue #134: every page on this site lives at a trailing-slash path, so
+    // users and clients append one naturally. The worker-owned routes answer
+    // both spellings; the original pathname still reaches the static assets,
+    // whose directory routing is slash-sensitive.
+    const route = url.pathname !== "/" && url.pathname.endsWith("/")
+      ? url.pathname.slice(0, -1)
+      : url.pathname;
+
+    if (route === "/stats") {
       try {
         return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
@@ -422,11 +430,11 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (url.pathname === CLOUD_LOGIN_ROUTE) {
+    if (route === CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
-    if (url.pathname === APPLY_ROUTE) {
+    if (route === APPLY_ROUTE) {
       return await handleApply(request, env);
     }
 
