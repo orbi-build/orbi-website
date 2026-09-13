@@ -49,6 +49,84 @@ the monthly allowance runs out, new deliveries pause. Founding coupons run
 100% off while they last. Fully self-hosting the core costs nothing and
 always will. Details and signup: https://orbi.build/cloud/
 
+## Connect a repository to Cloud
+
+Agent-executable setup for Managed Cloud. Follow the six steps in order; each
+step states how to tell it is done and where to go when it is not. The Cloud
+console lives on https://orbi.build under /api/ — after sign-in you are on the
+Cloud status page (https://orbi.build/api/), which is the home screen for
+every step below.
+
+1. **Sign in.** Open https://orbi.build/cloud/ and click "Start Cloud with
+   GitHub", then approve the GitHub OAuth prompt. Done: the browser lands on
+   the Cloud status page showing your GitHub login. If not: retry the same
+   link and accept the OAuth consent screen; no password or workspace setup
+   exists beyond this.
+
+2. **Authorize the Orbi GitHub App for the target repository.** The App is
+   authorized per repository: GitHub shows the Orbi App install screen during
+   sign-in, and only the repositories you select there are in scope. A
+   repository created after the installation is NOT added automatically.
+   Done: GitHub's post-install redirect returns you to the connect page
+   (https://orbi.build/api/connect). If not: on github.com open Settings →
+   Applications → Installed GitHub Apps → Orbi → Repository access, add the
+   target repository, and retry.
+
+3. **Subscribe.** Open https://orbi.build/api/checkout and complete Stripe
+   checkout. Founding coupons run 100% off while they last; the regular plan
+   is US$79/month with 300M model tokens included. Done: the status page
+   shows an active plan and no longer asks you to subscribe. If not: re-open
+   /api/checkout; when the coupon supply has run out, the regular price
+   applies.
+
+4. **Connect the repository.** On https://orbi.build/api/connect pick the
+   repository and its base branch from the dropdowns and submit. Done: the
+   status page lists the repository as connected and provisioning starts
+   (the status chip reads 「正在开通」 / provisioning). If not: an empty or
+   incomplete repository dropdown is an App authorization gap, not a bug —
+   see Failure diagnosis below.
+
+5. **Configure the model source — only when the status page asks.** A
+   subscription normally includes the platform's model quota, so skip this
+   step by default. If the status page shows 「仓库已连接，还差模型来源」
+   (repository connected, model source missing), the platform model channel
+   is unavailable and you must bring your own key: open
+   https://orbi.build/api/model-config, pick a provider, paste its API key,
+   save. Done: the status page stops showing that message and provisioning
+   proceeds. If not: see Failure diagnosis below.
+
+6. **Dispatch the first delivery.** In the connected GitHub repository,
+   create an Issue and apply the exact label `ai-ready`. Delivery then starts
+   by itself: worktree → agent → tests → independent review → exact-head
+   merge → pull request. Done: the Issue gains further `ai-*` labels and a
+   pull request opens; the status page shows the delivery. If not: confirm
+   the label is spelled exactly `ai-ready`, and that the status page shows
+   provisioning finished (「开通成功」), not 「正在开通」 or 「开通失败」;
+   if all of that checks out and the Issue still does not move, report it via
+   https://orbi.build/apply with the repository name and the status page's
+   request id.
+
+### Failure diagnosis (measured states, not hypotheticals)
+
+- **The connect page's repository dropdown is empty or lacks the target
+  repository.** Cause: the GitHub App installation does not include that
+  repository. Fix: add it on github.com under Installed GitHub Apps → Orbi →
+  Repository access, or type owner/repository by hand through the page's
+  「— 手动填写 —」 (manual fill) sentinel option in the dropdown.
+
+- **The status page shows 「仓库已连接，还差模型来源」.** Cause: this
+  deployment's platform model channel is unavailable, so the included quota
+  cannot start provisioning. Fix: configure your own provider key at
+  https://orbi.build/api/model-config; saving it rearms provisioning
+  automatically.
+
+- **The status page shows 「正在开通」 for more than a few minutes.** The page
+  itself says to expect 1–2 minutes and refreshes automatically. When
+  provisioning gives up, the same page turns to 「开通失败」 with a written
+  原因 (reason), the time, a request id, and a suggested next step. Do not
+  keep waiting: read that failure text on the status page and follow its next
+  step; if it says to contact us, include the request id.
+
 ## What is not shipping yet
 
 The "closed production loop" (software supplying evidence from its own
