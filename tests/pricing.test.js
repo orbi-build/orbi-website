@@ -5,6 +5,7 @@ import pricing from "../src/pricing.json";
 import { handleFetch } from "../src/worker.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
+const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
 
@@ -19,6 +20,30 @@ const PRICE_PAGES = [
   "cost/index.html",
   "zh/cost/index.html",
 ];
+
+// Issue #138: the included token quota rides the same seam. The same six
+// pages carry every quota mention, so the token-page set is identical.
+const TOKENS = pricing.includedTokensToken;
+const TOKENS_LABEL = String(pricing.includedTokensLabel);
+const TOKEN_PAGES = PRICE_PAGES;
+
+// An included-quota literal: a round token count sitting next to the word
+// "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
+// the exact forms the 2B-vs-3 亿 drift of website#137 shipped). Two kinds of
+// number+token text stay allowed:
+//   - measured usage figures, written as decimal M ("mean 4.74M tokens per
+//     delivery", "max observed, 37.6M tokens"): a drift quota is round, so
+//     the M-unit branch only matches integers (the lookbehind keeps a
+//     decimal fraction's tail like ".74M" from matching);
+//   - measured figures without a unit word ("2,220,637 tokens").
+// The overage unit price ("$0.10 per 1M tokens") is deliberately NOT exempted:
+// since website#137 the plan promises no per-token overage billing, so that
+// form must trip the gate if it ever ships again.
+function quotaLiterals(html) {
+  return [...html.matchAll(
+    /(?<![\d.])(\d+(?:\.\d+)?)\s*(?:billion|b|亿)\s*tokens?|(?<![\d.])(\d+)\s*m\s*tokens?/gi,
+  )].map((match) => ({ literal: match[0], index: match.index }));
+}
 
 // "$79" as OUR monthly price, not as a substring of another figure ($790,
 // $7,900) or of unrelated content (hex tokens, Anthropic's $15 on the
@@ -69,10 +94,15 @@ function serve(raw, path) {
 
 describe("Cloud monthly price constant (Issue #102)", () => {
   it("ships every price occurrence as the token, never as a literal", async () => {
-    for (const path of await listHtmlFiles()) {
-      const raw = await readFile(path, "utf8");
-      expect(raw.match(literalPrice(USD)), path).toBeNull();
-      expect(raw.match(new RegExp(`"price":\\s*"${USD}"`)), path).toBeNull();
+    // Issue #138 widened the scan to the sources: public/ is a build of
+    // site/pages/, but the gate reads both trees so a literal is caught no
+    // matter which one it was typed into.
+    for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
+      for (const path of await listHtmlFiles(dir)) {
+        const raw = await readFile(path, "utf8");
+        expect(raw.match(literalPrice(USD)), path).toBeNull();
+        expect(raw.match(new RegExp(`"price":\\s*"${USD}"`)), path).toBeNull();
+      }
     }
     for (const relativePath of PRICE_PAGES) {
       expect(await rawPage(relativePath), relativePath).toContain(TOKEN);
@@ -130,5 +160,74 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       expect(repriced.match(literalPrice(USD)), relativePath).toBeNull();
       expect(repriced.match(literalPrice(next)), relativePath).toHaveLength(tokenCount);
     }
+  });
+});
+
+describe("Included tokens constant (Issue #138)", () => {
+  // orbi-cloud is the system that enforces this quota, and the two repos
+  // cannot reference each other, so the expected value is pinned here with
+  // its source: orbi-build/orbi-cloud (branch beta) wrangler.toml [vars]
+  // MONTHLY_TOKEN_LIMITS = '{ "default": 2000000000 }', read at runtime by
+  // that repo's src/guard.ts monthlyTokenLimit(). If orbi-cloud changes its
+  // default, this assertion goes red and pricing.json must move in the same
+  // change — the drift that shipped "2 billion" here against the cloud's
+  // 3 亿 (website#137) is what this pin exists to stop. The default has
+  // moved once already (orbi-cloud#339, 2026-09-13): 300000000 → 2000000000,
+  // raising the enforcement to the US$79 / 2B pilot promise, and this pin
+  // moved in the same change.
+  it("matches orbi-cloud's MONTHLY_TOKEN_LIMITS.default", () => {
+    expect(pricing.includedTokens).toBe(2000000000);
+  });
+
+  it("ships every quota occurrence as the token, never as a literal", async () => {
+    for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
+      for (const path of await listHtmlFiles(dir)) {
+        const raw = await readFile(path, "utf8");
+        expect(quotaLiterals(raw), path).toEqual([]);
+      }
+    }
+    for (const relativePath of TOKEN_PAGES) {
+      expect(await rawPage(relativePath), relativePath).toContain(TOKENS);
+    }
+  });
+
+  it("serves the label into every carrier through the real Worker path", async () => {
+    for (const relativePath of TOKEN_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).not.toContain(TOKENS);
+      expect(body, relativePath).toContain(TOKENS_LABEL);
+    }
+  });
+
+  // Issue #143: the Founding Partner gift (orbi-cloud#338, 300M/month) rides
+  // the same token seam — only the two cloud pages carry it, and a visitor
+  // must read the rendered label, never the token or a literal.
+  it("serves the Founding Partner gift label through the same seam", async () => {
+    for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).not.toContain(pricing.foundingTokensToken);
+      expect(body, relativePath).toContain(pricing.foundingTokensLabel);
+    }
+  });
+
+  it("catches the exact literals this gate exists for", () => {
+    for (const sample of ["2B tokens", "2 billion tokens", "300M tokens", "20 亿 token", "3 亿 tokens"]) {
+      expect(quotaLiterals(sample).length, sample).toBeGreaterThan(0);
+    }
+    // The measured stats are legitimate numbers, not quota carriers: the gate
+    // must stay green on them.
+    expect(quotaLiterals("超出部分按公开的 $0.10/100 万 token 计费")).toEqual([]);
+    expect(quotaLiterals("the median delivery runs 2,220,637 tokens")).toEqual([]);
+    expect(quotaLiterals("mean 4.74M tokens per delivery")).toEqual([]);
+    expect(quotaLiterals("One delivery (max observed, 37.6M tokens)")).toEqual([]);
+    // Since website#137 the plan promises no per-token overage billing, so the
+    // old overage unit-price form must trip the gate too, not stay exempted.
+    expect(quotaLiterals("$0.10 per 1M tokens").length, "per 1M").toBeGreaterThan(0);
+    expect(quotaLiterals("$0.10 per additional 1M tokens").length, "per additional 1M").toBeGreaterThan(0);
+    // The same scan keeps the monthly price literal banned.
+    expect("US$79".match(literalPrice(USD)), "US$79").not.toBeNull();
+    expect("$79".match(literalPrice(USD)), "$79").not.toBeNull();
   });
 });
