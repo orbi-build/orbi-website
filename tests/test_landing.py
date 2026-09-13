@@ -15,7 +15,8 @@ WORKER_PATH = ROOT / "src" / "worker.js"
 # Issue #102: the shipped files carry the price token; every reader below
 # asserts what the Worker actually serves, so parse() resolves the token to
 # the constant first. src/pricing.json is the single source of truth for the
-# price.
+# price. Issue #138 put the included-token quota on the same seam, so parse()
+# resolves that token too.
 PRICING = json.loads((ROOT / "src" / "pricing.json").read_text(encoding="utf-8"))
 
 GITHUB = "https://github.com/orbi-build/orbi"
@@ -111,6 +112,7 @@ class PageParser(HTMLParser):
 def parse(path: Path) -> tuple[str, PageParser]:
     html = path.read_text(encoding="utf-8")
     html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
+    html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
     page = PageParser()
     page.feed(html)
     return html, page
@@ -1090,11 +1092,12 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("Offer", types, types)
 
     def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
-        """Issue #108: the regular US$79 price, the 2B-token inclusion, and the
-        coupon mechanism must be readable body text, not only structured data."""
+        """Issue #108: the regular US$79 price, the included-token quota, and
+        the coupon mechanism must be readable body text, not only structured
+        data."""
         for page, coupon, tokens in (
-            (self.en, "Founding coupon", "2 billion tokens"),
-            (self.zh, "Founding 券", "20 亿 token"),
+            (self.en, "Founding coupon", "300M tokens"),
+            (self.zh, "Founding 券", "300M token"),
         ):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
@@ -1103,16 +1106,16 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn(coupon, page.text)
 
     def test_pricing_section_states_price_tokens_overage_and_coupon_mechanism(self) -> None:
-        """Issue #108: $79 regular, 2B tokens included, the published overage,
-        and the coupon mechanism — the terms a subscriber agrees to must be
-        readable before subscribing. The framing around them stays unpinned
-        (Issue #112)."""
+        """Issue #108: $79 regular, the included-token quota, the published
+        overage, and the coupon mechanism — the terms a subscriber agrees to
+        must be readable before subscribing. The framing around them stays
+        unpinned (Issue #112)."""
         for page, needles in (
             (
                 self.en,
                 (
                     "US$79 per month",
-                    "2 billion tokens of model usage",
+                    "300M tokens of model usage",
                     "$0.10 per additional 1M tokens",
                     "100% off",
                 ),
@@ -1121,7 +1124,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.zh,
                 (
                     "US$79",
-                    "20 亿 token",
+                    "300M token",
                     "$0.10",
                     "100% off",
                     "限量",
@@ -1150,7 +1153,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 (
                     "2026-09-10", "n=46",
                     "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "64",
                     "not a promise to everyone", "order of magnitude", "totalTokens",
                 ),
             ),
@@ -1159,7 +1162,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 (
                     "2026-09-10", "n=46",
                     "2,220,637", "4,667,630", "37,627,783",
-                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "430",
+                    "$0.04–0.11", "92.7%", "3.4%", "0.7%", "64",
                     "不是对所有人的承诺", "一个数量级", "totalTokens",
                 ),
             ),

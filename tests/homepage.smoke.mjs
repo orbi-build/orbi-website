@@ -82,9 +82,10 @@ const sharedAttributes = {
 };
 
 // Issue #102: the shipped files carry the monthly price as a token and the
-// site Worker resolves it while serving (src/worker.js). This local server is
-// the stand-in for that Worker, so it applies the same substitution from the
-// same single source before a page reaches the browser.
+// site Worker resolves it while serving (src/worker.js). Issue #138 added the
+// included-token quota to the same seam. This local server is the stand-in
+// for that Worker, so it applies the same substitutions from the same single
+// source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
 
 const CONTENT_TYPES = {
@@ -124,7 +125,9 @@ function startServer() {
       const type = CONTENT_TYPES[extname(file.path).toLowerCase()] ?? "application/octet-stream";
       const body = type.startsWith("text/html")
         ? Buffer.from(
-            file.body.toString("utf8").replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd)),
+            file.body.toString("utf8")
+              .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
+              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel)),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -594,8 +597,8 @@ const cloudPages = {
       "business-flow e2e",
       "no check runs, both gates pass",
       "test-acceptance gate",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "2 billion tokens", "$0.10 per 1M", "100% off",
+      // Issue #108: the $79 regular price with the included-token quota
+      "US$79", "300M tokens", "$0.10 per 1M", "100% off",
       // and the measured cost section with its three limits
       "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
       "not a promise to everyone", "order of magnitude", "totalTokens",
@@ -625,8 +628,8 @@ const cloudPages = {
       "业务闭环",
       "两道门禁都放行",
       "测试验收闸门",
-      // Issue #108: the $79 regular price with the 2B-token inclusion
-      "US$79", "20 亿 token", "$0.10", "100% off",
+      // Issue #108: the $79 regular price with the included-token quota
+      "US$79", "300M token", "$0.10", "100% off",
       // and the measured cost section with its three limits
       "2026-09-10", "n=46", "2,220,637", "4,667,630", "$0.04–0.11", "92.7%",
       "不是对所有人的承诺", "一个数量级", "totalTokens", "~10x Pro usage",

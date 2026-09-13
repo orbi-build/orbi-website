@@ -1,4 +1,7 @@
 {
   "cloudMonthlyUsd": 79,
-  "monthlyUsdToken": "__CLOUD_MONTHLY_USD__"
+  "monthlyUsdToken": "__CLOUD_MONTHLY_USD__",
+  "includedTokens": 300000000,
+  "includedTokensLabel": "300M",
+  "includedTokensToken": "__INCLUDED_TOKENS__"
 }
