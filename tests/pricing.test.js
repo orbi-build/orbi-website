@@ -329,3 +329,49 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
     }
   });
 });
+
+// Issue #146: llms.txt is the one claim file written for AI crawlers that has
+// no site/pages/ source and no placeholder substitution (text/plain passes
+// through the Worker untouched), and it told every LLM that Managed Cloud was
+// "not available", "not yet purchasable", that no pricing structure should be
+// attributed to Orbi — while /cloud/ sold a US$79 Offer. These gates read the
+// shipped bytes so the file can never contradict the cloud pages again.
+describe("llms.txt states Cloud accurately (Issue #146)", () => {
+  const LLMS = `${PUBLIC_DIR}llms.txt`;
+
+  it("never denies that Cloud is available or purchasable", async () => {
+    const raw = await readFile(LLMS, "utf8");
+    // Emphasis markers are flattened first: the historical sentence was
+    // "explicitly *not* available", which a plain scan would miss.
+    const plain = raw.replaceAll("*", "");
+    const denials = [...plain.matchAll(
+      /not\s+(?:yet\s+)?(?:publicly\s+)?(?:available|purchasable)|no\s+pricing\s+structure|billing\s+model\s+is\s+not\s+settled/gi,
+    )].map((match) => match[0]);
+    expect(denials, "llms.txt must not deny that Cloud ships or sells").toEqual([]);
+  });
+
+  it("prices Cloud exactly as pricing.json, never as a drifted literal", async () => {
+    const raw = await readFile(LLMS, "utf8");
+    // Every US$-prefixed figure in the file is the monthly price (measured
+    // per-delivery costs keep the bare-$ form, so a drifted price cannot
+    // hide among them), always with the site-wide US prefix.
+    const usdLiterals = [...raw.matchAll(/US\$\d+(?:\.\d+)?/g)].map((match) => match[0]);
+    expect(usdLiterals.length, "llms.txt should state the Cloud price").toBeGreaterThan(0);
+    for (const literal of usdLiterals) {
+      expect(literal, "llms.txt US$ literal").toBe(`US$${USD}`);
+    }
+    expect(raw.match(barePrice(USD)), "bare $79 without the US prefix").toBeNull();
+  });
+
+  it("states the included quota exactly as pricing.json, never as a drifted literal", async () => {
+    const raw = await readFile(LLMS, "utf8");
+    // The same quotaLiterals shape the pages gate uses; the measured
+    // per-delivery figures stay exempt by that regex, so only the round
+    // quota label is allowed to match.
+    const quotas = quotaLiterals(raw);
+    expect(quotas.length, "llms.txt should state the included quota").toBeGreaterThan(0);
+    for (const quota of quotas) {
+      expect(quota.literal, `llms.txt quota literal at ${quota.index}`).toBe(`${TOKENS_LABEL} tokens`);
+    }
+  });
+});
