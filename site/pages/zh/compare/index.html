@@ -121,15 +121,15 @@
         <p class="claim-quotes-lede">交付三行的 vendor 原话。上表每个「是/否」都指向官方页面；读不到的格子写「未能核实」，不写「否」。没有任何一家的官方文档描述「独立评审 → 自动 merge → 打 Tag 发 Release」的完整链路——「发 Release」一格，只有 Orbi 是「是」。三行核实于 2026-09-10（逐家官方文档）；原句 2026-09-11 在活页复核。</p>
         <div class="claim-quote">
           <p class="claim-quote-text">“Pull request authors cannot approve their own pull requests. You will also not be able to approve a pull request that was raised by GitHub Copilot if it was you who assigned Copilot to the issue to which the pull request relates.”</p>
-          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub 文档 — Approving a pull request with required reviews</a>；关于 session 上限：“Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.”——<a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · 核实于 2026-09-11。GitHub 在 2026-09-10 审计之后重组了 coding agent 文档（原审计 URL 现已重定向到 cloud-agent 页），两句原句均为当天在活页重新核对。</p>
+          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub 文档 — Approving a pull request with required reviews</a>；关于 session 上限：“Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.”——<a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · 核实于 2026-09-11。</p>
         </div>
         <div class="claim-quote">
           <p class="claim-quote-text">“Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.” · “The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.”</p>
-          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · 核实于 2026-09-10，2026-09-11 复核。Claude Code 是 Anthropic 的编程 agent；矩阵中的 Managed Agents 是另一款产品，其官方文档未描述这三步中的任何一步，故标「未能核实」。</p>
+          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · 核实于 2026-09-10，2026-09-11 复核。Managed Agents 的文档未覆盖这三步。</p>
         </div>
         <div class="claim-quote">
           <p class="claim-quote-text">“Merge, close, convert to draft, mark ready for review, and toggle auto-merge directly from Devin Review without leaving the page.”</p>
-          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin 文档 — Devin Review</a> · 核实于 2026-09-11。auto-merge 开关真实存在，Devin 的格子如实标「是」。Devin 的 <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub 集成页</a>只描述 @提及（Core/Teams）与 Enterprise 仓库委托；issue 自动触发未能核实——Devin 同样没有文档化的无人值守 Issue→merge→Release 链路。</p>
+          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin 文档 — Devin Review</a> · 核实于 2026-09-11。Devin Review 提供 auto-merge 开关。Devin 的 <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub 集成页</a>只描述 @提及（Core/Teams）与 Enterprise 仓库委托；issue 自动触发未能核实——Devin 同样没有文档化的无人值守 Issue→merge→Release 链路。</p>
         </div>
       </div>
       <p class="src-note">*Hermes 是通用助理，其 GitHub skill 不等同于 GitHub 原生软件交付队列。OpenHands 来源：<a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">官方仓库</a> 和 <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">官方文档</a>。来源：<a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent 官方仓库</a>；<a href="https://docs.orbi.build/zh">Orbi 文档</a>；<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>；<a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub 文档</a>；<a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>；<a href="https://devin.ai/" rel="noopener">Devin</a>——均核实于 2026-09-07；交付三行核实于 2026-09-10，2026-09-11 复核。各家的范围与来源见下方深度对比。</p>
@@ -150,7 +150,7 @@
           </tbody></table>
         </div>
         <p class="thesis-punch">托管 agent 的便利，以 vendor 的单方变更权作抵押。Orbi 把这五项风险留在你手里；代价是维护一台机器，收益是你可以自行改变运行方式，不必等待托管 vendor。</p>
-        <p class="src-note">来源：<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>；<a href="https://x.com/bcherny" rel="noopener">Boris Cherny 公开声明</a>；<a href="/zh/compare/openclaw/">OpenClaw 深度对比</a>；<a href="https://github.com/orbi-build/orbi-website/issues/4">竞品调研 epic</a>——核实于 2026-09-07。这些是所有权取舍，不是对服务质量的判断。</p>
+        <p class="src-note">来源：<a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>；<a href="https://x.com/bcherny" rel="noopener">Boris Cherny 公开声明</a>；<a href="/zh/compare/openclaw/">OpenClaw 深度对比</a>——核实于 2026-09-07。这些是所有权取舍，不是对服务质量的判断。</p>
       </div>
     </section>
 
@@ -159,55 +159,49 @@
       <h2 id="dives-title">深度对比</h2>
       <ul class="dive-list">
         <li>
-          <a href="/zh/compare/orca/"><strong>Orbi vs Orca</strong><span class="dive-status is-live">已上线</span><p>6.68 万 star 的头部 ADE：一队并行 agent 的工作台——以及这一页要拆掉的「和 Orbi 差不多」误读。</p></a>
+          <a href="/zh/compare/orca/"><strong>Orbi vs Orca</strong><p>6.68 万 star 的头部 ADE：一队并行 agent 的工作台——以及这一页要拆掉的「和 Orbi 差不多」误读。</p></a>
         </li>
         <li>
           <a href="/zh/compare/openclaw/">
             <strong>Orbi vs OpenClaw</strong>
-            <span class="dive-status is-live">已上线</span>
             <p>开源常驻个人助理 agent——以及 2026 年 4 月那场一夜之间重新定价的 Anthropic 订阅通道调整。</p>
           </a>
         </li>
         <li>
           <a href="/zh/compare/github-copilot-coding-agent/">
             <strong>Orbi vs GitHub Copilot coding agent</strong>
-            <span class="dive-status is-live">已上线</span>
             <p>在 Issue 里 @copilot，云沙箱跑完交回 PR——与 Orbi 任务闭环重合度最高的对手。</p>
           </a>
         </li>
         <li>
           <a href="/zh/compare/managed-agents/">
             <strong>Orbi vs Claude Managed Agents（Anthropic）</strong>
-            <span class="dive-status is-live">已上线</span>
             <p>Anthropic 托管的 Agent API：按 token 价加 $0.08/session-hour 计费。</p>
           </a>
         </li>
         <li>
-          <a href="/zh/compare/openhands/"><strong>Orbi vs OpenHands</strong><span class="dive-status is-live">已上线</span><p>支持 Docker、云端、BYOK 和广泛自动化入口的开源 AI 开发平台。</p></a>
+          <a href="/zh/compare/openhands/"><strong>Orbi vs OpenHands</strong><p>支持 Docker、云端、BYOK 和广泛自动化入口的开源 AI 开发平台。</p></a>
         </li>
         <li>
           <a href="/zh/compare/hermes-agent/">
             <strong>Orbi vs Hermes Agent</strong>
-            <span class="dive-status is-live">已上线</span>
             <p>Nous Research 的开源常驻个人助理——有 GitHub 工具，但定位不是软件工程交付 agent。</p>
           </a>
         </li>
         <li>
           <a href="/zh/compare/codex/">
             <strong>Orbi vs OpenAI Codex（cloud）</strong>
-            <span class="dive-status">调研 ticket</span>
             <p>ChatGPT 侧的云端软件工程 agent，每个任务一个独立沙箱。</p>
           </a>
         </li>
         <li>
           <a href="/zh/compare/devin/">
             <strong>Orbi vs Devin</strong>
-            <span class="dive-status is-live">已上线</span>
             <p>Cognition 的托管自主工程师——Slack 派活、云端执行、以及一套已被整体改写过一次的计费结构。</p>
           </a>
         </li>
       </ul>
-      <p class="src-note">每篇已上线深度对比都有自己的官方来源和核实日期。Codex 页面对应已交付的调研 ticket <a href="https://github.com/orbi-build/orbi-website/issues/8">#8</a>；对比集合见<a href="https://github.com/orbi-build/orbi-website/issues/4">竞品对比 epic</a>。</p>
+      <p class="src-note">每篇深度对比都有自己的官方来源和核实日期。</p>
     </section>
 
     <section class="closing shell" aria-labelledby="closing-title">

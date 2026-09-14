@@ -45,29 +45,11 @@ const STATS_TTL_MS = 300000;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
 // (orbi-cloud discussion 120 §2 C2), so a website route under any of them
-// never runs there — the cloud Worker intercepts it. Both website-owned
-// Cloud-entry endpoints therefore live under /cloud/: the login handoff and
-// the application submit (Issue #76).
+// never runs there — the cloud Worker intercepts it. Website-owned Cloud
+// entry therefore lives under /cloud/: the login handoff. The retired submit
+// route answers 410; D1 bindings and historical rows stay (Issue #179).
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
-
-// /cloud/apply is an unauthenticated write into D1: bound the body and every
-// column so a script cannot fill the table with oversized rows.
-const MAX_BODY_BYTES = 16384;
-const MAX_FIELD = {
-  name: 120,
-  tg: 120,
-  email: 200,
-  agent_tools: 300,
-  scenario: 2000,
-  pain: 2000,
-  ai_spend: 60,
-  issue_volume: 60,
-};
-
-function field(body, key) {
-  return String(body[key] || "").trim().slice(0, MAX_FIELD[key]);
-}
 
 function githubHeaders(token) {
   if (!token) {
@@ -281,8 +263,8 @@ async function fetchAsset(request, assets) {
 // That link is only honest where this environment configures CLOUD_LOGIN_URL
 // (production and beta both do): without it the route fail-closes with 503,
 // so serving the shipped links would send visitors to a dead end and the
-// pages are served with every Cloud CTA rewritten to the application page
-// instead (Issue #77). The rewrite is driven by the configuration, so opening
+// pages are served with every Cloud CTA rewritten to the self-host docs
+// instead (Issue #179). The rewrite is driven by the configuration, so opening
 // production was a wrangler.toml change, not a page change (Issue #96).
 // The price and quota token replacements above it are unconditional: those
 // values must read the same on every environment, in every carrier a crawler
@@ -303,7 +285,7 @@ async function assetResponse(asset, cloudLoginConfigured) {
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS);
   if (!cloudLoginConfigured) {
-    body = body.replaceAll('href="/cloud/login"', 'href="/apply"');
+    body = body.replaceAll('href="/cloud/login"', 'href="https://docs.orbi.build"');
   }
   if (body === html) {
     // Nothing changed: the bytes are the asset's own representation, so the
@@ -346,7 +328,6 @@ span { color:#8ea0c0; }
 <h1>Cloud is temporarily unavailable</h1>
 <p>Orbi Cloud sign-in is down for the moment. Meanwhile:</p>
 <ul>
-<li><a href="/apply">Apply to build with us</a> <span>报名首批共建用户</span></li>
 <li><a href="/">Back to the homepage</a> <span>回首页</span></li>
 <li><a href="https://docs.orbi.build">Self-host Orbi yourself</a> <span>自托管文档</span></li>
 </ul>
@@ -383,87 +364,9 @@ function cloudLoginResponse(request, cloudBaseUrl) {
   return Response.redirect(target.toString(), 302);
 }
 
-async function handleApply(request, env) {
-  if (request.method !== "POST") {
-    return new Response(JSON.stringify({ error: "method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  const declared = Number(request.headers.get("content-length") || 0);
-  if (declared > MAX_BODY_BYTES) {
-    return new Response(JSON.stringify({ error: "payload too large" }), {
-      status: 413,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  let body;
-  try {
-    const raw = await request.text();
-    if (raw.length > MAX_BODY_BYTES) {
-      return new Response(JSON.stringify({ error: "payload too large" }), {
-        status: 413,
-        headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-      });
-    }
-    body = JSON.parse(raw);
-  } catch (err) {
-    return new Response(JSON.stringify({ error: "invalid json" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  if (body === null || typeof body !== "object" || Array.isArray(body)) {
-    return new Response(JSON.stringify({ error: "invalid json" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  const name = field(body, "name");
-  const tg = field(body, "tg");
-  const email = field(body, "email");
-  const agentTools = field(body, "agent_tools");
-  const scenario = field(body, "scenario");
-  const pain = field(body, "pain");
-  const aiSpend = field(body, "ai_spend");
-  const issueVolume = field(body, "issue_volume");
-  // A nickname is not needed to act on an application: tg identifies and
-  // reaches the person. The column is NOT NULL, so an omitted name is stored
-  // as an empty string rather than rejected.
-  if (!tg || !scenario) {
-    return new Response(JSON.stringify({ error: "tg and scenario are required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  try {
-    await env.orbi_applications.prepare(
-      "INSERT INTO applications (name, tg, email, agent_tools, scenario, pain, ai_spend, issue_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-    ).bind(name, tg, email, agentTools, scenario, pain, aiSpend, issueVolume).run();
-  } catch (err) {
-    // A failed insert used to bubble up as a 500 and the lead was lost for
-    // good: nothing else on the path keeps a copy. Log the parsed payload so
-    // the application can be recovered by hand from the Worker logs. Only
-    // fields we recognise are logged, never the raw body.
-    console.error("apply_insert_failed " + JSON.stringify({
-      reason: (err && err.message) || String(err),
-      at: new Date().toISOString(),
-      name: name,
-      tg: tg,
-      email: email,
-      scenario: scenario,
-      pain: pain,
-      agent_tools: agentTools,
-      ai_spend: aiSpend,
-      issue_volume: issueVolume,
-    }));
-    return new Response(JSON.stringify({ error: "could not save the application" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 201,
+function goneResponse() {
+  return new Response(JSON.stringify({ error: "gone" }), {
+    status: 410,
     headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
   });
 }
@@ -573,8 +476,12 @@ async function handleFetch(request, env) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
+    if (route === "/apply") {
+      return Response.redirect(`https://${url.hostname}/cloud/`, 301);
+    }
+
     if (route === APPLY_ROUTE) {
-      return await handleApply(request, env);
+      return goneResponse();
     }
 
     // Issue #165: /pricing is a permanent alias of the /cloud/ PRICING
@@ -587,7 +494,7 @@ async function handleFetch(request, env) {
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
+export { cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to

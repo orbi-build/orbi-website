@@ -1,13 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
-import worker, { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
+import worker, { cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
-  it("trims and bounds submitted fields", () => {
-    expect(field({ name: "  Ada Lovelace  " }, "name")).toBe("Ada Lovelace");
-    expect(field({ scenario: "x".repeat(2100) }, "scenario")).toHaveLength(2000);
-    expect(field({}, "email")).toBe("");
-  });
-
   it("falls back to an index asset for directory URLs", async () => {
     const requests = [];
     const assets = {
@@ -94,7 +88,7 @@ describe("Worker request helpers", () => {
     );
     const body = await page.text();
     expect(body).toContain('href="/cloud/login"');
-    expect(body).not.toContain('href="/apply"');
+    expect(body).not.toContain('href="https://docs.orbi.build"');
   });
 
   // Links already in the wild (cached HTML, bookmarks, shares, search index)
@@ -111,7 +105,7 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
     const html = await response.text();
     expect(html).toContain("Cloud is temporarily unavailable");
-    expect(html).toContain('href="/apply"');
+    expect(html).not.toContain('href="/apply"');
     expect(html).toContain('href="/"');
     expect(html).toContain('href="https://docs.orbi.build"');
   });
@@ -134,7 +128,7 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("Content-Type")).toContain("text/html");
   });
 
-  it("serves pages with the Cloud CTA rewritten to /apply when Cloud is not configured", async () => {
+  it("serves pages with the Cloud CTA rewritten to the self-host docs when Cloud is not configured", async () => {
     const html = '<a class="nav-apply" href="/cloud/login">Start Cloud</a>'
       + '<a data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub</a>';
     const response = await handleFetch(
@@ -149,7 +143,8 @@ describe("Worker request helpers", () => {
     );
     const body = await response.text();
     expect(body).not.toContain('href="/cloud/login"');
-    expect(body).toContain('href="/apply"');
+    expect(body).toContain('href="https://docs.orbi.build"');
+    expect(body).not.toContain('href="/apply"');
     // A rewritten body is a new representation: the asset file's validators
     // must not answer conditional requests for it.
     expect(response.headers.get("etag")).toBeNull();
@@ -537,106 +532,58 @@ describe("plaintext /status (Issue #173)", () => {
   });
 });
 
-describe("application submit endpoint (Issue #76)", () => {
-  // Minimal D1 binding double: record the prepared statement so the test
-  // asserts a real insert was issued, not just a status code.
-  function d1Env() {
-    const statements = [];
-    const env = {
-      ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
-      orbi_applications: {
-        prepare: (sql) => {
-          statements.push(sql);
-          return {
-            bind: (...values) => ({ run: () => Promise.resolve({ success: true }) }),
-          };
-        },
-      },
-    };
-    return { env, statements };
-  }
+describe("retired apply routes (Issue #179)", () => {
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
 
-  const submit = (env, body) => handleFetch(
-    new Request("https://beta.orbi.build/cloud/apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }),
-    env,
-  );
-
-  it("stores an application and answers 201 on /cloud/apply", async () => {
-    const { env, statements } = d1Env();
-    const response = await submit(env, { tg: "@ada", scenario: "ship our first Issue" });
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ ok: true });
-    expect(statements).toHaveLength(1);
-    expect(statements[0]).toContain("INSERT INTO applications");
+  it("301s GET /apply and /apply/ to /cloud/ on the request host", async () => {
+    for (const [url, location] of [
+      ["https://orbi.build/apply", "https://orbi.build/cloud/"],
+      ["https://orbi.build/apply/", "https://orbi.build/cloud/"],
+      ["https://beta.orbi.build/apply", "https://beta.orbi.build/cloud/"],
+      ["https://beta.orbi.build/apply/", "https://beta.orbi.build/cloud/"],
+    ]) {
+      const response = await handleFetch(new Request(url), env);
+      expect(response.status, url).toBe(301);
+      expect(response.headers.get("location"), url).toBe(location);
+    }
   });
 
-  it("stores an application and answers 201 on the trailing-slash form /cloud/apply/ (Issue #134)", async () => {
-    const { env, statements } = d1Env();
-    const response = await handleFetch(
-      new Request("https://beta.orbi.build/cloud/apply/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg: "@ada", scenario: "ship our first Issue" }),
-      }),
-      env,
-    );
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ ok: true });
-    expect(statements).toHaveLength(1);
+  it("answers 410 on POST /cloud/apply and the trailing-slash form", async () => {
+    for (const url of [
+      "https://beta.orbi.build/cloud/apply",
+      "https://beta.orbi.build/cloud/apply/",
+      "https://orbi.build/cloud/apply",
+    ]) {
+      const response = await handleFetch(
+        new Request(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tg: "@ada", scenario: "ship our first Issue" }),
+        }),
+        env,
+      );
+      expect(response.status, url).toBe(410);
+      expect(await response.json()).toEqual({ error: "gone" });
+    }
   });
 
-  it("rejects a submission without the required fields with 400", async () => {
-    const { env } = d1Env();
-    const response = await submit(env, { name: "no tg, no scenario" });
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: "tg and scenario are required" });
-  });
-
-  it("rejects GET with 405", async () => {
-    const { env } = d1Env();
+  it("answers 410 on GET /cloud/apply too — the form is gone, not method-gated", async () => {
     const response = await handleFetch(new Request("https://beta.orbi.build/cloud/apply"), env);
-    expect(response.status).toBe(405);
-  });
-
-  it("still serves GET /apply as a 200 conversion page (Issue #170)", async () => {
-    // The nav CTA no longer points here, but the route itself stays: external
-    // links and the fail-closed rewrite still land on this page.
-    const applyHtml = "<!DOCTYPE html><title>Apply</title>";
-    const env = {
-      ASSETS: {
-        fetch: (request) => {
-          const { pathname } = new URL(request.url);
-          if (pathname === "/apply" || pathname === "/apply.html") {
-            return Promise.resolve(new Response(applyHtml, {
-              status: 200,
-              headers: { "Content-Type": "text/html; charset=utf-8" },
-            }));
-          }
-          return Promise.resolve(new Response("missing", { status: 404 }));
-        },
-      },
-    };
-    const response = await handleFetch(new Request("https://orbi.build/apply"), env);
-    expect(response.status).toBe(200);
-    expect(await response.text()).toBe(applyHtml);
+    expect(response.status).toBe(410);
   });
 
   it("no longer handles POST /api/apply: the cloud control plane owns /api* on the shared beta host", async () => {
     // Issue #76: live beta answered POST /api/apply with cloud's 404
-    // (x-orbi-worker: orbi-cloud-control-plane-e2e) — the website's D1 never
-    // saw the submission. The website must not define the path at all; the
-    // request falls through to the static assets like any unknown path.
-    const { env } = d1Env();
-    env.ASSETS = {
-      fetch: () => Promise.resolve(new Response("missing", { status: 404 })),
+    // (x-orbi-worker: orbi-cloud-control-plane-e2e). The website must not
+    // define the path at all; the request falls through to the static assets.
+    const assets = {
+      ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
     };
     const response = await handleFetch(
       new Request("https://beta.orbi.build/api/apply", { method: "POST", body: "{}" }),
-      env,
+      assets,
     );
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("missing");

@@ -380,7 +380,7 @@ class LandingTests(unittest.TestCase):
             # configuration decision (Issue #99 sends it straight to
             # /cloud/login), so no test pins its target (Issue #103).
             self.assertIn("cloud-start", ctas)
-            self.assertEqual(ctas["cloud-apply"], "/apply")
+            self.assertNotIn("cloud-apply", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -453,21 +453,21 @@ class LandingTests(unittest.TestCase):
             ]
             self.assertEqual(cloud_sections[0].get("data-status"), "direction")
 
-    def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, apply_label, price, explainer in (
-            (self.en, "Apply / contact us", "US$79/month", "/cloud/"),
-            (self.zh, "申请 / 联系我们", "US$79/月", "/zh/cloud/"),
+    def test_cloud_entry_is_github_login_not_an_application(self) -> None:
+        for page, price, explainer in (
+            (self.en, "US$79/month", "/cloud/"),
+            (self.zh, "US$79/月", "/zh/cloud/"),
         ):
             # Issue #99: the price sits on the card before the click, and the
             # /cloud/ explainer stays reachable from the footer. The Start
             # Cloud CTA's own target is a product decision (#99 sends it
             # straight to /cloud/login) and the served href is additionally
             # rewritten per environment by the Worker, so no page test pins it
-            # (Issue #103). Price and entry points are the key information
-            # (Issue #112); the surrounding copy stays unpinned.
+            # (Issue #103). Issue #179 retired /apply: Cloud entry is GitHub
+            # login, never an application form.
             self.assertIn(price, page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
-            self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
+            self.assertFalse(any(href == "/apply" for _, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -479,7 +479,7 @@ class LandingTests(unittest.TestCase):
         # state broke the beta deploy (Issue #103). The behavior under either
         # configuration — configured: /cloud/login 302s to the value and the
         # served pages keep their CTAs; unconfigured: 503 with every Cloud CTA
-        # rewritten to /apply — is locked where it runs, in
+        # rewritten to https://docs.orbi.build — is locked where it runs, in
         # tests/worker.test.js. Only beta's value is pinned: it must stay the
         # one verified beta Cloud endpoint (docs/cloud-endpoints.md).
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
@@ -504,15 +504,13 @@ class LandingTests(unittest.TestCase):
         self.assertIn('"/cloud/login"', worker)
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The submit and handoff endpoints are actions, not pages: keep
-        crawlers off them now that they no longer sit under /api/."""
+        """The login handoff is an action, not a page: keep crawlers off it.
+        /apply and /cloud/apply are gone (Issue #179), so they are no longer
+        listed — listing a retired path would imply it still exists."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
-        self.assertIn("Disallow: /cloud/apply", robots)
+        self.assertNotIn("Disallow: /apply", robots)
+        self.assertNotIn("Disallow: /cloud/apply", robots)
         self.assertIn("Disallow: /cloud/login", robots)
-
-    def test_apply_posts_to_the_website_owned_submit_path(self) -> None:
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn('fetch("/cloud/apply"', apply_html)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -758,94 +756,16 @@ class LandingTests(unittest.TestCase):
             ):
                 self.assertNotIn(tracker, page.lower(), tracker)
 
-    def test_apply_requires_only_telegram_and_scenario(self) -> None:
-        """Telegram already identifies and reaches the person, so a nickname
-        is one more thing to abandon the form over. Only tg and scenario are
-        genuinely needed to act on an application, and they are exactly what
-        the Worker's own required check gates on — a page set wider than the
-        Worker's would 400 on fields the browser called valid, and narrower
-        would submit incomplete applications. That every required field also
-        shows a visible marker is asserted where it renders, in
-        tests/homepage.smoke.mjs (Issue #112)."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        import re
-
-        required_ids = re.findall(r'<(?:input|textarea)[^>]*id="([^"]+)"[^>]*\brequired\b', apply_html)
-        required_ids += re.findall(r'<(?:input|textarea)[^>]*\brequired\b[^>]*id="([^"]+)"', apply_html)
-        required_ids = sorted(set(required_ids))
-        self.assertEqual(required_ids, ["f-scenario", "f-tg"], required_ids)
-
-    def test_optional_email_never_blocks_the_submission(self) -> None:
-        """Nothing is sent to this address — Telegram is how people get
-        contacted — so a malformed optional field must not stop an otherwise
-        complete application. Only required fields gate the submit."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("el.required", apply_html)
-        # a hint is fine; a blocked submission is not
-        self.assertIn("data-msg-email-hint", apply_html)
-
-    def test_apply_blocks_double_submission(self) -> None:
-        """On a slow connection nothing says the request is in flight, so the
-        button gets clicked again — measured 3 POSTs from 3 clicks against
-        production. Disable it for the duration and say it is sending."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("submit.disabled", apply_html)
-        self.assertIn("data-msg-sending", apply_html)
-
-    def test_apply_validates_before_posting(self) -> None:
-        """novalidate turns off the browser's own check, so the form must do
-        it in JS. Otherwise a missing field costs a round-trip and comes back
-        as a raw English API string that never says which field is empty."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("checkValidity", apply_html)
-        # the offending field has to be focused, not just flagged
-        self.assertIn("focus()", apply_html)
-        # and it needs a localized message, not the API's English error
-        self.assertIn("data-msg-required", apply_html)
-        # spaces must be trimmed client-side too: the Worker trims before its
-        # own required check, so "   " would otherwise pass here and come back
-        # as a 400 that never names the field
-        self.assertIn(".trim()", apply_html)
-        # a filled-but-malformed field is not a missing one; saying "还差…没填"
-        # about an optional email the user did fill reads as a lie
-        self.assertIn("data-msg-invalid", apply_html)
-        self.assertIn("valueMissing", apply_html)
-
-    def test_apply_shows_the_outcome_where_the_user_is_looking(self) -> None:
-        """The form clears on success, which alone reads as "nothing
-        happened" if the confirmation is off-screen — measured at y=1627 in a
-        844px viewport when submitting after scrolling up to re-check."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("scrollIntoView", apply_html)
-        # the confirmation must be announced, not just painted
-        self.assertIn('role="status"', apply_html)
-        self.assertIn('aria-live', apply_html)
-
-    def test_apply_collects_pricing_signals(self) -> None:
-        """The first cohort is the only chance to gather real pricing data.
-
-        Two answers set the price: what they already pay for AI coding (the
-        anchor) and how many Issues they'd hand over per week (the volume).
-        Without both, Cloud pricing is guesswork.
-        """
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+    def test_apply_page_is_offline(self) -> None:
+        """Issue #179: /apply is gone. Historical D1 rows stay; the form and
+        the write path do not."""
+        self.assertFalse((ROOT / "public" / "apply.html").exists())
+        self.assertFalse((ROOT / "site" / "pages" / "apply.html").exists())
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        migrations = "\n".join(
-            p.read_text(encoding="utf-8") for p in sorted((ROOT / "migrations").glob("*.sql"))
-        )
-        for field in ("ai_spend", "issue_volume"):
-            self.assertIn(f'name="{field}"', apply_html, field)
-            self.assertIn(f'"{field}"', worker, field)
-            self.assertIn(field, migrations, field)
-
-    def test_apply_logs_the_payload_when_it_cannot_be_stored(self) -> None:
-        """A lead that fails to insert is gone unless the request itself is in
-        the log. Log every recognised field so it can be recovered by hand."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("apply_insert_failed", worker)
-        self.assertIn("JSON.stringify", worker)
-        for token in ("name", "tg", "scenario", "email"):
-            self.assertIn(token, worker)
+        self.assertIn('route === "/apply"', worker)
+        self.assertIn("goneResponse", worker)
+        self.assertNotIn("handleApply", worker)
+        self.assertNotIn("MAX_FIELD", worker)
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
@@ -1019,18 +939,6 @@ class LandingTests(unittest.TestCase):
         )
         self.assertTrue(config["observability"]["enabled"])
 
-    def test_apply_bounds_every_stored_field(self) -> None:
-        """An unauthenticated write path must cap what it stores."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("MAX_FIELD", worker)
-        self.assertIn("MAX_BODY_BYTES", worker)
-        self.assertIn("slice(0, ", worker)
-
-    def test_apply_rejects_oversized_bodies_before_parsing(self) -> None:
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("content-length", worker)
-        self.assertIn("413", worker)
-
     def test_stats_does_not_leak_upstream_error_text(self) -> None:
         """A 502 must not echo GitHub's response body to anonymous callers."""
         worker = WORKER_PATH.read_text(encoding="utf-8")
@@ -1047,11 +955,12 @@ class CloudLandingPageTests(unittest.TestCase):
     """Issue #79: /cloud/ and /zh/cloud/ — the indexable explainer page for
     anyone not ready to hit an OAuth consent screen directly.
 
-    Three segments: what Cloud is, the Founding Pilot price, and the three
+    Three segments: what Cloud is, the Founding coupon price, and the three
     steps after the click. Its buttons reach the /cloud/login handoff, whose
     behavior (302 to CLOUD_LOGIN_URL when configured, fail-closed 503 with
-    every Cloud CTA rewritten to /apply otherwise) is locked where it runs,
-    in tests/worker.test.js — not by page-target assertions (Issue #103)."""
+    every Cloud CTA rewritten to https://docs.orbi.build otherwise) is locked
+    where it runs, in tests/worker.test.js — not by page-target assertions
+    (Issue #103)."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1196,54 +1105,40 @@ class CloudLandingPageTests(unittest.TestCase):
                 if re.search(r"永久|forever|permanently|permanent", sentence, re.IGNORECASE):
                     self.assertNotIn("token", sentence.lower(), sentence)
 
-    def test_cloud_states_the_measured_token_cost_with_all_three_limits(self) -> None:
-        """Issue #108: the measured cost section carries the date, the sample
-        size, the distribution, and the three qualifying statements — our repo
-        only, caching load-bearing, totalTokens as billed — plus the competitor
-        non-disclosure quotes with their sources."""
-        competitors = (
-            "a significantly larger weekly usage quota",
-            "~10x Pro usage",
-        )
+    def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
+        """Issue #180: /cloud/ keeps a headline — median, mean, about 100
+        deliveries, cache premise — and links to /cost/. The table, three
+        limits, and Devin/Factory billing audit stay on the cost page."""
         competitor_hrefs = (
             "https://docs.devin.ai/admin/billing/self-serve",
             "https://docs.factory.ai/pricing/individuals",
         )
-        for page, needles in (
+        for page, needles, cost_href in (
             (
                 self.en,
                 (
-                    # Issue #147: the measured block is aligned to the
-                    # /cost/ page's snapshot of the same measurement.
-                    "2026-09-12", "n=46",
-                    "2,220,637", "4,742,066", "37,627,783",
-                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    # website#145: the plan quota is 300M on both tiers; the
-                    # derived deliveries figure uses the median (2,220,637),
-                    # not the mean — 300M / median ≈ 135, stated conservatively
-                    # as about 100.
+                    "2,220,637", "4,742,066",
                     "100 deliveries a month",
-                    "not a promise to everyone", "order of magnitude", "totalTokens",
+                    "prompt caching",
                 ),
+                "/cost/",
             ),
             (
                 self.zh,
                 (
-                    "2026-09-12", "n=46",
-                    "2,220,637", "4,742,066", "37,627,783",
-                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    # website#145: same median caliber as the EN page above.
+                    "2,220,637", "4,742,066",
                     "100 次交付/月",
-                    "不是对所有人的承诺", "一个数量级", "totalTokens",
+                    "prompt caching",
                 ),
+                "/zh/cost/",
             ),
         ):
             for needle in needles:
                 self.assertIn(needle, page.text, needle)
-            for needle in competitors:
-                self.assertIn(needle, page.text, needle)
+            hrefs = [h for _, h in page.hrefs]
+            self.assertIn(cost_href, hrefs, cost_href)
             for href in competitor_hrefs:
-                self.assertIn(href, [h for _, h in page.hrefs], href)
+                self.assertNotIn(href, hrefs, href)
 
     def test_offer_jsonld_prices_the_regular_plan(self) -> None:
         """Issue #108: JSON-LD prices the regular plan at 79 with the coupon in
@@ -1761,8 +1656,8 @@ class OrcaComparisonTests(unittest.TestCase):
                 self.assertIn(quote, page.text, quote)
 
     def test_the_page_explains_orbi_in_orcas_language(self) -> None:
-        # the misreading this page exists to dismantle, and the one-line answer
-        self.assertIn("差不多", self.zh.text)
+        # positioning difference first (Issue #178 dropped the origin anecdote)
+        self.assertIn("两个项目都用 git worktree 隔离 agent", self.zh.text)
         self.assertIn("你用 Orca 管一队 agent；Orbi 是让你不用管", self.zh.text)
         self.assertIn("Both projects put agents in git worktrees", self.en.text)
         self.assertIn("Orca is how you run a fleet of agents; Orbi is how you stop having to", self.en.text)
@@ -1889,25 +1784,14 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(f'class="button button-ghost" href="{secondary}"', hero_html)
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
-    def test_live_dive_statuses_match_the_published_pages(self) -> None:
-        """Published deep dives are live, and every published or research
-        entry points to its page or research ticket."""
-        for page in (self.en, self.zh):
-            statuses = [
-                attrs.get("class", "")
-                for tag, attrs in page.elements
-                if tag == "span" and "dive-status" in attrs.get("class", "")
-            ]
-            self.assertTrue(statuses)
-            self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 7, statuses
-            )
-        # A published or research entry must not become a dead end.
+    def test_every_deep_dive_links_its_page(self) -> None:
+        """Eight deep dives, each a link — no internal status badge (Issue #178)."""
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
             self.assertEqual(len(entries), 8, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
+                self.assertNotIn("dive-status", entry, entry)
 
     def test_the_closing_heading_names_the_choice_dimension(self) -> None:
         """Issue #54: the closing H2 states the real decision axis — where
@@ -1948,7 +1832,6 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
                 if path == COMPARE_INDEX_EN_PATH:
                     self.assertIn(href, [link for _, link in page.hrefs])
-            self.assertIn("https://github.com/orbi-build/orbi-website/issues/8", [link for _, link in page.hrefs])
 
 
 OPENHANDS_EN_PATH = ROOT / "public" / "compare" / "openhands" / "index.html"
@@ -2098,16 +1981,20 @@ EVIDENCE_ZH_PATH = ROOT / "public" / "zh" / "evidence" / "index.html"
 
 
 class BootstrapEvidenceTests(unittest.TestCase):
-    """Issue #169: a bootstrap evidence page, not a vmark-class app.
+    """Issue #177: /evidence/ is a visitor page pointing at public GitHub records.
 
     The visitor must be able to click at least three public GitHub records.
-    Private repos stay unlinked. The sample warehouse is a proposal, not a
-    shipping URL. Copy must not invent a licence name or write a qualitative
-    claim as a fact.
+    Private repos stay unlinked. Ticket-voice copy stays out. Copy must not
+    invent a licence name or write a qualitative claim as a fact.
     """
 
     PUBLIC_RECORDS = (
-        "https://github.com/orbi-build/orbi/issues/48",
+        "https://github.com/orbi-build/orbi/issues/852",
+        "https://github.com/orbi-build/orbi/pull/854",
+        "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
+        "https://github.com/orbi-build/orbi/issues/842",
+        "https://github.com/orbi-build/orbi/pull/845",
+        "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
         "https://github.com/orbi-build/orbi/issues/825",
         "https://github.com/orbi-build/orbi/pull/830",
         "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
@@ -2171,14 +2058,11 @@ class BootstrapEvidenceTests(unittest.TestCase):
             }
             self.assertTrue({"issue", "pr", "release"}.issubset(kinds), kinds)
 
-    def test_private_repos_are_named_not_linked(self) -> None:
+    def test_private_repos_are_not_linked(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
             hrefs = [href for _, href in page.hrefs]
             for private in self.PRIVATE_REPOS:
                 self.assertNotIn(private, hrefs, private)
-            self.assertIn("orbi-website", page.text)
-            self.assertIn("orbi-cloud", page.text)
-            self.assertIn("#158", page.text)
             self.assertNotIn("Apache", html)
             self.assertNotIn("Apache 2.0", html)
 
@@ -2193,22 +2077,23 @@ class BootstrapEvidenceTests(unittest.TestCase):
             lowered = page.text.lower()
             for phrase in forbidden:
                 self.assertNotIn(phrase.lower(), lowered, phrase)
-            self.assertIn(
-                "qualitative reading into a fact" if page is self.en else "不把定性判断写成事实",
-                page.text,
-            )
 
-    def test_sample_warehouse_is_a_proposal_not_a_url(self) -> None:
+    def test_sample_warehouse_is_not_a_shipping_url(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            self.assertIn('id="sample-warehouse"', html)
-            self.assertIn("proposal" if page is self.en else "方案", page.text)
-            self.assertIn("does not exist yet" if page is self.en else "还不存在", page.text)
+            self.assertNotIn('id="sample-warehouse"', html)
             hrefs = [href for _, href in page.hrefs]
             self.assertNotIn("https://github.com/orbi-build/orbi-smoke", hrefs)
             self.assertFalse(
                 [href for href in hrefs if "sample-warehouse" in href or "orbi-smoke" in href],
                 hrefs,
             )
+
+    def test_each_sample_tells_the_visitor_what_to_look_for(self) -> None:
+        self.assertGreaterEqual(self.en_html.count("What to look for on the timeline"), 3)
+        self.assertGreaterEqual(self.zh_html.count("在时间线上看什么"), 3)
+        for html in (self.en_html, self.zh_html):
+            self.assertGreaterEqual(html.count("xqliu"), 3)
+            self.assertGreaterEqual(html.lower().count("review_rounds"), 3)
 
     def test_licence_wording_is_not_invented(self) -> None:
         for html in (self.en_html, self.zh_html):

@@ -106,8 +106,8 @@ every step below.
    the label is spelled exactly `ai-ready`, and that the status page shows
    provisioning finished (「开通成功」), not 「正在开通」 or 「开通失败」;
    if all of that checks out and the Issue still does not move, report it via
-   https://orbi.build/apply with the repository name and the status page's
-   request id.
+   https://github.com/orbi-build/orbi/issues with the repository name and the
+   status page's request id.
 
 ### Failure diagnosis (measured states, not hypotheticals)
 
