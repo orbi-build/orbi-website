@@ -22,7 +22,7 @@ const HOST_ALIASES = {
 // Test environments (beta.orbi.build, *.workers.dev) must stay out of search
 // engines and AI crawlers: robots.txt is served as a blanket Disallow and every
 // response carries X-Robots-Tag. Prod hosts keep the public robots.txt.
-const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build"]);
+const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build", "aiready.sh"]);
 const TEST_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
 const TEST_NOINDEX = "noindex, nofollow, noarchive";
 
@@ -397,6 +397,37 @@ async function handleApply(request, env) {
   });
 }
 
+// Issue #174: curl gets public/install.sh; browsers 302 to orbi.build.
+// Bytes come from ASSETS so the worker never holds a second copy of the script.
+const INSTALL_SCRIPT_CACHE = "public, max-age=120";
+
+async function installScriptResponse(request, assets) {
+  const scriptUrl = new URL("/install.sh", request.url);
+  const asset = await assets.fetch(new Request(scriptUrl.href, request));
+  const headers = new Headers(asset.headers);
+  headers.set("Content-Type", "text/plain; charset=utf-8");
+  headers.set("Cache-Control", INSTALL_SCRIPT_CACHE);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(key, value);
+  }
+  return new Response(asset.body, {
+    status: asset.status,
+    statusText: asset.statusText,
+    headers,
+  });
+}
+
+function aireadyResponse(request, url, assets) {
+  const route = url.pathname !== "/" && url.pathname.endsWith("/")
+    ? url.pathname.slice(0, -1)
+    : url.pathname;
+  const accept = request.headers.get("accept") || "";
+  if (route === "/install.sh" || (url.pathname === "/" && !accept.includes("text/html"))) {
+    return installScriptResponse(request, assets);
+  }
+  return Response.redirect(`https://orbi.build${url.pathname}${url.search}`, 302);
+}
+
 async function handleFetch(request, env) {
     const url = new URL(request.url);
     const canonicalHost = HOST_ALIASES[url.hostname];
@@ -405,6 +436,13 @@ async function handleFetch(request, env) {
         `https://${canonicalHost}${url.pathname}${url.search}`,
         301,
       );
+    }
+
+    // Issue #174: aiready.sh is the curl install entry. Accept-negotiate on
+    // `/` only — browsers (text/html) go to orbi.build; curl (*/*) and the
+    // explicit /install.sh path get public/install.sh via ASSETS.
+    if (url.hostname === "aiready.sh") {
+      return aireadyResponse(request, url, env.ASSETS);
     }
 
     if (!PROD_HOSTS.has(url.hostname) && url.pathname === "/robots.txt") {
@@ -460,7 +498,7 @@ async function handleFetch(request, env) {
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse };
+export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to

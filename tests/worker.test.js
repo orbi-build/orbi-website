@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse } from "../src/worker.js";
+import worker, { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -461,5 +461,93 @@ describe("/pricing alias (Issue #165)", () => {
     const location = response.headers.get("location");
     expect(location).toBe(to);
     expect(location.endsWith(from.includes("/zh/") ? "/zh/cloud/#pricing" : "/cloud/#pricing")).toBe(true);
+  });
+});
+
+// Issue #174: aiready.sh is the curl install entry. Same host, Accept-negotiated:
+// curl (*/*) gets public/install.sh; a browser (text/html) 302s to orbi.build.
+// The script bytes come from env.ASSETS, never a copy inside the worker.
+describe("aiready.sh install entry (Issue #174)", () => {
+  const INSTALL_SH = "#!/usr/bin/env bash\n# aiready-test-fixture\n";
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        const { pathname } = new URL(request.url);
+        if (pathname === "/install.sh") {
+          return new Response(INSTALL_SH, {
+            status: 200,
+            headers: { "Content-Type": "application/octet-stream" },
+          });
+        }
+        if (pathname === "/robots.txt") {
+          return new Response("User-agent: *\nAllow: /\n", {
+            status: 200,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          });
+        }
+        return new Response("missing", { status: 404 });
+      },
+    },
+  };
+
+  it("serves install.sh as text/plain for curl Accept */* on /", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/", { headers: { Accept: "*/*" } }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await response.text();
+    expect(body.startsWith("#!/usr/bin/env bash")).toBe(true);
+    expect(body).toBe(INSTALL_SH);
+  });
+
+  it("302s a browser Accept text/html on / to https://orbi.build/", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      env,
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://orbi.build/");
+  });
+
+  it("serves the same script on /install.sh for any Accept", async () => {
+    for (const accept of ["*/*", "text/html,application/xhtml+xml"]) {
+      const response = await handleFetch(
+        new Request("https://aiready.sh/install.sh", { headers: { Accept: accept } }),
+        env,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+      expect(await response.text()).toBe(INSTALL_SH);
+    }
+  });
+
+  it("302s other paths to orbi.build preserving path and query", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/cloud/?ref=tg"),
+      env,
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://orbi.build/cloud/?ref=tg");
+  });
+
+  it("does not serve the test-env blanket Disallow on /robots.txt", async () => {
+    const response = await handleFetch(new Request("https://aiready.sh/robots.txt"), env);
+    const body = await response.text();
+    expect(body).not.toBe("User-agent: *\nDisallow: /\n");
+    expect(body).not.toMatch(/^User-agent: \*\s*\nDisallow: \/\s*$/);
+  });
+
+  it("is a production host: no X-Robots-Tag on the fetch wrapper", async () => {
+    expect(PROD_HOSTS.has("aiready.sh")).toBe(true);
+    const response = await worker.fetch(
+      new Request("https://aiready.sh/", { headers: { Accept: "*/*" } }),
+      env,
+      { waitUntil() {} },
+    );
+    expect(response.headers.get("X-Robots-Tag")).toBeNull();
   });
 });

@@ -27,6 +27,10 @@ custom_domain = true
 pattern = "www.orbi.build"
 custom_domain = true
 
+[[routes]]
+pattern = "aiready.sh"
+custom_domain = true
+
 [[d1_databases]]
 binding = "orbi_applications"
 database_name = "orbi-applications"

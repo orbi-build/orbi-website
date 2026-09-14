@@ -882,7 +882,7 @@ class LandingTests(unittest.TestCase):
         )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
-            ["orbi.build", "www.orbi.build"],
+            ["orbi.build", "www.orbi.build", "aiready.sh"],
         )
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
@@ -1015,7 +1015,7 @@ class LandingTests(unittest.TestCase):
         self.assertEqual(config["assets"]["binding"], "ASSETS")
         self.assertEqual(config["assets"]["directory"], "./public/")
         self.assertEqual(len(config["d1_databases"]), 1)
-        self.assertEqual(len(config["routes"]), 2)
+        self.assertEqual(len(config["routes"]), 3)
         # observability must hold only its own keys
         self.assertEqual(
             set(config["observability"]), {"enabled", "head_sampling_rate"}
