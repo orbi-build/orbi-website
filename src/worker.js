@@ -232,7 +232,7 @@ function formatStatusText(stats) {
     "",
     "  Every PR above was written, reviewed and merged by Orbi itself.",
     "",
-    "  Install:  curl -fsSL orbi.build/install.sh | sh",
+    "  Install:  curl -fsSL aiready.sh | sh",
     "  Docs:     https://docs.orbi.build",
     "",
   );

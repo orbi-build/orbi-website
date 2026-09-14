@@ -426,7 +426,8 @@ describe("plaintext /status (Issue #173)", () => {
     expect(body).toMatch(/orbi\s+issues closed\s+372\s+PRs merged\s+296\s+releases\s+3/);
     expect(body).toContain("orbi-website");
     expect(body).toContain("orbi-cloud");
-    expect(body).toContain("curl -fsSL orbi.build/install.sh | sh");
+    expect(body).toContain("curl -fsSL aiready.sh | sh");
+    expect(body).not.toContain("orbi.build/install.sh");
     expect(body).toContain("https://docs.orbi.build");
   });
 
