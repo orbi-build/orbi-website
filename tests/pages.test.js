@@ -1,4 +1,4 @@
-// Issue #106 gates: the 27 shipped pages stay in lockstep with their sources,
+// Issue #106 gates: the shipped pages stay in lockstep with their sources,
 // and the two language trees cannot silently drift apart again.
 //
 // These tests read the shipped bytes in public/ — the same files the Worker
