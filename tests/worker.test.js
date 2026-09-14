@@ -333,6 +333,209 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   });
 });
 
+// Issue #173: curl orbi.build/status prints the real delivery counts as
+// pasteable plaintext. Data still comes from loadStats(); this is only a
+// terminal rendering of that existing payload.
+describe("plaintext /status (Issue #173)", () => {
+  const realFetch = globalThis.fetch;
+  const realCaches = globalThis.caches;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    globalThis.caches = realCaches;
+  });
+
+  function jsonResponse(data) {
+    return new Response(JSON.stringify(data), { status: 200 });
+  }
+
+  function mockGitHub(overrides = {}) {
+    const calls = [];
+    globalThis.fetch = async (url) => {
+      calls.push(String(url));
+      const path = new URL(url).pathname;
+      const query = new URL(url).searchParams.get("q") || "";
+      const fail = (repo) => overrides.fail && overrides.fail.includes(repo);
+      if (path.startsWith("/search/issues")) {
+        const repo = query.includes("orbi-website") ? "orbi-website" : query.includes("orbi-cloud") ? "orbi-cloud" : "orbi";
+        if (fail(repo)) return new Response("rate limited", { status: 403 });
+        return jsonResponse({ total_count: query.includes("is:pr") ? 296 : 372 });
+      }
+      for (const repo of ["orbi-website", "orbi-cloud", "orbi"]) {
+        if (path === `/repos/orbi-build/${repo}`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse({ created_at: "2026-08-24T16:08:33Z", stargazers_count: 95 });
+        }
+        if (path === `/repos/orbi-build/${repo}/releases`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse([{ id: 1 }, { id: 2 }, { id: 3 }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/stargazers`) {
+          return jsonResponse([{ starred_at: "2026-09-01T00:00:00Z" }, { starred_at: "2026-09-02T00:00:00Z" }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-beta.yml/runs`) {
+          return jsonResponse({ total_count: 37 });
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-production.yml/runs`) {
+          return jsonResponse({ total_count: 4 });
+        }
+      }
+      throw new Error("unexpected GitHub call: " + url);
+    };
+    return calls;
+  }
+
+  function emptyCache() {
+    globalThis.caches = {
+      default: {
+        match: () => Promise.resolve(undefined),
+        put: async () => {},
+      },
+    };
+  }
+
+  function statusEnv() {
+    return {
+      GITHUB_TOKEN: "token",
+      ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+    };
+  }
+
+  function curlStatus(url = "https://orbi.build/status") {
+    return handleFetch(
+      new Request(url, { headers: { Accept: "*/*" } }),
+      statusEnv(),
+    );
+  }
+
+  it("answers curl Accept: */* with 200 text/plain, ≤72 columns, no ANSI", async () => {
+    mockGitHub();
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(response.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    const body = await response.text();
+    for (const line of body.split("\n")) {
+      expect(line.length).toBeLessThanOrEqual(72);
+    }
+    expect(body).not.toContain("\x1b");
+    expect(body).not.toContain("\t");
+    expect(body).toContain("Orbi — GitHub Issue in, tagged Release out");
+    expect(body).toMatch(/orbi\s+issues closed\s+372\s+PRs merged\s+296\s+releases\s+3/);
+    expect(body).toContain("orbi-website");
+    expect(body).toContain("orbi-cloud");
+    expect(body).toContain("curl -fsSL orbi.build/install.sh | sh");
+    expect(body).toContain("https://docs.orbi.build");
+  });
+
+  it("serves /status/ identically to /status", async () => {
+    mockGitHub();
+    emptyCache();
+    const bare = await curlStatus("https://orbi.build/status");
+    const slashed = await curlStatus("https://orbi.build/status/");
+    expect(slashed.status).toBe(bare.status);
+    expect(slashed.headers.get("Content-Type")).toBe(bare.headers.get("Content-Type"));
+    expect(await slashed.text()).toBe(await bare.text());
+  });
+
+  it("does not return text/plain when Accept includes text/html", async () => {
+    const env = {
+      ASSETS: {
+        fetch: () => Promise.resolve(new Response("<!doctype html>status page", {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        })),
+      },
+    };
+    const response = await handleFetch(
+      new Request("https://orbi.build/status", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      env,
+    );
+    expect(response.headers.get("Content-Type")).not.toMatch(/^text\/plain/);
+    expect(response.headers.get("Content-Type")).toContain("text/html");
+    expect(await response.text()).toContain("status page");
+  });
+
+  it("degrades a failing repo to unavailable and still answers 200", async () => {
+    mockGitHub({ fail: ["orbi-cloud"] });
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toMatch(/orbi-cloud\s+unavailable/);
+    expect(body).toMatch(/orbi\s+issues closed\s+372/);
+    expect(body).toMatch(/orbi-website\s+issues closed\s+372/);
+    for (const line of body.split("\n")) {
+      expect(line.length).toBeLessThanOrEqual(72);
+    }
+  });
+
+  it("answers 503 when every repo is unavailable", async () => {
+    mockGitHub({ fail: ["orbi", "orbi-website", "orbi-cloud"] });
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await response.text();
+    expect(body).toMatch(/orbi\s+unavailable/);
+    expect(body).toMatch(/orbi-website\s+unavailable/);
+    expect(body).toMatch(/orbi-cloud\s+unavailable/);
+    expect(body).not.toContain("\x1b");
+  });
+
+  it("serves a cache hit without calling GitHub again", async () => {
+    const calls = mockGitHub();
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: (key) => {
+          const body = store.get(String(key));
+          return Promise.resolve(body === undefined ? undefined : new Response(body));
+        },
+        put: async (key, response) => {
+          store.set(String(key), await response.text());
+        },
+      },
+    };
+    const first = await curlStatus();
+    const callsAfterFirst = calls.length;
+    expect(callsAfterFirst).toBeGreaterThan(0);
+    expect(first.status).toBe(200);
+    const second = await curlStatus();
+    expect(calls).toHaveLength(callsAfterFirst);
+    expect(await second.text()).toBe(await first.text());
+  });
+
+  it("does not reuse the /stats JSON cache body", async () => {
+    mockGitHub();
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: (key) => {
+          const body = store.get(String(key));
+          return Promise.resolve(body === undefined ? undefined : new Response(body));
+        },
+        put: async (key, response) => {
+          store.set(String(key), await response.text());
+        },
+      },
+    };
+    const stats = await handleFetch(new Request("https://orbi.build/stats"), statusEnv());
+    expect(stats.status).toBe(200);
+    expect(await stats.json()).toHaveProperty("repos");
+    const status = await curlStatus();
+    expect(status.status).toBe(200);
+    expect(status.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await status.text();
+    expect(body.startsWith("{")).toBe(false);
+    expect(body).toMatch(/issues closed/);
+  });
+});
+
 describe("application submit endpoint (Issue #76)", () => {
   // Minimal D1 binding double: record the prepared statement so the test
   // asserts a real insert was issued, not just a status code.

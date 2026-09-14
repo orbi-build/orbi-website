@@ -40,6 +40,7 @@ const SECURITY_HEADERS = {
 
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
+const STATUS_CACHE_KEY = "https://orbi.build/__status";
 const STATS_TTL_MS = 300000;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
@@ -193,6 +194,76 @@ async function statsResponse(request, token) {
   const toStore = response.clone();
   toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
   await cache.put(STATS_CACHE_KEY, toStore);
+  return response;
+}
+
+// Terminal rendering of loadStats() for `curl orbi.build/status` (Issue #173).
+// Width is hard-capped at 72 columns so the block pastes into TG / README
+// without wrapping; no ANSI, no tabs. A null group becomes `unavailable`
+// instead of inventing a number.
+function formatStatusText(stats) {
+  const nameWidth = Math.max(...STAT_REPOS.map((name) => name.length));
+  let issuesWidth = 3;
+  let prsWidth = 3;
+  let releasesWidth = 2;
+  for (const name of STAT_REPOS) {
+    const repo = stats.repos[name];
+    if (!repo) {
+      continue;
+    }
+    issuesWidth = Math.max(issuesWidth, String(repo.issues_closed).length);
+    prsWidth = Math.max(prsWidth, String(repo.prs_merged).length);
+    releasesWidth = Math.max(releasesWidth, String(repo.releases).length);
+  }
+  const lines = ["  Orbi — GitHub Issue in, tagged Release out", ""];
+  for (const name of STAT_REPOS) {
+    const repo = stats.repos[name];
+    const label = name.padEnd(nameWidth);
+    if (!repo) {
+      lines.push(`  ${label}   unavailable`);
+      continue;
+    }
+    const issues = String(repo.issues_closed).padStart(issuesWidth);
+    const prs = String(repo.prs_merged).padStart(prsWidth);
+    const releases = String(repo.releases).padStart(releasesWidth);
+    lines.push(`  ${label}   issues closed ${issues}   PRs merged ${prs}   releases ${releases}`);
+  }
+  lines.push(
+    "",
+    "  Every PR above was written, reviewed and merged by Orbi itself.",
+    "",
+    "  Install:  curl -fsSL orbi.build/install.sh | sh",
+    "  Docs:     https://docs.orbi.build",
+    "",
+  );
+  return lines.join("\n");
+}
+
+async function statusResponse(request, token) {
+  const cache = caches.default;
+  const cached = await cache.match(STATUS_CACHE_KEY);
+  if (cached) {
+    return cached;
+  }
+  const stats = await loadStats(token);
+  const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
+  const headers = {
+    "Content-Type": "text/plain; charset=utf-8",
+    ...SECURITY_HEADERS,
+  };
+  if (anyLive) {
+    headers["Cache-Control"] = "public, max-age=60";
+  }
+  const response = new Response(formatStatusText(stats), {
+    status: anyLive ? 200 : 503,
+    headers,
+  });
+  if (!anyLive) {
+    return response;
+  }
+  const toStore = response.clone();
+  toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
+  await cache.put(STATUS_CACHE_KEY, toStore);
   return response;
 }
 
@@ -436,6 +507,24 @@ async function handleFetch(request, env) {
           status: 502,
           headers: {
             "Content-Type": "application/json; charset=utf-8",
+            ...SECURITY_HEADERS,
+          },
+        });
+      }
+    }
+
+    // Issue #173: curl-readable plaintext of the same loadStats() payload.
+    // Browsers send Accept: text/html and fall through to assets so a future
+    // /status/ page is not hijacked; curl's default */* gets text/plain.
+    if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
+      try {
+        return await statusResponse(request, env.GITHUB_TOKEN);
+      } catch (err) {
+        console.error("status failed:", err && err.message ? err.message : err);
+        return new Response("upstream unavailable\n", {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
             ...SECURITY_HEADERS,
           },
         });
