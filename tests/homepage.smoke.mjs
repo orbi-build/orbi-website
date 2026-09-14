@@ -1018,6 +1018,34 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #170: /compare/ is on the buyer-decision path. The nav CTA a visitor
+// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the Cloud
+// login handoff — the same promise as every other page. Apply still 200s, so
+// a wrong destination would not 404; the text and href are the evidence.
+async function assertCompareNavCta(browser, path, label) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  try {
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const cta = page.locator("[data-primary-nav] .nav-apply");
+    if ((await cta.count()) !== 1) {
+      throw new Error(`${path}: expected exactly one nav CTA, got ${await cta.count()}`);
+    }
+    await cta.scrollIntoViewIfNeeded();
+    if (!(await cta.isVisible())) throw new Error(`${path}: nav CTA is not visible`);
+    const text = (await cta.textContent()).trim();
+    if (text !== label) {
+      throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
+    }
+    const href = await cta.getAttribute("href");
+    if (href !== "/cloud/login") {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login"`);
+    }
+    await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
+  } finally {
+    await page.close();
+  }
+}
+
 // Issue #117: the Orca deep dive answers the first external positioning test
 // (“我今天安装了 Orca，好像和你的项目差不多”). The rendered page must carry
 // the verbatim official self-descriptions, at least four honest "Not
@@ -1396,6 +1424,13 @@ async function main() {
     await assertCompareMatrix(browser, "/compare/", { width: 390, height: 844 }, "compare-en-mobile.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 1440, height: 900 }, "compare-zh-desktop.png");
     await assertCompareMatrix(browser, "/zh/compare/", { width: 390, height: 844 }, "compare-zh-mobile.png");
+    // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
+    // same Cloud login as every other page, not Apply — a silent /apply
+    // still 200s, so the funnel would break without a 404.
+    await assertCompareNavCta(browser, "/compare/", "Start Cloud");
+    await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
+    await assertCtaLandsAtEndpoint(browser, "/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
+    await assertCtaLandsAtEndpoint(browser, "/zh/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
     await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");

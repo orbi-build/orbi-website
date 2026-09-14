@@ -398,6 +398,29 @@ describe("application submit endpoint (Issue #76)", () => {
     expect(response.status).toBe(405);
   });
 
+  it("still serves GET /apply as a 200 conversion page (Issue #170)", async () => {
+    // The nav CTA no longer points here, but the route itself stays: external
+    // links and the fail-closed rewrite still land on this page.
+    const applyHtml = "<!DOCTYPE html><title>Apply</title>";
+    const env = {
+      ASSETS: {
+        fetch: (request) => {
+          const { pathname } = new URL(request.url);
+          if (pathname === "/apply" || pathname === "/apply.html") {
+            return Promise.resolve(new Response(applyHtml, {
+              status: 200,
+              headers: { "Content-Type": "text/html; charset=utf-8" },
+            }));
+          }
+          return Promise.resolve(new Response("missing", { status: 404 }));
+        },
+      },
+    };
+    const response = await handleFetch(new Request("https://orbi.build/apply"), env);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe(applyHtml);
+  });
+
   it("no longer handles POST /api/apply: the cloud control plane owns /api* on the shared beta host", async () => {
     // Issue #76: live beta answered POST /api/apply with cloud's 404
     // (x-orbi-worker: orbi-cloud-control-plane-e2e) — the website's D1 never

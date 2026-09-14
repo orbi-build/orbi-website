@@ -392,3 +392,51 @@ describe("cloud buyer FAQ (Issue #166)", () => {
     }
   });
 });
+
+// Issue #170: the primary-nav CTA is Start Cloud by default in the shared
+// partial. Walking every built index.html (not a hardcoded page list) is the
+// recurrence gate: a new page that forgets the Cloud login destination fails
+// here instead of silently shipping Apply.
+describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
+  it("defaults the shared partial to Cloud login, not Apply", async () => {
+    const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
+    expect(partial).toContain('href="/cloud/login"');
+    expect(partial).not.toContain('href="/apply"');
+    expect(partial).not.toContain("{{APPLY_HREF}}");
+  });
+
+  it("points the primary-nav CTA at /cloud/login on every built index.html", async () => {
+    const listIndex = async (dir, prefix = "") => {
+      const out = [];
+      for (const entry of await readdir(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          out.push(...(await listIndex(join(dir, entry.name), `${prefix}${entry.name}/`)));
+        } else if (entry.name === "index.html") {
+          out.push(`${prefix}${entry.name}`);
+        }
+      }
+      return out.sort();
+    };
+    // Walk the build products, never a hardcoded page list: a new page that
+    // forgets the Cloud login destination fails here instead of shipping Apply.
+    const outputs = await listIndex(builtDir);
+    expect(outputs.length, "need at least the five funnel pages").toBeGreaterThanOrEqual(5);
+    for (const output of outputs) {
+      const html = await readFile(join(builtDir, output), "utf8");
+      const nav = navRegion(html);
+      const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
+      expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
+      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login");
+      expect(cta[1], `${output}: nav CTA must not be the Apply form`).not.toBe("/apply");
+      const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
+      expect(cta[2], `${output}: nav CTA label`).toBe(label);
+    }
+  });
+
+  it("keeps /apply as a 200 conversion page, not a nav destination", async () => {
+    const apply = shipped.get("apply.html");
+    expect(apply, "public/apply.html must still ship").toBeTruthy();
+    expect(apply).toContain('<link rel="canonical" href="https://orbi.build/apply">');
+    expect(apply).not.toContain('data-primary-nav');
+  });
+});
