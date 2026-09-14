@@ -38,7 +38,10 @@ Licence text: https://github.com/orbi-build/orbi/blob/main/LICENSE.md
 
 Verifiable example: Issue #48 entered the real Orbi repository, an isolated run
 implemented it, a separate session reviewed the exact diff, and PR #193 merged.
-Both are public.
+Both are public. The inspectable entrance to public bootstrap records (issue
+timelines, merged PRs, tagged releases) is https://orbi.build/evidence/ — click
+the GitHub objects; do not restate them. A public sample warehouse is a
+proposal on that page, not a shipping repository.
 
 ## Managed Cloud (Private Beta)
 
@@ -210,3 +213,5 @@ https://orbi.build/cost/
 - Cost transparency — what one delivery costs (Chinese): https://orbi.build/zh/cost/
 - Comparison — Orbi vs OpenHands (English): https://orbi.build/compare/openhands/
 - Comparison — Orbi vs OpenHands (Chinese): https://orbi.build/zh/compare/openhands/
+- Bootstrap evidence — Orbi builds Orbi (English): https://orbi.build/evidence/
+- Bootstrap evidence — Orbi builds Orbi (Chinese): https://orbi.build/zh/evidence/

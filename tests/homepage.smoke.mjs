@@ -1214,6 +1214,185 @@ const ciGatesPages = {
   },
 };
 
+// Issue #169: the bootstrap evidence page is the inspectable entrance.
+// The visitor must land on a page that (a) explains Orbi builds Orbi,
+// (b) offers at least three public GitHub records as real <a href>,
+// (c) never links the private repos, (d) labels the sample warehouse a
+// proposal, and (e) does not invent a licence name or write a qualitative
+// claim as a fact. Screenshots land in .orbi/ next to the other flows.
+const evidencePages = {
+  "/evidence/": {
+    zh: "/zh/evidence/",
+    title: "Orbi builds Orbi",
+    h1: "Orbi builds Orbi. The record is GitHub",
+    hero: [
+      "Orbi is the delivery line that ships Orbi",
+      "Click them",
+    ],
+    text: [
+      "Issue #48",
+      "Issue #825",
+      "PR #830",
+      "Release v0.5.3",
+      "proposal",
+      "does not exist yet",
+      "orbi-website and orbi-cloud are private",
+      "does not convert a qualitative reading into a fact",
+      "verified 2026-09-14",
+    ],
+    hrefs: [
+      "https://github.com/orbi-build/orbi/issues/48",
+      "https://github.com/orbi-build/orbi/issues/825",
+      "https://github.com/orbi-build/orbi/pull/830",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
+      "https://github.com/orbi-build/orbi/releases",
+    ],
+    forbiddenHrefs: [
+      "https://github.com/orbi-build/orbi-website",
+      "https://github.com/orbi-build/orbi-cloud",
+    ],
+    localHrefs: ["/cloud/"],
+    homeEntry: "/",
+    homeLink: "/evidence/",
+  },
+  "/zh/evidence/": {
+    zh: "/evidence/",
+    title: "Orbi 在造 Orbi",
+    h1: "Orbi 在造 Orbi。记录在 GitHub",
+    hero: [
+      "Orbi 是把 Orbi 自己交付出去的那条产线",
+      "请点开",
+    ],
+    text: [
+      "Issue #48",
+      "Issue #825",
+      "PR #830",
+      "Release v0.5.3",
+      "方案",
+      "还不存在",
+      "orbi-website 与 orbi-cloud 是私有仓库",
+      "不把定性判断写成事实",
+      "核实于 2026-09-14",
+    ],
+    hrefs: [
+      "https://github.com/orbi-build/orbi/issues/48",
+      "https://github.com/orbi-build/orbi/issues/825",
+      "https://github.com/orbi-build/orbi/pull/830",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
+      "https://github.com/orbi-build/orbi/releases",
+    ],
+    forbiddenHrefs: [
+      "https://github.com/orbi-build/orbi-website",
+      "https://github.com/orbi-build/orbi-cloud",
+    ],
+    localHrefs: ["/zh/cloud/"],
+    homeEntry: "/zh/",
+    homeLink: "/zh/evidence/",
+  },
+};
+
+async function assertEvidencePage(browser, path, size, screenshot) {
+  const claim = evidencePages[path];
+  const page = await browser.newPage({ viewport: size });
+  const consoleErrors = [];
+  const failedRequests = [];
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
+  });
+  page.on("requestfailed", (request) => {
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+  });
+
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const h1Count = await page.locator("h1").count();
+  if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
+  const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
+  if (heroH1 !== claim.h1) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  }
+  if (!(await page.title()).includes(claim.title)) {
+    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the claim`);
+  }
+  const heroText = (await page.locator(".compare-hero").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.hero) {
+    if (!heroText.includes(needle)) {
+      throw new Error(`${path}: the hero is missing ${JSON.stringify(needle)}: ${JSON.stringify(heroText)}`);
+    }
+  }
+  const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
+  for (const needle of claim.text) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
+    }
+  }
+  if (text.toLowerCase().includes("apache")) {
+    throw new Error(`${path}: invented or conflicting licence name Apache`);
+  }
+  for (const href of claim.hrefs) {
+    if ((await page.locator(`main a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing a public evidence link ${href}`);
+    }
+  }
+  const evidenceLinks = await page.locator("main a[data-evidence]").evaluateAll((nodes) =>
+    nodes.map((node) => ({ href: node.getAttribute("href"), kind: node.getAttribute("data-evidence") })),
+  );
+  if (evidenceLinks.length < 3) {
+    throw new Error(`${path}: expected at least 3 data-evidence links, got ${evidenceLinks.length}`);
+  }
+  const kinds = new Set(evidenceLinks.map((link) => link.kind));
+  for (const kind of ["issue", "pr", "release"]) {
+    if (!kinds.has(kind)) throw new Error(`${path}: missing a ${kind} evidence link`);
+  }
+  for (const href of claim.forbiddenHrefs) {
+    if ((await page.locator(`a[href="${href}"]`).count()) !== 0) {
+      throw new Error(`${path}: private repo must not be linked: ${href}`);
+    }
+  }
+  for (const href of claim.localHrefs) {
+    if ((await page.locator(`main a[href="${href}"]`).count()) < 1) {
+      throw new Error(`${path}: missing the cross link ${href}`);
+    }
+  }
+  const navSwitch = page.locator("[data-primary-nav] .language a");
+  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+    throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  if (consoleErrors.length || failedRequests.length) {
+    throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+  }
+  await page.close();
+}
+
+async function assertHomeEvidenceEntry(browser, homePath, evidenceHref) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  try {
+    await page.goto(`${targetURL}${homePath}`, { waitUntil: "networkidle" });
+    const proof = page.locator('[data-cta="proof"]');
+    if ((await proof.count()) !== 1) throw new Error(`${homePath}: expected one hero proof link`);
+    if ((await proof.getAttribute("href")) !== evidenceHref) {
+      throw new Error(`${homePath}: proof href is ${JSON.stringify(await proof.getAttribute("href"))}, expected ${evidenceHref}`);
+    }
+    const live = page.locator("#orbi-stats a.stats-evidence");
+    if ((await live.count()) !== 1) throw new Error(`${homePath}: LIVE block missing the evidence entrance`);
+    if ((await live.getAttribute("href")) !== evidenceHref) {
+      throw new Error(`${homePath}: LIVE evidence href is ${JSON.stringify(await live.getAttribute("href"))}`);
+    }
+    await proof.click();
+    const expected = evidenceHref.replace(/\/+$/, "");
+    await page.waitForURL((url) => url.pathname.replace(/\/+$/, "") === expected);
+    if ((await page.locator("h1").count()) !== 1) {
+      throw new Error(`${homePath}: evidence page after click has no h1`);
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 async function assertCiGatesPage(browser, path, size, screenshot) {
   const claim = ciGatesPages[path];
   const page = await browser.newPage({ viewport: size });
@@ -1441,14 +1620,21 @@ async function main() {
     await assertCiGatesPage(browser, "/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-en-mobile.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 1440, height: 900 }, "ci-gates-zh-desktop.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-zh-mobile.png");
+    // Issue #169: bootstrap evidence page, both languages, phone and desktop.
+    await assertHomeEvidenceEntry(browser, "/", "/evidence/");
+    await assertHomeEvidenceEntry(browser, "/zh/", "/zh/evidence/");
+    await assertEvidencePage(browser, "/evidence/", { width: 1440, height: 900 }, "evidence-en-desktop.png");
+    await assertEvidencePage(browser, "/evidence/", { width: 390, height: 844 }, "evidence-en-mobile.png");
+    await assertEvidencePage(browser, "/zh/evidence/", { width: 1440, height: 900 }, "evidence-zh-desktop.png");
+    await assertEvidencePage(browser, "/zh/evidence/", { width: 390, height: 844 }, "evidence-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/"]) {
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/"]) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
