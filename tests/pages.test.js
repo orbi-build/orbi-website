@@ -440,3 +440,23 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     expect(apply).not.toContain('data-primary-nav');
   });
 });
+
+// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Coupon and
+// forever contract wording appear once; Devin/Factory billing docs stay on
+// /cost/. The grep is the site source — the same files the Issue names.
+describe("cloud copy is not a cost-page clone (Issue #180)", () => {
+  const countIn = (html, needle) => html.split(needle).length - 1;
+
+  it("keeps coupon and forever phrasing once and drops competitor billing docs", async () => {
+    const en = await readFile(join(ROOT, "site", "pages", "cloud", "index.html"), "utf8");
+    const zh = await readFile(join(ROOT, "site", "pages", "zh", "cloud", "index.html"), "utf8");
+    expect(countIn(en, "not a price increase"), "EN not a price increase").toBeLessThanOrEqual(1);
+    expect(countIn(en, "written on the subscription alone"), "EN forever phrasing").toBeLessThanOrEqual(1);
+    expect(en, "EN docs.devin.ai").not.toContain("docs.devin.ai");
+    expect(en, "EN docs.factory.ai").not.toContain("docs.factory.ai");
+    expect(countIn(zh, "不是涨价"), "ZH 不是涨价").toBeLessThanOrEqual(1);
+    expect(countIn(zh, "只写在订阅"), "ZH 只写在订阅").toBeLessThanOrEqual(1);
+    expect(zh, "ZH docs.devin.ai").not.toContain("docs.devin.ai");
+    expect(zh, "ZH docs.factory.ai").not.toContain("docs.factory.ai");
+  });
+});

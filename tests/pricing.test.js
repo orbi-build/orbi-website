@@ -242,15 +242,13 @@ describe("Included tokens constant (Issue #138)", () => {
 });
 
 // Issue #147: the measured delivery stats are bare literals — the quota gate
-// above deliberately exempts them — so nothing stopped /cloud/ from telling an
+// above deliberately exempts them — so nothing stopped a page from telling an
 // older snapshot (92.7% / 4,667,630 / $0.04–0.11 / 2026-09-10) of the very
 // measurement /cost/ had already restated as 95.9% / 4,742,066 / $0.06–0.12 /
-// 2026-09-12. Both pages tell one measurement: extract the same metric from
-// each telling and require equality, so a number can only move everywhere at
-// once. The mix must also sum to 100% — 92.7+3.4+0.7 = 96.8 shipped for days
-// as arithmetic a reader could falsify in their head — and /cloud/'s
-// per-delivery dollar range must re-derive from the cost page's own mean, mix,
-// and published list prices, so a range no page's numbers support cannot ship.
+// 2026-09-12. Issue #180 moved the table, mix, and dollar range off /cloud/
+// (buyers follow the cost-page link for those); the full extract and the mix
+// arithmetic stay on /cost/. /cloud/'s remaining headline (median / mean) must
+// still equal the cost table, so a number can only move everywhere at once.
 function measuredStats(html) {
   const row = (label) =>
     html.match(new RegExp(`<tr><th scope="row">(?:${label})</th><td>([\\d,]+)</td></tr>`))?.[1];
@@ -264,17 +262,19 @@ function measuredStats(html) {
   };
 }
 
-describe("Measured delivery stats agree across pages (Issue #147)", () => {
-  const MEASURED_PAGES = [
-    "cost/index.html",
-    "zh/cost/index.html",
-    "cloud/index.html",
-    "zh/cloud/index.html",
-  ];
+function cloudHeadlineStats(html) {
+  return {
+    median: html.match(/(?:Median delivery|单次交付中位) <strong>([\d,]+) tokens<\/strong>/)?.[1],
+    mean: html.match(/(?:mean|均值) <strong>([\d,]+)<\/strong>/)?.[1],
+  };
+}
 
-  it("extracts every metric from all four pages, so the gate cannot pass vacuously", async () => {
+describe("Measured delivery stats agree across pages (Issue #147)", () => {
+  const COST_PAGES = ["cost/index.html", "zh/cost/index.html"];
+
+  it("extracts every metric from both cost pages, so the gate cannot pass vacuously", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const relativePath of MEASURED_PAGES) {
+      for (const relativePath of COST_PAGES) {
         const stats = measuredStats(await readFile(`${dir}${relativePath}`, "utf8"));
         for (const [metric, value] of Object.entries(stats)) {
           expect(value, `${dir}${relativePath}: ${metric} not found`).toBeTruthy();
@@ -283,22 +283,23 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
     }
   });
 
-  it("tells the same measurement on /cloud/ as on /cost/, EN and ZH", async () => {
+  it("keeps /cloud/'s cost headline on the same median and mean as /cost/", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
       for (const [costPage, cloudPage] of [
         ["cost/index.html", "cloud/index.html"],
         ["zh/cost/index.html", "zh/cloud/index.html"],
       ]) {
         const cost = measuredStats(await readFile(`${dir}${costPage}`, "utf8"));
-        const cloud = measuredStats(await readFile(`${dir}${cloudPage}`, "utf8"));
-        expect(cloud, `${cloudPage} disagrees with ${costPage} in ${dir}`).toEqual(cost);
+        const cloud = cloudHeadlineStats(await readFile(`${dir}${cloudPage}`, "utf8"));
+        expect(cloud.median, `${cloudPage} median in ${dir}`).toBe(cost.median);
+        expect(cloud.mean, `${cloudPage} mean in ${dir}`).toBe(cost.mean);
       }
     }
   });
 
-  it("sums the token mix to 100% on every page that states it", async () => {
+  it("sums the token mix to 100% on every cost page that states it", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const relativePath of MEASURED_PAGES) {
+      for (const relativePath of COST_PAGES) {
         const { mix } = measuredStats(await readFile(`${dir}${relativePath}`, "utf8"));
         const [reads, input, output] = mix.map(Number);
         expect(reads + input + output, `${dir}${relativePath}: ${mix.join(" + ")}`).toBeCloseTo(100, 10);
@@ -306,14 +307,10 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
     }
   });
 
-  it("re-derives the cloud page's per-delivery cost range from the cost page", async () => {
+  it("re-derives the cost page's per-delivery dollar range from its own mean, mix, and list prices", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const [costPage, cloudPage, rangeRe] of [
-        ["cost/index.html", "cloud/index.html", /\$([\d.]+)–([\d.]+) per delivery/],
-        ["zh/cost/index.html", "zh/cloud/index.html", /\$([\d.]+)–([\d.]+) 一次/],
-      ]) {
+      for (const costPage of COST_PAGES) {
         const costHtml = await readFile(`${dir}${costPage}`, "utf8");
-        const cloudHtml = await readFile(`${dir}${cloudPage}`, "utf8");
         // The cost page publishes the deepseek-flash list prices as
         // hit/miss/output per 1M and states peak hours are exactly double.
         const [hit, miss, out] = [...costHtml.matchAll(/<strong>\$([\d.]+)\/1M<\/strong>/g)]
@@ -323,8 +320,8 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
         const per1M = (reads / 100) * hit + (input / 100) * miss + (output / 100) * out;
         const offPeak = (Number(mean.replaceAll(",", "")) / 1e6) * per1M;
         const cents = (usd) => Math.round(usd * 100) / 100;
-        const stated = cloudHtml.match(rangeRe)?.slice(1, 3).map(Number);
-        expect(stated, `${cloudPage} in ${dir}`).toEqual([cents(offPeak), cents(offPeak * 2)]);
+        const stated = costHtml.match(/\$([\d.]+)[–-]([\d.]+)/)?.slice(1, 3).map(Number);
+        expect(stated, `${costPage} in ${dir}`).toEqual([cents(offPeak), cents(offPeak * 2)]);
       }
     }
   });

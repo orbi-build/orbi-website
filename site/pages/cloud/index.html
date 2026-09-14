@@ -92,7 +92,7 @@
             "name": "Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0; the discount does not roll into the regular price on a subscription that already has it. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — that is the coupon supply running out, not a price increase on an existing Founding subscription. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
+              "text": "A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
             }
           },
           {
@@ -124,7 +124,7 @@
             "name": "What if a Founding Partner does not land one accepted Issue a month?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. Forever is written on the subscription alone; that commitment stands apart from the monthly condition."
+              "text": "The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. The subscription commitment is the one stated in the Founding Partner section above."
             }
           },
           {
@@ -221,60 +221,7 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">COST, MEASURED</p>
       <h2 id="cost-title">We don't take a margin on your tokens</h2>
-      <p class="section-lede">Measured on <strong>2026-09-12</strong> across <strong>n=46 real deliveries of our own repository</strong> (Python, full CI, issues written to spec): the median delivery runs <strong>2,220,637 tokens</strong> and the mean <strong>4,742,066</strong> — roughly <strong>$0.06–0.12 per delivery</strong> at DeepSeek V4.1 Flash list prices. The token mix: <strong>95.9% cache reads, 3.4% input, 0.7% output</strong>. At the measured median, the plan's __INCLUDED_TOKENS__ tokens cover about <strong>100 deliveries a month</strong>.</p>
-      <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead><tr><th scope="col">Quantile</th><th scope="col">totalTokens per delivery</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">p50 (median)</th><td>2,220,637</td></tr>
-            <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
-            <tr><th scope="row">Max observed</th><td>37,627,783</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="src-note">Source: aggregated from the implement + review session logs of 46 Orbi deliveries of the orbi-build/orbi repository, 2026-09-12. Prices applied: DeepSeek's published V4.1 Flash list prices.</p>
-      <ul class="event-list">
-        <li>
-          <span class="event-era">OUR REPO ONLY</span>
-          <div>
-            <strong>Our repository's measured range — not a promise to everyone</strong>
-            <p>Python, a full CI suite, and issues written to spec keep our context short. A repository with longer context, slower tests, or vaguer issues lands elsewhere in the distribution. Treat these numbers as what they are: our repo's measured range.</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">CACHING IS LOAD-BEARING</span>
-          <div>
-            <strong>95.9% cache reads assumes the provider supports prompt caching</strong>
-            <p>The cost structure rests on cache hits. On an endpoint without prompt caching — every token billed as a miss — the same work costs roughly an order of magnitude more.</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">TOTAL TOKENS, AS BILLED</span>
-          <div>
-            <strong>Numbers are totalTokens, cache reads included</strong>
-            <p>That is the basis the provider actually bills. Counting only input + output would hide most of the real consumption and flatter the number — the opposite of what this section is for.</p>
-          </div>
-        </li>
-      </ul>
-      <p class="section-lede">The managed agents at the $200 tier do not publish what your money buys. Verified against their own documentation:</p>
-      <ul class="event-list">
-        <li>
-          <span class="event-era">DEVIN</span>
-          <div>
-            <strong>Pro includes "a daily and weekly usage quota"; Max adds "a significantly larger weekly usage quota (with no daily cap)"</strong>
-            <p>Nowhere on the page does Cognition state how many ACUs either plan includes or what one ACU costs.</p>
-            <p class="src-note">Source: <a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> — verified 2026-09-11.</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">FACTORY</span>
-          <div>
-            <strong>"~5x Pro usage" / "~10x Pro usage" — no absolute values</strong>
-            <p>Plus ($100/month) is "~5x Pro usage"; Max ($200/month) is "~10x Pro usage". The page states no absolute token quantity and no per-token price anywhere.</p>
-            <p class="src-note">Source: <a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> — verified 2026-09-11.</p>
-          </div>
-        </li>
-      </ul>
+      <p class="section-lede">Median delivery <strong>2,220,637 tokens</strong>, mean <strong>4,742,066</strong> — about <strong>100 deliveries a month</strong> at the plan's __INCLUDED_TOKENS__ tokens. That cost structure assumes the provider supports prompt caching. Sample, quantiles, limits, and competitor citations are on the <a href="/cost/">cost page</a>.</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
@@ -310,7 +257,7 @@
           <details class="faq-item" open>
             <summary><span>01</span>Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?</summary>
             <div class="faq-answer">
-              <p>A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0; the discount does not roll into the regular price on a subscription that already has it. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — that is the coupon supply running out, not a price increase on an existing Founding subscription.</p>
+              <p>A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__.</p>
               <p>After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel.</p>
             </div>
           </details>
@@ -339,7 +286,7 @@
           <details class="faq-item">
             <summary><span>05</span>What if a Founding Partner does not land one accepted Issue a month?</summary>
             <div class="faq-answer">
-              <p>The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. Forever is written on the subscription alone; that commitment stands apart from the monthly condition.</p>
+              <p>The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. The subscription commitment is the one stated in the Founding Partner section above.</p>
             </div>
           </details>
 
