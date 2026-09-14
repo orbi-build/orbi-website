@@ -1108,54 +1108,40 @@ class CloudLandingPageTests(unittest.TestCase):
                 if re.search(r"永久|forever|permanently|permanent", sentence, re.IGNORECASE):
                     self.assertNotIn("token", sentence.lower(), sentence)
 
-    def test_cloud_states_the_measured_token_cost_with_all_three_limits(self) -> None:
-        """Issue #108: the measured cost section carries the date, the sample
-        size, the distribution, and the three qualifying statements — our repo
-        only, caching load-bearing, totalTokens as billed — plus the competitor
-        non-disclosure quotes with their sources."""
-        competitors = (
-            "a significantly larger weekly usage quota",
-            "~10x Pro usage",
-        )
+    def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
+        """Issue #180: /cloud/ keeps a headline — median, mean, about 100
+        deliveries, cache premise — and links to /cost/. The table, three
+        limits, and Devin/Factory billing audit stay on the cost page."""
         competitor_hrefs = (
             "https://docs.devin.ai/admin/billing/self-serve",
             "https://docs.factory.ai/pricing/individuals",
         )
-        for page, needles in (
+        for page, needles, cost_href in (
             (
                 self.en,
                 (
-                    # Issue #147: the measured block is aligned to the
-                    # /cost/ page's snapshot of the same measurement.
-                    "2026-09-12", "n=46",
-                    "2,220,637", "4,742,066", "37,627,783",
-                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    # website#145: the plan quota is 300M on both tiers; the
-                    # derived deliveries figure uses the median (2,220,637),
-                    # not the mean — 300M / median ≈ 135, stated conservatively
-                    # as about 100.
+                    "2,220,637", "4,742,066",
                     "100 deliveries a month",
-                    "not a promise to everyone", "order of magnitude", "totalTokens",
+                    "prompt caching",
                 ),
+                "/cost/",
             ),
             (
                 self.zh,
                 (
-                    "2026-09-12", "n=46",
-                    "2,220,637", "4,742,066", "37,627,783",
-                    "$0.06–0.12", "95.9%", "3.4%", "0.7%",
-                    # website#145: same median caliber as the EN page above.
+                    "2,220,637", "4,742,066",
                     "100 次交付/月",
-                    "不是对所有人的承诺", "一个数量级", "totalTokens",
+                    "prompt caching",
                 ),
+                "/zh/cost/",
             ),
         ):
             for needle in needles:
                 self.assertIn(needle, page.text, needle)
-            for needle in competitors:
-                self.assertIn(needle, page.text, needle)
+            hrefs = [h for _, h in page.hrefs]
+            self.assertIn(cost_href, hrefs, cost_href)
             for href in competitor_hrefs:
-                self.assertIn(href, [h for _, h in page.hrefs], href)
+                self.assertNotIn(href, hrefs, href)
 
     def test_offer_jsonld_prices_the_regular_plan(self) -> None:
         """Issue #108: JSON-LD prices the regular plan at 79 with the coupon in
@@ -1673,8 +1659,8 @@ class OrcaComparisonTests(unittest.TestCase):
                 self.assertIn(quote, page.text, quote)
 
     def test_the_page_explains_orbi_in_orcas_language(self) -> None:
-        # the misreading this page exists to dismantle, and the one-line answer
-        self.assertIn("差不多", self.zh.text)
+        # positioning difference first (Issue #178 dropped the origin anecdote)
+        self.assertIn("两个项目都用 git worktree 隔离 agent", self.zh.text)
         self.assertIn("你用 Orca 管一队 agent；Orbi 是让你不用管", self.zh.text)
         self.assertIn("Both projects put agents in git worktrees", self.en.text)
         self.assertIn("Orca is how you run a fleet of agents; Orbi is how you stop having to", self.en.text)
@@ -1801,25 +1787,14 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(f'class="button button-ghost" href="{secondary}"', hero_html)
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
-    def test_live_dive_statuses_match_the_published_pages(self) -> None:
-        """Published deep dives are live, and every published or research
-        entry points to its page or research ticket."""
-        for page in (self.en, self.zh):
-            statuses = [
-                attrs.get("class", "")
-                for tag, attrs in page.elements
-                if tag == "span" and "dive-status" in attrs.get("class", "")
-            ]
-            self.assertTrue(statuses)
-            self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 7, statuses
-            )
-        # A published or research entry must not become a dead end.
+    def test_every_deep_dive_links_its_page(self) -> None:
+        """Eight deep dives, each a link — no internal status badge (Issue #178)."""
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
             self.assertEqual(len(entries), 8, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
+                self.assertNotIn("dive-status", entry, entry)
 
     def test_the_closing_heading_names_the_choice_dimension(self) -> None:
         """Issue #54: the closing H2 states the real decision axis — where
@@ -1860,7 +1835,6 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
                 if path == COMPARE_INDEX_EN_PATH:
                     self.assertIn(href, [link for _, link in page.hrefs])
-            self.assertIn("https://github.com/orbi-build/orbi-website/issues/8", [link for _, link in page.hrefs])
 
 
 OPENHANDS_EN_PATH = ROOT / "public" / "compare" / "openhands" / "index.html"
