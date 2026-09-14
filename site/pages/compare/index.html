@@ -87,7 +87,7 @@
       <section class="compare-hero shell" aria-labelledby="compare-index-title">
         <p class="eyebrow">Comparison · facts verified 2026-09-07</p>
         <h1 id="compare-index-title">Orbi, compared</h1>
-        <p class="hero-lede"><strong>Self-hosted delivery, honestly benchmarked.</strong> One deep dive per competitor: what it is from its own materials, where it differs from Orbi, and which job each one is right for. Every factual claim carries a source and a verification date — when the facts change, these pages get rewritten, not spun.</p>
+        <p class="hero-lede"><strong>Self-hosted delivery, sourced and dated.</strong> One deep dive per competitor: what it is from its own materials, where it differs from Orbi, and which job each one is right for. Every factual claim carries a source and a verification date — when the facts change, these pages get rewritten, not spun.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/compare/openhands/">Read the OpenHands deep dive</a>
           <a class="button button-ghost" href="/compare/openclaw/">Read the OpenClaw deep dive</a>
@@ -121,15 +121,15 @@
         <p class="claim-quotes-lede">The three delivery rows, in the vendors’ own words. Every Yes/No above points at an official page; a cell we could not verify reads “Not verified”, never “No”. No competitor’s official documentation describes the full chain — independent review, auto-merge, and a tagged Release; the Tag / Release cell is Orbi’s alone. Rows audited 2026-09-10 across the vendors’ official docs; quotes re-read on the live pages 2026-09-11.</p>
         <div class="claim-quote">
           <p class="claim-quote-text">“Pull request authors cannot approve their own pull requests. You will also not be able to approve a pull request that was raised by GitHub Copilot if it was you who assigned Copilot to the issue to which the pull request relates.”</p>
-          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub Docs — Approving a pull request with required reviews</a>; and, on the session cap: “Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.” — <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · verified 2026-09-11. GitHub reorganized its coding-agent docs after the 2026-09-10 audit (the audited URL now redirects to the cloud-agent page), so both quotes were re-read on the live pages that day.</p>
+          <p class="claim-quote-src"><a href="https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews" rel="noopener">GitHub Docs — Approving a pull request with required reviews</a>; and, on the session cap: “Each Copilot cloud agent session has a maximum execution time of 59 minutes. This is a hard limit that cannot be extended or bypassed.” — <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent" rel="noopener">About GitHub Copilot cloud agent</a> · verified 2026-09-11.</p>
         </div>
         <div class="claim-quote">
           <p class="claim-quote-text">“Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.” · “The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.”</p>
-          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · verified 2026-09-10, re-verified 2026-09-11. Claude Code is Anthropic’s coding agent; the matrix’s Managed Agents column tracks a different product whose documentation covers none of the three steps, so its cells read “Not verified”.</p>
+          <p class="claim-quote-src"><a href="https://code.claude.com/docs/en/code-review" rel="noopener">Anthropic — Claude Code code review</a> · verified 2026-09-10, re-verified 2026-09-11. Managed Agents documentation does not cover the three delivery steps.</p>
         </div>
         <div class="claim-quote">
           <p class="claim-quote-text">“Merge, close, convert to draft, mark ready for review, and toggle auto-merge directly from Devin Review without leaving the page.”</p>
-          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin Docs — Devin Review</a> · verified 2026-09-11. The auto-merge toggle is real, so Devin’s cell honestly reads “Yes”. Devin’s <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub integration page</a> documents @mentions (Core/Teams) and Enterprise repository delegation only; automatic Issue triggering is not verified — Devin also does not document an unattended Issue→merge→Release chain.</p>
+          <p class="claim-quote-src"><a href="https://docs.devin.ai/work-with-devin/devin-review" rel="noopener">Devin Docs — Devin Review</a> · verified 2026-09-11. Devin Review provides an auto-merge toggle. Devin’s <a href="https://docs.devin.ai/integrations/gh" rel="noopener">GitHub integration page</a> documents @mentions (Core/Teams) and Enterprise repository delegation only; automatic Issue triggering is not verified — Devin also does not document an unattended Issue→merge→Release chain.</p>
         </div>
       </div>
       <p class="src-note">*Hermes is a general assistant; its GitHub skill is not equivalent to a GitHub-native software delivery queue. OpenHands sources: <a href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">official repository</a> and <a href="https://docs.openhands.dev/openhands/usage" rel="noopener">official docs</a>. Sources: <a href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent official repository</a>; <a href="https://docs.orbi.build">Orbi documentation</a>; <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic</a>; <a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" rel="noopener">GitHub Docs</a>; <a href="https://openai.com/codex/" rel="noopener">OpenAI Codex</a>; <a href="https://devin.ai/" rel="noopener">Devin</a> — all verified 2026-09-07; the delivery rows verified 2026-09-10, re-verified 2026-09-11. See each linked deep dive below for scope and sources.</p>
@@ -150,7 +150,7 @@
           </tbody></table>
         </div>
         <p class="thesis-punch">Hosted-agent convenience is collateralized by vendor change power. Orbi leaves that five-part risk with you; the price is operating a machine, and the benefit is that you can change your own runtime without waiting for a hosted vendor.</p>
-        <p class="src-note">Sources: <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>; <a href="https://x.com/bcherny" rel="noopener">Boris Cherny’s public statements</a>; <a href="/compare/openclaw/">OpenClaw deep dive</a>; <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison research epic</a> — verified 2026-09-07. These are ownership trade-offs, not claims about service quality.</p>
+        <p class="src-note">Sources: <a href="https://www.anthropic.com/engineering/managed-agents" rel="noopener">Anthropic Managed Agents</a>; <a href="https://x.com/bcherny" rel="noopener">Boris Cherny’s public statements</a>; <a href="/compare/openclaw/">OpenClaw deep dive</a> — verified 2026-09-07. These are ownership trade-offs, not claims about service quality.</p>
       </div>
     </section>
 
@@ -161,61 +161,53 @@
         <li>
           <a href="/compare/orca/">
             <strong>Orbi vs Orca</strong>
-            <span class="dive-status is-live">Live</span>
             <p>The category's 66.8k-star ADE for running a fleet of parallel agents — and why "similar to Orca" is the misreading this page dismantles.</p>
           </a>
         </li>
         <li>
           <a href="/compare/openclaw/">
             <strong>Orbi vs OpenClaw</strong>
-            <span class="dive-status is-live">Live</span>
             <p>The open-source always-on personal agent — and the April 2026 Anthropic subscription policy change that affected its subscription route.</p>
           </a>
         </li>
         <li>
           <a href="/compare/github-copilot-coding-agent/">
             <strong>Orbi vs GitHub Copilot coding agent</strong>
-            <span class="dive-status is-live">Live</span>
             <p>Assign an Issue to @copilot and a cloud sandbox returns a PR — the closest overlap with Orbi's task loop.</p>
           </a>
         </li>
         <li>
           <a href="/compare/managed-agents/">
             <strong>Orbi vs Claude Managed Agents (Anthropic)</strong>
-            <span class="dive-status is-live">Live</span>
             <p>Anthropic-hosted Agent API at token rates plus $0.08/session-hour.</p>
           </a>
         </li>
         <li>
           <a href="/compare/openhands/">
             <strong>Orbi vs OpenHands</strong>
-            <span class="dive-status is-live">Live</span>
             <p>Open-source AI development platform with Docker, cloud, BYOK, and broad automation surfaces.</p>
           </a>
         </li>
         <li>
           <a href="/compare/hermes-agent/">
             <strong>Orbi vs Hermes Agent</strong>
-            <span class="dive-status is-live">Live</span>
             <p>Nous Research's open-source always-on personal assistant — with GitHub tools, but not positioned as a software delivery agent.</p>
           </a>
         </li>
         <li>
           <a href="/compare/codex/">
             <strong>Orbi vs OpenAI Codex (cloud)</strong>
-            <span class="dive-status">Research ticket</span>
             <p>Cloud software-engineering agent from the ChatGPT side, one sandbox per task.</p>
           </a>
         </li>
         <li>
           <a href="/compare/devin/">
             <strong>Orbi vs Devin</strong>
-            <span class="dive-status is-live">Live</span>
             <p>Cognition's managed autonomous engineer — Slack-driven tasks, cloud execution, and a billing structure that has already been rewritten once.</p>
           </a>
         </li>
       </ul>
-      <p class="src-note">Every live deep dive includes its own official sources and verification date. The Codex page is the delivered research ticket <a href="https://github.com/orbi-build/orbi-website/issues/8">#8</a>; the comparison set is tracked in the <a href="https://github.com/orbi-build/orbi-website/issues/4">comparison epic</a>.</p>
+      <p class="src-note">Every deep dive includes its own official sources and verification date.</p>
     </section>
 
     <section class="closing shell" aria-labelledby="closing-title">

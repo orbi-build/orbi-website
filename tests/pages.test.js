@@ -440,3 +440,35 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     expect(apply).not.toContain('data-primary-nav');
   });
 });
+
+// Issue #178: /compare/ and /compare/orca/ are visitor-facing. Delivery-status
+// badges, private-repo ticket links, and audit-reasoning sentences belong in
+// docs/comparison-audit.md, not on the pages a stranger opens.
+describe("compare pages drop internal-reviewer copy (Issue #178)", () => {
+  const outputs = [
+    "compare/index.html",
+    "zh/compare/index.html",
+    "compare/orca/index.html",
+    "zh/compare/orca/index.html",
+  ];
+  const forbidden = [
+    "Research ticket",
+    "dive-status",
+    "orbi-website/issues/8",
+    "orbi-website/issues/4",
+    "comparison epic",
+    "honestly",
+    "after the 2026-09-10 audit",
+    "described us",
+    "研究票",
+  ];
+
+  it("keeps the four page sources free of those strings", async () => {
+    for (const output of outputs) {
+      const source = await readFile(join(ROOT, "site", "pages", output), "utf8");
+      for (const needle of forbidden) {
+        expect(source, `${output} still contains ${JSON.stringify(needle)}`).not.toContain(needle);
+      }
+    }
+  });
+});
