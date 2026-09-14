@@ -69,7 +69,7 @@
             "name": "券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0；已经用上券的订阅不会因为券位发完而改扣正价。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
+              "text": "Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
             }
           },
           {
@@ -101,7 +101,7 @@
             "name": "Founding Partner 每月一个被采纳的 Issue，没做到会怎样？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。"
+              "text": "条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。"
             }
           },
           {
@@ -201,7 +201,7 @@
         <p class="section-tag">价格</p>
         <h2 id="pricing-title">正价 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token</h2>
         <p class="section-lede">正价为<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，包含托管 Runner——协调、恢复和合并门禁都在内——并含 <strong>__INCLUDED_TOKENS__ token 的模型用量</strong>（按我们实测的中位数约 100 次交付）；额度用完后，新交付暂停。</p>
-        <p><strong>Founding 券 100% off，限量发放。</strong>Founding Partner——前 10 位订阅者——凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。想先聊聊是否适合？<a href="/apply">申请 / 联系我们</a>。</p>
+        <p><strong>Founding 券 100% off，限量发放。</strong>Founding Partner——前 10 位订阅者——凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。</p>
         <p>单次交付的实测 token 成本——样本、分位、竞品引证——在<a href="/zh/cost/">成本页</a>。</p>
         <ul class="event-list">
           <li>
@@ -219,60 +219,7 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">成本，实测</p>
       <h2 id="cost-title">我们不在你的 token 上赚差价</h2>
-      <p class="section-lede">实测于 <strong>2026-09-12</strong>，样本为我们自己仓库的 <strong>n=46 次真实交付</strong>（Python、完整 CI、Issue 写得规范）：单次交付中位 <strong>2,220,637 tokens</strong>，均值 <strong>4,742,066</strong>——按 DeepSeek V4.1 Flash 官方牌价约 <strong>$0.06–0.12 一次</strong>。token 构成：<strong>95.9% cacheRead、3.4% input、0.7% output</strong>。按实测中位数，计划内的 __INCLUDED_TOKENS__ token 约够 <strong>100 次交付/月</strong>。</p>
-      <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead><tr><th scope="col">分位</th><th scope="col">单次交付 totalTokens</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">p50（中位）</th><td>2,220,637</td></tr>
-            <tr><th scope="row">均值</th><td>4,742,066</td></tr>
-            <tr><th scope="row">最大观测</th><td>37,627,783</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="src-note">来源：orbi-build/orbi 仓库 46 次 Orbi 交付的 implement + review session 日志聚合，2026-09-12。套用的是 DeepSeek 公布的 V4.1 Flash 官方牌价。</p>
-      <ul class="event-list">
-        <li>
-          <span class="event-era">只测了我们自己的仓库</span>
-          <div>
-            <strong>这是我们仓库的实测区间——不是对所有人的承诺</strong>
-            <p>Python、完整 CI、Issue 写得规范，让我们的 context 偏短。context 更长、测试更慢、Issue 更模糊的仓库会落在分布的其他位置。这些数字只说明一件事：我们仓库的实测区间。</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">缓存是承重墙</span>
-          <div>
-            <strong>95.9% cacheRead 依赖 provider 支持 prompt caching</strong>
-            <p>整套成本结构建立在缓存命中上。换到不支持 prompt caching 的端点——每个 token 都按 miss 计价——同样的工作成本大约要涨一个数量级。</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">按 totalTokens 计</span>
-          <div>
-            <strong>数字是 totalTokens，含 cacheRead</strong>
-            <p>这是 provider 实际计费的口径。只算 input + output 会藏掉大部分真实消耗，把数字做好看——和这一段的目的正好相反。</p>
-          </div>
-        </li>
-      </ul>
-      <p class="section-lede">$200 档的托管 Agent 不公布你的钱买到了什么。以下对照其官方文档核实：</p>
-      <ul class="event-list">
-        <li>
-          <span class="event-era">DEVIN</span>
-          <div>
-            <strong>Pro 是 "a daily and weekly usage quota"；Max 加 "a significantly larger weekly usage quota (with no daily cap)"</strong>
-            <p>Cognition 没有任何地方写明两个计划各含多少 ACU、一个 ACU 值多少钱。</p>
-            <p class="src-note">来源：<a href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>——核实于 2026-09-11。</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">FACTORY</span>
-          <div>
-            <strong>"~5x Pro usage" / "~10x Pro usage"——没有任何绝对值</strong>
-            <p>Plus（$100/月）是 "~5x Pro usage"；Max（$200/月）是 "~10x Pro usage"。页面上找不到任何绝对 token 量，也没有 per-token 价格。</p>
-            <p class="src-note">来源：<a href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a>——核实于 2026-09-11。</p>
-          </div>
-        </li>
-      </ul>
+      <p class="section-lede">单次交付中位 <strong>2,220,637 tokens</strong>，均值 <strong>4,742,066</strong>——按实测中位数，计划内的 __INCLUDED_TOKENS__ token 约够 <strong>100 次交付/月</strong>。这套成本结构建立在 provider 支持 prompt caching 上。完整样本、分位、限制和竞品引证见<a href="/zh/cost/">成本页</a>。</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
@@ -308,7 +255,7 @@
           <details class="faq-item" open>
             <summary><span>01</span>券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？</summary>
             <div class="faq-answer">
-              <p>Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0；已经用上券的订阅不会因为券位发完而改扣正价。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。</p>
+              <p>Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。</p>
               <p>登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
             </div>
           </details>
@@ -337,7 +284,7 @@
           <details class="faq-item">
             <summary><span>05</span>Founding Partner 每月一个被采纳的 Issue，没做到会怎样？</summary>
             <div class="faq-answer">
-              <p>条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
+              <p>条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。</p>
             </div>
           </details>
 

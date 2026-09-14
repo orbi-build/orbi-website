@@ -6,8 +6,6 @@
 //                                layout, nav params) followed by the page body with
 //                                <!--@nav--> and <!--@footer--> markers where the
 //                                fragments belong.
-// Pages listing apply.html keep their whole body in the source and carry no
-// markers — a conversion endpoint with no primary nav and no site footer.
 //
 // Usage: node scripts/build-pages.mjs [--out <dir>]   (default: public)
 //
@@ -214,9 +212,8 @@ function parsePage(name, source) {
 }
 
 // The public/ URL a page's output path maps to: "cloud/index.html" →
-// "/cloud/", "index.html" → "/", "apply.html" → "/apply".
+// "/cloud/", "index.html" → "/".
 export function pathToHref(output) {
-  if (output === "apply.html") return "/apply";
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
 }
 

@@ -184,11 +184,6 @@ describe("per-page head parameters (title / description / canonical)", () => {
       const canonical = shipped
         .get(page.output)
         .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
-      if (page.standalone) {
-        // apply.html is a noindex conversion endpoint, not an indexable page.
-        expect(canonical).toBe("https://orbi.build/apply");
-        continue;
-      }
       expect(canonical, `${page.output}: canonical drifted`).toBe(
         `https://orbi.build${pathToHref(page.output)}`,
       );
@@ -433,11 +428,60 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     }
   });
 
-  it("keeps /apply as a 200 conversion page, not a nav destination", async () => {
-    const apply = shipped.get("apply.html");
-    expect(apply, "public/apply.html must still ship").toBeTruthy();
-    expect(apply).toContain('<link rel="canonical" href="https://orbi.build/apply">');
-    expect(apply).not.toContain('data-primary-nav');
+  it("does not ship apply.html — /apply is a 301, not a conversion page", async () => {
+    expect(shipped.has("apply.html"), "public/apply.html must not ship").toBe(false);
+  });
+});
+
+// Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Coupon and
+// forever contract wording appear once; Devin/Factory billing docs stay on
+// /cost/. The grep is the site source — the same files the Issue names.
+describe("cloud copy is not a cost-page clone (Issue #180)", () => {
+  const countIn = (html, needle) => html.split(needle).length - 1;
+
+  it("keeps coupon and forever phrasing once and drops competitor billing docs", async () => {
+    const en = await readFile(join(ROOT, "site", "pages", "cloud", "index.html"), "utf8");
+    const zh = await readFile(join(ROOT, "site", "pages", "zh", "cloud", "index.html"), "utf8");
+    expect(countIn(en, "not a price increase"), "EN not a price increase").toBeLessThanOrEqual(1);
+    expect(countIn(en, "written on the subscription alone"), "EN forever phrasing").toBeLessThanOrEqual(1);
+    expect(en, "EN docs.devin.ai").not.toContain("docs.devin.ai");
+    expect(en, "EN docs.factory.ai").not.toContain("docs.factory.ai");
+    expect(countIn(zh, "不是涨价"), "ZH 不是涨价").toBeLessThanOrEqual(1);
+    expect(countIn(zh, "只写在订阅"), "ZH 只写在订阅").toBeLessThanOrEqual(1);
+    expect(zh, "ZH docs.devin.ai").not.toContain("docs.devin.ai");
+    expect(zh, "ZH docs.factory.ai").not.toContain("docs.factory.ai");
+  });
+});
+
+// Issue #178: /compare/ and /compare/orca/ are visitor-facing. Delivery-status
+// badges, private-repo ticket links, and audit-reasoning sentences belong in
+// docs/comparison-audit.md, not on the pages a stranger opens.
+describe("compare pages drop internal-reviewer copy (Issue #178)", () => {
+  const outputs = [
+    "compare/index.html",
+    "zh/compare/index.html",
+    "compare/orca/index.html",
+    "zh/compare/orca/index.html",
+  ];
+  const forbidden = [
+    "Research ticket",
+    "dive-status",
+    "orbi-website/issues/8",
+    "orbi-website/issues/4",
+    "comparison epic",
+    "honestly",
+    "after the 2026-09-10 audit",
+    "described us",
+    "研究票",
+  ];
+
+  it("keeps the four page sources free of those strings", async () => {
+    for (const output of outputs) {
+      const source = await readFile(join(ROOT, "site", "pages", output), "utf8");
+      for (const needle of forbidden) {
+        expect(source, `${output} still contains ${JSON.stringify(needle)}`).not.toContain(needle);
+      }
+    }
   });
 });
 
