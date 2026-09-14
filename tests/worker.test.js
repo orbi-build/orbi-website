@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse } from "../src/worker.js";
+import worker, { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("trims and bounds submitted fields", () => {
@@ -333,6 +333,210 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   });
 });
 
+// Issue #173: curl orbi.build/status prints the real delivery counts as
+// pasteable plaintext. Data still comes from loadStats(); this is only a
+// terminal rendering of that existing payload.
+describe("plaintext /status (Issue #173)", () => {
+  const realFetch = globalThis.fetch;
+  const realCaches = globalThis.caches;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    globalThis.caches = realCaches;
+  });
+
+  function jsonResponse(data) {
+    return new Response(JSON.stringify(data), { status: 200 });
+  }
+
+  function mockGitHub(overrides = {}) {
+    const calls = [];
+    globalThis.fetch = async (url) => {
+      calls.push(String(url));
+      const path = new URL(url).pathname;
+      const query = new URL(url).searchParams.get("q") || "";
+      const fail = (repo) => overrides.fail && overrides.fail.includes(repo);
+      if (path.startsWith("/search/issues")) {
+        const repo = query.includes("orbi-website") ? "orbi-website" : query.includes("orbi-cloud") ? "orbi-cloud" : "orbi";
+        if (fail(repo)) return new Response("rate limited", { status: 403 });
+        return jsonResponse({ total_count: query.includes("is:pr") ? 296 : 372 });
+      }
+      for (const repo of ["orbi-website", "orbi-cloud", "orbi"]) {
+        if (path === `/repos/orbi-build/${repo}`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse({ created_at: "2026-08-24T16:08:33Z", stargazers_count: 95 });
+        }
+        if (path === `/repos/orbi-build/${repo}/releases`) {
+          if (fail(repo)) return new Response("not found", { status: 500 });
+          return jsonResponse([{ id: 1 }, { id: 2 }, { id: 3 }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/stargazers`) {
+          return jsonResponse([{ starred_at: "2026-09-01T00:00:00Z" }, { starred_at: "2026-09-02T00:00:00Z" }]);
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-beta.yml/runs`) {
+          return jsonResponse({ total_count: 37 });
+        }
+        if (path === `/repos/orbi-build/${repo}/actions/workflows/deploy-production.yml/runs`) {
+          return jsonResponse({ total_count: 4 });
+        }
+      }
+      throw new Error("unexpected GitHub call: " + url);
+    };
+    return calls;
+  }
+
+  function emptyCache() {
+    globalThis.caches = {
+      default: {
+        match: () => Promise.resolve(undefined),
+        put: async () => {},
+      },
+    };
+  }
+
+  function statusEnv() {
+    return {
+      GITHUB_TOKEN: "token",
+      ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+    };
+  }
+
+  function curlStatus(url = "https://orbi.build/status") {
+    return handleFetch(
+      new Request(url, { headers: { Accept: "*/*" } }),
+      statusEnv(),
+    );
+  }
+
+  it("answers curl Accept: */* with 200 text/plain, ≤72 columns, no ANSI", async () => {
+    mockGitHub();
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(response.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    const body = await response.text();
+    for (const line of body.split("\n")) {
+      expect(line.length).toBeLessThanOrEqual(72);
+    }
+    expect(body).not.toContain("\x1b");
+    expect(body).not.toContain("\t");
+    expect(body).toContain("Orbi — GitHub Issue in, tagged Release out");
+    expect(body).toMatch(/orbi\s+issues closed\s+372\s+PRs merged\s+296\s+releases\s+3/);
+    expect(body).toContain("orbi-website");
+    expect(body).toContain("orbi-cloud");
+    expect(body).toContain("curl -fsSL aiready.sh | sh");
+    expect(body).not.toContain("orbi.build/install.sh");
+    expect(body).toContain("https://docs.orbi.build");
+  });
+
+  it("serves /status/ identically to /status", async () => {
+    mockGitHub();
+    emptyCache();
+    const bare = await curlStatus("https://orbi.build/status");
+    const slashed = await curlStatus("https://orbi.build/status/");
+    expect(slashed.status).toBe(bare.status);
+    expect(slashed.headers.get("Content-Type")).toBe(bare.headers.get("Content-Type"));
+    expect(await slashed.text()).toBe(await bare.text());
+  });
+
+  it("does not return text/plain when Accept includes text/html", async () => {
+    const env = {
+      ASSETS: {
+        fetch: () => Promise.resolve(new Response("<!doctype html>status page", {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        })),
+      },
+    };
+    const response = await handleFetch(
+      new Request("https://orbi.build/status", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      env,
+    );
+    expect(response.headers.get("Content-Type")).not.toMatch(/^text\/plain/);
+    expect(response.headers.get("Content-Type")).toContain("text/html");
+    expect(await response.text()).toContain("status page");
+  });
+
+  it("degrades a failing repo to unavailable and still answers 200", async () => {
+    mockGitHub({ fail: ["orbi-cloud"] });
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toMatch(/orbi-cloud\s+unavailable/);
+    expect(body).toMatch(/orbi\s+issues closed\s+372/);
+    expect(body).toMatch(/orbi-website\s+issues closed\s+372/);
+    for (const line of body.split("\n")) {
+      expect(line.length).toBeLessThanOrEqual(72);
+    }
+  });
+
+  it("answers 503 when every repo is unavailable", async () => {
+    mockGitHub({ fail: ["orbi", "orbi-website", "orbi-cloud"] });
+    emptyCache();
+    const response = await curlStatus();
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await response.text();
+    expect(body).toMatch(/orbi\s+unavailable/);
+    expect(body).toMatch(/orbi-website\s+unavailable/);
+    expect(body).toMatch(/orbi-cloud\s+unavailable/);
+    expect(body).not.toContain("\x1b");
+  });
+
+  it("serves a cache hit without calling GitHub again", async () => {
+    const calls = mockGitHub();
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: (key) => {
+          const body = store.get(String(key));
+          return Promise.resolve(body === undefined ? undefined : new Response(body));
+        },
+        put: async (key, response) => {
+          store.set(String(key), await response.text());
+        },
+      },
+    };
+    const first = await curlStatus();
+    const callsAfterFirst = calls.length;
+    expect(callsAfterFirst).toBeGreaterThan(0);
+    expect(first.status).toBe(200);
+    const second = await curlStatus();
+    expect(calls).toHaveLength(callsAfterFirst);
+    expect(await second.text()).toBe(await first.text());
+  });
+
+  it("does not reuse the /stats JSON cache body", async () => {
+    mockGitHub();
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: (key) => {
+          const body = store.get(String(key));
+          return Promise.resolve(body === undefined ? undefined : new Response(body));
+        },
+        put: async (key, response) => {
+          store.set(String(key), await response.text());
+        },
+      },
+    };
+    const stats = await handleFetch(new Request("https://orbi.build/stats"), statusEnv());
+    expect(stats.status).toBe(200);
+    expect(await stats.json()).toHaveProperty("repos");
+    const status = await curlStatus();
+    expect(status.status).toBe(200);
+    expect(status.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await status.text();
+    expect(body.startsWith("{")).toBe(false);
+    expect(body).toMatch(/issues closed/);
+  });
+});
+
 describe("application submit endpoint (Issue #76)", () => {
   // Minimal D1 binding double: record the prepared statement so the test
   // asserts a real insert was issued, not just a status code.
@@ -398,6 +602,29 @@ describe("application submit endpoint (Issue #76)", () => {
     expect(response.status).toBe(405);
   });
 
+  it("still serves GET /apply as a 200 conversion page (Issue #170)", async () => {
+    // The nav CTA no longer points here, but the route itself stays: external
+    // links and the fail-closed rewrite still land on this page.
+    const applyHtml = "<!DOCTYPE html><title>Apply</title>";
+    const env = {
+      ASSETS: {
+        fetch: (request) => {
+          const { pathname } = new URL(request.url);
+          if (pathname === "/apply" || pathname === "/apply.html") {
+            return Promise.resolve(new Response(applyHtml, {
+              status: 200,
+              headers: { "Content-Type": "text/html; charset=utf-8" },
+            }));
+          }
+          return Promise.resolve(new Response("missing", { status: 404 }));
+        },
+      },
+    };
+    const response = await handleFetch(new Request("https://orbi.build/apply"), env);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe(applyHtml);
+  });
+
   it("no longer handles POST /api/apply: the cloud control plane owns /api* on the shared beta host", async () => {
     // Issue #76: live beta answered POST /api/apply with cloud's 404
     // (x-orbi-worker: orbi-cloud-control-plane-e2e) — the website's D1 never
@@ -413,5 +640,118 @@ describe("application submit endpoint (Issue #76)", () => {
     );
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("missing");
+  });
+});
+
+// Issue #165: /pricing is the URL visitors type and crawlers guess. It is a
+// permanent alias of the /cloud/ PRICING section — never its own page.
+describe("/pricing alias (Issue #165)", () => {
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+
+  it.each([
+    ["https://orbi.build/pricing", "https://orbi.build/cloud/#pricing"],
+    ["https://orbi.build/pricing/", "https://orbi.build/cloud/#pricing"],
+    ["https://beta.orbi.build/pricing", "https://beta.orbi.build/cloud/#pricing"],
+    ["https://beta.orbi.build/pricing/", "https://beta.orbi.build/cloud/#pricing"],
+    ["https://orbi.build/zh/pricing", "https://orbi.build/zh/cloud/#pricing"],
+    ["https://orbi.build/zh/pricing/", "https://orbi.build/zh/cloud/#pricing"],
+    ["https://beta.orbi.build/zh/pricing", "https://beta.orbi.build/zh/cloud/#pricing"],
+    ["https://beta.orbi.build/zh/pricing/", "https://beta.orbi.build/zh/cloud/#pricing"],
+  ])("301s %s to the pricing section on the same host", async (from, to) => {
+    const response = await handleFetch(new Request(from), env);
+    expect(response.status).toBe(301);
+    const location = response.headers.get("location");
+    expect(location).toBe(to);
+    expect(location.endsWith(from.includes("/zh/") ? "/zh/cloud/#pricing" : "/cloud/#pricing")).toBe(true);
+  });
+});
+
+// Issue #174: aiready.sh is the curl install entry. Same host, Accept-negotiated:
+// curl (*/*) gets public/install.sh; a browser (text/html) 302s to orbi.build.
+// The script bytes come from env.ASSETS, never a copy inside the worker.
+describe("aiready.sh install entry (Issue #174)", () => {
+  const INSTALL_SH = "#!/usr/bin/env bash\n# aiready-test-fixture\n";
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        const { pathname } = new URL(request.url);
+        if (pathname === "/install.sh") {
+          return new Response(INSTALL_SH, {
+            status: 200,
+            headers: { "Content-Type": "application/octet-stream" },
+          });
+        }
+        if (pathname === "/robots.txt") {
+          return new Response("User-agent: *\nAllow: /\n", {
+            status: 200,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          });
+        }
+        return new Response("missing", { status: 404 });
+      },
+    },
+  };
+
+  it("serves install.sh as text/plain for curl Accept */* on /", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/", { headers: { Accept: "*/*" } }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+    const body = await response.text();
+    expect(body.startsWith("#!/usr/bin/env bash")).toBe(true);
+    expect(body).toBe(INSTALL_SH);
+  });
+
+  it("302s a browser Accept text/html on / to https://orbi.build/", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      env,
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://orbi.build/");
+  });
+
+  it("serves the same script on /install.sh for any Accept", async () => {
+    for (const accept of ["*/*", "text/html,application/xhtml+xml"]) {
+      const response = await handleFetch(
+        new Request("https://aiready.sh/install.sh", { headers: { Accept: accept } }),
+        env,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Content-Type")).toMatch(/^text\/plain/);
+      expect(await response.text()).toBe(INSTALL_SH);
+    }
+  });
+
+  it("302s other paths to orbi.build preserving path and query", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/cloud/?ref=tg"),
+      env,
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("https://orbi.build/cloud/?ref=tg");
+  });
+
+  it("does not serve the test-env blanket Disallow on /robots.txt", async () => {
+    const response = await handleFetch(new Request("https://aiready.sh/robots.txt"), env);
+    const body = await response.text();
+    expect(body).not.toBe("User-agent: *\nDisallow: /\n");
+    expect(body).not.toMatch(/^User-agent: \*\s*\nDisallow: \/\s*$/);
+  });
+
+  it("is a production host: no X-Robots-Tag on the fetch wrapper", async () => {
+    expect(PROD_HOSTS.has("aiready.sh")).toBe(true);
+    const response = await worker.fetch(
+      new Request("https://aiready.sh/", { headers: { Accept: "*/*" } }),
+      env,
+      { waitUntil() {} },
+    );
+    expect(response.headers.get("X-Robots-Tag")).toBeNull();
   });
 });

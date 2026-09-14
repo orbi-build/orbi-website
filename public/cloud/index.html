@@ -60,6 +60,60 @@
         "priceCurrency": "USD",
         "description": "Regular price US$__CLOUD_MONTHLY_USD__ per month with __INCLUDED_TOKENS__ tokens of model usage included; when the monthly allowance runs out, new deliveries pause. Founding coupons: 100% off, limited supply — once they run out, the regular price applies.",
         "url": "https://orbi.build/cloud/"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://orbi.build/cloud/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0; the discount does not roll into the regular price on a subscription that already has it. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — that is the coupon supply running out, not a price increase on an existing Founding subscription. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens when the __INCLUDED_TOKENS__ tokens run out?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The plan includes __INCLUDED_TOKENS__ tokens a month. When the allowance runs out, new deliveries pause — there is no per-token overage billing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How many repositories can one subscription connect?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Private Beta keeps one active repository per subscription. You can switch: connecting a different repository deactivates the previous one and provisions the new one. A switch is blocked while a delivery is in flight on the bound repository."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can you see my code?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What if a Founding Partner does not land one accepted Issue a month?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. Forever is written on the subscription alone; that commitment stands apart from the monthly condition."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I self-host and use Cloud at the same time?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Self-hosting the fair-code core remains free forever. Cloud is the hosted runner on infrastructure we operate. Subscribing to Cloud does not replace self-hosting, and self-hosting does not require a Cloud subscription."
+            }
+          }
+        ]
       }
     ]
   }
@@ -79,7 +133,7 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/compare/" data-cta="comparisons">Comparisons</a><a href="/cost/">Cost</a>
+        <a href="/compare/" data-cta="comparisons">Comparisons</a><a href="/cloud/#pricing" aria-current="page">Pricing</a>
         <a href="https://docs.orbi.build">Docs</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a class="nav-apply" href="/cloud/login">Start Cloud</a>
@@ -143,12 +197,13 @@
       </ul>
     </section>
 
-    <section class="compare-section compare-section-tint" aria-labelledby="pricing-title">
+    <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">PRICING</p>
         <h2 id="pricing-title">US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens included</h2>
         <p class="section-lede">The regular price is <strong>US$__CLOUD_MONTHLY_USD__ per month</strong> for the managed runner — orchestration, recovery, and the merge gates included — with <strong>__INCLUDED_TOKENS__ tokens of model usage in the plan</strong> (about 100 deliveries at our measured median); when the allowance runs out, new deliveries pause.</p>
         <p><strong>Founding coupons: 100% off, limited supply.</strong> Founding Partners — the first ten subscribers — pay US$0; once the coupons run out, subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — charging later is not a price increase, it is the coupon supply running out. Self-hosting the fair-code core remains free forever. Want to talk about fit first? <a href="/apply">Apply / contact us</a>.</p>
+        <p>Measured token cost per delivery — the sample, the quantiles, the competitor citations — is on the <a href="/cost/">cost page</a>.</p>
         <ul class="event-list">
           <li>
             <span class="event-era">FOUNDING PARTNER · LIMITED TO 10</span>
@@ -242,6 +297,59 @@
           <p>Subscribe (Founding coupons: 100% off while they last), connect the first repository, and we provision your runner — the first Issue can start.</p>
         </li>
       </ol>
+    </section>
+
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="shell">
+        <p class="section-tag">BEFORE YOU START</p>
+        <h2 id="faq-title">Questions buyers ask
+          <br>before clicking Start Cloud</h2>
+
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary><span>01</span>Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?</summary>
+            <div class="faq-answer">
+              <p>A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0; the discount does not roll into the regular price on a subscription that already has it. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — that is the coupon supply running out, not a price increase on an existing Founding subscription.</p>
+              <p>After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" open>
+            <summary><span>02</span>What happens when the __INCLUDED_TOKENS__ tokens run out?</summary>
+            <div class="faq-answer">
+              <p>The plan includes __INCLUDED_TOKENS__ tokens a month. When the allowance runs out, new deliveries pause — there is no per-token overage billing.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>03</span>How many repositories can one subscription connect?</summary>
+            <div class="faq-answer">
+              <p>Private Beta keeps one active repository per subscription. You can switch: connecting a different repository deactivates the previous one and provisions the new one. A switch is blocked while a delivery is in flight on the bound repository.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>04</span>Can you see my code?</summary>
+            <div class="faq-answer">
+              <p>The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>05</span>What if a Founding Partner does not land one accepted Issue a month?</summary>
+            <div class="faq-answer">
+              <p>The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. Forever is written on the subscription alone; that commitment stands apart from the monthly condition.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>06</span>Can I self-host and use Cloud at the same time?</summary>
+            <div class="faq-answer">
+              <p>Yes. Self-hosting the fair-code core remains free forever. Cloud is the hosted runner on infrastructure we operate. Subscribing to Cloud does not replace self-hosting, and self-hosting does not require a Cloud subscription.</p>
+            </div>
+          </details>
+        </div>
+      </div>
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">

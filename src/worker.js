@@ -22,7 +22,7 @@ const HOST_ALIASES = {
 // Test environments (beta.orbi.build, *.workers.dev) must stay out of search
 // engines and AI crawlers: robots.txt is served as a blanket Disallow and every
 // response carries X-Robots-Tag. Prod hosts keep the public robots.txt.
-const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build"]);
+const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build", "aiready.sh"]);
 const TEST_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
 const TEST_NOINDEX = "noindex, nofollow, noarchive";
 
@@ -40,6 +40,7 @@ const SECURITY_HEADERS = {
 
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
+const STATUS_CACHE_KEY = "https://orbi.build/__status";
 const STATS_TTL_MS = 300000;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
@@ -193,6 +194,76 @@ async function statsResponse(request, token) {
   const toStore = response.clone();
   toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
   await cache.put(STATS_CACHE_KEY, toStore);
+  return response;
+}
+
+// Terminal rendering of loadStats() for `curl orbi.build/status` (Issue #173).
+// Width is hard-capped at 72 columns so the block pastes into TG / README
+// without wrapping; no ANSI, no tabs. A null group becomes `unavailable`
+// instead of inventing a number.
+function formatStatusText(stats) {
+  const nameWidth = Math.max(...STAT_REPOS.map((name) => name.length));
+  let issuesWidth = 3;
+  let prsWidth = 3;
+  let releasesWidth = 2;
+  for (const name of STAT_REPOS) {
+    const repo = stats.repos[name];
+    if (!repo) {
+      continue;
+    }
+    issuesWidth = Math.max(issuesWidth, String(repo.issues_closed).length);
+    prsWidth = Math.max(prsWidth, String(repo.prs_merged).length);
+    releasesWidth = Math.max(releasesWidth, String(repo.releases).length);
+  }
+  const lines = ["  Orbi — GitHub Issue in, tagged Release out", ""];
+  for (const name of STAT_REPOS) {
+    const repo = stats.repos[name];
+    const label = name.padEnd(nameWidth);
+    if (!repo) {
+      lines.push(`  ${label}   unavailable`);
+      continue;
+    }
+    const issues = String(repo.issues_closed).padStart(issuesWidth);
+    const prs = String(repo.prs_merged).padStart(prsWidth);
+    const releases = String(repo.releases).padStart(releasesWidth);
+    lines.push(`  ${label}   issues closed ${issues}   PRs merged ${prs}   releases ${releases}`);
+  }
+  lines.push(
+    "",
+    "  Every PR above was written, reviewed and merged by Orbi itself.",
+    "",
+    "  Install:  curl -fsSL aiready.sh | sh",
+    "  Docs:     https://docs.orbi.build",
+    "",
+  );
+  return lines.join("\n");
+}
+
+async function statusResponse(request, token) {
+  const cache = caches.default;
+  const cached = await cache.match(STATUS_CACHE_KEY);
+  if (cached) {
+    return cached;
+  }
+  const stats = await loadStats(token);
+  const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
+  const headers = {
+    "Content-Type": "text/plain; charset=utf-8",
+    ...SECURITY_HEADERS,
+  };
+  if (anyLive) {
+    headers["Cache-Control"] = "public, max-age=60";
+  }
+  const response = new Response(formatStatusText(stats), {
+    status: anyLive ? 200 : 503,
+    headers,
+  });
+  if (!anyLive) {
+    return response;
+  }
+  const toStore = response.clone();
+  toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
+  await cache.put(STATUS_CACHE_KEY, toStore);
   return response;
 }
 
@@ -397,6 +468,37 @@ async function handleApply(request, env) {
   });
 }
 
+// Issue #174: curl gets public/install.sh; browsers 302 to orbi.build.
+// Bytes come from ASSETS so the worker never holds a second copy of the script.
+const INSTALL_SCRIPT_CACHE = "public, max-age=120";
+
+async function installScriptResponse(request, assets) {
+  const scriptUrl = new URL("/install.sh", request.url);
+  const asset = await assets.fetch(new Request(scriptUrl.href, request));
+  const headers = new Headers(asset.headers);
+  headers.set("Content-Type", "text/plain; charset=utf-8");
+  headers.set("Cache-Control", INSTALL_SCRIPT_CACHE);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(key, value);
+  }
+  return new Response(asset.body, {
+    status: asset.status,
+    statusText: asset.statusText,
+    headers,
+  });
+}
+
+function aireadyResponse(request, url, assets) {
+  const route = url.pathname !== "/" && url.pathname.endsWith("/")
+    ? url.pathname.slice(0, -1)
+    : url.pathname;
+  const accept = request.headers.get("accept") || "";
+  if (route === "/install.sh" || (url.pathname === "/" && !accept.includes("text/html"))) {
+    return installScriptResponse(request, assets);
+  }
+  return Response.redirect(`https://orbi.build${url.pathname}${url.search}`, 302);
+}
+
 async function handleFetch(request, env) {
     const url = new URL(request.url);
     const canonicalHost = HOST_ALIASES[url.hostname];
@@ -405,6 +507,13 @@ async function handleFetch(request, env) {
         `https://${canonicalHost}${url.pathname}${url.search}`,
         301,
       );
+    }
+
+    // Issue #174: aiready.sh is the curl install entry. Accept-negotiate on
+    // `/` only — browsers (text/html) go to orbi.build; curl (*/*) and the
+    // explicit /install.sh path get public/install.sh via ASSETS.
+    if (url.hostname === "aiready.sh") {
+      return aireadyResponse(request, url, env.ASSETS);
     }
 
     if (!PROD_HOSTS.has(url.hostname) && url.pathname === "/robots.txt") {
@@ -442,6 +551,24 @@ async function handleFetch(request, env) {
       }
     }
 
+    // Issue #173: curl-readable plaintext of the same loadStats() payload.
+    // Browsers send Accept: text/html and fall through to assets so a future
+    // /status/ page is not hijacked; curl's default */* gets text/plain.
+    if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
+      try {
+        return await statusResponse(request, env.GITHUB_TOKEN);
+      } catch (err) {
+        console.error("status failed:", err && err.message ? err.message : err);
+        return new Response("upstream unavailable\n", {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            ...SECURITY_HEADERS,
+          },
+        });
+      }
+    }
+
     if (route === CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
@@ -450,10 +577,17 @@ async function handleFetch(request, env) {
       return await handleApply(request, env);
     }
 
+    // Issue #165: /pricing is a permanent alias of the /cloud/ PRICING
+    // section. Host comes from the request so beta stays on beta.
+    if (route === "/pricing" || route === "/zh/pricing") {
+      const prefix = route.startsWith("/zh") ? "/zh" : "";
+      return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
+    }
+
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, statsResponse };
+export { cloudLoginResponse, field, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to

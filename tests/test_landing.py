@@ -372,7 +372,10 @@ class LandingTests(unittest.TestCase):
                 if tag == "a" and "data-cta" in attrs
             }
             self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
-            self.assertEqual(ctas["proof"], f"{GITHUB}/issues/48")
+            # Issue #169: the hero proof link is the bootstrap evidence page,
+            # not a single Issue. The public GitHub objects live on /evidence/.
+            evidence = "/zh/evidence/" if page is self.zh else "/evidence/"
+            self.assertEqual(ctas["proof"], evidence)
             # The Start Cloud CTA must exist; where it points is a product and
             # configuration decision (Issue #99 sends it straight to
             # /cloud/login), so no test pins its target (Issue #103).
@@ -879,7 +882,7 @@ class LandingTests(unittest.TestCase):
         )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
-            ["orbi.build", "www.orbi.build"],
+            ["orbi.build", "www.orbi.build", "aiready.sh"],
         )
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
@@ -1009,7 +1012,7 @@ class LandingTests(unittest.TestCase):
         self.assertEqual(config["assets"]["binding"], "ASSETS")
         self.assertEqual(config["assets"]["directory"], "./public/")
         self.assertEqual(len(config["d1_databases"]), 1)
-        self.assertEqual(len(config["routes"]), 2)
+        self.assertEqual(len(config["routes"]), 3)
         # observability must hold only its own keys
         self.assertEqual(
             set(config["observability"]), {"enabled", "head_sampling_rate"}
@@ -2088,6 +2091,164 @@ class CompareTableOrbiColumnTests(unittest.TestCase):
                     if "compare-table-no-orbi" in classes.split()
                 ]
                 self.assertEqual(len(marked), 1, path)
+
+
+EVIDENCE_EN_PATH = ROOT / "public" / "evidence" / "index.html"
+EVIDENCE_ZH_PATH = ROOT / "public" / "zh" / "evidence" / "index.html"
+
+
+class BootstrapEvidenceTests(unittest.TestCase):
+    """Issue #169: a bootstrap evidence page, not a vmark-class app.
+
+    The visitor must be able to click at least three public GitHub records.
+    Private repos stay unlinked. The sample warehouse is a proposal, not a
+    shipping URL. Copy must not invent a licence name or write a qualitative
+    claim as a fact.
+    """
+
+    PUBLIC_RECORDS = (
+        "https://github.com/orbi-build/orbi/issues/48",
+        "https://github.com/orbi-build/orbi/issues/825",
+        "https://github.com/orbi-build/orbi/pull/830",
+        "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
+        "https://github.com/orbi-build/orbi/releases",
+    )
+    PRIVATE_REPOS = (
+        "https://github.com/orbi-build/orbi-website",
+        "https://github.com/orbi-build/orbi-cloud",
+    )
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.en_html, cls.en = parse(EVIDENCE_EN_PATH)
+        cls.zh_html, cls.zh = parse(EVIDENCE_ZH_PATH)
+
+    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
+        self.assertIn('lang="en"', self.en_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/evidence/"', self.en_html)
+        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/evidence/"', self.en_html)
+        self.assertIn('lang="zh-CN"', self.zh_html)
+        self.assertIn('rel="canonical" href="https://orbi.build/zh/evidence/"', self.zh_html)
+        self.assertIn('hreflang="en" href="https://orbi.build/evidence/"', self.zh_html)
+
+    def test_homes_link_to_the_evidence_page(self) -> None:
+        _, home_en = parse(EN_PATH)
+        _, home_zh = parse(ZH_PATH)
+        self.assertIn("/evidence/", [href for _, href in home_en.hrefs])
+        self.assertIn("/zh/evidence/", [href for _, href in home_zh.hrefs])
+        self.assertEqual(
+            dict(
+                (attrs.get("data-cta"), attrs.get("href"))
+                for tag, attrs in home_en.elements
+                if tag == "a" and attrs.get("data-cta") == "proof"
+            )["proof"],
+            "/evidence/",
+        )
+        self.assertEqual(
+            dict(
+                (attrs.get("data-cta"), attrs.get("href"))
+                for tag, attrs in home_zh.elements
+                if tag == "a" and attrs.get("data-cta") == "proof"
+            )["proof"],
+            "/zh/evidence/",
+        )
+
+    def test_at_least_three_public_github_records_are_clickable(self) -> None:
+        for page in (self.en, self.zh):
+            hrefs = [href for _, href in page.hrefs]
+            for record in self.PUBLIC_RECORDS:
+                self.assertIn(record, hrefs, record)
+            marked = [
+                attrs.get("href")
+                for tag, attrs in page.elements
+                if tag == "a" and attrs.get("data-evidence")
+            ]
+            self.assertGreaterEqual(len(set(marked)), 3, marked)
+            kinds = {
+                attrs.get("data-evidence")
+                for tag, attrs in page.elements
+                if tag == "a" and attrs.get("data-evidence")
+            }
+            self.assertTrue({"issue", "pr", "release"}.issubset(kinds), kinds)
+
+    def test_private_repos_are_named_not_linked(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            hrefs = [href for _, href in page.hrefs]
+            for private in self.PRIVATE_REPOS:
+                self.assertNotIn(private, hrefs, private)
+            self.assertIn("orbi-website", page.text)
+            self.assertIn("orbi-cloud", page.text)
+            self.assertIn("#158", page.text)
+            self.assertNotIn("Apache", html)
+            self.assertNotIn("Apache 2.0", html)
+
+    def test_copy_does_not_write_qualitative_claims_as_facts(self) -> None:
+        forbidden = (
+            "nobody ever wrote code",
+            "no human ever typed",
+            "无人写代码",
+            "从来没有人敲过键盘",
+        )
+        for page in (self.en, self.zh):
+            lowered = page.text.lower()
+            for phrase in forbidden:
+                self.assertNotIn(phrase.lower(), lowered, phrase)
+            self.assertIn(
+                "qualitative reading into a fact" if page is self.en else "不把定性判断写成事实",
+                page.text,
+            )
+
+    def test_sample_warehouse_is_a_proposal_not_a_url(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            self.assertIn('id="sample-warehouse"', html)
+            self.assertIn("proposal" if page is self.en else "方案", page.text)
+            self.assertIn("does not exist yet" if page is self.en else "还不存在", page.text)
+            hrefs = [href for _, href in page.hrefs]
+            self.assertNotIn("https://github.com/orbi-build/orbi-smoke", hrefs)
+            self.assertFalse(
+                [href for href in hrefs if "sample-warehouse" in href or "orbi-smoke" in href],
+                hrefs,
+            )
+
+    def test_licence_wording_is_not_invented(self) -> None:
+        for html in (self.en_html, self.zh_html):
+            self.assertNotIn("Apache", html)
+            self.assertNotIn("open-source", html.lower())
+            self.assertNotIn("open source", html.lower())
+            self.assertNotIn("开源", html)
+
+    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
+        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+            for crawler, rendered in zip(page.headings, page.headings_rendered):
+                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
+            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
+            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            self.assertTrue(plain)
+            self.assertFalse(
+                [heading for heading in plain if heading.endswith((".", "。"))],
+                plain,
+            )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        en, zh = (
+            sorted(set(font_families(html)))
+            for html in (self.en_html, self.zh_html)
+        )
+        self.assertLess(len(en), len(zh), (en, zh))
+
+    def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
+        sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
+        llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
+        for loc in (
+            "https://orbi.build/evidence/",
+            "https://orbi.build/zh/evidence/",
+        ):
+            self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
+            self.assertIn(loc, llms)
+
+    def test_language_switch_crosses_to_the_counterpart(self) -> None:
+        self.assertIn("/zh/evidence/", [href for _, href in self.en.hrefs])
+        self.assertIn("/evidence/", [href for _, href in self.zh.hrefs])
 
 
 if __name__ == "__main__":

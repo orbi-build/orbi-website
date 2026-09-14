@@ -529,6 +529,17 @@ h1 span { color: var(--signal); }
   color: #829a96;
 }
 
+/* Issue #169: the LIVE totals are not the inspectable entrance.
+   This link sits with the heading so the star chart stays on the right. */
+.stats-evidence {
+  margin-right: auto;
+  color: #aec2bd;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.stats-evidence:hover { color: #fff; }
+
 .stats-label [data-star-chart] {
   flex: 0 1 340px;
   min-width: 180px;

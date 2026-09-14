@@ -11,12 +11,10 @@
     "compareLabel": "竞品对比",
     "compareDataCta": true,
     "compareCurrent": false,
-    "costHref": "/zh/cost/",
-    "costCurrent": false,
+    "costHref": "/zh/cloud/#pricing",
+    "costCurrent": true,
     "compareCostSameLine": true,
     "docsHref": "https://docs.orbi.build/zh",
-    "applyHref": "/cloud/login",
-    "applyLabel": "开始 Cloud",
     "langSwitchHref": "/cloud/",
     "langCurrentFirst": false
   }
@@ -83,6 +81,60 @@
         "priceCurrency": "USD",
         "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Founding 券 100% off，限量发放——券发完即正价。",
         "url": "https://orbi.build/zh/cloud/"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://orbi.build/zh/cloud/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0；已经用上券的订阅不会因为券位发完而改扣正价。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "__INCLUDED_TOKENS__ token 用完了会怎样？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "一个订阅能接几个仓库？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Private Beta 期间，每个订阅同时只接 1 个 active 仓库。可以更换：连接另一个仓库会停用原来的，并为新仓库重新开通。原仓库有进行中的交付时，暂时无法更换。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "你们能看到我的代码吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Founding Partner 每月一个被采纳的 Issue，没做到会怎样？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "自托管和 Cloud 能同时用吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。"
+            }
+          }
+        ]
       }
     ]
   }
@@ -145,12 +197,13 @@
       </ul>
     </section>
 
-    <section class="compare-section compare-section-tint" aria-labelledby="pricing-title">
+    <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">价格</p>
         <h2 id="pricing-title">正价 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token</h2>
         <p class="section-lede">正价为<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，包含托管 Runner——协调、恢复和合并门禁都在内——并含 <strong>__INCLUDED_TOKENS__ token 的模型用量</strong>（按我们实测的中位数约 100 次交付）；额度用完后，新交付暂停。</p>
         <p><strong>Founding 券 100% off，限量发放。</strong>Founding Partner——前 10 位订阅者——凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。想先聊聊是否适合？<a href="/apply">申请 / 联系我们</a>。</p>
+        <p>单次交付的实测 token 成本——样本、分位、竞品引证——在<a href="/zh/cost/">成本页</a>。</p>
         <ul class="event-list">
           <li>
             <span class="event-era">FOUNDING PARTNER · 限 10 位</span>
@@ -244,6 +297,59 @@
           <p>支付订阅（Founding 券限量，100% off），连接第一个仓库，随后我们开通你的 Runner——第一个 Issue 就能开工。</p>
         </li>
       </ol>
+    </section>
+
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="shell">
+        <p class="section-tag">开始之前</p>
+        <h2 id="faq-title">买家在点「开始 Cloud」之前
+          <br>卡住的问题</h2>
+
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary><span>01</span>券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？</summary>
+            <div class="faq-answer">
+              <p>Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0；已经用上券的订阅不会因为券位发完而改扣正价。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。</p>
+              <p>登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
+            </div>
+          </details>
+
+          <details class="faq-item" open>
+            <summary><span>02</span>__INCLUDED_TOKENS__ token 用完了会怎样？</summary>
+            <div class="faq-answer">
+              <p>计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>03</span>一个订阅能接几个仓库？</summary>
+            <div class="faq-answer">
+              <p>Private Beta 期间，每个订阅同时只接 1 个 active 仓库。可以更换：连接另一个仓库会停用原来的，并为新仓库重新开通。原仓库有进行中的交付时，暂时无法更换。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>04</span>你们能看到我的代码吗？</summary>
+            <div class="faq-answer">
+              <p>托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>05</span>Founding Partner 每月一个被采纳的 Issue，没做到会怎样？</summary>
+            <div class="faq-answer">
+              <p>条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary><span>06</span>自托管和 Cloud 能同时用吗？</summary>
+            <div class="faq-answer">
+              <p>可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。</p>
+            </div>
+          </details>
+        </div>
+      </div>
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">
