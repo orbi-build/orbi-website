@@ -440,3 +440,29 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     expect(apply).not.toContain('data-primary-nav');
   });
 });
+
+// Issue #177: /evidence/ is a visitor page, not a restated ticket. Lock the
+// forbidden ticket-voice strings out of the sources. Do not pin sentences —
+// a later rewrite that keeps the visitor voice should still pass.
+describe("evidence page visitor voice (Issue #177)", () => {
+  const sources = ["site/pages/evidence/index.html", "site/pages/zh/evidence/index.html"];
+  const forbidden = [
+    "vmark",
+    "#158",
+    "PROPOSAL",
+    "does not claim",
+    "this page does not",
+    "We do not restate",
+    "本页不",
+    "这张票",
+  ];
+
+  it("keeps ticket-voice copy out of both evidence sources", async () => {
+    for (const rel of sources) {
+      const html = await readFile(join(ROOT, rel), "utf8");
+      for (const needle of forbidden) {
+        expect(html, `${rel}: forbidden ${JSON.stringify(needle)}`).not.toContain(needle);
+      }
+    }
+  });
+});

@@ -2101,16 +2101,20 @@ EVIDENCE_ZH_PATH = ROOT / "public" / "zh" / "evidence" / "index.html"
 
 
 class BootstrapEvidenceTests(unittest.TestCase):
-    """Issue #169: a bootstrap evidence page, not a vmark-class app.
+    """Issue #177: /evidence/ is a visitor page pointing at public GitHub records.
 
     The visitor must be able to click at least three public GitHub records.
-    Private repos stay unlinked. The sample warehouse is a proposal, not a
-    shipping URL. Copy must not invent a licence name or write a qualitative
-    claim as a fact.
+    Private repos stay unlinked. Ticket-voice copy stays out. Copy must not
+    invent a licence name or write a qualitative claim as a fact.
     """
 
     PUBLIC_RECORDS = (
-        "https://github.com/orbi-build/orbi/issues/48",
+        "https://github.com/orbi-build/orbi/issues/852",
+        "https://github.com/orbi-build/orbi/pull/854",
+        "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
+        "https://github.com/orbi-build/orbi/issues/842",
+        "https://github.com/orbi-build/orbi/pull/845",
+        "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
         "https://github.com/orbi-build/orbi/issues/825",
         "https://github.com/orbi-build/orbi/pull/830",
         "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
@@ -2174,14 +2178,11 @@ class BootstrapEvidenceTests(unittest.TestCase):
             }
             self.assertTrue({"issue", "pr", "release"}.issubset(kinds), kinds)
 
-    def test_private_repos_are_named_not_linked(self) -> None:
+    def test_private_repos_are_not_linked(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
             hrefs = [href for _, href in page.hrefs]
             for private in self.PRIVATE_REPOS:
                 self.assertNotIn(private, hrefs, private)
-            self.assertIn("orbi-website", page.text)
-            self.assertIn("orbi-cloud", page.text)
-            self.assertIn("#158", page.text)
             self.assertNotIn("Apache", html)
             self.assertNotIn("Apache 2.0", html)
 
@@ -2196,22 +2197,23 @@ class BootstrapEvidenceTests(unittest.TestCase):
             lowered = page.text.lower()
             for phrase in forbidden:
                 self.assertNotIn(phrase.lower(), lowered, phrase)
-            self.assertIn(
-                "qualitative reading into a fact" if page is self.en else "不把定性判断写成事实",
-                page.text,
-            )
 
-    def test_sample_warehouse_is_a_proposal_not_a_url(self) -> None:
+    def test_sample_warehouse_is_not_a_shipping_url(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            self.assertIn('id="sample-warehouse"', html)
-            self.assertIn("proposal" if page is self.en else "方案", page.text)
-            self.assertIn("does not exist yet" if page is self.en else "还不存在", page.text)
+            self.assertNotIn('id="sample-warehouse"', html)
             hrefs = [href for _, href in page.hrefs]
             self.assertNotIn("https://github.com/orbi-build/orbi-smoke", hrefs)
             self.assertFalse(
                 [href for href in hrefs if "sample-warehouse" in href or "orbi-smoke" in href],
                 hrefs,
             )
+
+    def test_each_sample_tells_the_visitor_what_to_look_for(self) -> None:
+        self.assertGreaterEqual(self.en_html.count("What to look for on the timeline"), 3)
+        self.assertGreaterEqual(self.zh_html.count("在时间线上看什么"), 3)
+        for html in (self.en_html, self.zh_html):
+            self.assertGreaterEqual(html.count("xqliu"), 3)
+            self.assertGreaterEqual(html.lower().count("review_rounds"), 3)
 
     def test_licence_wording_is_not_invented(self) -> None:
         for html in (self.en_html, self.zh_html):
