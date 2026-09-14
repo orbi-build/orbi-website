@@ -1750,8 +1750,8 @@ class OrcaComparisonTests(unittest.TestCase):
                 self.assertIn(quote, page.text, quote)
 
     def test_the_page_explains_orbi_in_orcas_language(self) -> None:
-        # the misreading this page exists to dismantle, and the one-line answer
-        self.assertIn("差不多", self.zh.text)
+        # positioning difference first (Issue #178 dropped the origin anecdote)
+        self.assertIn("两个项目都用 git worktree 隔离 agent", self.zh.text)
         self.assertIn("你用 Orca 管一队 agent；Orbi 是让你不用管", self.zh.text)
         self.assertIn("Both projects put agents in git worktrees", self.en.text)
         self.assertIn("Orca is how you run a fleet of agents; Orbi is how you stop having to", self.en.text)
@@ -1878,25 +1878,14 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(f'class="button button-ghost" href="{secondary}"', hero_html)
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
-    def test_live_dive_statuses_match_the_published_pages(self) -> None:
-        """Published deep dives are live, and every published or research
-        entry points to its page or research ticket."""
-        for page in (self.en, self.zh):
-            statuses = [
-                attrs.get("class", "")
-                for tag, attrs in page.elements
-                if tag == "span" and "dive-status" in attrs.get("class", "")
-            ]
-            self.assertTrue(statuses)
-            self.assertEqual(
-                len([cls for cls in statuses if "is-live" in cls]), 7, statuses
-            )
-        # A published or research entry must not become a dead end.
+    def test_every_deep_dive_links_its_page(self) -> None:
+        """Eight deep dives, each a link — no internal status badge (Issue #178)."""
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
             self.assertEqual(len(entries), 8, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
+                self.assertNotIn("dive-status", entry, entry)
 
     def test_the_closing_heading_names_the_choice_dimension(self) -> None:
         """Issue #54: the closing H2 states the real decision axis — where
@@ -1937,7 +1926,6 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
                 if path == COMPARE_INDEX_EN_PATH:
                     self.assertIn(href, [link for _, link in page.hrefs])
-            self.assertIn("https://github.com/orbi-build/orbi-website/issues/8", [link for _, link in page.hrefs])
 
 
 OPENHANDS_EN_PATH = ROOT / "public" / "compare" / "openhands" / "index.html"
