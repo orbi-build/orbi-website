@@ -184,11 +184,6 @@ describe("per-page head parameters (title / description / canonical)", () => {
       const canonical = shipped
         .get(page.output)
         .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
-      if (page.standalone) {
-        // apply.html is a noindex conversion endpoint, not an indexable page.
-        expect(canonical).toBe("https://orbi.build/apply");
-        continue;
-      }
       expect(canonical, `${page.output}: canonical drifted`).toBe(
         `https://orbi.build${pathToHref(page.output)}`,
       );
@@ -433,11 +428,8 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     }
   });
 
-  it("keeps /apply as a 200 conversion page, not a nav destination", async () => {
-    const apply = shipped.get("apply.html");
-    expect(apply, "public/apply.html must still ship").toBeTruthy();
-    expect(apply).toContain('<link rel="canonical" href="https://orbi.build/apply">');
-    expect(apply).not.toContain('data-primary-nav');
+  it("does not ship apply.html — /apply is a 301, not a conversion page", async () => {
+    expect(shipped.has("apply.html"), "public/apply.html must not ship").toBe(false);
   });
 });
 

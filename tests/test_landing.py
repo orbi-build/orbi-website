@@ -380,7 +380,7 @@ class LandingTests(unittest.TestCase):
             # configuration decision (Issue #99 sends it straight to
             # /cloud/login), so no test pins its target (Issue #103).
             self.assertIn("cloud-start", ctas)
-            self.assertEqual(ctas["cloud-apply"], "/apply")
+            self.assertNotIn("cloud-apply", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -453,21 +453,21 @@ class LandingTests(unittest.TestCase):
             ]
             self.assertEqual(cloud_sections[0].get("data-status"), "direction")
 
-    def test_cloud_entry_separates_start_from_application(self) -> None:
-        for page, apply_label, price, explainer in (
-            (self.en, "Apply / contact us", "US$79/month", "/cloud/"),
-            (self.zh, "申请 / 联系我们", "US$79/月", "/zh/cloud/"),
+    def test_cloud_entry_is_github_login_not_an_application(self) -> None:
+        for page, price, explainer in (
+            (self.en, "US$79/month", "/cloud/"),
+            (self.zh, "US$79/月", "/zh/cloud/"),
         ):
             # Issue #99: the price sits on the card before the click, and the
             # /cloud/ explainer stays reachable from the footer. The Start
             # Cloud CTA's own target is a product decision (#99 sends it
             # straight to /cloud/login) and the served href is additionally
             # rewritten per environment by the Worker, so no page test pins it
-            # (Issue #103). Price and entry points are the key information
-            # (Issue #112); the surrounding copy stays unpinned.
+            # (Issue #103). Issue #179 retired /apply: Cloud entry is GitHub
+            # login, never an application form.
             self.assertIn(price, page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
-            self.assertTrue(any(href == "/apply" and text.startswith(apply_label) for text, href in page.hrefs))
+            self.assertFalse(any(href == "/apply" for _, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -479,7 +479,7 @@ class LandingTests(unittest.TestCase):
         # state broke the beta deploy (Issue #103). The behavior under either
         # configuration — configured: /cloud/login 302s to the value and the
         # served pages keep their CTAs; unconfigured: 503 with every Cloud CTA
-        # rewritten to /apply — is locked where it runs, in
+        # rewritten to https://docs.orbi.build — is locked where it runs, in
         # tests/worker.test.js. Only beta's value is pinned: it must stay the
         # one verified beta Cloud endpoint (docs/cloud-endpoints.md).
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
@@ -504,15 +504,13 @@ class LandingTests(unittest.TestCase):
         self.assertIn('"/cloud/login"', worker)
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The submit and handoff endpoints are actions, not pages: keep
-        crawlers off them now that they no longer sit under /api/."""
+        """The login handoff is an action, not a page: keep crawlers off it.
+        /apply and /cloud/apply are gone (Issue #179), so they are no longer
+        listed — listing a retired path would imply it still exists."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
-        self.assertIn("Disallow: /cloud/apply", robots)
+        self.assertNotIn("Disallow: /apply", robots)
+        self.assertNotIn("Disallow: /cloud/apply", robots)
         self.assertIn("Disallow: /cloud/login", robots)
-
-    def test_apply_posts_to_the_website_owned_submit_path(self) -> None:
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn('fetch("/cloud/apply"', apply_html)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -758,94 +756,16 @@ class LandingTests(unittest.TestCase):
             ):
                 self.assertNotIn(tracker, page.lower(), tracker)
 
-    def test_apply_requires_only_telegram_and_scenario(self) -> None:
-        """Telegram already identifies and reaches the person, so a nickname
-        is one more thing to abandon the form over. Only tg and scenario are
-        genuinely needed to act on an application, and they are exactly what
-        the Worker's own required check gates on — a page set wider than the
-        Worker's would 400 on fields the browser called valid, and narrower
-        would submit incomplete applications. That every required field also
-        shows a visible marker is asserted where it renders, in
-        tests/homepage.smoke.mjs (Issue #112)."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        import re
-
-        required_ids = re.findall(r'<(?:input|textarea)[^>]*id="([^"]+)"[^>]*\brequired\b', apply_html)
-        required_ids += re.findall(r'<(?:input|textarea)[^>]*\brequired\b[^>]*id="([^"]+)"', apply_html)
-        required_ids = sorted(set(required_ids))
-        self.assertEqual(required_ids, ["f-scenario", "f-tg"], required_ids)
-
-    def test_optional_email_never_blocks_the_submission(self) -> None:
-        """Nothing is sent to this address — Telegram is how people get
-        contacted — so a malformed optional field must not stop an otherwise
-        complete application. Only required fields gate the submit."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("el.required", apply_html)
-        # a hint is fine; a blocked submission is not
-        self.assertIn("data-msg-email-hint", apply_html)
-
-    def test_apply_blocks_double_submission(self) -> None:
-        """On a slow connection nothing says the request is in flight, so the
-        button gets clicked again — measured 3 POSTs from 3 clicks against
-        production. Disable it for the duration and say it is sending."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("submit.disabled", apply_html)
-        self.assertIn("data-msg-sending", apply_html)
-
-    def test_apply_validates_before_posting(self) -> None:
-        """novalidate turns off the browser's own check, so the form must do
-        it in JS. Otherwise a missing field costs a round-trip and comes back
-        as a raw English API string that never says which field is empty."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("checkValidity", apply_html)
-        # the offending field has to be focused, not just flagged
-        self.assertIn("focus()", apply_html)
-        # and it needs a localized message, not the API's English error
-        self.assertIn("data-msg-required", apply_html)
-        # spaces must be trimmed client-side too: the Worker trims before its
-        # own required check, so "   " would otherwise pass here and come back
-        # as a 400 that never names the field
-        self.assertIn(".trim()", apply_html)
-        # a filled-but-malformed field is not a missing one; saying "还差…没填"
-        # about an optional email the user did fill reads as a lie
-        self.assertIn("data-msg-invalid", apply_html)
-        self.assertIn("valueMissing", apply_html)
-
-    def test_apply_shows_the_outcome_where_the_user_is_looking(self) -> None:
-        """The form clears on success, which alone reads as "nothing
-        happened" if the confirmation is off-screen — measured at y=1627 in a
-        844px viewport when submitting after scrolling up to re-check."""
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
-        self.assertIn("scrollIntoView", apply_html)
-        # the confirmation must be announced, not just painted
-        self.assertIn('role="status"', apply_html)
-        self.assertIn('aria-live', apply_html)
-
-    def test_apply_collects_pricing_signals(self) -> None:
-        """The first cohort is the only chance to gather real pricing data.
-
-        Two answers set the price: what they already pay for AI coding (the
-        anchor) and how many Issues they'd hand over per week (the volume).
-        Without both, Cloud pricing is guesswork.
-        """
-        apply_html = (ROOT / "public" / "apply.html").read_text(encoding="utf-8")
+    def test_apply_page_is_offline(self) -> None:
+        """Issue #179: /apply is gone. Historical D1 rows stay; the form and
+        the write path do not."""
+        self.assertFalse((ROOT / "public" / "apply.html").exists())
+        self.assertFalse((ROOT / "site" / "pages" / "apply.html").exists())
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        migrations = "\n".join(
-            p.read_text(encoding="utf-8") for p in sorted((ROOT / "migrations").glob("*.sql"))
-        )
-        for field in ("ai_spend", "issue_volume"):
-            self.assertIn(f'name="{field}"', apply_html, field)
-            self.assertIn(f'"{field}"', worker, field)
-            self.assertIn(field, migrations, field)
-
-    def test_apply_logs_the_payload_when_it_cannot_be_stored(self) -> None:
-        """A lead that fails to insert is gone unless the request itself is in
-        the log. Log every recognised field so it can be recovered by hand."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("apply_insert_failed", worker)
-        self.assertIn("JSON.stringify", worker)
-        for token in ("name", "tg", "scenario", "email"):
-            self.assertIn(token, worker)
+        self.assertIn('route === "/apply"', worker)
+        self.assertIn("goneResponse", worker)
+        self.assertNotIn("handleApply", worker)
+        self.assertNotIn("MAX_FIELD", worker)
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
@@ -942,8 +862,8 @@ class LandingTests(unittest.TestCase):
         # Issue #74: the browser smoke's login contract is injected per
         # environment. Issue #77: production configures no CLOUD_LOGIN_URL, so
         # its /cloud/login fail-closes with the site Worker's stamped 503 and
-        # the served pages send the Cloud CTA to /apply; expecting the old
-        # handoff 302 here would fail every promotion. When production gets
+        # the served pages send the Cloud CTA to the self-host docs; expecting
+        # the old handoff 302 here would fail every promotion. When production gets
         # its own Cloud login, set the verified endpoint in wrangler.toml and
         # flip this to oauth-302 as a reviewed diff.
         self.assertIn("CLOUD_LOGIN_EXPECT=fail-closed-503", workflow)
@@ -1022,18 +942,6 @@ class LandingTests(unittest.TestCase):
         )
         self.assertTrue(config["observability"]["enabled"])
 
-    def test_apply_bounds_every_stored_field(self) -> None:
-        """An unauthenticated write path must cap what it stores."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("MAX_FIELD", worker)
-        self.assertIn("MAX_BODY_BYTES", worker)
-        self.assertIn("slice(0, ", worker)
-
-    def test_apply_rejects_oversized_bodies_before_parsing(self) -> None:
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("content-length", worker)
-        self.assertIn("413", worker)
-
     def test_stats_does_not_leak_upstream_error_text(self) -> None:
         """A 502 must not echo GitHub's response body to anonymous callers."""
         worker = WORKER_PATH.read_text(encoding="utf-8")
@@ -1050,11 +958,12 @@ class CloudLandingPageTests(unittest.TestCase):
     """Issue #79: /cloud/ and /zh/cloud/ — the indexable explainer page for
     anyone not ready to hit an OAuth consent screen directly.
 
-    Three segments: what Cloud is, the Founding Pilot price, and the three
+    Three segments: what Cloud is, the Founding coupon price, and the three
     steps after the click. Its buttons reach the /cloud/login handoff, whose
     behavior (302 to CLOUD_LOGIN_URL when configured, fail-closed 503 with
-    every Cloud CTA rewritten to /apply otherwise) is locked where it runs,
-    in tests/worker.test.js — not by page-target assertions (Issue #103)."""
+    every Cloud CTA rewritten to https://docs.orbi.build otherwise) is locked
+    where it runs, in tests/worker.test.js — not by page-target assertions
+    (Issue #103)."""
 
     @classmethod
     def setUpClass(cls) -> None:
