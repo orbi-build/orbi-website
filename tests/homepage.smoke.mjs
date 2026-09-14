@@ -1210,12 +1210,12 @@ const ciGatesPages = {
   },
 };
 
-// Issue #169: the bootstrap evidence page is the inspectable entrance.
+// Issue #177: the bootstrap evidence page is the inspectable entrance.
 // The visitor must land on a page that (a) explains Orbi builds Orbi,
 // (b) offers at least three public GitHub records as real <a href>,
-// (c) never links the private repos, (d) labels the sample warehouse a
-// proposal, and (e) does not invent a licence name or write a qualitative
-// claim as a fact. Screenshots land in .orbi/ next to the other flows.
+// (c) never links the private repos, (d) tells the visitor what to look
+// for on each timeline, and (e) does not invent a licence name or write a
+// qualitative claim as a fact. Screenshots land in .orbi/ next to the other flows.
 const evidencePages = {
   "/evidence/": {
     zh: "/zh/evidence/",
@@ -1226,18 +1226,25 @@ const evidencePages = {
       "Click them",
     ],
     text: [
-      "Issue #48",
+      "Issue #852",
+      "Issue #842",
       "Issue #825",
+      "PR #854",
+      "PR #845",
       "PR #830",
-      "Release v0.5.3",
-      "proposal",
-      "does not exist yet",
-      "orbi-website and orbi-cloud are private",
-      "does not convert a qualitative reading into a fact",
+      "Release v0.5.5",
+      "What to look for on the timeline",
+      "review_rounds",
+      "xqliu",
       "verified 2026-09-14",
     ],
     hrefs: [
-      "https://github.com/orbi-build/orbi/issues/48",
+      "https://github.com/orbi-build/orbi/issues/852",
+      "https://github.com/orbi-build/orbi/pull/854",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
+      "https://github.com/orbi-build/orbi/issues/842",
+      "https://github.com/orbi-build/orbi/pull/845",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
       "https://github.com/orbi-build/orbi/issues/825",
       "https://github.com/orbi-build/orbi/pull/830",
       "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
@@ -1260,18 +1267,25 @@ const evidencePages = {
       "请点开",
     ],
     text: [
-      "Issue #48",
+      "Issue #852",
+      "Issue #842",
       "Issue #825",
+      "PR #854",
+      "PR #845",
       "PR #830",
-      "Release v0.5.3",
-      "方案",
-      "还不存在",
-      "orbi-website 与 orbi-cloud 是私有仓库",
-      "不把定性判断写成事实",
+      "Release v0.5.5",
+      "在时间线上看什么",
+      "review_rounds",
+      "xqliu",
       "核实于 2026-09-14",
     ],
     hrefs: [
-      "https://github.com/orbi-build/orbi/issues/48",
+      "https://github.com/orbi-build/orbi/issues/852",
+      "https://github.com/orbi-build/orbi/pull/854",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
+      "https://github.com/orbi-build/orbi/issues/842",
+      "https://github.com/orbi-build/orbi/pull/845",
+      "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
       "https://github.com/orbi-build/orbi/issues/825",
       "https://github.com/orbi-build/orbi/pull/830",
       "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
