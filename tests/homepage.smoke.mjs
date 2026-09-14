@@ -166,7 +166,7 @@ async function assertFooterDeepDives(page, label) {
 // any other prefix the Cloud control plane owns on the shared beta hostname).
 // Issue #77: production configures no CLOUD_LOGIN_URL until a production
 // control plane exists, so its /cloud/login fail-closes with the site
-// Worker's stamped 503 and the served pages send the Cloud CTA to /apply.
+// Worker's stamped 503 and the served pages send the Cloud CTA to the docs.
 // beta keeps the one verified Cloud login endpoint (docs/cloud-endpoints.md):
 // its /cloud/login 302s to CLOUD_LOGIN_URL — Cloud's /api/login — which
 // answers with the GitHub OAuth redirect.
@@ -248,14 +248,14 @@ export async function assertCloudLoginRedirect(targetURL) {
 
 // Issue #107: a Cloud CTA's contract is where its click lands — the endpoint
 // CLOUD_LOGIN_EXPECT declares (Issue #74) — never the href literal. The
-// shipped href="/cloud/login" is rewritten to /apply by the site Worker
-// where CLOUD_LOGIN_URL is unset (Issue #77), so deriving the expected href
-// from CLOUD_LOGIN_EXPECT copied that rewrite into the test and broke on
-// implementation changes while the site was fine. What each expectation
-// declares is the landing:
+// shipped href="/cloud/login" is rewritten to https://docs.orbi.build by the
+// site Worker where CLOUD_LOGIN_URL is unset (Issue #179), so deriving the
+// expected href from CLOUD_LOGIN_EXPECT copied that rewrite into the test and
+// broke on implementation changes while the site was fine. What each
+// expectation declares is the landing:
 //   oauth-302        → the GitHub OAuth authorize page (beta; the handoff
 //                      chain is pinned by assertCloudLoginRedirect)
-//   fail-closed-503  → the /apply application page (production, Issue #77)
+//   fail-closed-503  → the self-host docs (production, Issue #179)
 //   fail-closed-404  → the /cloud/login handoff route itself (local static
 //                      serving: no worker completes the chain, the click
 //                      must still reach the handoff)
@@ -281,9 +281,9 @@ export function expectedCtaLanding(expectation) {
   }
   if (expectation === "fail-closed-503") {
     return {
-      describe: "the /apply application page",
+      describe: "the self-host docs",
       statusOk: (status) => status < 400,
-      matches: (url) => url.pathname === "/apply",
+      matches: (url) => url.hostname === "docs.orbi.build",
     };
   }
   return {
@@ -1496,62 +1496,6 @@ async function assertPublishedInstallScript(browser) {
   }
 }
 
-// Issue #112: a field the form rejects must look required before it is
-// rejected, and the marker must survive the language switch — setLang()
-// rewrites every label's text, which is exactly how English visitors once
-// lost their markers. The check reads the rendered DOM (each required
-// field's label must render a visible "*") and never the implementation's
-// class names. Runs against the locally served bytes only: on the shared
-// beta hostname the Cloud control plane's /app* route owns /apply and
-// /apply.html (docs/cloud-endpoints.md, measured 2026-09-09), so beta
-// serves no apply page at all; production serves the same bytes at /apply.
-async function assertApplyForm(browser) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  try {
-    const page = await context.newPage();
-    const consoleErrors = [];
-    const failedRequests = [];
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
-    page.on("console", (message) => {
-      if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
-    });
-    page.on("requestfailed", (request) => {
-      if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
-    });
-    await page.goto(`${targetURL}/apply.html`, { waitUntil: "load" });
-    const requiredFields = page.locator("#apply [required]");
-    const requiredCount = await requiredFields.count();
-    if (requiredCount < 1) throw new Error("/apply: nothing is required, so nothing can be rejected");
-    const markersVisible = async () => {
-      for (let i = 0; i < requiredCount; i += 1) {
-        const id = await requiredFields.nth(i).getAttribute("id");
-        if (!id) throw new Error("/apply: a required field carries no id, so no label can mark it");
-        const marker = page.locator(`label[for="${id}"]`).getByText("*", { exact: true });
-        if ((await marker.count()) < 1 || !(await marker.first().isVisible())) {
-          throw new Error(`/apply: required field #${id} shows no visible required marker`);
-        }
-      }
-    };
-    await markersVisible();
-    const langButton = page.locator("#langBtn");
-    if (!(await langButton.isVisible())) throw new Error("/apply: the language switch is not reachable");
-    const tgLabelBefore = await page.locator('label[for="f-tg"]').innerText();
-    await langButton.click();
-    const tgLabelAfter = await page.locator('label[for="f-tg"]').innerText();
-    if (tgLabelAfter === tgLabelBefore) {
-      throw new Error("/apply: the language switch changed nothing, so the marker re-check would be vacuous");
-    }
-    await markersVisible();
-    await page.screenshot({ path: `${artifacts}/apply-required-markers.png`, fullPage: false });
-    if (consoleErrors.length || failedRequests.length) {
-      throw new Error(`/apply: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
-    }
-    await page.close();
-  } finally {
-    await context.close();
-  }
-}
-
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : await startServer();
@@ -1565,7 +1509,6 @@ async function main() {
     });
     await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
-    if (!process.env.BASE_URL) await assertApplyForm(browser);
     await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
@@ -1576,6 +1519,7 @@ async function main() {
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
+      ["midway-cloud", '[data-cta="midway-cloud"]'],
       ["nav Start Cloud", "[data-primary-nav] .nav-apply"],
     ];
     await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);

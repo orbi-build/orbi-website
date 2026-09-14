@@ -207,9 +207,10 @@ describe("Cloud CTA landing contract (Issue #107)", () => {
     expect(landing.matches(new URL("https://github.com/login"))).toBe(false);
   });
 
-  it("fail-closed-503 lands the click on the /apply application page", () => {
+  it("fail-closed-503 lands the click on the self-host docs", () => {
     const landing = expectedCtaLanding("fail-closed-503");
-    expect(landing.matches(new URL("https://orbi.build/apply"))).toBe(true);
+    expect(landing.matches(new URL("https://docs.orbi.build/"))).toBe(true);
+    expect(landing.matches(new URL("https://orbi.build/apply"))).toBe(false);
     expect(landing.matches(new URL("https://orbi.build/cloud/login"))).toBe(false);
   });
 
