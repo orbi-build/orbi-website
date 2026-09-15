@@ -616,10 +616,12 @@ class LandingTests(unittest.TestCase):
         """"Install it yourself" is one curl line; the four hand-run steps
         survive only as the collapsed manual fallback, so nobody faces them
         up front."""
-        command = "curl -fsSL https://orbi.build/install.sh | bash"
-        for html in (self.en_html, self.zh_html):
+        command = "curl -fsSL https://aiready.sh | sh"
+        stale = "curl -fsSL https://orbi.build/install.sh"
+        for path, html in ((EN_PATH, self.en_html), (ZH_PATH, self.zh_html)):
             # exactly once: the primary install path, not repeated per locale
-            self.assertEqual(html.count(command), 1)
+            self.assertEqual(html.count(command), 1, path)
+            self.assertNotIn(stale, html, path)
             self.assertIn("git clone https://github.com/orbi-build/orbi.git", html)
             self.assertIn("orbi setup --config orbi.toml", html)
             # the fallback stays collapsed and secondary, behind the one-liner
@@ -627,6 +629,18 @@ class LandingTests(unittest.TestCase):
             self.assertLess(html.index("<details"), html.index("git clone https://github.com"))
             # the honest prerequisites, so nobody discovers systemd halfway in
             self.assertIn("systemd", html)
+
+    def test_no_primary_install_snippet_uses_legacy_orbi_build_host(self) -> None:
+        """A stale primary install URL fails with the exact file identified."""
+        stale = "curl -fsSL https://orbi.build/install.sh"
+        offenders = []
+        for folder in (ROOT / "public", ROOT / "site" / "pages"):
+            for path in folder.rglob("*"):
+                if path.suffix not in {".html", ".txt"}:
+                    continue
+                if stale in path.read_text(encoding="utf-8"):
+                    offenders.append(str(path.relative_to(ROOT)))
+        self.assertEqual(offenders, [], f"stale primary install URL in: {offenders}")
 
     def test_install_sh_is_published_from_the_orbi_repo(self) -> None:
         """/install.sh must be the orbi repo's script byte for byte, with a

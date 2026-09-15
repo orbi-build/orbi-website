@@ -510,3 +510,40 @@ describe("evidence page visitor voice (Issue #177)", () => {
     }
   });
 });
+
+// Issue #186: the homepage one-liner is the canonical aiready.sh entry.
+// orbi.build/install.sh remains the underlying asset, never the primary command.
+describe("canonical install one-liner (Issue #186)", () => {
+  const canonical = "curl -fsSL https://aiready.sh | sh";
+  const stalePrimary = "curl -fsSL https://orbi.build/install.sh";
+
+  const snippetOf = (html) => html.match(/<code data-copy-source>([^<]*)<\/code>/)?.[1] ?? null;
+
+  it("uses aiready.sh on the English and Chinese homepages", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const snippet = snippetOf(shipped.get(output));
+      expect(snippet, `${output}: missing copyable install snippet`).toBe(canonical);
+    }
+  });
+
+  it("keeps homepage sources on the same command", async () => {
+    for (const rel of ["site/pages/index.html", "site/pages/zh/index.html"]) {
+      const html = await readFile(join(ROOT, rel), "utf8");
+      expect(snippetOf(html), `${rel}: missing copyable install snippet`).toBe(canonical);
+    }
+  });
+
+  it("names the exact file when a primary snippet still uses orbi.build/install.sh", async () => {
+    const stale = [];
+    for (const [output, html] of shipped) {
+      if (html.includes(stalePrimary)) stale.push(`public/${output}`);
+    }
+    for (const page of pages) {
+      const html = await readFile(join(ROOT, "site", "pages", page.output), "utf8");
+      if (html.includes(stalePrimary)) stale.push(`site/pages/${page.output}`);
+    }
+    const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
+    if (llms.includes(stalePrimary)) stale.push("public/llms.txt");
+    expect(stale, `stale primary install URL in: ${stale.join(", ")}`).toEqual([]);
+  });
+});
