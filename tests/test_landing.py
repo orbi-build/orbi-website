@@ -851,7 +851,10 @@ class LandingTests(unittest.TestCase):
         the deployed commit's own copy, and rolls back automatically when any
         smoke fails."""
         workflow = (ROOT / ".github" / "workflows" / "deploy-production.yml").read_text(encoding="utf-8")
-        self.assertIn("branches:\n      - main", workflow)
+        # Issue #210: production deploys run only on a manual workflow_dispatch;
+        # the push-triggered twin of that dispatch run was always redundant and
+        # parked on the approval gate billing while it waited
+        self.assertNotIn("push:", workflow)
         self.assertIn("workflow_dispatch:", workflow)
         # the one-confirmation human gate: the workflow must declare the
         # environment whose required reviewers hold the deployment
@@ -914,11 +917,33 @@ class LandingTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("branches:\n      - beta", workflow)
         self.assertIn("pull_request:", workflow)
+        # Issue #210: a newer CI run for the same branch cancels the older one,
+        # so a pushed fix never queues behind runs it supersedes; the group is
+        # per-branch, not per-repo
+        self.assertIn("group: ci-${{ github.head_ref || github.ref }}", workflow)
+        self.assertIn("cancel-in-progress: true", workflow)
         # Issue #103: PR CI must run the same contract tests the deploy
         # workflows run. This suite used to execute only at deploy time,
         # so a contract violation passed PR review green and broke the
         # beta deploy after the merge instead of failing the PR.
         self.assertIn("python3 -m unittest tests.test_landing", workflow)
+
+    def test_every_workflow_job_has_a_timeout(self) -> None:
+        """Issue #210: a job without timeout-minutes bills 360 minutes when it
+        hangs; the longest observed job is ~3 minutes, so every job in every
+        workflow carries an explicit 15-minute cap."""
+        for name in ("ci.yml", "deploy-beta.yml", "deploy-production.yml"):
+            workflow = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+            jobs = workflow.split("\njobs:\n", 1)[1]
+            starts = [(m.group(1), m.start()) for m in re.finditer(r"^  (\S+):\n", jobs, re.M)]
+            self.assertTrue(starts, f"no jobs found in {name}")
+            for i, (job, start) in enumerate(starts):
+                end = starts[i + 1][1] if i + 1 < len(starts) else len(jobs)
+                self.assertIn(
+                    "timeout-minutes: 15",
+                    jobs[start:end],
+                    f"{name} job {job} has no timeout-minutes",
+                )
 
     def test_beta_deployment_docs_name_secrets_and_environments(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

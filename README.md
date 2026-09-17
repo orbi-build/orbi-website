@@ -45,8 +45,9 @@ npx wrangler deploy --env beta
 landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
 OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1 数据库，不会写入生产库。
 
-合并进 `main` 后，`.github/workflows/deploy-production.yml` 在 GitHub Environment
-`production` 的 required reviewer 审批通过后自动部署生产（`orbi.build` /
+生产部署只由人工 `workflow_dispatch` 触发 `.github/workflows/deploy-production.yml`
+（Issue #210：合并进 `main` 不会自动触发），workflow 在 GitHub Environment
+`production` 的 required reviewer 审批通过后部署生产（`orbi.build` /
 `www.orbi.build`）：部署前运行完整测试，部署后对线上做 HTTP 内容 smoke（期望文案取自
 部署 commit 的页面本身）与真实浏览器 smoke，任一 smoke 失败会自动 `wrangler rollback`
 回部署前的生产版本并让 job 红灯。晋升的 commit 还需先在 `origin/beta` 上浸泡满

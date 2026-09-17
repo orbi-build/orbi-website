@@ -1,9 +1,6 @@
 name: Deploy production
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       skip_soak:
@@ -25,6 +22,7 @@ jobs:
   # the approver's attention.
   soak:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -77,6 +75,7 @@ jobs:
   deploy:
     needs: soak
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # The human gate: the `production` environment's required reviewers must
     # approve before this job runs (repo Settings, not git).
     environment: production

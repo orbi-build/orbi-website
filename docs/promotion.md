@@ -18,7 +18,14 @@ gh pr create --repo orbi-build/orbi-website --base main --head beta \
   --title "晋升 beta 到 main：<一句话概括>" --body-file <evidence body>
 ```
 
-Merging it pushes main and triggers `deploy-production.yml`:
+Merging it does not deploy anything: production deploys are a manual
+`workflow_dispatch` only (Issue #210 — the push-triggered run was always a
+redundant twin of the dispatch). After the merge, a human dispatches the
+workflow:
+
+```
+gh workflow run deploy-production.yml --repo orbi-build/orbi-website --ref main
+```
 
 1. **Soak gate** — beta commits newer than the last successful production
    deploy must have spent `PROD_MIN_SOAK_HOURS` (repo variable, default 4) on
