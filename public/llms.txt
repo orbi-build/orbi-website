@@ -186,6 +186,17 @@ delivery at DeepSeek V4.1 Flash list prices. The sample moves as worktrees are
 cleaned up. Full data and limits:
 https://orbi.build/cost/
 
+## Blog
+
+Shipping notes from the root domain: what each delivery run hit, what fixed
+it, and the numbers behind both, traced to the issues they came from. RSS
+feed of the English posts: https://orbi.build/blog/feed.xml
+
+- Docker image published on the third try (English):
+  https://orbi.build/blog/docker-image-third-try/
+- Docker image published on the third try (Chinese):
+  https://orbi.build/zh/blog/docker-image-third-try/
+
 ## Links
 
 - ai-ready 12 factors (English): https://aiready.sh/

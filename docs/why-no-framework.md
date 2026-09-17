@@ -28,13 +28,13 @@
 |---|---|---|
 | 页面数 | 27 | `find site/pages -name '*.html' \| wc -l` |
 | HTML 总行数 | 5718 | `find site/pages -name '*.html' -exec cat {} + \| wc -l` |
-| 构建脚本 | `scripts/build-pages.mjs`，296 行 | `wc -l scripts/build-pages.mjs` |
+| 构建脚本 | `scripts/build-pages.mjs`，456 行 | `wc -l scripts/build-pages.mjs` |
 | 运行时依赖 | 1 个（`@datafast/ai-crawl`） | package.json `dependencies` |
 
 统计口径：`site/pages/` 下的页面源，不含 `site/partials/` 的两个片段（共 45 行）。
 
 为一个五千余行的静态站引入框架，意味着增加数百个依赖和一整套新的构建/部署管线；
-换来的组件化与路由能力，现有方案已经用 296 行脚本 + 两个 partial 的形态提供了。
+换来的组件化与路由能力，现有方案已经用 456 行脚本 + 两个 partial 的形态提供了。
 
 ## 3. 现有方案的一个非显然优势
 

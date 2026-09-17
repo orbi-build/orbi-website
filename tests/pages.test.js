@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { loadPages, pathToHref } from "../scripts/build-pages.mjs";
+import { collectPosts, loadPages, pathToHref } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -19,6 +19,7 @@ let pages;
 let shipped; // output path -> bytes of public/<path>
 let generatedSitemap;
 let shippedSitemap;
+let shippedFeed; // public/blog/feed.xml, the build-generated RSS 2.0 file
 let matrixCsv;
 
 beforeAll(async () => {
@@ -34,6 +35,7 @@ beforeAll(async () => {
   }
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
+  shippedFeed = await readFile(join(ROOT, "public", "blog", "feed.xml"), "utf8");
   matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
 });
 
@@ -125,10 +127,10 @@ describe("build output is committed (npm run build ran)", () => {
       }
       return out.sort();
     };
-    // The build owns the HTML and sitemap; public/ also carries assets (styles.css,
-    // img/, …) that no page source generates.
-    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
-    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
+    // The build owns the HTML, sitemap and blog feed; public/ also carries
+    // assets (styles.css, img/, …) that no page source generates.
+    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f.endsWith(".xml"));
+    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f.endsWith(".xml"));
     expect(built).toEqual(committed);
   });
 
@@ -152,10 +154,13 @@ describe("build output is committed (npm run build ran)", () => {
       .toBeGreaterThanOrEqual(2);
 
     const source = "site/pages/zh/cloud/index.html";
-    const expectedDate = execFileSync("git", ["log", "-1", "--format=%cs", "--", source], {
+    // Same basis as the build's lastCommitDate: the commit epoch, rendered to
+    // the UTC day.
+    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", source], {
       cwd: ROOT,
       encoding: "utf8",
     }).trim();
+    const expectedDate = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
     const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
   });
@@ -164,6 +169,8 @@ describe("build output is committed (npm run build ran)", () => {
     for (const [, html] of shipped) {
       expect(html).not.toContain("<!--@nav-->");
       expect(html).not.toContain("<!--@footer-->");
+      expect(html).not.toContain("<!--@posts-->");
+      expect(html).not.toContain("<!--@post-meta-->");
       expect(html).not.toMatch(/\{\{[A-Z_]+\}\}/);
     }
   });
@@ -205,7 +212,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 10-item footer nav on all 26 content pages", () => {
+  it("carries the 10-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -624,8 +631,11 @@ describe("canonical install one-liner (Issue #186)", () => {
       if (html.includes(stalePrimary)) stale.push(`public/${output}`);
     }
     for (const page of pages) {
-      const html = await readFile(join(ROOT, "site", "pages", page.output), "utf8");
-      if (html.includes(stalePrimary)) stale.push(`site/pages/${page.output}`);
+      // Blog posts keep their source at blog/<slug>.html while the output
+      // lives at blog/<slug>/index.html, so sources are addressed by
+      // page.source, never page.output.
+      const html = await readFile(join(ROOT, "site", "pages", page.source), "utf8");
+      if (html.includes(stalePrimary)) stale.push(`site/pages/${page.source}`);
     }
     const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
     if (llms.includes(stalePrimary)) stale.push("public/llms.txt");
@@ -710,5 +720,162 @@ describe("Google Jules comparison contract (Issue #200)", () => {
     }
     expect(shippedSitemap).toContain("https://orbi.build/compare/jules/");
     expect(shippedSitemap).toContain("https://orbi.build/zh/compare/jules/");
+  });
+});
+
+// Issue #212: /blog/ on the root domain. The index is derived by the build
+// from the post sources (no hand-maintained list), every post carries the
+// shared chrome plus a generated canonical/article-og block from its header,
+// and the English posts also ship as an RSS 2.0 feed at /blog/feed.xml.
+describe("blog (Issue #212)", () => {
+  const blogPosts = () => collectPosts(pages);
+  const enPost = () => blogPosts().find((post) => post.lang === "en");
+  const zhPost = () => blogPosts().find((post) => post.lang === "zh");
+
+  it("derives the post list from the post sources, newest first", () => {
+    // Sort contract on synthetic posts: date descending, slug as the tiebreaker.
+    const sorted = collectPosts([
+      { source: "blog/old.html", lang: "en", output: "blog/old/index.html", date: "2026-09-10", summary: "old", body: "<title>Old | Orbi</title>" },
+      { source: "blog/new.html", lang: "en", output: "blog/new/index.html", date: "2026-09-17", summary: "new", body: "<title>New | Orbi</title>" },
+      { source: "blog/new-2.html", lang: "en", output: "blog/new-2/index.html", date: "2026-09-17", summary: "same day", body: "<title>New 2 | Orbi</title>" },
+    ]);
+    expect(sorted.map((post) => post.source)).toEqual(["blog/new-2.html", "blog/new.html", "blog/old.html"]);
+    expect(sorted[0].headline).toBe("New 2");
+    expect(sorted[0].href).toBe("/blog/new-2/");
+  });
+
+  it("renders both language indexes from the post sources with title, date, summary and link", () => {
+    expect(enPost(), "the first post must ship").toBeTruthy();
+    expect(zhPost(), "the first post must have a zh mirror").toBeTruthy();
+    for (const [indexOutput, post] of [["blog/index.html", enPost()], ["zh/blog/index.html", zhPost()]]) {
+      const html = shipped.get(indexOutput);
+      expect(html, `${indexOutput}: missing output`).toBeTruthy();
+      expect(html, `${indexOutput}: post link`).toContain(`<a href="${post.href}">${post.headline}</a>`);
+      expect(html, `${indexOutput}: post summary`).toContain(post.summary);
+      expect(html, `${indexOutput}: post date`).toContain(`<time datetime="${post.date}">${post.date}</time>`);
+      expect(html, `${indexOutput}: index must be built, not carry the marker`).not.toContain("<!--@posts-->");
+    }
+  });
+
+  it("renders each post with the shared chrome, a canonical link and article og meta from its header", () => {
+    for (const post of [enPost(), zhPost()]) {
+      const html = shipped.get(post.output);
+      const url = `https://orbi.build${post.href}`;
+      expect(html).toContain(`<link rel="canonical" href="${url}">`);
+      expect(html).toContain('<meta property="og:type" content="article">');
+      expect(html).toContain(`<meta property="og:title" content="${post.headline}">`);
+      expect(html).toContain(`<meta property="og:description" content="${post.summary}">`);
+      expect(html).toContain(`<meta property="og:url" content="${url}">`);
+      expect(html).toContain(`<meta property="article:published_time" content="${post.date}">`);
+      expect(html, `${post.output}: shared nav must render`).toContain('<nav id="');
+      expect(html, `${post.output}: shared footer must render`).toContain('<footer class="site-footer shell">');
+      expect(html, `${post.output}: meta must be generated, not carry the marker`).not.toContain("<!--@post-meta-->");
+    }
+  });
+
+  it("generates an RSS 2.0 feed of the English posts that parses as XML with one item per post", async () => {
+    const builtFeed = await readFile(join(builtDir, "blog", "feed.xml"), "utf8");
+    expect(builtFeed, "public/blog/feed.xml drifted from the build").toBe(shippedFeed);
+    // A real XML parse, not a regex, over the shipped file's actual bytes:
+    // python3 is already a standing requirement of this repository's CI
+    // (tests.test_landing runs on it in every workflow).
+    const parsed = JSON.parse(execFileSync("python3", ["-c", `
+import json, sys, xml.etree.ElementTree as ET
+root = ET.parse(sys.argv[1]).getroot()
+channel = root.find("channel")
+print(json.dumps({
+    "root": root.tag,
+    "version": root.get("version"),
+    "title": channel.findtext("title"),
+    "link": channel.findtext("link"),
+    "items": [{"title": i.findtext("title"), "link": i.findtext("link"),
+               "guid": i.findtext("guid"), "guidAttr": i.find("guid").get("isPermaLink"),
+               "pubDate": i.findtext("pubDate"), "description": i.findtext("description")}
+              for i in channel.findall("item")],
+}))
+`, join(ROOT, "public", "blog", "feed.xml")], { timeout: 30_000, encoding: "utf8" }));
+    const enItems = blogPosts().filter((post) => post.lang === "en");
+    expect(parsed.root).toBe("rss");
+    expect(parsed.version).toBe("2.0");
+    expect(parsed.title).toBe("Orbi Blog");
+    expect(parsed.link).toBe("https://orbi.build/blog/");
+    expect(parsed.items, "one item per English post, newest first").toHaveLength(enItems.length);
+    for (const [i, item] of parsed.items.entries()) {
+      expect(item.title).toBe(enItems[i].headline);
+      expect(item.link).toBe(`https://orbi.build${enItems[i].href}`);
+      expect(item.guid).toBe(`https://orbi.build${enItems[i].href}`);
+      expect(item.guidAttr).toBe("true");
+      expect(item.pubDate).toBe(new Date(`${enItems[i].date}T00:00:00Z`).toUTCString());
+      expect(item.description).toBe(enItems[i].summary);
+    }
+  });
+
+  it("lists /blog/, /zh/blog/ and every post URL in the sitemap", () => {
+    for (const post of blogPosts()) {
+      expect(shippedSitemap).toContain(`<loc>https://orbi.build${post.href}</loc>`);
+    }
+    expect(shippedSitemap).toContain("<loc>https://orbi.build/blog/</loc>");
+    expect(shippedSitemap).toContain("<loc>https://orbi.build/zh/blog/</loc>");
+  });
+
+  it("ships a zh mirror file for every en post file, with the same date", async () => {
+    const enDir = join(ROOT, "site", "pages", "blog");
+    const enFiles = (await readdir(enDir)).filter((f) => f.endsWith(".html") && f !== "index.html");
+    expect(enFiles.length, "the blog must ship at least one post").toBeGreaterThan(0);
+    for (const file of enFiles) {
+      // Reading the zh file is the existence check: a missing file throws here.
+      const zhSource = await readFile(join(ROOT, "site", "pages", "zh", "blog", file), "utf8");
+      expect(zhSource, `zh/blog/${file}: mirror must carry the same date`).toContain(`"date": ${JSON.stringify(enPost().date)}`);
+    }
+  });
+
+  it("links the blog from the primary nav on both language homes", () => {
+    expect(navRegion(shipped.get("index.html"))).toContain('<a href="/blog/">Blog</a>');
+    expect(navRegion(shipped.get("zh/index.html"))).toContain('<a href="/zh/blog/">博客</a>');
+  });
+
+  it("lists every post URL in the llms.txt Blog section", async () => {
+    const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
+    const section = llms.slice(llms.indexOf("## Blog"));
+    expect(section, "llms.txt is missing the Blog section").not.toBe("");
+    for (const post of blogPosts()) {
+      expect(section, `llms.txt Blog section misses ${post.href}`).toContain(`https://orbi.build${post.href}`);
+    }
+  });
+});
+
+// Issue #212 failure path: a post source missing date or summary must fail
+// the build with the file name in the error, never skip silently.
+describe("blog failure path (Issue #212)", () => {
+  const post = (header) => ({
+    lang: "en",
+    output: "blog/t/index.html",
+    body: "<title>T | Orbi</title>",
+    ...header,
+  });
+
+  it("fails with the file name when a post has no date", () => {
+    expect(() => collectPosts([post({ source: "blog/t.html", summary: "s" })]))
+      .toThrow(/blog\/t\.html[\s\S]*"date"/);
+  });
+
+  it("fails with the file name when the date is not YYYY-MM-DD", () => {
+    expect(() => collectPosts([post({ source: "blog/t.html", date: "September 17", summary: "s" })]))
+      .toThrow(/blog\/t\.html[\s\S]*"date"/);
+  });
+
+  it("fails with the file name when a post has no summary", () => {
+    expect(() => collectPosts([post({ source: "blog/t.html", date: "2026-09-17" })]))
+      .toThrow(/blog\/t\.html[\s\S]*"summary"/);
+  });
+
+  it("fails with the file name when an empty summary", () => {
+    expect(() => collectPosts([post({ source: "blog/t.html", date: "2026-09-17", summary: "  " })]))
+      .toThrow(/blog\/t\.html[\s\S]*"summary"/);
+  });
+
+  it("fails with the file name when a post has no title", () => {
+    expect(() => collectPosts([{ source: "blog/t.html", lang: "en", output: "blog/t/index.html", date: "2026-09-17", summary: "s", body: "<p>x</p>" }]))
+      .toThrow(/blog\/t\.html[\s\S]*<title>/);
   });
 });

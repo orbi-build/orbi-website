@@ -31,24 +31,32 @@ contradiction in place for the next delivery to rediscover.
 `public/` is half generated and half hand-written. Knowing which half a file
 belongs to decides where you edit it.
 
-**Generated (28 files, never edit in `public/`):** every `*.html` under `public/`.
+**Generated (40 files, never edit in `public/`):** every `*.html` under `public/`.
 `npm run build` (`node scripts/build-pages.mjs`) writes them from:
 
 - `site/pages/**/index.html` — one source per page: a `<!--orbi:page ... -->` JSON
   header (`lang`, `mirror`, `output`, `layout`, nav params, `standalone`) followed
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
+- `site/pages/blog/<slug>.html` (+ `zh/blog/<slug>.html`) — one source per blog
+  post (Issue #212): the same JSON header plus `date` and `summary`; the build
+  validates both, renders the post's canonical/og meta, derives the `/blog/`
+  indexes from the post list, and writes `/blog/feed.xml` (RSS 2.0, English
+  posts). A post missing `date` or `summary` fails the build with the file name.
 - `site/partials/nav.html` and `site/partials/footer.html` — the single shared
   navigation and footer, rendered into every non-standalone page.
 
+The build also writes `sitemap.xml` and `blog/feed.xml` into `public/`; both
+are generated files like the HTML, never hand-edited.
+
 **Hand-written (edit directly in `public/`):** `styles.css`, `demo.js`,
-`install.sh`, `llms.txt`, `robots.txt`, `sitemap.xml`, `favicon.svg`,
-`logo-mark.svg`, `logo-mark-on-dark.svg`, and everything under `public/img/`.
+`install.sh`, `llms.txt`, `robots.txt`, `favicon.svg`, `logo-mark.svg`,
+`logo-mark-on-dark.svg`, and everything under `public/img/`.
 These are outside the build and have no source under `site/`.
 
 Editing a generated page in `public/` fails three ways: the next build overwrites
 it; `tests/pages.test.js` compares the build output against `public/` byte-for-byte
 and goes red; and a hand-edited nav or footer silently drifts one page away from
-the other 27. Always edit the source under `site/`, then run `npm run build` and
+the other 39. Always edit the source under `site/`, then run `npm run build` and
 commit the regenerated `public/` output together with the source change.
 
 `scripts/build-pages.mjs --out <dir>` renders to any directory, which is how you

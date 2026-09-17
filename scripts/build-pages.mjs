@@ -52,6 +52,7 @@ const LANG = {
     systemLabel: "How it works",
     costLabel: "Pricing",
     docsLabel: "Docs",
+    blogLabel: "Blog",
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
@@ -80,6 +81,7 @@ const LANG = {
     systemLabel: "产品怎么运作",
     costLabel: "价格",
     docsLabel: "文档",
+    blogLabel: "博客",
     langGroupAria: "语言",
     currentLangLabel: "中文",
     otherLangAttr: "en",
@@ -146,6 +148,8 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_LABEL: t.costLabel,
     DOCS_HREF: n.docsHref,
     DOCS_LABEL: t.docsLabel,
+    BLOG_HREF: `${t.langPrefix}/blog/`,
+    BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
     LANG_GROUP_ARIA: t.langGroupAria,
     LANG_LINE_A: lineA,
@@ -224,15 +228,123 @@ export function pathToHref(output) {
 function lastCommitDate(source) {
   const relativeSource = relative(ROOT, source);
   try {
-    const date = execFileSync("git", ["log", "-1", "--format=%cs", "--", relativeSource], {
+    // %ct is the timezone-independent commit epoch; rendering it to the UTC
+    // day matches the untracked-file fallback below exactly. A local-day
+    // format (%cs, or slicing %cI) moves with the committer's timezone and
+    // disagrees with a UTC CI whenever a commit and a build straddle local
+    // midnight.
+    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
       cwd: ROOT,
       encoding: "utf8",
     }).trim();
-    return date || new Date().toISOString().slice(0, 10);
+    return epoch
+      ? new Date(Number(epoch) * 1000).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
   } catch (error) {
     const detail = error.stderr?.toString().trim() || error.message;
     throw new Error(`unable to get git lastmod for ${relativeSource}: ${detail}`);
   }
+}
+
+// Attribute-value escaping for the generated meta lines, index entries and
+// feed items (the hand-written page bodies escape their own copy).
+function escAttr(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+// Issue #212: a blog post is a page source at blog/<slug>.html (or
+// zh/blog/<slug>.html); the index lives at blog/index.html. Anything else
+// under those directories is not a post.
+const POST_SOURCE_RE = /^(zh\/)?blog\/(?!index\.html$)[^/]+\.html$/;
+
+function parsePost(page) {
+  if (typeof page.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(page.date)) {
+    throw new Error(`${page.source}: blog post needs "date" as YYYY-MM-DD in its orbi:page header`);
+  }
+  if (typeof page.summary !== "string" || page.summary.trim() === "") {
+    throw new Error(`${page.source}: blog post needs a non-empty "summary" string in its orbi:page header`);
+  }
+  const title = page.body.match(/<title>([^<]*)<\/title>/)?.[1];
+  if (!title || !title.trim()) {
+    throw new Error(`${page.source}: blog post needs a <title> element in its body`);
+  }
+  return {
+    source: page.source,
+    lang: page.lang,
+    output: page.output,
+    href: pathToHref(page.output),
+    date: page.date,
+    summary: page.summary,
+    title,
+    headline: title.replace(/ \| Orbi$/, ""),
+  };
+}
+
+// The posts derived from the page sources, newest first (slug breaks ties).
+// Validation failures above carry the source file name: a post missing date
+// or summary fails the build instead of skipping silently (Issue #212).
+export function collectPosts(pages) {
+  const posts = pages.filter((page) => POST_SOURCE_RE.test(page.source)).map(parsePost);
+  return posts.sort((a, b) => b.date.localeCompare(a.date) || a.href.localeCompare(b.href));
+}
+
+// The canonical + article og block the build derives from the post header,
+// so the meta cannot drift from the title/summary/date the page ships.
+function renderPostMeta(post) {
+  const url = `https://orbi.build${post.href}`;
+  return [
+    `  <link rel="canonical" href="${url}">`,
+    `  <meta property="og:type" content="article">`,
+    `  <meta property="og:title" content="${escAttr(post.headline)}">`,
+    `  <meta property="og:description" content="${escAttr(post.summary)}">`,
+    `  <meta property="og:url" content="${url}">`,
+    `  <meta property="article:published_time" content="${post.date}">`,
+  ].join("\n");
+}
+
+// The blog index entry list: title, date, one-line summary, link — one
+// article per post, newest first, per language tree.
+function renderPostList(posts) {
+  return posts
+    .map((post) => [
+      `    <article class="post-entry">`,
+      `      <h2 class="post-entry-title"><a href="${post.href}">${escAttr(post.headline)}</a></h2>`,
+      `      <p class="post-entry-meta"><time datetime="${post.date}">${post.date}</time></p>`,
+      `      <p class="post-entry-summary">${escAttr(post.summary)}</p>`,
+      `    </article>`,
+    ].join("\n"))
+    .join("\n");
+}
+
+// RSS 2.0 feed of the English posts at /blog/feed.xml.
+function renderFeed(posts) {
+  const items = posts
+    .map((post) => {
+      const url = `https://orbi.build${post.href}`;
+      return `    <item>
+      <title>${escAttr(post.headline)}</title>
+      <link>${url}</link>
+      <guid isPermaLink="true">${url}</guid>
+      <pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>
+      <description>${escAttr(post.summary)}</description>
+    </item>`;
+    })
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Orbi Blog</title>
+    <link>https://orbi.build/blog/</link>
+    <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
+    <language>en</language>
+${items}
+  </channel>
+</rss>
+`;
 }
 
 function renderSitemap(pages) {
@@ -252,7 +364,12 @@ export async function loadPages() {
   const sources = await walkPages(PAGES_DIR);
   const pages = [];
   for (const path of sources) {
-    pages.push(parsePage(path, await readFile(path, "utf8")));
+    const page = parsePage(path, await readFile(path, "utf8"));
+    // The source path relative to site/pages, POSIX form: "blog/post.html".
+    // Identity for the blog conventions, and the file name the build's
+    // errors carry.
+    page.source = relative(PAGES_DIR, path).split("\\").join("/");
+    pages.push(page);
   }
   return pages;
 }
@@ -274,14 +391,12 @@ let FOOTER_PARTIAL;
 export async function buildPages(outDir) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
-  const sources = await walkPages(PAGES_DIR);
-  const pages = [];
-  for (const path of sources) {
-    const page = parsePage(path, await readFile(path, "utf8"));
-    pages.push({ page, path });
-  }
+  const pages = await loadPages();
+  const posts = collectPosts(pages);
+  const postsFor = (indexSource) =>
+    posts.filter((post) => post.source.startsWith("zh/") === indexSource.startsWith("zh/"));
   await mkdir(outDir, { recursive: true });
-  for (const { page, path } of pages) {
+  for (const page of pages) {
     let html = page.body;
     if (page.nav) {
       const nav = toLayout(renderNav(page), page.layout);
@@ -301,12 +416,30 @@ export async function buildPages(outDir) {
     } else if (html.includes("<!--@footer-->")) {
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
     }
+    if (POST_SOURCE_RE.test(page.source)) {
+      const post = posts.find((p) => p.source === page.source);
+      if (!html.includes("<!--@post-meta-->")) {
+        throw new Error(`${page.source}: blog post is missing the <!--@post-meta--> marker`);
+      }
+      html = html.replace("<!--@post-meta-->", () => renderPostMeta(post));
+    }
+    if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
+      if (!html.includes("<!--@posts-->")) {
+        throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
+      }
+      html = html.replace("<!--@posts-->", () => renderPostList(postsFor(page.source)));
+    }
     const out = join(outDir, page.output);
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
   }
-  await writeFile(join(outDir, "sitemap.xml"), renderSitemap(pages));
-  return sources.length;
+  await writeFile(
+    join(outDir, "sitemap.xml"),
+    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) }))),
+  );
+  await mkdir(join(outDir, "blog"), { recursive: true });
+  await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
+  return pages.length;
 }
 
 // Run only when executed directly, so tests and the migration can import

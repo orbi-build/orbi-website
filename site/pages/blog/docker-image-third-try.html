@@ -1,0 +1,164 @@
+<!--orbi:page
+{
+  "output": "blog/docker-image-third-try/index.html",
+  "lang": "en",
+  "mirror": "zh/blog/docker-image-third-try/index.html",
+  "layout": "pretty",
+  "date": "2026-09-17",
+  "summary": "The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "langSwitchHref": "/zh/blog/docker-image-third-try/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docker image published on the third try | Orbi</title>
+  <meta name="description" content="The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.">
+<!--@post-meta-->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC here: this page is English-only; the Chinese page loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-17 · orbi-build/orbi #1031 #1044 #1046 #1048 #1049</p>
+        <h1 id="post-title">Docker image published on the third try</h1>
+        <p class="hero-lede">The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref <code>1044/merge</code> into an invalid image tag.</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="https://docs.orbi.build/docker">The Docker quick start</a>
+          <a class="text-link" href="https://hub.docker.com/r/orbibuild/orbi">orbibuild/orbi on Docker Hub ↗</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="shipped-title">
+      <p class="section-tag">WHAT SHIPPED</p>
+      <h2 id="shipped-title">One image, two registries, two architectures</h2>
+      <p class="section-lede">Issue <a href="https://github.com/orbi-build/orbi/issues/1031" rel="noopener">#1031</a> asked for the obvious thing: the container that <code>3rd/docker/Dockerfile</code> already builds should be published, so a Docker search lands on something real. The workflow now publishes on every release and on a manual dispatch: <code>linux/amd64</code> and <code>linux/arm64</code>, tagged with the release version and <code>latest</code>, to both <code>ghcr.io/orbi-build/orbi</code> and <code>docker.io/orbibuild/orbi</code>.</p>
+      <figure class="code-block">
+        <figcaption>Pull the published image</figcaption>
+<pre><code>docker pull ghcr.io/orbi-build/orbi:latest
+docker pull docker.io/orbibuild/orbi:latest</code></pre>
+      </figure>
+      <p class="src-note">The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker" rel="noopener">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi" rel="noopener">hub.docker.com/r/orbibuild/orbi</a>.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="runs-title">
+      <div class="shell">
+        <p class="section-tag">THE THREE RUNS</p>
+        <h2 id="runs-title">Three failures, three different causes</h2>
+        <p class="section-lede">All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>
+        <ul class="event-list">
+          <li>
+            <span class="event-era">TRY 1 · RELEASE v0.5.17</span>
+            <div>
+              <strong>Two jobs, two build contexts</strong>
+              <p>The build-only verify job built the image fine; the publish job failed. Buildx could not find <code>/orbi-container-setup.sh</code> and <code>/orbi-container-setup.service</code>, the files the Dockerfile copies. The verify job pointed at the right directory; the publish job pointed at another context, so its build started from a view of the repository that was missing exactly those files.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">TRY 2 · MANUAL DISPATCH</span>
+            <div>
+              <strong>The Dockerfile path resolved from the workspace root</strong>
+              <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993" rel="noopener">35215809993</a> failed all three build steps with <code>failed to read dockerfile: open Dockerfile: no such file or directory</code>. <a href="https://github.com/orbi-build/orbi/pull/1044" rel="noopener">#1044</a> names the cause: buildx resolves <code>file: Dockerfile</code> against the workspace root, so the fix wrote <code>3rd/docker/Dockerfile</code> in all three places. The fix's own pull-request checks then failed from the other side: the workflow derived the image tag from the git ref, and a pull request's ref is <code>1044/merge</code>, which buildx rejects as <code>invalid reference format</code>.</p>
+            </div>
+          </li>
+          <li>
+            <span class="event-era">TRY 3 · MANUAL DISPATCH</span>
+            <div>
+              <strong>The images landed; the overview step kept the job red</strong>
+              <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306" rel="noopener">35216638306</a> pushed <code>0.5.17</code> and <code>latest</code> to both registries, for <code>linux/amd64</code> and <code>linux/arm64</code>. The job still ended red: the only failing step was the Docker Hub overview update, answered 403 because the token lacked a permission. <a href="https://github.com/orbi-build/orbi/pull/1046" rel="noopener">#1046</a> made that step <code>continue-on-error: true</code>, so an overview hiccup can never fail a release again.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="gained-title">
+      <p class="section-tag">WHAT THE WORKFLOW GAINED</p>
+      <h2 id="gained-title">Three rules the failures bought</h2>
+      <ul class="event-list">
+        <li>
+          <span class="event-era">RULE 1 · NAME THE DOCKERFILE</span>
+          <div>
+            <strong>Every build spells out its paths</strong>
+            <p>Each build step now carries <code>context: 3rd/docker</code> and <code>file: 3rd/docker/Dockerfile</code>. Nothing depends on the working directory buildx happens to start from.</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">RULE 2 · PUBLISH NEVER RUNS ON A PR REF</span>
+          <div>
+            <strong>Pull requests build, releases publish</strong>
+            <p>The build-only job runs on pull requests and builds under a <code>pr-&lt;n&gt;</code> tag with <code>push: false</code>; the publish job is gated on the event name. A ref like <code>1044/merge</code> can no longer reach a tag.</p>
+          </div>
+        </li>
+        <li>
+          <span class="event-era">RULE 3 · AN OVERVIEW CANNOT FAIL A RELEASE</span>
+          <div>
+            <strong>The description step is non-fatal</strong>
+            <p>The Docker Hub overview step runs with <code>continue-on-error: true</code>. The release contract lives in the images; a description update answered 403 cannot turn a finished publish into a failed run.</p>
+          </div>
+        </li>
+      </ul>
+      <p class="src-note">Checked against <code>.github/workflows/docker-image.yml</code> on orbi-build/orbi main, 2026-09-18.</p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="next-title">
+      <div class="shell">
+        <p class="section-tag">FROM PULL TO FIRST DELIVERY</p>
+        <h2 id="next-title">One docker run now carries the model source</h2>
+        <p>A pulled image still needs a model provider before it can deliver. <a href="https://github.com/orbi-build/orbi/issues/1048" rel="noopener">#1048</a> added the <code>ORBI_PI_*</code> environment variables: with <code>ORBI_PI_PROVIDER</code>, <code>ORBI_PI_MODEL</code>, <code>ORBI_PI_BASE_URL</code> and <code>ORBI_PI_API_KEY</code> set, the entrypoint generates <code>pi-providers.json</code> on first start, and it never touches an existing configuration. <a href="https://github.com/orbi-build/orbi/issues/1049" rel="noopener">#1049</a> rewrote the Quick start around that: <code>docker pull</code>, then one copy-pasted <code>docker run</code> that reaches a real delivery, with build-from-source moved to its own section.</p>
+        <p>The first release after the fixes, v0.5.18, published green end to end. That is the state the next release inherits.</p>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="try-title">
+      <p class="section-tag">NEXT STEP</p>
+      <h2 id="try-title">Pull the image, create an Issue, get a PR</h2>
+      <p>The Quick start on <a href="https://docs.orbi.build/docker" rel="noopener">docs.orbi.build/docker</a> takes you from <code>docker pull</code> to a first delivery. The image overview lives on <a href="https://hub.docker.com/r/orbibuild/orbi" rel="noopener">hub.docker.com/r/orbibuild/orbi</a>.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build/docker">Docker quick start <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/orbi-build/orbi/issues/1031">The issue that started it: #1031 →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
