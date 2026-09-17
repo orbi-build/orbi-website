@@ -56,6 +56,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/compare/jules/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/compare/managed-agents/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/managed-agents/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/managed-agents/"/>
@@ -177,6 +186,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/jules/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
