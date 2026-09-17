@@ -17,6 +17,8 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
 let pages;
 let shipped; // output path -> bytes of public/<path>
+let generatedSitemap;
+let shippedSitemap;
 
 beforeAll(async () => {
   // A real build through the real entry point, never a re-implementation.
@@ -29,6 +31,8 @@ beforeAll(async () => {
   for (const page of pages) {
     shipped.set(page.output, await readFile(join(ROOT, "public", page.output), "utf8"));
   }
+  generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
+  shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
 });
 
 afterAll(async () => {
@@ -91,10 +95,10 @@ describe("build output is committed (npm run build ran)", () => {
       }
       return out.sort();
     };
-    const built = await listFiles(builtDir);
-    // The build owns the HTML; public/ also carries assets (styles.css, img/,
-    // sitemap.xml, …) that no page source generates.
-    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html"));
+    // The build owns the HTML and sitemap; public/ also carries assets (styles.css,
+    // img/, …) that no page source generates.
+    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
+    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
     expect(built).toEqual(committed);
   });
 
@@ -108,6 +112,22 @@ describe("build output is committed (npm run build ran)", () => {
       drifted,
       `public/ disagrees with site/ — run npm run build after editing site/** (drifted: ${drifted.join(", ")})`,
     ).toEqual([]);
+  });
+
+  it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
+    const pagesForSitemap = pages.filter((page) => !page.standalone);
+    expect(generatedSitemap).toBe(shippedSitemap);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length);
+    expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
+      .toBeGreaterThanOrEqual(2);
+
+    const source = "site/pages/zh/cloud/index.html";
+    const expectedDate = execFileSync("git", ["log", "-1", "--format=%cs", "--", source], {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
+    const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
+    expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
   });
 
   it("leaves no build markers or unfilled slots in shipped pages", () => {

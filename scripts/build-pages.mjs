@@ -15,7 +15,8 @@
 // a fragment and rebuilding never reflows a page that declares minified.
 
 import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
-import { join, resolve, dirname } from "node:path";
+import { execFileSync } from "node:child_process";
+import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -217,6 +218,32 @@ export function pathToHref(output) {
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
 }
 
+function lastCommitDate(source) {
+  const relativeSource = relative(ROOT, source);
+  try {
+    const date = execFileSync("git", ["log", "-1", "--format=%cs", "--", relativeSource], {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
+    return date || new Date().toISOString().slice(0, 10);
+  } catch (error) {
+    const detail = error.stderr?.toString().trim() || error.message;
+    throw new Error(`unable to get git lastmod for ${relativeSource}: ${detail}`);
+  }
+}
+
+function renderSitemap(pages) {
+  const urls = pages.filter(({ page }) => !page.standalone).map(({ page, path }) => {
+    const href = pathToHref(page.output);
+    const mirror = pathToHref(page.mirror);
+    const base = "https://orbi.build";
+    const isHome = page.output === "index.html" || page.output === "zh/index.html";
+    const priority = page.output === "index.html" ? "1.0" : page.output === "zh/index.html" ? "0.9" : "0.8";
+    return `  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${page.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(path)}</lastmod>\n    <changefreq>${isHome ? "weekly" : "monthly"}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+  });
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
+}
+
 export async function loadPages() {
   const sources = await walkPages(PAGES_DIR);
   const pages = [];
@@ -244,9 +271,13 @@ export async function buildPages(outDir) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
   const sources = await walkPages(PAGES_DIR);
-  await mkdir(outDir, { recursive: true });
+  const pages = [];
   for (const path of sources) {
     const page = parsePage(path, await readFile(path, "utf8"));
+    pages.push({ page, path });
+  }
+  await mkdir(outDir, { recursive: true });
+  for (const { page, path } of pages) {
     let html = page.body;
     if (page.nav) {
       const nav = toLayout(renderNav(page), page.layout);
@@ -270,6 +301,7 @@ export async function buildPages(outDir) {
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
   }
+  await writeFile(join(outDir, "sitemap.xml"), renderSitemap(pages));
   return sources.length;
 }
 
