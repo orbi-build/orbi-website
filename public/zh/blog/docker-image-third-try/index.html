@@ -10,7 +10,7 @@
   <meta property="og:title" content="Docker 镜像第三次尝试才发布成功">
   <meta property="og:description" content="orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。">
   <meta property="og:url" content="https://orbi.build/zh/blog/docker-image-third-try/">
-  <meta property="article:published_time" content="2026-09-17">
+  <meta property="article:published_time" content="2026-09-18">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -20,6 +20,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+  </style>
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
 </head>
@@ -54,106 +69,42 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-17 · orbi-build/orbi #1031 #1044 #1046 #1048 #1049</p>
+        <p class="eyebrow">博客 · 2026-09-18</p>
         <h1 id="post-title">Docker 镜像第三次尝试才发布成功</h1>
-        <p class="hero-lede">orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref <code>1044/merge</code> 变成了非法镜像 tag。</p>
-        <div class="cta-row">
-          <a class="button button-ghost" href="https://docs.orbi.build/docker">Docker 快速上手</a>
-          <a class="text-link" href="https://hub.docker.com/r/orbibuild/orbi">Docker Hub 上的 orbibuild/orbi ↗</a>
-        </div>
+        <p class="hero-lede">orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。</p>
       </section>
     </div>
 
-    <section class="compare-section shell" aria-labelledby="shipped-title">
-      <p class="section-tag">发布了什么</p>
-      <h2 id="shipped-title">一个镜像，两个 Registry，两种架构</h2>
-      <p class="section-lede">Issue <a href="https://github.com/orbi-build/orbi/issues/1031" rel="noopener">#1031</a> 提了一个再直接不过的需求：<code>3rd/docker/Dockerfile</code> 已经能构建出可用的容器，它就应该被发布出去，让 Docker 搜索能落在一个真实的结果上。现在的 workflow 会在每次 Release 和手动触发时发布：<code>linux/amd64</code> 和 <code>linux/arm64</code>，打上 Release 版本号和 <code>latest</code> 两个 tag，推到 <code>ghcr.io/orbi-build/orbi</code> 和 <code>docker.io/orbibuild/orbi</code>。</p>
-      <figure class="code-block">
-        <figcaption>拉取已发布的镜像</figcaption>
-<pre><code>docker pull ghcr.io/orbi-build/orbi:latest
-docker pull docker.io/orbibuild/orbi:latest</code></pre>
-      </figure>
-      <p class="src-note">文档会带你从拉取镜像走到第一次真实交付：<a href="https://docs.orbi.build/docker" rel="noopener">docs.orbi.build/docker</a>。Hub 仓库主页在 <a href="https://hub.docker.com/r/orbibuild/orbi" rel="noopener">hub.docker.com/r/orbibuild/orbi</a>。</p>
-    </section>
+    <article class="post-body">
+<p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> 提了一个再直接不过的需求：<code>3rd/docker/Dockerfile</code> 已经能构建出可用的容器，它就应该被发布出去，让 Docker 搜索能落在一个真实的结果上。现在的 workflow 会在每次 Release 和手动触发时发布：<code>linux/amd64</code> 和 <code>linux/arm64</code>，打上 Release 版本号和 <code>latest</code> 两个 tag，推到 <code>ghcr.io/orbi-build/orbi</code> 和 <code>docker.io/orbibuild/orbi</code>。</p>
+<p>拉取已发布的镜像：</p>
+<pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
+docker pull docker.io/orbibuild/orbi:latest
+</code></pre>
+<p>文档会带你从拉取镜像走到第一次真实交付：<a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。Hub 仓库主页在 <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>。</p>
+<h2>三次失败，三种不同的原因</h2>
+<p>这一切都发生在 2026-09-17，也就是 workflow 随 Release v0.5.17 上线的那一天。每次失败都留下了一个修复，每个修复都是公开的 PR。</p>
+<h3>第一次（Release v0.5.17）：两个 job，两个构建上下文</h3>
+<p>build-only 验证 job 把镜像构建得好好的；发布 job 却失败了。Buildx 找不到 <code>/orbi-container-setup.sh</code> 和 <code>/orbi-container-setup.service</code>，也就是 Dockerfile 要 COPY 的文件。验证 job 指向了正确的目录；发布 job 指向了另一个上下文，它的构建从一开始就看不到这几个文件。</p>
+<h3>第二次（手动触发）：Dockerfile 路径按工作区根目录解析</h3>
+<p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> 的三个构建步骤全部死于 <code>failed to read dockerfile: open Dockerfile: no such file or directory</code>。<a href="https://github.com/orbi-build/orbi/pull/1044">PR #1044</a> 点明了原因：buildx 按 workspace 根目录解析 <code>file: Dockerfile</code>；修复是把三处都写成 <code>3rd/docker/Dockerfile</code>。随后这个修复自己的 PR 检查又从另一头失败了：workflow 用 git ref 推导镜像 tag，而 PR 的 ref 是 <code>1044/merge</code>，buildx 直接拒绝：<code>invalid reference format</code>。</p>
+<h3>第三次（手动触发）：镜像已经推上去了；overview 步骤却把 job 拉红</h3>
+<p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> 把 <code>0.5.17</code> 和 <code>latest</code> 推到了两个 Registry，覆盖 <code>linux/amd64</code> 和 <code>linux/arm64</code>。但 job 还是红了：唯一失败的步骤是 Docker Hub 仓库主页更新，返回 403，原因是令牌缺一个权限。<a href="https://github.com/orbi-build/orbi/pull/1046">PR #1046</a> 给这一步加了 <code>continue-on-error: true</code>，从此 overview 的意外再也拉不红一次发布。</p>
+<h2>三次失败换来的三条规则</h2>
+<h3>规则一：每个构建步骤都写全路径</h3>
+<p>每个构建步骤现在都带着 <code>context: 3rd/docker</code> 和 <code>file: 3rd/docker/Dockerfile</code>。没有任何步骤依赖 buildx 启动时所在的工作目录。</p>
+<h3>规则二：PR ref 永不发布</h3>
+<p>build-only job 会在 PR 上运行，用 <code>pr-&lt;n&gt;</code> 这个 tag 构建且 <code>push: false</code>；发布 job 用事件名做了门禁。像 <code>1044/merge</code> 这样的 ref 再也到不了 tag 这一步。</p>
+<h3>规则三：overview 拉不红 Release</h3>
+<p>Docker Hub overview 步骤带着 <code>continue-on-error: true</code> 运行。发布承诺落在镜像本身；一次返回 403 的描述更新，不能把一次已完成的发布变成一次失败的运行。</p>
+<p>核对对象是 orbi-build/orbi main 分支上的 <code>.github/workflows/docker-image.yml</code>，核对日期 2026-09-18。</p>
+<h2>从拉取到第一次交付</h2>
+<p>拉下来的镜像在能交付之前还需要一个模型来源。<a href="https://github.com/orbi-build/orbi/issues/1048">Issue #1048</a> 增加了 <code>ORBI_PI_*</code> 环境变量：设好 <code>ORBI_PI_PROVIDER</code>、<code>ORBI_PI_MODEL</code>、<code>ORBI_PI_BASE_URL</code> 和 <code>ORBI_PI_API_KEY</code>，entrypoint 就会在首次启动时生成 <code>pi-providers.json</code>，并且绝不改动已存在的配置。<a href="https://github.com/orbi-build/orbi/issues/1049">Issue #1049</a> 据此重写了 Quick start：<code>docker pull</code>，然后一段复制即用的 <code>docker run</code> 直达一次真实交付，从源码构建则移进了独立的章节。</p>
+<p>修复之后的第一个 Release v0.5.18 端到端全绿发布。下一个 Release 继承的就是这个状态。</p>
+<h2>拉镜像，建 Issue，收 PR</h2>
+<p><a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> 上的 Quick start 会带你从 <code>docker pull</code> 走到第一次交付。镜像主页在 <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>。</p>
 
-    <section class="compare-section compare-section-tint" aria-labelledby="runs-title">
-      <div class="shell">
-        <p class="section-tag">三次运行</p>
-        <h2 id="runs-title">三次失败，三种不同的原因</h2>
-        <p class="section-lede">这一切都发生在 2026-09-17，也就是 workflow 随 Release v0.5.17 上线的那一天。每次失败都留下了一个修复，每个修复都是公开的 PR。</p>
-        <ul class="event-list">
-          <li>
-            <span class="event-era">第一次 · RELEASE v0.5.17</span>
-            <div>
-              <strong>两个 job，两个构建上下文</strong>
-              <p>build-only 验证 job 把镜像构建得好好的；发布 job 却失败了。Buildx 找不到 <code>/orbi-container-setup.sh</code> 和 <code>/orbi-container-setup.service</code>，也就是 Dockerfile 要 COPY 的文件。验证 job 指向了正确的目录；发布 job 指向了另一个上下文，它的构建从一开始就看不到这几个文件。</p>
-            </div>
-          </li>
-          <li>
-            <span class="event-era">第二次 · 手动触发</span>
-            <div>
-              <strong>Dockerfile 路径按工作区根目录解析</strong>
-              <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993" rel="noopener">35215809993</a> 的三个构建步骤全部死于 <code>failed to read dockerfile: open Dockerfile: no such file or directory</code>。<a href="https://github.com/orbi-build/orbi/pull/1044" rel="noopener">#1044</a> 点明了原因：buildx 按 workspace 根目录解析 <code>file: Dockerfile</code>；修复是把三处都写成 <code>3rd/docker/Dockerfile</code>。随后这个修复自己的 PR 检查又从另一头失败了：workflow 用 git ref 推导镜像 tag，而 PR 的 ref 是 <code>1044/merge</code>，buildx 直接拒绝：<code>invalid reference format</code>。</p>
-            </div>
-          </li>
-          <li>
-            <span class="event-era">第三次 · 手动触发</span>
-            <div>
-              <strong>镜像已经推上去了；overview 步骤却把 job 拉红</strong>
-              <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306" rel="noopener">35216638306</a> 把 <code>0.5.17</code> 和 <code>latest</code> 推到了两个 Registry，覆盖 <code>linux/amd64</code> 和 <code>linux/arm64</code>。但 job 还是红了：唯一失败的步骤是 Docker Hub 仓库主页更新，返回 403，原因是令牌缺一个权限。<a href="https://github.com/orbi-build/orbi/pull/1046" rel="noopener">#1046</a> 给这一步加了 <code>continue-on-error: true</code>，从此 overview 的意外再也拉不红一次发布。</p>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="compare-section shell" aria-labelledby="gained-title">
-      <p class="section-tag">workflow 换来了什么</p>
-      <h2 id="gained-title">三次失败换来的三条规则</h2>
-      <ul class="event-list">
-        <li>
-          <span class="event-era">规则一 · 写明 Dockerfile</span>
-          <div>
-            <strong>每个构建步骤都写全路径</strong>
-            <p>每个构建步骤现在都带着 <code>context: 3rd/docker</code> 和 <code>file: 3rd/docker/Dockerfile</code>。没有任何步骤依赖 buildx 启动时所在的工作目录。</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">规则二 · PR ref 永不发布</span>
-          <div>
-            <strong>PR 只构建，Release 才发布</strong>
-            <p>build-only job 会在 PR 上运行，用 <code>pr-&lt;n&gt;</code> 这个 tag 构建且 <code>push: false</code>；发布 job 用事件名做了门禁。像 <code>1044/merge</code> 这样的 ref 再也到不了 tag 这一步。</p>
-          </div>
-        </li>
-        <li>
-          <span class="event-era">规则三 · overview 拉不红 Release</span>
-          <div>
-            <strong>描述步骤是非致命的</strong>
-            <p>Docker Hub overview 步骤带着 <code>continue-on-error: true</code> 运行。发布承诺落在镜像本身；一次返回 403 的描述更新，不能把一次已完成的发布变成一次失败的运行。</p>
-          </div>
-        </li>
-      </ul>
-      <p class="src-note">核对对象是 orbi-build/orbi main 分支上的 <code>.github/workflows/docker-image.yml</code>，核对日期 2026-09-18。</p>
-    </section>
-
-    <section class="compare-section compare-section-tint" aria-labelledby="next-title">
-      <div class="shell">
-        <p class="section-tag">从拉取到第一次交付</p>
-        <h2 id="next-title">现在一个 docker run 就能带上模型来源</h2>
-        <p>拉下来的镜像在能交付之前还需要一个模型来源。<a href="https://github.com/orbi-build/orbi/issues/1048" rel="noopener">#1048</a> 增加了 <code>ORBI_PI_*</code> 环境变量：设好 <code>ORBI_PI_PROVIDER</code>、<code>ORBI_PI_MODEL</code>、<code>ORBI_PI_BASE_URL</code> 和 <code>ORBI_PI_API_KEY</code>，entrypoint 就会在首次启动时生成 <code>pi-providers.json</code>，并且绝不改动已存在的配置。<a href="https://github.com/orbi-build/orbi/issues/1049" rel="noopener">#1049</a> 据此重写了 Quick start：<code>docker pull</code>，然后一段复制即用的 <code>docker run</code> 直达一次真实交付，从源码构建则移进了独立的章节。</p>
-        <p>修复之后的第一个 Release v0.5.18 端到端全绿发布。下一个 Release 继承的就是这个状态。</p>
-      </div>
-    </section>
-
-    <section class="closing shell" aria-labelledby="try-title">
-      <p class="section-tag">下一步</p>
-      <h2 id="try-title">拉镜像，建 Issue，收 PR</h2>
-      <p><a href="https://docs.orbi.build/docker" rel="noopener">docs.orbi.build/docker</a> 上的 Quick start 会带你从 <code>docker pull</code> 走到第一次交付。镜像主页在 <a href="https://hub.docker.com/r/orbibuild/orbi" rel="noopener">hub.docker.com/r/orbibuild/orbi</a>。</p>
-      <div class="cta-row">
-        <a class="button button-dark" href="https://docs.orbi.build/docker">Docker 快速上手 <span aria-hidden="true">↗</span></a>
-        <a class="text-link" href="https://github.com/orbi-build/orbi/issues/1031">一切的起点：#1031 →</a>
-      </div>
-    </section>
+    </article>
   </main>
 
   <footer class="site-footer shell">

@@ -6,6 +6,11 @@
 //                                layout, nav params) followed by the page body with
 //                                <!--@nav--> and <!--@footer--> markers where the
 //                                fragments belong.
+//   content/blog/<slug>.md     — one Markdown file per blog post (Issue #212),
+//   content/blog/zh/<slug>.md    YAML front matter plus a CommonMark body; the
+//                                build renders the body (marked) into the post
+//                                template and derives the /blog/ indexes and
+//                                /blog/feed.xml from the post list.
 //
 // Usage: node scripts/build-pages.mjs [--out <dir>]   (default: public)
 //
@@ -18,10 +23,12 @@ import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { marked } from "marked";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGES_DIR = join(ROOT, "site", "pages");
 const PARTIALS_DIR = join(ROOT, "site", "partials");
+const CONTENT_DIR = join(ROOT, "content", "blog");
 
 // Footer deep dives, in the order the /compare/ grid and the browser smoke
 // test pin them. Href prefix per language; anchor text is the competitors'
@@ -227,6 +234,9 @@ export function pathToHref(output) {
 
 function lastCommitDate(source) {
   const relativeSource = relative(ROOT, source);
+  // Content outside the repository (the fixture builds in the tests) has no
+  // git history to ask: same fallback as an untracked file.
+  if (relativeSource.startsWith("..")) return new Date().toISOString().slice(0, 10);
   try {
     // %ct is the timezone-independent commit epoch; rendering it to the UTC
     // day matches the untracked-file fallback below exactly. A local-day
@@ -256,44 +266,101 @@ function escAttr(value) {
     .replaceAll('"', "&quot;");
 }
 
-// Issue #212: a blog post is a page source at blog/<slug>.html (or
-// zh/blog/<slug>.html); the index lives at blog/index.html. Anything else
-// under those directories is not a post.
-const POST_SOURCE_RE = /^(zh\/)?blog\/(?!index\.html$)[^/]+\.html$/;
+// --- Blog posts: Markdown files under content/blog (Issue #212) ---
 
-function parsePost(page) {
-  if (typeof page.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(page.date)) {
-    throw new Error(`${page.source}: blog post needs "date" as YYYY-MM-DD in its orbi:page header`);
+// The blog's YAML subset: one `key: value` per line, values are plain
+// single-line strings (they may contain colons — the split is on the first
+// one). This keeps the dependency count at one: marked renders, this reads.
+export function parseFrontMatter(displayName, source) {
+  const match = source.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!match) throw new Error(`${displayName}: missing the --- front-matter block`);
+  const fields = {};
+  for (const line of match[1].split("\n")) {
+    if (!line.trim()) continue;
+    const pair = line.match(/^([A-Za-z_]+):\s?(.*)$/);
+    if (!pair) throw new Error(`${displayName}: front-matter line is not "key: value": ${JSON.stringify(line)}`);
+    fields[pair[1]] = pair[2].trim();
   }
-  if (typeof page.summary !== "string" || page.summary.trim() === "") {
-    throw new Error(`${page.source}: blog post needs a non-empty "summary" string in its orbi:page header`);
+  return { fields, body: source.slice(match[0].length) };
+}
+
+// One content file -> one validated post record. displayName is the path
+// relative to the content directory ("docker-image-third-try.md",
+// "zh/docker-image-third-try.md"); the directory half fixes the expected lang,
+// so front matter contradicting the location fails the build. The slug is the
+// file name; the output path follows the site's directory convention.
+export function postFromSource(displayName, source) {
+  const label = `content/blog/${displayName}`;
+  const lang = displayName.startsWith("zh/") ? "zh" : "en";
+  const { fields, body } = parseFrontMatter(label, source);
+  for (const field of ["title", "date", "summary", "lang"]) {
+    if (typeof fields[field] !== "string" || fields[field].trim() === "") {
+      throw new Error(`${label}: front matter needs a non-empty "${field}"`);
+    }
   }
-  const title = page.body.match(/<title>([^<]*)<\/title>/)?.[1];
-  if (!title || !title.trim()) {
-    throw new Error(`${page.source}: blog post needs a <title> element in its body`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) {
+    throw new Error(`${label}: front matter needs "date" as YYYY-MM-DD, got "${fields.date}"`);
   }
+  if (fields.lang !== lang) {
+    throw new Error(`${label}: front matter says lang: ${fields.lang}, but its directory fixes lang: ${lang}`);
+  }
+  const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
+  const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
   return {
-    source: page.source,
-    lang: page.lang,
-    output: page.output,
-    href: pathToHref(page.output),
-    date: page.date,
-    summary: page.summary,
-    title,
-    headline: title.replace(/ \| Orbi$/, ""),
+    slug,
+    lang,
+    source: displayName,
+    output,
+    mirrorOutput: lang === "en" ? `zh/blog/${slug}/index.html` : `blog/${slug}/index.html`,
+    href: pathToHref(output),
+    title: fields.title,
+    headline: fields.title,
+    date: fields.date,
+    summary: fields.summary,
+    html: marked.parse(body),
   };
 }
 
-// The posts derived from the page sources, newest first (slug breaks ties).
-// Validation failures above carry the source file name: a post missing date
-// or summary fails the build instead of skipping silently (Issue #212).
-export function collectPosts(pages) {
-  const posts = pages.filter((page) => POST_SOURCE_RE.test(page.source)).map(parsePost);
+// Every post in the content directory, validated as en/zh mirror pairs,
+// newest first (slug breaks ties). A missing mirror fails the build here,
+// naming the absent file: no silent skip, no partial index (Issue #212).
+export async function collectPosts(contentDir = CONTENT_DIR) {
+  const readDir = async (rel) => {
+    try {
+      return (await readdir(join(contentDir, rel), { withFileTypes: true }))
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+        .map((entry) => entry.name);
+    } catch {
+      return [];
+    }
+  };
+  const enFiles = await readDir(".");
+  const zhFiles = await readDir("zh");
+  if (enFiles.length + zhFiles.length === 0) {
+    throw new Error(`${contentDir}: no posts found (expected *.md and zh/*.md)`);
+  }
+  for (const name of enFiles) {
+    if (!zhFiles.includes(name)) {
+      throw new Error(`content/blog/zh/${name}: missing zh mirror for content/blog/${name}`);
+    }
+  }
+  for (const name of zhFiles) {
+    if (!enFiles.includes(name)) {
+      throw new Error(`content/blog/${name}: missing en post for content/blog/zh/${name}`);
+    }
+  }
+  const posts = [];
+  for (const [dir, names] of [[".", enFiles], ["zh", zhFiles]]) {
+    for (const name of names) {
+      const displayName = dir === "." ? name : `${dir}/${name}`;
+      posts.push(postFromSource(displayName, await readFile(join(contentDir, dir, name), "utf8")));
+    }
+  }
   return posts.sort((a, b) => b.date.localeCompare(a.date) || a.href.localeCompare(b.href));
 }
 
-// The canonical + article og block the build derives from the post header,
-// so the meta cannot drift from the title/summary/date the page ships.
+// The canonical + article og block the build derives from the post front
+// matter, so the meta cannot drift from the title/summary/date the post ships.
 function renderPostMeta(post) {
   const url = `https://orbi.build${post.href}`;
   return [
@@ -304,6 +371,77 @@ function renderPostMeta(post) {
     `  <meta property="og:url" content="${url}">`,
     `  <meta property="article:published_time" content="${post.date}">`,
   ].join("\n");
+}
+
+// Per-language bits only the post template needs. The zh page loads Noto Sans
+// SC; the en page must not. Nav params mirror the hand-written content pages'
+// (compare the old post page sources), except langSwitchHref, which the build
+// derives from the post's own mirror.
+const POST_LANG = {
+  en: {
+    htmlLang: "en",
+    fontLink: `  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">`,
+    skipLabel: "Skip to content",
+    eyebrow: "Blog",
+    nav: {
+      navId: "primary-navigation",
+      systemHref: "/#system",
+      compareHref: "/compare/",
+      compareLabel: "Compare",
+      costHref: "/cloud/#pricing",
+      docsHref: "https://docs.orbi.build",
+      langCurrentFirst: true,
+    },
+  },
+  zh: {
+    htmlLang: "zh-CN",
+    fontLink: `  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">`,
+    skipLabel: "跳到正文",
+    eyebrow: "博客",
+    nav: {
+      navId: "primary-navigation-zh",
+      systemHref: "/zh/#system",
+      compareHref: "/zh/compare/",
+      compareLabel: "竞品对比",
+      costHref: "/zh/cloud/#pricing",
+      docsHref: "https://docs.orbi.build/zh",
+      langCurrentFirst: true,
+    },
+  },
+};
+
+// A post's page: the rendered CommonMark body inside the post template, with
+// the shared nav and footer rendered exactly as for site/pages/**.
+function renderPost(post, template) {
+  const t = POST_LANG[post.lang];
+  const page = {
+    lang: post.lang,
+    output: post.output,
+    mirror: post.mirrorOutput,
+    nav: {
+      ...t.nav,
+      compareDataCta: false,
+      compareCurrent: false,
+      costCurrent: false,
+      compareCostSameLine: false,
+      langSwitchHref: pathToHref(post.mirrorOutput),
+    },
+  };
+  return fill(template, {
+    LANG_ATTR: t.htmlLang,
+    TITLE: escAttr(`${post.title} | Orbi`),
+    DESCRIPTION: escAttr(post.summary),
+    POST_META: renderPostMeta(post),
+    FONT_LINK: t.fontLink,
+    SKIP_LABEL: t.skipLabel,
+    NAV: toLayout(renderNav(page), "pretty"),
+    EYEBROW: t.eyebrow,
+    DATE: post.date,
+    HEADLINE: escAttr(post.title),
+    SUMMARY: escAttr(post.summary),
+    BODY: post.html,
+    FOOTER: toLayout(renderFooter(page), "pretty"),
+  });
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -347,7 +485,7 @@ ${items}
 `;
 }
 
-function renderSitemap(pages) {
+function renderSitemap(pages, posts = [], contentDir = CONTENT_DIR) {
   const urls = pages.filter(({ page }) => !page.standalone).map(({ page, path }) => {
     const href = pathToHref(page.output);
     const mirror = pathToHref(page.mirror);
@@ -356,6 +494,13 @@ function renderSitemap(pages) {
     const priority = page.output === "index.html" ? "1.0" : page.output === "zh/index.html" ? "0.9" : "0.8";
     return `  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${page.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(path)}</lastmod>\n    <changefreq>${isHome ? "weekly" : "monthly"}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
   });
+  // Blog posts: rendered from content/blog, one URL per language mirror.
+  for (const post of posts) {
+    const base = "https://orbi.build";
+    const href = post.href;
+    const mirror = pathToHref(post.mirrorOutput);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(join(contentDir, post.source))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+  }
   urls.push(`  <url>\n    <loc>https://orbi.build/compare/matrix.csv</loc>\n    <lastmod>${lastCommitDate(join(ROOT, "site", "pages", "compare", "index.html"))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
 }
@@ -388,13 +533,14 @@ async function walkPages(dir) {
 let NAV_PARTIAL;
 let FOOTER_PARTIAL;
 
-export async function buildPages(outDir) {
+export async function buildPages(outDir, { contentDir = CONTENT_DIR } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
+  const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const pages = await loadPages();
-  const posts = collectPosts(pages);
+  const posts = await collectPosts(contentDir);
   const postsFor = (indexSource) =>
-    posts.filter((post) => post.source.startsWith("zh/") === indexSource.startsWith("zh/"));
+    posts.filter((post) => post.lang === (indexSource.startsWith("zh/") ? "zh" : "en"));
   await mkdir(outDir, { recursive: true });
   for (const page of pages) {
     let html = page.body;
@@ -416,13 +562,6 @@ export async function buildPages(outDir) {
     } else if (html.includes("<!--@footer-->")) {
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
     }
-    if (POST_SOURCE_RE.test(page.source)) {
-      const post = posts.find((p) => p.source === page.source);
-      if (!html.includes("<!--@post-meta-->")) {
-        throw new Error(`${page.source}: blog post is missing the <!--@post-meta--> marker`);
-      }
-      html = html.replace("<!--@post-meta-->", () => renderPostMeta(post));
-    }
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
@@ -433,13 +572,18 @@ export async function buildPages(outDir) {
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
   }
+  for (const post of posts) {
+    const out = join(outDir, post.output);
+    await mkdir(dirname(out), { recursive: true });
+    await writeFile(out, renderPost(post, POST_TEMPLATE));
+  }
   await writeFile(
     join(outDir, "sitemap.xml"),
-    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) }))),
+    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, contentDir),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
-  return pages.length;
+  return pages.length + posts.length;
 }
 
 // Run only when executed directly, so tests and the migration can import

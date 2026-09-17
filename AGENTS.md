@@ -37,13 +37,17 @@ belongs to decides where you edit it.
 - `site/pages/**/index.html` — one source per page: a `<!--orbi:page ... -->` JSON
   header (`lang`, `mirror`, `output`, `layout`, nav params, `standalone`) followed
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
-- `site/pages/blog/<slug>.html` (+ `zh/blog/<slug>.html`) — one source per blog
-  post (Issue #212): the same JSON header plus `date` and `summary`; the build
-  validates both, renders the post's canonical/og meta, derives the `/blog/`
-  indexes from the post list, and writes `/blog/feed.xml` (RSS 2.0, English
-  posts). A post missing `date` or `summary` fails the build with the file name.
-- `site/partials/nav.html` and `site/partials/footer.html` — the single shared
-  navigation and footer, rendered into every non-standalone page.
+- `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
+  per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
+  `lang`, all four required) plus a plain CommonMark body; no HTML, no JSON
+  header, no nav/footer markers in a post. The build renders the body with
+  marked into `site/partials/post.html` (the shared nav/footer included),
+  derives the `/blog/` and `/zh/blog/` indexes from the post list, and writes
+  `/blog/feed.xml` (RSS 2.0, English posts). A post missing a front-matter
+  field, or an en post with no zh mirror, fails the build with the file path.
+- `site/partials/nav.html`, `site/partials/footer.html` and
+  `site/partials/post.html` — the shared navigation, footer and post template,
+  rendered into every page that needs them.
 
 The build also writes `sitemap.xml` and `blog/feed.xml` into `public/`; both
 are generated files like the HTML, never hand-edited.

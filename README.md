@@ -14,8 +14,9 @@ npx wrangler dev
 ## 页面（Issue #106）
 
 39 个 HTML（连同 sitemap.xml 与 blog/feed.xml）一律由构建产生，**不要手改 `public/*.html`**：改 `site/partials/`（共享的
-nav / footer 片段，全站一处生效）或 `site/pages/`（单页源：JSON 头里的 lang、mirror、
-nav 参数 + 页面正文），然后 `npm run build` 重新生成 `public/`。
+nav / footer / 博客文章模板片段，全站一处生效）、`site/pages/`（单页源：JSON 头里的 lang、mirror、
+nav 参数 + 页面正文）或 `content/blog/*.md`（博客文章：YAML front matter + CommonMark 正文，
+en 与 zh 镜像各一份），然后 `npm run build` 重新生成 `public/`。
 `tests/pages.test.js` 是门禁：构建产物与 `public/` 逐字节比对，中英镜像的
 nav/footer 项数、CTA 数量、语言切换目标、锚点前缀不一致会直接红。
 
