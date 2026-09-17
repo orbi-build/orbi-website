@@ -105,9 +105,10 @@ are permanently diverged — every promotion is a true merge, never a fast-forwa
   `.github/workflows/deploy-production.yml`; merging into `main` does not
   trigger it (Issue #210). The workflow runs the soak gate,
   required-reviewer approval on the `production` GitHub Environment, the full test
-  set, `wrangler deploy`, then an HTTP content smoke plus a real-browser smoke.
-  Either smoke failing triggers an automatic `wrangler rollback` to the previous
-  production version and reds the job.
+  set, `wrangler deploy`, then an HTTP content smoke (the real-browser smoke was
+  removed from this workflow on 2026-09-10). A smoke failure triggers an
+  automatic `wrangler rollback` to the previous production version and reds the
+  job.
 - D1 migrations are not in the deploy path; a production schema change is an
   explicit manual step.
 - Local deploys load credentials from `~/.cloudflare.env`, never from the repo:

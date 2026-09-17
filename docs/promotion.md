@@ -31,9 +31,9 @@ gh workflow run deploy-production.yml --repo orbi-build/orbi-website --ref main
    deploy must have spent `PROD_MIN_SOAK_HOURS` (repo variable, default 4) on
    origin/beta. A failed soak blocks the deploy without paging anyone.
 2. **Deploy** — build, full test set, `wrangler deploy`.
-3. **Smoke** — h1 comparison of the live pages against the deployed commit,
-   then a real-browser check; any failure rolls production back to the
-   previous version automatically.
+3. **Smoke** — h1 comparison of the live pages against the deployed commit
+   (the real-browser check was removed from this workflow on 2026-09-10);
+   any failure rolls production back to the previous version automatically.
 
 The PR never merges itself (`allow_auto_merge` is false) — a human picks the
 merge moment, which is how the soak window is honored.
