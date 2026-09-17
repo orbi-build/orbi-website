@@ -822,10 +822,19 @@ print(json.dumps({
     const enDir = join(ROOT, "site", "pages", "blog");
     const enFiles = (await readdir(enDir)).filter((f) => f.endsWith(".html") && f !== "index.html");
     expect(enFiles.length, "the blog must ship at least one post").toBeGreaterThan(0);
+    // Each zh mirror is compared against its own en counterpart's header
+    // date, not against the newest post's: with two posts of different
+    // dates the newest-only check would fail the older pair falsely.
+    const headerDate = (source, name) => {
+      const header = source.match(/<!--orbi:page\s*(\{[\s\S]*?\})\s*-->/)?.[1];
+      expect(header, `${name}: missing the orbi:page header`).toBeTruthy();
+      return JSON.parse(header).date;
+    };
     for (const file of enFiles) {
+      const enDate = headerDate(await readFile(join(enDir, file), "utf8"), `blog/${file}`);
       // Reading the zh file is the existence check: a missing file throws here.
       const zhSource = await readFile(join(ROOT, "site", "pages", "zh", "blog", file), "utf8");
-      expect(zhSource, `zh/blog/${file}: mirror must carry the same date`).toContain(`"date": ${JSON.stringify(enPost().date)}`);
+      expect(headerDate(zhSource, `zh/blog/${file}`), `zh/blog/${file}: mirror must carry the same date as blog/${file}`).toBe(enDate);
     }
   });
 
