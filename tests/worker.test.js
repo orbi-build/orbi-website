@@ -27,6 +27,15 @@ describe("Worker request helpers", () => {
     expect(badge.headers.get("cache-control")).toContain("max-age");
   });
 
+  it("serves the comparison CSV asset with its text/csv content type", async () => {
+    const response = await handleFetch(
+      new Request("https://orbi.build/compare/matrix.csv"),
+      { ASSETS: { fetch: async () => new Response("product,verified\\nOrbi,2026-09-17", { headers: { "Content-Type": "text/csv; charset=utf-8" } }) } },
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toMatch(/^text\/csv/);
+  });
+
   it("falls back to an index asset for directory URLs", async () => {
     const requests = [];
     const assets = {

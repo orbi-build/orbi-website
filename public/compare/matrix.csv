@@ -1,0 +1,13 @@
+product,independent_review,blocks_merge_on_findings,merges_the_pr,publishes_the_release,self_host,license,source_url,verified
+Orbi,yes,yes,yes,yes,yes,yes,https://docs.orbi.build,2026-09-17
+Orca,yes,yes,yes,yes,yes,yes,https://github.com/orbi-build/orbi,2026-09-12
+OpenClaw,not documented,not documented,not documented,not documented,yes,yes,https://github.com/openclaw/openclaw,2026-09-07
+GitHub Copilot coding agent,not documented,no (official docs),not documented,not documented,no (official docs),not documented,https://docs.github.com/en/copilot/concepts/agents/coding-agent,2026-09-07
+Claude Managed Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://www.anthropic.com/engineering/managed-agents,2026-09-07
+Claude Code,yes,no (official docs),not documented,not documented,no (official docs),not documented,https://code.claude.com/docs/en/code-review,2026-09-17
+OpenHands,yes,not documented,not documented,not documented,yes,yes,https://github.com/All-Hands-AI/OpenHands,2026-09-07
+Hermes Agent,not documented,not documented,not documented,not documented,yes,yes,https://github.com/NousResearch/hermes-agent,2026-09-07
+OpenAI Codex,not documented,not documented,not documented,not documented,no (official docs),not documented,https://platform.openai.com/docs/codex,2026-09-07
+Devin,not documented,not documented,yes,not documented,no (official docs),not documented,https://docs.devin.ai/work-with-devin/devin-review,2026-09-07
+Google Jules,not documented,not documented,not documented,not documented,no (official docs),not documented,https://jules.google/docs/running-tasks/,2026-09-17
+Cursor Cloud Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://cursor.com/docs/cloud-agent,2026-09-17
