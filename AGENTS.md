@@ -7,6 +7,14 @@ deliver a change here is stated below, not referenced away.
 
 `CLAUDE.md` is a symlink to this file; the two are always identical.
 
+**Code is the source of truth, not documentation.** This file, the README and
+everything under `docs/` describe what the code is meant to do; the code — and the
+deployed behavior it produces — decides what it actually does. When a document and
+the code disagree, trust the code, and say so: report the mismatch in the Issue or
+PR (which file, which line, what the code actually does) instead of silently
+following either one. A stale document is a defect worth its own Issue, not
+something to work around quietly.
+
 ## Read first
 
 - Read the GitHub Issue (body and comments) first. Then, in priority order: this
@@ -62,8 +70,11 @@ mirror gate. Add both, and keep nav/footer/CTA counts identical between them.
 ## Cloud API boundary
 
 Before changing a website-to-Cloud handoff, read
-[docs/cloud-endpoints.md](docs/cloud-endpoints.md) — it is the source of truth for
-this boundary and records **beta only**.
+[docs/cloud-endpoints.md](docs/cloud-endpoints.md). It records **beta only**, and it
+is a log of verified external facts rather than an exception to the rule above: the
+values in it were measured against the live endpoints, and the live endpoints still
+win. Re-verify before relying on a value, and update the document when reality has
+moved.
 
 - `beta.orbi.build` is shared with the cloud control-plane Worker, which owns
   `/api*`, `/auth*`, `/login*`, `/app*`, `/connect*`, `/checkout*`, `/stripe*`.
