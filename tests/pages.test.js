@@ -198,12 +198,12 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("carries the 8 compare deep dives, in the right language tree", () => {
+  it("carries the 9 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const deep = region(footer, '<nav class="footer-compare"', "</nav>");
       const hrefs = [...deep.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(hrefs, `${page.output}: deep-dive links drifted`).toHaveLength(8);
+      expect(hrefs, `${page.output}: deep-dive links drifted`).toHaveLength(9);
       const prefix = page.lang === "zh" ? "/zh" : "";
       for (const href of hrefs) {
         expect(href, `${page.output}: deep dive ${href} must live under ${prefix}/compare/`).toMatch(
@@ -600,5 +600,32 @@ describe("canonical install one-liner (Issue #186)", () => {
     const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
     if (llms.includes(stalePrimary)) stale.push("public/llms.txt");
     expect(stale, `stale primary install URL in: ${stale.join(", ")}`).toEqual([]);
+  });
+});
+
+describe("Google Jules comparison contract (Issue #200)", () => {
+  it("ships both Jules mirrors with Article metadata, all sourced quotes, and sitemap entries", () => {
+    const en = shipped.get("compare/jules/index.html");
+    const zh = shipped.get("zh/compare/jules/index.html");
+    for (const [output, html, canonical, mirror] of [
+      ["compare/jules/index.html", en, "https://orbi.build/compare/jules/", "https://orbi.build/zh/compare/jules/"],
+      ["zh/compare/jules/index.html", zh, "https://orbi.build/zh/compare/jules/", "https://orbi.build/compare/jules/"],
+    ]) {
+      expect(html, `${output}: missing output`).toBeTruthy();
+      expect(html).toContain('type="application/ld+json"');
+      expect(html).toContain('"@type":"Article"');
+      expect(html).toContain(`rel="canonical" href="${canonical}"`);
+      expect(html).toContain(`hreflang="${output.startsWith("zh/") ? "en" : "zh-CN"}" href="${mirror}"`);
+      for (const quote of [
+        "Once the plan is approved, Jules will start coding",
+        "You can click <strong>Create branch</strong> to push the changes",
+        "You are the branch owner",
+        "Jules appears as the commit author",
+        "open a PR from this branch in GitHub",
+      ]) expect(html, `${output}: missing sourced quote`).toContain(quote);
+      expect(html).toContain("2026-09-17");
+    }
+    expect(shippedSitemap).toContain("https://orbi.build/compare/jules/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/compare/jules/");
   });
 });
