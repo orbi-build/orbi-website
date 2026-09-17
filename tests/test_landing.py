@@ -1799,10 +1799,10 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
     def test_every_deep_dive_links_its_page(self) -> None:
-        """Ten deep dives, each a link — no internal status badge (Issue #178)."""
+        """Eleven deep dives, each a link — no internal status badge (Issue #178)."""
         for html in (self.en_html, self.zh_html):
             entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
-            self.assertEqual(len(entries), 10, entries)
+            self.assertEqual(len(entries), 11, entries)
             for entry in entries:
                 self.assertIn('<a href="', entry, entry)
                 self.assertNotIn("dive-status", entry, entry)

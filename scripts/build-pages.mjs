@@ -31,6 +31,7 @@ const DEEP_DIVES = [
   ["openclaw", "Orbi vs OpenClaw"],
   ["github-copilot-coding-agent", "Orbi vs GitHub Copilot coding agent"],
   ["managed-agents", "Orbi vs Claude Managed Agents"],
+  ["claude-code", "Orbi vs Claude Code"],
   ["openhands", "Orbi vs OpenHands"],
   ["hermes-agent", "Orbi vs Hermes Agent"],
   ["codex", "Orbi vs OpenAI Codex"],
