@@ -147,9 +147,16 @@ describe("build output is committed (npm run build ran)", () => {
       const built = await readFile(join(builtDir, page.output), "utf8");
       if (built !== shipped.get(page.output)) drifted.push(page.output);
     }
+    // Posts have no page source; their rendered output must reproduce from the
+    // committed content/blog/** the same way, or a body edit without a rebuild
+    // would ship stale.
+    for (const post of posts) {
+      const built = await readFile(join(builtDir, post.output), "utf8");
+      if (built !== shipped.get(post.output)) drifted.push(post.output);
+    }
     expect(
       drifted,
-      `public/ disagrees with site/ — run npm run build after editing site/** (drifted: ${drifted.join(", ")})`,
+      `public/ disagrees with site/ — run npm run build after editing site/** or content/** (drifted: ${drifted.join(", ")})`,
     ).toEqual([]);
   });
 
