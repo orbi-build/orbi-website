@@ -846,10 +846,11 @@ class LandingTests(unittest.TestCase):
         self.assertIn("CLOUD_LOGIN_EXPECT=oauth-302", workflow)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
-        """Issue #68: merging into main deploys orbi.build behind the
-        `production` environment approval gate, smokes the real site against
-        the deployed commit's own copy, and rolls back automatically when any
-        smoke fails."""
+        """Issue #68: production deploys of orbi.build run behind the
+        `production` environment approval gate, smoke the real site against
+        the deployed commit's own copy, and roll back automatically when any
+        smoke fails. Issue #210: dispatched manually only — merging into main
+        deploys nothing."""
         workflow = (ROOT / ".github" / "workflows" / "deploy-production.yml").read_text(encoding="utf-8")
         # Issue #210: production deploys run only on a manual workflow_dispatch;
         # the push-triggered twin of that dispatch run was always redundant and
