@@ -22,19 +22,19 @@
 「3 亿 token」），才有了 website#137 的 2B/300M 矛盾；价格因为走了占位符，从未出过错。
 先走已有的机制，比引入一套框架便宜得多。
 
-## 2. 规模数据（2026-09-13 核实）
+## 2. 规模数据（2026-09-18 核实）
 
 | 项 | 值 | 复核命令 |
 |---|---|---|
-| 页面数 | 27 | `find site/pages -name '*.html' \| wc -l` |
-| HTML 总行数 | 5718 | `find site/pages -name '*.html' -exec cat {} + \| wc -l` |
-| 构建脚本 | `scripts/build-pages.mjs`，296 行 | `wc -l scripts/build-pages.mjs` |
+| 页面数 | 38 | `find site/pages -name '*.html' \| wc -l` |
+| HTML 总行数 | 6233 | `find site/pages -name '*.html' -exec cat {} + \| wc -l` |
+| 构建脚本 | `scripts/build-pages.mjs`，607 行 | `wc -l scripts/build-pages.mjs` |
 | 运行时依赖 | 1 个（`@datafast/ai-crawl`） | package.json `dependencies` |
 
-统计口径：`site/pages/` 下的页面源，不含 `site/partials/` 的两个片段（共 45 行）。
+统计口径：`site/pages/` 下的页面源，不含 `site/partials/` 的三个片段（共 109 行）。
 
-为一个五千余行的静态站引入框架，意味着增加数百个依赖和一整套新的构建/部署管线；
-换来的组件化与路由能力，现有方案已经用 296 行脚本 + 两个 partial 的形态提供了。
+为一个六千余行的静态站引入框架，意味着增加数百个依赖和一整套新的构建/部署管线；
+换来的组件化与路由能力，现有方案已经用 607 行脚本 + 三个 partial 的形态提供了。
 
 ## 3. 现有方案的一个非显然优势
 

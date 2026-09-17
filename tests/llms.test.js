@@ -30,6 +30,7 @@ describe("llms.txt keeps the existing positioning sections (Issue #154 acceptanc
       "How Orbi differs from Copilot, Cursor, and similar tools",
       "Requirements",
       "Common questions",
+      "Blog",
       "Links",
     ]);
   });

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docker image published on the third try | Orbi</title>
+  <meta name="description" content="The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.">
+  <link rel="canonical" href="https://orbi.build/blog/docker-image-third-try/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Docker image published on the third try">
+  <meta property="og:description" content="The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.">
+  <meta property="og:url" content="https://orbi.build/blog/docker-image-third-try/">
+  <meta property="article:published_time" content="2026-09-18">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/docker-image-third-try/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-18</p>
+        <h1 id="post-title">Docker image published on the third try</h1>
+        <p class="hero-lede">The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> asked for the obvious thing: the container that <code>3rd/docker/Dockerfile</code> already builds should be published, so a Docker search lands on something real. The workflow now publishes on every release and on a manual dispatch: <code>linux/amd64</code> and <code>linux/arm64</code>, tagged with the release version and <code>latest</code>, to both <code>ghcr.io/orbi-build/orbi</code> and <code>docker.io/orbibuild/orbi</code>.</p>
+<p>Pull the published image:</p>
+<pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
+docker pull docker.io/orbibuild/orbi:latest
+</code></pre>
+<p>The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
+<h2>Three failures, three different causes</h2>
+<p>All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>
+<h3>Try 1 (release v0.5.17): two jobs, two build contexts</h3>
+<p>The build-only verify job built the image fine; the publish job failed. Buildx could not find <code>/orbi-container-setup.sh</code> and <code>/orbi-container-setup.service</code>, the files the Dockerfile copies. The verify job pointed at the right directory; the publish job pointed at another context, so its build started from a view of the repository that was missing exactly those files.</p>
+<h3>Try 2 (manual dispatch): the Dockerfile path resolved from the workspace root</h3>
+<p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> failed all three build steps with <code>failed to read dockerfile: open Dockerfile: no such file or directory</code>. <a href="https://github.com/orbi-build/orbi/pull/1044">#1044</a> names the cause: buildx resolves <code>file: Dockerfile</code> against the workspace root, so the fix wrote <code>3rd/docker/Dockerfile</code> in all three places. The fix&#39;s own pull-request checks then failed from the other side: the workflow derived the image tag from the git ref, and a pull request&#39;s ref is <code>1044/merge</code>, which buildx rejects as <code>invalid reference format</code>.</p>
+<h3>Try 3 (manual dispatch): the images landed; the overview step kept the job red</h3>
+<p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> pushed <code>0.5.17</code> and <code>latest</code> to both registries, for <code>linux/amd64</code> and <code>linux/arm64</code>. The job still ended red: the only failing step was the Docker Hub overview update, answered 403 because the token lacked a permission. <a href="https://github.com/orbi-build/orbi/pull/1046">#1046</a> made that step <code>continue-on-error: true</code>, so an overview hiccup can never fail a release again.</p>
+<h2>Three rules the failures bought</h2>
+<h3>Rule 1: every build spells out its paths</h3>
+<p>Each build step now carries <code>context: 3rd/docker</code> and <code>file: 3rd/docker/Dockerfile</code>. Nothing depends on the working directory buildx happens to start from.</p>
+<h3>Rule 2: publish never runs on a PR ref</h3>
+<p>The build-only job runs on pull requests and builds under a <code>pr-&lt;n&gt;</code> tag with <code>push: false</code>; the publish job is gated on the event name. A ref like <code>1044/merge</code> can no longer reach a tag.</p>
+<h3>Rule 3: an overview cannot fail a release</h3>
+<p>The Docker Hub overview step runs with <code>continue-on-error: true</code>. The release contract lives in the images; a description update answered 403 cannot turn a finished publish into a failed run.</p>
+<p>Checked against <code>.github/workflows/docker-image.yml</code> on orbi-build/orbi main, 2026-09-18.</p>
+<h2>From pull to first delivery</h2>
+<p>A pulled image still needs a model provider before it can deliver. <a href="https://github.com/orbi-build/orbi/issues/1048">#1048</a> added the <code>ORBI_PI_*</code> environment variables: with <code>ORBI_PI_PROVIDER</code>, <code>ORBI_PI_MODEL</code>, <code>ORBI_PI_BASE_URL</code> and <code>ORBI_PI_API_KEY</code> set, the entrypoint generates <code>pi-providers.json</code> on first start, and it never touches an existing configuration. <a href="https://github.com/orbi-build/orbi/issues/1049">#1049</a> rewrote the Quick start around that: <code>docker pull</code>, then one copy-pasted <code>docker run</code> that reaches a real delivery, with build-from-source moved to its own section.</p>
+<p>The first release after the fixes, v0.5.18, published green end to end. That is the state the next release inherits.</p>
+<h2>Pull the image, create an Issue, get a PR</h2>
+<p>The Quick start on <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> takes you from <code>docker pull</code> to a first delivery. The image overview lives on <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/cloud/">Cloud</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
+      <a href="/#direction">Direction</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/blog/docker-image-third-try/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
