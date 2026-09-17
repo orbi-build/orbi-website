@@ -2,6 +2,31 @@ import { afterEach, describe, expect, it } from "vitest";
 import worker, { cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
+  it("serves the ai-ready browser page and badge while preserving curl install", async () => {
+    const assets = {
+      fetch: async (request) => {
+        const path = new URL(request.url).pathname;
+        if (path === "/install.sh") return new Response("#!/usr/bin/env bash\necho install\n");
+        if (path === "/aiready/index.html") return new Response("<html><body>12 factors</body></html>", { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        if (path === "/aiready/zh/index.html") return new Response("<html><body>12 factors 中文</body></html>", { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        if (path === "/badge.svg") return new Response("<svg>ai-ready 12 factors</svg>", { headers: { "Content-Type": "image/svg+xml" } });
+        return new Response("missing", { status: 404 });
+      },
+    };
+    const browser = await handleFetch(new Request("https://aiready.sh/", { headers: { Accept: "text/html" } }), { ASSETS: assets });
+    expect(browser.status).toBe(200);
+    expect(await browser.text()).toContain("12 factors");
+    const curl = await handleFetch(new Request("https://aiready.sh/", { headers: { Accept: "*/*" } }), { ASSETS: assets });
+    expect(curl.status).toBe(200);
+    expect((await curl.text()).split("\n", 1)[0]).toBe("#!/usr/bin/env bash");
+    const zh = await handleFetch(new Request("https://aiready.sh/zh/", { headers: { Accept: "text/html" } }), { ASSETS: assets });
+    expect(zh.status).toBe(200);
+    const badge = await handleFetch(new Request("https://aiready.sh/badge.svg"), { ASSETS: assets });
+    expect(badge.status).toBe(200);
+    expect(badge.headers.get("content-type")).toContain("image/svg+xml");
+    expect(badge.headers.get("cache-control")).toContain("max-age");
+  });
+
   it("falls back to an index asset for directory URLs", async () => {
     const requests = [];
     const assets = {
@@ -615,9 +640,8 @@ describe("/pricing alias (Issue #165)", () => {
   });
 });
 
-// Issue #174: aiready.sh is the curl install entry. Same host, Accept-negotiated:
-// curl (*/*) gets public/install.sh; a browser (text/html) 302s to orbi.build.
-// The script bytes come from env.ASSETS, never a copy inside the worker.
+// Issue #195: aiready.sh is the curl install entry and browser methodology page.
+// The script and HTML bytes come from env.ASSETS, never copies inside the worker.
 describe("aiready.sh install entry (Issue #174)", () => {
   const INSTALL_SH = "#!/usr/bin/env bash\n# aiready-test-fixture\n";
   const env = {
@@ -628,6 +652,12 @@ describe("aiready.sh install entry (Issue #174)", () => {
           return new Response(INSTALL_SH, {
             status: 200,
             headers: { "Content-Type": "application/octet-stream" },
+          });
+        }
+        if (pathname === "/aiready/index.html") {
+          return new Response("<html><body>12 factors</body></html>", {
+            status: 200,
+            headers: { "Content-Type": "text/html; charset=utf-8" },
           });
         }
         if (pathname === "/robots.txt") {
@@ -653,15 +683,15 @@ describe("aiready.sh install entry (Issue #174)", () => {
     expect(body).toBe(INSTALL_SH);
   });
 
-  it("302s a browser Accept text/html on / to https://orbi.build/", async () => {
+  it("serves the ai-ready page for a browser Accept text/html", async () => {
     const response = await handleFetch(
       new Request("https://aiready.sh/", {
         headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
       }),
       env,
     );
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://orbi.build/");
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("12 factors");
   });
 
   it("serves the same script on /install.sh for any Accept", async () => {

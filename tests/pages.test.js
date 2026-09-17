@@ -17,6 +17,8 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
 let pages;
 let shipped; // output path -> bytes of public/<path>
+let generatedSitemap;
+let shippedSitemap;
 
 beforeAll(async () => {
   // A real build through the real entry point, never a re-implementation.
@@ -29,6 +31,8 @@ beforeAll(async () => {
   for (const page of pages) {
     shipped.set(page.output, await readFile(join(ROOT, "public", page.output), "utf8"));
   }
+  generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
+  shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
 });
 
 afterAll(async () => {
@@ -47,6 +51,40 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+describe("ai-ready methodology pages (Issue #195)", () => {
+  it("renders both language pages with metadata and twelve ordered factor headings", () => {
+    const expected = [
+      "One Issue, one runtime outcome.", "Acceptance is written before the work, in the Issue.",
+      "Dependencies are native relations, not prose.", "One label is the execution switch; state lives only in labels.",
+      "Issue text is data, never instructions.", "The contract lives in the repository; identity lives on the host.",
+      "CI is the only test authority.", "Coverage is a gate, line and branch measured separately.",
+      "The default branch is protected and only the runner merges.", "Review is a second session, and its verdict is bound to one SHA.",
+      "Every loop has a limit, and beyond the limit is a human decision.", "A release is a state machine, not a script.",
+    ];
+    for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
+      const html = shipped.get(output);
+      expect(html).toContain('<link rel="canonical" href="https://aiready.sh/');
+      expect(html).toContain('hreflang="en"');
+      expect(html).toContain('hreflang="zh-CN"');
+      expect(html).toContain('"@type":"Article"');
+      expect(html).toContain('"@type":"FAQPage"');
+      expect(html).toContain("datafa.st/js/script.js");
+      if (output === "aiready/index.html") {
+        expect([...html.matchAll(/<h3>\d+\. ([^<]+)/g)].map((m) => m[1])).toEqual(expected);
+      }
+      expect([...html.matchAll(/<h3>/g)]).toHaveLength(12);
+    }
+  });
+
+  it("includes the requested ai-ready cross-links", () => {
+    for (const page of pages) {
+      if (page.output.includes("compare/") || ["index.html", "zh/index.html", "guides/ci-gates/index.html", "zh/guides/ci-gates/index.html"].includes(page.output)) {
+        expect(shipped.get(page.output)).toContain("https://aiready.sh/");
+      }
+    }
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
@@ -57,10 +95,10 @@ describe("build output is committed (npm run build ran)", () => {
       }
       return out.sort();
     };
-    const built = await listFiles(builtDir);
-    // The build owns the HTML; public/ also carries assets (styles.css, img/,
-    // sitemap.xml, …) that no page source generates.
-    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html"));
+    // The build owns the HTML and sitemap; public/ also carries assets (styles.css,
+    // img/, …) that no page source generates.
+    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
+    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f === "sitemap.xml");
     expect(built).toEqual(committed);
   });
 
@@ -74,6 +112,22 @@ describe("build output is committed (npm run build ran)", () => {
       drifted,
       `public/ disagrees with site/ — run npm run build after editing site/** (drifted: ${drifted.join(", ")})`,
     ).toEqual([]);
+  });
+
+  it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
+    const pagesForSitemap = pages.filter((page) => !page.standalone);
+    expect(generatedSitemap).toBe(shippedSitemap);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length);
+    expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
+      .toBeGreaterThanOrEqual(2);
+
+    const source = "site/pages/zh/cloud/index.html";
+    const expectedDate = execFileSync("git", ["log", "-1", "--format=%cs", "--", source], {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
+    const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
+    expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
   });
 
   it("leaves no build markers or unfilled slots in shipped pages", () => {
@@ -165,7 +219,7 @@ describe("one unified footer on every content page", () => {
   });
 
   it("switches language to the mirror page from nav and footer", () => {
-    for (const page of pages.filter((p) => p.mirror)) {
+    for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = pathToHref(page.mirror);
       const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">/g)]
@@ -184,8 +238,9 @@ describe("per-page head parameters (title / description / canonical)", () => {
       const canonical = shipped
         .get(page.output)
         .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      const expectedBase = page.output.startsWith("aiready/") ? "https://aiready.sh" : "https://orbi.build";
       expect(canonical, `${page.output}: canonical drifted`).toBe(
-        `https://orbi.build${pathToHref(page.output)}`,
+        `${expectedBase}${page.output.startsWith("aiready/") ? (page.output === "aiready/index.html" ? "/" : "/zh/") : pathToHref(page.output)}`,
       );
     }
   });
@@ -414,7 +469,7 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     };
     // Walk the build products, never a hardcoded page list: a new page that
     // forgets the Cloud login destination fails here instead of shipping Apply.
-    const outputs = await listIndex(builtDir);
+    const outputs = (await listIndex(builtDir)).filter((output) => !output.startsWith("aiready/"));
     expect(outputs.length, "need at least the five funnel pages").toBeGreaterThanOrEqual(5);
     for (const output of outputs) {
       const html = await readFile(join(builtDir, output), "utf8");

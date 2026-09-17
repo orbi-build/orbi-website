@@ -96,7 +96,7 @@
       <section class="compare-hero shell" aria-labelledby="cigates-title">
         <p class="eyebrow">指南 · Orbi 的 CI 门禁如何工作 · 引擎源码核实于 2026-09-12</p>
         <h1 id="cigates-title">CI 里放什么，Orbi 就保证什么</h1>
-        <p class="hero-lede"><strong>Orbi 的两道门禁——评审门禁和发版门禁——只读一样东西：每个 GitHub check run 的 conclusion。</strong>它们不认识 pytest，也不认识 Playwright：<code>success</code>、<code>neutral</code>、<code>skipped</code> 放行，其余一律拦下。所以你在 CI 里放什么测试，Orbi 就在每次交付里替你保证什么——而<strong>一个 check run 都没有时，两道门禁都放行</strong>，这是下文的第一条边界。这一页给出机制、两份可直接复制的 workflow、四条边界，每条都能指回引擎源码。</p>
+        <p class="hero-lede"><strong>Orbi 的两道门禁——评审门禁和发版门禁——只读一样东西：每个 GitHub check run 的 conclusion。</strong>它们不认识 pytest，也不认识 Playwright：<code>success</code>、<code>neutral</code>、<code>skipped</code> 放行，其余一律拦下。所以你在 CI 里放什么测试，Orbi 就在每次交付里替你保证什么——而<strong>一个 check run 都没有时，两道门禁都放行</strong>，这是下文的第一条边界。这一页给出机制、两份可直接复制的 workflow、四条边界，每条都能指回引擎源码。</p><p><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors</a></p>
         <div class="cta-row">
           <a class="button button-ghost" href="#boundaries">先看四条边界</a>
           <a class="text-link" href="/zh/cloud/">发版是怎么跑完的 →</a>
