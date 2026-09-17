@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
-import worker, { cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
@@ -7,8 +7,11 @@ describe("Worker request helpers", () => {
       fetch: async (request) => {
         const path = new URL(request.url).pathname;
         if (path === "/install.sh") return new Response("#!/usr/bin/env bash\necho install\n");
-        if (path === "/aiready/index.html") return new Response("<html><body>12 factors</body></html>", { headers: { "Content-Type": "text/html; charset=utf-8" } });
-        if (path === "/aiready/zh/index.html") return new Response("<html><body>12 factors 中文</body></html>", { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        if (path === "/aiready/" || path === "/aiready/zh/") {
+          return new Response(`<html><head><title>ai-ready</title></head><body>${path.includes("/zh/") ? "12 factors 中文" : "12 factors"}</body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        }
+        if (path === "/aiready/index.html") return Response.redirect("https://aiready.sh/aiready/", 307);
+        if (path === "/aiready/zh/index.html") return Response.redirect("https://aiready.sh/aiready/zh/", 307);
         if (path === "/badge.svg") return new Response("<svg>ai-ready 12 factors</svg>", { headers: { "Content-Type": "image/svg+xml" } });
         return new Response("missing", { status: 404 });
       },
@@ -34,6 +37,17 @@ describe("Worker request helpers", () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toMatch(/^text\/csv/);
+  });
+
+  it("fails closed when an asset unexpectedly redirects", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const response = await assetResponse(Response.redirect("https://example.com/page/", 307), false);
+      expect(response.status).toBe(500);
+      expect(error).toHaveBeenCalledWith("asset_redirect_unexpected", 307);
+    } finally {
+      error.mockRestore();
+    }
   });
 
   it("falls back to an index asset for directory URLs", async () => {
@@ -663,11 +677,17 @@ describe("aiready.sh install entry (Issue #174)", () => {
             headers: { "Content-Type": "application/octet-stream" },
           });
         }
-        if (pathname === "/aiready/index.html") {
-          return new Response("<html><body>12 factors</body></html>", {
+        if (pathname === "/aiready/" || pathname === "/aiready/zh/") {
+          return new Response(`<html><head><title>ai-ready</title></head><body>${pathname.includes("/zh/") ? "12 factors 中文" : "12 factors"}</body></html>`, {
             status: 200,
             headers: { "Content-Type": "text/html; charset=utf-8" },
           });
+        }
+        if (pathname === "/aiready/index.html") {
+          return Response.redirect("https://aiready.sh/aiready/", 307);
+        }
+        if (pathname === "/aiready/zh/index.html") {
+          return Response.redirect("https://aiready.sh/aiready/zh/", 307);
         }
         if (pathname === "/robots.txt") {
           return new Response("User-agent: *\nAllow: /\n", {
@@ -700,7 +720,20 @@ describe("aiready.sh install entry (Issue #174)", () => {
       env,
     );
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain("12 factors");
+    expect(response.headers.get("Location")).toBeNull();
+    expect(await response.text()).toContain("<title>ai-ready</title>");
+  });
+
+  it("serves the ai-ready page for a browser in Chinese", async () => {
+    const response = await handleFetch(
+      new Request("https://aiready.sh/zh/", {
+        headers: { Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Location")).toBeNull();
+    expect(await response.text()).toContain("<title>ai-ready</title>");
   });
 
   it("serves the same script on /install.sh for any Accept", async () => {
