@@ -198,12 +198,12 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("carries the 9 compare deep dives, in the right language tree", () => {
+  it("carries the 10 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const deep = region(footer, '<nav class="footer-compare"', "</nav>");
       const hrefs = [...deep.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(hrefs, `${page.output}: deep-dive links drifted`).toHaveLength(9);
+      expect(hrefs, `${page.output}: deep-dive links drifted`).toHaveLength(10);
       const prefix = page.lang === "zh" ? "/zh" : "";
       for (const href of hrefs) {
         expect(href, `${page.output}: deep dive ${href} must live under ${prefix}/compare/`).toMatch(
@@ -600,6 +600,31 @@ describe("canonical install one-liner (Issue #186)", () => {
     const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
     if (llms.includes(stalePrimary)) stale.push("public/llms.txt");
     expect(stale, `stale primary install URL in: ${stale.join(", ")}`).toEqual([]);
+  });
+});
+
+describe("Cursor Cloud Agents comparison contract (Issue #199)", () => {
+  it("ships both Cursor mirrors with Article metadata, all sourced quotes, and sitemap entries", () => {
+    const en = shipped.get("compare/cursor/index.html");
+    const zh = shipped.get("zh/compare/cursor/index.html");
+    for (const [output, html, canonical, mirror] of [
+      ["compare/cursor/index.html", en, "https://orbi.build/compare/cursor/", "https://orbi.build/zh/compare/cursor/"],
+      ["zh/compare/cursor/index.html", zh, "https://orbi.build/zh/compare/cursor/", "https://orbi.build/compare/cursor/"],
+    ]) {
+      expect(html, `${output}: missing output`).toBeTruthy();
+      expect(html).toContain('type="application/ld+json"');
+      expect(html).toContain('"@type":"Article"');
+      expect(html).toContain(`rel="canonical" href="${canonical}"`);
+      expect(html).toContain(`hreflang="${output.startsWith("zh/") ? "en" : "zh-CN"}" href="${mirror}"`);
+      for (const quote of [
+        "open pull requests in the repos it changes",
+        "produce merge-ready PRs with artifacts to demo their changes",
+        "work on a separate branch, then push changes to your repo for handoff",
+      ]) expect(html, `${output}: missing sourced quote`).toContain(quote);
+      expect(html).toContain("2026-09-17");
+    }
+    expect(shippedSitemap).toContain("https://orbi.build/compare/cursor/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/compare/cursor/");
   });
 });
 

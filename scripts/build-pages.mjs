@@ -36,6 +36,7 @@ const DEEP_DIVES = [
   ["codex", "Orbi vs OpenAI Codex"],
   ["devin", "Orbi vs Devin"],
   ["jules", "Orbi vs Google Jules"],
+  ["cursor", "Orbi vs Cursor Cloud Agents"],
 ];
 
 // Everything in the fragments that is a pure function of the page language.

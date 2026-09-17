@@ -26,6 +26,7 @@ const deepDives = [
   ["Orbi vs OpenAI Codex", "/compare/codex/"],
   ["Orbi vs Devin", "/compare/devin/"],
   ["Orbi vs Google Jules", "/compare/jules/"],
+  ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
 // Issue #91: the hero claims delivery to a tagged release, and the lede
@@ -1598,7 +1599,7 @@ async function main() {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st") || url.includes("fonts.googleapis.com");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     if (!process.env.BASE_URL) {
       await page.route("**/stats", (route) => route.fulfill({
@@ -1615,13 +1616,13 @@ async function main() {
     page.on("requestfailed", (request) => { if (!isTelemetry(request.url())) failures.push(request.url()); });
     await page.goto(`${targetURL}/compare/`, { waitUntil: "networkidle" });
     await assertFooterDeepDives(page, "/compare/");
-    await page.getByRole("link", { name: "Orbi vs Google Jules", exact: true }).click();
+    await page.getByRole("link", { name: "Orbi vs Cursor Cloud Agents", exact: true }).click();
     await page.waitForLoadState("networkidle");
-    if (new URL(page.url()).pathname !== "/compare/jules/") throw new Error(`detail route: ${page.url()}`);
-    await assertFooterDeepDives(page, "/compare/jules/");
-    if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/jules/") throw new Error("detail language switch is wrong");
-    await page.getByRole("heading", { name: "Orbi vs Google Jules", exact: true }).waitFor();
-    await page.screenshot({ path: `${artifacts}/comparison-jules.png`, fullPage: false });
+    if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
+    await assertFooterDeepDives(page, "/compare/cursor/");
+    if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/cursor/") throw new Error("detail language switch is wrong");
+    await page.getByRole("heading", { name: "Orbi vs Cursor Cloud Agents", exact: true }).waitFor();
+    await page.screenshot({ path: `${artifacts}/comparison-cursor.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();
   } finally {
