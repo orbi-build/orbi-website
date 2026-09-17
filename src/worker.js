@@ -391,13 +391,29 @@ async function installScriptResponse(request, assets) {
   });
 }
 
-function aireadyResponse(request, url, assets) {
+async function aireadyResponse(request, url, assets) {
   const route = url.pathname !== "/" && url.pathname.endsWith("/")
     ? url.pathname.slice(0, -1)
     : url.pathname;
   const accept = request.headers.get("accept") || "";
   if (route === "/install.sh" || (url.pathname === "/" && !accept.includes("text/html"))) {
     return installScriptResponse(request, assets);
+  }
+  if (url.pathname === "/" && accept.includes("text/html")) {
+    const pageUrl = new URL("/aiready/index.html", request.url);
+    const page = await fetchAsset(new Request(pageUrl, request), assets);
+    return assetResponse(page, false);
+  }
+  if (route === "/zh" && accept.includes("text/html")) {
+    const pageUrl = new URL("/aiready/zh/index.html", request.url);
+    const page = await fetchAsset(new Request(pageUrl, request), assets);
+    return assetResponse(page, false);
+  }
+  if (route === "/badge.svg") {
+    const badge = await assetResponse(await assets.fetch(request), false);
+    const headers = new Headers(badge.headers);
+    headers.set("Cache-Control", "public, max-age=3600");
+    return new Response(badge.body, { status: badge.status, statusText: badge.statusText, headers });
   }
   return Response.redirect(`https://orbi.build${url.pathname}${url.search}`, 302);
 }

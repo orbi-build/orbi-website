@@ -47,6 +47,40 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+describe("ai-ready methodology pages (Issue #195)", () => {
+  it("renders both language pages with metadata and twelve ordered factor headings", () => {
+    const expected = [
+      "One Issue, one runtime outcome.", "Acceptance is written before the work, in the Issue.",
+      "Dependencies are native relations, not prose.", "One label is the execution switch; state lives only in labels.",
+      "Issue text is data, never instructions.", "The contract lives in the repository; identity lives on the host.",
+      "CI is the only test authority.", "Coverage is a gate, line and branch measured separately.",
+      "The default branch is protected and only the runner merges.", "Review is a second session, and its verdict is bound to one SHA.",
+      "Every loop has a limit, and beyond the limit is a human decision.", "A release is a state machine, not a script.",
+    ];
+    for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
+      const html = shipped.get(output);
+      expect(html).toContain('<link rel="canonical" href="https://aiready.sh/');
+      expect(html).toContain('hreflang="en"');
+      expect(html).toContain('hreflang="zh-CN"');
+      expect(html).toContain('"@type":"Article"');
+      expect(html).toContain('"@type":"FAQPage"');
+      expect(html).toContain("datafa.st/js/script.js");
+      if (output === "aiready/index.html") {
+        expect([...html.matchAll(/<h3>\d+\. ([^<]+)/g)].map((m) => m[1])).toEqual(expected);
+      }
+      expect([...html.matchAll(/<h3>/g)]).toHaveLength(12);
+    }
+  });
+
+  it("includes the requested ai-ready cross-links", () => {
+    for (const page of pages) {
+      if (page.output.includes("compare/") || ["index.html", "zh/index.html", "guides/ci-gates/index.html", "zh/guides/ci-gates/index.html"].includes(page.output)) {
+        expect(shipped.get(page.output)).toContain("https://aiready.sh/");
+      }
+    }
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
@@ -165,7 +199,7 @@ describe("one unified footer on every content page", () => {
   });
 
   it("switches language to the mirror page from nav and footer", () => {
-    for (const page of pages.filter((p) => p.mirror)) {
+    for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = pathToHref(page.mirror);
       const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">/g)]
@@ -184,8 +218,9 @@ describe("per-page head parameters (title / description / canonical)", () => {
       const canonical = shipped
         .get(page.output)
         .match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      const expectedBase = page.output.startsWith("aiready/") ? "https://aiready.sh" : "https://orbi.build";
       expect(canonical, `${page.output}: canonical drifted`).toBe(
-        `https://orbi.build${pathToHref(page.output)}`,
+        `${expectedBase}${page.output.startsWith("aiready/") ? (page.output === "aiready/index.html" ? "/" : "/zh/") : pathToHref(page.output)}`,
       );
     }
   });
@@ -414,7 +449,7 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
     };
     // Walk the build products, never a hardcoded page list: a new page that
     // forgets the Cloud login destination fails here instead of shipping Apply.
-    const outputs = await listIndex(builtDir);
+    const outputs = (await listIndex(builtDir)).filter((output) => !output.startsWith("aiready/"));
     expect(outputs.length, "need at least the five funnel pages").toBeGreaterThanOrEqual(5);
     for (const output of outputs) {
       const html = await readFile(join(builtDir, output), "utf8");

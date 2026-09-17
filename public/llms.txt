@@ -188,6 +188,9 @@ https://orbi.build/cost/
 
 ## Links
 
+- ai-ready 12 factors (English): https://aiready.sh/
+- ai-ready 12 factors (Chinese): https://aiready.sh/zh/
+
 - Landing page (English): https://orbi.build/
 - Landing page (Chinese): https://orbi.build/zh/
 - Managed Cloud (Private Beta): https://orbi.build/cloud/
