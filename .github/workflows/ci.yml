@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Keep public/install.sh synced with the orbi repo
         # The homepage's one-line install downloads this file, so a stale copy
         # would install something other than the current orbi. Sync with
