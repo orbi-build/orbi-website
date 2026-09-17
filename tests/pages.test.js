@@ -19,6 +19,7 @@ let pages;
 let shipped; // output path -> bytes of public/<path>
 let generatedSitemap;
 let shippedSitemap;
+let matrixCsv;
 
 beforeAll(async () => {
   // A real build through the real entry point, never a re-implementation.
@@ -33,6 +34,7 @@ beforeAll(async () => {
   }
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
+  matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
 });
 
 afterAll(async () => {
@@ -85,6 +87,34 @@ describe("ai-ready methodology pages (Issue #195)", () => {
   });
 });
 
+describe("comparison capability matrix (Issue #201)", () => {
+  it("keeps the HTML table and downloadable CSV row and column sets identical", () => {
+    const html = shipped.get("compare/index.html");
+    const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+    const headers = [...table.matchAll(/<th scope="col">([^<]+)<\/th>/g)].map((match) => match[1]);
+    const rows = [...table.matchAll(/<tr data-product="([^"]+)">([\s\S]*?)<\/tr>/g)].map((match) => [
+      match[1],
+      [...match[2].matchAll(/<td><a [^>]+>([^<]+)<\/a><\/td>/g)].map((cell) => cell[1]),
+    ]);
+    const csv = matrixCsv.trim().split("\n").map((line) => line.split(","));
+    expect(headers).toEqual(csv[0].slice(0, -2));
+    expect(rows).toEqual(csv.slice(1).map((row) => [row[0], row.slice(1, -2)]));
+  });
+
+  it("links every capability cell to its dated source", () => {
+    for (const html of [shipped.get("compare/index.html"), shipped.get("zh/compare/index.html")]) {
+      const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+      for (const row of table.matchAll(/<tr data-product="[^"]+">([\s\S]*?)<\/tr>/g)) {
+        for (const cell of row[1].matchAll(/<td>([\s\S]*?)<\/td>/g)) expect(cell[1]).toMatch(/<a href="https?:\/\//);
+      }
+    }
+  });
+
+  it("lists the CSV asset in the sitemap", () => {
+    expect(shippedSitemap).toContain("https://orbi.build/compare/matrix.csv");
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
@@ -117,7 +147,7 @@ describe("build output is committed (npm run build ran)", () => {
   it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
     const pagesForSitemap = pages.filter((page) => !page.standalone);
     expect(generatedSitemap).toBe(shippedSitemap);
-    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + 1);
     expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
       .toBeGreaterThanOrEqual(2);
 
