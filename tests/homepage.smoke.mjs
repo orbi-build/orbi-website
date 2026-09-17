@@ -21,6 +21,7 @@ const deepDives = [
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
   ["Orbi vs GitHub Copilot coding agent", "/compare/github-copilot-coding-agent/"],
   ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
+  ["Orbi vs Claude Code", "/compare/claude-code/"],
   ["Orbi vs OpenHands", "/compare/openhands/"],
   ["Orbi vs Hermes Agent", "/compare/hermes-agent/"],
   ["Orbi vs OpenAI Codex", "/compare/codex/"],
