@@ -485,6 +485,24 @@ ${items}
 `;
 }
 
+// llms.txt (Issue #215): the hand-written prose lives in site/llms.txt, next
+// to the other page sources, and stays editable there. The build generates
+// only the Blog section's post list — one entry per post per language,
+// newest first, in the format the hand-maintained file used — by replacing
+// the <!--@llms-blog--> marker. A source without the marker fails the build
+// instead of silently shipping a stale Blog section.
+export function renderLlms(source, posts) {
+  const marker = "<!--@llms-blog-->";
+  if (!source.includes(marker)) {
+    throw new Error("site/llms.txt: missing the <!--@llms-blog--> marker for the generated Blog section");
+  }
+  const label = { en: "English", zh: "Chinese" };
+  const list = posts
+    .map((post) => `- ${post.title} (${label[post.lang]}):\n  https://orbi.build${post.href}`)
+    .join("\n");
+  return source.replace(marker, () => list);
+}
+
 function renderSitemap(pages, posts = [], contentDir = CONTENT_DIR) {
   const urls = pages.filter(({ page }) => !page.standalone).map(({ page, path }) => {
     const href = pathToHref(page.output);
@@ -583,6 +601,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR } = {}) {
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
+  await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
   return pages.length + posts.length;
 }
 

@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, loadPages, pathToHref, postFromSource } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -21,6 +21,8 @@ let shipped; // output path -> bytes of public/<path>
 let generatedSitemap;
 let shippedSitemap;
 let shippedFeed; // public/blog/feed.xml, the build-generated RSS 2.0 file
+let generatedLlms; // build-generated llms.txt (Issue #215)
+let shippedLlms; // public/llms.txt
 let matrixCsv;
 
 beforeAll(async () => {
@@ -43,6 +45,8 @@ beforeAll(async () => {
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
   shippedFeed = await readFile(join(ROOT, "public", "blog", "feed.xml"), "utf8");
+  generatedLlms = await readFile(join(builtDir, "llms.txt"), "utf8");
+  shippedLlms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
   matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
 });
 
@@ -134,10 +138,10 @@ describe("build output is committed (npm run build ran)", () => {
       }
       return out.sort();
     };
-    // The build owns the HTML, sitemap and blog feed; public/ also carries
-    // assets (styles.css, img/, …) that no page source generates.
-    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f.endsWith(".xml"));
-    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f.endsWith(".xml"));
+    // The build owns the HTML, sitemap, blog feed and llms.txt; public/ also
+    // carries assets (styles.css, img/, …) that no page source generates.
+    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || f === "llms.txt");
+    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || f === "llms.txt");
     expect(built).toEqual(committed);
   });
 
@@ -149,11 +153,13 @@ describe("build output is committed (npm run build ran)", () => {
     }
     // Posts have no page source; their rendered output must reproduce from the
     // committed content/blog/** the same way, or a body edit without a rebuild
-    // would ship stale.
+    // would ship stale. llms.txt is generated too (Issue #215): a hand edit to
+    // public/llms.txt that skips the build fails here.
     for (const post of posts) {
       const built = await readFile(join(builtDir, post.output), "utf8");
       if (built !== shipped.get(post.output)) drifted.push(post.output);
     }
+    if (generatedLlms !== shippedLlms) drifted.push("llms.txt");
     expect(
       drifted,
       `public/ disagrees with site/ — run npm run build after editing site/** or content/** (drifted: ${drifted.join(", ")})`,
@@ -785,11 +791,13 @@ describe("blog (Issue #212)", () => {
     for (const post of [enPost(), zhPost()]) {
       const html = shipped.get(post.output);
       expect(html, `${post.output}: title from front matter`).toContain(`<h1 id="post-title">${post.title}</h1>`);
-      // The first post ships fenced shell commands and issue links; the
-      // rendered body must carry them as HTML, produced by marked.
+      // Every post ships fenced shell commands and Markdown links; the
+      // rendered body must carry them as HTML, produced by marked. Assert the
+      // shapes, not one post's URL, so a later post cannot fail on its own links.
       expect(html, `${post.output}: fenced code block`).toContain("<pre><code");
       expect(html, `${post.output}: no raw markdown fences survive`).not.toContain("```");
-      expect(html, `${post.output}: rendered link`).toContain('<a href="https://docs.orbi.build/docker">');
+      expect(html, `${post.output}: rendered link`).toMatch(/<a href="https:\/\/[^"]+">/);
+      expect(html, `${post.output}: no raw markdown link syntax survives`).not.toMatch(/\]\(https:\/\//);
     }
   });
 
@@ -864,14 +872,61 @@ print(json.dumps({
     expect(navRegion(shipped.get("index.html"))).toContain('<a href="/blog/">Blog</a>');
     expect(navRegion(shipped.get("zh/index.html"))).toContain('<a href="/zh/blog/">博客</a>');
   });
+});
 
-  it("lists every post URL in the llms.txt Blog section", async () => {
-    const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
-    const section = llms.slice(llms.indexOf("## Blog"));
-    expect(section, "llms.txt is missing the Blog section").not.toBe("");
-    for (const post of posts) {
-      expect(section, `llms.txt Blog section misses ${post.href}`).toContain(`https://orbi.build${post.href}`);
+// Issue #215: the Blog section of llms.txt is generated from content/blog/**
+// like the indexes, feed and sitemap — adding a post never needs a second
+// manual edit in another file. The hand-written prose (every section above
+// and below) lives in site/llms.txt; only the post list at the
+// <!--@llms-blog--> marker is generated, newest first, in the format the
+// hand-maintained file used.
+describe("llms.txt Blog section is generated (Issue #215)", () => {
+  const entryRe = /^- (.+) \((English|Chinese)\):\n  (https:\/\/orbi\.build\/(?:zh\/)?blog\/[^/\s]+\/)$/gm;
+
+  it("builds llms.txt from site/llms.txt byte-for-byte", () => {
+    expect(generatedLlms, "public/llms.txt drifted from the build").toBe(shippedLlms);
+  });
+
+  it("keeps the hand-written prose in the source, with the marker and no hand-listed posts", async () => {
+    const source = await readFile(join(ROOT, "site", "llms.txt"), "utf8");
+    const section = source.slice(source.indexOf("## Blog"), source.indexOf("## Links"));
+    expect(section, "site/llms.txt: Blog prose missing").toContain("Shipping notes from the root domain");
+    expect(section, "site/llms.txt: RSS feed link missing").toContain("https://orbi.build/blog/feed.xml");
+    expect(section, "site/llms.txt: missing the <!--@llms-blog--> marker").toContain("<!--@llms-blog-->");
+    expect([...section.matchAll(/^- /gm)], "site/llms.txt must not hand-list posts").toEqual([]);
+  });
+
+  it("ships no build marker in public/llms.txt", () => {
+    expect(shippedLlms).not.toContain("<!--@llms-blog-->");
+  });
+
+  it("lists exactly the content/blog posts — newest first, one entry per language, nothing else", () => {
+    const start = shippedLlms.indexOf("## Blog");
+    const end = shippedLlms.indexOf("## Links");
+    expect(start, "Blog section missing").toBeGreaterThan(-1);
+    expect(end, "Links section missing").toBeGreaterThan(start);
+    const section = shippedLlms.slice(start, end);
+    const matched = [...section.matchAll(entryRe)];
+    // Nothing else: every "- " line parses as an entry, so a removed post
+    // cannot leave a stale line and no foreign line can hide here.
+    expect([...section.matchAll(/^- /gm)], "unparseable list lines in the Blog section")
+      .toHaveLength(matched.length);
+    expect(matched.map((m) => m[3])).toEqual(posts.map((post) => `https://orbi.build${post.href}`));
+    for (const [i, m] of matched.entries()) {
+      expect(m[1], `entry ${i} title`).toBe(posts[i].title);
+      expect(m[2], `entry ${i} language`).toBe(posts[i].lang === "zh" ? "Chinese" : "English");
     }
+  });
+
+  it("replaces only the marker: the prose around it survives byte-for-byte", () => {
+    const source = "## Blog\n\nIntro prose.\n\n<!--@llms-blog-->\n\n## Links\n";
+    const out = renderLlms(source, [{ lang: "en", title: "Fixture", href: "/blog/fixture/" }]);
+    expect(out).toBe("## Blog\n\nIntro prose.\n\n- Fixture (English):\n  https://orbi.build/blog/fixture/\n\n## Links\n");
+  });
+
+  it("fails the build when the source lost the Blog marker", () => {
+    expect(() => renderLlms("## Blog\n\nno marker here\n", []))
+      .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-blog-->/);
   });
 });
 
@@ -1025,6 +1080,18 @@ print(json.dumps({
       for (const href of ["/blog/fixture-new/", "/blog/fixture-old/", "/zh/blog/fixture-new/", "/zh/blog/fixture-old/"]) {
         expect(sitemap).toContain(`<loc>https://orbi.build${href}</loc>`);
       }
+
+      // Issue #215: the generated llms.txt Blog section picks the fixture
+      // posts up with no manual edit anywhere — newest first, both languages,
+      // and none of the real posts (the list is built from the content dir,
+      // not from a hand-maintained file).
+      const llms = await readFile(join(outDir, "llms.txt"), "utf8");
+      const llmsSection = llms.slice(llms.indexOf("## Blog"), llms.indexOf("## Links"));
+      expect(llmsSection).toContain("- Fixture new (English):\n  https://orbi.build/blog/fixture-new/");
+      expect(llmsSection).toContain("- Fixture 新 (Chinese):\n  https://orbi.build/zh/blog/fixture-new/");
+      expect(llmsSection).toContain("- Fixture old (English):\n  https://orbi.build/blog/fixture-old/");
+      expect(llmsSection.indexOf("fixture-new"), "newest first").toBeLessThan(llmsSection.indexOf("fixture-old"));
+      expect(llmsSection, "generated Blog section must not list real posts").not.toContain("docker-image-third-try");
     } finally {
       await rm(contentDir, { recursive: true, force: true });
       await rm(outDir, { recursive: true, force: true });
