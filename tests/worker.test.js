@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
@@ -48,6 +48,36 @@ describe("Worker request helpers", () => {
     } finally {
       error.mockRestore();
     }
+  });
+
+  // Production 2026-09-18: orbi.build/cloud (no trailing slash) answered 500
+  // "asset redirect unexpectedly reached the Worker". The Assets binding
+  // canonicalises /cloud to /cloud/ with a 307; that one is ours to pass on.
+  it("passes the Assets binding's trailing-slash redirect on as a 308", async () => {
+    const assets = {
+      fetch: async (request) => {
+        const url = new URL(request.url);
+        if (url.pathname === "/cloud") return Response.redirect(`${url.origin}/cloud/`, 307);
+        return new Response("<html><head><title>Cloud</title></head><body>cloud</body></html>", { headers: { "Content-Type": "text/html" } });
+      },
+    };
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const response = await handleFetch(new Request("https://orbi.build/cloud?x=1"), { ASSETS: assets, CLOUD_LOGIN_URL: "https://orbi.build/api/login" });
+      expect(response.status).toBe(308);
+      expect(response.headers.get("Location")).toBe("/cloud/?x=1");
+      expect(response.headers.get("X-Frame-Options")).toBeTruthy();
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("does not treat a cross-origin or non-slash redirect as canonicalisation", () => {
+    const url = new URL("https://orbi.build/cloud");
+    expect(trailingSlashRedirect(Response.redirect("https://example.com/cloud/", 307), url)).toBeNull();
+    expect(trailingSlashRedirect(Response.redirect("https://orbi.build/other/", 307), url)).toBeNull();
+    expect(trailingSlashRedirect(new Response("ok", { status: 200 }), url)).toBeNull();
   });
 
   it("falls back to an index asset for directory URLs", async () => {

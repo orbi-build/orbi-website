@@ -39,12 +39,17 @@ belongs to decides where you edit it.
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
 - `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
   per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
-  `lang`, all four required) plus a plain CommonMark body; no HTML, no JSON
-  header, no nav/footer markers in a post. The build renders the body with
-  marked into `site/partials/post.html` (the shared nav/footer included),
-  derives the `/blog/` and `/zh/blog/` indexes from the post list, and writes
-  `/blog/feed.xml` (RSS 2.0, English posts). A post missing a front-matter
-  field, or an en post with no zh mirror, fails the build with the file path.
+  `lang`, all four required; optional `mirror`) plus a plain CommonMark body;
+  no HTML, no JSON header, no nav/footer markers in a post. The build renders
+  the body with marked into `site/partials/post.html` (the shared nav/footer
+  included), derives the `/blog/` and `/zh/blog/` indexes from the post list,
+  and writes `/blog/feed.xml` (RSS 2.0, English posts). Pairing (Issue #214):
+  a `mirror: <slug>` field names the post's counterpart in the other language
+  directory; without it, a same-slug file there pairs by default; with
+  neither, the post publishes single-language and its language switcher
+  points at the other language's blog index. A post missing a front-matter
+  field, a `mirror:` naming a file that does not exist, or a `mirror:` the
+  named file does not name back, fails the build naming both files.
 - `site/partials/nav.html`, `site/partials/footer.html` and
   `site/partials/post.html` — the shared navigation, footer and post template,
   rendered into every page that needs them.
