@@ -839,6 +839,12 @@ class LandingTests(unittest.TestCase):
         # the install one-liner's host is the host CI actually deploys, so the
         # published script must be smoke-tested there after every release
         self.assertIn('check_page "https://beta.orbi.build/install.sh"', workflow)
+        # Issue #223: /cloud and /cloud/ are the URLs actually handed out on
+        # X and Telegram; the beta smoke must request both so the no-slash
+        # form (which 500ed in production for an hour on 2026-09-18) cannot
+        # regress past a deploy
+        self.assertIn('check_page "https://beta.orbi.build/cloud/"', workflow)
+        self.assertIn('check_page "https://beta.orbi.build/cloud"', workflow)
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
@@ -887,6 +893,15 @@ class LandingTests(unittest.TestCase):
         # the smoke asserts the deployed commit's real copy, parsed from the
         # checked-out pages — never hardcoded wording that will drift
         self.assertIn("public/index.html", workflow)
+        # Issue #223: the smoke must also request the URLs actually handed
+        # out — /cloud/ and the no-slash /cloud (a 500 for an hour on
+        # 2026-09-18) — each against the deployed commit's own cloud page
+        self.assertIn(
+            'check_page "https://orbi.build/cloud/" "public/cloud/index.html"', workflow,
+        )
+        self.assertIn(
+            'check_page "https://orbi.build/cloud" "public/cloud/index.html"', workflow,
+        )
         # rollback: smoke failure triggers wrangler rollback to the recorded
         # pre-deploy version, and both version IDs land in the log
         self.assertIn("rollback", workflow)
