@@ -8,7 +8,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildPages, collectPosts, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
@@ -846,13 +846,16 @@ print(json.dumps({
     expect(shippedSitemap).toContain("<loc>https://orbi.build/zh/blog/</loc>");
   });
 
-  it("pairs every en post file with a zh mirror of the same slug and date", async () => {
+  it("keeps the same-date rule on the same-slug pairs that exist (Issue #214)", async () => {
     const enDir = join(ROOT, "content", "blog");
     const enFiles = (await readdir(enDir)).filter((f) => f.endsWith(".md"));
     expect(enFiles.length, "the blog must ship at least one post").toBeGreaterThan(0);
-    // Each zh mirror is compared against its own en counterpart's front-matter
-    // date, not against the newest post's: with two posts of different dates
-    // the newest-only check would fail the older pair falsely.
+    const zhFiles = new Set((await readdir(join(enDir, "zh"))).filter((f) => f.endsWith(".md")));
+    // Each same-slug zh mirror is compared against its own en counterpart's
+    // front-matter date, not against the newest post's: with two posts of
+    // different dates the newest-only check would fail the older pair falsely.
+    // An en file with no same-slug zh file is a single-language post — valid
+    // since Issue #214, nothing to compare.
     const frontDate = (source, name) => {
       const block = source.match(/^---\n([\s\S]*?)\n---\n/)?.[1];
       expect(block, `${name}: missing the --- front-matter block`).toBeTruthy();
@@ -862,8 +865,8 @@ print(json.dumps({
     };
     for (const file of enFiles) {
       const enDate = frontDate(await readFile(join(enDir, file), "utf8"), `content/blog/${file}`);
-      // Reading the zh file is the existence check: a missing file throws here.
-      const zhSource = await readFile(join(ROOT, "content", "blog", "zh", file), "utf8");
+      if (!zhFiles.has(file)) continue;
+      const zhSource = await readFile(join(enDir, "zh", file), "utf8");
       expect(frontDate(zhSource, `content/blog/zh/${file}`), `content/blog/zh/${file}: mirror must carry the same date as content/blog/${file}`).toBe(enDate);
     }
   });
@@ -980,29 +983,105 @@ describe("blog failure path (Issue #212)", () => {
     expect(() => postFromSource("zh/t.md", front({ ...full, lang: "en" })))
       .toThrow(/content\/blog\/zh\/t\.md[\s\S]*lang/);
   });
+});
 
-  it("fails naming the missing file when an en post has no zh mirror", async () => {
-    const contentDir = await mkdtemp(join(tmpdir(), "orbi-content-"));
-    try {
-      await writeFile(join(contentDir, "lonely.md"), front(full));
-      await expect(collectPosts(contentDir)).rejects
-        .toThrow(/content\/blog\/zh\/lonely\.md: missing zh mirror for content\/blog\/lonely\.md/);
-    } finally {
-      await rm(contentDir, { recursive: true, force: true });
-    }
-  });
+// Issue #214: pairing is no longer "same slug or nothing". A post may declare
+// `mirror: <slug>` naming its counterpart in the other language directory, a
+// same-slug file pairs by default, and a post with neither publishes alone —
+// its language switcher at the other language's blog index, never a 404. A
+// dangling or non-mutual `mirror:` fails the build naming both files.
+describe("blog mirror pairing (Issue #214)", () => {
+  const front = (fields) =>
+    `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\nBody paragraph.\n`;
+  const full = { title: "T", date: "2026-09-18", summary: "s", lang: "en" };
+  const writePost = async (contentDir, name, fields) => {
+    await mkdir(dirname(join(contentDir, name)), { recursive: true });
+    await writeFile(join(contentDir, name), front(fields));
+  };
+  const withContent = (fn) =>
+    mkdtemp(join(tmpdir(), "orbi-content-")).then(async (contentDir) => {
+      try {
+        return await fn(contentDir);
+      } finally {
+        await rm(contentDir, { recursive: true, force: true });
+      }
+    });
 
-  it("fails naming the missing file when a zh post has no en counterpart", async () => {
-    const contentDir = await mkdtemp(join(tmpdir(), "orbi-content-"));
-    try {
-      await mkdir(join(contentDir, "zh"), { recursive: true });
-      await writeFile(join(contentDir, "zh", "lonely.md"), front({ ...full, lang: "zh" }));
+  it("keeps the same-slug pair working with no front-matter change", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "same.md", { ...full, title: "Same" });
+      await writePost(contentDir, "zh/same.md", { ...full, title: "Same 旧", lang: "zh" });
+      const posts = await collectPosts(contentDir);
+      expect(posts.map((post) => post.output).sort()).toEqual([
+        "blog/same/index.html",
+        "zh/blog/same/index.html",
+      ]);
+      for (const post of posts) {
+        expect(post.paired, `${post.output}: paired`).toBe(true);
+        expect(post.mirrorOutput, `${post.output}: switcher target`).toBe(
+          post.lang === "en" ? "zh/blog/same/index.html" : "blog/same/index.html",
+        );
+      }
+    }));
+
+  it("pairs a mirror:-declared pair across different slugs, both directions", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "alpha.md", { ...full, title: "Alpha", mirror: "beta" });
+      await writePost(contentDir, "zh/beta.md", { ...full, title: "Beta 旧", lang: "zh", mirror: "alpha" });
+      const posts = await collectPosts(contentDir);
+      expect(posts).toHaveLength(2);
+      const alpha = posts.find((post) => post.slug === "alpha");
+      const beta = posts.find((post) => post.slug === "beta");
+      expect(alpha.mirrorOutput, "alpha switches to beta").toBe("zh/blog/beta/index.html");
+      expect(beta.mirrorOutput, "beta switches to alpha").toBe("blog/alpha/index.html");
+    }));
+
+  it("publishes a single-language post with the switcher at the other language's blog index", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "solo.md", { ...full, title: "Solo" });
+      let posts = await collectPosts(contentDir);
+      expect(posts).toHaveLength(1);
+      expect(posts[0].paired).toBe(false);
+      expect(posts[0].mirrorOutput).toBe("zh/blog/index.html");
+
+      await rm(join(contentDir, "solo.md"));
+      await writePost(contentDir, "zh/solo.md", { ...full, title: "Solo 旧", lang: "zh" });
+      posts = await collectPosts(contentDir);
+      expect(posts).toHaveLength(1);
+      expect(posts[0].paired).toBe(false);
+      expect(posts[0].mirrorOutput).toBe("blog/index.html");
+    }));
+
+  it("fails naming both files when mirror: names a file that does not exist", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "a.md", { ...full, mirror: "b" });
       await expect(collectPosts(contentDir)).rejects
-        .toThrow(/content\/blog\/lonely\.md: missing en post for content\/blog\/zh\/lonely\.md/);
-    } finally {
-      await rm(contentDir, { recursive: true, force: true });
-    }
-  });
+        .toThrow(/content\/blog\/a\.md[\s\S]*mirror: b[\s\S]*content\/blog\/zh\/b\.md/);
+    }));
+
+  it("fails naming both files when the named mirror names nothing back", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "a.md", { ...full, mirror: "b" });
+      await writePost(contentDir, "zh/b.md", { ...full, lang: "zh" });
+      await expect(collectPosts(contentDir)).rejects
+        .toThrow(/content\/blog\/a\.md names content\/blog\/zh\/b\.md as its mirror, but content\/blog\/zh\/b\.md names no mirror/);
+    }));
+
+  it("fails naming both files when the named mirror names a different post", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "a.md", { ...full, mirror: "b" });
+      await writePost(contentDir, "c.md", { ...full, title: "C", mirror: "b" });
+      await writePost(contentDir, "zh/b.md", { ...full, lang: "zh", mirror: "c" });
+      await expect(collectPosts(contentDir)).rejects
+        .toThrow(/content\/blog\/a\.md names content\/blog\/zh\/b\.md as its mirror, but content\/blog\/zh\/b\.md names content\/blog\/c\.md/);
+    }));
+
+  it("fails naming the file when mirror: is empty", () =>
+    withContent(async (contentDir) => {
+      await writePost(contentDir, "a.md", { ...full, mirror: "" });
+      await expect(collectPosts(contentDir)).rejects
+        .toThrow(/content\/blog\/a\.md[\s\S]*"mirror"/);
+    }));
 });
 
 // Issue #212 acceptance 7: a brand-new post fixture goes through the real
@@ -1092,6 +1171,102 @@ print(json.dumps({
       expect(llmsSection).toContain("- Fixture old (English):\n  https://orbi.build/blog/fixture-old/");
       expect(llmsSection.indexOf("fixture-new"), "newest first").toBeLessThan(llmsSection.indexOf("fixture-old"));
       expect(llmsSection, "generated Blog section must not list real posts").not.toContain("docker-image-third-try");
+    } finally {
+      await rm(contentDir, { recursive: true, force: true });
+      await rm(outDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// Issue #214 evidence: all three shapes through the real build — the
+// same-slug pair, a mirror:-declared pair across different slugs, and
+// single-language posts in both languages — with the rendered language
+// switchers, indexes, feed, sitemap and llms.txt each shape must produce.
+describe("blog mirror pairing end to end (Issue #214 evidence)", () => {
+  const md = (title, date, summary, lang, mirror) => `---
+title: ${title}
+date: ${date}
+summary: ${summary}
+lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
+---
+
+Body of ${title} with [a link](https://docs.orbi.build/docker).
+`;
+
+  const switchTargets = async (outDir, output) => {
+    const html = await readFile(join(outDir, output), "utf8");
+    return [...html.matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">[^<]*<\/a>/g)].map((m) => m[1]);
+  };
+
+  it("publishes the same-slug pair, the declared pair and both single-language posts", async () => {
+    const contentDir = await mkdtemp(join(tmpdir(), "orbi-content-"));
+    const outDir = await mkdtemp(join(tmpdir(), "orbi-fixture-build-"));
+    try {
+      await mkdir(join(contentDir, "zh"), { recursive: true });
+      await writeFile(join(contentDir, "pair.md"), md("Pair", "2026-09-01", "The same-slug pair.", "en"));
+      await writeFile(join(contentDir, "zh", "pair.md"), md("Pair 旧", "2026-09-01", "The same-slug pair, in Chinese.", "zh"));
+      await writeFile(join(contentDir, "alpha.md"), md("Alpha", "2026-09-02", "English comparison intent.", "en", "beta"));
+      await writeFile(join(contentDir, "zh", "beta.md"), md("Beta", "2026-09-05", "Chinese method intent.", "zh", "alpha"));
+      await writeFile(join(contentDir, "solo-en.md"), md("Solo EN", "2026-09-03", "English only.", "en"));
+      await writeFile(join(contentDir, "zh", "solo-zh.md"), md("Solo ZH", "2026-09-04", "Chinese only.", "zh"));
+
+      await buildPages(outDir, { contentDir });
+
+      // The language switcher (nav and footer, two hits per page): the
+      // counterpart page for a pair, the other language's blog index for a
+      // single-language post — never a page that does not exist.
+      expect(await switchTargets(outDir, "blog/pair/index.html")).toEqual(["/zh/blog/pair/", "/zh/blog/pair/"]);
+      expect(await switchTargets(outDir, "blog/alpha/index.html")).toEqual(["/zh/blog/beta/", "/zh/blog/beta/"]);
+      expect(await switchTargets(outDir, "zh/blog/beta/index.html")).toEqual(["/blog/alpha/", "/blog/alpha/"]);
+      expect(await switchTargets(outDir, "blog/solo-en/index.html")).toEqual(["/zh/blog/", "/zh/blog/"]);
+      expect(await switchTargets(outDir, "zh/blog/solo-zh/index.html")).toEqual(["/blog/", "/blog/"]);
+
+      // Indexes: every post in its own language, never the other's.
+      const enIndex = await readFile(join(outDir, "blog", "index.html"), "utf8");
+      for (const href of ["/blog/pair/", "/blog/alpha/", "/blog/solo-en/"]) {
+        expect(enIndex, `en index lists ${href}`).toContain(`<a href="${href}">`);
+      }
+      for (const href of ["/zh/blog/beta/", "/zh/blog/solo-zh/"]) {
+        expect(enIndex, `en index must not list ${href}`).not.toContain(`href="${href}"`);
+      }
+      const zhIndex = await readFile(join(outDir, "zh", "blog", "index.html"), "utf8");
+      for (const href of ["/zh/blog/pair/", "/zh/blog/beta/", "/zh/blog/solo-zh/"]) {
+        expect(zhIndex, `zh index lists ${href}`).toContain(`<a href="${href}">`);
+      }
+      expect(zhIndex, "zh index must not list the en-only post").not.toContain('href="/blog/alpha/"');
+
+      // The feed carries every English post regardless of pairing.
+      const feed = await readFile(join(outDir, "blog", "feed.xml"), "utf8");
+      for (const href of ["/blog/pair/", "/blog/alpha/", "/blog/solo-en/"]) {
+        expect(feed, `feed lists ${href}`).toContain(`<link>https://orbi.build${href}</link>`);
+      }
+      expect(feed, "feed must not list the zh-only post").not.toContain("/blog/beta/");
+
+      // The sitemap lists all six posts; pairs carry hreflang alternates to
+      // each other, a single-language post lists itself with no alternate.
+      const sitemap = await readFile(join(outDir, "sitemap.xml"), "utf8");
+      for (const href of ["/blog/pair/", "/zh/blog/pair/", "/blog/alpha/", "/zh/blog/beta/", "/blog/solo-en/", "/zh/blog/solo-zh/"]) {
+        expect(sitemap, `sitemap lists ${href}`).toContain(`<loc>https://orbi.build${href}</loc>`);
+      }
+      const soloUrl = sitemap.match(/<url>\n    <loc>https:\/\/orbi\.build\/blog\/solo-en\/<\/loc>[\s\S]*?<\/url>/)?.[0];
+      expect(soloUrl, "solo post sitemap entry").toBeTruthy();
+      expect(soloUrl, "a single-language post carries no hreflang alternate").not.toContain("xhtml:link");
+      const alphaUrl = sitemap.match(/<url>\n    <loc>https:\/\/orbi\.build\/blog\/alpha\/<\/loc>[\s\S]*?<\/url>/)?.[0];
+      expect(alphaUrl, "the declared pair's alternates cross-link").toContain(
+        '<xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/beta/"/>',
+      );
+
+      // llms.txt lists every published post regardless of pairing.
+      const llms = await readFile(join(outDir, "llms.txt"), "utf8");
+      const llmsSection = llms.slice(llms.indexOf("## Blog"), llms.indexOf("## Links"));
+      for (const [title, lang, href] of [
+        ["Alpha", "English", "https://orbi.build/blog/alpha/"],
+        ["Beta", "Chinese", "https://orbi.build/zh/blog/beta/"],
+        ["Solo EN", "English", "https://orbi.build/blog/solo-en/"],
+        ["Solo ZH", "Chinese", "https://orbi.build/zh/blog/solo-zh/"],
+      ]) {
+        expect(llmsSection, `llms.txt lists ${title}`).toContain(`- ${title} (${lang}):\n  ${href}`);
+      }
     } finally {
       await rm(contentDir, { recursive: true, force: true });
       await rm(outDir, { recursive: true, force: true });
