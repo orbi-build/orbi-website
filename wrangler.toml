@@ -63,3 +63,34 @@ zone_name = "orbi.build"
 binding = "orbi_applications"
 database_name = "orbi-applications-test"
 database_id = "3c254d65-e5c6-4488-9b83-dabc3433f092"
+
+# Issue #220: orbi-probe, a second Worker defined by this same file —
+# `wrangler deploy --env probe` publishes it next to the site Worker without
+# touching that Worker. It cron-probes the public URLs every three minutes
+# (src/probe.js), writes one Analytics Engine data point per URL per run, and
+# alerts Telegram once a URL has failed two consecutive runs. main, routes and
+# workers_dev are per-environment overrides here: src/probe.js and no ingress
+# at all (routes = [] keeps the production custom domains above from being
+# attached to this Worker) — the probe only ever runs from its cron trigger.
+[env.probe]
+name = "orbi-probe"
+main = "src/probe.js"
+workers_dev = false
+routes = []
+
+[env.probe.triggers]
+crons = ["*/3 * * * *"]
+
+# Result history (acceptance: queryable by SQL). The dataset is created
+# automatically on the first write; query it through the SQL API — see README.
+[[env.probe.analytics_engine_datasets]]
+binding = "PROBE_RESULTS"
+dataset = "orbi_probe_results"
+
+# One key per URL holding the consecutive-failure streak, so each transition
+# alerts exactly once (flap suppression). KV, not an Analytics Engine query:
+# reading AE would need a new Cloudflare API token secret, while KV is one
+# binding the cron alone writes and reads.
+[[env.probe.kv_namespaces]]
+binding = "PROBE_STATE"
+id = "6196879c92434ed79f4d13130b76f9b3"

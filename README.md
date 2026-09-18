@@ -75,6 +75,33 @@ npx wrangler deploy --domains orbi.build --domains www.orbi.build
 
 Worker 会把 `www.orbi.build` 301 到 `orbi.build`。
 
+## 探测告警（Issue #220）
+
+`wrangler.toml` 的 `env.probe` 定义第二个 Worker `orbi-probe`：每 3 分钟
+（`*/3 * * * *`）探测公开页面（URL 列表在 `src/probe.js` 顶部的 `CHECKS`，
+加一个 URL 就是一行），每次运行给每个 URL 写一个 Analytics Engine 数据点
+（数据集 `orbi_probe_results`），一个 URL 连续两次失败才向 Telegram 发一条
+告警，恢复时发一条恢复通知；连续失败状态存 KV（`PROBE_STATE`）。合并进
+`beta` 后由 deploy-beta.yml 随站点一起部署。运行异常记 `probe_run_failed`，
+Telegram 不可达记 `probe_alert_failed`（数据点照写），两者都能在 Workers
+Observability 日志里查到。
+
+一次性设置（操作员执行；缺 secret 时告警会以 `probe_alert_failed` 可见地失败）：
+
+```bash
+set -a; source ~/.cloudflare.env; set +a
+npx wrangler secret put TELEGRAM_BOT_TOKEN --env probe
+npx wrangler secret put TELEGRAM_CHAT_ID --env probe
+```
+
+最近一小时的探测结果（SQL API，token 需具备该账号的 analytics 读权限）：
+
+```bash
+curl "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  --data "SELECT timestamp, index1 AS url, double1 AS status, double2 AS ok, double3 AS latency_ms, blob2 AS failure FROM orbi_probe_results WHERE timestamp > NOW() - INTERVAL '1' HOUR ORDER BY timestamp DESC"
+```
+
 ## 检查
 
 ```bash
