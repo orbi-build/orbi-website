@@ -514,10 +514,39 @@ async function handleFetch(request, env) {
       return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
     }
 
-    return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
+    const asset = await fetchAsset(request, env.ASSETS);
+    // The Assets binding answers a directory path without its trailing slash
+    // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
+    // binding's own canonicalisation, not an unexpected asset redirect: pass
+    // it on as a 308 with our headers so the visitor lands on /cloud/ instead
+    // of the 500 guard below (production 2026-09-18: orbi.build/cloud → 500).
+    const slashRedirect = trailingSlashRedirect(asset, url);
+    if (slashRedirect !== null) {
+      return slashRedirect;
+    }
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
+// A same-origin redirect from <path> to <path>/ is the Assets binding's
+// trailing-slash canonicalisation; anything else is not ours to follow.
+function trailingSlashRedirect(asset, url) {
+  if (![301, 307, 308].includes(asset.status)) return null;
+  const location = asset.headers.get("Location");
+  if (location === null) return null;
+  let target;
+  try {
+    target = new URL(location, url);
+  } catch {
+    return null;
+  }
+  if (target.origin !== url.origin || target.pathname !== `${url.pathname}/`) return null;
+  return new Response(null, {
+    status: 308,
+    headers: { ...SECURITY_HEADERS, Location: `${target.pathname}${url.search}` },
+  });
+}
+
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
