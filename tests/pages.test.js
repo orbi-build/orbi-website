@@ -785,11 +785,13 @@ describe("blog (Issue #212)", () => {
     for (const post of [enPost(), zhPost()]) {
       const html = shipped.get(post.output);
       expect(html, `${post.output}: title from front matter`).toContain(`<h1 id="post-title">${post.title}</h1>`);
-      // The first post ships fenced shell commands and issue links; the
-      // rendered body must carry them as HTML, produced by marked.
+      // Every post ships fenced shell commands and Markdown links; the
+      // rendered body must carry them as HTML, produced by marked. Assert the
+      // shapes, not one post's URL, so a later post cannot fail on its own links.
       expect(html, `${post.output}: fenced code block`).toContain("<pre><code");
       expect(html, `${post.output}: no raw markdown fences survive`).not.toContain("```");
-      expect(html, `${post.output}: rendered link`).toContain('<a href="https://docs.orbi.build/docker">');
+      expect(html, `${post.output}: rendered link`).toMatch(/<a href="https:\/\/[^"]+">/);
+      expect(html, `${post.output}: no raw markdown link syntax survives`).not.toMatch(/\]\(https:\/\//);
     }
   });
 

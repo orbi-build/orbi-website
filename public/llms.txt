@@ -196,6 +196,10 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/docker-image-third-try/
 - Docker image published on the third try (Chinese):
   https://orbi.build/zh/blog/docker-image-third-try/
+- Claude Code in GitHub Actions stops at the pull request. Who merges it? (English):
+  https://orbi.build/blog/claude-code-github-actions-who-merges/
+- Claude Code 无人值守跑起来之后，谁来按合并 (Chinese):
+  https://orbi.build/zh/blog/claude-code-github-actions-who-merges/
 
 ## Links
 

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Code 无人值守跑起来之后，谁来按合并 | Orbi</title>
+  <meta name="description" content="让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Claude Code 无人值守跑起来之后，谁来按合并">
+  <meta property="og:description" content="让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
+  <meta property="article:published_time" content="2026-09-19">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">中文</span>
+          <a href="/blog/claude-code-github-actions-who-merges/" lang="en">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-19</p>
+        <h1 id="post-title">Claude Code 无人值守跑起来之后，谁来按合并</h1>
+        <p class="hero-lede">让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>想让 Claude Code 无人值守，网上的做法大多停在同一步：接进 GitHub Actions，或者写个循环让它自己跑。这一步好办。麻烦的是跑完之后那个 PR，测试绿了，代码是它写的，评审也是它做的，谁来按合并。</p>
+<p>我这边现在的答案是没有人按。一个月 431 个 PR 合进主干，416 张 Issue 走完全流程，发了 40 个版本。代码我基本不读。下面是为了让这件事不至于变成赌博，中间必须存在的东西。</p>
+<h2>卡住的不是模型，是那道门</h2>
+<p>大家担心的是模型写错。这确实会发生，测试能拦住大部分。真正贵的是另一种：判断「这东西可以合了」的，还是写它的那个会话；或者是一个三周前就不再认真看了的人。</p>
+<p>所以第一条：评审的不能是写代码的那一个。不是同一个会话里换个 prompt 再跑一遍，是另起一个进程、全新上下文、在 PR 建好之后读冻结的 diff。它不知道实现时在想什么，这正是重点。如果一段代码非得知道作者当时的想法才看得懂，那它就没写完。</p>
+<p>评审发现问题可以自己改、推到同一个分支，然后对新的 head 重新出结论。带着问题结束的那一轮不叫合并，叫下一轮。轮次上限是五轮，用完还没过就停下来等人，不会含糊过去。</p>
+<h2>合并的瞬间重查三个条件</h2>
+<p>光有评审结论不够，因为评审和合并之间隔着时间。合并前对着远端重新查三件事：</p>
+<ul>
+<li><strong>CI 是绿的</strong>，而且是评审过的那个 head 上的绿。</li>
+<li><strong>head 没动过</strong>。评审之后有人推了东西，这个结论就作废。</li>
+<li><strong>base 是最新的</strong>。PR 必须包含最新的 main，用普通 merge 吸收，不用 rebase，因为 rebase 会改写被评审过的那些提交。</li>
+</ul>
+<p>落到命令上就是一行，关键在那个 pin：</p>
+<pre><code class="language-bash">gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_HEAD&quot;
+</code></pre>
+<p>评审之后远端的 head 要是动过，这条命令直接失败，而不是把没人看过的东西合进去。三条都过，才按评审过的那个 commit 合进去。任何一条不过，票要么等下一跳，要么停下来等人。没有一条路径是「看起来没问题」就合的。</p>
+<p>这三条本身很普通，任何团队在代码评审时都会念叨。区别只在于它们是状态机里的三行代码，不是某个人脑子里的三个习惯，所以第九十个 PR 在凌晨三点也照样生效。</p>
+<h2>人还剩下什么活</h2>
+<p>我写票。这就是全部的活，而且比听起来费劲：一张票一个可观察的结果，验收条件要写到「做完了没有」能被一个不能反过来问我的东西判断。票写得含糊，交付出来的就是一个理直气壮的错东西，而且下游任何闸门都拦不住，因为闸门查的是代码有没有做到票上写的事。</p>
+<p>我还写发版票：版本号和范围。发版本身是一个确定性的状态机，不是模型会话。它冻结 base、等 CI 绿、改版本号、打 tag、发布、关里程碑。任何一步不对就停下来等我。</p>
+<p>这两张票之间，没有人在场。</p>
+<h2>想自己搭的话</h2>
+<p>不用换掉现在用的东西。Claude Code 是执行层，缺的是做决定那一层。按收益排，加三样：</p>
+<ol>
+<li><strong>评审换一个会话</strong>，读冻结的 diff，有权判交付失败。</li>
+<li><strong>合并前重查 CI、head、base</strong>，不信任十分钟前的结论。</li>
+<li><strong>发版走确定性流程</strong>，别让模型决定「应该可以发了吧」。</li>
+</ol>
+<p><a href="https://github.com/orbi-build/orbi">Orbi</a> 就是我按这三条做的实现，fair-code，可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。底下的引擎可以用 Claude Code、Codex 或者任何 OpenAI 兼容的模型，所以你现在的模型那一侧不用动。</p>
+<p>或者干脆把这三个条件搬进你自己的流程里。条件本身比谁来执行它重要。</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/cloud/">Cloud</a>
+      <a href="/zh/compare/">竞品对比</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
+      <a href="/zh/#direction">方向</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <a href="/blog/claude-code-github-actions-who-merges/" lang="en">EN</a>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

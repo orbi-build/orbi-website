@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Claude Code in GitHub Actions stops at the pull request. Who merges it?</title>
+      <link>https://orbi.build/blog/claude-code-github-actions-who-merges/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/claude-code-github-actions-who-merges/</guid>
+      <pubDate>Sat, 19 Sep 2026 00:00:00 GMT</pubDate>
+      <description>The official Claude Code Action implements changes and reviews pull requests inside your own runner. It does not merge and it does not release. This is what the rest of the path looks like when a system closes it instead of a person, measured on a repository where 431 pull requests merged this way.</description>
+    </item>
+    <item>
       <title>Docker image published on the third try</title>
       <link>https://orbi.build/blog/docker-image-third-try/</link>
       <guid isPermaLink="true">https://orbi.build/blog/docker-image-third-try/</guid>
