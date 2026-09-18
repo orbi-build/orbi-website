@@ -192,14 +192,7 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- Claude Code in GitHub Actions stops at the pull request. Who merges it? (English):
-  https://orbi.build/blog/claude-code-github-actions-who-merges/
-- Claude Code 无人值守跑起来之后，谁来按合并 (Chinese):
-  https://orbi.build/zh/blog/claude-code-github-actions-who-merges/
-- Docker image published on the third try (English):
-  https://orbi.build/blog/docker-image-third-try/
-- Docker 镜像第三次尝试才发布成功 (Chinese):
-  https://orbi.build/zh/blog/docker-image-third-try/
+<!--@llms-blog-->
 
 ## Links
 
