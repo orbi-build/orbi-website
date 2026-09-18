@@ -11,7 +11,7 @@ That boundary is deliberate and it is the right default for a general-purpose ac
 
 For the last month the answer on my own repository has been: nobody. 431 pull requests merged, 416 Issues walked the full delivery path, 40 releases tagged and published. I have not read the diffs. This post is what had to exist for that to be a reasonable thing to do rather than a reckless one.
 
-## The gap is not the model, it is the gate
+## The model is not the bottleneck
 
 The failure people expect is that the model writes something wrong. That happens, and tests catch most of it. The failure that actually costs you is different: the thing that decides "this is good enough to merge" is the same session that wrote the code, or it is a person who stopped reading carefully three weeks ago.
 
