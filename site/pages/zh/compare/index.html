@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/compare/">
   <meta property="og:title" content="Orbi 竞品对比：vs 各家托管 / 编程 agent">
-  <meta property="og:description" content="逐家事实对比，每条标注来源与核实日期。深度分析：OpenClaw 与 Anthropic 订阅通道调整事件；Devin 与积分计费。">
+  <meta property="og:description" content="逐家事实对比，每条标注来源与核实日期。深度分析：OpenClaw 与 Anthropic 订阅通道调整事件；Devin 与积分计费；Google Jules 与计划审批。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -154,6 +154,32 @@
       </div>
     </section>
 
+    <section class="compare-section shell" aria-labelledby="matrix-title">
+      <p class="section-tag">能力矩阵</p>
+      <h2 id="matrix-title">哪些交付能力有文档依据？</h2>
+      <p class="matrix-verified">能力声明最近核实至 <time datetime="2026-09-17">2026-09-17</time>。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table compare-table-no-orbi capability-matrix">
+          <caption>有来源的能力矩阵 · <a href="/compare/matrix.csv">下载 CSV</a></caption>
+          <thead><tr><th scope="col">product</th><th scope="col">independent_review</th><th scope="col">blocks_merge_on_findings</th><th scope="col">merges_the_pr</th><th scope="col">publishes_the_release</th><th scope="col">self_host</th><th scope="col">license</th></tr></thead>
+          <tbody>
+            <tr data-product="Orbi"><th scope="row">Orbi</th><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://docs.orbi.build" title="Verified 2026-09-17" rel="noopener">yes</a></td></tr>
+            <tr data-product="Orca"><th scope="row">Orca</th><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">not documented</a></td><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">not documented</a></td><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">not documented</a></td><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">not documented</a></td><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">yes</a></td><td><a href="https://github.com/stablyai/orca/blob/main/README.md" title="Verified 2026-09-12" rel="noopener">yes</a></td></tr>
+            <tr data-product="OpenClaw"><th scope="row">OpenClaw</th><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">yes</a></td><td><a href="https://github.com/openclaw/openclaw" title="Verified 2026-09-07" rel="noopener">yes</a></td></tr>
+            <tr data-product="GitHub Copilot coding agent"><th scope="row">GitHub Copilot coding agent</th><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">no (official docs)</a></td><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">no (official docs)</a></td><td><a href="https://docs.github.com/en/copilot/concepts/agents/coding-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td></tr>
+            <tr data-product="Claude Managed Agents"><th scope="row">Claude Managed Agents</th><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">no (official docs)</a></td><td><a href="https://www.anthropic.com/engineering/managed-agents" title="Verified 2026-09-07" rel="noopener">not documented</a></td></tr>
+            <tr data-product="Claude Code"><th scope="row">Claude Code</th><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">yes</a></td><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">no (official docs)</a></td><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">no (official docs)</a></td><td><a href="https://code.claude.com/docs/en/code-review" title="Verified 2026-09-17" rel="noopener">not documented</a></td></tr>
+            <tr data-product="OpenHands"><th scope="row">OpenHands</th><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">yes</a></td><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">yes</a></td><td><a href="https://github.com/All-Hands-AI/OpenHands" title="Verified 2026-09-07" rel="noopener">yes</a></td></tr>
+            <tr data-product="Hermes Agent"><th scope="row">Hermes Agent</th><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">yes</a></td><td><a href="https://github.com/NousResearch/hermes-agent" title="Verified 2026-09-07" rel="noopener">yes</a></td></tr>
+            <tr data-product="OpenAI Codex"><th scope="row">OpenAI Codex</th><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">no (official docs)</a></td><td><a href="https://platform.openai.com/docs/codex" title="Verified 2026-09-07" rel="noopener">not documented</a></td></tr>
+            <tr data-product="Devin"><th scope="row">Devin</th><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">yes</a></td><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">not documented</a></td><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">no (official docs)</a></td><td><a href="https://docs.devin.ai/work-with-devin/devin-review" title="Verified 2026-09-07" rel="noopener">not documented</a></td></tr>
+            <tr data-product="Google Jules"><th scope="row">Google Jules</th><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">no (official docs)</a></td><td><a href="https://jules.google/docs/running-tasks/" title="Verified 2026-09-17" rel="noopener">not documented</a></td></tr>
+            <tr data-product="Cursor Cloud Agents"><th scope="row">Cursor Cloud Agents</th><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">not documented</a></td><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">no (official docs)</a></td><td><a href="https://cursor.com/docs/cloud-agent" title="Verified 2026-09-17" rel="noopener">not documented</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="compare-section shell" aria-labelledby="dives-title">
       <p class="section-tag">对比版图</p>
       <h2 id="dives-title">深度对比</h2>
@@ -180,6 +206,9 @@
           </a>
         </li>
         <li>
+          <a href="/zh/compare/claude-code/"><strong>Orbi vs Claude Code</strong><p>Claude Code 可将 Issue 变成 PR；Orbi 把审查过的冻结 head 继续交付到合并和带 tag 发布。</p></a>
+        </li>
+        <li>
           <a href="/zh/compare/openhands/"><strong>Orbi vs OpenHands</strong><p>支持 Docker、云端、BYOK 和广泛自动化入口的开源 AI 开发平台。</p></a>
         </li>
         <li>
@@ -198,6 +227,18 @@
           <a href="/zh/compare/devin/">
             <strong>Orbi vs Devin</strong>
             <p>Cognition 的托管自主工程师——Slack 派活、云端执行、以及一套已被整体改写过一次的计费结构。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/jules/">
+            <strong>Orbi vs Google Jules</strong>
+            <p>人工批准计划、用户拥有分支并交接 PR——引用流程没有记录合并和发布步骤。</p>
+          </a>
+        </li>
+        <li>
+          <a href="/zh/compare/cursor/">
+            <strong>Orbi vs Cursor Cloud Agents</strong>
+            <p>云端 agent 返回可合并 PR 和演示 artifacts；Orbi 把交付产线延伸到审查、合并和发布。</p>
           </a>
         </li>
       </ul>

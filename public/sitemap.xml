@@ -2,11 +2,29 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://orbi.build/blog/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/cloud/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/cloud/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/cloud/"/>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/compare/claude-code/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/claude-code/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/claude-code/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/claude-code/"/>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -15,6 +33,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/codex/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/compare/cursor/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/cursor/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/cursor/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/cursor/"/>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -51,6 +78,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/compare/jules/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -105,7 +141,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/evidence/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/evidence/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/evidence/"/>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -128,11 +164,29 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://orbi.build/zh/blog/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/cloud/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/cloud/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/cloud/"/>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/claude-code/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/claude-code/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/claude-code/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/claude-code/"/>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -141,6 +195,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/codex/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/cursor/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/cursor/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/cursor/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/cursor/"/>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -177,6 +240,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/jules/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -231,7 +303,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/evidence/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/evidence/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/evidence/"/>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -252,5 +324,29 @@
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/docker-image-third-try/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/docker-image-third-try/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/docker-image-third-try/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/docker-image-third-try/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/"/>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/compare/matrix.csv</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

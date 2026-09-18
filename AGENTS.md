@@ -31,24 +31,36 @@ contradiction in place for the next delivery to rediscover.
 `public/` is half generated and half hand-written. Knowing which half a file
 belongs to decides where you edit it.
 
-**Generated (28 files, never edit in `public/`):** every `*.html` under `public/`.
+**Generated (40 files, never edit in `public/`):** every `*.html` under `public/`.
 `npm run build` (`node scripts/build-pages.mjs`) writes them from:
 
 - `site/pages/**/index.html` — one source per page: a `<!--orbi:page ... -->` JSON
   header (`lang`, `mirror`, `output`, `layout`, nav params, `standalone`) followed
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
-- `site/partials/nav.html` and `site/partials/footer.html` — the single shared
-  navigation and footer, rendered into every non-standalone page.
+- `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
+  per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
+  `lang`, all four required) plus a plain CommonMark body; no HTML, no JSON
+  header, no nav/footer markers in a post. The build renders the body with
+  marked into `site/partials/post.html` (the shared nav/footer included),
+  derives the `/blog/` and `/zh/blog/` indexes from the post list, and writes
+  `/blog/feed.xml` (RSS 2.0, English posts). A post missing a front-matter
+  field, or an en post with no zh mirror, fails the build with the file path.
+- `site/partials/nav.html`, `site/partials/footer.html` and
+  `site/partials/post.html` — the shared navigation, footer and post template,
+  rendered into every page that needs them.
+
+The build also writes `sitemap.xml` and `blog/feed.xml` into `public/`; both
+are generated files like the HTML, never hand-edited.
 
 **Hand-written (edit directly in `public/`):** `styles.css`, `demo.js`,
-`install.sh`, `llms.txt`, `robots.txt`, `sitemap.xml`, `favicon.svg`,
-`logo-mark.svg`, `logo-mark-on-dark.svg`, and everything under `public/img/`.
+`install.sh`, `llms.txt`, `robots.txt`, `favicon.svg`, `logo-mark.svg`,
+`logo-mark-on-dark.svg`, and everything under `public/img/`.
 These are outside the build and have no source under `site/`.
 
 Editing a generated page in `public/` fails three ways: the next build overwrites
 it; `tests/pages.test.js` compares the build output against `public/` byte-for-byte
 and goes red; and a hand-edited nav or footer silently drifts one page away from
-the other 27. Always edit the source under `site/`, then run `npm run build` and
+the other 39. Always edit the source under `site/`, then run `npm run build` and
 commit the regenerated `public/` output together with the source change.
 
 `scripts/build-pages.mjs --out <dir>` renders to any directory, which is how you
@@ -101,11 +113,14 @@ are permanently diverged — every promotion is a true merge, never a fast-forwa
   landing/deployment contract tests, then the beta deploy, then checks of the
   homepage, `/compare/` and the EN/ZH OpenClaw pages. Beta uses its own D1
   (`orbi-applications-test`) and never writes the production database.
-- Merging into `main` runs `.github/workflows/deploy-production.yml`: the soak gate,
+- Production deployment is a manual `workflow_dispatch` of
+  `.github/workflows/deploy-production.yml`; merging into `main` does not
+  trigger it (Issue #210). The workflow runs the soak gate,
   required-reviewer approval on the `production` GitHub Environment, the full test
-  set, `wrangler deploy`, then an HTTP content smoke plus a real-browser smoke.
-  Either smoke failing triggers an automatic `wrangler rollback` to the previous
-  production version and reds the job.
+  set, `wrangler deploy`, then an HTTP content smoke (the real-browser smoke was
+  removed from this workflow on 2026-09-10). A smoke failure triggers an
+  automatic `wrangler rollback` to the previous production version and reds the
+  job.
 - D1 migrations are not in the deploy path; a production schema change is an
   explicit manual step.
 - Local deploys load credentials from `~/.cloudflare.env`, never from the repo:

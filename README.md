@@ -13,9 +13,10 @@ npx wrangler dev
 
 ## 页面（Issue #106）
 
-27 个 HTML 一律由构建产生，**不要手改 `public/*.html`**：改 `site/partials/`（共享的
-nav / footer 片段，全站一处生效）或 `site/pages/`（单页源：JSON 头里的 lang、mirror、
-nav 参数 + 页面正文），然后 `npm run build` 重新生成 `public/`。
+40 个 HTML（连同 sitemap.xml 与 blog/feed.xml）一律由构建产生，**不要手改 `public/*.html`**：改 `site/partials/`（共享的
+nav / footer / 博客文章模板片段，全站一处生效）、`site/pages/`（单页源：JSON 头里的 lang、mirror、
+nav 参数 + 页面正文）或 `content/blog/*.md`（博客文章：YAML front matter + CommonMark 正文，
+en 与 zh 镜像各一份），然后 `npm run build` 重新生成 `public/`。
 `tests/pages.test.js` 是门禁：构建产物与 `public/` 逐字节比对，中英镜像的
 nav/footer 项数、CTA 数量、语言切换目标、锚点前缀不一致会直接红。
 
@@ -45,11 +46,12 @@ npx wrangler deploy --env beta
 landing/deployment contract tests，再部署 beta，并检查首页、`/compare/` 及英文/中文
 OpenClaw 页面。Beta 使用独立的 `orbi-applications-test` D1 数据库，不会写入生产库。
 
-合并进 `main` 后，`.github/workflows/deploy-production.yml` 在 GitHub Environment
-`production` 的 required reviewer 审批通过后自动部署生产（`orbi.build` /
+生产部署只由人工 `workflow_dispatch` 触发 `.github/workflows/deploy-production.yml`
+（Issue #210：合并进 `main` 不会自动触发），workflow 在 GitHub Environment
+`production` 的 required reviewer 审批通过后部署生产（`orbi.build` /
 `www.orbi.build`）：部署前运行完整测试，部署后对线上做 HTTP 内容 smoke（期望文案取自
-部署 commit 的页面本身）与真实浏览器 smoke，任一 smoke 失败会自动 `wrangler rollback`
-回部署前的生产版本并让 job 红灯。晋升的 commit 还需先在 `origin/beta` 上浸泡满
+部署 commit 的页面本身；真实浏览器 smoke 已于 2026-09-10 从该 workflow 移除），smoke
+失败会自动 `wrangler rollback` 回部署前的生产版本并让 job 红灯。晋升的 commit 还需先在 `origin/beta` 上浸泡满
 `PROD_MIN_SOAK_HOURS` 小时（默认 4，仓库变量可调）：浸泡不达标时部署在审批前直接失败，
 不打扰审批人；热修可用 `workflow_dispatch` 的 `skip_soak` 跳过浸泡，但不能跳过审批。
 D1 迁移不在部署路径，生产库 schema 变更仍需显式手工执行。

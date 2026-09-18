@@ -270,6 +270,13 @@ async function fetchAsset(request, assets) {
 // values must read the same on every environment, in every carrier a crawler
 // reads.
 async function assetResponse(asset, cloudLoginConfigured) {
+  if ([301, 302, 307, 308].includes(asset.status)) {
+    console.error("asset_redirect_unexpected", asset.status);
+    return new Response("asset redirect unexpectedly reached the Worker\n", {
+      status: 500,
+      headers: SECURITY_HEADERS,
+    });
+  }
   const headers = new Headers(asset.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(key, value);
@@ -400,12 +407,12 @@ async function aireadyResponse(request, url, assets) {
     return installScriptResponse(request, assets);
   }
   if (url.pathname === "/" && accept.includes("text/html")) {
-    const pageUrl = new URL("/aiready/index.html", request.url);
+    const pageUrl = new URL("/aiready/", request.url);
     const page = await fetchAsset(new Request(pageUrl, request), assets);
     return assetResponse(page, false);
   }
   if (route === "/zh" && accept.includes("text/html")) {
-    const pageUrl = new URL("/aiready/zh/index.html", request.url);
+    const pageUrl = new URL("/aiready/zh/", request.url);
     const page = await fetchAsset(new Request(pageUrl, request), assets);
     return assetResponse(page, false);
   }
@@ -510,7 +517,7 @@ async function handleFetch(request, env) {
     return assetResponse(await fetchAsset(request, env.ASSETS), Boolean(env.CLOUD_LOGIN_URL));
 }
 
-export { cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse };
 
 export default {
   // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to

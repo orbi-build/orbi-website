@@ -1,9 +1,6 @@
 name: Deploy production
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       skip_soak:
@@ -25,6 +22,7 @@ jobs:
   # the approver's attention.
   soak:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -60,9 +58,9 @@ jobs:
             exit 0
           fi
           timeout 120s git fetch origin beta
-          newest="$(git log --format=%ct origin/beta --not "$previous" | sort -nr | head -1)"
+          newest="$(git log --no-merges --format=%ct "$GITHUB_SHA" --not "$previous" | sort -nr | head -1)"
           if [[ -z "$newest" ]]; then
-            echo "No new beta commits since the previous production version ${previous}; soak satisfied."
+            echo "No new promoted commits since the previous production version ${previous}; soak satisfied."
             exit 0
           fi
           age="$(awk -v now="$(date +%s)" -v t="$newest" 'BEGIN {printf "%.1f", (now - t) / 3600}')"
@@ -77,6 +75,7 @@ jobs:
   deploy:
     needs: soak
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # The human gate: the `production` environment's required reviewers must
     # approve before this job runs (repo Settings, not git).
     environment: production
@@ -268,6 +267,28 @@ jobs:
           check_page "https://www.orbi.build/" "public/index.html"
           check_page "https://orbi.build/compare/" "public/compare/index.html"
           check_page "https://orbi.build/zh/" "public/zh/index.html"
+
+          # aiready.sh is both the browser landing page and the curl install
+          # entry. Do not follow redirects here: the canonical host must own
+          # the browser response after the Worker selects the page asset.
+          aiready_headers="$(timeout 60s curl --fail --silent --show-error --head -H 'Accept: text/html' https://aiready.sh/)"
+          if [[ ! "$aiready_headers" =~ HTTP/[0-9.]+[[:space:]]200([[:space:]]|$) ]]; then
+            echo "::error::https://aiready.sh/ did not return HTTP 200: $aiready_headers"
+            exit 1
+          fi
+          if [[ "$aiready_headers" == *$'\nLocation:'* || "$aiready_headers" == *$'\nlocation:'* ]]; then
+            echo "::error::https://aiready.sh/ returned an unexpected Location header: $aiready_headers"
+            exit 1
+          fi
+          aiready_body="$(mktemp)"
+          trap 'rm -f "$aiready_body"' RETURN
+          timeout 60s curl --fail --silent --show-error https://aiready.sh/ -o "$aiready_body"
+          IFS= read -r aiready_first_line < "$aiready_body"
+          if [[ "$aiready_first_line" != "#!/usr/bin/env bash" ]]; then
+            echo "::error::https://aiready.sh/ did not return the install script for the body check: $aiready_first_line"
+            exit 1
+          fi
+          echo "Smoke test passed: https://aiready.sh/ returned HTTP 200 without Location and the bash install script body"
 
       - name: Roll back production on smoke failure
         if: failure()

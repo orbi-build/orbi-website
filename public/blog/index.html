@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog | Orbi</title>
+  <meta name="description" content="Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements, with every number traceable to the issue or run it came from.">
+  <link rel="canonical" href="https://orbi.build/blog/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/">
+  <link rel="alternate" type="application/rss+xml" title="Orbi Blog" href="/blog/feed.xml">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/blog/">
+  <meta property="og:title" content="Blog">
+  <meta property="og:description" content="Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- No Noto Sans SC here: this page is English-only; the Chinese page loads it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Page-scoped: the derived post list the build fills in. */
+    .post-list { margin: 0 auto; max-width: 52rem; }
+    .post-entry { padding: 34px 0; border-top: 1px solid var(--line); }
+    .post-entry-title { margin: 0 0 6px; font-family: var(--display); font-size: 1.45rem; line-height: 1.25; }
+    .post-entry-title a { text-decoration: none; color: var(--ink); }
+    .post-entry-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .post-entry-meta { margin: 0 0 10px; color: var(--ink-soft); font-family: var(--mono); font-size: 0.82rem; }
+    .post-entry-summary { margin: 0; color: var(--ink-soft); }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="blog-title">
+        <p class="eyebrow">orbi.build · development notes</p>
+        <h1 id="blog-title">Blog</h1>
+        <p class="hero-lede">Notes from shipping Orbi in the open. Every number in every post traces back to an issue or a run you can open.</p>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-label="Posts">
+      <div class="post-list">
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/blog/docker-image-third-try/">Docker image published on the third try</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-09-18">2026-09-18</time></p>
+      <p class="post-entry-summary">The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.</p>
+    </article>
+      </div>
+      <p class="src-note">Reading by feed? The RSS 2.0 feed of the English posts lives at <a href="/blog/feed.xml">/blog/feed.xml</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/cloud/">Cloud</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
+      <a href="/#direction">Direction</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/blog/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
