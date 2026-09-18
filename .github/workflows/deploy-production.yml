@@ -267,6 +267,13 @@ jobs:
           check_page "https://www.orbi.build/" "public/index.html"
           check_page "https://orbi.build/compare/" "public/compare/index.html"
           check_page "https://orbi.build/zh/" "public/zh/index.html"
+          # Issue #223: /cloud and /cloud/ are the URLs actually handed out
+          # (Telegram/X share the no-slash form). The no-slash request must
+          # follow the trailing-slash redirect onto the page (2026-09-18 it
+          # answered 500 for an hour, unseen by this smoke): curl --fail
+          # fails on a 500, and on a redirect loop curl fails too.
+          check_page "https://orbi.build/cloud/" "public/cloud/index.html"
+          check_page "https://orbi.build/cloud" "public/cloud/index.html"
 
           # aiready.sh is both the browser landing page and the curl install
           # entry. Do not follow redirects here: the canonical host must own
