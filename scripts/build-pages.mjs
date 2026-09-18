@@ -289,6 +289,9 @@ export function parseFrontMatter(displayName, source) {
 // "zh/docker-image-third-try.md"); the directory half fixes the expected lang,
 // so front matter contradicting the location fails the build. The slug is the
 // file name; the output path follows the site's directory convention.
+// `mirror` (Issue #214) is the optional declared counterpart slug in the
+// other language directory; collectPosts resolves it to the switcher target
+// once both sides exist.
 export function postFromSource(displayName, source) {
   const label = `content/blog/${displayName}`;
   const lang = displayName.startsWith("zh/") ? "zh" : "en";
@@ -304,6 +307,9 @@ export function postFromSource(displayName, source) {
   if (fields.lang !== lang) {
     throw new Error(`${label}: front matter says lang: ${fields.lang}, but its directory fixes lang: ${lang}`);
   }
+  if (fields.mirror !== undefined && fields.mirror === "") {
+    throw new Error(`${label}: front matter needs a non-empty "mirror"`);
+  }
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
   return {
@@ -311,7 +317,7 @@ export function postFromSource(displayName, source) {
     lang,
     source: displayName,
     output,
-    mirrorOutput: lang === "en" ? `zh/blog/${slug}/index.html` : `blog/${slug}/index.html`,
+    mirror: fields.mirror,
     href: pathToHref(output),
     title: fields.title,
     headline: fields.title,
@@ -321,9 +327,13 @@ export function postFromSource(displayName, source) {
   };
 }
 
-// Every post in the content directory, validated as en/zh mirror pairs,
-// newest first (slug breaks ties). A missing mirror fails the build here,
-// naming the absent file: no silent skip, no partial index (Issue #212).
+// Every post in the content directory, validated and paired (Issue #214),
+// newest first (slug breaks ties). A post pairs with the file its `mirror:`
+// names in the other language directory, or — with no declaration — with a
+// same-slug file there (the Issue #212 default); with neither it publishes
+// as a single-language post. A `mirror:` naming a file that does not exist,
+// or one the named file does not name back, fails the build naming both
+// files: no silent skip, no page whose language switcher 404s.
 export async function collectPosts(contentDir = CONTENT_DIR) {
   const readDir = async (rel) => {
     try {
@@ -339,22 +349,52 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
   if (enFiles.length + zhFiles.length === 0) {
     throw new Error(`${contentDir}: no posts found (expected *.md and zh/*.md)`);
   }
-  for (const name of enFiles) {
-    if (!zhFiles.includes(name)) {
-      throw new Error(`content/blog/zh/${name}: missing zh mirror for content/blog/${name}`);
-    }
-  }
-  for (const name of zhFiles) {
-    if (!enFiles.includes(name)) {
-      throw new Error(`content/blog/${name}: missing en post for content/blog/zh/${name}`);
-    }
-  }
   const posts = [];
   for (const [dir, names] of [[".", enFiles], ["zh", zhFiles]]) {
     for (const name of names) {
       const displayName = dir === "." ? name : `${dir}/${name}`;
       posts.push(postFromSource(displayName, await readFile(join(contentDir, dir, name), "utf8")));
     }
+  }
+  const label = (post) => `content/blog/${post.source}`;
+  const otherLang = (post) => (post.lang === "en" ? "zh" : "en");
+  const byKey = new Map(posts.map((post) => [`${post.lang}/${post.slug}`, post]));
+  for (const post of posts) {
+    if (post.mirror === undefined) continue;
+    if (!byKey.has(`${otherLang(post)}/${post.mirror}`)) {
+      const missing = post.lang === "en"
+        ? `content/blog/zh/${post.mirror}.md`
+        : `content/blog/${post.mirror}.md`;
+      throw new Error(`${label(post)}: mirror: ${post.mirror} names a file that does not exist: ${missing} (Issue #214)`);
+    }
+  }
+  // Counterpart per post: the declared mirror, else the same-slug default,
+  // else none.
+  for (const post of posts) {
+    post.counterpartSlug = post.mirror
+      ?? (byKey.has(`${otherLang(post)}/${post.slug}`) ? post.slug : null);
+  }
+  // The pairing is mutual: what a post names must name it back.
+  for (const post of posts) {
+    if (post.counterpartSlug === null) continue;
+    const other = byKey.get(`${otherLang(post)}/${post.counterpartSlug}`);
+    if (other.counterpartSlug !== post.slug) {
+      const named = other.counterpartSlug === null
+        ? "no mirror"
+        : label(byKey.get(`${otherLang(other)}/${other.counterpartSlug}`));
+      throw new Error(`${label(post)} names ${label(other)} as its mirror, but ${label(other)} names ${named} (Issue #214)`);
+    }
+  }
+  for (const post of posts) {
+    const other = post.counterpartSlug === null
+      ? null
+      : byKey.get(`${otherLang(post)}/${post.counterpartSlug}`);
+    post.paired = other !== null;
+    // A single-language post switches languages at the other language's blog
+    // index — never at a page that does not exist.
+    post.mirrorOutput = other
+      ? other.output
+      : post.lang === "en" ? "zh/blog/index.html" : "blog/index.html";
   }
   return posts.sort((a, b) => b.date.localeCompare(a.date) || a.href.localeCompare(b.href));
 }
@@ -512,12 +552,21 @@ function renderSitemap(pages, posts = [], contentDir = CONTENT_DIR) {
     const priority = page.output === "index.html" ? "1.0" : page.output === "zh/index.html" ? "0.9" : "0.8";
     return `  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${page.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(path)}</lastmod>\n    <changefreq>${isHome ? "weekly" : "monthly"}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
   });
-  // Blog posts: rendered from content/blog, one URL per language mirror.
+  // Blog posts: rendered from content/blog, one URL per published post
+  // regardless of pairing (Issue #214). Paired posts carry hreflang
+  // alternates to each other; a single-language post lists itself only — an
+  // alternate to the blog index would promise a translation that does not
+  // exist.
   for (const post of posts) {
     const base = "https://orbi.build";
     const href = post.href;
+    const tail = `\n    <lastmod>${lastCommitDate(join(contentDir, post.source))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`;
+    if (!post.paired) {
+      urls.push(`  <url>\n    <loc>${base}${href}</loc>${tail}`);
+      continue;
+    }
     const mirror = pathToHref(post.mirrorOutput);
-    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(join(contentDir, post.source))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>${tail}`);
   }
   urls.push(`  <url>\n    <loc>https://orbi.build/compare/matrix.csv</loc>\n    <lastmod>${lastCommitDate(join(ROOT, "site", "pages", "compare", "index.html"))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
