@@ -379,6 +379,28 @@ function goneResponse() {
   });
 }
 
+// Issue #251: the bot verdict on beta is all zeros and the two candidate
+// causes — botManagement absent on this account/plan, or present with high
+// scores — differ only in the live value. /__cf is the read-only measurement:
+// the request's own request.cf echoed back as JSON, exactly as received. It
+// carries no credentials, writes nothing, and is never cached (the score is
+// per-request), and it is answered on non-production hosts only — production
+// has no such route and its assets 404.
+function cfDiagResponse(request) {
+  const cf = request.cf ?? {};
+  return new Response(JSON.stringify({
+    botManagement: cf.botManagement ?? null,
+    asn: cf.asn,
+    colo: cf.colo,
+  }), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
 // Issue #174: curl gets public/install.sh; browsers 302 to orbi.build.
 // Bytes come from ASSETS so the worker never holds a second copy of the script.
 const INSTALL_SCRIPT_CACHE = "public, max-age=120";
@@ -513,6 +535,12 @@ async function handleFetch(request, env) {
     if (route === "/pricing" || route === "/zh/pricing") {
       const prefix = route.startsWith("/zh") ? "/zh" : "";
       return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
+    }
+
+    // Issue #251: beta-only request.cf diagnostic; production falls through
+    // to the assets and 404s.
+    if (route === "/__cf" && !PROD_HOSTS.has(url.hostname)) {
+      return cfDiagResponse(request);
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
@@ -665,7 +693,8 @@ async function reportVisit(env, payload) {
 //   fill an empty slot and never overwrite — github.com must not replace the
 //   tweet that brought the visitor here.
 // Probes and crawlers keep their vid and their page; their visits are marked
-// is_bot=1 (visitSignals, Cloudflare's botManagement score) so dashboard
+// is_bot=1 (visitSignals, an exact match of our own probes' UAs — #251
+// measured botManagement as absent on this plan) so dashboard
 // queries can exclude them. The response body is never rewritten, so asset
 // validators like ETag survive. Every HTML 200 is reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is

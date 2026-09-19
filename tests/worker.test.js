@@ -1232,21 +1232,17 @@ describe("visit attribution (Issue #228)", () => {
     });
   });
 
-  // Issue #243: classification is Cloudflare's answer, not ours. The Workers
-  // plan computes request.cf.botManagement.score on every request; the visit
-  // report carries only the verdict (is_bot) — no UA list, no ASN table, no
-  // stored Sec-Fetch-Mode. vid is still seeded on every request and the page
-  // is served unchanged.
-  describe("bot marking (Issue #243)", () => {
+  // Issue #251 measured the live request on beta through the /__cf
+  // diagnostic (2026-09-20): request.cf itself is populated (asn, colo) but
+  // botManagement is absent on this account/plan, so #243's score-based
+  // classification could never fire and every row landed is_bot=0. The
+  // working marker is an exact UA match of the probes we actually run — the
+  // attribution e2e's Better Stack monitor string — not a substring sweep,
+  // not a 1500-entry list. vid is still seeded on every request and the page
+  // is served unchanged; the marker never blocks.
+  describe("bot marking (Issue #251)", () => {
     const CHROME_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
-
-    // workerd attaches request.cf to incoming requests; the tests pin the
-    // property on undici's Request the same way.
-    function requestWithCf(url, cf, headers) {
-      const request = new Request(url, { headers });
-      request.cf = cf;
-      return request;
-    }
+    const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
 
     async function botReportFor(request) {
       const fetchMock = vi.fn(async () => new Response("ok"));
@@ -1260,54 +1256,133 @@ describe("visit attribution (Issue #228)", () => {
       return { body: await visitBody(calls[0]), cookies: response.headers.getSetCookie() };
     }
 
-    it("marks Cloudflare's automated score is_bot=1 while seeding vid and serving the page unchanged", async () => {
-      const { body, cookies } = await botReportFor(requestWithCf(
-        "https://beta.orbi.build/",
-        { botManagement: { score: 1 } },
-        { "User-Agent": CHROME_127 },
-      ));
+    it("marks the known Better Uptime probe is_bot=1 while seeding vid and serving the page unchanged", async () => {
+      const { body, cookies } = await botReportFor(
+        new Request("https://beta.orbi.build/", { headers: { "User-Agent": BETTER_UPTIME } }),
+      );
       expect(body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 1 });
       expect(cookies).toHaveLength(1);
       expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
     });
 
-    it("marks a likely-human score is_bot=0", async () => {
-      const { body } = await botReportFor(requestWithCf(
-        "https://beta.orbi.build/",
-        { botManagement: { score: 99 } },
-        { "User-Agent": CHROME_127 },
-      ));
+    it("matches the probe string exactly: lookalike, case-different and substring UAs stay human", async () => {
+      const lookalike = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; Better Uptime Bot/1.0)" },
+      }));
+      const lowercase = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": BETTER_UPTIME.toLowerCase() },
+      }));
+      const wrapped = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": `x ${BETTER_UPTIME} y` },
+      }));
+      expect(lookalike.body.is_bot).toBe(0);
+      expect(lowercase.body.is_bot).toBe(0);
+      expect(wrapped.body.is_bot).toBe(0);
+    });
+
+    it("marks browsers and curl human", async () => {
+      const chrome = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": CHROME_127 } }));
+      const curl = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": "curl/8.7.1" } }));
+      expect(chrome.body.is_bot).toBe(0);
+      expect(curl.body.is_bot).toBe(0);
+    });
+
+    it("no longer reads botManagement at all: a perfect score decides nothing", async () => {
+      const request = new Request("https://beta.orbi.build/", { headers: { "User-Agent": CHROME_127 } });
+      request.cf = { botManagement: { score: 1 } };
+      const { body } = await botReportFor(request);
       expect(body.is_bot).toBe(0);
     });
+  });
+});
 
-    it("pins the threshold at the Issue's code: score 30 is a bot, 31 is not", async () => {
-      const at30 = await botReportFor(requestWithCf("https://beta.orbi.build/", { botManagement: { score: 30 } }));
-      const at31 = await botReportFor(requestWithCf("https://beta.orbi.build/", { botManagement: { score: 31 } }));
-      expect(at30.body.is_bot).toBe(1);
-      expect(at31.body.is_bot).toBe(0);
-    });
+// Issue #251: the bot verdict on beta is all zeros and the two candidate
+// causes — botManagement absent on this account/plan, or present with high
+// scores — differ only in the live value. /__cf is the read-only measurement:
+// the request's own request.cf echoed back as JSON on non-production hosts.
+// No credentials, no writes, no cache (the score is per-request), and
+// production has no such route: it 404s through the asset fall-through.
+describe("/__cf diagnostic (Issue #251)", () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+  });
 
-    it("treats a missing botManagement field as human — is_bot=0 without throwing, no fallback path", async () => {
-      const cfWithoutField = await botReportFor(requestWithCf("https://beta.orbi.build/", { asn: 24940, country: "DE" }));
-      const withoutCf = await botReportFor(new Request("https://beta.orbi.build/"));
-      expect(cfWithoutField.body.is_bot).toBe(0);
-      expect(withoutCf.body.is_bot).toBe(0);
-      expect(withoutCf.body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 0 });
-    });
+  function requestWithCf(url, cf) {
+    const request = new Request(url);
+    request.cf = cf;
+    return request;
+  }
 
-    it("carries no UA-list or ASN verdict: curl's UA and a datacenter ASN no longer decide", async () => {
-      const curl = await botReportFor(requestWithCf(
-        "https://beta.orbi.build/",
-        { botManagement: { score: 99 } },
-        { "User-Agent": "curl/8.7.1" },
-      ));
-      const hetzner = await botReportFor(requestWithCf(
-        "https://beta.orbi.build/",
-        { asn: 24940, botManagement: { score: 99 } },
-        { "User-Agent": CHROME_127 },
-      ));
-      expect(curl.body.is_bot).toBe(0);
-      expect(hetzner.body.is_bot).toBe(0);
-    });
+  // Rejecting assets prove the beta endpoint is answered by the worker route
+  // and never falls through to the static assets.
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+  const notFoundAssets = {
+    ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+  };
+
+  it("echoes the live request.cf fields as JSON on beta", async () => {
+    const response = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { botManagement: { score: 7 }, asn: 24940, colo: "FRA" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(await response.json()).toEqual({ botManagement: { score: 7 }, asn: 24940, colo: "FRA" });
+  });
+
+  it("answers botManagement null when the field is absent from request.cf", async () => {
+    const response = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { asn: 24940, colo: "HKG" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ botManagement: null, asn: 24940, colo: "HKG" });
+  });
+
+  it("answers botManagement null without any request.cf at all (local dev)", async () => {
+    const response = await handleFetch(new Request("https://beta.orbi.build/__cf"), env);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ botManagement: null, asn: undefined, colo: undefined });
+  });
+
+  it("serves the trailing-slash form identically (Issue #134)", async () => {
+    const response = await handleFetch(new Request("https://beta.orbi.build/__cf/"), env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+  });
+
+  it("is 404 in production: orbi.build directly, aiready.sh via its standard redirect", async () => {
+    const apex = await handleFetch(new Request("https://orbi.build/__cf"), notFoundAssets);
+    expect(apex.status).toBe(404);
+    // aiready.sh's Issue #174 contract 302s every unknown path to orbi.build,
+    // where the diagnostic 404s — the end result is still no /__cf in prod.
+    const aiready = await handleFetch(new Request("https://aiready.sh/__cf"), notFoundAssets);
+    expect(aiready.status).toBe(302);
+    expect(aiready.headers.get("Location")).toBe("https://orbi.build/__cf");
+  });
+
+  it("never reports a visit: the diagnostic is not an HTML 200", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const pending = [];
+    const attributionEnv = {
+      ...env,
+      CLOUD_VISIT_URL: "https://beta.orbi.build/api/internal/visit",
+      WEBSITE_SECRET: "e2e-visit-secret",
+      CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
+    };
+    const response = await worker.fetch(
+      requestWithCf("https://beta.orbi.build/__cf", { botManagement: { score: 1 } }),
+      attributionEnv,
+      { waitUntil: (promise) => pending.push(promise) },
+    );
+    expect(response.status).toBe(200);
+    await Promise.all(pending);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
