@@ -810,7 +810,7 @@ describe("aiready.sh install entry (Issue #174)", () => {
 // the cloud control plane's POST /api/internal/visit. The registration side
 // (orbi-cloud#716) reads the same cookie, so the contract is pinned: 16 random
 // bytes as base64url (22 chars, no padding), host-only Path=/ with HttpOnly;
-// SameSite=Lax; Max-Age=31536000, and Secure only on https (cloud's
+// SameSite=Lax; Max-Age=7776000, and Secure only on https (cloud's
 // sessionCookieString pattern) so local http tests can still seed it.
 // Reporting rides ctx.waitUntil and never delays or fails the page.
 // Issue #234: the same exit seeds a `ref` cookie — the one the
@@ -896,8 +896,8 @@ describe("visit attribution (Issue #228)", () => {
     expect(response.status).toBe(200);
     const cookies = response.headers.getSetCookie();
     expect(cookies).toHaveLength(2);
-    expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
-    expect(cookies[1]).toBe("ref=e2e-14f5d89f; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure");
+    expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure$/);
+    expect(cookies[1]).toBe("ref=e2e-14f5d89f; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure");
     // Seeding must not rewrite the body, so the asset's own validators survive.
     expect(response.headers.get("ETag")).toBe('"asset-etag-1"');
     await flush(ctx);
@@ -923,7 +923,7 @@ describe("visit attribution (Issue #228)", () => {
     // Issue #240: no ?ref= and no referer means no ref cookie — "direct" is
     // no longer fabricated into the slot, so only vid is seeded.
     expect(response.headers.getSetCookie()).toEqual([
-      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000$/),
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000$/),
     ]);
     await flush(ctx);
   });
@@ -941,7 +941,7 @@ describe("visit attribution (Issue #228)", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.getSetCookie()).toEqual([
-      "ref=later-ref; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure",
+      "ref=later-ref; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
     ]);
     await flush(ctx);
     const calls = visitCalls(fetchMock);
@@ -1068,7 +1068,7 @@ describe("visit attribution (Issue #228)", () => {
   // ?ref= channel. The slot now only fills when the landing carries a real
   // signal (?ref=, ?source=, referer host).
   describe("ref cookie (Issue #234)", () => {
-    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000";
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000";
 
     it("seeds no ref cookie on a first landing without any ref signal (Issue #240)", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
@@ -1144,7 +1144,7 @@ describe("visit attribution (Issue #228)", () => {
   // they fill an empty slot and never overwrite. The rows of the Issue's
   // priority table map onto these tests one to one.
   describe("attribution model (Issue #247)", () => {
-    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000";
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000";
 
     // Row: ref cookie `aaa`, landing ?ref=bbb → overwritten with bbb
     // (last-touch), and the visit reports bbb. The token is also
@@ -1262,7 +1262,7 @@ describe("visit attribution (Issue #228)", () => {
       );
       expect(body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 1 });
       expect(cookies).toHaveLength(1);
-      expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
+      expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure$/);
     });
 
     it("matches the probe string exactly: lookalike, case-different and substring UAs stay human", async () => {
