@@ -1,0 +1,50 @@
+[
+  {
+    "repo": "SHUKE-LABS/mat-site",
+    "pr": 16,
+    "merged_at": "2026-09-19T00:41:18Z",
+    "human_reviews": 0,
+    "title": "Replace terminal logo and favicon with new four-agent My AI Team artwork",
+    "quote": null,
+    "person": null,
+    "handle": null,
+    "person_url": null,
+    "consent": null
+  },
+  {
+    "repo": "SHUKE-LABS/mat-site",
+    "pr": 14,
+    "merged_at": "2026-09-18T21:06:02Z",
+    "human_reviews": 0,
+    "title": "Let mat-site use the same slogan as https://shukelabs.com/products/my-ai-team/ does",
+    "quote": null,
+    "person": null,
+    "handle": null,
+    "person_url": null,
+    "consent": null
+  },
+  {
+    "repo": "zzuu080603/Tianshu-harness",
+    "pr": 3,
+    "merged_at": "2026-09-18T02:15:53Z",
+    "human_reviews": 0,
+    "title": "buildOaiRequest 每轮 5+ 趟全量扫描的性能战役（战略票）",
+    "quote": null,
+    "person": null,
+    "handle": null,
+    "person_url": null,
+    "consent": null
+  },
+  {
+    "repo": null,
+    "pr": null,
+    "merged_at": null,
+    "human_reviews": null,
+    "title": null,
+    "quote": "orbi 全自动控制流程还是很棒的，继续保持",
+    "person": "Tommy Xiao",
+    "handle": "@xds2000",
+    "person_url": "https://x.com/xds2000",
+    "consent": "Telegram, 2026-09-19"
+  }
+]

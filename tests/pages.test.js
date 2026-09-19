@@ -191,6 +191,7 @@ describe("build output is committed (npm run build ran)", () => {
       expect(html).not.toContain("<!--@footer-->");
       expect(html).not.toContain("<!--@posts-->");
       expect(html).not.toContain("<!--@post-meta-->");
+      expect(html).not.toContain("<!--@social-proof-->");
       expect(html).not.toMatch(/\{\{[A-Z_]+\}\}/);
     }
   });
