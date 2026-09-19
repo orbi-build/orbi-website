@@ -202,6 +202,36 @@ describe("/evidence/ #third-party section (Issue #226)", () => {
   });
 });
 
+// Issue #232: the repository name is evidence of whose repository delivered,
+// but the repository homepage is the other project's storefront — the section
+// links only the public PR records, never a repo root. Our own repositories
+// live outside these sections, so the root-href scan is scoped to them.
+describe("third-party repository name is plain text (Issue #232)", () => {
+  it("renders no href to a github.com/<owner>/<repo> root and keeps the repo name visible", () => {
+    for (const [output, id] of [
+      ["index.html", "social-proof"],
+      ["zh/index.html", "social-proof"],
+      ["evidence/index.html", "third-party"],
+      ["zh/evidence/index.html", "third-party"],
+    ]) {
+      const section = sectionOf(built.get(output), id);
+      // A root has exactly <owner>/<repo> after the host; a PR link carries
+      // /pull/N and must not match.
+      expect(section, `${output}: a repository homepage is still linked`).not.toMatch(
+        /href="https:\/\/github\.com\/[^/"]+\/[^/"]+"/,
+      );
+      expect(section, `${output}: the repository name vanished from the cards`).toContain(
+        '<p class="proof-card-repo">SHUKE-LABS/mat-site</p>',
+      );
+      if (id === "third-party") {
+        expect(section, `${output}: the repository name vanished from the group title`).toContain(
+          '<h3 class="social-proof-group-title">SHUKE-LABS/mat-site</h3>',
+        );
+      }
+    }
+  });
+});
+
 describe("caps: 6 cards, 2 quotes, 2 per repository (Issue #226 acceptance 3)", () => {
   // 9 records across 2 repositories: 4 + 3 deliveries plus 2 quotes. The
   // homepage must render 6 cards (2 quotes + 4 deliveries, at most 2 per
