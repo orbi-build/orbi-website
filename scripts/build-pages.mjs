@@ -24,11 +24,24 @@ import { execFileSync } from "node:child_process";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { marked } from "marked";
+import { renderSocialProof, validateSocialProof } from "./social-proof.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGES_DIR = join(ROOT, "site", "pages");
 const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
+const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
+
+// The four pages that carry the data-driven social-proof section (Issue #226):
+// the two homes render the capped grid, the two evidence pages the full
+// grouped list. A page in this map without the <!--@social-proof--> marker
+// fails the build, like a blog index without <!--@posts-->.
+const SOCIAL_PROOF_VARIANTS = {
+  "index.html": "home",
+  "zh/index.html": "home",
+  "evidence/index.html": "evidence",
+  "zh/evidence/index.html": "evidence",
+};
 
 // Footer deep dives, in the order the /compare/ grid and the browser smoke
 // test pin them. Href prefix per language; anchor text is the competitors'
@@ -603,12 +616,19 @@ async function walkPages(dir) {
 let NAV_PARTIAL;
 let FOOTER_PARTIAL;
 
-export async function buildPages(outDir, { contentDir = CONTENT_DIR } = {}) {
+export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
+  // Issue #226: the consent gate runs here, once, before anything renders —
+  // a quote without recorded consent fails the build even if no page carried
+  // the section marker.
+  const socialProof = validateSocialProof(
+    JSON.parse(await readFile(socialProofPath, "utf8")),
+    relative(ROOT, socialProofPath).split("\\").join("/"),
+  );
   const postsFor = (indexSource) =>
     posts.filter((post) => post.lang === (indexSource.startsWith("zh/") ? "zh" : "en"));
   await mkdir(outDir, { recursive: true });
@@ -637,6 +657,16 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR } = {}) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
       }
       html = html.replace("<!--@posts-->", () => renderPostList(postsFor(page.source)));
+    }
+    const socialVariant = SOCIAL_PROOF_VARIANTS[page.source];
+    if (socialVariant) {
+      if (!html.includes("<!--@social-proof-->")) {
+        throw new Error(`${page.source}: missing the <!--@social-proof--> marker for the social-proof section`);
+      }
+      html = html.replace(
+        "<!--@social-proof-->",
+        () => toLayout(renderSocialProof(socialProof, page.lang, socialVariant), page.layout),
+      );
     }
     const out = join(outDir, page.output);
     await mkdir(dirname(out), { recursive: true });

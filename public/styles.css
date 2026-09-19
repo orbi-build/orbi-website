@@ -667,6 +667,138 @@ h1 span { color: var(--signal); }
 .stat span { margin-top: 8px; color: #9aada9; font-size: 0.8rem; }
 .stat small { color: #7d9992; font-family: var(--mono); font-size: 0.65rem; }
 
+/* Third-party social proof (Issue #226): one data file, one card markup, two
+ * contexts. The homepage section sits inside .night (the card colours are
+ * scoped below); /evidence/#third-party renders the same markup on paper.
+ * Quote cards are distinguished by a quotation mark and type size, never by
+ * colour alone. */
+.social-proof {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(84px, 9vw, 140px);
+  padding-bottom: clamp(84px, 9vw, 140px);
+}
+
+.social-proof h2 { max-width: 22ch; }
+
+.social-proof-grid {
+  display: grid;
+  /* minmax(0, 1fr), not 1fr: a card whose title carries a long URL must not
+   * inflate its track's min-content and push the grid past the container. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.social-proof-group + .social-proof-group { margin-top: 56px; }
+
+.social-proof-group-title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.social-proof-group .social-proof-grid { margin-top: 24px; }
+
+.social-proof-more {
+  margin: 34px 0 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.proof-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+.proof-card-repo { margin: 0; color: #4b615d; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em; }
+.proof-card-repo a { color: var(--ink); text-underline-offset: 3px; }
+.proof-card-repo a:hover { color: #000; }
+
+.proof-card-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+/* PR titles may carry long URLs: wrap them, never overflow the card. */
+.proof-card-title a {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.proof-card-title a:hover { text-decoration: underline; }
+
+.proof-card-meta { margin: 0; color: #4b615d; font-family: var(--mono); font-size: 0.72rem; }
+.proof-card-meta a { color: inherit; text-underline-offset: 3px; }
+
+.proof-card-review {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: #4b615d;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+/* Quote card: the quotation mark and the larger type carry the distinction. */
+.proof-card-quote-text { margin: 0; }
+.proof-card-quote-text p {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+}
+.proof-card-quote-text::before {
+  content: "\201C";
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.proof-card-person { margin: 0; font-size: 0.85rem; }
+.proof-card-name { font-weight: 600; }
+.proof-card-handle { margin-left: 4px; font-family: var(--mono); font-size: 0.75rem; text-underline-offset: 3px; }
+
+/* The same cards on the dark .night band of the homes. */
+.night .social-proof .section-tag { color: #829a96; }
+.night .social-proof .section-lede { color: #9aada9; }
+.night .social-proof-more { color: #9aada9; }
+.night .social-proof-more a { color: #edf5f0; text-underline-offset: 3px; }
+.night .social-proof-more a:hover { color: #fff; }
+
+.night .proof-card {
+  border: 1px solid var(--line-dark);
+  background: rgba(220, 238, 230, 0.04);
+}
+
+.night .proof-card-repo { color: #9aada9; }
+.night .proof-card-repo a { color: #edf5f0; }
+.night .proof-card-repo a:hover { color: var(--run); }
+.night .proof-card-title { color: #edf5f0; }
+.night .proof-card-meta { color: #9aada9; }
+.night .proof-card-meta a { color: #edf5f0; }
+.night .proof-card-review { border-top-color: var(--line-dark); color: #9aada9; }
+.night .proof-card-person { color: #edf5f0; }
+.night .proof-card-handle { color: #9aada9; }
+.night .proof-card-handle:hover { color: #edf5f0; }
+
 .thesis,
 .proof,
 .direction,
@@ -1357,6 +1489,8 @@ h2 {
    collapsing it at 1160px stranded every viewport between 980 and 1160 —
    1152, 1159 and a half-screen 1280 all fell to a single stacked column. */
 @media (max-width: 980px) {
+  .social-proof-grid { grid-template-columns: repeat(2, 1fr); }
+
   .hero {
     grid-template-columns: 1fr;
     min-height: auto;
@@ -1444,6 +1578,8 @@ h2 {
 }
 
 @media (max-width: 760px) {
+  .social-proof-grid { grid-template-columns: 1fr; }
+
   /* A <pre> scrolls horizontally, so right padding scrolls away with the
    * content and the floating button ends up on top of the commands. On narrow
    * screens give it its own full-width bar above the code instead. */
