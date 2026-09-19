@@ -618,9 +618,19 @@ function normalizedSource(url, request) {
 // The visit report is a bypass path: it never delays the response (rides
 // ctx.waitUntil) and never decides the page's fate — every failure, its own
 // or a timeout or a rejection status, is swallowed with a console.warn.
+//
+// It travels over the CLOUD service binding, never a plain fetch() (Issue
+// #231). Both Workers answer on one hostname — website on orbi.build/*, the
+// control plane on orbi.build/api* — and Cloudflare routes a Worker's own
+// fetch() of its zone "to the zone's origin server, ignoring any Workers
+// mapped to the URL". The report therefore never reached the control plane
+// and died on the 5s timeout; the binding is a direct Worker-to-Worker call
+// that skips routing entirely. env.CLOUD_VISIT_URL still supplies the path.
+// A missing binding (local dev, a partial config) falls back to fetch so the
+// page path stays identical either way.
 async function reportVisit(env, payload) {
   try {
-    const response = await fetch(env.CLOUD_VISIT_URL, {
+    const request = new Request(env.CLOUD_VISIT_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
@@ -629,6 +639,7 @@ async function reportVisit(env, payload) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000),
     });
+    const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);
     if (!response.ok) {
       console.warn("visit_report_rejected", response.status);
     }

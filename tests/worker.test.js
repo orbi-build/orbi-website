@@ -851,17 +851,31 @@ describe("visit attribution (Issue #228)", () => {
     };
   }
 
+  // The report travels over the CLOUD service binding (Issue #231), so the
+  // env carries one whose fetch is the same mock the tests already assert on.
+  // A plain global fetch() of this zone would be routed to the origin server
+  // past every Worker, which is exactly the bug the binding fixes.
   function env(overrides = {}) {
     return {
       ASSETS: assetServer({ "/": HTML_PAGE }),
       CLOUD_VISIT_URL: VISIT_URL,
       WEBSITE_SECRET: SECRET,
+      CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
       ...overrides,
     };
   }
 
+  // The binding is handed a Request, so the url and the body both live on it.
   function visitCalls(fetchMock) {
-    return fetchMock.mock.calls.filter(([url]) => String(url) === VISIT_URL);
+    return fetchMock.mock.calls.filter(([first]) => String(first?.url ?? first) === VISIT_URL);
+  }
+
+  // A Request's body is a stream: clone before reading so a second assertion
+  // on the same captured call still works.
+  async function visitBody(call) {
+    const [first, init] = call;
+    if (init && typeof init.body === "string") return JSON.parse(init.body);
+    return await first.clone().json();
   }
 
   it("seeds a vid cookie on first touch over https, reports the visit, keeps the ETag", async () => {
@@ -880,13 +894,14 @@ describe("visit attribution (Issue #228)", () => {
 
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    const [url, init] = calls[0];
-    expect(String(url)).toBe(VISIT_URL);
-    expect(init.method).toBe("POST");
-    expect(init.headers.Authorization).toBe(`Bearer ${SECRET}`);
-    expect(init.headers["Content-Type"]).toBe("application/json");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
-    expect(JSON.parse(init.body)).toEqual({ vid: cookie.match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
+    // The binding receives one Request, so every field is asserted on it.
+    const [sent] = calls[0];
+    expect(sent.url).toBe(VISIT_URL);
+    expect(sent.method).toBe("POST");
+    expect(sent.headers.get("Authorization")).toBe(`Bearer ${SECRET}`);
+    expect(sent.headers.get("Content-Type")).toBe("application/json");
+    expect(sent.signal).toBeInstanceOf(AbortSignal);
+    expect(await visitBody(calls[0])).toEqual({ vid: cookie.match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
   });
 
   it("seeds the vid cookie without Secure over http", async () => {
@@ -915,7 +930,7 @@ describe("visit attribution (Issue #228)", () => {
     await flush(ctx);
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    expect(JSON.parse(calls[0][1].body)).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
@@ -1008,7 +1023,7 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
       const calls = visitCalls(fetchMock);
       expect(calls, url).toHaveLength(1);
-      expect(JSON.parse(calls[0][1].body).ref, url).toBe(expected);
+      expect((await visitBody(calls[0])).ref, url).toBe(expected);
     }
   });
 
