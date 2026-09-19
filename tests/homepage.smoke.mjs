@@ -605,7 +605,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 const cloudPages = {
   "/cloud/": {
     zh: "/zh/cloud/",
-    title: "GitHub Issues in, tagged releases out",
+    // Issue #237: the title now leads with the search term; the release
+    // claim itself stays pinned on the h1 below and in the body.
+    title: "Self-hosted or cloud coding agent",
     h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
     loop: "GitHub Issue in, tagged release out",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
