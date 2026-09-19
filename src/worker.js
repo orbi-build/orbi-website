@@ -660,8 +660,8 @@ async function reportVisit(env, payload) {
 // stopped the old "seed direct too" behavior: a fabricated direct first
 // touch hides a real later ?ref= channel, so a source-less landing now
 // leaves the slot empty. Probes and crawlers keep their vid and their page;
-// their visits are marked is_bot=1 (visitSignals) so dashboard queries can
-// exclude them and reclassify history when the rules improve. The response
+// their visits are marked is_bot=1 (visitSignals, Cloudflare's botManagement
+// score) so dashboard queries can exclude them. The response
 // body is never rewritten, so asset validators like ETag survive. Every
 // HTML 200 is reported as one visit; only first touch carries the ref, later
 // pages of the same visit report an empty one.
@@ -690,7 +690,7 @@ function withAttribution(request, response, env, ctx) {
     && env.WEBSITE_SECRET
   ) {
     // Signals ride only this reported branch so every static-asset request
-    // skips the UA-list work entirely.
+    // skips the classification entirely.
     ctx.waitUntil(reportVisit(env, {
       vid,
       path: url.pathname,

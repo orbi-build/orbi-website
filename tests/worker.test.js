@@ -908,7 +908,7 @@ describe("visit attribution (Issue #228)", () => {
     expect(sent.headers.get("Authorization")).toBe(`Bearer ${SECRET}`);
     expect(sent.headers.get("Content-Type")).toBe("application/json");
     expect(sent.signal).toBeInstanceOf(AbortSignal);
-    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 0, ua: null, sec_fetch_mode: null });
+    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 0 });
   });
 
   it("seeds the vid cookie without Secure over http", async () => {
@@ -943,7 +943,7 @@ describe("visit attribution (Issue #228)", () => {
     await flush(ctx);
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0, ua: null, sec_fetch_mode: null });
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0 });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
@@ -1130,15 +1130,13 @@ describe("visit attribution (Issue #228)", () => {
     });
   });
 
-  // Issue #240: probes and crawlers are marked, not dropped. vid is still
-  // seeded on every request and the page is served unchanged; the visit
-  // report carries is_bot (crawler-UA list + datacenter-ASN list — the free
-  // plan has no request.cf.botManagement), the capped UA, and Sec-Fetch-Mode
-  // recorded as a positive-human signal that never participates in filtering.
-  describe("bot marking (Issue #240)", () => {
-    const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+  // Issue #243: classification is Cloudflare's answer, not ours. The Workers
+  // plan computes request.cf.botManagement.score on every request; the visit
+  // report carries only the verdict (is_bot) — no UA list, no ASN table, no
+  // stored Sec-Fetch-Mode. vid is still seeded on every request and the page
+  // is served unchanged.
+  describe("bot marking (Issue #243)", () => {
     const CHROME_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
-    const IOS_SAFARI_17 = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
 
     // workerd attaches request.cf to incoming requests; the tests pin the
     // property on undici's Request the same way.
@@ -1160,54 +1158,54 @@ describe("visit attribution (Issue #228)", () => {
       return { body: await visitBody(calls[0]), cookies: response.headers.getSetCookie() };
     }
 
-    it("marks a Better Uptime Bot probe is_bot=1 while seeding vid and serving the page unchanged", async () => {
-      const { body, cookies } = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": BETTER_UPTIME } }));
-      expect(body.is_bot).toBe(1);
-      expect(body.ua).toBe(BETTER_UPTIME.slice(0, 120));
+    it("marks Cloudflare's automated score is_bot=1 while seeding vid and serving the page unchanged", async () => {
+      const { body, cookies } = await botReportFor(requestWithCf(
+        "https://beta.orbi.build/",
+        { botManagement: { score: 1 } },
+        { "User-Agent": CHROME_127 },
+      ));
+      expect(body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 1 });
       expect(cookies).toHaveLength(1);
       expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
     });
 
-    it("marks real Chrome and iOS Safari is_bot=0", async () => {
-      for (const ua of [CHROME_127, IOS_SAFARI_17]) {
-        const { body } = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": ua } }));
-        expect(body.is_bot, ua).toBe(0);
-        // The iOS UA itself exceeds the 120-char cap; truncation is the contract.
-        expect(body.ua, ua).toBe(ua.slice(0, 120));
-      }
-    });
-
-    it("marks curl's default UA is_bot=1", async () => {
-      const { body } = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": "curl/8.7.1" } }));
-      expect(body.is_bot).toBe(1);
-    });
-
-    it("marks a known datacenter ASN is_bot=1 even with a clean browser UA (layer 2)", async () => {
-      const { body } = await botReportFor(requestWithCf("https://beta.orbi.build/", { asn: 24940 }, { "User-Agent": CHROME_127 }));
-      expect(body.is_bot).toBe(1);
-    });
-
-    it("does not flag a VPN exit ASN: Mullvad AS51818 stays is_bot=0", async () => {
-      const { body } = await botReportFor(requestWithCf("https://beta.orbi.build/", { asn: 51818 }, { "User-Agent": CHROME_127 }));
+    it("marks a likely-human score is_bot=0", async () => {
+      const { body } = await botReportFor(requestWithCf(
+        "https://beta.orbi.build/",
+        { botManagement: { score: 99 } },
+        { "User-Agent": CHROME_127 },
+      ));
       expect(body.is_bot).toBe(0);
     });
 
-    it("truncates an overlong UA to 120 chars without erroring and records Sec-Fetch-Mode", async () => {
-      const overlong = `${CHROME_127} ${"padding/".repeat(30)}`;
-      expect(overlong.length).toBeGreaterThan(120);
-      const { body } = await botReportFor(new Request("https://beta.orbi.build/", {
-        headers: { "User-Agent": overlong, "Sec-Fetch-Mode": "navigate" },
-      }));
-      expect(body.ua).toBe(overlong.slice(0, 120));
-      expect(body.ua).toHaveLength(120);
-      expect(body.sec_fetch_mode).toBe("navigate");
+    it("pins the threshold at the Issue's code: score 30 is a bot, 31 is not", async () => {
+      const at30 = await botReportFor(requestWithCf("https://beta.orbi.build/", { botManagement: { score: 30 } }));
+      const at31 = await botReportFor(requestWithCf("https://beta.orbi.build/", { botManagement: { score: 31 } }));
+      expect(at30.body.is_bot).toBe(1);
+      expect(at31.body.is_bot).toBe(0);
     });
 
-    it("reports a missing UA and Sec-Fetch-Mode as null", async () => {
-      const { body } = await botReportFor(new Request("https://beta.orbi.build/"));
-      expect(body.ua).toBeNull();
-      expect(body.sec_fetch_mode).toBeNull();
-      expect(body.is_bot).toBe(0);
+    it("treats a missing botManagement field as human — is_bot=0 without throwing, no fallback path", async () => {
+      const cfWithoutField = await botReportFor(requestWithCf("https://beta.orbi.build/", { asn: 24940, country: "DE" }));
+      const withoutCf = await botReportFor(new Request("https://beta.orbi.build/"));
+      expect(cfWithoutField.body.is_bot).toBe(0);
+      expect(withoutCf.body.is_bot).toBe(0);
+      expect(withoutCf.body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 0 });
+    });
+
+    it("carries no UA-list or ASN verdict: curl's UA and a datacenter ASN no longer decide", async () => {
+      const curl = await botReportFor(requestWithCf(
+        "https://beta.orbi.build/",
+        { botManagement: { score: 99 } },
+        { "User-Agent": "curl/8.7.1" },
+      ));
+      const hetzner = await botReportFor(requestWithCf(
+        "https://beta.orbi.build/",
+        { asn: 24940, botManagement: { score: 99 } },
+        { "User-Agent": CHROME_127 },
+      ));
+      expect(curl.body.is_bot).toBe(0);
+      expect(hetzner.body.is_bot).toBe(0);
     });
   });
 });
