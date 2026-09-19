@@ -113,6 +113,32 @@ been wrong to begin with.
   value for what you need, stop and report the blocker. Update the document only
   after a real endpoint check establishes the new value.
 
+## Continuous deployment: no versions, no releases, no milestones
+
+This repository ships continuously — that is the delivery model, not an
+omission. There is no version number to bump, no tagged release, and **no
+milestone to assign**.
+
+- `package.json` carries `1.0.0` and stays there. It is not a version anyone
+  reads; nothing derives from it.
+- The repository has never cut a GitHub release and will not.
+- The runner config for this repo (`zcode-website`) has **no
+  `active_milestone`**, so the claim scans ignore milestones entirely: an
+  Issue with `ai-ready` is claimable whether or not it carries one.
+- The `v0.5.1` milestone that exists is a leftover default bucket holding
+  30 closed Issues spanning the whole history of the repo. It marks nothing.
+  Do not add Issues to it, and do not read its name as "the version we are
+  working toward" — there is no such thing here.
+
+What replaces a release here is the promotion below: `beta` is live for
+anyone to look at, and a human merges `beta → main` when a change should
+reach production. That merge is the only "shipping" event, and it is not a
+version.
+
+The sibling repositories work differently — `orbi-build/orbi` and
+`orbi-build/orbi-cloud` both version, release, and gate claims on
+`active_milestone`. Do not carry their habits over.
+
 ## Branch flow and deployment
 
 `beta` is the development and default branch (serves `beta.orbi.build`); `main` is
