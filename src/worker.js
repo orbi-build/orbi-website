@@ -546,24 +546,27 @@ function trailingSlashRedirect(asset, url) {
   });
 }
 
-// ---- First-touch vid attribution (Issue #228) ----
+// ---- First-touch attribution (Issues #228, #234) ----
 
-// The registration side (orbi-cloud#716) reads the same cookie on the same
-// hostname, so the format is a two-repo contract: 16 random bytes as
-// base64url (22 chars, no padding) in a host-only Path=/ cookie with
-// HttpOnly; SameSite=Lax and a one-year Max-Age. Secure rides only on https
-// requests — the cloud sessionCookieString pattern — so local http testing
-// can still seed it.
-const VID_MAX_AGE_SECONDS = 31536000;
+// Two first-touch cookies ride every response, and the registration side
+// (orbi-cloud#716) reads both on the same hostname, so the format is a
+// two-repo contract: a host-only Path=/ cookie with HttpOnly; SameSite=Lax
+// and a one-year Max-Age. Secure rides only on https requests — the cloud
+// sessionCookieString pattern — so local http testing can still seed them.
+// vid is 16 random bytes as base64url (22 chars, no padding). ref carries the
+// normalized source (a ref token, a source host, or "direct") and is what
+// the signup actually attributes to (orbi-cloud getCookie(..., "ref"),
+// Issue #234).
+const ATTRIBUTION_MAX_AGE_SECONDS = 31536000;
 
-function vidFrom(request) {
+function cookieFrom(request, name) {
   const header = request.headers.get("Cookie");
   if (!header) {
     return null;
   }
   for (const pair of header.split(";")) {
-    const [name, ...rest] = pair.trim().split("=");
-    if (name === "vid" && rest.length > 0) {
+    const [key, ...rest] = pair.trim().split("=");
+    if (key === name && rest.length > 0) {
       return rest.join("=");
     }
   }
@@ -579,8 +582,8 @@ function randomVid() {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function vidCookieString(value, secure) {
-  return `vid=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${VID_MAX_AGE_SECONDS}${secure ? "; Secure" : ""}`;
+function attributionCookieString(name, value, secure) {
+  return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ATTRIBUTION_MAX_AGE_SECONDS}${secure ? "; Secure" : ""}`;
 }
 
 // Same fallback chain as the cloud signup source (orbi-cloud#716), so the
@@ -650,8 +653,11 @@ async function reportVisit(env, payload) {
 
 // Runs at the fetch-wrapper exit, after handleFetch returns, so every worker
 // response — pages, redirects, worker-served routes — passes through here.
-// A request without a vid cookie gets one seeded (first touch); the response
-// body is never rewritten, so asset validators like ETag survive. Every HTML
+// A request without a vid cookie gets one seeded (first touch), and — judged
+// independently (Issue #234) — a request without a ref cookie gets the
+// normalized source of this landing seeded, so visitors whose vid predates
+// the ref cookie are attributed on their next landing. The response body is
+// never rewritten, so asset validators like ETag survive. Every HTML
 // 200 is reported as one visit; only first touch carries the ref, later
 // pages of the same visit report an empty one.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
@@ -663,9 +669,14 @@ async function reportVisit(env, payload) {
 // HTML 200 responses (maintainer's call).
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
-  const existing = vidFrom(request);
-  const vid = existing ?? randomVid();
-  const firstTouch = existing === null;
+  const secure = url.protocol === "https:";
+  const existingVid = cookieFrom(request, "vid");
+  const vid = existingVid ?? randomVid();
+  const firstTouch = existingVid === null;
+  // The ref slot is judged independently of vid: visitors whose vid predates
+  // the ref cookie (Issue #234) have firstTouch === false but no ref yet, and
+  // this landing is still their first ref touch.
+  const existingRef = cookieFrom(request, "ref");
   if (
     response.status === 200
     && (response.headers.get("Content-Type") || "").startsWith("text/html")
@@ -678,11 +689,19 @@ function withAttribution(request, response, env, ctx) {
       ref: firstTouch ? normalizedSource(url, request) : "",
     }));
   }
-  if (!firstTouch) {
+  if (!firstTouch && existingRef !== null) {
     return response;
   }
   const stamped = new Response(response.body, response);
-  stamped.headers.append("Set-Cookie", vidCookieString(vid, url.protocol === "https:"));
+  if (firstTouch) {
+    stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
+  }
+  // "direct" is seeded too: an empty slot would let the visitor's next ?ref=
+  // land as first touch after a direct first visit — last-touch posing as
+  // first-touch.
+  if (existingRef === null) {
+    stamped.headers.append("Set-Cookie", attributionCookieString("ref", normalizedSource(url, request), secure));
+  }
   return stamped;
 }
 
