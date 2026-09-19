@@ -1,4 +1,5 @@
 import { withAICrawlerTracking } from "@datafast/ai-crawl";
+import { visitSignals } from "./bot-detection.js";
 import pricing from "./pricing.json";
 
 // Single source of truth for the Cloud monthly price and the included token
@@ -654,11 +655,15 @@ async function reportVisit(env, payload) {
 // Runs at the fetch-wrapper exit, after handleFetch returns, so every worker
 // response — pages, redirects, worker-served routes — passes through here.
 // A request without a vid cookie gets one seeded (first touch), and — judged
-// independently (Issue #234) — a request without a ref cookie gets the
-// normalized source of this landing seeded, so visitors whose vid predates
-// the ref cookie are attributed on their next landing. The response body is
-// never rewritten, so asset validators like ETag survive. Every HTML
-// 200 is reported as one visit; only first touch carries the ref, later
+// independently (Issue #234) — a landing carrying a real source signal
+// (?ref=, ?source=, referer host) seeds the ref slot when empty. Issue #240
+// stopped the old "seed direct too" behavior: a fabricated direct first
+// touch hides a real later ?ref= channel, so a source-less landing now
+// leaves the slot empty. Probes and crawlers keep their vid and their page;
+// their visits are marked is_bot=1 (visitSignals) so dashboard queries can
+// exclude them and reclassify history when the rules improve. The response
+// body is never rewritten, so asset validators like ETag survive. Every
+// HTML 200 is reported as one visit; only first touch carries the ref, later
 // pages of the same visit report an empty one.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
@@ -677,30 +682,32 @@ function withAttribution(request, response, env, ctx) {
   // the ref cookie (Issue #234) have firstTouch === false but no ref yet, and
   // this landing is still their first ref touch.
   const existingRef = cookieFrom(request, "ref");
+  const source = normalizedSource(url, request);
   if (
     response.status === 200
     && (response.headers.get("Content-Type") || "").startsWith("text/html")
     && env.CLOUD_VISIT_URL
     && env.WEBSITE_SECRET
   ) {
+    // Signals ride only this reported branch so every static-asset request
+    // skips the UA-list work entirely.
     ctx.waitUntil(reportVisit(env, {
       vid,
       path: url.pathname,
-      ref: firstTouch ? normalizedSource(url, request) : "",
+      ref: firstTouch ? source : "",
+      ...visitSignals(request),
     }));
   }
-  if (!firstTouch && existingRef !== null) {
+  const seedsRef = existingRef === null && source !== "direct";
+  if (!firstTouch && !seedsRef) {
     return response;
   }
   const stamped = new Response(response.body, response);
   if (firstTouch) {
     stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
   }
-  // "direct" is seeded too: an empty slot would let the visitor's next ?ref=
-  // land as first touch after a direct first visit — last-touch posing as
-  // first-touch.
-  if (existingRef === null) {
-    stamped.headers.append("Set-Cookie", attributionCookieString("ref", normalizedSource(url, request), secure));
+  if (seedsRef) {
+    stamped.headers.append("Set-Cookie", attributionCookieString("ref", source, secure));
   }
   return stamped;
 }
