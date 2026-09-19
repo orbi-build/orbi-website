@@ -580,13 +580,21 @@ function trailingSlashRedirect(asset, url) {
 // Two first-touch cookies ride every response, and the registration side
 // (orbi-cloud#716) reads both on the same hostname, so the format is a
 // two-repo contract: a host-only Path=/ cookie with HttpOnly; SameSite=Lax
-// and a one-year Max-Age. Secure rides only on https requests — the cloud
+// and a 90-day Max-Age. Secure rides only on https requests — the cloud
 // sessionCookieString pattern — so local http testing can still seed them.
 // vid is 16 random bytes as base64url (22 chars, no padding). ref carries the
 // normalized source (a ref token, a source host, or "direct") and is what
 // the signup actually attributes to (orbi-cloud getCookie(..., "ref"),
 // Issue #234).
-const ATTRIBUTION_MAX_AGE_SECONDS = 31536000;
+//
+// 90 days (Issue #246): the longest window mainstream platforms use for this
+// kind of touch (GA4 non-acquisition key events, LinkedIn click, SaaS
+// affiliate ceiling). Because the website is every visitor's first landing
+// and the cloud's plantVidCookie never re-plants over an existing vid, this
+// constant alone decides the real window. It MUST stay in lockstep with
+// ATTRIBUTION_MAX_AGE_SECONDS in orbi-cloud src/session.ts (cloud#732) —
+// both workers plant the same shared-domain cookie.
+const ATTRIBUTION_MAX_AGE_SECONDS = 7776000;
 
 function cookieFrom(request, name) {
   const header = request.headers.get("Cookie");
