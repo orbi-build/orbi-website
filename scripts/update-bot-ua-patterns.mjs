@@ -27,6 +27,14 @@ for (const entry of entries) {
     throw new Error(`entry without a pattern field: ${JSON.stringify(entry).slice(0, 120)}`);
   }
   new RegExp(`(?:${entry.pattern})`); // throws on a pattern JS cannot compile
+  // Upstream patterns are Python regexes, where \digit is always a
+  // backreference. Combined into one alternation the group numbering shifts
+  // per branch, so such a pattern would silently bind to the wrong group
+  // instead of failing to compile (src/bot-detection.js relies on its
+  // absence).
+  if (/\\\d/.test(entry.pattern)) {
+    throw new Error(`backreference pattern cannot be combined safely: ${entry.pattern.slice(0, 80)}`);
+  }
   if (!seen.has(entry.pattern)) {
     seen.add(entry.pattern);
     patterns.push(entry.pattern);
