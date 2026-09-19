@@ -643,6 +643,10 @@ async function reportVisit(env, payload) {
 // body is never rewritten, so asset validators like ETag survive. Every HTML
 // 200 is reported as one visit; only first touch carries the ref, later
 // pages of the same visit report an empty one.
+// Accepted corner (Issue #228, maintainer adjudication): seeding is
+// unconditional, so a first landing that redirects — www → apex 301 or a
+// trailing-slash 308 — keeps ?ref= in the redirected URL but is no longer
+// first touch on the final page, whose visit reports an empty ref.
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const existing = vidFrom(request);
