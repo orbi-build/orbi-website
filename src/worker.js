@@ -643,10 +643,13 @@ async function reportVisit(env, payload) {
 // body is never rewritten, so asset validators like ETag survive. Every HTML
 // 200 is reported as one visit; only first touch carries the ref, later
 // pages of the same visit report an empty one.
-// Accepted corner (Issue #228, maintainer adjudication): seeding is
-// unconditional, so a first landing that redirects — www → apex 301 or a
-// trailing-slash 308 — keeps ?ref= in the redirected URL but is no longer
-// first touch on the final page, whose visit reports an empty ref.
+// Known corner (Issue #228, awaiting maintainer sign-off): seeding is
+// unconditional because the issue's acceptance seeds at the handleFetch exit
+// on every no-vid response, so a first landing that redirects — www → apex
+// 301 or a trailing-slash 308 — keeps ?ref= in the redirected URL but is no
+// longer first touch on the final page, whose visit reports an empty ref.
+// If redirected landings must keep their ref, the flip is to seed only on
+// HTML 200 responses (maintainer's call).
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const existing = vidFrom(request);
@@ -672,7 +675,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect, withAttribution };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit
