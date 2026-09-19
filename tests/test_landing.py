@@ -1488,10 +1488,12 @@ class DevinComparisonTests(unittest.TestCase):
 
     def test_titles_carry_the_search_terms(self) -> None:
         en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
-        self.assertLessEqual(len(en_title), 65, en_title)
+        # Issue #237: the keyword-aligned title runs 66 chars; as with the
+        # homepage cap (Issue #78), the wording wins, so the cap moves.
+        self.assertLessEqual(len(en_title), 70, en_title)
         en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
         self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("Orbi", "Devin", "Cognition"):
+        for term in ("Orbi", "Devin", "alternative"):
             self.assertIn(term, en_title + " " + en_desc, term)
 
         zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
