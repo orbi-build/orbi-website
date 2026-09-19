@@ -654,35 +654,42 @@ async function reportVisit(env, payload) {
 
 // Runs at the fetch-wrapper exit, after handleFetch returns, so every worker
 // response — pages, redirects, worker-served routes — passes through here.
-// A request without a vid cookie gets one seeded (first touch), and — judged
-// independently (Issue #234) — a landing carrying a real source signal
-// (?ref=, ?source=, referer host) seeds the ref slot when empty. Issue #240
-// stopped the old "seed direct too" behavior: a fabricated direct first
-// touch hides a real later ?ref= channel, so a source-less landing now
-// leaves the slot empty. Probes and crawlers keep their vid and their page;
-// their visits are marked is_bot=1 (visitSignals, Cloudflare's botManagement
-// score) so dashboard queries can exclude them. The response
-// body is never rewritten, so asset validators like ETag survive. Every
-// HTML 200 is reported as one visit; only first touch carries the ref, later
-// pages of the same visit report an empty one.
+// A request without a vid cookie gets one seeded (first touch), and the ref
+// slot follows the Issue #247 split by source kind:
+// - An explicit ?ref= token is a link we shipped, so it is last touch: it
+//   overwrites whatever the slot held and is reported on every visit — a
+//   visitor who browsed direct first and clicked a campaign link later still
+//   lands the referral (Issue #244).
+// - Derived sources (?source=, referer host, direct) are guesses an OAuth
+//   bounce or an in-site hop can fabricate, so they are first touch: they
+//   fill an empty slot and never overwrite — github.com must not replace the
+//   tweet that brought the visitor here.
+// Probes and crawlers keep their vid and their page; their visits are marked
+// is_bot=1 (visitSignals, Cloudflare's botManagement score) so dashboard
+// queries can exclude them. The response body is never rewritten, so asset
+// validators like ETag survive. Every HTML 200 is reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
 // on every no-vid response, so a first landing that redirects — www → apex
 // 301 or a trailing-slash 308 — keeps ?ref= in the redirected URL but is no
-// longer first touch on the final page, whose visit reports an empty ref.
-// If redirected landings must keep their ref, the flip is to seed only on
-// HTML 200 responses (maintainer's call).
+// longer first touch on the final page. If redirected landings must keep
+// their ref, the flip is to seed only on HTML 200 responses (maintainer's
+// call).
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const secure = url.protocol === "https:";
   const existingVid = cookieFrom(request, "vid");
   const vid = existingVid ?? randomVid();
   const firstTouch = existingVid === null;
-  // The ref slot is judged independently of vid: visitors whose vid predates
-  // the ref cookie (Issue #234) have firstTouch === false but no ref yet, and
-  // this landing is still their first ref touch.
   const existingRef = cookieFrom(request, "ref");
   const source = normalizedSource(url, request);
+  // Lowercased and REF_TOKEN-tested exactly like normalizedSource's ref
+  // branch, so when this is non-null it equals `source` and the registration
+  // side (orbi-cloud isStoredSource) accepts the value unchanged.
+  const rawRef = url.searchParams.get("ref");
+  const explicitRef = rawRef !== null && REF_TOKEN.test(rawRef.toLowerCase())
+    ? rawRef.toLowerCase()
+    : null;
   if (
     response.status === 200
     && (response.headers.get("Content-Type") || "").startsWith("text/html")
@@ -694,11 +701,11 @@ function withAttribution(request, response, env, ctx) {
     ctx.waitUntil(reportVisit(env, {
       vid,
       path: url.pathname,
-      ref: firstTouch ? source : "",
+      ref: explicitRef ?? (firstTouch ? source : ""),
       ...visitSignals(request),
     }));
   }
-  const seedsRef = existingRef === null && source !== "direct";
+  const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
   if (!firstTouch && !seedsRef) {
     return response;
   }
@@ -707,7 +714,7 @@ function withAttribution(request, response, env, ctx) {
     stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
   }
   if (seedsRef) {
-    stamped.headers.append("Set-Cookie", attributionCookieString("ref", source, secure));
+    stamped.headers.append("Set-Cookie", attributionCookieString("ref", explicitRef ?? source, secure));
   }
   return stamped;
 }
