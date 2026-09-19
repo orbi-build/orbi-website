@@ -813,11 +813,14 @@ describe("aiready.sh install entry (Issue #174)", () => {
 // SameSite=Lax; Max-Age=31536000, and Secure only on https (cloud's
 // sessionCookieString pattern) so local http tests can still seed it.
 // Reporting rides ctx.waitUntil and never delays or fails the page.
-// Issue #234: the same exit seeds a first-touch `ref` cookie — the one the
+// Issue #234: the same exit seeds a `ref` cookie — the one the
 // registration side actually reads to attribute signups (orbi-cloud
 // getCookie(..., "ref")). Its first touch is judged independently of vid
-// (pre-#234 visitors carry a vid but no ref), it is never overwritten, and
-// it is seeded as "direct" too so a later ?ref= cannot pose as first touch.
+// (pre-#234 visitors carry a vid but no ref). Issue #240 stopped fabricating
+// "direct" into the empty slot. Issue #247 splits the model by source kind:
+// an explicit ?ref= token is last touch (it overwrites the slot and is
+// reported on every visit); derived sources (referer host, ?source=) are
+// first touch (they fill an empty slot and never overwrite).
 describe("visit attribution (Issue #228)", () => {
   const VISIT_URL = "https://beta.orbi.build/api/internal/visit";
   const SECRET = "e2e-visit-secret";
@@ -943,7 +946,10 @@ describe("visit attribution (Issue #228)", () => {
     await flush(ctx);
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0 });
+    // Issue #247/#244: the explicit ?ref= is reported on every visit, not
+    // only on first touch — a visitor who browsed direct first and clicked a
+    // campaign link later still lands the referral.
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "later-ref", is_bot: 0 });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
@@ -1127,6 +1133,102 @@ describe("visit attribution (Issue #228)", () => {
 
       expect(response.headers.getSetCookie()).toContain(`ref=xtest; ${REF_ATTRS}`);
       await flush(ctx);
+    });
+  });
+
+  // Issue #247: the attribution model splits by source kind. An explicit
+  // ?ref= token is ours — every seeded link carries one — so it is last
+  // touch: it overwrites whatever the slot held and is reported on every
+  // visit. Derived sources (referer host, ?source=, direct) are guesses an
+  // OAuth bounce or an in-site hop can fabricate, so they stay first touch:
+  // they fill an empty slot and never overwrite. The rows of the Issue's
+  // priority table map onto these tests one to one.
+  describe("attribution model (Issue #247)", () => {
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000";
+
+    // Row: ref cookie `aaa`, landing ?ref=bbb → overwritten with bbb
+    // (last-touch), and the visit reports bbb. The token is also
+    // re-normalized to lowercase like any ?ref= value.
+    it("an explicit ?ref= overwrites the previous ref cookie and is reported on a repeat visit", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=BBB", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=bbb; ${REF_ATTRS}; Secure`]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "bbb", is_bot: 0 });
+    });
+
+    // Row: ref cookie news.ycombinator.com, landing ?ref=aaa → explicit
+    // beats derived.
+    it("an explicit ?ref= overwrites a derived-source cookie", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=aaa", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=news.ycombinator.com" },
+        }),
+        env(),
+        collectingCtx(),
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=aaa; ${REF_ATTRS}; Secure`]);
+    });
+
+    // Row: ref cookie aaa, landing with no ref and a HN referer → nothing is
+    // seeded (a derived source may not overwrite an explicit ref) and the
+    // report carries no ref — the referral survives the in-site hop.
+    it("a derived source never overwrites the ref cookie, and later visits report no derived ref", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa", Referer: "https://news.ycombinator.com/item?id=1" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0 });
+    });
+
+    // The xqliu beta repro (2026-09-19): direct landing first (vid seeded, no
+    // ref cookie), a campaign link clicked days later. The visit must carry
+    // the explicit ref now that first touch is long gone.
+    it("reports an explicit ?ref= for a vid-only visitor with no ref cookie yet (Issue #244)", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=afterdirect1789833086", {
+          headers: { Cookie: "vid=ExistingVidValue123456" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=afterdirect1789833086; ${REF_ATTRS}; Secure`]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 0 });
     });
   });
 
