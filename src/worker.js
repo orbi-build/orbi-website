@@ -546,15 +546,140 @@ function trailingSlashRedirect(asset, url) {
   });
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+// ---- First-touch vid attribution (Issue #228) ----
+
+// The registration side (orbi-cloud#716) reads the same cookie on the same
+// hostname, so the format is a two-repo contract: 16 random bytes as
+// base64url (22 chars, no padding) in a host-only Path=/ cookie with
+// HttpOnly; SameSite=Lax and a one-year Max-Age. Secure rides only on https
+// requests — the cloud sessionCookieString pattern — so local http testing
+// can still seed it.
+const VID_MAX_AGE_SECONDS = 31536000;
+
+function vidFrom(request) {
+  const header = request.headers.get("Cookie");
+  if (!header) {
+    return null;
+  }
+  for (const pair of header.split(";")) {
+    const [name, ...rest] = pair.trim().split("=");
+    if (name === "vid" && rest.length > 0) {
+      return rest.join("=");
+    }
+  }
+  return null;
+}
+
+function randomVid() {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function vidCookieString(value, secure) {
+  return `vid=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${VID_MAX_AGE_SECONDS}${secure ? "; Secure" : ""}`;
+}
+
+// Same fallback chain as the cloud signup source (orbi-cloud#716), so the
+// website's first-touch answer and the signup's own normalization agree:
+// validated ?ref= token, then ?source= host, then referer host, then direct.
+const REF_TOKEN = /^[a-z0-9_-]{1,32}$/;
+const SOURCE_HOST = /^[a-z0-9.-]{1,253}$/;
+
+function refererHost(request) {
+  const value = request.headers.get("Referer");
+  if (value === null) {
+    return null;
+  }
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    return (url.protocol === "http:" || url.protocol === "https:") && SOURCE_HOST.test(host) ? host : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizedSource(url, request) {
+  const ref = url.searchParams.get("ref");
+  if (ref !== null && REF_TOKEN.test(ref.toLowerCase())) {
+    return ref.toLowerCase();
+  }
+  const source = url.searchParams.get("source")?.toLowerCase();
+  if (source !== undefined && SOURCE_HOST.test(source)) {
+    return source;
+  }
+  return refererHost(request) ?? "direct";
+}
+
+// The visit report is a bypass path: it never delays the response (rides
+// ctx.waitUntil) and never decides the page's fate — every failure, its own
+// or a timeout or a rejection status, is swallowed with a console.warn.
+async function reportVisit(env, payload) {
+  try {
+    const response = await fetch(env.CLOUD_VISIT_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.WEBSITE_SECRET}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) {
+      console.warn("visit_report_rejected", response.status);
+    }
+  } catch (err) {
+    console.warn("visit_report_failed:", err && err.message ? err.message : err);
+  }
+}
+
+// Runs at the fetch-wrapper exit, after handleFetch returns, so every worker
+// response — pages, redirects, worker-served routes — passes through here.
+// A request without a vid cookie gets one seeded (first touch); the response
+// body is never rewritten, so asset validators like ETag survive. Every HTML
+// 200 is reported as one visit; only first touch carries the ref, later
+// pages of the same visit report an empty one.
+function withAttribution(request, response, env, ctx) {
+  const url = new URL(request.url);
+  const existing = vidFrom(request);
+  const vid = existing ?? randomVid();
+  const firstTouch = existing === null;
+  if (
+    response.status === 200
+    && (response.headers.get("Content-Type") || "").startsWith("text/html")
+    && env.CLOUD_VISIT_URL
+    && env.WEBSITE_SECRET
+  ) {
+    ctx.waitUntil(reportVisit(env, {
+      vid,
+      path: url.pathname,
+      ref: firstTouch ? normalizedSource(url, request) : "",
+    }));
+  }
+  if (!firstTouch) {
+    return response;
+  }
+  const stamped = new Response(response.body, response);
+  stamped.headers.append("Set-Cookie", vidCookieString(vid, url.protocol === "https:"));
+  return stamped;
+}
+
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect, withAttribution };
 
 export default {
-  // Third arg (ctx) carries waitUntil: the wrapper hands the DataFast POST to
-  // ctx.waitUntil, so tracking never delays the response.
+  // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit
+  // attribution report ride ctx.waitUntil, so neither ever delays the
+  // response. withAttribution runs at the wrapper exit so every handleFetch
+  // return — pages, redirects, worker routes — is covered (Issue #228).
   fetch: withAICrawlerTracking(async (request, env, ctx) => {
     const response = await handleFetch(request, env, ctx);
-    if (PROD_HOSTS.has(new URL(request.url).hostname)) return response;
-    const stamped = new Response(response.body, response);
+    const attributed = withAttribution(request, response, env, ctx);
+    if (PROD_HOSTS.has(new URL(request.url).hostname)) return attributed;
+    const stamped = new Response(attributed.body, attributed);
     stamped.headers.set("X-Robots-Tag", TEST_NOINDEX);
     return stamped;
   }, { websiteId: DATAFAST_WEBSITE_ID }),
