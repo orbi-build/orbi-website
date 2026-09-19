@@ -124,13 +124,18 @@ export function groupForEvidence(records) {
   };
 }
 
-const githubRepoUrl = (repo) => `https://github.com/${repo}`;
 const githubPrUrl = (repo, pr) => `https://github.com/${repo}/pull/${pr}`;
 
+// Issue #232: the repository name renders as plain text — in the delivery
+// cards and as the evidence page's group title. The PR is a public delivery
+// record, so linking it is citing evidence; the repository homepage is the
+// other project's storefront. We have no reason to route traffic there, and
+// nobody agreed to that form of exposure. The name itself stays visible: it
+// is evidence of whose repository the delivery happened in.
 function renderDeliveryCard(record, copy) {
   return [
     `      <article class="proof-card">`,
-    `        <p class="proof-card-repo"><a href="${esc(githubRepoUrl(record.repo))}" rel="noopener">${esc(record.repo)}</a></p>`,
+    `        <p class="proof-card-repo">${esc(record.repo)}</p>`,
     `        <h3 class="proof-card-title"><a href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.title)}</a></h3>`,
     `        <p class="proof-card-meta"><time datetime="${esc(record.merged_at)}">${esc(String(record.merged_at).slice(0, 10))}</time></p>`,
     // `no human review` only when there were zero: a non-zero count is never
@@ -184,7 +189,7 @@ function renderEvidenceSection(records, lang) {
   for (const { repo, records: repoRecords } of repos) {
     groups.push(
       `        <div class="social-proof-group">`,
-      `          <h3 class="social-proof-group-title"><a href="${esc(githubRepoUrl(repo))}" rel="noopener">${esc(repo)}</a></h3>`,
+      `          <h3 class="social-proof-group-title">${esc(repo)}</h3>`,
       `          <div class="social-proof-grid">`,
       ...repoRecords.map((record) => renderDeliveryCard(record, copy)),
       `          </div>`,

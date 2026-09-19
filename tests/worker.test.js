@@ -813,6 +813,11 @@ describe("aiready.sh install entry (Issue #174)", () => {
 // SameSite=Lax; Max-Age=31536000, and Secure only on https (cloud's
 // sessionCookieString pattern) so local http tests can still seed it.
 // Reporting rides ctx.waitUntil and never delays or fails the page.
+// Issue #234: the same exit seeds a first-touch `ref` cookie — the one the
+// registration side actually reads to attribute signups (orbi-cloud
+// getCookie(..., "ref")). Its first touch is judged independently of vid
+// (pre-#234 visitors carry a vid but no ref), it is never overwritten, and
+// it is seeded as "direct" too so a later ?ref= cannot pose as first touch.
 describe("visit attribution (Issue #228)", () => {
   const VISIT_URL = "https://beta.orbi.build/api/internal/visit";
   const SECRET = "e2e-visit-secret";
@@ -851,17 +856,31 @@ describe("visit attribution (Issue #228)", () => {
     };
   }
 
+  // The report travels over the CLOUD service binding (Issue #231), so the
+  // env carries one whose fetch is the same mock the tests already assert on.
+  // A plain global fetch() of this zone would be routed to the origin server
+  // past every Worker, which is exactly the bug the binding fixes.
   function env(overrides = {}) {
     return {
       ASSETS: assetServer({ "/": HTML_PAGE }),
       CLOUD_VISIT_URL: VISIT_URL,
       WEBSITE_SECRET: SECRET,
+      CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
       ...overrides,
     };
   }
 
+  // The binding is handed a Request, so the url and the body both live on it.
   function visitCalls(fetchMock) {
-    return fetchMock.mock.calls.filter(([url]) => String(url) === VISIT_URL);
+    return fetchMock.mock.calls.filter(([first]) => String(first?.url ?? first) === VISIT_URL);
+  }
+
+  // A Request's body is a stream: clone before reading so a second assertion
+  // on the same captured call still works.
+  async function visitBody(call) {
+    const [first, init] = call;
+    if (init && typeof init.body === "string") return JSON.parse(init.body);
+    return await first.clone().json();
   }
 
   it("seeds a vid cookie on first touch over https, reports the visit, keeps the ETag", async () => {
@@ -872,21 +891,24 @@ describe("visit attribution (Issue #228)", () => {
     const response = await worker.fetch(new Request("https://beta.orbi.build/?ref=e2e-14f5d89f"), env(), ctx);
 
     expect(response.status).toBe(200);
-    const cookie = response.headers.get("Set-Cookie");
-    expect(cookie).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
+    const cookies = response.headers.getSetCookie();
+    expect(cookies).toHaveLength(2);
+    expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
+    expect(cookies[1]).toBe("ref=e2e-14f5d89f; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure");
     // Seeding must not rewrite the body, so the asset's own validators survive.
     expect(response.headers.get("ETag")).toBe('"asset-etag-1"');
     await flush(ctx);
 
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    const [url, init] = calls[0];
-    expect(String(url)).toBe(VISIT_URL);
-    expect(init.method).toBe("POST");
-    expect(init.headers.Authorization).toBe(`Bearer ${SECRET}`);
-    expect(init.headers["Content-Type"]).toBe("application/json");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
-    expect(JSON.parse(init.body)).toEqual({ vid: cookie.match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
+    // The binding receives one Request, so every field is asserted on it.
+    const [sent] = calls[0];
+    expect(sent.url).toBe(VISIT_URL);
+    expect(sent.method).toBe("POST");
+    expect(sent.headers.get("Authorization")).toBe(`Bearer ${SECRET}`);
+    expect(sent.headers.get("Content-Type")).toBe("application/json");
+    expect(sent.signal).toBeInstanceOf(AbortSignal);
+    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
   });
 
   it("seeds the vid cookie without Secure over http", async () => {
@@ -895,11 +917,14 @@ describe("visit attribution (Issue #228)", () => {
 
     const response = await worker.fetch(new Request("http://beta.orbi.build/"), env(), ctx);
 
-    expect(response.headers.get("Set-Cookie")).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000$/);
+    expect(response.headers.getSetCookie()).toEqual([
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000$/),
+      "ref=direct; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000",
+    ]);
     await flush(ctx);
   });
 
-  it("keeps an existing vid: no reseed, the visit reports an empty ref", async () => {
+  it("keeps an existing vid (pre-#234 visitor): no vid reseed, the missing ref is seeded", async () => {
     const fetchMock = vi.fn(async () => new Response("ok"));
     globalThis.fetch = fetchMock;
     const ctx = collectingCtx();
@@ -911,19 +936,21 @@ describe("visit attribution (Issue #228)", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Set-Cookie")).toBeNull();
+    expect(response.headers.getSetCookie()).toEqual([
+      "ref=later-ref; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure",
+    ]);
     await flush(ctx);
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    expect(JSON.parse(calls[0][1].body)).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
     globalThis.fetch = vi.fn(async () => new Response("ok"));
     const first = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
     const second = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
-    const firstVid = first.headers.get("Set-Cookie").match(/^vid=([A-Za-z0-9_-]{22});/)[1];
-    const secondVid = second.headers.get("Set-Cookie").match(/^vid=([A-Za-z0-9_-]{22});/)[1];
+    const firstVid = first.headers.getSetCookie()[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1];
+    const secondVid = second.headers.getSetCookie()[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1];
     expect(firstVid).not.toBe(secondVid);
   });
 
@@ -1008,7 +1035,7 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
       const calls = visitCalls(fetchMock);
       expect(calls, url).toHaveLength(1);
-      expect(JSON.parse(calls[0][1].body).ref, url).toBe(expected);
+      expect((await visitBody(calls[0])).ref, url).toBe(expected);
     }
   });
 
@@ -1023,5 +1050,78 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
     }
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // Issue #234: the ref cookie the cloud registration side reads
+  // (orbi-cloud getCookie(request.headers.get("Cookie"), "ref"), accepted by
+  // its isStoredSource: "direct", a ref token, or a source host — exactly the
+  // normalizedSource value space). First touch is judged independently of vid
+  // and the value is seeded even when "direct": an empty slot would let the
+  // next ?ref= pose as first touch after a direct first visit.
+  describe("ref cookie (Issue #234)", () => {
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000";
+
+    it("seeds ref=direct on a first landing without any ref signal", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("https://beta.orbi.build/"), env(), ctx);
+
+      expect(response.headers.getSetCookie()).toContain(`ref=direct; ${REF_ATTRS}; Secure`);
+      await flush(ctx);
+    });
+
+    it("seeds the referer host as ref when the landing carries no ref param", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/", { headers: { Referer: "https://News.Ycombinator.com/item?id=1" } }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toContain(`ref=news.ycombinator.com; ${REF_ATTRS}; Secure`);
+      await flush(ctx);
+    });
+
+    it("never overwrites an existing ref: a direct first visit keeps its slot when the visitor returns from X", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const first = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
+      const jar = first.headers.getSetCookie().map((cookie) => cookie.split(";")[0]).join("; ");
+      expect(jar).toMatch(/^vid=[A-Za-z0-9_-]{22}; ref=direct$/);
+
+      const second = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=xtest", { headers: { Cookie: jar } }),
+        env(),
+        collectingCtx(),
+      );
+      expect(second.headers.getSetCookie()).toEqual([]);
+    });
+
+    it("seeds ref for a vid-only visitor without reseeding vid", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/", { headers: { Cookie: "vid=ExistingVidValue123456" } }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=direct; ${REF_ATTRS}; Secure`]);
+      await flush(ctx);
+    });
+
+    it("mirrors vid's Secure logic: the ref cookie drops Secure over http", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("http://beta.orbi.build/?ref=xtest"), env(), ctx);
+
+      expect(response.headers.getSetCookie()).toContain(`ref=xtest; ${REF_ATTRS}`);
+      await flush(ctx);
+    });
   });
 });

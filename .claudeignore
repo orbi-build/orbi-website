@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build artifacts / compiled output
+dist/
+build/
+.next/
+
+# Lock files (large, churn-heavy)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Python caches (site has some py tooling)
+__pycache__/
+.pytest_cache/
+
+# Cloudflare / run artifacts / drafts / logs
+.wrangler/
+.dev.vars
+.orbi/
+.drafts/
+.worktrees/
+*.log
+
+# OS / editor
+.DS_Store

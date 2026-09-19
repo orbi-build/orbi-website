@@ -719,8 +719,6 @@ h1 span { color: var(--signal); }
 }
 
 .proof-card-repo { margin: 0; color: #4b615d; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em; }
-.proof-card-repo a { color: var(--ink); text-underline-offset: 3px; }
-.proof-card-repo a:hover { color: #000; }
 
 .proof-card-title {
   margin: 0;
@@ -789,8 +787,6 @@ h1 span { color: var(--signal); }
 }
 
 .night .proof-card-repo { color: #9aada9; }
-.night .proof-card-repo a { color: #edf5f0; }
-.night .proof-card-repo a:hover { color: var(--run); }
 .night .proof-card-title { color: #edf5f0; }
 .night .proof-card-meta { color: #9aada9; }
 .night .proof-card-meta a { color: #edf5f0; }
