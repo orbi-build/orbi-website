@@ -19,10 +19,27 @@ workers_dev = true
 # shared secret as `Authorization: Bearer ${WEBSITE_SECRET}` — the secret is
 # never in the repo: `wrangler secret put WEBSITE_SECRET` (plus `--env beta`
 # for the beta Worker), same value on the cloud side.
+#
+# That report travels over the CLOUD service binding below, NOT a plain
+# fetch() of the URL (Issue #231). Both Workers answer on one hostname
+# (website orbi.build/*, cloud orbi.build/api*), and a Worker's own fetch()
+# of its zone is "routed to the zone's origin server, ignoring any Workers
+# mapped to the URL" — so the report never reached the cloud Worker and
+# died on the 5s timeout. CLOUD_VISIT_URL stays as the path the binding
+# requests; only the transport changed.
 vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit" }
+
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
+
+# Worker-to-Worker transport for the visit report (Issue #231): a plain
+# fetch() of our own zone is routed to the origin server past every Worker,
+# so the report never reached the control plane. Must stay AFTER every
+# top-level key — a [[table]] header ends the top-level section in TOML.
+[[services]]
+binding = "CLOUD"
+service = "orbi-cloud-control-plane"
 
 [[routes]]
 pattern = "orbi.build"
@@ -52,11 +69,18 @@ head_sampling_rate = 1
 [env.beta]
 name = "orbi-website-beta"
 vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit" }
+
 # Keep a deploy target so routine releases update the Worker used by the
 # existing beta Custom Domain, without managing that domain or its DNS.
 workers_dev = false
 # Route through the existing proxied DNS record without asking Wrangler to
 # create/manage a Custom Domain (which would conflict with that record).
+# Beta binds the e2e control plane (the Worker on beta.orbi.build/api*).
+# Same TOML rule as the production binding above: after the env's plain keys.
+[[env.beta.services]]
+binding = "CLOUD"
+service = "orbi-cloud-control-plane-e2e"
+
 [[env.beta.routes]]
 pattern = "beta.orbi.build/*"
 custom_domain = false
