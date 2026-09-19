@@ -14,7 +14,12 @@ workers_dev = true
 # [env.beta] names its own verified Cloud endpoint below. The website defines
 # its endpoints outside the cloud control plane's route prefixes —
 # /cloud/login and /cloud/apply (Issue #76; see docs/cloud-endpoints.md).
-vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login" }
+# Visit attribution (Issue #228) reports HTML 200s to the cloud control
+# plane's POST /api/internal/visit (delivered by orbi-cloud#716) with the
+# shared secret as `Authorization: Bearer ${WEBSITE_SECRET}` — the secret is
+# never in the repo: `wrangler secret put WEBSITE_SECRET` (plus `--env beta`
+# for the beta Worker), same value on the cloud side.
+vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit" }
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
@@ -46,7 +51,7 @@ head_sampling_rate = 1
 # unchanged when deploying with `wrangler deploy --env beta`.
 [env.beta]
 name = "orbi-website-beta"
-vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login" }
+vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit" }
 # Keep a deploy target so routine releases update the Worker used by the
 # existing beta Custom Domain, without managing that domain or its DNS.
 workers_dev = false

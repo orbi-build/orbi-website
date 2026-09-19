@@ -804,3 +804,224 @@ describe("aiready.sh install entry (Issue #174)", () => {
     expect(response.headers.get("X-Robots-Tag")).toBeNull();
   });
 });
+
+// Issue #228: first-touch vid attribution. The fetch-wrapper exit seeds a vid
+// cookie when the request has none and reports every HTML 200 as one visit to
+// the cloud control plane's POST /api/internal/visit. The registration side
+// (orbi-cloud#716) reads the same cookie, so the contract is pinned: 16 random
+// bytes as base64url (22 chars, no padding), host-only Path=/ with HttpOnly;
+// SameSite=Lax; Max-Age=31536000, and Secure only on https (cloud's
+// sessionCookieString pattern) so local http tests can still seed it.
+// Reporting rides ctx.waitUntil and never delays or fails the page.
+describe("visit attribution (Issue #228)", () => {
+  const VISIT_URL = "https://beta.orbi.build/api/internal/visit";
+  const SECRET = "e2e-visit-secret";
+  const realFetch = globalThis.fetch;
+  const HTML_PAGE = {
+    body: "<html><head><title>page</title></head><body>page</body></html>",
+    headers: { "Content-Type": "text/html; charset=utf-8", ETag: '"asset-etag-1"' },
+  };
+
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+  });
+
+  function collectingCtx() {
+    const pending = [];
+    return { pending, waitUntil: (promise) => pending.push(promise) };
+  }
+
+  // Flush the waitUntil queue with a hard cap: a promise that never settles
+  // must fail the test, not hang it.
+  async function flush(ctx) {
+    await Promise.race([
+      Promise.all(ctx.pending),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("waitUntil still pending after 2s")), 2000)),
+    ]);
+  }
+
+  function assetServer(routes) {
+    return {
+      fetch: async (request) => {
+        const hit = routes[new URL(request.url).pathname];
+        if (!hit) return new Response("missing", { status: 404, headers: { "Content-Type": "text/plain" } });
+        return new Response(hit.body, { status: hit.status ?? 200, headers: hit.headers });
+      },
+    };
+  }
+
+  function env(overrides = {}) {
+    return {
+      ASSETS: assetServer({ "/": HTML_PAGE }),
+      CLOUD_VISIT_URL: VISIT_URL,
+      WEBSITE_SECRET: SECRET,
+      ...overrides,
+    };
+  }
+
+  function visitCalls(fetchMock) {
+    return fetchMock.mock.calls.filter(([url]) => String(url) === VISIT_URL);
+  }
+
+  it("seeds a vid cookie on first touch over https, reports the visit, keeps the ETag", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const ctx = collectingCtx();
+
+    const response = await worker.fetch(new Request("https://beta.orbi.build/?ref=e2e-14f5d89f"), env(), ctx);
+
+    expect(response.status).toBe(200);
+    const cookie = response.headers.get("Set-Cookie");
+    expect(cookie).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
+    // Seeding must not rewrite the body, so the asset's own validators survive.
+    expect(response.headers.get("ETag")).toBe('"asset-etag-1"');
+    await flush(ctx);
+
+    const calls = visitCalls(fetchMock);
+    expect(calls).toHaveLength(1);
+    const [url, init] = calls[0];
+    expect(String(url)).toBe(VISIT_URL);
+    expect(init.method).toBe("POST");
+    expect(init.headers.Authorization).toBe(`Bearer ${SECRET}`);
+    expect(init.headers["Content-Type"]).toBe("application/json");
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(JSON.parse(init.body)).toEqual({ vid: cookie.match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
+  });
+
+  it("seeds the vid cookie without Secure over http", async () => {
+    globalThis.fetch = vi.fn(async () => new Response("ok"));
+    const ctx = collectingCtx();
+
+    const response = await worker.fetch(new Request("http://beta.orbi.build/"), env(), ctx);
+
+    expect(response.headers.get("Set-Cookie")).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000$/);
+    await flush(ctx);
+  });
+
+  it("keeps an existing vid: no reseed, the visit reports an empty ref", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const ctx = collectingCtx();
+
+    const response = await worker.fetch(
+      new Request("https://beta.orbi.build/?ref=later-ref", { headers: { Cookie: "vid=ExistingVidValue123456" } }),
+      env(),
+      ctx,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Set-Cookie")).toBeNull();
+    await flush(ctx);
+    const calls = visitCalls(fetchMock);
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(calls[0][1].body)).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
+  });
+
+  it("generates a fresh 22-char base64url vid per first touch", async () => {
+    globalThis.fetch = vi.fn(async () => new Response("ok"));
+    const first = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
+    const second = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
+    const firstVid = first.headers.get("Set-Cookie").match(/^vid=([A-Za-z0-9_-]{22});/)[1];
+    const secondVid = second.headers.get("Set-Cookie").match(/^vid=([A-Za-z0-9_-]{22});/)[1];
+    expect(firstVid).not.toBe(secondVid);
+  });
+
+  it("records HTML 200 responses only — not static assets, robots.txt or HTML 404s", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const routes = {
+      "/": HTML_PAGE,
+      "/styles.css": { body: "body{}", headers: { "Content-Type": "text/css" } },
+      "/logo.svg": { body: "<svg/>", headers: { "Content-Type": "image/svg+xml" } },
+      "/install.sh": { body: "#!/bin/sh\n", headers: { "Content-Type": "text/plain; charset=utf-8" } },
+      "/gone/": { body: "<html>404</html>", headers: { "Content-Type": "text/html; charset=utf-8" }, status: 404 },
+    };
+    const assets = assetServer(routes);
+
+    for (const path of ["/", "/styles.css", "/logo.svg", "/install.sh", "/gone/"]) {
+      const before = visitCalls(fetchMock).length;
+      const ctx = collectingCtx();
+      await worker.fetch(new Request(`https://beta.orbi.build${path}`), env({ ASSETS: assets }), ctx);
+      await flush(ctx);
+      expect(visitCalls(fetchMock).length - before, path).toBe(path === "/" ? 1 : 0);
+    }
+    // beta robots.txt is worker-served (test-env blanket Disallow): never a visit.
+    const before = visitCalls(fetchMock).length;
+    const ctx = collectingCtx();
+    await worker.fetch(new Request("https://beta.orbi.build/robots.txt"), env(), ctx);
+    await flush(ctx);
+    expect(visitCalls(fetchMock).length - before).toBe(0);
+  });
+
+  it("keeps the page 200 when the visit endpoint rejects, answers 500, or times out", async () => {
+    const failures = [
+      { label: "network error", answer: async () => { throw new Error("network down"); } },
+      { label: "500 response", answer: async () => new Response("boom", { status: 500 }) },
+      { label: "timeout abort", answer: async () => { throw Object.assign(new Error("The operation was aborted"), { name: "AbortError" }); } },
+    ];
+    for (const failure of failures) {
+      globalThis.fetch = vi.fn(failure.answer);
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const ctx = collectingCtx();
+      const response = await worker.fetch(new Request("https://beta.orbi.build/"), env(), ctx);
+      expect(response.status, failure.label).toBe(200);
+      expect(response.headers.get("Set-Cookie"), failure.label).toMatch(/^vid=/);
+      await flush(ctx);
+      expect(warn, failure.label).toHaveBeenCalled();
+      expect(warn.mock.calls[0][0], failure.label).toMatch(/^visit_report_/);
+      warn.mockRestore();
+    }
+  });
+
+  it("returns the response before the visit POST completes", async () => {
+    let settled = false;
+    let release;
+    globalThis.fetch = vi.fn(() => new Promise((resolve) => {
+      release = () => { settled = true; resolve(new Response("ok")); };
+    }));
+    const ctx = collectingCtx();
+
+    const response = await worker.fetch(new Request("https://beta.orbi.build/"), env(), ctx);
+
+    expect(response.status).toBe(200);
+    expect(settled).toBe(false);
+    release();
+    await flush(ctx);
+    expect(settled).toBe(true);
+  });
+
+  it("derives ref from ?ref=, then ?source=, then referer host, then direct — first touch only", async () => {
+    const cases = [
+      { url: "https://beta.orbi.build/?ref=TG", expected: "tg" },
+      { url: "https://beta.orbi.build/?source=News.Site", expected: "news.site" },
+      { url: `https://beta.orbi.build/?ref=${"x".repeat(33)}`, expected: "direct" },
+      { url: "https://beta.orbi.build/", headers: { Referer: "https://News.Ycombinator.com/item?id=1" }, expected: "news.ycombinator.com" },
+      { url: "https://beta.orbi.build/", headers: { Referer: "javascript:alert(1)" }, expected: "direct" },
+      { url: "https://beta.orbi.build/", headers: {}, expected: "direct" },
+    ];
+    for (const { url, headers, expected } of cases) {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+      await worker.fetch(new Request(url, { headers }), env(), ctx);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls, url).toHaveLength(1);
+      expect(JSON.parse(calls[0][1].body).ref, url).toBe(expected);
+    }
+  });
+
+  it("skips the visit POST when CLOUD_VISIT_URL or WEBSITE_SECRET is unset, still seeding the cookie", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    for (const overrides of [{ CLOUD_VISIT_URL: undefined }, { WEBSITE_SECRET: undefined }]) {
+      const ctx = collectingCtx();
+      const response = await worker.fetch(new Request("https://beta.orbi.build/"), env(overrides), ctx);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Set-Cookie")).toMatch(/^vid=/);
+      await flush(ctx);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
