@@ -107,6 +107,13 @@ jobs:
           check_page "https://beta.orbi.build/compare/" "OpenClaw"
           check_page "https://beta.orbi.build/compare/openclaw/" "OpenClaw"
           check_page "https://beta.orbi.build/zh/compare/openclaw/" "OpenClaw"
+          # Issue #223: /cloud and /cloud/ are the URLs actually handed out
+          # (Telegram/X share the no-slash form). The no-slash request must
+          # follow the trailing-slash redirect onto the page (2026-09-18 it
+          # answered 500 for an hour in production, unseen by either smoke):
+          # curl --fail fails on a 500, and on a redirect loop curl fails too.
+          check_page "https://beta.orbi.build/cloud/" "Orbi Cloud: GitHub Issues in, tagged releases out"
+          check_page "https://beta.orbi.build/cloud" "Orbi Cloud: GitHub Issues in, tagged releases out"
       - name: Smoke-test beta in a real browser
         # Issue #74: the login contract is declared per environment, never
         # guessed in the test. Issue #76: the website hands off at its own

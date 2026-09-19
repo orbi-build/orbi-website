@@ -232,7 +232,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 10-item footer nav on every content page", () => {
+  it("carries the 11-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -248,6 +248,7 @@ describe("one unified footer on every content page", () => {
         "https://x.com/xqliu",
         `${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
+        "https://status.orbi.build",
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
@@ -453,8 +454,8 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   it("keeps the same item count on EN and ZH, first two open", () => {
     const counts = CLOUD_FAQ_PAGES.map(({ output }) => {
       const items = cloudFaqItems(shipped.get(output));
-      expect(items.length, `${output}: need 5–6 buyer questions`).toBeGreaterThanOrEqual(5);
-      expect(items.length, `${output}: need 5–6 buyer questions`).toBeLessThanOrEqual(6);
+      expect(items.length, `${output}: need 5–7 buyer questions`).toBeGreaterThanOrEqual(5);
+      expect(items.length, `${output}: need 5–7 buyer questions`).toBeLessThanOrEqual(7);
       expect(
         items.map((item) => item.open),
         `${output}: first two open, the rest collapsed (homepage pattern)`,
@@ -496,6 +497,48 @@ describe("cloud buyer FAQ (Issue #166)", () => {
       for (const question of questions) {
         expect(home, `${output}: ${question}`).not.toContain(question);
       }
+    }
+  });
+});
+
+// Issue #221: status.orbi.build went live 2026-09-18; the only way to find it
+// was to already know the URL. The footer links it on every page (after
+// Releases, no target="_blank", same as GitHub and X) and the cloud FAQ
+// answers the incident question with the link. The zh label must come from
+// the translation table, so the zh page never shows the English word.
+describe("status page link (Issue #221)", () => {
+  it("links https://status.orbi.build from the footer right after Releases, on en and zh", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      const releases = footer.indexOf('href="https://github.com/orbi-build/orbi/releases"');
+      const status = footer.indexOf('href="https://status.orbi.build"');
+      expect(releases, `${output}: Releases link missing`).toBeGreaterThan(-1);
+      expect(status, `${output}: status link missing from the footer`).toBeGreaterThan(releases);
+    }
+  });
+
+  it("labels the link Status on en and 状态 on zh, with no target attribute", () => {
+    const en = footerRegion(shipped.get("index.html"));
+    const zh = footerRegion(shipped.get("zh/index.html"));
+    expect(en).toContain('href="https://status.orbi.build">Status</a>');
+    expect(zh, "the zh footer must not show the English label").toContain('href="https://status.orbi.build">状态</a>');
+    for (const [output, footer] of [["index.html", en], ["zh/index.html", zh]]) {
+      expect(footer, `${output}: status link must not open a new tab`).not.toMatch(
+        /<a[^>]*status\.orbi\.build[^>]*target=/,
+      );
+    }
+  });
+
+  it("answers the incident question in the cloud FAQ of both languages with the status link", () => {
+    for (const [output, question] of [
+      ["cloud/index.html", "What happens when Orbi Cloud has an incident?"],
+      ["zh/cloud/index.html", "Orbi Cloud 出故障了怎么办？"],
+    ]) {
+      const html = shipped.get(output);
+      const item = cloudFaqItems(html).find((entry) => entry.question === question);
+      expect(item, `${output}: incident FAQ entry missing`).toBeTruthy();
+      expect(item.answer, `${output}: FAQ answer must name the status page`).toContain("status.orbi.build");
+      expect(html, `${output}: FAQ answer must link the status page`).toContain('href="https://status.orbi.build"');
     }
   });
 });
