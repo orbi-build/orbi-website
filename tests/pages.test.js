@@ -313,6 +313,46 @@ describe("per-page head parameters (title / description / canonical)", () => {
       expect(description, `${page.output}: description is missing`).toBeTruthy();
     }
   });
+
+  // Issue #237 (growth #41): the six keyword-aligned titles are delivered
+  // copy — pin them verbatim (and the two rewritten descriptions) so a later
+  // rebrand cannot silently undo the search-term targeting.
+  it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
+    const expected = {
+      "compare/devin/index.html": {
+        title: "Open-source Devin alternative: Orbi vs Devin, with the bill | Orbi",
+        description:
+          "Looking for an open-source Devin alternative? A sourced comparison of Orbi and Devin: ACU credit billing versus measured per-delivery cost, cloud execution versus self-hosted, model lock-in, and when each one wins. Every claim sourced and dated.",
+      },
+      "compare/github-copilot-coding-agent/index.html": {
+        title: "GitHub Copilot coding agent alternative: who merges the PR | Orbi",
+        description:
+          "A GitHub Copilot coding agent alternative that merges and releases. Sourced comparison: Copilot cannot approve or merge its own pull requests; Orbi runs independent review, an exact-head merge gate, and a tagged release. Cost and auditability compared.",
+      },
+      "cost/index.html": {
+        title: "AI coding agent cost comparison: what one delivery actually costs | Orbi",
+      },
+      "cloud/index.html": {
+        title: "Self-hosted or cloud coding agent: Orbi Cloud | Orbi",
+      },
+      "zh/compare/index.html": {
+        title: "AI 编程 agent 工具对比：Orbi 与各家逐条核实 | Orbi",
+      },
+      "zh/cost/index.html": {
+        title: "AI 编程成本实测：跑一个 Issue 到底花多少钱 | Orbi",
+      },
+    };
+    for (const [output, slots] of Object.entries(expected)) {
+      const html = shipped.get(output);
+      expect(html.match(/<title>([^<]+)<\/title>/)?.[1], `${output}: title`).toBe(slots.title);
+      if (slots.description) {
+        expect(
+          html.match(/<meta name="description" content="([^"]+)"/)?.[1],
+          `${output}: description`,
+        ).toBe(slots.description);
+      }
+    }
+  });
 });
 
 describe("cloud hero CTA microcopy (Issue #156)", () => {
