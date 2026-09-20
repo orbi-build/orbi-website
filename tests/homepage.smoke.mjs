@@ -1022,6 +1022,18 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
     }
   }
+  // Issue #275: the onboarding must end with a concrete execution switch,
+  // not merely "the first Issue can start". Assert the rendered four-step
+  // path at both desktop and phone widths; the overflow check below catches
+  // a layout that squeezes or clips the instruction.
+  const steps = page.locator(".proof-ledger > li");
+  if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
+  const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
+  for (const needle of path === "/cloud/"
+    ? ["Label one Issue ai-ready", "<repo>/issues/new?labels=ai-ready", "within 5 minutes", "comments on the Issue"]
+    : ["给一个 Issue 加上 ai-ready 标签", "<repo>/issues/new?labels=ai-ready", "5 分钟内认领", "Issue 下留言"]) {
+    if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
+  }
   if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
   // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
   // its description — never the retired US$15.
