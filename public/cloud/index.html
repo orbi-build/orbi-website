@@ -94,7 +94,7 @@
             "name": "Can you see my code?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub."
+              "text": "The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub. Retention: after a delivery reaches a terminal outcome, its worktree is destroyed after a 120-minute quiet period; in-flight and recoverable deliveries are kept. Isolation: each tenant’s code, credentials, and delivery artifacts are isolated from other tenants. Model API keys: BYOK keys are stored AES-GCM encrypted in the control plane; API reads return only a masked value, and decryption is only for runner injection."
             }
           },
           {
@@ -288,6 +288,13 @@
             <summary><span>04</span>Can you see my code?</summary>
             <div class="faq-answer">
               <p>The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub.</p>
+              <!-- Sources (private operator repository, not user-facing links):
+                   orbi-cloud/runbook/cleanup_completed.py
+                   orbi-cloud/scripts/provision-runner-sandbox.sh
+                   orbi-cloud/migrations/0005_tenant_secrets.sql -->
+              <p>Retention: after a delivery reaches a terminal outcome, its worktree is destroyed after a 120-minute quiet period; in-flight and recoverable deliveries are kept.</p>
+              <p>Isolation: each tenant’s code, credentials, and delivery artifacts are isolated from other tenants.</p>
+              <p>Model API keys: BYOK keys are stored AES-GCM encrypted in the control plane; API reads return only a masked value, and decryption is only for runner injection.</p>
             </div>
           </details>
 
