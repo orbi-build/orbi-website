@@ -1038,8 +1038,8 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    if (href !== "/cloud/login") {
-      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login"`);
+    if (href !== "/cloud/login?ref=nav") {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login?ref=nav"`);
     }
     await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
   } finally {

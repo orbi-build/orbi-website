@@ -368,6 +368,11 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
       "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
   };
 
+  const heroCtaHref = {
+    "cloud/index.html": 'href="/cloud/login?ref=cloud-page"',
+    "zh/cloud/index.html": 'href="/cloud/login?ref=zh-cloud-page"',
+  };
+
   const heroCtaBlock = (output) => {
     const hero = region(shipped.get(output), '<section class="compare-hero', "</section>");
     return hero.match(/<div class="hero-primary">([\s\S]*?)<\/div>/)?.[1] ?? "";
@@ -376,7 +381,7 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
   it("carries the handoff warning directly under the hero CTA on both languages", () => {
     for (const [output, expected] of Object.entries(microcopyExpectations)) {
       const block = heroCtaBlock(output);
-      const button = block.indexOf('href="/cloud/login"');
+      const button = block.indexOf(heroCtaHref[output]);
       expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
       const paragraph = block.indexOf("<p>");
       expect(paragraph, `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
@@ -591,7 +596,7 @@ describe("status page link (Issue #221)", () => {
 describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
   it("defaults the shared partial to Cloud login, not Apply", async () => {
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
-    expect(partial).toContain('href="/cloud/login"');
+    expect(partial).toContain('href="/cloud/login?ref=nav"');
     expect(partial).not.toContain('href="/apply"');
     expect(partial).not.toContain("{{APPLY_HREF}}");
   });
@@ -617,7 +622,7 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
       const nav = navRegion(html);
       const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login");
+      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login?ref=nav");
       expect(cta[1], `${output}: nav CTA must not be the Apply form`).not.toBe("/apply");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
