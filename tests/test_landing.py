@@ -1222,18 +1222,24 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertEqual(offers[0]["price"], "79", offers[0])
             self.assertIn("100% off", offers[0]["description"], offers[0])
 
-    def test_the_three_steps_appear_in_order_and_end_at_the_login_button(self) -> None:
+    def test_the_four_steps_appear_in_order_and_end_at_delivery(self) -> None:
         # Issue #256: the login buttons carry the page-level ?ref= token the
-        # signup attribution records.
+        # signup attribution records. Issue #274 puts the free path before
+        # subscription and makes triggering the delivery the fourth step.
         for page, steps, login_href in (
             (
                 self.en,
-                ("Sign in with GitHub", "Install the Orbi GitHub App", "Subscribe and connect a repository"),
+                (
+                    "Sign in with GitHub",
+                    "Install the Orbi GitHub App",
+                    "Connect a repository",
+                    "Label one Issue ai-ready",
+                ),
                 "/cloud/login",
             ),
             (
                 self.zh,
-                ("用 GitHub 登录", "安装 Orbi GitHub App", "订阅并连接仓库"),
+                ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给一个 Issue 加上 ai-ready 标签"),
                 "/cloud/login",
             ),
         ):
