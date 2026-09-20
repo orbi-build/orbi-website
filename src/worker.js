@@ -51,6 +51,7 @@ const STATS_TTL_MS = 300000;
 // entry therefore lives under /cloud/: the login handoff. The retired submit
 // route answers 410; D1 bindings and historical rows stay (Issue #179).
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
+const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 
 function githubHeaders(token) {
@@ -568,7 +569,7 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (route === CLOUD_LOGIN_ROUTE) {
+    if (route === CLOUD_LOGIN_ROUTE || route === ZH_CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 

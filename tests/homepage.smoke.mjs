@@ -305,7 +305,7 @@ export function expectedCtaLanding(expectation) {
   return {
     describe: "the /cloud/login handoff",
     statusOk: (status) => status === 404,
-    matches: (url) => url.pathname === "/cloud/login",
+    matches: (url) => url.pathname === "/cloud/login" || url.pathname === "/zh/cloud/login",
   };
 }
 
@@ -624,11 +624,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
-  // plus the card CTA and the nav "Start Cloud" keeping the same promise —
-  // one click into the login handoff, never a second identical button.
-  // Issue #107: where that click lands is the environment contract
-  // (assertCtaLandsAtEndpoint), never a pinned href — the Worker rewrites
-  // the shipped href where CLOUD_LOGIN_URL is unset (Issue #77).
+  // plus the card CTA and the nav "Start Cloud" keeping the same promise.
+  // The nav introduces the Cloud page; that page's CTA remains the login handoff.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
   await cloudCta.scrollIntoViewIfNeeded();
@@ -1442,10 +1439,35 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #170: /compare/ is on the buyer-decision path. The nav CTA a visitor
-// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the Cloud
-// login handoff — the same promise as every other page. Apply still 200s, so
-// a wrong destination would not 404; the text and href are the evidence.
+// Issue #308: exercise the actual homepage navigation journey at each
+// acceptance viewport, then verify the Cloud page's language-specific login
+// handoff without following the interactive GitHub OAuth page.
+async function assertHomeNavCloudFlow(browser, path, size, screenshot) {
+  const context = await browser.newContext({ viewport: size });
+  try {
+    const page = await context.newPage();
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const nav = page.locator("[data-primary-nav] .nav-apply");
+    if (!(await nav.isVisible())) await page.locator("[data-menu-toggle]").click();
+    await nav.click();
+    const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    if (new URL(page.url()).pathname !== cloudPath) {
+      throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
+    }
+    const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
+    const cta = page.locator("a.button-signal").first();
+    if (await cta.getAttribute("href") !== loginPath) {
+      throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+    }
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  } finally {
+    await context.close();
+  }
+}
+
+// Issue #308: /compare/ is on the buyer-decision path. The nav CTA a visitor
+// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the language
+// Cloud introduction page before its login handoff.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -1461,8 +1483,9 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    if (href !== "/cloud/login") {
-      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login"`);
+    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    if (href !== expectedHref) {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected ${JSON.stringify(expectedHref)}`);
     }
     await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
   } finally {
@@ -2043,10 +2066,13 @@ async function main() {
       ["cloud-start", '[data-cta="cloud-start"]'],
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
-      ["nav Start Cloud", "[data-primary-nav] .nav-apply"],
     ];
     await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);
     await assertCtaLandsAtEndpoint(browser, "/zh/", homepageCloudCtas);
+    await assertHomeNavCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
+    await assertHomeNavCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
+    await assertHomeNavCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
+    await assertHomeNavCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
     // Issue #97: both Cloud pages, both languages, phone and desktop widths.
     await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
@@ -2091,8 +2117,9 @@ async function main() {
     // still 200s, so the funnel would break without a 404.
     await assertCompareNavCta(browser, "/compare/", "Start Cloud");
     await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
-    await assertCtaLandsAtEndpoint(browser, "/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
-    await assertCtaLandsAtEndpoint(browser, "/zh/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
+    // The compare nav CTA now introduces Cloud; assertCompareNavCta checks its
+    // language-specific landing href above, while the Cloud page flow above
+    // verifies the login handoff.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
     await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");

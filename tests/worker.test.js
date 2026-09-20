@@ -119,12 +119,10 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
   });
 
-  // Issue #134: users and clients append the site's natural trailing slash
-  // (every page lives at /…/), so /cloud/login/ must behave exactly like
-  // /cloud/login — the configured 302 when CLOUD_LOGIN_URL exists, the same
-  // fail-closed 503 page where it does not — never the asset fallback's 404.
-  it("serves /cloud/login/ identically to /cloud/login in both configurations (Issue #134)", async () => {
-    for (const pathname of ["/cloud/login", "/cloud/login/"]) {
+  // Issue #134 / #308: login handoffs preserve the configured 302 for both
+  // language paths and their natural trailing-slash variants.
+  it("serves language Cloud login handoffs identically in both configurations (Issue #308)", async () => {
+    for (const pathname of ["/cloud/login", "/cloud/login/", "/zh/cloud/login"]) {
       const configured = await handleFetch(
         new Request(`https://beta.orbi.build${pathname}?tenant=untrusted`),
         { CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login", ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) } },

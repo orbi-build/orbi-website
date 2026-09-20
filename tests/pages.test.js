@@ -444,7 +444,7 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
 
   const heroCtaHref = {
     "cloud/index.html": 'href="/cloud/login"',
-    "zh/cloud/index.html": 'href="/cloud/login"',
+    "zh/cloud/index.html": 'href="/zh/cloud/login"',
   };
 
   const heroCtaBlock = (output) => {
@@ -703,19 +703,17 @@ describe("status page link (Issue #221)", () => {
   });
 });
 
-// Issue #170: the primary-nav CTA is Start Cloud by default in the shared
-// partial. Walking every built index.html (not a hardcoded page list) is the
-// recurrence gate: a new page that forgets the Cloud login destination fails
-// here instead of silently shipping Apply.
-describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
-  it("defaults the shared partial to Cloud login, not Apply", async () => {
+// Issue #308: the primary-nav CTA introduces Cloud before authorization. Walking
+// every built index.html keeps both language trees on the same funnel contract.
+describe("nav CTA introduces the Cloud page (Issue #308)", () => {
+  it("uses a language-aware Cloud landing href in the shared partial", async () => {
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
-    expect(partial).toContain('href="/cloud/login"');
+    expect(partial).toContain('href="{{CLOUD_HREF}}"');
+    expect(partial).not.toContain('href="/cloud/login"');
     expect(partial).not.toContain('href="/apply"');
-    expect(partial).not.toContain("{{APPLY_HREF}}");
   });
 
-  it("points the primary-nav CTA at /cloud/login on every built index.html", async () => {
+  it("points the primary-nav CTA at the language Cloud page on every built index.html", async () => {
     const listIndex = async (dir, prefix = "") => {
       const out = [];
       for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -736,10 +734,18 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
       const nav = navRegion(html);
       const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login");
-      expect(cta[1], `${output}: nav CTA must not be the Apply form`).not.toBe("/apply");
+      const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
+      expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
+      expect(cta[1], `${output}: nav CTA must not be the Cloud login handoff`).not.toContain("/cloud/login");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
+    }
+  });
+
+  it("keeps Cloud page CTAs on the matching language login handoff", () => {
+    for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
+      const html = shipped.get(output);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(2);
     }
   });
 
