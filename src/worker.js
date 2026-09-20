@@ -165,16 +165,18 @@ async function loadAllReleases(repo, token) {
   return releases;
 }
 
+async function loadFoundingAvatars(db) {
+  if (!db) return [];
+  const tenants = await db.prepare("SELECT login FROM tenants WHERE login IS NOT NULL").all();
+  return (tenants?.results || []).map((row) => row.login).filter(Boolean);
+}
+
 async function loadFoundingStats(db) {
   if (!db) return null;
   const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
-  // The control-plane schema calls the public GitHub username `login`; alias
-  // it to the public /stats contract rather than leaking a storage detail.
-  const tenants = await db.prepare("SELECT login AS github_login FROM tenants WHERE login IS NOT NULL").all();
   return {
     active: Number(active?.count),
     limit: 10,
-    github_logins: (tenants?.results || []).map((row) => row.github_login).filter(Boolean),
   };
 }
 
@@ -299,7 +301,20 @@ async function fetchAsset(request, assets) {
 // The price and quota token replacements above it are unconditional: those
 // values must read the same on every environment, in every carrier a crawler
 // reads.
-async function assetResponse(asset, cloudLoginConfigured) {
+function foundingAvatarMarkup(logins) {
+  return logins.map((login) => {
+    const escaped = String(login).replace(/[&<>\"']/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '\"': "&quot;",
+      "'": "&#39;",
+    })[character]);
+    return `<img alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
+  }).join("");
+}
+
+async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -321,7 +336,8 @@ async function assetResponse(asset, cloudLoginConfigured) {
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
-    .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES);
+    .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
+    .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
@@ -577,6 +593,14 @@ async function handleFetch(request, env) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
+    let foundingLogins = [];
+    if (route === "/" || route === "/zh") {
+      try {
+        foundingLogins = await loadFoundingAvatars(env.CONTROL_PLANE_DB);
+      } catch (err) {
+        console.error("founding avatars failed:", err && err.message ? err.message : err);
+      }
+    }
     // The Assets binding answers a directory path without its trailing slash
     // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
     // binding's own canonicalisation, not an unexpected asset redirect: pass
@@ -586,7 +610,7 @@ async function handleFetch(request, env) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL));
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins);
 }
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
@@ -793,7 +817,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit

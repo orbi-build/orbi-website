@@ -293,15 +293,11 @@
             element.hidden = false;
           });
           document.querySelectorAll("[data-avatar-wall]").forEach(function (wall) {
-            const logins = founding && Array.isArray(founding.github_logins) ? founding.github_logins : [];
-            if (!logins.length) return;
-            const list = wall.querySelector("[data-avatar-list]");
+            const images = Array.from(wall.querySelectorAll("[data-avatar-list] img"));
+            if (!images.length) return;
             let failed = false;
-            let remaining = logins.length;
-            logins.forEach(function (login) {
-              const image = document.createElement("img");
-              image.alt = "";
-              image.title = login;
+            let remaining = images.length;
+            images.forEach(function (image) {
               image.addEventListener("load", function () {
                 remaining -= 1;
                 if (!failed && remaining === 0) wall.hidden = false;
@@ -310,8 +306,7 @@
                 failed = true;
                 wall.hidden = true;
               });
-              image.src = "https://avatars.githubusercontent.com/" + encodeURIComponent(login) + "?s=80";
-              list.appendChild(image);
+              if (image.complete && image.naturalWidth > 0) image.dispatchEvent(new Event("load"));
             });
           });
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {

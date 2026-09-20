@@ -438,7 +438,7 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
-  founding: { active: 4, limit: 10, github_logins: ["alice", "bob"] },
+  founding: { active: 4, limit: 10 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -598,13 +598,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     timeZone: "UTC",
   }).format(new Date(flagship.started));
   if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
-  const logins = servedStats?.founding?.github_logins || [];
+  // Avatar identities are server-rendered into the HTML, deliberately not
+  // carried by the public /stats payload. The Worker/browser contract test
+  // verifies the injection; this smoke only checks that any injected wall
+  // remains renderable after avatar loads.
   const wall = page.locator("[data-avatar-wall]");
-  if (logins.length) {
+  if (await wall.locator("img").count()) {
     await wall.locator("img").last().waitFor({ state: "visible" });
-    if ((await wall.locator("img").count()) !== logins.length) throw new Error(`${path}: avatar count does not match /stats`);
-    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
-    if (titles.join("|") !== logins.join("|")) throw new Error(`${path}: avatar titles do not match public GitHub logins`);
   }
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
@@ -1007,7 +1007,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ founding: { active: 4, limit: 10, github_logins: [] }, repos: {} }),
+      body: JSON.stringify({ founding: { active: 4, limit: 10 }, repos: {} }),
     }));
   }
   page.on("console", (message) => {
