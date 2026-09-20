@@ -17,6 +17,13 @@ const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
 // against a whitespace-collapsed copy so a line break never hides a phrase.
 const flat = llms.replace(/\s+/g, " ");
 
+describe("llms.txt model compatibility claim (Issue #296)", () => {
+  it("names the OpenAI-compatible boundary without implying native Claude support", () => {
+    expect(flat).toContain("any OpenAI-compatible API or a locally hosted model");
+    expect(flat).not.toContain("Bring your own: Claude, GPT");
+  });
+});
+
 describe("llms.txt keeps the existing positioning sections (Issue #154 acceptance 3)", () => {
   it("still carries every pre-existing section heading, in order", () => {
     const headings = [...llms.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
