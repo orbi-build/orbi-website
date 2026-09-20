@@ -2158,10 +2158,19 @@ class BootstrapEvidenceTests(unittest.TestCase):
 
     def test_licence_wording_is_not_invented(self) -> None:
         for html in (self.en_html, self.zh_html):
-            self.assertNotIn("Apache", html)
-            self.assertNotIn("open-source", html.lower())
-            self.assertNotIn("open source", html.lower())
-            self.assertNotIn("开源", html)
+            # Issue #270: the shared footer carries the opensourcealternatives.to
+            # backlink on every content page, including this one. The anchor text
+            # is a third-party site name, not a licence claim about Orbi — strip
+            # it before the bans below.
+            body = html.replace(
+                '<a href="https://www.opensourcealternatives.to/" rel="noopener">'
+                "Open Source Alternatives</a>",
+                "",
+            )
+            self.assertNotIn("Apache", body)
+            self.assertNotIn("open-source", body.lower())
+            self.assertNotIn("open source", body.lower())
+            self.assertNotIn("开源", body)
 
     def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
