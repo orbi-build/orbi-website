@@ -152,7 +152,7 @@ describe("Worker request helpers", () => {
     expect(login.status).toBe(302);
     expect(login.headers.get("location")).toBe(cloudLoginUrl);
 
-    const html = '<a data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub</a>';
+    const html = '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>';
     const page = await handleFetch(
       new Request("https://orbi.build/"),
       {
@@ -165,7 +165,7 @@ describe("Worker request helpers", () => {
       },
     );
     const body = await page.text();
-    expect(body).toContain('href="/cloud/login"');
+    expect(body).toContain('href="/cloud/login?ref=home-hero"');
     expect(body).not.toContain('href="https://docs.orbi.build"');
   });
 
@@ -207,8 +207,11 @@ describe("Worker request helpers", () => {
   });
 
   it("serves pages with the Cloud CTA rewritten to the self-host docs when Cloud is not configured", async () => {
-    const html = '<a class="nav-apply" href="/cloud/login">Start Cloud</a>'
-      + '<a data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub</a>';
+    // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
+    // catch the ref form as well as the bare form, or an unconfigured
+    // environment ships dead-end CTAs again (Issue #179).
+    const html = '<a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>'
+      + '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>';
     const response = await handleFetch(
       new Request("https://orbi.build/"),
       {
@@ -220,7 +223,7 @@ describe("Worker request helpers", () => {
       },
     );
     const body = await response.text();
-    expect(body).not.toContain('href="/cloud/login"');
+    expect(body).not.toMatch(/href="\/cloud\/login/);
     expect(body).toContain('href="https://docs.orbi.build"');
     expect(body).not.toContain('href="/apply"');
     // A rewritten body is a new representation: the asset file's validators
@@ -229,7 +232,7 @@ describe("Worker request helpers", () => {
   });
 
   it("serves pages unchanged when Cloud login is configured", async () => {
-    const html = '<a data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub</a>';
+    const html = '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>';
     const response = await handleFetch(
       new Request("https://beta.orbi.build/"),
       {
@@ -241,7 +244,7 @@ describe("Worker request helpers", () => {
         },
       },
     );
-    expect(await response.text()).toContain('href="/cloud/login"');
+    expect(await response.text()).toContain('href="/cloud/login?ref=home-hero"');
   });
 
   it("builds authenticated GitHub API headers", () => {
@@ -1229,6 +1232,52 @@ describe("visit attribution (Issue #228)", () => {
       const calls = visitCalls(fetchMock);
       expect(calls).toHaveLength(1);
       expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 0 });
+    });
+  });
+
+  // Issue #256: the shipped CTA hrefs carry ?ref=<token>. The handoff route
+  // keeps stripping the query (the tenant protection pinned above), so the
+  // attribution travels in the ref cookie that withAttribution plants on the
+  // 302 response itself — the shared-domain cookie /api/login reads
+  // (orbi-cloud #716). These tests pin that exact mechanism.
+  describe("login handoff ref (Issue #256)", () => {
+    const LOGIN_ENV = {
+      CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+      ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+    };
+
+    it("plants the ref cookie on the /cloud/login 302 and keeps the Location bare", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/cloud/login?ref=home-hero", {
+          headers: { Cookie: "vid=ExistingVidValue123456" },
+        }),
+        LOGIN_ENV,
+        collectingCtx(),
+      );
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+      expect(response.headers.getSetCookie()).toEqual([
+        "ref=home-hero; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+      ]);
+    });
+
+    it("never plants a ref cookie for a token the receiving side would reject", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/cloud/login?ref=!!invalid!!", {
+          headers: { Cookie: "vid=ExistingVidValue123456" },
+        }),
+        LOGIN_ENV,
+        collectingCtx(),
+      );
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+      expect(response.headers.getSetCookie()).toEqual([]);
     });
   });
 
