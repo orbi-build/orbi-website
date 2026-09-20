@@ -639,10 +639,11 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262: the proof section's 17.6-second silent loop. The acceptance is
-// measured rendering, not strings: the four autoplay-contract attributes one
-// by one and no controls, the video fitting its container at the laptop and
-// phone widths the Issue names, and no horizontal scroll from the new block.
+// Issue #264: the proof section's delivery loop, retold as measured
+// rendering, not copy: the autoplay contract plus controls one by one —
+// the asset carries a narration track, so a visitor must be able to unmute
+// and pause — the video fitting its container at the laptop and phone
+// widths the Issue names, and no horizontal scroll from the block.
 // The midway CTA directly under the video carries the video's own ref token —
 // the signup attribution this Issue exists for.
 async function assertProofLoop(browser, path, size, screenshot) {
@@ -651,13 +652,10 @@ async function assertProofLoop(browser, path, size, screenshot) {
   const view = `${path} ${size.width}x${size.height}`;
   const video = page.locator(".proof-loop-video");
   if ((await video.count()) !== 1) throw new Error(`${view}: expected exactly one .proof-loop-video`);
-  for (const attribute of ["autoplay", "loop", "muted", "playsinline"]) {
+  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
     if ((await video.getAttribute(attribute)) === null) {
       throw new Error(`${view}: .proof-loop-video is missing ${attribute}`);
     }
-  }
-  if ((await video.getAttribute("controls")) !== null) {
-    throw new Error(`${view}: .proof-loop-video must not carry controls`);
   }
   // The loop must actually play — the strongest signal a visitor's browser
   // can give that the asset loads and the autoplay contract holds. Chromium
