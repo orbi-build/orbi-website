@@ -644,10 +644,19 @@ describe("privacy boundary copy (Issue #276)", () => {
       expect(html).toContain("migrations/0005_tenant_secrets.sql");
       expect(html).not.toMatch(/href="https:\/\/github\.com\/orbi-build\/orbi-cloud\//);
       const item = cloudFaqItems(html).find((entry) => /Can you see my code|能看到我的代码/.test(entry.question));
-      expect(item.answer).toMatch(/retained for 72 hours by default|默认保留 72 小时/);
+      expect(item.answer).toMatch(/120-minute quiet period|静默 120 分钟/);
       expect(item.answer).toMatch(/code, credentials, and delivery artifacts are isolated from other tenants|代码、凭据和交付产物均与其他租户隔离/);
       expect(item.answer).not.toMatch(/Linux user|UID|Linux 用户/);
       expect(item.answer).toMatch(/AES-GCM encrypted|AES-GCM 加密存储/);
+    }
+  });
+
+  it("states the implemented worktree and D1 retention boundaries on the privacy pages", () => {
+    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
+      const main = mainRegion(shipped.get(output));
+      expect(main, `${output}: worktree retention drifted`).toMatch(/120-minute quiet period|静默 120 分钟/);
+      expect(main, `${output}: persistent-record retention is missing`).toMatch(/have no automatic expiry|不会自动过期/);
+      expect(main, `${output}: the unimplemented 72-hour retention must not return`).not.toMatch(/72 hours|72 小时/);
     }
   });
 });
