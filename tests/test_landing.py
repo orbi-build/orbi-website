@@ -1229,12 +1229,12 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 ("Sign in with GitHub", "Install the Orbi GitHub App", "Subscribe and connect a repository"),
-                "/cloud/login?ref=cloud-page",
+                "/cloud/login",
             ),
             (
                 self.zh,
                 ("用 GitHub 登录", "安装 Orbi GitHub App", "订阅并连接仓库"),
-                "/cloud/login?ref=zh-cloud-page",
+                "/cloud/login",
             ),
         ):
             positions = [page.text.index(step) for step in steps]

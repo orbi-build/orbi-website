@@ -1276,22 +1276,21 @@ describe("visit attribution (Issue #228)", () => {
     });
   });
 
-  // Issue #256: the shipped CTA hrefs carry ?ref=<token>. The handoff route
-  // keeps stripping the query (the tenant protection pinned above), so the
-  // attribution travels in the ref cookie that withAttribution plants on the
-  // 302 response itself — the shared-domain cookie /api/login reads
-  // (orbi-cloud #716). These tests pin that exact mechanism.
+  // Explicit campaign links may still target the handoff directly. The
+  // handoff strips their query, while withAttribution plants the shared-domain
+  // ref cookie that /api/login reads (orbi-cloud #716). Internal site CTAs are
+  // bare instead, so they preserve the campaign cookie planted on landing.
   describe("login handoff ref (Issue #256)", () => {
     const LOGIN_ENV = {
       CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
       ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
     };
 
-    it("plants the ref cookie on the /cloud/login 302 and keeps the Location bare", async () => {
+    it("plants a direct campaign ref on the handoff and keeps the Location bare", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
 
       const response = await worker.fetch(
-        new Request("https://beta.orbi.build/cloud/login?ref=home-hero", {
+        new Request("https://beta.orbi.build/cloud/login?ref=x-2609201530", {
           headers: { Cookie: "vid=ExistingVidValue123456" },
         }),
         LOGIN_ENV,
@@ -1301,7 +1300,7 @@ describe("visit attribution (Issue #228)", () => {
       expect(response.status).toBe(302);
       expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
       expect(response.headers.getSetCookie()).toEqual([
-        "ref=home-hero; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+        "ref=x-2609201530; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
       ]);
     });
 
@@ -1319,6 +1318,41 @@ describe("visit attribution (Issue #228)", () => {
       expect(response.status).toBe(302);
       expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
       expect(response.headers.getSetCookie()).toEqual([]);
+    });
+
+    it("preserves a campaign ref from landing through the bare internal handoff (Issue #273)", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+      const journeyEnv = {
+        ...LOGIN_ENV,
+        ASSETS: { fetch: () => Promise.resolve(new Response("<h1>Orbi</h1>", {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        })) },
+      };
+
+      const landing = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=x-2609201530", {
+          headers: { Cookie: "vid=ExistingVidValue123456" },
+        }),
+        journeyEnv,
+        collectingCtx(),
+      );
+      expect(landing.status).toBe(200);
+      expect(landing.headers.getSetCookie()).toEqual([
+        "ref=x-2609201530; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+      ]);
+
+      const campaignCookie = landing.headers.getSetCookie()[0].split(";", 1)[0];
+      const handoff = await worker.fetch(
+        new Request("https://beta.orbi.build/cloud/login", {
+          headers: { Cookie: `vid=ExistingVidValue123456; ${campaignCookie}` },
+        }),
+        journeyEnv,
+        collectingCtx(),
+      );
+
+      expect(handoff.status).toBe(302);
+      expect(handoff.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+      expect(handoff.headers.getSetCookie()).toEqual([]);
     });
   });
 

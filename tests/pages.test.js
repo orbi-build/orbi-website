@@ -440,8 +440,8 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
   };
 
   const heroCtaHref = {
-    "cloud/index.html": 'href="/cloud/login?ref=cloud-page"',
-    "zh/cloud/index.html": 'href="/cloud/login?ref=zh-cloud-page"',
+    "cloud/index.html": 'href="/cloud/login"',
+    "zh/cloud/index.html": 'href="/cloud/login"',
   };
 
   const heroCtaBlock = (output) => {
@@ -698,7 +698,7 @@ describe("status page link (Issue #221)", () => {
 describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
   it("defaults the shared partial to Cloud login, not Apply", async () => {
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
-    expect(partial).toContain('href="/cloud/login?ref=nav"');
+    expect(partial).toContain('href="/cloud/login"');
     expect(partial).not.toContain('href="/apply"');
     expect(partial).not.toContain("{{APPLY_HREF}}");
   });
@@ -724,7 +724,7 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
       const nav = navRegion(html);
       const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login?ref=nav");
+      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login");
       expect(cta[1], `${output}: nav CTA must not be the Apply form`).not.toBe("/apply");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
