@@ -15,6 +15,7 @@ import pricing from "./pricing.json";
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
+const FREE_DELIVERIES = String(pricing.freeDeliveries);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -319,7 +320,8 @@ async function assetResponse(asset, cloudLoginConfigured) {
   let body = html
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
-    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS);
+    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
+    .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES);
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
