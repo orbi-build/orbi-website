@@ -192,6 +192,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Watch the six steps, start to finish (English):
+  https://orbi.build/blog/watch-the-six-steps/
+- 六步跑完，全程录下来了 (Chinese):
+  https://orbi.build/zh/blog/watch-the-six-steps/
 - An autonomous coding agent that can tell itself no (English):
   https://orbi.build/blog/what-autonomous-actually-means/
 - 会对自己说不的 AI 编码 agent (Chinese):
