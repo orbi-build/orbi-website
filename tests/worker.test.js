@@ -810,14 +810,17 @@ describe("aiready.sh install entry (Issue #174)", () => {
 // the cloud control plane's POST /api/internal/visit. The registration side
 // (orbi-cloud#716) reads the same cookie, so the contract is pinned: 16 random
 // bytes as base64url (22 chars, no padding), host-only Path=/ with HttpOnly;
-// SameSite=Lax; Max-Age=31536000, and Secure only on https (cloud's
+// SameSite=Lax; Max-Age=7776000, and Secure only on https (cloud's
 // sessionCookieString pattern) so local http tests can still seed it.
 // Reporting rides ctx.waitUntil and never delays or fails the page.
-// Issue #234: the same exit seeds a first-touch `ref` cookie — the one the
+// Issue #234: the same exit seeds a `ref` cookie — the one the
 // registration side actually reads to attribute signups (orbi-cloud
 // getCookie(..., "ref")). Its first touch is judged independently of vid
-// (pre-#234 visitors carry a vid but no ref), it is never overwritten, and
-// it is seeded as "direct" too so a later ?ref= cannot pose as first touch.
+// (pre-#234 visitors carry a vid but no ref). Issue #240 stopped fabricating
+// "direct" into the empty slot. Issue #247 splits the model by source kind:
+// an explicit ?ref= token is last touch (it overwrites the slot and is
+// reported on every visit); derived sources (referer host, ?source=) are
+// first touch (they fill an empty slot and never overwrite).
 describe("visit attribution (Issue #228)", () => {
   const VISIT_URL = "https://beta.orbi.build/api/internal/visit";
   const SECRET = "e2e-visit-secret";
@@ -893,8 +896,8 @@ describe("visit attribution (Issue #228)", () => {
     expect(response.status).toBe(200);
     const cookies = response.headers.getSetCookie();
     expect(cookies).toHaveLength(2);
-    expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure$/);
-    expect(cookies[1]).toBe("ref=e2e-14f5d89f; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure");
+    expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure$/);
+    expect(cookies[1]).toBe("ref=e2e-14f5d89f; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure");
     // Seeding must not rewrite the body, so the asset's own validators survive.
     expect(response.headers.get("ETag")).toBe('"asset-etag-1"');
     await flush(ctx);
@@ -908,7 +911,7 @@ describe("visit attribution (Issue #228)", () => {
     expect(sent.headers.get("Authorization")).toBe(`Bearer ${SECRET}`);
     expect(sent.headers.get("Content-Type")).toBe("application/json");
     expect(sent.signal).toBeInstanceOf(AbortSignal);
-    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f" });
+    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 0 });
   });
 
   it("seeds the vid cookie without Secure over http", async () => {
@@ -917,9 +920,10 @@ describe("visit attribution (Issue #228)", () => {
 
     const response = await worker.fetch(new Request("http://beta.orbi.build/"), env(), ctx);
 
+    // Issue #240: no ?ref= and no referer means no ref cookie — "direct" is
+    // no longer fabricated into the slot, so only vid is seeded.
     expect(response.headers.getSetCookie()).toEqual([
-      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=31536000$/),
-      "ref=direct; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000",
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000$/),
     ]);
     await flush(ctx);
   });
@@ -937,12 +941,15 @@ describe("visit attribution (Issue #228)", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.getSetCookie()).toEqual([
-      "ref=later-ref; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000; Secure",
+      "ref=later-ref; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
     ]);
     await flush(ctx);
     const calls = visitCalls(fetchMock);
     expect(calls).toHaveLength(1);
-    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "" });
+    // Issue #247/#244: the explicit ?ref= is reported on every visit, not
+    // only on first touch — a visitor who browsed direct first and clicked a
+    // campaign link later still lands the referral.
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "later-ref", is_bot: 0 });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
@@ -1055,19 +1062,23 @@ describe("visit attribution (Issue #228)", () => {
   // Issue #234: the ref cookie the cloud registration side reads
   // (orbi-cloud getCookie(request.headers.get("Cookie"), "ref"), accepted by
   // its isStoredSource: "direct", a ref token, or a source host — exactly the
-  // normalizedSource value space). First touch is judged independently of vid
-  // and the value is seeded even when "direct": an empty slot would let the
-  // next ?ref= pose as first touch after a direct first visit.
+  // normalizedSource value space). First touch is judged independently of vid.
+  // Issue #240 reverses one part of the original design: "direct" is no
+  // longer seeded — a fabricated direct first touch hides a real later
+  // ?ref= channel. The slot now only fills when the landing carries a real
+  // signal (?ref=, ?source=, referer host).
   describe("ref cookie (Issue #234)", () => {
-    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000";
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000";
 
-    it("seeds ref=direct on a first landing without any ref signal", async () => {
+    it("seeds no ref cookie on a first landing without any ref signal (Issue #240)", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
       const ctx = collectingCtx();
 
       const response = await worker.fetch(new Request("https://beta.orbi.build/"), env(), ctx);
 
-      expect(response.headers.getSetCookie()).toContain(`ref=direct; ${REF_ATTRS}; Secure`);
+      expect(response.headers.getSetCookie()).toEqual([
+        expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+      ]);
       await flush(ctx);
     });
 
@@ -1085,22 +1096,22 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
     });
 
-    it("never overwrites an existing ref: a direct first visit keeps its slot when the visitor returns from X", async () => {
+    it("leaves the ref slot empty on a direct first visit, so a later ?ref= lands as true first touch (Issue #240)", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
 
       const first = await worker.fetch(new Request("https://beta.orbi.build/"), env(), collectingCtx());
       const jar = first.headers.getSetCookie().map((cookie) => cookie.split(";")[0]).join("; ");
-      expect(jar).toMatch(/^vid=[A-Za-z0-9_-]{22}; ref=direct$/);
+      expect(jar).toMatch(/^vid=[A-Za-z0-9_-]{22}$/);
 
       const second = await worker.fetch(
         new Request("https://beta.orbi.build/?ref=xtest", { headers: { Cookie: jar } }),
         env(),
         collectingCtx(),
       );
-      expect(second.headers.getSetCookie()).toEqual([]);
+      expect(second.headers.getSetCookie()).toEqual([`ref=xtest; ${REF_ATTRS}; Secure`]);
     });
 
-    it("seeds ref for a vid-only visitor without reseeding vid", async () => {
+    it("seeds nothing for a vid-only visitor without a ref signal (Issue #240)", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
       const ctx = collectingCtx();
 
@@ -1110,7 +1121,7 @@ describe("visit attribution (Issue #228)", () => {
         ctx,
       );
 
-      expect(response.headers.getSetCookie()).toEqual([`ref=direct; ${REF_ATTRS}; Secure`]);
+      expect(response.headers.getSetCookie()).toEqual([]);
       await flush(ctx);
     });
 
@@ -1123,5 +1134,255 @@ describe("visit attribution (Issue #228)", () => {
       expect(response.headers.getSetCookie()).toContain(`ref=xtest; ${REF_ATTRS}`);
       await flush(ctx);
     });
+  });
+
+  // Issue #247: the attribution model splits by source kind. An explicit
+  // ?ref= token is ours — every seeded link carries one — so it is last
+  // touch: it overwrites whatever the slot held and is reported on every
+  // visit. Derived sources (referer host, ?source=, direct) are guesses an
+  // OAuth bounce or an in-site hop can fabricate, so they stay first touch:
+  // they fill an empty slot and never overwrite. The rows of the Issue's
+  // priority table map onto these tests one to one.
+  describe("attribution model (Issue #247)", () => {
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000";
+
+    // Row: ref cookie `aaa`, landing ?ref=bbb → overwritten with bbb
+    // (last-touch), and the visit reports bbb. The token is also
+    // re-normalized to lowercase like any ?ref= value.
+    it("an explicit ?ref= overwrites the previous ref cookie and is reported on a repeat visit", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=BBB", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=bbb; ${REF_ATTRS}; Secure`]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "bbb", is_bot: 0 });
+    });
+
+    // Row: ref cookie news.ycombinator.com, landing ?ref=aaa → explicit
+    // beats derived.
+    it("an explicit ?ref= overwrites a derived-source cookie", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=aaa", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=news.ycombinator.com" },
+        }),
+        env(),
+        collectingCtx(),
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=aaa; ${REF_ATTRS}; Secure`]);
+    });
+
+    // Row: ref cookie aaa, landing with no ref and a HN referer → nothing is
+    // seeded (a derived source may not overwrite an explicit ref) and the
+    // report carries no ref — the referral survives the in-site hop.
+    it("a derived source never overwrites the ref cookie, and later visits report no derived ref", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa", Referer: "https://news.ycombinator.com/item?id=1" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0 });
+    });
+
+    // The xqliu beta repro (2026-09-19): direct landing first (vid seeded, no
+    // ref cookie), a campaign link clicked days later. The visit must carry
+    // the explicit ref now that first touch is long gone.
+    it("reports an explicit ?ref= for a vid-only visitor with no ref cookie yet (Issue #244)", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?ref=afterdirect1789833086", {
+          headers: { Cookie: "vid=ExistingVidValue123456" },
+        }),
+        env(),
+        ctx,
+      );
+
+      expect(response.headers.getSetCookie()).toEqual([`ref=afterdirect1789833086; ${REF_ATTRS}; Secure`]);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 0 });
+    });
+  });
+
+  // Issue #251 measured the live request on beta through the /__cf
+  // diagnostic (2026-09-20): request.cf itself is populated (asn, colo) but
+  // botManagement is absent on this account/plan, so #243's score-based
+  // classification could never fire and every row landed is_bot=0. The
+  // working marker is an exact UA match of the probes we actually run — the
+  // attribution e2e's Better Stack monitor string — not a substring sweep,
+  // not a 1500-entry list. vid is still seeded on every request and the page
+  // is served unchanged; the marker never blocks.
+  describe("bot marking (Issue #251)", () => {
+    const CHROME_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
+    const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
+
+    async function botReportFor(request) {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+      const response = await worker.fetch(request, env(), ctx);
+      expect(response.status).toBe(200);
+      await flush(ctx);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      return { body: await visitBody(calls[0]), cookies: response.headers.getSetCookie() };
+    }
+
+    it("marks the known Better Uptime probe is_bot=1 while seeding vid and serving the page unchanged", async () => {
+      const { body, cookies } = await botReportFor(
+        new Request("https://beta.orbi.build/", { headers: { "User-Agent": BETTER_UPTIME } }),
+      );
+      expect(body).toEqual({ vid: expect.any(String), path: "/", ref: expect.any(String), is_bot: 1 });
+      expect(cookies).toHaveLength(1);
+      expect(cookies[0]).toMatch(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure$/);
+    });
+
+    it("matches the probe string exactly: lookalike, case-different and substring UAs stay human", async () => {
+      const lookalike = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; Better Uptime Bot/1.0)" },
+      }));
+      const lowercase = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": BETTER_UPTIME.toLowerCase() },
+      }));
+      const wrapped = await botReportFor(new Request("https://beta.orbi.build/", {
+        headers: { "User-Agent": `x ${BETTER_UPTIME} y` },
+      }));
+      expect(lookalike.body.is_bot).toBe(0);
+      expect(lowercase.body.is_bot).toBe(0);
+      expect(wrapped.body.is_bot).toBe(0);
+    });
+
+    it("marks browsers and curl human", async () => {
+      const chrome = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": CHROME_127 } }));
+      const curl = await botReportFor(new Request("https://beta.orbi.build/", { headers: { "User-Agent": "curl/8.7.1" } }));
+      expect(chrome.body.is_bot).toBe(0);
+      expect(curl.body.is_bot).toBe(0);
+    });
+
+    it("no longer reads botManagement at all: a perfect score decides nothing", async () => {
+      const request = new Request("https://beta.orbi.build/", { headers: { "User-Agent": CHROME_127 } });
+      request.cf = { botManagement: { score: 1 } };
+      const { body } = await botReportFor(request);
+      expect(body.is_bot).toBe(0);
+    });
+  });
+});
+
+// Issue #251: the bot verdict on beta is all zeros and the two candidate
+// causes — botManagement absent on this account/plan, or present with high
+// scores — differ only in the live value. /__cf is the read-only measurement:
+// the request's own request.cf echoed back as JSON on non-production hosts.
+// No credentials, no writes, no cache (the score is per-request), and
+// production has no such route: it 404s through the asset fall-through.
+describe("/__cf diagnostic (Issue #251)", () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+  });
+
+  function requestWithCf(url, cf) {
+    const request = new Request(url);
+    request.cf = cf;
+    return request;
+  }
+
+  // Rejecting assets prove the beta endpoint is answered by the worker route
+  // and never falls through to the static assets.
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+  const notFoundAssets = {
+    ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+  };
+
+  it("echoes the live request.cf fields as JSON on beta", async () => {
+    const response = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { botManagement: { score: 7 }, asn: 24940, colo: "FRA" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(await response.json()).toEqual({ botManagement: { score: 7 }, asn: 24940, colo: "FRA" });
+  });
+
+  it("answers botManagement null when the field is absent from request.cf", async () => {
+    const response = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { asn: 24940, colo: "HKG" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ botManagement: null, asn: 24940, colo: "HKG" });
+  });
+
+  it("answers botManagement null without any request.cf at all (local dev)", async () => {
+    const response = await handleFetch(new Request("https://beta.orbi.build/__cf"), env);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ botManagement: null, asn: undefined, colo: undefined });
+  });
+
+  it("serves the trailing-slash form identically (Issue #134)", async () => {
+    const response = await handleFetch(new Request("https://beta.orbi.build/__cf/"), env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+  });
+
+  it("is 404 in production: orbi.build directly, aiready.sh via its standard redirect", async () => {
+    const apex = await handleFetch(new Request("https://orbi.build/__cf"), notFoundAssets);
+    expect(apex.status).toBe(404);
+    // aiready.sh's Issue #174 contract 302s every unknown path to orbi.build,
+    // where the diagnostic 404s — the end result is still no /__cf in prod.
+    const aiready = await handleFetch(new Request("https://aiready.sh/__cf"), notFoundAssets);
+    expect(aiready.status).toBe(302);
+    expect(aiready.headers.get("Location")).toBe("https://orbi.build/__cf");
+  });
+
+  it("never reports a visit: the diagnostic is not an HTML 200", async () => {
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const pending = [];
+    const attributionEnv = {
+      ...env,
+      CLOUD_VISIT_URL: "https://beta.orbi.build/api/internal/visit",
+      WEBSITE_SECRET: "e2e-visit-secret",
+      CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
+    };
+    const response = await worker.fetch(
+      requestWithCf("https://beta.orbi.build/__cf", { botManagement: { score: 1 } }),
+      attributionEnv,
+      { waitUntil: (promise) => pending.push(promise) },
+    );
+    expect(response.status).toBe(200);
+    await Promise.all(pending);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

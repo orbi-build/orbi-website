@@ -1,4 +1,5 @@
 import { withAICrawlerTracking } from "@datafast/ai-crawl";
+import { visitSignals } from "./bot-detection.js";
 import pricing from "./pricing.json";
 
 // Single source of truth for the Cloud monthly price and the included token
@@ -378,6 +379,28 @@ function goneResponse() {
   });
 }
 
+// Issue #251: the bot verdict on beta is all zeros and the two candidate
+// causes — botManagement absent on this account/plan, or present with high
+// scores — differ only in the live value. /__cf is the read-only measurement:
+// the request's own request.cf echoed back as JSON, exactly as received. It
+// carries no credentials, writes nothing, and is never cached (the score is
+// per-request), and it is answered on non-production hosts only — production
+// has no such route and its assets 404.
+function cfDiagResponse(request) {
+  const cf = request.cf ?? {};
+  return new Response(JSON.stringify({
+    botManagement: cf.botManagement ?? null,
+    asn: cf.asn,
+    colo: cf.colo,
+  }), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
 // Issue #174: curl gets public/install.sh; browsers 302 to orbi.build.
 // Bytes come from ASSETS so the worker never holds a second copy of the script.
 const INSTALL_SCRIPT_CACHE = "public, max-age=120";
@@ -514,6 +537,12 @@ async function handleFetch(request, env) {
       return Response.redirect(`https://${url.hostname}${prefix}/cloud/#pricing`, 301);
     }
 
+    // Issue #251: beta-only request.cf diagnostic; production falls through
+    // to the assets and 404s.
+    if (route === "/__cf" && !PROD_HOSTS.has(url.hostname)) {
+      return cfDiagResponse(request);
+    }
+
     const asset = await fetchAsset(request, env.ASSETS);
     // The Assets binding answers a directory path without its trailing slash
     // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
@@ -551,13 +580,21 @@ function trailingSlashRedirect(asset, url) {
 // Two first-touch cookies ride every response, and the registration side
 // (orbi-cloud#716) reads both on the same hostname, so the format is a
 // two-repo contract: a host-only Path=/ cookie with HttpOnly; SameSite=Lax
-// and a one-year Max-Age. Secure rides only on https requests — the cloud
+// and a 90-day Max-Age. Secure rides only on https requests — the cloud
 // sessionCookieString pattern — so local http testing can still seed them.
 // vid is 16 random bytes as base64url (22 chars, no padding). ref carries the
 // normalized source (a ref token, a source host, or "direct") and is what
 // the signup actually attributes to (orbi-cloud getCookie(..., "ref"),
 // Issue #234).
-const ATTRIBUTION_MAX_AGE_SECONDS = 31536000;
+//
+// 90 days (Issue #246): the longest window mainstream platforms use for this
+// kind of touch (GA4 non-acquisition key events, LinkedIn click, SaaS
+// affiliate ceiling). Because the website is every visitor's first landing
+// and the cloud's plantVidCookie never re-plants over an existing vid, this
+// constant alone decides the real window. It MUST stay in lockstep with
+// ATTRIBUTION_MAX_AGE_SECONDS in orbi-cloud src/session.ts (cloud#732) —
+// both workers plant the same shared-domain cookie.
+const ATTRIBUTION_MAX_AGE_SECONDS = 7776000;
 
 function cookieFrom(request, name) {
   const header = request.headers.get("Cookie");
@@ -653,54 +690,68 @@ async function reportVisit(env, payload) {
 
 // Runs at the fetch-wrapper exit, after handleFetch returns, so every worker
 // response — pages, redirects, worker-served routes — passes through here.
-// A request without a vid cookie gets one seeded (first touch), and — judged
-// independently (Issue #234) — a request without a ref cookie gets the
-// normalized source of this landing seeded, so visitors whose vid predates
-// the ref cookie are attributed on their next landing. The response body is
-// never rewritten, so asset validators like ETag survive. Every HTML
-// 200 is reported as one visit; only first touch carries the ref, later
-// pages of the same visit report an empty one.
+// A request without a vid cookie gets one seeded (first touch), and the ref
+// slot follows the Issue #247 split by source kind:
+// - An explicit ?ref= token is a link we shipped, so it is last touch: it
+//   overwrites whatever the slot held and is reported on every visit — a
+//   visitor who browsed direct first and clicked a campaign link later still
+//   lands the referral (Issue #244).
+// - Derived sources (?source=, referer host, direct) are guesses an OAuth
+//   bounce or an in-site hop can fabricate, so they are first touch: they
+//   fill an empty slot and never overwrite — github.com must not replace the
+//   tweet that brought the visitor here.
+// Probes and crawlers keep their vid and their page; their visits are marked
+// is_bot=1 (visitSignals, an exact match of our own probes' UAs — #251
+// measured botManagement as absent on this plan) so dashboard
+// queries can exclude them. The response body is never rewritten, so asset
+// validators like ETag survive. Every HTML 200 is reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
 // on every no-vid response, so a first landing that redirects — www → apex
 // 301 or a trailing-slash 308 — keeps ?ref= in the redirected URL but is no
-// longer first touch on the final page, whose visit reports an empty ref.
-// If redirected landings must keep their ref, the flip is to seed only on
-// HTML 200 responses (maintainer's call).
+// longer first touch on the final page. If redirected landings must keep
+// their ref, the flip is to seed only on HTML 200 responses (maintainer's
+// call).
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const secure = url.protocol === "https:";
   const existingVid = cookieFrom(request, "vid");
   const vid = existingVid ?? randomVid();
   const firstTouch = existingVid === null;
-  // The ref slot is judged independently of vid: visitors whose vid predates
-  // the ref cookie (Issue #234) have firstTouch === false but no ref yet, and
-  // this landing is still their first ref touch.
   const existingRef = cookieFrom(request, "ref");
+  const source = normalizedSource(url, request);
+  // Lowercased and REF_TOKEN-tested exactly like normalizedSource's ref
+  // branch, so when this is non-null it equals `source` and the registration
+  // side (orbi-cloud isStoredSource) accepts the value unchanged.
+  const rawRef = url.searchParams.get("ref");
+  const explicitRef = rawRef !== null && REF_TOKEN.test(rawRef.toLowerCase())
+    ? rawRef.toLowerCase()
+    : null;
   if (
     response.status === 200
     && (response.headers.get("Content-Type") || "").startsWith("text/html")
     && env.CLOUD_VISIT_URL
     && env.WEBSITE_SECRET
   ) {
+    // Signals ride only this reported branch so every static-asset request
+    // skips the classification entirely.
     ctx.waitUntil(reportVisit(env, {
       vid,
       path: url.pathname,
-      ref: firstTouch ? normalizedSource(url, request) : "",
+      ref: explicitRef ?? (firstTouch ? source : ""),
+      ...visitSignals(request),
     }));
   }
-  if (!firstTouch && existingRef !== null) {
+  const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
+  if (!firstTouch && !seedsRef) {
     return response;
   }
   const stamped = new Response(response.body, response);
   if (firstTouch) {
     stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
   }
-  // "direct" is seeded too: an empty slot would let the visitor's next ?ref=
-  // land as first touch after a direct first visit — last-touch posing as
-  // first-touch.
-  if (existingRef === null) {
-    stamped.headers.append("Set-Cookie", attributionCookieString("ref", normalizedSource(url, request), secure));
+  if (seedsRef) {
+    stamped.headers.append("Set-Cookie", attributionCookieString("ref", explicitRef ?? source, secure));
   }
   return stamped;
 }
