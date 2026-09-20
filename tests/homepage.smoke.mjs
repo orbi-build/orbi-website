@@ -1746,12 +1746,10 @@ async function main() {
   };
   const onSignal = (signal) => {
     void cleanup()
+      .then(() => process.exit(signal === "SIGINT" ? 130 : 143))
       .catch((error) => {
         console.error(`Failed to clean up after ${signal}:`, error.stack || error);
-        process.exitCode = 1;
-      })
-      .finally(() => {
-        process.exitCode ||= signal === "SIGINT" ? 130 : 143;
+        process.exit(1);
       });
   };
   process.once("SIGINT", onSignal);
