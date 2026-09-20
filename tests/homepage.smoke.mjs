@@ -92,6 +92,10 @@ const sharedAttributes = {
 // for that Worker, so it applies the same substitutions from the same single
 // source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
+const localFoundingAvatars = localFoundingLogins
+  .map((login) => `<img alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .join("");
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -135,7 +139,8 @@ function startServer() {
             file.body.toString("utf8")
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
-              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries)),
+              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -599,13 +604,24 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }).format(new Date(flagship.started));
   if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
   // Avatar identities are server-rendered into the HTML, deliberately not
-  // carried by the public /stats payload. The Worker/browser contract test
-  // verifies the injection; this smoke only checks that any injected wall
-  // remains renderable after avatar loads.
-  const wall = page.locator("[data-avatar-wall]");
-  if (await wall.locator("img").count()) {
-    await wall.locator("img").last().waitFor({ state: "visible" });
+  // carried by the public /stats payload. Exercise the complete browser path:
+  // the aggregate endpoint stays identity-free and all 11 injected images
+  // finish loading before the wall becomes visible.
+  if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
+    throw new Error(`${path}: /stats exposes founding GitHub logins`);
   }
+  const wall = page.locator("[data-avatar-wall]");
+  if ((await wall.locator("img").count()) !== 11) {
+    throw new Error(`${path}: expected 11 server-rendered avatars`);
+  }
+  await wall.locator("img").last().waitFor({ state: "visible" });
+  if (!process.env.BASE_URL) {
+    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    if (titles.join("|") !== localFoundingLogins.join("|")) {
+      throw new Error(`${path}: server-rendered avatar identities changed`);
+    }
+  }
+  await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
   // one click into the login handoff, never a second identical button.
