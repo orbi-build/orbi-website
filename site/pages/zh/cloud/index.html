@@ -115,7 +115,7 @@
             "name": "你们能看到我的代码吗？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。"
+              "text": "托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。 保留：交付进入终态后，worktree 会在静默 120 分钟后销毁；进行中和可恢复的交付会保留。 隔离：每个租户与仓库的 Runner 沙箱使用独立的 Linux 用户，worktree、凭据、模型密钥和日志通过 UID 与其他租户隔离。 模型 API key：BYOK 密钥在控制面以 AES-GCM 加密存储；API 读取只返回掩码值，解密只用于注入 Runner。"
             }
           },
           {
@@ -286,7 +286,7 @@
           <details class="faq-item">
             <summary><span>04</span>你们能看到我的代码吗？</summary>
             <div class="faq-answer">
-              <p>托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。</p>
+              <p>托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。 保留：交付进入终态后，worktree 会在<a href="https://github.com/orbi-build/orbi-cloud/blob/main/runbook/cleanup_completed.py">静默 120 分钟</a>后销毁；进行中和可恢复的交付会保留。 隔离：每个租户与仓库的 Runner 沙箱使用<a href="https://github.com/orbi-build/orbi-cloud/blob/main/scripts/provision-runner-sandbox.sh">独立的 Linux 用户</a>，worktree、凭据、模型密钥和日志通过 UID 与其他租户隔离。 模型 API key：BYOK 密钥在控制面以<a href="https://github.com/orbi-build/orbi-cloud/blob/main/migrations/0005_tenant_secrets.sql"> AES-GCM 加密存储</a>；API 读取只返回掩码值，解密只用于注入 Runner。</p>
             </div>
           </details>
 
