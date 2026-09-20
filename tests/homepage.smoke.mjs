@@ -134,7 +134,8 @@ function startServer() {
         ? Buffer.from(
             file.body.toString("utf8")
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
-              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel)),
+              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
+              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries)),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });

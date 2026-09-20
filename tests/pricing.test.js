@@ -8,6 +8,8 @@ const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
+const FREE_DELIVERIES = String(pricing.freeDeliveries);
+const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 
 // The pages whose price mentions the Issue pins (originally 12 across the two
 // cloud pages; #99 added the homepage card and the cost tables since). Every
@@ -164,6 +166,29 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       expect(repriced, relativePath).not.toContain(TOKEN);
       expect(repriced.match(literalPrice(USD)), relativePath).toBeNull();
       expect(repriced.match(literalPrice(next)), relativePath).toHaveLength(tokenCount);
+    }
+  });
+});
+
+describe("Free delivery allowance constant (Issue #274)", () => {
+  const FREE_PAGES = ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"];
+
+  it("keeps the allowance sourced from pricing.json and tokenized in every source", async () => {
+    expect(pricing.freeDeliveries).toBe(3);
+    for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
+      for (const relativePath of FREE_PAGES) {
+        const html = await readFile(`${dir}${relativePath}`, "utf8");
+        expect(html, `${dir}${relativePath}`).toContain(FREE_DELIVERIES_TOKEN);
+      }
+    }
+  });
+
+  it("serves the allowance through the real Worker path", async () => {
+    for (const relativePath of FREE_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(body, relativePath).toContain(FREE_DELIVERIES);
     }
   });
 });
