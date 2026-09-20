@@ -1935,7 +1935,7 @@ async function assertPublishedInstallScript(browser) {
   }
 }
 
-async function assertLegalPage(browser, path, expectedHeading, size, screenshot) {
+async function assertLegalPage(browser, path, expectedHeading, expectedAddress, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const errors = [];
   const failures = [];
@@ -1953,8 +1953,8 @@ async function assertLegalPage(browser, path, expectedHeading, size, screenshot)
     if (mainText.includes("__CLOUD_") || mainText.includes("__INCLUDED_")) {
       throw new Error(`${path}: pricing placeholder reached the rendered page`);
     }
-    const contact = await page.locator('main a[href="mailto:smartlitchi@gmail.com"]').count();
-    if (contact < 1) throw new Error(`${path}: verified support email is missing`);
+    const contact = await page.locator(`main a[href="mailto:${expectedAddress}"]`).count();
+    if (contact < 1) throw new Error(`${path}: verified ${expectedAddress} email is missing`);
     const legalHrefs = await page.locator(".site-footer nav:first-of-type a").evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("href"))
     );
@@ -2060,16 +2060,16 @@ async function main() {
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.
     const legalPages = [
-      ["/privacy/", "Privacy policy", "privacy-en"],
-      ["/terms/", "Terms of service", "terms-en"],
-      ["/support/", "Support that starts with a useful report", "support-en"],
-      ["/zh/privacy/", "隐私政策", "privacy-zh"],
-      ["/zh/terms/", "服务条款", "terms-zh"],
-      ["/zh/support/", "从有用的报告开始支持", "support-zh"],
+      ["/privacy/", "Privacy policy", "privacy@orbi.build", "privacy-en"],
+      ["/terms/", "Terms of service", "support@orbi.build", "terms-en"],
+      ["/support/", "Support that starts with a useful report", "support@orbi.build", "support-en"],
+      ["/zh/privacy/", "隐私政策", "privacy@orbi.build", "privacy-zh"],
+      ["/zh/terms/", "服务条款", "support@orbi.build", "terms-zh"],
+      ["/zh/support/", "从有用的报告开始支持", "support@orbi.build", "support-zh"],
     ];
-    for (const [path, heading, name] of legalPages) {
-      await assertLegalPage(browser, path, heading, { width: 1440, height: 900 }, `${name}-desktop.png`);
-      await assertLegalPage(browser, path, heading, { width: 390, height: 844 }, `${name}-mobile.png`);
+    for (const [path, heading, address, name] of legalPages) {
+      await assertLegalPage(browser, path, heading, address, { width: 1440, height: 900 }, `${name}-desktop.png`);
+      await assertLegalPage(browser, path, heading, address, { width: 390, height: 844 }, `${name}-mobile.png`);
     }
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     // Issue #118: the two languages' rendered sample sizes must agree — the
