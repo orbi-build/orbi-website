@@ -167,7 +167,9 @@ async function loadAllReleases(repo, token) {
 async function loadFoundingStats(db) {
   if (!db) return null;
   const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
-  const tenants = await db.prepare("SELECT github_login FROM tenants WHERE github_login IS NOT NULL").all();
+  // The control-plane schema calls the public GitHub username `login`; alias
+  // it to the public /stats contract rather than leaking a storage detail.
+  const tenants = await db.prepare("SELECT login AS github_login FROM tenants WHERE login IS NOT NULL").all();
   return {
     active: Number(active?.count),
     limit: 10,
@@ -514,7 +516,7 @@ async function handleFetch(request, env) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN, env.orbi_applications);
+        return await statsResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -534,7 +536,7 @@ async function handleFetch(request, env) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN, env.orbi_applications);
+        return await statusResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {

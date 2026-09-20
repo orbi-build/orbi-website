@@ -272,9 +272,15 @@
           const repos = (stats && stats.repos) || {};
           const proof = root.parentElement.querySelector("[data-runtime-proof]");
           const flagship = repos.orbi;
-          if (proof && flagship && Number.isFinite(flagship.prs_merged) && Number.isFinite(flagship.releases)) {
+          const started = flagship && Date.parse(flagship.started);
+          if (proof && flagship && Number.isFinite(flagship.prs_merged) && Number.isFinite(flagship.releases) && Number.isFinite(started)) {
             proof.querySelector("[data-proof-prs]").textContent = flagship.prs_merged;
             proof.querySelector("[data-proof-releases]").textContent = flagship.releases;
+            proof.querySelector("[data-proof-since]").textContent = new Intl.DateTimeFormat(lang === "zh" ? "zh-CN" : "en-US", {
+              month: "short",
+              day: "numeric",
+              timeZone: "UTC",
+            }).format(new Date(started));
             proof.hidden = false;
           }
           const founding = stats && stats.founding;
@@ -291,16 +297,22 @@
             if (!logins.length) return;
             const list = wall.querySelector("[data-avatar-list]");
             let failed = false;
+            let remaining = logins.length;
             logins.forEach(function (login) {
               const image = document.createElement("img");
-              image.src = "https://avatars.githubusercontent.com/" + encodeURIComponent(login) + "?s=80";
               image.alt = "";
               image.title = login;
-              image.loading = "lazy";
-              image.addEventListener("error", function () { failed = true; wall.hidden = true; });
+              image.addEventListener("load", function () {
+                remaining -= 1;
+                if (!failed && remaining === 0) wall.hidden = false;
+              });
+              image.addEventListener("error", function () {
+                failed = true;
+                wall.hidden = true;
+              });
+              image.src = "https://avatars.githubusercontent.com/" + encodeURIComponent(login) + "?s=80";
               list.appendChild(image);
             });
-            if (!failed) wall.hidden = false;
           });
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {
             fillGroup(group, repos[group.getAttribute("data-repo-group")]);
@@ -416,9 +428,10 @@
       if (!founding || !Number.isFinite(founding.active) || !Number.isFinite(founding.limit)) return;
       const left = Math.max(0, founding.limit - founding.active);
       document.querySelectorAll("[data-founding-availability]").forEach(function (element) {
+        const isZh = document.documentElement.lang.startsWith("zh");
         element.textContent = left > 0
-          ? (document.documentElement.lang === "zh" ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
-          : (document.documentElement.lang === "zh" ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
+          ? (isZh ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
+          : (isZh ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
         element.hidden = false;
       });
     }).catch(function () {

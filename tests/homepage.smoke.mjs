@@ -363,6 +363,7 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
+  founding: { active: 4, limit: 10, github_logins: ["alice", "bob"] },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -402,6 +403,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  await page.route("https://avatars.githubusercontent.com/**", (route) => route.fulfill({
+    status: 200,
+    contentType: "image/svg+xml",
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#3ddc97"/></svg>',
+  }));
   // Issue #101: /stats answers one group per repository, and the local
   // fixture leaves orbi-cloud null on purpose — a repo that fails must
   // degrade only its own group to the HTML floors while the other two still
@@ -504,6 +510,27 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       .join(" "));
     throw new Error(`${path}: stats render did not match the served /stats payload: ${dump}`);
   });
+  const flagship = servedStats?.repos?.orbi;
+  const proof = page.locator("[data-runtime-proof]");
+  if (!flagship || !(await proof.isVisible())) throw new Error(`${path}: runtime proof is not visible`);
+  const proofText = await proof.textContent();
+  for (const value of [flagship.prs_merged, flagship.releases]) {
+    if (!proofText.includes(String(value))) throw new Error(`${path}: runtime proof is missing ${value}`);
+  }
+  const since = new Intl.DateTimeFormat(path.startsWith("/zh") ? "zh-CN" : "en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(flagship.started));
+  if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
+  const logins = servedStats?.founding?.github_logins || [];
+  const wall = page.locator("[data-avatar-wall]");
+  if (logins.length) {
+    await wall.locator("img").last().waitFor({ state: "visible" });
+    if ((await wall.locator("img").count()) !== logins.length) throw new Error(`${path}: avatar count does not match /stats`);
+    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    if (titles.join("|") !== logins.join("|")) throw new Error(`${path}: avatar titles do not match public GitHub logins`);
+  }
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
   // one click into the login handoff, never a second identical button.
@@ -916,6 +943,14 @@ async function assertCloudPage(browser, path, size, screenshot) {
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  if (!process.env.BASE_URL) {
+    const availability = page.locator("[data-founding-availability]");
+    if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
+    const expected = path.startsWith("/zh") ? "· 还剩 6 / 10 个名额" : "· 6 of 10 left";
+    if ((await availability.textContent()).trim() !== expected) {
+      throw new Error(`${path}: Founding availability does not match D1 fixture`);
+    }
+  }
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();

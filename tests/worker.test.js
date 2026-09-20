@@ -353,7 +353,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(stats.founding).toEqual({ active: 4, limit: 10, github_logins: ["alice", "bob"] });
     expect(queries).toEqual([
       "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",
-      "SELECT github_login FROM tenants WHERE github_login IS NOT NULL",
+      "SELECT login AS github_login FROM tenants WHERE login IS NOT NULL",
     ]);
   });
 
