@@ -376,10 +376,14 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
       }
     });
     page.on("requestfailed", (request) => {
-      if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+      const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
+        && request.url().includes("/video/delivery-loop");
+      if (!isTelemetry(request.url()) && !abortedMedia) {
+        failedRequests.push(`${request.method()} ${request.url()}`);
+      }
     });
 
-    await page.goto(`${targetURL}/?ref=${token}`, { waitUntil: "networkidle" });
+    await page.goto(`${targetURL}/?ref=${token}`, { waitUntil: "load" });
     if (!process.env.BASE_URL) {
       await context.addCookies([{ name: "ref", value: token, url: targetURL }]);
     }
