@@ -1,4 +1,4 @@
-// Issue #262: the proof section's 14-second silent loop. The Issue pins the
+// Issue #262: the proof section's 16-second silent loop. The Issue pins the
 // figure block byte-exactly (acceptance 1), the four autoplay-contract video
 // attributes one by one with no controls (acceptance 2), the exact midway CTA
 // refs (acceptance 3, pinned in cta-ref.test.js), the three video assets
@@ -17,19 +17,19 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 // figure blocks may differ only in the aria-label, and must sit exactly
 // between the proof-ledger's </ul> and the midway div.
 const enFigure = `<figure class="proof-loop">
-<video class="proof-loop-video" src="/video/delivery-loop.mp4" poster="/video/delivery-loop-poster.jpg" width="1280" height="720" autoplay loop muted playsinline preload="metadata" aria-label="A 14-second silent loop of one real delivery: the review returns one Major finding, only the reviewed commit merges, and the result ships as tagged release v0.5.13.">
+<video class="proof-loop-video" src="/video/delivery-loop.mp4" poster="/video/delivery-loop-poster.jpg" width="1280" height="720" autoplay loop muted playsinline preload="metadata" aria-label="A 16-second silent loop of one real delivery: the review blocks the PR with a Major finding, the run fixes itself and re-runs to green, only the reviewed commit merges, and the result ships as tagged release v0.5.17.">
 <source src="/video/delivery-loop.webm" type="video/webm">
 <source src="/video/delivery-loop.mp4" type="video/mp4">
 </video>
-<figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/983">#983</a> · PR <a href="https://github.com/orbi-build/orbi/pull/991">#991</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.13">v0.5.13</a></figcaption>
+<figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/1018">#1018</a> · PR <a href="https://github.com/orbi-build/orbi/pull/1023">#1023</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a></figcaption>
 </figure>`;
 
 const zhFigure = `<figure class="proof-loop">
-<video class="proof-loop-video" src="/video/delivery-loop.mp4" poster="/video/delivery-loop-poster.jpg" width="1280" height="720" autoplay loop muted playsinline preload="metadata" aria-label="14 秒无声循环：一次真实交付里，评审给出一条 Major，只有审过的那个 commit 被合并，最后发成打了 tag 的 v0.5.13。">
+<video class="proof-loop-video" src="/video/delivery-loop.mp4" poster="/video/delivery-loop-poster.jpg" width="1280" height="720" autoplay loop muted playsinline preload="metadata" aria-label="16 秒无声循环：一次真实交付里，评审给出一条 Major 拦下 PR，Orbi 自己改到绿，只有审过的那个 commit 被合并，最后发成打了 tag 的 v0.5.17。">
 <source src="/video/delivery-loop.webm" type="video/webm">
 <source src="/video/delivery-loop.mp4" type="video/mp4">
 </video>
-<figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/983">#983</a> · PR <a href="https://github.com/orbi-build/orbi/pull/991">#991</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.13">v0.5.13</a></figcaption>
+<figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/1018">#1018</a> · PR <a href="https://github.com/orbi-build/orbi/pull/1023">#1023</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a></figcaption>
 </figure>`;
 
 const pages = [

@@ -639,7 +639,7 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262: the proof section's 14-second silent loop. The acceptance is
+// Issue #262: the proof section's 16-second silent loop. The acceptance is
 // measured rendering, not strings: the four autoplay-contract attributes one
 // by one and no controls, the video fitting its container at the laptop and
 // phone widths the Issue names, and no horizontal scroll from the new block.
@@ -701,9 +701,9 @@ async function assertProofLoop(browser, path, size, screenshot) {
   const captionLinks = await page.locator(".proof-loop figcaption a")
     .evaluateAll((nodes) => nodes.map((a) => a.getAttribute("href")));
   const expectedCaption = [
-    "https://github.com/orbi-build/orbi/issues/983",
-    "https://github.com/orbi-build/orbi/pull/991",
-    "https://github.com/orbi-build/orbi/releases/tag/v0.5.13",
+    "https://github.com/orbi-build/orbi/issues/1018",
+    "https://github.com/orbi-build/orbi/pull/1023",
+    "https://github.com/orbi-build/orbi/releases/tag/v0.5.17",
   ];
   if (JSON.stringify(captionLinks) !== JSON.stringify(expectedCaption)) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
