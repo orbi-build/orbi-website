@@ -502,15 +502,17 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("/api/login", worker)
         self.assertIn('"/cloud/apply"', worker)
         self.assertIn('"/cloud/login"', worker)
+        self.assertIn('"/zh/cloud/login"', worker)
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The login handoff is an action, not a page: keep crawlers off it.
+        """The login handoffs are actions, not pages: keep crawlers off them.
         /apply and /cloud/apply are gone (Issue #179), so they are no longer
         listed — listing a retired path would imply it still exists."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
         self.assertNotIn("Disallow: /apply", robots)
         self.assertNotIn("Disallow: /cloud/apply", robots)
         self.assertIn("Disallow: /cloud/login", robots)
+        self.assertIn("Disallow: /zh/cloud/login", robots)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1240,7 +1242,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给一个 Issue 加上 ai-ready 标签"),
-                "/cloud/login",
+                "/zh/cloud/login",
             ),
         ):
             positions = [page.text.index(step) for step in steps]

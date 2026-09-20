@@ -51,6 +51,7 @@ const STATS_TTL_MS = 300000;
 // entry therefore lives under /cloud/: the login handoff. The retired submit
 // route answers 410; D1 bindings and historical rows stay (Issue #179).
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
+const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 
 function githubHeaders(token) {
@@ -343,7 +344,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
     // environment ships dead-end CTAs again (Issue #179).
-    body = body.replace(/href="\/cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
+    body = body.replace(/href="\/(?:zh\/)?cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
   }
   if (body === html) {
     // Nothing changed: the bytes are the asset's own representation, so the
@@ -568,7 +569,7 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (route === CLOUD_LOGIN_ROUTE) {
+    if (route === CLOUD_LOGIN_ROUTE || route === ZH_CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 

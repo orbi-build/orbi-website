@@ -179,6 +179,7 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     BLOG_HREF: `${t.langPrefix}/blog/`,
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
+    CLOUD_HREF: `${t.langPrefix}/cloud/`,
     LANG_GROUP_ARIA: t.langGroupAria,
     LANG_LINE_A: lineA,
     LANG_LINE_B: lineB,

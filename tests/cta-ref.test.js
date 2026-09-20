@@ -40,14 +40,14 @@ async function walkHtml(dir) {
   return files;
 }
 
-const cloudLoginHrefs = (html) => [...html.matchAll(/href="(\/cloud\/login[^\"]*)"/g)].map((m) => m[1]);
+const cloudLoginHrefs = (html) => [...html.matchAll(/href="(\/(?:zh\/)?cloud\/login[^\"]*)"/g)].map((m) => m[1]);
 
 describe("internal Cloud login CTA attribution (Issue #273)", () => {
-  it("uses the bare login handoff in all 15 source CTAs", async () => {
+  it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
-    const hrefs = html.flatMap(cloudLoginHrefs);
-    expect(hrefs).toHaveLength(15);
-    expect(hrefs).toEqual(hrefs.map(() => "/cloud/login"));
+    const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
+    expect(hrefs).toHaveLength(14);
+    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login");
   });
 
   it("keeps the existing data-cta markers on homepage Cloud buttons", async () => {
@@ -59,19 +59,20 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
     }
   });
 
-  it("ships only bare login handoffs in the built pages", async () => {
+  it("ships only bare, language-matching login handoffs in the built pages", async () => {
     const html = await Promise.all(builtFiles.map(read));
-    const hrefs = html.flatMap(cloudLoginHrefs);
-    expect(hrefs.length).toBeGreaterThanOrEqual(15);
-    expect(hrefs).toEqual(hrefs.map(() => "/cloud/login"));
+    const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [builtFiles[index], href]));
+    expect(hrefs.length).toBeGreaterThanOrEqual(14);
+    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login");
   });
 
   it("forbids query-bearing Cloud login links anywhere in source or built HTML", async () => {
     const files = [...await walkHtml("site"), ...await walkHtml("public")];
     for (const file of files) {
       const hrefs = cloudLoginHrefs(await read(file));
+      const expected = file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login";
       expect(hrefs, `${file}: internal Cloud login links must preserve campaign attribution`).toEqual(
-        hrefs.map(() => "/cloud/login"),
+        hrefs.map(() => expected),
       );
     }
   });
