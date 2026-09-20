@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { resetBehaviorSignals } from "../src/bot-detection.js";
 import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
@@ -992,6 +993,33 @@ describe("visit attribution (Issue #228)", () => {
     expect(sent.headers.get("Content-Type")).toBe("application/json");
     expect(sent.signal).toBeInstanceOf(AbortSignal);
     expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+  });
+
+  it("passes visit identity and path through the real reporting chain for behavior marking", async () => {
+    resetBehaviorSignals();
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const routes = Object.fromEntries(Array.from({ length: 12 }, (_, index) => [
+      `/page-${index}`,
+      { ...HTML_PAGE, body: `<html><body>page ${index}</body></html>` },
+    ]));
+
+    for (let index = 0; index < 12; index += 1) {
+      const ctx = collectingCtx();
+      await worker.fetch(new Request(`https://beta.orbi.build/page-${index}`, {
+        headers: {
+          Cookie: "vid=ScannerVidValue1234567",
+          "User-Agent": "Mozilla/5.0 behavior-test",
+          "CF-Connecting-IP": "203.0.113.10",
+        },
+      }), env({ ASSETS: assetServer(routes) }), ctx);
+      await flush(ctx);
+      expect(await visitBody(visitCalls(fetchMock).at(-1))).toMatchObject({
+        vid: "ScannerVidValue1234567",
+        path: `/page-${index}`,
+        is_bot: index === 11 ? 1 : 0,
+      });
+    }
   });
 
   it("seeds the vid cookie without Secure over http", async () => {

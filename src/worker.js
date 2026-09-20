@@ -738,7 +738,7 @@ async function reportVisit(env, visitRequest, payload) {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest) }),
+      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest, payload) }),
       signal: AbortSignal.timeout(5000),
     });
     const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);
@@ -763,9 +763,9 @@ async function reportVisit(env, visitRequest, payload) {
 //   fill an empty slot and never overwrite — github.com must not replace the
 //   tweet that brought the visitor here.
 // Probes and crawlers keep their vid and their page; their visits are marked
-// is_bot=1 (visitSignals — the request.cf.asn of a cloud provider plus
-// crawler UA substrings, Issue #280; botManagement is an Enterprise add-on
-// we do not buy) so dashboard queries can exclude them. The response body is
+// is_bot=1 (visitSignals — the request.cf.asn of a cloud provider, crawler UA
+// substrings, or short-window behavior, Issue #280/#305; botManagement is an
+// Enterprise add-on we do not buy) so dashboard queries can exclude them. The response body is
 // never rewritten, so asset validators like ETag survive. Every HTML 200 is
 // reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
