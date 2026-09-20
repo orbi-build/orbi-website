@@ -95,6 +95,8 @@ mirror gate. Add both, and keep nav/footer/CTA counts identical between them.
 
 ## Cloud API boundary
 
+Internal CTAs to the Cloud login handoff do not carry `ref`; preserve channel attribution already held by the visitor.
+
 Before changing a website-to-Cloud handoff, read
 [docs/cloud-endpoints.md](docs/cloud-endpoints.md). It records **beta only**, and it
 is a log of external facts as measured on a given date, not a standing guarantee:
