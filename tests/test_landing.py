@@ -1161,9 +1161,8 @@ class CloudLandingPageTests(unittest.TestCase):
                     self.assertNotIn("token", sentence.lower(), sentence)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
-        """Issue #180: /cloud/ keeps a headline — median, mean, about 100
-        deliveries, cache premise — and links to /cost/. The table, three
-        limits, and Devin/Factory billing audit stay on the cost page."""
+        """Issue #277: /cloud/ keeps the owner-approved delivery range and
+        cache premise, and links to /cost/. Detailed measurements stay there."""
         competitor_hrefs = (
             "https://docs.devin.ai/admin/billing/self-serve",
             "https://docs.factory.ai/pricing/individuals",
@@ -1172,8 +1171,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "2,220,637", "4,742,066",
-                    "100 deliveries a month",
+                    "85–400 merged deliveries",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1181,8 +1179,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    "2,220,637", "4,742,066",
-                    "100 次交付/月",
+                    "85–400 次合并交付",
                     "prompt caching",
                 ),
                 "/zh/cost/",
