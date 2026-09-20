@@ -671,7 +671,11 @@ function normalizedSource(url, request) {
 // that skips routing entirely. env.CLOUD_VISIT_URL still supplies the path.
 // A missing binding (local dev, a partial config) falls back to fetch so the
 // page path stays identical either way.
-async function reportVisit(env, payload) {
+// The visit's own request comes along so the bot signals (visitSignals, an
+// await because of the UA hash) are computed here, inside the waitUntil
+// branch — the response path stays synchronous and static-asset requests
+// never classify at all.
+async function reportVisit(env, visitRequest, payload) {
   try {
     const request = new Request(env.CLOUD_VISIT_URL, {
       method: "POST",
@@ -679,7 +683,7 @@ async function reportVisit(env, payload) {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest) }),
       signal: AbortSignal.timeout(5000),
     });
     const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);
@@ -704,10 +708,11 @@ async function reportVisit(env, payload) {
 //   fill an empty slot and never overwrite — github.com must not replace the
 //   tweet that brought the visitor here.
 // Probes and crawlers keep their vid and their page; their visits are marked
-// is_bot=1 (visitSignals, an exact match of our own probes' UAs — #251
-// measured botManagement as absent on this plan) so dashboard
-// queries can exclude them. The response body is never rewritten, so asset
-// validators like ETag survive. Every HTML 200 is reported as one visit.
+// is_bot=1 (visitSignals — the request.cf.asn of a cloud provider plus
+// crawler UA substrings, Issue #280; botManagement is an Enterprise add-on
+// we do not buy) so dashboard queries can exclude them. The response body is
+// never rewritten, so asset validators like ETag survive. Every HTML 200 is
+// reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
 // on every no-vid response, so a first landing that redirects — www → apex
@@ -738,11 +743,10 @@ function withAttribution(request, response, env, ctx) {
   ) {
     // Signals ride only this reported branch so every static-asset request
     // skips the classification entirely.
-    ctx.waitUntil(reportVisit(env, {
+    ctx.waitUntil(reportVisit(env, request, {
       vid,
       path: url.pathname,
       ref: explicitRef ?? (firstTouch ? source : ""),
-      ...visitSignals(request),
     }));
   }
   const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
