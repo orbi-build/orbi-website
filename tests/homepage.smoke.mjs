@@ -1456,8 +1456,14 @@ async function assertHomeNavCloudFlow(browser, path, size, screenshot) {
     }
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     const cta = page.locator("a.button-signal").first();
-    if (await cta.getAttribute("href") !== loginPath) {
+    const href = await cta.getAttribute("href");
+    if (href !== loginPath) {
       throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+    }
+    const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+    const response = await context.request.get(new URL(href, page.url()).toString());
+    if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+      throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
     }
     await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   } finally {

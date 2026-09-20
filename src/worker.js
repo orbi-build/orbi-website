@@ -344,7 +344,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
     // environment ships dead-end CTAs again (Issue #179).
-    body = body.replace(/href="\/cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
+    body = body.replace(/href="\/(?:zh\/)?cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
   }
   if (body === html) {
     // Nothing changed: the bytes are the asset's own representation, so the
