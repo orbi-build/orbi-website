@@ -1061,6 +1061,11 @@ h2 {
 .proof-ledger strong { font-family: var(--display); font-size: 1.1rem; }
 .proof-ledger p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; }
 
+.proof-loop { margin: 28px 0 0; }
+.proof-loop-video { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; }
+.proof-loop figcaption { margin-top: 10px; font-family: var(--mono); font-size: 0.82rem; color: var(--ink-soft); }
+@media (prefers-reduced-motion: reduce) { .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
+
 .ownership {
   padding: 110px 0;
   background: #15353d;
