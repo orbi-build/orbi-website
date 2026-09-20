@@ -281,7 +281,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 13-item footer nav on every content page", () => {
+  it("carries the 16-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -299,6 +299,9 @@ describe("one unified footer on every content page", () => {
         `${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
         "https://status.orbi.build",
+        `${prefix}/privacy/`,
+        `${prefix}/terms/`,
+        `${prefix}/support/`,
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
