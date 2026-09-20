@@ -639,7 +639,7 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262: the proof section's 16-second silent loop. The acceptance is
+// Issue #262: the proof section's 17.6-second silent loop. The acceptance is
 // measured rendering, not strings: the four autoplay-contract attributes one
 // by one and no controls, the video fitting its container at the laptop and
 // phone widths the Issue names, and no horizontal scroll from the new block.
