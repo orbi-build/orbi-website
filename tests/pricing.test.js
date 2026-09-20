@@ -242,13 +242,10 @@ describe("Included tokens constant (Issue #138)", () => {
 });
 
 // Issue #147: the measured delivery stats are bare literals — the quota gate
-// above deliberately exempts them — so nothing stopped a page from telling an
-// older snapshot (92.7% / 4,667,630 / $0.04–0.11 / 2026-09-10) of the very
-// measurement /cost/ had already restated as 95.9% / 4,742,066 / $0.06–0.12 /
-// 2026-09-12. Issue #180 moved the table, mix, and dollar range off /cloud/
-// (buyers follow the cost-page link for those); the full extract and the mix
-// arithmetic stay on /cost/. /cloud/'s remaining headline (median / mean) must
-// still equal the cost table, so a number can only move everywhere at once.
+// above deliberately exempts them — so the /cost/ extraction and mix checks
+// below keep that detailed snapshot internally consistent. Issue #277 replaced
+// /cloud/'s self-repository median and mean with the owner-approved customer
+// range; the Cloud check pins that range and rejects the retired figures.
 function measuredStats(html) {
   const row = (label) =>
     html.match(new RegExp(`<tr><th scope="row">(?:${label})</th><td>([\\d,]+)</td></tr>`))?.[1];
