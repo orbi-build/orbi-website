@@ -1381,6 +1381,27 @@ print(json.dumps({
   });
 });
 
+describe("legal contact addresses (Issue #307)", () => {
+  it("uses domain mailboxes on every English and Chinese legal/support page", () => {
+    const expected = {
+      "privacy/index.html": ["privacy@orbi.build", 2],
+      "zh/privacy/index.html": ["privacy@orbi.build", 2],
+      "terms/index.html": ["support@orbi.build", 2],
+      "zh/terms/index.html": ["support@orbi.build", 2],
+      "support/index.html": ["support@orbi.build", 4],
+      "zh/support/index.html": ["support@orbi.build", 4],
+    };
+
+    for (const [output, [address, count]] of Object.entries(expected)) {
+      const html = shipped.get(output);
+      expect(html, `${output} is shipped`).toBeTruthy();
+      expect(html, `${output} must not expose Gmail`).not.toMatch(/gmail\.com/i);
+      expect(html.split(address).length - 1).toBe(count);
+      expect(html).toContain(`mailto:${address}`);
+    }
+  });
+});
+
 // Issue #214 evidence: all three shapes through the real build — the
 // same-slug pair, a mirror:-declared pair across different slugs, and
 // single-language posts in both languages — with the rendered language
