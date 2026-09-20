@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
@@ -337,7 +337,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  it("loads active founding seats and public GitHub logins from D1", async () => {
+  it("loads active founding seats without exposing tenant identities in stats", async () => {
     mockGitHub();
     const queries = [];
     const db = {
@@ -350,11 +350,21 @@ describe("per-repo GitHub stats (Issue #101)", () => {
       },
     };
     const stats = await loadStats("token", db);
-    expect(stats.founding).toEqual({ active: 4, limit: 10, github_logins: ["alice", "bob"] });
+    expect(stats.founding).toEqual({ active: 4, limit: 10 });
+    expect(stats.founding).not.toHaveProperty("github_logins");
     expect(queries).toEqual([
       "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",
-      "SELECT login AS github_login FROM tenants WHERE login IS NOT NULL",
     ]);
+  });
+
+  it("loads tenant logins only for server-rendered avatar markup", async () => {
+    const db = {
+      prepare(sql) {
+        expect(sql).toBe("SELECT login FROM tenants WHERE login IS NOT NULL");
+        return { all: async () => ({ results: [{ login: "alice" }, { login: "bob&co" }] }) };
+      },
+    };
+    await expect(loadFoundingAvatars(db)).resolves.toEqual(["alice", "bob&co"]);
   });
 
   it("counts orbi-website's successful deploy workflow runs, its fourth metric in place of releases", async () => {
@@ -380,6 +390,35 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(stats.repos["orbi-cloud"]).toBeNull();
     expect(stats.repos.orbi.issues_closed).toBe(372);
     expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+  });
+
+  it("injects server-rendered avatars into HTML", async () => {
+    const html = '<div data-avatar-list>__FOUNDING_AVATARS__</div>';
+    const response = await assetResponse(
+      new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }),
+      true,
+      ["alice", "bob&co"],
+    );
+    const body = await response.text();
+    expect(body).toContain('title="alice"');
+    expect(body).toContain('title="bob&amp;co"');
+    expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
+    expect(body).not.toContain("__FOUNDING_AVATARS__");
+  });
+
+  it("injects tenant avatars on the homepage path, not through /stats", async () => {
+    const logins = Array.from({ length: 11 }, (_, index) => `user-${index}`);
+    const response = await handleFetch(new Request("https://orbi.build/"), {
+      ASSETS: { fetch: async () => new Response('<div data-avatar-list>__FOUNDING_AVATARS__</div>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: {
+        prepare(sql) {
+          expect(sql).toBe("SELECT login FROM tenants WHERE login IS NOT NULL");
+          return { all: async () => ({ results: logins.map((login) => ({ login })) }) };
+        },
+      },
+    });
+    const body = await response.text();
+    expect((body.match(/avatars\.githubusercontent\.com/g) || [])).toHaveLength(11);
   });
 
   it("serves a cache hit without calling GitHub again", async () => {

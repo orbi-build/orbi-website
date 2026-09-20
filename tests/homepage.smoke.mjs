@@ -92,6 +92,10 @@ const sharedAttributes = {
 // for that Worker, so it applies the same substitutions from the same single
 // source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
+const localFoundingAvatars = localFoundingLogins
+  .map((login) => `<img alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .join("");
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -135,7 +139,8 @@ function startServer() {
             file.body.toString("utf8")
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
-              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries)),
+              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -438,7 +443,7 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
-  founding: { active: 4, limit: 10, github_logins: ["alice", "bob"] },
+  founding: { active: 4, limit: 10 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -598,14 +603,25 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     timeZone: "UTC",
   }).format(new Date(flagship.started));
   if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
-  const logins = servedStats?.founding?.github_logins || [];
-  const wall = page.locator("[data-avatar-wall]");
-  if (logins.length) {
-    await wall.locator("img").last().waitFor({ state: "visible" });
-    if ((await wall.locator("img").count()) !== logins.length) throw new Error(`${path}: avatar count does not match /stats`);
-    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
-    if (titles.join("|") !== logins.join("|")) throw new Error(`${path}: avatar titles do not match public GitHub logins`);
+  // Avatar identities are server-rendered into the HTML, deliberately not
+  // carried by the public /stats payload. Exercise the complete browser path:
+  // the aggregate endpoint stays identity-free and all 11 injected images
+  // finish loading before the wall becomes visible.
+  if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
+    throw new Error(`${path}: /stats exposes founding GitHub logins`);
   }
+  const wall = page.locator("[data-avatar-wall]");
+  if ((await wall.locator("img").count()) !== 11) {
+    throw new Error(`${path}: expected 11 server-rendered avatars`);
+  }
+  await wall.locator("img").last().waitFor({ state: "visible" });
+  if (!process.env.BASE_URL) {
+    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    if (titles.join("|") !== localFoundingLogins.join("|")) {
+      throw new Error(`${path}: server-rendered avatar identities changed`);
+    }
+  }
+  await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
   // plus the card CTA and the nav "Start Cloud" keeping the same promise —
   // one click into the login handoff, never a second identical button.
@@ -1007,7 +1023,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ founding: { active: 4, limit: 10, github_logins: [] }, repos: {} }),
+      body: JSON.stringify({ founding: { active: 4, limit: 10 }, repos: {} }),
     }));
   }
   page.on("console", (message) => {
