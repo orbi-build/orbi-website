@@ -1233,13 +1233,13 @@ class CloudLandingPageTests(unittest.TestCase):
                     "Sign in with GitHub",
                     "Install the Orbi GitHub App",
                     "Connect a repository",
-                    "Label an Issue to trigger delivery",
+                    "Label one Issue ai-ready",
                 ),
                 "/cloud/login",
             ),
             (
                 self.zh,
-                ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给 Issue 打标签，触发交付"),
+                ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给一个 Issue 加上 ai-ready 标签"),
                 "/cloud/login",
             ),
         ):
