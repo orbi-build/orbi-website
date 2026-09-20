@@ -1069,6 +1069,8 @@ h2 {
   list-style: none;
 }
 
+.proof-ledger-four { grid-template-columns: repeat(4, 1fr); }
+
 .proof-ledger li {
   display: grid;
   grid-template-columns: 34px 1fr;
