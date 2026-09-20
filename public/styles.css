@@ -1501,7 +1501,16 @@ h2 {
   }
 
   .hero-copy { max-width: 64rem; }
-  .factory-trace { max-width: 760px; margin-left: auto; }
+  /* Issue #267: margin-left:auto turned the figure's stretch off, so it
+     shrank to fit-content and sat flush right, ~372px off the copy's left
+     edge; left-aligned it keeps the 760px cap on the wide end of the band. */
+  .factory-trace { max-width: 760px; }
+  /* Issue #267: the base .hero-alt margin-top sagged the self-host CTA
+     15px below its flex-start row-mates; the ≤760px block already zeroes it. */
+  .hero-alt { margin-top: 0; }
+  /* Issue #267: the checklist wrapped as one ragged full-column row; the
+     hero only — the How-it-works .trust-line-paper keeps its own layout. */
+  .hero .trust-line { flex-direction: column; align-items: flex-start; }
 }
 
 @media (max-width: 1160px) {
