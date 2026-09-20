@@ -54,8 +54,9 @@ No human decided anything in that window.
 
 ## The part the screenshots cannot show
 
-Here is something I had to label on the video we cut from this run, because the
-frames are misleading on their own.
+Here is something I had to label on [the video we cut from this
+run](https://youtu.be/Et6gBSaXqqA), because the frames are misleading on their
+own.
 
 The runner posts through my own GitHub account. It has my token, so its commits
 carry my name and its review comments carry my name and my avatar. On screen,
