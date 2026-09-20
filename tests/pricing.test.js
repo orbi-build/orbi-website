@@ -262,14 +262,11 @@ function measuredStats(html) {
   };
 }
 
-function cloudHeadlineStats(html) {
-  return {
-    median: html.match(/(?:Median delivery|单次交付中位) <strong>([\d,]+) tokens<\/strong>/)?.[1],
-    mean: html.match(/(?:mean|均值) <strong>([\d,]+)<\/strong>/)?.[1],
-  };
+function cloudDeliveryRange(html) {
+  return html.match(/(?:85–400 merged deliveries|85–400 次合并交付)/)?.[0];
 }
 
-describe("Measured delivery stats agree across pages (Issue #147)", () => {
+describe("Cloud delivery range stays consistent (Issue #277)", () => {
   const COST_PAGES = ["cost/index.html", "zh/cost/index.html"];
 
   it("extracts every metric from both cost pages, so the gate cannot pass vacuously", async () => {
@@ -283,16 +280,12 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
     }
   });
 
-  it("keeps /cloud/'s cost headline on the same median and mean as /cost/", async () => {
+  it("uses the owner-approved range on both Cloud pages", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const [costPage, cloudPage] of [
-        ["cost/index.html", "cloud/index.html"],
-        ["zh/cost/index.html", "zh/cloud/index.html"],
-      ]) {
-        const cost = measuredStats(await readFile(`${dir}${costPage}`, "utf8"));
-        const cloud = cloudHeadlineStats(await readFile(`${dir}${cloudPage}`, "utf8"));
-        expect(cloud.median, `${cloudPage} median in ${dir}`).toBe(cost.median);
-        expect(cloud.mean, `${cloudPage} mean in ${dir}`).toBe(cost.mean);
+      for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
+        const html = await readFile(`${dir}${cloudPage}`, "utf8");
+        expect(cloudDeliveryRange(html), `${cloudPage} delivery range in ${dir}`).toBeTruthy();
+        expect(html).not.toMatch(/2,220,637|4,742,066|about 100 deliveries|100 次交付\/月/);
       }
     }
   });

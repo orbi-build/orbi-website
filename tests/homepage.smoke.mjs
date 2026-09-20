@@ -848,9 +848,9 @@ const cloudPages = {
       // that is 300M, the same quota the Founder plan carries); the
       // over-limit behavior is the pause, not a $0.10 overage price
       "US$79", "300M tokens", "new deliveries pause", "100% off",
-      // Issue #180: COST, MEASURED is a headline that links to /cost/, not
-      // a clone of the measurement table, three limits, or competitor audit.
-      "2,220,637", "4,742,066", "100 deliveries a month", "prompt caching",
+      // Issue #277: Cloud gives a range rather than a misleading single-point
+      // conversion; the detailed measurement remains on /cost/.
+      "85–400 merged deliveries", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -882,8 +882,8 @@ const cloudPages = {
       // included-token quota (rendered from the pricing.json label; zh rides
       // the same label, 300M since #145)
       "US$79", "300M token", "新交付暂停", "100% off",
-      // Issue #180: COST, MEASURED is a headline that links to /zh/cost/.
-      "2,220,637", "4,742,066", "100 次交付/月", "prompt caching",
+      // Issue #277: Cloud gives the owner-approved delivery range.
+      "85–400 次合并交付", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
