@@ -991,7 +991,7 @@ describe("visit attribution (Issue #228)", () => {
     expect(sent.headers.get("Authorization")).toBe(`Bearer ${SECRET}`);
     expect(sent.headers.get("Content-Type")).toBe("application/json");
     expect(sent.signal).toBeInstanceOf(AbortSignal);
-    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+    expect(await visitBody(calls[0])).toEqual({ vid: cookies[0].match(/^vid=([A-Za-z0-9_-]{22});/)[1], path: "/", ref: "e2e-14f5d89f", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
   });
 
   it("passes visit identity and path through the real reporting chain for behavior marking", async () => {
@@ -1056,7 +1056,7 @@ describe("visit attribution (Issue #228)", () => {
     // Issue #247/#244: the explicit ?ref= is reported on every visit, not
     // only on first touch — a visitor who browsed direct first and clicked a
     // campaign link later still lands the referral.
-    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "later-ref", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+    expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "later-ref", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
   });
 
   it("generates a fresh 22-char base64url vid per first touch", async () => {
@@ -1288,7 +1288,7 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
       const calls = visitCalls(fetchMock);
       expect(calls).toHaveLength(1);
-      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "bbb", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "bbb", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
     });
 
     // Row: ref cookie news.ycombinator.com, landing ?ref=aaa → explicit
@@ -1329,7 +1329,7 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
       const calls = visitCalls(fetchMock);
       expect(calls).toHaveLength(1);
-      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
     });
 
     // The xqliu beta repro (2026-09-19): direct landing first (vid seeded, no
@@ -1352,7 +1352,7 @@ describe("visit attribution (Issue #228)", () => {
       await flush(ctx);
       const calls = visitCalls(fetchMock);
       expect(calls).toHaveLength(1);
-      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 0, asn: null, ua_hash: EMPTY_UA_HASH });
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
     });
   });
 
