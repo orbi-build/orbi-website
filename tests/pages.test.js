@@ -281,7 +281,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 13-item footer nav on every content page", () => {
+  it("carries the 16-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -299,6 +299,9 @@ describe("one unified footer on every content page", () => {
         `${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
         "https://status.orbi.build",
+        `${prefix}/privacy/`,
+        `${prefix}/terms/`,
+        `${prefix}/support/`,
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
@@ -645,6 +648,15 @@ describe("privacy boundary copy (Issue #276)", () => {
       expect(item.answer).toMatch(/code, credentials, and delivery artifacts are isolated from other tenants|代码、凭据和交付产物均与其他租户隔离/);
       expect(item.answer).not.toMatch(/Linux user|UID|Linux 用户/);
       expect(item.answer).toMatch(/AES-GCM encrypted|AES-GCM 加密存储/);
+    }
+  });
+
+  it("states the implemented worktree and D1 retention boundaries on the privacy pages", () => {
+    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
+      const main = mainRegion(shipped.get(output));
+      expect(main, `${output}: worktree retention drifted`).toMatch(/120-minute quiet period|静默 120 分钟/);
+      expect(main, `${output}: persistent-record retention is missing`).toMatch(/have no automatic expiry|不会自动过期/);
+      expect(main, `${output}: the unimplemented 72-hour retention must not return`).not.toMatch(/72 hours|72 小时/);
     }
   });
 });
