@@ -153,7 +153,9 @@ function startServer() {
 async function stopServer(server) {
   if (!server || !server.listening) return;
   server.closeAllConnections();
-  await new Promise((resolve) => server.close(resolve));
+  await new Promise((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
 }
 
 async function assertFooterDeepDives(page, label) {
@@ -1729,6 +1731,31 @@ async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : await startServer();
   let browser;
+  let cleanupPromise;
+  const cleanup = () => {
+    if (!cleanupPromise) {
+      cleanupPromise = (async () => {
+        try {
+          if (browser) await browser.close();
+        } finally {
+          await stopServer(server);
+        }
+      })();
+    }
+    return cleanupPromise;
+  };
+  const onSignal = (signal) => {
+    void cleanup()
+      .catch((error) => {
+        console.error(`Failed to clean up after ${signal}:`, error.stack || error);
+        process.exitCode = 1;
+      })
+      .finally(() => {
+        process.exitCode ||= signal === "SIGINT" ? 130 : 143;
+      });
+  };
+  process.once("SIGINT", onSignal);
+  process.once("SIGTERM", onSignal);
   try {
     browser = await chromium.launch({
       ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
@@ -1865,11 +1892,9 @@ async function main() {
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();
   } finally {
-    try {
-      if (browser) await browser.close();
-    } finally {
-      await stopServer(server);
-    }
+    process.removeListener("SIGINT", onSignal);
+    process.removeListener("SIGTERM", onSignal);
+    await cleanup();
   }
 }
 
