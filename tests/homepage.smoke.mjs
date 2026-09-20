@@ -1731,6 +1731,44 @@ async function assertPublishedInstallScript(browser) {
   }
 }
 
+async function assertLegalPage(browser, path, expectedHeading, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  const errors = [];
+  const failures = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("requestfailed", (request) => failures.push(request.url()));
+  try {
+    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    if (!response || response.status() !== 200) {
+      throw new Error(`${path} returned ${response?.status() ?? "no response"}`);
+    }
+    await page.getByRole("heading", { level: 1, name: expectedHeading, exact: true }).waitFor();
+    const mainText = await page.locator("main").textContent();
+    if (mainText.includes("__CLOUD_") || mainText.includes("__INCLUDED_")) {
+      throw new Error(`${path}: pricing placeholder reached the rendered page`);
+    }
+    const contact = await page.locator('main a[href="mailto:smartlitchi@gmail.com"]').count();
+    if (contact < 1) throw new Error(`${path}: verified support email is missing`);
+    const legalHrefs = await page.locator(".site-footer nav:first-of-type a").evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("href"))
+    );
+    const prefix = path.startsWith("/zh/") ? "/zh" : "";
+    for (const href of [`${prefix}/privacy/`, `${prefix}/terms/`, `${prefix}/support/`]) {
+      if (!legalHrefs.includes(href)) throw new Error(`${path}: footer is missing ${href}`);
+    }
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (overflow > 1) throw new Error(`${path}: horizontal overflow ${overflow}px at ${size.width}px`);
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: true });
+    if (errors.length || failures.length) {
+      throw new Error(`${path}: console errors=${JSON.stringify(errors)} failed requests=${JSON.stringify(failures)}`);
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : await startServer();
@@ -1812,6 +1850,20 @@ async function main() {
     // Issue #107: the /cloud/ page's login buttons land at the same contract.
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
+    // Issue #287: all policy/support URLs render at the acceptance widths in
+    // both languages, without browser errors or horizontal overflow.
+    const legalPages = [
+      ["/privacy/", "Privacy policy", "privacy-en"],
+      ["/terms/", "Terms of service", "terms-en"],
+      ["/support/", "Support that starts with a useful report", "support-en"],
+      ["/zh/privacy/", "隐私政策", "privacy-zh"],
+      ["/zh/terms/", "服务条款", "terms-zh"],
+      ["/zh/support/", "从有用的报告开始支持", "support-zh"],
+    ];
+    for (const [path, heading, name] of legalPages) {
+      await assertLegalPage(browser, path, heading, { width: 1440, height: 900 }, `${name}-desktop.png`);
+      await assertLegalPage(browser, path, heading, { width: 390, height: 844 }, `${name}-mobile.png`);
+    }
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     // Issue #118: the two languages' rendered sample sizes must agree — the
     // page's whole credibility is that the numbers reconcile.
@@ -1853,12 +1905,13 @@ async function main() {
     await assertEvidencePage(browser, "/zh/evidence/", { width: 390, height: 844 }, "evidence-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
+      const legalPaths = ["/privacy/", "/terms/", "/support/", "/zh/privacy/", "/zh/terms/", "/zh/support/"];
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
