@@ -21,10 +21,10 @@ const REF_TOKEN = /^[a-z0-9_-]{1,32}$/;
 // (acceptance 1: byte-exact match against the source and the built page).
 const issueCtas = [
   ["site/pages/index.html", "public/index.html", 'data-cta="cloud-start" href="/cloud/login?ref=home-hero"'],
-  ["site/pages/index.html", "public/index.html", 'data-cta="midway-cloud" href="/cloud/login?ref=home-proof"'],
+  ["site/pages/index.html", "public/index.html", 'data-cta="midway-cloud" href="/cloud/login?ref=home-video"'],
   ["site/pages/index.html", "public/index.html", 'data-cta="cloud-start-card" href="/cloud/login?ref=home-runorbi"'],
   ["site/pages/zh/index.html", "public/zh/index.html", 'data-cta="cloud-start" href="/cloud/login?ref=zh-hero"'],
-  ["site/pages/zh/index.html", "public/zh/index.html", 'data-cta="midway-cloud" href="/cloud/login?ref=zh-proof"'],
+  ["site/pages/zh/index.html", "public/zh/index.html", 'data-cta="midway-cloud" href="/cloud/login?ref=zh-video"'],
   ["site/pages/zh/index.html", "public/zh/index.html", 'data-cta="cloud-start-card" href="/cloud/login?ref=zh-runorbi"'],
   ["site/partials/nav.html", "public/index.html", 'class="nav-apply" href="/cloud/login?ref=nav"'],
 ];
@@ -88,7 +88,11 @@ describe("cloud login CTA ref tokens (Issue #256)", () => {
         }
       }
     }
-    const seven = ["home-hero", "home-proof", "home-runorbi", "zh-hero", "zh-proof", "zh-runorbi", "nav"];
+    // Issue #262: the proof section's midway CTA sits directly under the new
+    // proof-loop video, so its token became home-video/zh-video — tenants
+    // carrying those values signed up from the video screen. home-proof and
+    // zh-proof no longer ship.
+    const seven = ["home-hero", "home-video", "home-runorbi", "zh-hero", "zh-video", "zh-runorbi", "nav"];
     expect(new Set(seven).size, "the Issue's seven ref values must be mutually distinct").toBe(7);
     for (const token of seven) {
       expect(tokens.has(token), `expected ref token ${token} to be shipped`).toBe(true);

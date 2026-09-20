@@ -398,6 +398,19 @@
           <li><span>02</span><strong>Merge evidence tied to one SHA</strong><p>A fresh base, a mergeable PR, and the exact commit that received the verdict.</p></li>
           <li><span>03</span><strong>Recovery without a second story</strong><p>Restarts reconstruct the delivery from the Issue, PR, labels, journal, and run ID.</p></li>
         </ul>
+        <figure class="proof-loop">
+          <video
+            class="proof-loop-video"
+            src="/video/delivery-loop.mp4"
+            poster="/video/delivery-loop-poster.jpg"
+            width="1280" height="720"
+            autoplay loop muted playsinline preload="metadata"
+            aria-label="A 17.6-second silent loop of one real delivery: the review blocks the PR with a Major finding, the run fixes itself and re-runs to green, only the reviewed commit merges, and the result ships as tagged release v0.5.17.">
+          <source src="/video/delivery-loop.webm" type="video/webm">
+          <source src="/video/delivery-loop.mp4" type="video/mp4">
+          </video>
+          <figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/1018">#1018</a> · PR <a href="https://github.com/orbi-build/orbi/pull/1023">#1023</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a></figcaption>
+        </figure>
         <div class="midway">
           <p>Run this on your own repository</p>
           <div class="install-block">
@@ -412,7 +425,7 @@ cp .orbi.example.toml orbi.toml
 orbi setup --config orbi.toml</code></pre>
             </details>
           </div>
-          <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login?ref=home-proof">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+          <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login?ref=home-video">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">Read the setup guide</a>
           <p class="midway-sub">Prefer to self-host? Run Orbi on your own machine — the fair-code core is free forever. <a href="https://docs.orbi.build">Setup guide ↗</a></p>
         </div>

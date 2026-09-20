@@ -371,6 +371,19 @@
         <li><span>02</span><strong>合并证据只绑定一个 SHA</strong><p>最新底仓、可以合并，以及真正收到 Verdict 的那个 Commit。</p></li>
         <li><span>03</span><strong>失败不产生第二套故事</strong><p>Issue、PR、Label、Journal 和 Run ID 足够让重启恢复同一现场。</p></li>
       </ul>
+      <figure class="proof-loop">
+        <video
+          class="proof-loop-video"
+          src="/video/delivery-loop.mp4"
+          poster="/video/delivery-loop-poster.jpg"
+          width="1280" height="720"
+          autoplay loop muted playsinline preload="metadata"
+          aria-label="17.6 秒无声循环：一次真实交付里，评审给出一条 Major 拦下 PR，Orbi 自己改到绿，只有审过的那个 commit 被合并，最后发成打了 tag 的 v0.5.17。">
+        <source src="/video/delivery-loop.webm" type="video/webm">
+        <source src="/video/delivery-loop.mp4" type="video/mp4">
+        </video>
+        <figcaption>Issue <a href="https://github.com/orbi-build/orbi/issues/1018">#1018</a> · PR <a href="https://github.com/orbi-build/orbi/pull/1023">#1023</a> · Release <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a></figcaption>
+      </figure>
       <div class="midway">
         <p>在你自己的仓库上跑一次</p>
         <div class="install-block">
@@ -385,7 +398,7 @@ cp .orbi.example.toml orbi.toml
 orbi setup --config orbi.toml</code></pre>
           </details>
         </div>
-        <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login?ref=zh-proof">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+        <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login?ref=zh-video">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">阅读安装文档</a>
         <p class="midway-sub">想自己部署？在自己的机器上跑 Orbi——fair-code 核心永久免费。<a href="https://docs.orbi.build/zh">安装文档 ↗</a></p>
       </div>
