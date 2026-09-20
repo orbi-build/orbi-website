@@ -1,21 +1,80 @@
-// Bot marking for the attribution chain (Issues #243, #251). #251 measured
-// the live request on beta through the /__cf diagnostic (2026-09-20):
-// request.cf itself is populated (asn, colo) but botManagement is absent on
-// this account/plan, so #243's score-based classification could never fire —
-// every row landed is_bot=0. The working marker is an exact UA match of the
-// probes we actually run against the site (the attribution e2e's Better
-// Stack monitor string), not a substring sweep and not a 1500-entry list.
+// Bot marking for the attribution chain (Issues #240, #243, #251, #280).
+// #251 measured the live request on beta through the /__cf diagnostic
+// (2026-09-20): request.cf itself is populated (asn, colo) but botManagement
+// is absent. botManagement is only set when the site buys the Cloudflare Bot
+// Management product — an Enterprise add-on we do not buy; #243's
+// score-based classification rested on a field we never had, and every row
+// landed is_bot=0. The signals every plan does carry are request.cf.asn
+// ("All plans have access to" per the Cloudflare docs, checked 2026-09-20)
+// and the User-Agent, so the classification is (Issue #280):
+// - ASN: a cloud/datacenter ASN is a crawler or a scripted client — real
+//   people do not browse the site from a datacenter IP. Highest-signal
+//   check: #280 reviewed the production rows by behavior and 93% were
+//   crawlers, none of them ever marked.
+// - UA substrings: crawlers that self-identify, plus the generic
+//   bot/crawler/spider fallback; the exact UA of the probes we run
+//   ourselves stays pinned too.
 // The verdict is a marker only, never a block — a marked row can be
-// reclassified while a dropped one is gone.
+// reclassified while a dropped one is gone. visitSignals stores the
+// judgment inputs with the row (asn, ua_hash — never the raw UA, which is
+// PII), so a verdict later found wrong can be re-derived from the stored
+// evidence instead of being wrong forever.
+const CLOUD_ASNS = new Set([
+  16509, 14618, // AWS
+  15169, 396982, // GCP
+  8075, // Azure
+  24940, // Hetzner
+  14061, // DigitalOcean
+  16276, // OVH
+  63949, // Linode
+]);
+
 const KNOWN_PROBE_UAS = new Set([
   "Better Uptime Bot Mozilla/5.0",
 ]);
 
+// Lowercase needles, matched against the lowercased UA. The named crawlers
+// self-identify and stay caught even if the generic fallback ever has to be
+// narrowed over a false positive.
+const KNOWN_CRAWLER_UAS = [
+  "gptbot",
+  "claudebot",
+  "ccbot",
+  "bytespider",
+  "ahrefsbot",
+  "semrushbot",
+  "dataforseobot",
+  "mj12bot",
+  "dotbot",
+  "petalbot",
+  "yandexbot",
+  // Generic fallback: no real browser UA contains any of these.
+  "bot",
+  "crawler",
+  "spider",
+];
+
 export function isBot(request) {
-  return KNOWN_PROBE_UAS.has(request.headers.get("User-Agent") ?? "");
+  if (CLOUD_ASNS.has(request.cf?.asn)) return true;
+  const rawUA = request.headers.get("User-Agent") ?? "";
+  if (KNOWN_PROBE_UAS.has(rawUA)) return true;
+  const ua = rawUA.toLowerCase();
+  return KNOWN_CRAWLER_UAS.some((needle) => ua.includes(needle));
 }
 
-// The visit report carries the verdict alone: no UA, no stored score, no ASN.
-export function visitSignals(request) {
-  return { is_bot: isBot(request) ? 1 : 0 };
+// The verdict travels with its inputs: the asn that was seen and a hash of
+// the UA (SHA-256, first 16 hex) — enough to re-derive the classification,
+// never enough to identify the visitor.
+export async function visitSignals(request) {
+  const ua = request.headers.get("User-Agent") ?? "";
+  return {
+    is_bot: isBot(request) ? 1 : 0,
+    asn: request.cf?.asn ?? null,
+    ua_hash: (await sha256Hex(ua)).slice(0, 16),
+  };
+}
+
+async function sha256Hex(text) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
