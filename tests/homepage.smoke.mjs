@@ -1014,10 +1014,16 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+    // Chromium abandons the metadata request when it opens the playback
+    // request. Every other media/network failure remains fatal.
+    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
+      && request.url().includes("/video/delivery-loop");
+    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The assertions below explicitly prove playback, so DOM load is the
+  // bounded navigation gate rather than waiting on autoplay network churn.
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   if (!process.env.BASE_URL) {
     const availability = page.locator("[data-founding-availability]");
     if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
@@ -1026,6 +1032,42 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: Founding availability does not match D1 fixture`);
     }
   }
+  const demo = page.locator(".cloud-demo");
+  const video = demo.locator(".proof-loop-video");
+  if ((await demo.count()) !== 1 || (await video.count()) !== 1) {
+    throw new Error(`${path}: expected exactly one Cloud walkthrough video`);
+  }
+  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+    if ((await video.getAttribute(attribute)) === null) {
+      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
+    }
+  }
+  if ((await video.getAttribute("preload")) !== "metadata") {
+    throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
+  }
+  if ((await video.getAttribute("poster")) !== "/video/delivery-loop-poster.jpg") {
+    throw new Error(`${path}: Cloud walkthrough poster is missing`);
+  }
+  const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
+  const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
+  if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
+  await demo.scrollIntoViewIfNeeded();
+  try {
+    await page.waitForFunction(() => {
+      const video = document.querySelector(".cloud-demo .proof-loop-video");
+      return video && !video.paused && video.readyState >= 3 && video.currentTime > 0;
+    }, null, { timeout: 5000 });
+  } catch {
+    const state = await video.evaluate((element) => ({
+      paused: element.paused,
+      readyState: element.readyState,
+      networkState: element.networkState,
+      currentTime: element.currentTime,
+      error: element.error && element.error.code,
+    }));
+    throw new Error(`${path}: Cloud walkthrough is not playing: ${JSON.stringify(state)}`);
+  }
+
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -1993,6 +2035,8 @@ async function main() {
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 1440, height: 900 }, "cloud-zh-desktop.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
+    await assertProofLoopReducedMotion(browser, "/cloud/");
+    await assertProofLoopReducedMotion(browser, "/zh/cloud/");
     // Issue #107: the /cloud/ page's login buttons land at the same contract.
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
