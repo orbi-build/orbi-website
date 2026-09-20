@@ -118,7 +118,7 @@
             "name": "跑 Orbi 需要什么前提？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器或服务器。不需要 GPU——思考交给模型，模型可以是托管 API。仓库、密钥和测试套件都留在原地，Orbi 不会把代码上传到我们运营的服务上。"
+              "text": "Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。 自托管：仓库、密钥和测试套件留在你的机器上，不会上传给我们。Cloud：Runner 会在一次交付期间，把你授权的仓库 clone 到我们运维的机器上——详见 「能看到我的代码吗？」。"
             }
           },
           {
@@ -504,7 +504,7 @@ orbi setup --config orbi.toml</code></pre>
             <summary><span>01</span>跑 Orbi 需要什么前提？</summary>
             <div class="faq-answer">
               <p>Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。</p>
-              <p>仓库、密钥和测试套件都留在原地。Orbi 不会把你的代码上传到我们运营的服务上。</p>
+              <p>自托管：仓库、密钥和测试套件留在你的机器上，不会上传给我们。Cloud：Runner 会在一次交付期间，把你授权的仓库 clone 到我们运维的机器上——详见 <a href="/zh/cloud/#faq">「能看到我的代码吗？」</a>。</p>
             </div>
           </details>
 

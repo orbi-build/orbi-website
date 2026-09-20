@@ -618,6 +618,37 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   });
 });
 
+// Issue #276: the homepage must distinguish self-hosted execution from Cloud,
+// and the Cloud answer must expose only facts backed by the Cloud implementation.
+describe("privacy boundary copy (Issue #276)", () => {
+  it("qualifies the homepage self-host FAQ in visible copy and JSON-LD", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const html = shipped.get(output);
+      const item = cloudFaqItems(html)[0];
+      expect(item.answer).toMatch(/Self-hosted:|自托管：/);
+      expect(item.answer).toMatch(/Cloud:|Cloud：/);
+      expect(item.answer).not.toMatch(/does not upload your code|不会把你的代码上传到我们运营的服务上/);
+      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
+      expect(String(faq.mainEntity[0].acceptedAnswer.text).replace(/\s+/g, " ").trim()).toBe(item.answer);
+    }
+  });
+
+  it("traces each Cloud privacy fact to its implementation source without dead private links", () => {
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const html = shipped.get(output);
+      expect(html).toContain("runbook/cleanup_completed.py");
+      expect(html).toContain("scripts/provision-runner-sandbox.sh");
+      expect(html).toContain("migrations/0005_tenant_secrets.sql");
+      expect(html).not.toMatch(/href="https:\/\/github\.com\/orbi-build\/orbi-cloud\//);
+      const item = cloudFaqItems(html).find((entry) => /Can you see my code|能看到我的代码/.test(entry.question));
+      expect(item.answer).toMatch(/120-minute quiet period|静默 120 分钟/);
+      expect(item.answer).toMatch(/code, credentials, and delivery artifacts are isolated from other tenants|代码、凭据和交付产物均与其他租户隔离/);
+      expect(item.answer).not.toMatch(/Linux user|UID|Linux 用户/);
+      expect(item.answer).toMatch(/AES-GCM encrypted|AES-GCM 加密存储/);
+    }
+  });
+});
+
 // Issue #221: status.orbi.build went live 2026-09-18; the only way to find it
 // was to already know the URL. The footer links it on every page (after
 // Releases, no target="_blank", same as GitHub and X) and the cloud FAQ
