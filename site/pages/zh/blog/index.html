@@ -53,6 +53,12 @@
     .post-list { margin: 0 auto; max-width: 52rem; }
     .src-note { margin-inline: auto; max-width: 52rem; }
     .post-entry { padding: 34px 0; border-top: 1px solid var(--line); }
+    /* 分隔线是用来隔开两篇的：第一篇上面没有可隔的东西，那条线会悬在
+       section 的上边距里，看起来像一条孤立的装饰线。 */
+    .post-entry:first-child { padding-top: 0; border-top: 0; }
+    /* 深色 hero 本身就是分隔，section 的 84px 通用上边距在这里成了一块
+       刺眼的空白。列表页单独收紧。 */
+    .compare-section { padding-top: 40px; }
     .post-entry-title { margin: 0 0 6px; font-family: var(--display); font-size: 1.45rem; line-height: 1.25; }
     .post-entry-title a { text-decoration: none; color: var(--ink); }
     .post-entry-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
