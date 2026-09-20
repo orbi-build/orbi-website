@@ -233,7 +233,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 12-item footer nav on every content page", () => {
+  it("carries the 13-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -254,6 +254,7 @@ describe("one unified footer on every content page", () => {
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
+        "https://www.opensourcealternatives.to/",
       ]);
     }
   });
@@ -264,6 +265,18 @@ describe("one unified footer on every content page", () => {
       expect(footer, `${output}: YouTube footer anchor drifted`).toContain(
         '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>',
       );
+    }
+  });
+
+  // Issue #270: opensourcealternatives.to requires a crawlable backlink before
+  // the free listing goes live — no nofollow, or the review rejects it.
+  it("links Open Source Alternatives from the footer without nofollow, on en and zh", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: Open Source Alternatives footer anchor drifted`).toContain(
+        '<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>',
+      );
+      expect(footer, `${output}: the backlink must be crawlable`).not.toContain("nofollow");
     }
   });
 
