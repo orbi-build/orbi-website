@@ -133,7 +133,7 @@ async function loadRepoStats(name, token) {
     ghJson(`/repos/${repo}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`, token),
-    ghJson(`/repos/${repo}/releases?per_page=100`, token),
+    loadAllReleases(repo, token),
     name === "orbi" ? loadStarHistory(repo, token).catch(() => []) : Promise.resolve([]),
   ]);
   const stats = {
@@ -153,20 +153,46 @@ async function loadRepoStats(name, token) {
   return stats;
 }
 
-async function loadStats(token) {
-  const groups = await Promise.all(
-    STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)),
-  );
-  return { repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])) };
+async function loadAllReleases(repo, token) {
+  const releases = [];
+  for (let page = 1; page <= 10; page += 1) {
+    const batch = await ghJson(`/repos/${repo}/releases?per_page=100&page=${page}`, token);
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    releases.push(...batch);
+    if (batch.length < 100) break;
+  }
+  return releases;
 }
 
-async function statsResponse(request, token) {
+async function loadFoundingStats(db) {
+  if (!db) return null;
+  const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
+  const tenants = await db.prepare("SELECT github_login FROM tenants WHERE github_login IS NOT NULL").all();
+  return {
+    active: Number(active?.count),
+    limit: 10,
+    github_logins: (tenants?.results || []).map((row) => row.github_login).filter(Boolean),
+  };
+}
+
+async function loadStats(token, db) {
+  const [groups, founding] = await Promise.all([
+    Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null))),
+    loadFoundingStats(db).catch(() => null),
+  ]);
+  return {
+    repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])),
+    founding,
+  };
+}
+
+async function statsResponse(request, token, db) {
   const cache = caches.default;
   const cached = await cache.match(STATS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token);
+  const stats = await loadStats(token, db);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -222,13 +248,13 @@ function formatStatusText(stats) {
   return lines.join("\n");
 }
 
-async function statusResponse(request, token) {
+async function statusResponse(request, token, db) {
   const cache = caches.default;
   const cached = await cache.match(STATUS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token);
+  const stats = await loadStats(token, db);
   const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
@@ -488,7 +514,7 @@ async function handleFetch(request, env) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN);
+        return await statsResponse(request, env.GITHUB_TOKEN, env.orbi_applications);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -508,7 +534,7 @@ async function handleFetch(request, env) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN);
+        return await statusResponse(request, env.GITHUB_TOKEN, env.orbi_applications);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {
@@ -763,7 +789,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit

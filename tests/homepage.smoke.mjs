@@ -901,6 +901,13 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  if (!process.env.BASE_URL) {
+    await page.route("**/stats", (route) => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ founding: { active: 4, limit: 10, github_logins: [] }, repos: {} }),
+    }));
+  }
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
