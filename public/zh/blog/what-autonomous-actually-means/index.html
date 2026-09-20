@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>会对自己说不的 AI 编码 agent | Orbi</title>
+  <meta name="description" content="大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/what-autonomous-actually-means/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="会对自己说不的 AI 编码 agent">
+  <meta property="og:description" content="大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/what-autonomous-actually-means/">
+  <meta property="article:published_time" content="2026-09-20">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login?ref=nav">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">中文</span>
+          <a href="/blog/what-autonomous-actually-means/" lang="en">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-20</p>
+        <h1 id="post-title">会对自己说不的 AI 编码 agent</h1>
+        <p class="hero-lede">大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>搜「AI 编码 agent」会搜到一堆能自动开 PR 的工具。那一步早就不难了。</p>
+<p>没人给你看的是拒绝：有个东西读完 diff，说这个不能发。</p>
+<p>我想讲一次真的发生了这件事的交付。写代码那部分好演，拒绝不好演。</p>
+<h2>这次交付</h2>
+<p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> 是我们自己发版代码里的一个真实缺陷：
+有个改动把文档同步挪到了打 tag 之前，于是开出三个窗口，让「已发布的 tag」可能没有对应的文档页。</p>
+<p>这张票打上 <code>ai-ready</code>。没有别的配置。</p>
+<p>Orbi 认领它，在隔离的 worktree 里干活，基于一个记录下来的 base commit 开出
+<a href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a>。到这里为止，每个 agent 都能做。</p>
+<p>然后另一个会话，全新的上下文、完全不记得自己写过这些代码，去读那份 diff。</p>
+<h2>拒绝</h2>
+<p>第一轮回来一条 Major。不是风格建议：</p>
+<blockquote>
+<p><strong>Location:</strong> <code>src/orbi/release.py:2377</code></p>
+<p><strong>Note:</strong> 如果 <code>publish_release</code> 在 tag 推上去之后失败，<code>rollback_release_docs</code>
+会删掉文档 commit，却把远端的 tag 留在那里。CI 于是可能看到一个没有文档页的
+已发布 tag，违反验收项。</p>
+</blockquote>
+<p>修 bug 的那个改动，在更窄的窗口里把 bug 又造了一遍。评审点出了文件、行号、成因，
+以及正确的修法长什么样。</p>
+<p>Orbi 读了这条 finding，补上恢复路径，再跑一遍。第二轮又回来了，这次是覆盖率：
+新分支没有测试。再来三个 commit。</p>
+<p>一共九个 commit，+427/-43，从 Issue 到合并三小时零两分钟。然后是
+<a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a>，
+生成的 release notes 里列着这张 Issue 和这个 PR。</p>
+<p>这段时间里没有人做过任何决定。</p>
+<h2>截图说不出来的那部分</h2>
+<p>我们用这次运行剪了个视频，有一处必须在画面上标注，否则帧本身会骗人。</p>
+<p>runner 是拿我自己的 GitHub 账号发东西的。它用我的 token，所以它的 commit 署我的名，
+它的评审意见也署我的名、配我的头像。屏幕上，拦下 PR #1023 的那条评审显示在
+<code>xqliu</code> 名下，徽章写着 <code>Collaborator</code> 和 <code>Author</code>。</p>
+<p>第一次看到的人会把这读成「一个开发者在审自己的 PR」—— 恰恰是这整件事要反驳的东西。
+而那条评论正下方，坐着一条 <code>github-actions</code> 的评论，带着 <code>Bot</code> 徽章。
+同一屏先教会你「机器人长这样」，再给你看一条不是机器人的评审。</p>
+<p>我没法让 GitHub 显示成别的样子。我能做的是把它说出来：那是第二个模型，
+跑在独立的会话里，不记得自己写过被它拒掉的那些代码。</p>
+<h2>闸门能拦住交付之后，变的是什么</h2>
+<p>一个能写代码、能开 PR 的 agent，只是把活挪给了人。总得有人去读、去判断、去合。
+agent 干的是打字那部分。</p>
+<p>把闸门做成真的，多半是管道活。verdict 必须绑定到某个具体 commit，
+否则后来的推送会绕过一个为更早的 commit 出具的判断。finding 也必须具体到
+<strong>一个全新的、不记得原始工作的会话能据此动手</strong> —— 只会说「还没完成」的检查，
+会让下一个会话去猜。</p>
+<p>更难的部分是，它得被允许直接把整次交付判死。我最近在和几个做类似闸门的维护者对账，
+他们说的是同一件事：大家都把检查留成 advisory，因为会拦的检查拖慢迭代速度。</p>
+<p>我觉得这件事的关键是谁在等，而不是检查对不对。拦一个人的 PR，当场花掉那个人的时间，
+他能感觉到。拦一个 agent 的 PR，不花任何人的时间 —— agent 读完 finding 自己再跑一遍，
+凌晨三点，所有人都在睡觉。</p>
+<h2>自己试</h2>
+<p>整条流水线是一个容器。systemd 在里面当 PID 1，那几行 cgroup 挂载就是为了这个：</p>
+<pre><code class="language-bash">docker run -d --name orbi \
+  --stop-signal SIGRTMIN+3 \
+  --tmpfs /run --tmpfs /tmp \
+  --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+  -v orbi-deploy:/orbi \
+  -v orbi-work:/work \
+  -e GH_TOKEN=&quot;github_pat_xxx&quot; \
+  -e ORBI_SOURCE_REPO=&quot;OWNER/REPO&quot; \
+  -e ORBI_PI_PROVIDER=deepseek \
+  -e ORBI_PI_MODEL=deepseek-chat \
+  -e ORBI_PI_BASE_URL=https://api.deepseek.com \
+  -e ORBI_PI_API_KEY=&quot;sk-xxx&quot; \
+  ghcr.io/orbi-build/orbi:latest
+</code></pre>
+<p>引擎就是那四个变量指向的模型。给一张 Issue 打上 <code>ai-ready</code>，下一次 tick 就会认领它。
+评审跑在独立的会话里，对的是冻结的 head；那个会话不放行，就不会合并。
+完整步骤见 <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。</p>
+<h2>账本</h2>
+<p>这套东西跑在它自己的仓库上。到今天为止，27 天：<code>orbi/</code> 分支合并了 334 个 PR，
+发布了 51 个打了 tag 的 release。</p>
+<p>每一个都是能点开的链接，包括那些拦下了东西的评审，以及之后补上的 commit。</p>
+<p>Orbi 开源，可自托管：<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>。</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/cloud/">Cloud</a>
+      <a href="/zh/compare/">竞品对比</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>
+      <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
+      <a href="https://status.orbi.build">状态</a>
+      <a href="/zh/#direction">方向</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <a href="/blog/what-autonomous-actually-means/" lang="en">EN</a>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

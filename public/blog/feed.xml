@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>An autonomous coding agent that can tell itself no</title>
+      <link>https://orbi.build/blog/what-autonomous-actually-means/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/what-autonomous-actually-means/</guid>
+      <pubDate>Sun, 20 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.</description>
+    </item>
+    <item>
       <title>Claude Code in GitHub Actions stops at the pull request. Who merges it?</title>
       <link>https://orbi.build/blog/claude-code-github-actions-who-merges/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-github-actions-who-merges/</guid>

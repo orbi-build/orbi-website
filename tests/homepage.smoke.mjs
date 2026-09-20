@@ -100,6 +100,8 @@ const CONTENT_TYPES = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
   ".xml": "application/xml; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
 };
@@ -439,7 +441,15 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+    // Issue #262: on the homepage the proof-loop video plays (asserted in
+    // assertProofLoop), and Chromium's media element abandons its metadata
+    // connection once the data connection opens — Playwright records that
+    // churn as net::ERR_ABORTED while the page is still open. Probed
+    // 2026-09-20: paused=false, currentTime advancing, only the old
+    // request aborts. A no-op on pages without the video.
+    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
+      && request.url().includes("/video/delivery-loop");
+    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -626,6 +636,169 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
     throw new Error(`${view}: footnote top ${footnoteTop} must come after the primary CTA top ${ctaTop}`);
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.close();
+}
+
+// Issue #267: at the ≤980px breakpoint the hero collapses to one column and
+// came apart on the Z Fold 8's unfolded viewport: the factory-trace figure
+// right-shifted ~372px off the copy's left edge (the 980px rule's
+// margin-left:auto right-aligns the shrink-to-fit figure), the "Prefer to
+// self-host?" CTA sagged 15px below its row-mates (the base .hero-alt
+// margin-top inside a flex-start row), and the trust-line checklist spread
+// across the full column while the copy above it sat on a narrower measure.
+// This measures the repaired geometry — acceptance in pixels, not strings:
+// the figure shares the copy column's left edge, CTAs sharing a visual row
+// share its top (aligned within 1px, or genuinely wrapped to their own row),
+// and no checklist row runs wider than the copy measure the h1 box anchors.
+async function assertHeroSingleColumn(browser, path, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.evaluate(() => document.fonts.ready);
+  const view = `${path} ${size.width}x${size.height}`;
+  const hero = await page.evaluate(() => {
+    const rect = (nodeOrSelector) => {
+      const el = typeof nodeOrSelector === "string" ? document.querySelector(nodeOrSelector) : nodeOrSelector;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top };
+    };
+    return {
+      columns: getComputedStyle(document.querySelector(".hero")).gridTemplateColumns.split(" ").length,
+      copy: rect(".hero-copy"),
+      figure: rect(".hero figure.factory-trace"),
+      ctas: [
+        rect('.hero [data-cta="cloud-start"]'),
+        rect(".hero .hero-alt"),
+        rect(".hero .hero-proof-link"),
+      ],
+      h1: rect(".hero h1"),
+      checklist: [...document.querySelectorAll(".hero .trust-line li")].map(rect),
+    };
+  });
+  // The two-column hero (≥981px) has its own alignment contract; the checks
+  // below are the single-column repair's, so only run where it applies.
+  if (hero.columns === 1) {
+    const leftDrift = Math.abs(hero.figure.left - hero.copy.left);
+    if (leftDrift > 1) {
+      throw new Error(`${view}: figure left ${hero.figure.left} vs .hero-copy left ${hero.copy.left} — drift ${leftDrift}px > 1px`);
+    }
+    const tops = hero.ctas.map((cta) => cta.top).sort((a, b) => a - b);
+    for (let i = 1; i < tops.length; i += 1) {
+      const gap = tops[i] - tops[i - 1];
+      // A wrapped CTA's row starts at least a line below the previous one;
+      // anything between "aligned" and "wrapped" is the 15px sag again.
+      if (gap > 1 && gap < 24) {
+        throw new Error(`${view}: CTA tops ${JSON.stringify(hero.ctas.map((cta) => cta.top))} — a ${gap}px offset is neither aligned nor a line break`);
+      }
+    }
+    for (const row of hero.checklist) {
+      if (row.right > hero.h1.right + 1) {
+        throw new Error(`${view}: checklist row runs to ${row.right}, past the copy column edge ${hero.h1.right}`);
+      }
+    }
+  }
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.close();
+}
+
+// Issue #264: the proof section's delivery loop, retold as measured
+// rendering, not copy: the autoplay contract plus controls one by one —
+// the asset carries a narration track, so a visitor must be able to unmute
+// and pause — the video fitting its container at the laptop and phone
+// widths the Issue names, and no horizontal scroll from the block.
+// The midway CTA directly under the video carries the video's own ref token —
+// the signup attribution this Issue exists for.
+async function assertProofLoop(browser, path, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const view = `${path} ${size.width}x${size.height}`;
+  const video = page.locator(".proof-loop-video");
+  if ((await video.count()) !== 1) throw new Error(`${view}: expected exactly one .proof-loop-video`);
+  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+    if ((await video.getAttribute(attribute)) === null) {
+      throw new Error(`${view}: .proof-loop-video is missing ${attribute}`);
+    }
+  }
+  // The loop must actually play — the strongest signal a visitor's browser
+  // can give that the asset loads and the autoplay contract holds. Chromium
+  // defers autoplay while the video is offscreen (probed 2026-09-20: at
+  // viewport top 4939px paused=true; scrollIntoView → paused=false with
+  // currentTime advancing, no user gesture), so walk the visitor's real path:
+  // scroll the proof section into view, then wait for playback. A broken or
+  // missing file surfaces here as a timeout, not as a network event (the
+  // element's connection churn aborts benignly, see the requestfailed filter
+  // in assertHomepage).
+  await page.locator(".proof-loop").scrollIntoViewIfNeeded();
+  try {
+    await page.waitForFunction(() => {
+      const video = document.querySelector(".proof-loop-video");
+      return video && !video.paused && video.readyState >= 3 && video.currentTime > 0;
+    }, null, { timeout: 5000 });
+  } catch {
+    const state = await video.evaluate((video) => ({
+      paused: video.paused,
+      readyState: video.readyState,
+      networkState: video.networkState,
+      currentTime: video.currentTime,
+      error: video.error && video.error.code,
+    }));
+    throw new Error(`${view}: proof-loop video is not playing: ${JSON.stringify(state)}`);
+  }
+  const geometry = await page.evaluate(() => {
+    const video = document.querySelector(".proof-loop-video");
+    return {
+      width: video.getBoundingClientRect().width,
+      containerWidth: video.closest(".proof-loop").getBoundingClientRect().width,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    };
+  });
+  if (!(geometry.width > 0) || geometry.width > geometry.containerWidth + 0.5) {
+    throw new Error(`${view}: .proof-loop-video width ${geometry.width} must be > 0 and within its container ${geometry.containerWidth}`);
+  }
+  const overflow = geometry.scrollWidth - geometry.clientWidth;
+  if (overflow > 1) throw new Error(`${view}: horizontal overflow of ${overflow}px`);
+  const captionLinks = await page.locator(".proof-loop figcaption a")
+    .evaluateAll((nodes) => nodes.map((a) => a.getAttribute("href")));
+  const expectedCaption = [
+    "https://github.com/orbi-build/orbi/issues/1018",
+    "https://github.com/orbi-build/orbi/pull/1023",
+    "https://github.com/orbi-build/orbi/releases/tag/v0.5.17",
+  ];
+  if (JSON.stringify(captionLinks) !== JSON.stringify(expectedCaption)) {
+    throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
+  }
+  const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
+  const expectedHref = path.startsWith("/zh") ? "/cloud/login?ref=zh-video" : "/cloud/login?ref=home-video";
+  if (midwayHref !== expectedHref) {
+    throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
+  }
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.close();
+}
+
+// Issue #262: the reduced-motion degradation path a vestibular user actually
+// gets — the autoplaying video is hidden and the static poster takes its
+// place. emulated here, because no string check exercises the media query.
+async function assertProofLoopReducedMotion(browser, path) {
+  const page = await browser.newPage({
+    viewport: { width: 1366, height: 768 },
+    reducedMotion: "reduce",
+  });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  const state = await page.evaluate(() => {
+    const video = document.querySelector(".proof-loop-video");
+    const figure = document.querySelector(".proof-loop");
+    return {
+      display: getComputedStyle(video).display,
+      background: getComputedStyle(figure).backgroundImage,
+    };
+  });
+  if (state.display !== "none") {
+    throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
+  }
+  if (!state.background.includes("delivery-loop-poster.jpg")) {
+    throw new Error(`${path}: reduced motion must show the static poster, got background=${state.background}`);
+  }
   await page.close();
 }
 
@@ -1576,6 +1749,22 @@ async function main() {
     await assertHeroAboveFold(browser, "/", { width: 390, height: 844 }, "hero-fold-en-phone.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 1366, height: 768 }, "hero-fold-zh-laptop.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 390, height: 844 }, "hero-fold-zh-phone.png");
+    // Issue #267: the single-column hero geometry at the breakpoint the
+    // Issue reproduces (960×850, Z Fold 8 unfolded), both languages; the
+    // 1080×960 shot watches the two-column layout just above the breakpoint
+    // for regression. 1440×900 and 390×844 are shot by assertHomepage above.
+    await assertHeroSingleColumn(browser, "/", { width: 960, height: 850 }, "hero-single-en-960.png");
+    await assertHeroSingleColumn(browser, "/zh/", { width: 960, height: 850 }, "hero-single-zh-960.png");
+    await assertHeroSingleColumn(browser, "/", { width: 1080, height: 960 }, "hero-two-en-1080.png");
+    // Issue #262: the proof-loop video renders inside its container at the
+    // laptop and phone widths the Issue names, with no horizontal scroll,
+    // and the reduced-motion visitor gets the static poster.
+    await assertProofLoop(browser, "/", { width: 1366, height: 768 }, "proof-loop-en-laptop.png");
+    await assertProofLoop(browser, "/", { width: 390, height: 844 }, "proof-loop-en-phone.png");
+    await assertProofLoop(browser, "/zh/", { width: 1366, height: 768 }, "proof-loop-zh-laptop.png");
+    await assertProofLoop(browser, "/zh/", { width: 390, height: 844 }, "proof-loop-zh-phone.png");
+    await assertProofLoopReducedMotion(browser, "/");
+    await assertProofLoopReducedMotion(browser, "/zh/");
     // Issue #107: follow a real click from every Cloud CTA — hero, card and
     // nav share one promise — to the endpoint CLOUD_LOGIN_EXPECT declares.
     const homepageCloudCtas = [
