@@ -841,15 +841,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -1019,15 +1011,7 @@ async function assertCostPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -1134,15 +1118,7 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -1270,15 +1246,7 @@ async function assertOrcaPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -1504,15 +1472,7 @@ async function assertEvidencePage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
@@ -1614,15 +1574,7 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Issue #262: on the homepage the proof-loop video plays (asserted in
-    // assertProofLoop), and Chromium's media element abandons its metadata
-    // connection once the data connection opens — Playwright records that
-    // churn as net::ERR_ABORTED while the page is still open. Probed
-    // 2026-09-20: paused=false, currentTime advancing, only the old
-    // request aborts. A no-op on pages without the video.
-    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
-    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
+    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
   await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
