@@ -9,7 +9,9 @@
   --line: #b8c5c1;
   --line-dark: rgba(220, 238, 230, 0.18);
   --signal: #ffb000;
+  --signal-on-light: #8a5b00;
   --run: #5cd6b5;
+  --run-on-light: #0a6b52;
   --fault: #ef6a62;
   --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
   --body: "Instrument Sans", "Noto Sans SC", sans-serif;
@@ -250,8 +252,8 @@ img {
 .avatar-wall-list img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
 .avatar-wall-list img:first-child { margin-left: 0; }
 .founding-offer { display: flex; align-items: baseline; gap: 14px; font-size: 1.15rem; }
-.founding-offer .founding-price { color: var(--run); font-size: 1.5rem; }
-.founding-availability { color: var(--run); font: 500 .9rem/1.4 var(--mono); }
+.founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
+.founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
 .stats-label,
 .trace-head,
 .trace-index,
@@ -407,6 +409,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
    where the fair-code / self-host / BYOK attributes moved from the hero.
    Same list; only the text color lifts for the light paper background. */
 .trust-line-paper { color: var(--ink-soft); }
+.trust-line-paper li::before { color: var(--run-on-light); }
 
 .factory-trace {
   position: relative;
@@ -903,7 +906,7 @@ h2 {
 .shift-list b { font-size: 0.92rem; }
 .shift-list strong { color: #455b58; font-weight: 500; }
 .shift-list b { font-weight: 600; }
-.shift-list em { color: var(--signal); font-style: normal; }
+.shift-list em { color: var(--signal-on-light); font-style: normal; }
 
 .system-section {
   padding: clamp(100px, 9vw, 150px) 0;
@@ -1051,7 +1054,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: var(--signal);
+  color: var(--signal-on-light);
   font-family: var(--display);
   font-size: 1.7rem;
 }
@@ -1251,7 +1254,7 @@ h2 {
   height: 26px;
   place-items: center;
   background: var(--paper);
-  color: var(--signal);
+  color: var(--signal-on-light);
 }
 
 .future-loop li:nth-child(3)::after,
@@ -1443,7 +1446,7 @@ h2 {
 .faq-item summary::after {
   content: "+";
   justify-self: end;
-  color: var(--signal);
+  color: var(--signal-on-light);
   font-family: var(--mono);
   font-size: 1.3rem;
   font-weight: 400;
