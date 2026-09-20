@@ -290,7 +290,7 @@ describe("one unified footer on every content page", () => {
       const prefix = page.lang === "zh" ? "/zh" : "";
       const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;
       expect(items, `${page.output}: footer nav drifted`).toEqual([
-        "https://docs.orbi.build" + (page.lang === "zh" ? "/zh" : ""),
+        page.nav.docsHref,
         `${prefix}/cloud/`,
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
@@ -469,6 +469,33 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
       const block = heroCtaBlock(output);
       const paragraph = block.slice(block.indexOf("<p>"));
       expect(paragraph, `${output}: CTA microcopy must not carry links`).not.toContain("<a ");
+    }
+  });
+});
+
+describe("Cloud documentation links (Issue #315)", () => {
+  const expectations = {
+    "cloud/index.html": {
+      docs: "https://orbi-cloud.mintlify.app",
+      selfHost: "https://docs.orbi.build",
+    },
+    "zh/cloud/index.html": {
+      docs: "https://orbi-cloud.mintlify.app/zh",
+      selfHost: "https://docs.orbi.build/zh",
+    },
+  };
+
+  it("routes Cloud nav and footer Docs to Cloud docs while preserving self-hosting CTA", () => {
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      const chrome = navRegion(html) + footerRegion(html);
+      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}">`);
+      expect(chrome, `${output}: engine docs must not be in Cloud Docs chrome`).not.toContain(
+        `href="${expected.selfHost}">`,
+      );
+      expect(html, `${output}: self-hosting CTA`).toContain(
+        `<a data-cta="install" href="${expected.selfHost}">`,
+      );
     }
   });
 });

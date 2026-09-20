@@ -202,7 +202,7 @@ export function renderFooter(page) {
     HOME_ARIA: t.homeAria,
     TAGLINE: t.tagline,
     FOOTER_NAV_ARIA: t.footerNavAria,
-    DOCS_HREF: t.docsHref,
+    DOCS_HREF: page.nav?.docsHref ?? t.docsHref,
     DOCS_LABEL: t.docsLabel,
     CLOUD_HREF: `${t.langPrefix}/cloud/`,
     CLOUD_LABEL: t.cloudLabel,
