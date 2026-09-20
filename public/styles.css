@@ -20,6 +20,11 @@
 
 * { box-sizing: border-box; }
 
+/* Keep the designed heading breaks on desktop, but let mobile text flow naturally. */
+@media (max-width: 767px) {
+  .responsive-break { display: none; }
+}
+
 html {
   scroll-behavior: smooth;
   background: var(--paper);
