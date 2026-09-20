@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isBot, resetBehaviorSignals, visitSignals } from "../src/bot-detection.js";
 
 // Issue #280: classification rested on an exact match of one probe UA, so
@@ -16,14 +16,16 @@ describe("bot detection (Issue #280)", () => {
   const GPTBOT = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)";
   const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
 
-  function requestWith({ ua, asn, path = "/" } = {}) {
+  function requestWith({ ua, asn, ip, path = "/" } = {}) {
     const headers = ua === undefined ? {} : { "User-Agent": ua };
+    if (ip !== undefined) headers["CF-Connecting-IP"] = ip;
     const request = new Request(`https://beta.orbi.build${path}`, { headers });
     if (asn !== undefined) request.cf = { asn };
     return request;
   }
 
   beforeEach(() => {
+    vi.useRealTimers();
     resetBehaviorSignals();
   });
 
@@ -113,17 +115,50 @@ describe("bot detection (Issue #280)", () => {
 
   it("marks a burst of one-hit vids sharing a source fingerprint", async () => {
     for (let index = 0; index < 7; index += 1) {
-      expect(await visitSignals(requestWith({ ua: CHROME_127, path: `/page-${index}` }), {
+      expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10", path: `/page-${index}` }), {
         vid: `crawler-${index}`,
         path: `/page-${index}`,
         ref: "direct",
       })).toMatchObject({ is_bot: 0 });
     }
-    expect(await visitSignals(requestWith({ ua: CHROME_127, path: "/page-7" }), {
+    expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10", path: "/page-7" }), {
       vid: "crawler-7",
       path: "/page-7",
       ref: "direct",
     })).toMatchObject({ is_bot: 1 });
+  });
+
+  it("expires one-hit observations outside the short window", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-20T16:00:00Z"));
+    for (let index = 0; index < 7; index += 1) {
+      await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10" }), {
+        vid: `old-crawler-${index}`,
+        path: `/old-${index}`,
+        ref: "direct",
+      });
+    }
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
+    expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10" }), {
+      vid: "new-crawler",
+      path: "/new",
+      ref: "direct",
+    })).toMatchObject({ is_bot: 0 });
+  });
+
+  it("does not merge different client IPs into one burst based only on ISP ASN and browser UA", async () => {
+    for (let index = 0; index < 8; index += 1) {
+      expect(await visitSignals(requestWith({
+        ua: CHROME_127,
+        asn: 7922,
+        ip: `203.0.113.${index + 1}`,
+        path: `/visitor-${index}`,
+      }), {
+        vid: `human-${index}`,
+        path: `/visitor-${index}`,
+        ref: "direct",
+      })).toMatchObject({ is_bot: 0 });
+    }
   });
 
   it("keeps a normal referred visitor human", async () => {

@@ -57,17 +57,31 @@ const KNOWN_CRAWLER_UAS = [
 ];
 
 const BEHAVIOR_WINDOW_MS = 5 * 60 * 1000;
+const PRUNE_INTERVAL_MS = 30 * 1000;
 const PATH_BREADTH_THRESHOLD = 12;
 const BURST_VID_THRESHOLD = 8;
+const MAX_TRACKED_VIDS = 1024;
+const MAX_TRACKED_FINGERPRINTS = 256;
+const MAX_VIDS_PER_FINGERPRINT = 64;
 
-// This is deliberately process-local and bounded by the short window. It is
-// only an additional signal: a cold isolate has no behavior history and the
-// request still gets the ASN/UA verdict. Durable state would require a schema
-// change in the Cloud receiver, which is explicitly outside this issue.
+// This is deliberately process-local and bounded by both age and cardinality.
+// It is only an additional signal: a cold isolate has no behavior history and
+// the request still gets the ASN/UA verdict. Durable state would require a
+// schema change in the Cloud receiver, which is explicitly outside this issue.
 const behaviorByVid = new Map();
 const burstByFingerprint = new Map();
+let nextPruneAt = 0;
+
+function setBounded(map, key, value, limit) {
+  if (!map.has(key) && map.size >= limit) {
+    map.delete(map.keys().next().value);
+  }
+  map.set(key, value);
+}
 
 function pruneBehavior(now) {
+  if (now < nextPruneAt) return;
+  nextPruneAt = now + PRUNE_INTERVAL_MS;
   for (const [vid, visit] of behaviorByVid) {
     if (now - visit.firstSeen > BEHAVIOR_WINDOW_MS) behaviorByVid.delete(vid);
   }
@@ -77,28 +91,36 @@ function pruneBehavior(now) {
 }
 
 function observeBehavior({ vid, path, fingerprint, now = Date.now() }) {
-  if (!vid || !path || !fingerprint) return {};
+  if (!vid || !path) return {};
   pruneBehavior(now);
 
   const current = behaviorByVid.get(vid) || {
     firstSeen: now,
     paths: new Set(),
   };
-  current.paths.add(path);
-  behaviorByVid.set(vid, current);
+  if (current.paths.size < PATH_BREADTH_THRESHOLD) current.paths.add(path);
+  setBounded(behaviorByVid, vid, current, MAX_TRACKED_VIDS);
 
-  const burst = burstByFingerprint.get(fingerprint) || {
-    firstSeen: now,
-    vids: new Map(),
-  };
-  const priorHits = burst.vids.get(vid) || 0;
-  burst.vids.set(vid, priorHits + 1);
-  burstByFingerprint.set(fingerprint, burst);
+  let oneHitVidBurst = false;
+  if (fingerprint) {
+    const burst = burstByFingerprint.get(fingerprint) || {
+      firstSeen: now,
+      vids: new Map(),
+      detected: false,
+    };
+    if (!burst.detected) {
+      const priorHits = burst.vids.get(vid) || 0;
+      setBounded(burst.vids, vid, priorHits + 1, MAX_VIDS_PER_FINGERPRINT);
+      burst.detected = [...burst.vids.values()].filter((hits) => hits === 1).length
+        >= BURST_VID_THRESHOLD;
+    }
+    setBounded(burstByFingerprint, fingerprint, burst, MAX_TRACKED_FINGERPRINTS);
+    oneHitVidBurst = burst.detected;
+  }
 
   return {
     manyPaths: current.paths.size >= PATH_BREADTH_THRESHOLD,
-    oneHitVidBurst: burst.vids.size >= BURST_VID_THRESHOLD
-      && [...burst.vids.values()].every((hits) => hits === 1),
+    oneHitVidBurst,
   };
 }
 
@@ -116,6 +138,7 @@ export function isBot(request, behavior = {}) {
 export function resetBehaviorSignals() {
   behaviorByVid.clear();
   burstByFingerprint.clear();
+  nextPruneAt = 0;
 }
 
 // The verdict travels with its inputs: the asn that was seen and a hash of
@@ -124,12 +147,18 @@ export function resetBehaviorSignals() {
 export async function visitSignals(request, visit = {}) {
   const ua = request.headers.get("User-Agent") ?? "";
   const uaHash = (await sha256Hex(ua)).slice(0, 16);
+  const clientIp = request.headers.get("CF-Connecting-IP");
+  // Cloudflare supplies CF-Connecting-IP to the Worker. Hash it before using
+  // it as an isolate-local key: an ASN can contain millions of unrelated
+  // people, while an IP + UA + source identifies the requested burst without
+  // retaining the visitor's raw address.
+  const fingerprint = clientIp && visit.vid && visit.path
+    ? await sha256Hex(`${clientIp}|${request.cf?.asn ?? ""}|${uaHash}|${visit.ref || "direct"}`)
+    : null;
   const behavior = observeBehavior({
     vid: visit.vid,
     path: visit.path,
-    fingerprint: visit.vid && visit.path
-      ? `${request.cf?.asn ?? ""}|${uaHash}|${visit.ref || "direct"}`
-      : null,
+    fingerprint,
   });
   return {
     is_bot: isBot(request, behavior) ? 1 : 0,
