@@ -248,24 +248,37 @@ export function pathToHref(output) {
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
 }
 
-function lastCommitDate(source) {
-  const relativeSource = relative(ROOT, source);
+// The UTC day a source's lastmod carries. %ct is the timezone-independent
+// commit epoch; rendering it to the UTC day matches the untracked-file
+// fallback exactly. A local-day format (%cs, or slicing %cI) moves with the
+// committer's timezone and disagrees with a UTC CI whenever a commit and a
+// build straddle local midnight.
+function utcDay(epochSeconds) {
+  return new Date(Number(epochSeconds) * 1000).toISOString().slice(0, 10);
+}
+
+export function lastCommitDate(source, root = ROOT) {
+  const relativeSource = relative(root, source);
   // Content outside the repository (the fixture builds in the tests) has no
   // git history to ask: same fallback as an untracked file.
   if (relativeSource.startsWith("..")) return new Date().toISOString().slice(0, 10);
   try {
-    // %ct is the timezone-independent commit epoch; rendering it to the UTC
-    // day matches the untracked-file fallback below exactly. A local-day
-    // format (%cs, or slicing %cI) moves with the committer's timezone and
-    // disagrees with a UTC CI whenever a commit and a build straddle local
-    // midnight.
-    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
-      cwd: ROOT,
+    // A source with uncommitted changes is being committed right now: the
+    // build runs before the commit, so git log would return the PREVIOUS
+    // commit's epoch and the shipped sitemap would lag by one commit — a CI
+    // rebuild (file committed) then computes a different lastmod and the
+    // byte-for-byte gate goes red (Issue #279). Use the current UTC day,
+    // the day the change is committed.
+    const dirty = execFileSync("git", ["status", "--porcelain", "--", relativeSource], {
+      cwd: root,
       encoding: "utf8",
     }).trim();
-    return epoch
-      ? new Date(Number(epoch) * 1000).toISOString().slice(0, 10)
-      : new Date().toISOString().slice(0, 10);
+    if (dirty) return new Date().toISOString().slice(0, 10);
+    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
+      cwd: root,
+      encoding: "utf8",
+    }).trim();
+    return epoch ? utcDay(epoch) : new Date().toISOString().slice(0, 10);
   } catch (error) {
     const detail = error.stderr?.toString().trim() || error.message;
     throw new Error(`unable to get git lastmod for ${relativeSource}: ${detail}`);

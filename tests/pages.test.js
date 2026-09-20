@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -183,6 +183,54 @@ describe("build output is committed (npm run build ran)", () => {
     const expectedDate = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
     const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
+  });
+
+  // Issue #279: the build runs before the commit, so a source with
+  // uncommitted changes must carry the current UTC day (the day the change
+  // is committed), not the previous commit's epoch. A clean source keeps the
+  // committed epoch. Both are timezone-independent.
+  describe("lastCommitDate (Issue #279)", () => {
+    let repo;
+    const git = (args) =>
+      execFileSync("git", args, { cwd: repo, encoding: "utf8", stdio: "pipe" });
+
+    beforeAll(async () => {
+      repo = await mkdtemp(join(tmpdir(), "orbi-lastmod-"));
+      git(["init", "-q"]);
+      git(["config", "user.email", "test@orbi.build"]);
+      git(["config", "user.name", "orbi-test"]);
+      await writeFile(join(repo, "page.html"), "<p>one</p>\n");
+      git(["add", "page.html"]);
+      // Commit with a fixed PAST date so the committed epoch's UTC day
+      // (2026-09-19) differs from the current UTC day — otherwise the
+      // clean-source and dirty-source tests cannot tell the behaviors apart.
+      execFileSync("git", ["commit", "-q", "-m", "initial"], {
+        cwd: repo,
+        encoding: "utf8",
+        env: { ...process.env, GIT_COMMITTER_DATE: "2026-09-19T12:00:00Z", GIT_AUTHOR_DATE: "2026-09-19T12:00:00Z" },
+      });
+    });
+
+    afterAll(async () => {
+      if (repo) await rm(repo, { recursive: true, force: true });
+    });
+
+    it("returns the committed epoch's UTC day for a clean source", () => {
+      const epoch = git(["log", "-1", "--format=%ct", "--", "page.html"]).trim();
+      const expected = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
+      // The fixed commit date is 2026-09-19, so this asserts the committed
+      // epoch is used — not the current UTC day.
+      expect(expected).toBe("2026-09-19");
+      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe("2026-09-19");
+    });
+
+    it("returns the current UTC day for a source with uncommitted changes", async () => {
+      await writeFile(join(repo, "page.html"), "<p>two</p>\n"); // dirty, uncommitted
+      const todayUtc = new Date().toISOString().slice(0, 10);
+      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe(todayUtc);
+      // Restore so the clean-source test stays valid on rerun.
+      git(["checkout", "--", "page.html"]);
+    });
   });
 
   it("leaves no build markers or unfilled slots in shipped pages", () => {
