@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>隐私政策 | Orbi</title><meta name="description" content="Orbi Cloud 如何处理 GitHub 账号信息、仓库元数据、交付用量、账单与删除请求。"><link rel="canonical" href="https://orbi.build/zh/privacy/"><link rel="alternate" hreflang="en" href="https://orbi.build/privacy/"><link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/privacy/"><link rel="alternate" hreflang="x-default" href="https://orbi.build/privacy/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css"></head><body><a class="skip-link" href="#main-content">跳到正文</a>
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/" data-cta="comparisons">竞品对比</a><a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <a href="/privacy/" lang="en">EN</a>
+          <span aria-current="page">中文</span>
+        </span>
+      </nav>
+    </header>
+  </div><main id="main-content"><div class="night"><section class="compare-hero shell" aria-labelledby="privacy-title"><p class="eyebrow">隐私 · Orbi Cloud</p><h1 id="privacy-title">隐私政策</h1><p class="hero-lede"><strong>哪些数据会跨过托管服务边界，以及为什么。</strong> 本政策说明 Orbi Cloud 用哪些数据登录、运行交付、统计用量和处理订阅账单。</p></section></div><section class="compare-section shell" aria-labelledby="data-title"><p class="section-tag">我们使用的数据</p><h2 id="data-title">只处理服务需要的记录</h2><p class="section-lede">连接 Cloud 时，我们会收到 GitHub 账号信息和你授权的仓库。对这些仓库，服务会处理运行交付所需的仓库元数据和记录，例如 Issue、Pull Request、Commit 及运行结果。控制平面把租户与仓库配置存入 Cloudflare D1，并记录交付用量，用于额度和计费。网站可能把匿名访客事件记录在 <code>visitor_events</code> 表中，用于站点统计。</p><p>Cloud 交付会暂时运行在我们运营的基础设施上。交付进入终态后，worktree 会在静默 120 分钟后销毁；进行中和可恢复的 worktree 会保留。Cloudflare D1 中的账号、仓库、用量和访客记录不会自动过期，会保留至服务运营不再需要或你提出删除请求。GitHub 仍是 Issue、Pull Request 和 Release 的事实来源。</p></section><section class="compare-section compare-section-tint" aria-labelledby="sharing-title"><div class="shell"><p class="section-tag">服务供应商</p><h2 id="sharing-title">让 Cloud 运转的处理方</h2><p>Stripe 处理订阅付款、发票和客户门户操作；Orbi 不会收到完整卡号。你选择的模型 provider 会收到交付所需的 prompt、相关仓库上下文和输出。Provider 的保留与处理规则由其条款决定。GitHub 则按你授予的权限接收 Cloud 执行的 GitHub 操作。</p><p>我们不出售个人信息。Cloud 使用的 BYOK 模型密钥会在控制平面加密存储，仅在需要时提供给 runner。</p></div></section><section class="compare-section shell" aria-labelledby="choices-title"><p class="section-tag">你的选择</p><h2 id="choices-title">访问、删除与联系</h2><p>你可以在 GitHub 撤销 Orbi 的仓库访问权限。若要删除 Orbi 账号及关联的 Cloud 记录，请发邮件至 <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>，并提供用于识别的 GitHub 账号或租户。我们会说明删除了什么，以及哪些数据必须留在 GitHub 或 Stripe 系统中。政策问题也可通过同一邮箱或 <a href="https://github.com/orbi-build/orbi/issues">GitHub Issues</a> 联系。</p><p>本政策描述当前 Cloud 实现，包括 <code>tenants</code>、<code>repositories</code>、<code>delivery_usage</code> 和 <code>visitor_events</code> 记录；不承诺删除 GitHub、Stripe 或模型 provider 独立持有的数据。</p></section></main>  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <a href="https://docs.orbi.build/zh">文档</a>
+      <a href="/zh/cloud/">Cloud</a>
+      <a href="/zh/compare/">竞品对比</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>
+      <a href="/zh/#faq">常见问题</a>
+      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
+      <a href="https://status.orbi.build">状态</a>
+      <a href="/zh/privacy/">隐私政策</a>
+      <a href="/zh/terms/">服务条款</a>
+      <a href="/zh/support/">支持</a>
+      <a href="/zh/#direction">方向</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
+      <a href="/privacy/" lang="en">EN</a>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer></body></html>

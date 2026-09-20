@@ -94,7 +94,7 @@
             "name": "Can you see my code?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub."
+              "text": "The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub. Retention: after a delivery reaches a terminal outcome, its worktree is destroyed after a 120-minute quiet period; in-flight and recoverable delivery worktrees are kept. Isolation: each tenant’s code, credentials, and delivery artifacts are isolated from other tenants. Model API keys: BYOK keys are stored AES-GCM encrypted in the control plane; API reads return only a masked value, and decryption is only for runner injection."
             }
           },
           {
@@ -145,7 +145,7 @@
         <a href="https://docs.orbi.build">Docs</a>
         <a href="/blog/">Blog</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
         <span class="language" role="group" aria-label="Language">
           <span aria-current="page">EN</span>
           <a href="/zh/cloud/" lang="zh-CN">中文</a>
@@ -159,14 +159,29 @@
       <section class="compare-hero shell" aria-labelledby="cloud-title">
         <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud · Private Beta</p>
         <h1 id="cloud-title">Orbi Cloud: GitHub Issues in, tagged releases out</h1>
-        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, and runs the independent review-and-repair gate — then merges the exact reviewed head, publishes a tagged GitHub Release, and closes the milestone. Model usage is part of the plan — __INCLUDED_TOKENS__ tokens a month; we operate the delivery line.</p>
+        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, and runs the independent review-and-repair gate — then merges the exact reviewed head, publishes a tagged GitHub Release, and closes the milestone. Model usage is part of the plan — __INCLUDED_TOKENS__ tokens a month; we operate the delivery line — you trigger each delivery by adding the ai-ready label.</p>
         <div class="cta-row hero-ctas">
           <div class="hero-primary">
-            <a class="button button-signal" href="/cloud/login?ref=cloud-page">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+            <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
             <p>Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.</p>
+            <p><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong></p>
           </div>
           <p class="hero-alt">Prefer to self-host? <a data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
         </div>
+        <figure class="proof-loop cloud-demo">
+          <!-- Temporary shared proof asset; replace these three URLs with the six-step Cloud onboarding recording. -->
+          <video
+            class="proof-loop-video"
+            src="/video/delivery-loop.mp4"
+            poster="/video/delivery-loop-poster.jpg"
+            width="1280" height="720"
+            autoplay loop muted playsinline controls preload="metadata"
+            aria-label="Temporary preview of Orbi delivering an Issue while the Cloud onboarding walkthrough is recorded.">
+            <source src="/video/delivery-loop.webm" type="video/webm">
+            <source src="/video/delivery-loop.mp4" type="video/mp4">
+          </video>
+          <figcaption>Cloud walkthrough recording coming soon. For now, see Orbi deliver an Issue end to end.</figcaption>
+        </figure>
       </section>
     </div>
 
@@ -209,9 +224,10 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">PRICING</p>
-        <h2 id="pricing-title">US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens included</h2>
-        <p class="section-lede">The regular price is <strong>US$__CLOUD_MONTHLY_USD__ per month</strong> for the managed runner — orchestration, recovery, and the merge gates included — with <strong>__INCLUDED_TOKENS__ tokens of model usage in the plan</strong> (about 100 deliveries at our measured median); when the allowance runs out, new deliveries pause.</p>
-        <p><strong>Founding coupons: 100% off, limited supply.</strong> Founding Partners — the first ten subscribers — pay US$0; once the coupons run out, subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — charging later is not a price increase, it is the coupon supply running out. Self-hosting the fair-code core remains free forever.</p>
+        <h2 id="pricing-title">Free: __FREE_DELIVERIES__ merged deliveries. Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens included</h2>
+        <p class="section-lede"><strong>Free: __FREE_DELIVERIES__ merged deliveries.</strong> Failed deliveries do not use up the allowance. Then the regular price is <strong>US$__CLOUD_MONTHLY_USD__ per month</strong> for the managed runner — orchestration, recovery, and the merge gates included — with <strong>__INCLUDED_TOKENS__ tokens of model usage in the plan</strong> (__INCLUDED_TOKENS__ tokens covers roughly 85–400 merged deliveries depending on task size); when the allowance runs out, new deliveries pause.</p>
+        <p class="founding-offer"><strong>Founding Partner</strong> <strong class="founding-price">US$0</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
+        <p>Founding coupons: 100% off, limited supply. Founding Partners — the first ten subscribers — pay US$0; once the coupons run out, subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — charging later is not a price increase, it is the coupon supply running out. Self-hosting the fair-code core remains free forever.</p>
         <p>Measured token cost per delivery — the sample, the quantiles, the competitor citations — is on the <a href="/cost/">cost page</a>.</p>
         <ul class="event-list">
           <li>
@@ -229,14 +245,14 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">COST, MEASURED</p>
       <h2 id="cost-title">We don't take a margin on your tokens</h2>
-      <p class="section-lede">Median delivery <strong>2,220,637 tokens</strong>, mean <strong>4,742,066</strong> — about <strong>100 deliveries a month</strong> at the plan's __INCLUDED_TOKENS__ tokens. That cost structure assumes the provider supports prompt caching. Sample, quantiles, limits, and competitor citations are on the <a href="/cost/">cost page</a>.</p>
+      <p class="section-lede">__INCLUDED_TOKENS__ tokens covers roughly <strong>85–400 merged deliveries</strong> depending on task size. That cost structure assumes the provider supports prompt caching. Sample, quantiles, limits, and competitor citations are on the <a href="/cost/">cost page</a>.</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
       <p class="section-tag">AFTER YOU CLICK</p>
-      <h2 id="steps-title">From sign-in to a delivered Issue in three steps</h2>
+      <h2 id="steps-title">From sign-in to a delivered Issue in four steps</h2>
       <p class="section-lede">No new password, no workspace to migrate. The whole path is GitHub-native:</p>
-      <ol class="proof-ledger">
+      <ol class="proof-ledger proof-ledger-four">
         <li>
           <span>01</span>
           <strong>Sign in with GitHub</strong>
@@ -249,8 +265,13 @@
         </li>
         <li>
           <span>03</span>
-          <strong>Subscribe and connect a repository</strong>
-          <p>Subscribe (Founding coupons: 100% off while they last), connect the first repository, and we provision your runner — the first Issue can start.</p>
+          <strong>Connect a repository</strong>
+          <p>Connect the first repository and we provision your runner. The first __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</p>
+        </li>
+        <li>
+          <span>04</span>
+          <strong>Label one Issue ai-ready</strong>
+          <p>Open <code>&lt;repo&gt;/issues/new?labels=ai-ready</code>, write what should change, and add the label. Orbi claims it within 5 minutes and comments on the Issue as it works. Only merged deliveries count toward the lifetime allowance; a delivery that fails or ends without a merge refunds its grant.</p>
         </li>
       </ol>
     </section>
@@ -259,7 +280,7 @@
       <div class="shell">
         <p class="section-tag">BEFORE YOU START</p>
         <h2 id="faq-title">Questions buyers ask
-          <br>before clicking Start Cloud</h2>
+          <br class="responsive-break">before clicking Start Cloud</h2>
 
         <div class="faq-list">
           <details class="faq-item" open>
@@ -288,6 +309,13 @@
             <summary><span>04</span>Can you see my code?</summary>
             <div class="faq-answer">
               <p>The hosted runner clones your repository onto machines we operate — that is what hosted means. GitHub stays the source of truth: Issues, pull requests, and release evidence remain in your repositories. You choose which repositories the Orbi GitHub App may access, and you can revoke that access at any time from GitHub.</p>
+              <!-- Sources (private operator repository, not user-facing links):
+                   orbi-cloud/runbook/cleanup_completed.py
+                   orbi-cloud/scripts/provision-runner-sandbox.sh
+                   orbi-cloud/migrations/0005_tenant_secrets.sql -->
+              <p>Retention: after a delivery reaches a terminal outcome, its worktree is destroyed after a 120-minute quiet period; in-flight and recoverable delivery worktrees are kept.</p>
+              <p>Isolation: each tenant’s code, credentials, and delivery artifacts are isolated from other tenants.</p>
+              <p>Model API keys: BYOK keys are stored AES-GCM encrypted in the control plane; API reads return only a masked value, and decryption is only for runner injection.</p>
             </div>
           </details>
 
@@ -320,7 +348,7 @@
       <h2 id="start-title">Start with the first Issue</h2>
       <p>Sign in with GitHub, install the App, connect a repository — your runner comes up, and the first Issue can start. If you would rather run the delivery line yourself, self-hosting stays free forever.</p>
       <div class="cta-row">
-        <a class="button button-signal" href="/cloud/login?ref=cloud-page">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/">What Orbi does first →</a>
       </div>
     </section>
@@ -342,9 +370,13 @@
       <a href="/#faq">FAQ</a>
       <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
       <a href="https://status.orbi.build">Status</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/support/">Support</a>
       <a href="/#direction">Direction</a>
       <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
       <a href="/zh/cloud/" lang="zh-CN">中文</a>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
     </nav>
     <nav class="footer-compare" aria-label="Compare deep dives">
       <span>Compare</span>

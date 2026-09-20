@@ -502,15 +502,17 @@ class LandingTests(unittest.TestCase):
         self.assertNotIn("/api/login", worker)
         self.assertIn('"/cloud/apply"', worker)
         self.assertIn('"/cloud/login"', worker)
+        self.assertIn('"/zh/cloud/login"', worker)
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The login handoff is an action, not a page: keep crawlers off it.
+        """The login handoffs are actions, not pages: keep crawlers off them.
         /apply and /cloud/apply are gone (Issue #179), so they are no longer
         listed — listing a retired path would imply it still exists."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
         self.assertNotIn("Disallow: /apply", robots)
         self.assertNotIn("Disallow: /cloud/apply", robots)
         self.assertIn("Disallow: /cloud/login", robots)
+        self.assertIn("Disallow: /zh/cloud/login", robots)
 
     def test_display_headings_have_no_terminal_periods(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -801,19 +803,29 @@ class LandingTests(unittest.TestCase):
                 }
             ],
         )
-        self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
-        self.assertEqual(beta["d1_databases"][0]["database_name"], "orbi-applications-test")
+        beta_d1 = {entry["binding"]: entry for entry in beta["d1_databases"]}
+        self.assertEqual(beta_d1["orbi_applications"]["database_name"], "orbi-applications-test")
         self.assertEqual(
-            beta["d1_databases"][0]["database_id"],
+            beta_d1["orbi_applications"]["database_id"],
             "3c254d65-e5c6-4488-9b83-dabc3433f092",
         )
+        production_d1 = {entry["binding"]: entry for entry in config["d1_databases"]}
         self.assertEqual(
-            config["d1_databases"][0]["database_name"], "orbi-applications"
+            production_d1["orbi_applications"]["database_name"], "orbi-applications"
         )
         self.assertEqual(
-            config["d1_databases"][0]["database_id"],
+            production_d1["orbi_applications"]["database_id"],
             "9df2048e-004e-48e1-b81e-16826bd49d8a",
         )
+        for bindings in (production_d1, beta_d1):
+            self.assertEqual(
+                bindings["CONTROL_PLANE_DB"]["database_name"],
+                "orbi_control_plane",
+            )
+            self.assertEqual(
+                bindings["CONTROL_PLANE_DB"]["database_id"],
+                "f43377a6-3c1b-41d3-9018-3339590915ab",
+            )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
             ["orbi.build", "www.orbi.build", "aiready.sh"],
@@ -986,7 +998,10 @@ class LandingTests(unittest.TestCase):
 
         self.assertEqual(config["assets"]["binding"], "ASSETS")
         self.assertEqual(config["assets"]["directory"], "./public/")
-        self.assertEqual(len(config["d1_databases"]), 1)
+        self.assertEqual(
+            {database["binding"] for database in config["d1_databases"]},
+            {"orbi_applications", "CONTROL_PLANE_DB"},
+        )
         self.assertEqual(len(config["routes"]), 3)
         # observability must hold only its own keys
         self.assertEqual(
@@ -1161,9 +1176,8 @@ class CloudLandingPageTests(unittest.TestCase):
                     self.assertNotIn("token", sentence.lower(), sentence)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
-        """Issue #180: /cloud/ keeps a headline — median, mean, about 100
-        deliveries, cache premise — and links to /cost/. The table, three
-        limits, and Devin/Factory billing audit stay on the cost page."""
+        """Issue #277: /cloud/ keeps the owner-approved delivery range and
+        cache premise, and links to /cost/. Detailed measurements stay there."""
         competitor_hrefs = (
             "https://docs.devin.ai/admin/billing/self-serve",
             "https://docs.factory.ai/pricing/individuals",
@@ -1172,8 +1186,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "2,220,637", "4,742,066",
-                    "100 deliveries a month",
+                    "85–400 merged deliveries",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1181,8 +1194,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    "2,220,637", "4,742,066",
-                    "100 次交付/月",
+                    "85–400 次合并交付",
                     "prompt caching",
                 ),
                 "/zh/cost/",
@@ -1212,19 +1224,25 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertEqual(offers[0]["price"], "79", offers[0])
             self.assertIn("100% off", offers[0]["description"], offers[0])
 
-    def test_the_three_steps_appear_in_order_and_end_at_the_login_button(self) -> None:
+    def test_the_four_steps_appear_in_order_and_end_at_delivery(self) -> None:
         # Issue #256: the login buttons carry the page-level ?ref= token the
-        # signup attribution records.
+        # signup attribution records. Issue #274 puts the free path before
+        # subscription and makes triggering the delivery the fourth step.
         for page, steps, login_href in (
             (
                 self.en,
-                ("Sign in with GitHub", "Install the Orbi GitHub App", "Subscribe and connect a repository"),
-                "/cloud/login?ref=cloud-page",
+                (
+                    "Sign in with GitHub",
+                    "Install the Orbi GitHub App",
+                    "Connect a repository",
+                    "Label one Issue ai-ready",
+                ),
+                "/cloud/login",
             ),
             (
                 self.zh,
-                ("用 GitHub 登录", "安装 Orbi GitHub App", "订阅并连接仓库"),
-                "/cloud/login?ref=zh-cloud-page",
+                ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给一个 Issue 加上 ai-ready 标签"),
+                "/zh/cloud/login",
             ),
         ):
             positions = [page.text.index(step) for step in steps]
@@ -2158,10 +2176,19 @@ class BootstrapEvidenceTests(unittest.TestCase):
 
     def test_licence_wording_is_not_invented(self) -> None:
         for html in (self.en_html, self.zh_html):
-            self.assertNotIn("Apache", html)
-            self.assertNotIn("open-source", html.lower())
-            self.assertNotIn("open source", html.lower())
-            self.assertNotIn("开源", html)
+            # Issue #270: the shared footer carries the opensourcealternatives.to
+            # backlink on every content page, including this one. The anchor text
+            # is a third-party site name, not a licence claim about Orbi — strip
+            # it before the bans below.
+            body = html.replace(
+                '<a href="https://www.opensourcealternatives.to/" rel="noopener">'
+                "Open Source Alternatives</a>",
+                "",
+            )
+            self.assertNotIn("Apache", body)
+            self.assertNotIn("open-source", body.lower())
+            self.assertNotIn("open source", body.lower())
+            self.assertNotIn("开源", body)
 
     def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):

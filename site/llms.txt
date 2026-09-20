@@ -164,9 +164,9 @@ product, not the code generation.
 
 ## Common questions
 
-**Which models work?** Bring your own: Claude, GPT, or locally hosted
-open-weight models. Model spend goes to your provider at your rate; the
-self-hosted core adds no platform fee.
+**Which models work?** Bring your own: any OpenAI-compatible API or a locally
+hosted model. Model spend goes to your provider at your rate; the self-hosted
+core adds no platform fee.
 
 **Who reviews the AI's code?** An independent Orbi session that can modify the
 branch and rerun tests. The human stays the final gate — work lands as an

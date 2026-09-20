@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi — Self-hosted, fair-code AI coding agent: Issues in, tagged releases out</title>
-  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent that turns GitHub Issues into tagged releases: independent review repairs the code, the exact reviewed head merges, then the SHA is frozen and the tag published. Bring your own model — Claude, GPT, or local.">
+  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent that turns GitHub Issues into tagged releases: independent review repairs the code, the exact reviewed head merges, then the SHA is frozen and the tag published. Use any OpenAI-compatible API or local model.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -94,7 +94,7 @@
             "name": "What does Orbi actually need to run?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API. Your repository, your keys, and your test suite stay where they already are."
+              "text": "Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API. Self-hosted: your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the runner clones the repository you authorize onto machines we operate for the duration of a delivery — see “Can you see my code?” on the Cloud page."
             }
           },
           {
@@ -102,7 +102,7 @@
             "name": "Which AI models can I use with Orbi?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work. Model spend goes to your provider at your rate; the self-hosted core has no platform fee."
+              "text": "Bring your own. Orbi drives the agent through your credentials, using any OpenAI-compatible API or a locally hosted model. Model spend goes to your provider at your rate; the self-hosted core has no platform fee."
             }
           },
           {
@@ -163,7 +163,7 @@
         <a href="https://docs.orbi.build">Docs</a>
         <a href="/blog/">Blog</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
         <span class="language" role="group" aria-label="Language">
           <span aria-current="page">EN</span>
           <a href="/zh/" lang="zh-CN">中文</a>
@@ -178,11 +178,11 @@
         <div class="hero-copy">
           <p class="eyebrow"><span class="live-dot"></span>GitHub-native software production</p>
           <h1>Turn GitHub Issues
-            <br><span>into tagged releases</span></h1>
+            <br class="responsive-break"><span>into tagged releases</span></h1>
         <p class="hero-lede"><strong>No new workspace.</strong> Orbi runs the delivery line on the Issues already in your repository. GitHub stays the source of truth.</p>
           <div class="cta-row hero-ctas">
             <div class="hero-primary">
-              <a class="button button-signal" data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+              <a class="button button-signal" data-cta="cloud-start" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
               <p>Register with GitHub and continue onboarding in Cloud.</p>
             </div>
             <p class="hero-alt">Prefer to self-host? <a data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
@@ -193,7 +193,7 @@
             <li>Only the reviewed commit merges</li>
             <li>Frozen SHA, tag, release</li>
           </ul>
-        <p class="hero-footnote"><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors ↗</a></p>
+        <p class="hero-footnote"><a href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>
         </div>
 
         <figure class="factory-trace" id="factory-trace" aria-labelledby="trace-caption">
@@ -231,6 +231,10 @@
             <strong>GitHub is the ledger. The tagged release is the product.</strong>
           </figcaption>
         </figure>
+      </section>
+
+      <section class="runtime-proof shell" data-runtime-proof hidden aria-label="Live Orbi delivery numbers">
+        <p class="runtime-proof-line"><a href="https://github.com/orbi-build/orbi/pulls?q=is%3Apr+is%3Amerged" rel="noopener"><strong data-proof-prs></strong> PRs merged by the machine</a> · <a href="https://github.com/orbi-build/orbi/releases" rel="noopener"><strong data-proof-releases></strong> releases shipped</a> · unattended since <a href="https://github.com/orbi-build/orbi" rel="noopener" data-proof-since></a></p>
       </section>
 
       <section class="stats shell" id="orbi-stats" data-lang="en" data-status="shipping" aria-label="Live GitHub evidence">
@@ -304,13 +308,18 @@
         </div>
         <p class="social-proof-more"><a href="/evidence/#third-party">3 deliveries in other people's repositories →</a></p>
       </section>
+
+      <section class="avatar-wall shell" data-avatar-wall __FOUNDING_AVATARS_HIDDEN__ aria-label="Teams already running Orbi">
+        <p class="avatar-wall-label">Teams already running Orbi</p>
+        <div class="avatar-wall-list" data-avatar-list>__FOUNDING_AVATARS__</div>
+      </section>
   </div>
 
       <section class="thesis shell" aria-labelledby="thesis-title">
         <div>
           <p class="section-tag">THE SHIFT</p>
           <h2 id="thesis-title">AI agents write the code.
-            <br>Shipping it still needs a system</h2>
+            <br class="responsive-break">Shipping it still needs a system</h2>
           <p class="section-lede">As agents work for hours and run in parallel, the bottleneck moves. It is no longer typing code. It is deciding what should change, ordering dependent work, proving the result, controlling authority, and carrying an exact version into production.</p>
           <p class="thesis-punch">Stronger agents make the production system more important, not less.</p>
         </div>
@@ -327,7 +336,7 @@
           <p class="section-tag">SHIPPING TODAY</p>
           <div class="section-heading">
             <h2 id="system-title">How Orbi automates
-              <br>GitHub Issue to tagged release</h2>
+              <br class="responsive-break">GitHub Issue to tagged release</h2>
             <p>An Issue is the executable unit, but Orbi does not manage Issues in isolation. Epics and milestones hold scope. Dependencies order the work. Review and repair converge each PR. A Release Issue freezes the result into a version.</p>
           </div>
 
@@ -373,7 +382,7 @@
           <div>
             <p class="section-tag">PRODUCTION EVIDENCE</p>
             <h2 id="proof-title">One Issue, reviewed
-              <br>merged, and released</h2>
+              <br class="responsive-break">merged, and released</h2>
           </div>
           <p>Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, PR #193 merged, and the work shipped in Release v0.2.0 with every Issue in scope verified item by item. The record is still inspectable because the record is GitHub.</p>
         </div>
@@ -425,7 +434,7 @@ cp .orbi.example.toml orbi.toml
 orbi setup --config orbi.toml</code></pre>
             </details>
           </div>
-          <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login?ref=home-video">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+          <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">Read the setup guide</a>
           <p class="midway-sub">Prefer to self-host? Run Orbi on your own machine — the fair-code core is free forever. <a href="https://docs.orbi.build">Setup guide ↗</a></p>
         </div>
@@ -436,7 +445,7 @@ orbi setup --config orbi.toml</code></pre>
           <div>
             <p class="section-tag section-tag-dark">YOUR FACTORY FLOOR</p>
             <h2 id="ownership-title">Self-hosted, so your code
-              <br>never leaves your machine</h2>
+              <br class="responsive-break">never leaves your machine</h2>
             <p>Orbi runs where the repository and model access already live. GitHub carries durable coordination and evidence; your machine carries the execution.</p>
           </div>
           <div class="ownership-map" role="group" aria-label="Orbi execution boundary">
@@ -455,7 +464,7 @@ orbi setup --config orbi.toml</code></pre>
             <div>
               <p class="section-tag">RUN IT YOUR WAY</p>
               <h2 id="run-orbi-title">Bring your own model
-                <br>Claude, GPT, or local</h2>
+                <br class="responsive-break">Any OpenAI-compatible API, or local</h2>
             </div>
             <p>The self-hosted, fair-code core ships today. Managed Cloud is Orbi's commercial managed service on the same GitHub-native ledger — Private Beta · Founding coupons.</p>
           </div>
@@ -474,16 +483,14 @@ orbi setup --config orbi.toml</code></pre>
             <article class="run-option run-option-cloud">
               <p class="option-state">PRIVATE BETA · FOUNDING COUPONS</p>
               <h3>Managed Cloud</h3>
-              <p>Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens of model usage included</strong>; when the allowance runs out, new deliveries pause. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
+              <p><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong> Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens of model usage included</strong>; when the allowance runs out, new deliveries pause. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
               <ul>
                 <li>Platform subscription pays for orchestration, recovery, and evidence</li>
-                <li>Managed runtime is charged only when Orbi provides it</li>
                 <li>Model usage included: __INCLUDED_TOKENS__ tokens a month; when the allowance runs out, new deliveries pause</li>
               </ul>
-              <a class="button button-signal" data-cta="cloud-start-card" href="/cloud/login?ref=home-runorbi">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+              <a class="button button-signal" data-cta="cloud-start-card" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
             </article>
           </div>
-          <p class="pricing-equation"><span>PROPOSED CLOUD BILL</span><strong>Platform subscription + managed runtime</strong><small>Model usage is part of the subscription — __INCLUDED_TOKENS__ tokens included; when the allowance runs out, new deliveries pause. Fully self-host the fair-code core and pay Orbi $0.</small></p>
         </div>
       </section>
 
@@ -492,7 +499,7 @@ orbi setup --config orbi.toml</code></pre>
           <div>
             <p class="section-tag">THE DIRECTION · NOT A SHIPPING CLAIM</p>
             <h2 id="direction-title">Where autonomous software
-              <br>development goes next</h2>
+              <br class="responsive-break">development goes next</h2>
           </div>
           <p>Today, explicit GitHub tasks and Release Issues enter the line. The next horizon is a closed production loop: software supplies evidence from its own operation, Orbi turns that evidence into bounded work, Agents execute, and the result is measured after release.</p>
         </div>
@@ -517,21 +524,21 @@ orbi setup --config orbi.toml</code></pre>
         <div class="shell">
           <p class="section-tag">BEFORE YOU INSTALL</p>
           <h2 id="faq-title">Questions people ask
-            <br>before running an agent on their repo</h2>
+            <br class="responsive-break">before running an agent on their repo</h2>
 
           <div class="faq-list">
             <details class="faq-item" open>
               <summary><span>01</span>What does Orbi actually need to run?</summary>
               <div class="faq-answer">
                 <p>Git, a POSIX shell, and API access to a model you already pay for. Orbi runs on Linux and macOS, on your own machine or your own server. No GPU is required — the model does the thinking, and it can be a hosted API.</p>
-                <p>Your repository, your keys, and your test suite stay where they already are. Orbi does not upload your code to a service we operate.</p>
+                <p>Self-hosted: your repository, keys, and test suite stay on your machine; nothing is uploaded to us. Cloud: the runner clones the repository you authorize onto machines we operate for the duration of a delivery — see <a href="/cloud/#faq">“Can you see my code?”</a> on the Cloud page.</p>
               </div>
             </details>
 
             <details class="faq-item" open>
               <summary><span>02</span>Which AI models can I use?</summary>
               <div class="faq-answer">
-                <p>Bring your own. Orbi drives the agent through your credentials, so Claude, GPT, and locally hosted open-weight models all work, and you can change your mind later without changing your workflow.</p>
+                <p>Bring your own. Orbi drives the agent through your credentials, using any OpenAI-compatible API or a locally hosted model, and you can change your mind later without changing your workflow.</p>
                 <p>Model spend goes to your provider at your rate. Orbi charges nothing on top: the self-hosted core has no platform fee.</p>
               </div>
             </details>
@@ -564,7 +571,7 @@ orbi setup --config orbi.toml</code></pre>
               <summary><span>06</span>Is it really free, and what is Managed Cloud?</summary>
               <div class="faq-answer">
                 <p>The self-hosted core is free forever under the <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md">Sustainable Use License</a>: running it on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is needed only to sell Orbi itself — hosting it for your customers, or embedding it in a paid product.</p>
-                <p>Managed Cloud starts with GitHub: sign in, install the App, and subscribe. The plan is a hosted control plane billed as a platform subscription — __INCLUDED_TOKENS__ tokens of model usage included — plus managed runtime when Orbi provides it. Founding coupons are 100% off, limited supply; once coupons run out, it's the regular price, not a hike.</p>
+                <p>Managed Cloud starts with GitHub: sign in, install the App, and subscribe. The plan is a hosted control plane billed as a platform subscription — __INCLUDED_TOKENS__ tokens of model usage included. Founding coupons are 100% off, limited supply; once coupons run out, it's the regular price, not a hike.</p>
               </div>
             </details>
           </div>
@@ -574,7 +581,7 @@ orbi setup --config orbi.toml</code></pre>
       <section class="closing shell" aria-labelledby="closing-title">
         <p class="section-tag">FAIR-CODE CORE</p>
         <h2 id="closing-title">Install the self-hosted agent
-          <br>and turn the lights off</h2>
+          <br class="responsive-break">and turn the lights off</h2>
         <p>Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a tagged release.</p>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
@@ -600,9 +607,13 @@ orbi setup --config orbi.toml</code></pre>
       <a href="#faq">FAQ</a>
       <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
       <a href="https://status.orbi.build">Status</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/support/">Support</a>
       <a href="#direction">Direction</a>
       <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
       <a href="/zh/" lang="zh-CN">中文</a>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
     </nav>
     <nav class="footer-compare" aria-label="Compare deep dives">
       <span>Compare</span>

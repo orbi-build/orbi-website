@@ -92,6 +92,10 @@ const sharedAttributes = {
 // for that Worker, so it applies the same substitutions from the same single
 // source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
+const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
+const localFoundingAvatars = localFoundingLogins
+  .map((login) => `<img alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .join("");
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -134,7 +138,10 @@ function startServer() {
         ? Buffer.from(
             file.body.toString("utf8")
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
-              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel)),
+              .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
+              .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
+              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -153,7 +160,9 @@ function startServer() {
 async function stopServer(server) {
   if (!server || !server.listening) return;
   server.closeAllConnections();
-  await new Promise((resolve) => server.close(resolve));
+  await new Promise((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+  });
 }
 
 async function assertFooterDeepDives(page, label) {
@@ -296,7 +305,7 @@ export function expectedCtaLanding(expectation) {
   return {
     describe: "the /cloud/login handoff",
     statusOk: (status) => status === 404,
-    matches: (url) => url.pathname === "/cloud/login",
+    matches: (url) => url.pathname === "/cloud/login" || url.pathname === "/zh/cloud/login",
   };
 }
 
@@ -350,6 +359,80 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   }
 }
 
+// Issue #273: exercise the campaign user's actual browser action. On beta the
+// first request asks the real Worker to plant the ref cookie; the local static
+// fixture cannot do that, so it starts from the same documented precondition.
+// The clicked request must be query-free, carry the campaign cookie, and must
+// not receive a replacement ref cookie from the handoff.
+async function assertCampaignRefSurvivesHeroClick(browser) {
+  const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
+  if (process.env.BASE_URL && expectation !== "oauth-302") return;
+
+  const token = "x-2609201530";
+  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  try {
+    const page = await context.newPage();
+    const consoleErrors = [];
+    const failedRequests = [];
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+    await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    await page.route("**datafa.st/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    page.on("console", (message) => {
+      if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) {
+        consoleErrors.push(message.text());
+      }
+    });
+    page.on("requestfailed", (request) => {
+      const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
+        && request.url().includes("/video/delivery-loop");
+      if (!isTelemetry(request.url()) && !abortedMedia) {
+        failedRequests.push(`${request.method()} ${request.url()}`);
+      }
+    });
+
+    await page.goto(`${targetURL}/?ref=${token}`, { waitUntil: "load" });
+    if (!process.env.BASE_URL) {
+      await context.addCookies([{ name: "ref", value: token, url: targetURL }]);
+    }
+    const landedRef = (await context.cookies(targetURL)).find((cookie) => cookie.name === "ref");
+    if (landedRef?.value !== token) {
+      throw new Error(`campaign landing cookie is ${JSON.stringify(landedRef?.value)}, expected ${token}`);
+    }
+    await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
+
+    const handoffResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      const target = new URL(targetURL);
+      return url.origin === target.origin && url.pathname === "/cloud/login";
+    });
+    await page.locator('[data-cta="cloud-start"]').click({ noWaitAfter: true });
+    const response = await handoffResponse;
+    const requestURL = new URL(response.request().url());
+    if (requestURL.search !== "") {
+      throw new Error(`hero CTA sent query-bearing handoff ${requestURL}`);
+    }
+    const requestCookie = (await response.request().allHeaders()).cookie || "";
+    if (!requestCookie.split(/;\s*/).includes(`ref=${token}`)) {
+      throw new Error(`hero CTA handoff lost campaign cookie: ${JSON.stringify(requestCookie)}`);
+    }
+    const setCookies = (await response.headersArray())
+      .filter(({ name }) => name.toLowerCase() === "set-cookie")
+      .map(({ value }) => value);
+    if (setCookies.some((value) => value.startsWith("ref="))) {
+      throw new Error(`hero CTA handoff overwrote campaign ref: ${JSON.stringify(setCookies)}`);
+    }
+    const finalRef = (await context.cookies(targetURL)).find((cookie) => cookie.name === "ref");
+    if (finalRef?.value !== token) {
+      throw new Error(`campaign cookie after hero click is ${JSON.stringify(finalRef?.value)}, expected ${token}`);
+    }
+    if (consoleErrors.length || failedRequests.length) {
+      throw new Error(`campaign handoff console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 // Issue #101: /stats answers one group per repository, and this fixture
 // leaves orbi-cloud null on purpose — a repo that fails must degrade only its
 // own group to the HTML floors while the other two still show live numbers.
@@ -361,6 +444,7 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
+  founding: { active: 4, limit: 10 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -400,6 +484,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   let statsRequested = false;
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  await page.route("https://avatars.githubusercontent.com/**", (route) => route.fulfill({
+    status: 200,
+    contentType: "image/svg+xml",
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#3ddc97"/></svg>',
+  }));
   // Issue #101: /stats answers one group per repository, and the local
   // fixture leaves orbi-cloud null on purpose — a repo that fails must
   // degrade only its own group to the HTML floors while the other two still
@@ -452,7 +541,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The homepage has an autoplaying video, so networkidle depends on media
+  // download timing and can stall the bounded CI suite. The assertions below
+  // explicitly wait for dynamic stats; DOM load is the correct navigation gate.
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -499,12 +591,41 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       .join(" "));
     throw new Error(`${path}: stats render did not match the served /stats payload: ${dump}`);
   });
+  const flagship = servedStats?.repos?.orbi;
+  const proof = page.locator("[data-runtime-proof]");
+  if (!flagship || !(await proof.isVisible())) throw new Error(`${path}: runtime proof is not visible`);
+  const proofText = await proof.textContent();
+  for (const value of [flagship.prs_merged, flagship.releases]) {
+    if (!proofText.includes(String(value))) throw new Error(`${path}: runtime proof is missing ${value}`);
+  }
+  const since = new Intl.DateTimeFormat(path.startsWith("/zh") ? "zh-CN" : "en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(flagship.started));
+  if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
+  // Avatar identities are server-rendered into the HTML, deliberately not
+  // carried by the public /stats payload. Exercise the complete browser path:
+  // the aggregate endpoint stays identity-free and all 11 injected images
+  // finish loading before the wall becomes visible.
+  if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
+    throw new Error(`${path}: /stats exposes founding GitHub logins`);
+  }
+  const wall = page.locator("[data-avatar-wall]");
+  if ((await wall.locator("img").count()) !== 11) {
+    throw new Error(`${path}: expected 11 server-rendered avatars`);
+  }
+  await wall.locator("img").last().waitFor({ state: "visible" });
+  if (!process.env.BASE_URL) {
+    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    if (titles.join("|") !== localFoundingLogins.join("|")) {
+      throw new Error(`${path}: server-rendered avatar identities changed`);
+    }
+  }
+  await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #99: the homepage carries exactly one primary hero CTA, visible,
-  // plus the card CTA and the nav "Start Cloud" keeping the same promise —
-  // one click into the login handoff, never a second identical button.
-  // Issue #107: where that click lands is the environment contract
-  // (assertCtaLandsAtEndpoint), never a pinned href — the Worker rewrites
-  // the shipped href where CLOUD_LOGIN_URL is unset (Issue #77).
+  // plus the card CTA and the nav "Start Cloud" keeping the same promise.
+  // The nav introduces the Cloud page; that page's CTA remains the login handoff.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
   await cloudCta.scrollIntoViewIfNeeded();
@@ -559,7 +680,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!(await pricingSection.isVisible())) {
       throw new Error(`${path}: #pricing is not visible after the Pricing click`);
     }
-    await page.goBack({ waitUntil: "networkidle" });
+    await page.goBack({ waitUntil: "load" });
   }
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
@@ -607,7 +728,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 // geometry, not strings.
 async function assertHeroAboveFold(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
     .evaluate((el) => el.getBoundingClientRect().top);
   // Scoped to the hero: a second .trust-line.trust-line-paper sits further
@@ -652,7 +773,7 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
 // and no checklist row runs wider than the copy measure the h1 box anchors.
 async function assertHeroSingleColumn(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   const view = `${path} ${size.width}x${size.height}`;
   const hero = await page.evaluate(() => {
@@ -709,7 +830,7 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
 // the signup attribution this Issue exists for.
 async function assertProofLoop(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const view = `${path} ${size.width}x${size.height}`;
   const video = page.locator(".proof-loop-video");
   if ((await video.count()) !== 1) throw new Error(`${view}: expected exactly one .proof-loop-video`);
@@ -768,7 +889,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh") ? "/cloud/login?ref=zh-video" : "/cloud/login?ref=home-video";
+  const expectedHref = "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -848,9 +969,9 @@ const cloudPages = {
       // that is 300M, the same quota the Founder plan carries); the
       // over-limit behavior is the pause, not a $0.10 overage price
       "US$79", "300M tokens", "new deliveries pause", "100% off",
-      // Issue #180: COST, MEASURED is a headline that links to /cost/, not
-      // a clone of the measurement table, three limits, or competitor audit.
-      "2,220,637", "4,742,066", "100 deliveries a month", "prompt caching",
+      // Issue #277: Cloud gives a range rather than a misleading single-point
+      // conversion; the detailed measurement remains on /cost/.
+      "85–400 merged deliveries", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -882,8 +1003,8 @@ const cloudPages = {
       // included-token quota (rendered from the pricing.json label; zh rides
       // the same label, 300M since #145)
       "US$79", "300M token", "新交付暂停", "100% off",
-      // Issue #180: COST, MEASURED is a headline that links to /zh/cost/.
-      "2,220,637", "4,742,066", "100 次交付/月", "prompt caching",
+      // Issue #277: Cloud gives the owner-approved delivery range.
+      "85–400 次合并交付", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
@@ -896,14 +1017,71 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  if (!process.env.BASE_URL) {
+    await page.route("**/stats", (route) => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ founding: { active: 4, limit: 10 }, repos: {} }),
+    }));
+  }
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+    // Chromium abandons the metadata request when it opens the playback
+    // request. Every other media/network failure remains fatal.
+    const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
+      && request.url().includes("/video/delivery-loop");
+    if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The assertions below explicitly prove playback, so DOM load is the
+  // bounded navigation gate rather than waiting on autoplay network churn.
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  if (!process.env.BASE_URL) {
+    const availability = page.locator("[data-founding-availability]");
+    if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
+    const expected = path.startsWith("/zh") ? "· 还剩 6 / 10 个名额" : "· 6 of 10 left";
+    if ((await availability.textContent()).trim() !== expected) {
+      throw new Error(`${path}: Founding availability does not match D1 fixture`);
+    }
+  }
+  const demo = page.locator(".cloud-demo");
+  const video = demo.locator(".proof-loop-video");
+  if ((await demo.count()) !== 1 || (await video.count()) !== 1) {
+    throw new Error(`${path}: expected exactly one Cloud walkthrough video`);
+  }
+  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+    if ((await video.getAttribute(attribute)) === null) {
+      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
+    }
+  }
+  if ((await video.getAttribute("preload")) !== "metadata") {
+    throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
+  }
+  if ((await video.getAttribute("poster")) !== "/video/delivery-loop-poster.jpg") {
+    throw new Error(`${path}: Cloud walkthrough poster is missing`);
+  }
+  const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
+  const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
+  if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
+  await demo.scrollIntoViewIfNeeded();
+  try {
+    await page.waitForFunction(() => {
+      const video = document.querySelector(".cloud-demo .proof-loop-video");
+      return video && !video.paused && video.readyState >= 3 && video.currentTime > 0;
+    }, null, { timeout: 5000 });
+  } catch {
+    const state = await video.evaluate((element) => ({
+      paused: element.paused,
+      readyState: element.readyState,
+      networkState: element.networkState,
+      currentTime: element.currentTime,
+      error: element.error && element.error.code,
+    }));
+    throw new Error(`${path}: Cloud walkthrough is not playing: ${JSON.stringify(state)}`);
+  }
+
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -943,6 +1121,34 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
     }
   }
+  // Issue #275: the onboarding must end with a concrete execution switch,
+  // not merely "the first Issue can start". Assert the rendered four-step
+  // path at both desktop and phone widths; the overflow check below catches
+  // a layout that squeezes or clips the instruction.
+  const stepList = page.locator(".proof-ledger-four");
+  const steps = stepList.locator(":scope > li");
+  if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
+  const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
+  for (const needle of path === "/cloud/"
+    ? ["Label one Issue ai-ready", "<repo>/issues/new?labels=ai-ready", "within 5 minutes", "comments on the Issue"]
+    : ["给一个 Issue 加上 ai-ready 标签", "<repo>/issues/new?labels=ai-ready", "5 分钟内认领", "Issue 下留言"]) {
+    if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
+  }
+  const stepBoxes = await steps.evaluateAll((elements) => elements.map((element) => {
+    const box = element.getBoundingClientRect();
+    return { top: box.top, left: box.left, right: box.right, width: box.width };
+  }));
+  if (size.width > 760) {
+    if (Math.max(...stepBoxes.map(({ top }) => top)) - Math.min(...stepBoxes.map(({ top }) => top)) > 1) {
+      throw new Error(`${path}: four desktop onboarding steps do not fit on one row`);
+    }
+  } else if (!stepBoxes.every((box, index) => index === 0 || box.top > stepBoxes[index - 1].top)) {
+    throw new Error(`${path}: mobile onboarding steps are not stacked in order`);
+  }
+  if (stepBoxes.some(({ left, right, width }) => width <= 0 || left < 0 || right > size.width + 1)) {
+    throw new Error(`${path}: onboarding steps are clipped at ${size.width}px`);
+  }
+  await stepList.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-steps.png")}` });
   if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
   // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
   // its description — never the retired US$15.
@@ -1233,10 +1439,41 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #170: /compare/ is on the buyer-decision path. The nav CTA a visitor
-// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the Cloud
-// login handoff — the same promise as every other page. Apply still 200s, so
-// a wrong destination would not 404; the text and href are the evidence.
+// Issue #308: exercise the actual homepage navigation journey at each
+// acceptance viewport, then verify the Cloud page's language-specific login
+// handoff without following the interactive GitHub OAuth page.
+async function assertHomeNavCloudFlow(browser, path, size, screenshot) {
+  const context = await browser.newContext({ viewport: size });
+  try {
+    const page = await context.newPage();
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const nav = page.locator("[data-primary-nav] .nav-apply");
+    if (!(await nav.isVisible())) await page.locator("[data-menu-toggle]").click();
+    await nav.click();
+    const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    if (new URL(page.url()).pathname !== cloudPath) {
+      throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
+    }
+    const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
+    const cta = page.locator("a.button-signal").first();
+    const href = await cta.getAttribute("href");
+    if (href !== loginPath) {
+      throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+    }
+    const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+    const response = await context.request.get(new URL(href, page.url()).toString());
+    if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+      throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+    }
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  } finally {
+    await context.close();
+  }
+}
+
+// Issue #308: /compare/ is on the buyer-decision path. The nav CTA a visitor
+// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the language
+// Cloud introduction page before its login handoff.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -1252,8 +1489,9 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    if (href !== "/cloud/login?ref=nav") {
-      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login?ref=nav"`);
+    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    if (href !== expectedHref) {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected ${JSON.stringify(expectedHref)}`);
     }
     await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
   } finally {
@@ -1600,7 +1838,8 @@ async function assertEvidencePage(browser, path, size, screenshot) {
 async function assertHomeEvidenceEntry(browser, homePath, evidenceHref) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
-    await page.goto(`${targetURL}${homePath}`, { waitUntil: "networkidle" });
+    // Do not wait for networkidle on a page with an autoplaying video.
+    await page.goto(`${targetURL}${homePath}`, { waitUntil: "load" });
     const proof = page.locator('[data-cta="proof"]');
     if ((await proof.count()) !== 1) throw new Error(`${homePath}: expected one hero proof link`);
     if ((await proof.getAttribute("href")) !== evidenceHref) {
@@ -1688,7 +1927,7 @@ async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
     const page = await context.newPage();
-    await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     await page.locator(".install-copy").click();
     // is-copied flips exactly when the write promise resolved, so the
     // clipboard read below cannot race the copy.
@@ -1725,10 +1964,71 @@ async function assertPublishedInstallScript(browser) {
   }
 }
 
+async function assertLegalPage(browser, path, expectedHeading, expectedAddress, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  const errors = [];
+  const failures = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("requestfailed", (request) => failures.push(request.url()));
+  try {
+    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    if (!response || response.status() !== 200) {
+      throw new Error(`${path} returned ${response?.status() ?? "no response"}`);
+    }
+    await page.getByRole("heading", { level: 1, name: expectedHeading, exact: true }).waitFor();
+    const mainText = await page.locator("main").textContent();
+    if (mainText.includes("__CLOUD_") || mainText.includes("__INCLUDED_")) {
+      throw new Error(`${path}: pricing placeholder reached the rendered page`);
+    }
+    const contact = await page.locator(`main a[href="mailto:${expectedAddress}"]`).count();
+    if (contact < 1) throw new Error(`${path}: verified ${expectedAddress} email is missing`);
+    const legalHrefs = await page.locator(".site-footer nav:first-of-type a").evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("href"))
+    );
+    const prefix = path.startsWith("/zh/") ? "/zh" : "";
+    for (const href of [`${prefix}/privacy/`, `${prefix}/terms/`, `${prefix}/support/`]) {
+      if (!legalHrefs.includes(href)) throw new Error(`${path}: footer is missing ${href}`);
+    }
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (overflow > 1) throw new Error(`${path}: horizontal overflow ${overflow}px at ${size.width}px`);
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: true });
+    if (errors.length || failures.length) {
+      throw new Error(`${path}: console errors=${JSON.stringify(errors)} failed requests=${JSON.stringify(failures)}`);
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : await startServer();
   let browser;
+  let cleanupPromise;
+  const cleanup = () => {
+    if (!cleanupPromise) {
+      cleanupPromise = (async () => {
+        try {
+          if (browser) await browser.close();
+        } finally {
+          await stopServer(server);
+        }
+      })();
+    }
+    return cleanupPromise;
+  };
+  const onSignal = (signal) => {
+    void cleanup()
+      .then(() => process.exit(signal === "SIGINT" ? 130 : 143))
+      .catch((error) => {
+        console.error(`Failed to clean up after ${signal}:`, error.stack || error);
+        process.exit(1);
+      });
+  };
+  process.once("SIGINT", onSignal);
+  process.once("SIGTERM", onSignal);
   try {
     browser = await chromium.launch({
       ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
@@ -1743,6 +2043,7 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
     await assertHeroAboveFold(browser, "/", { width: 1366, height: 768 }, "hero-fold-en-laptop.png");
@@ -1771,18 +2072,37 @@ async function main() {
       ["cloud-start", '[data-cta="cloud-start"]'],
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
-      ["nav Start Cloud", "[data-primary-nav] .nav-apply"],
     ];
     await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);
     await assertCtaLandsAtEndpoint(browser, "/zh/", homepageCloudCtas);
+    await assertHomeNavCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
+    await assertHomeNavCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
+    await assertHomeNavCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
+    await assertHomeNavCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
     // Issue #97: both Cloud pages, both languages, phone and desktop widths.
     await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 1440, height: 900 }, "cloud-zh-desktop.png");
     await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
+    await assertProofLoopReducedMotion(browser, "/cloud/");
+    await assertProofLoopReducedMotion(browser, "/zh/cloud/");
     // Issue #107: the /cloud/ page's login buttons land at the same contract.
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
+    // Issue #287: all policy/support URLs render at the acceptance widths in
+    // both languages, without browser errors or horizontal overflow.
+    const legalPages = [
+      ["/privacy/", "Privacy policy", "privacy@orbi.build", "privacy-en"],
+      ["/terms/", "Terms of service", "support@orbi.build", "terms-en"],
+      ["/support/", "Support that starts with a useful report", "support@orbi.build", "support-en"],
+      ["/zh/privacy/", "隐私政策", "privacy@orbi.build", "privacy-zh"],
+      ["/zh/terms/", "服务条款", "support@orbi.build", "terms-zh"],
+      ["/zh/support/", "从有用的报告开始支持", "support@orbi.build", "support-zh"],
+    ];
+    for (const [path, heading, address, name] of legalPages) {
+      await assertLegalPage(browser, path, heading, address, { width: 1440, height: 900 }, `${name}-desktop.png`);
+      await assertLegalPage(browser, path, heading, address, { width: 390, height: 844 }, `${name}-mobile.png`);
+    }
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     // Issue #118: the two languages' rendered sample sizes must agree — the
     // page's whole credibility is that the numbers reconcile.
@@ -1803,8 +2123,9 @@ async function main() {
     // still 200s, so the funnel would break without a 404.
     await assertCompareNavCta(browser, "/compare/", "Start Cloud");
     await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
-    await assertCtaLandsAtEndpoint(browser, "/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
-    await assertCtaLandsAtEndpoint(browser, "/zh/compare/", [["nav Start Cloud", "[data-primary-nav] .nav-apply"]]);
+    // The compare nav CTA now introduces Cloud; assertCompareNavCta checks its
+    // language-specific landing href above, while the Cloud page flow above
+    // verifies the login handoff.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
     await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
@@ -1824,12 +2145,13 @@ async function main() {
     await assertEvidencePage(browser, "/zh/evidence/", { width: 390, height: 844 }, "evidence-zh-mobile.png");
     const assetContext = await browser.newContext();
     try {
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
+      const legalPaths = ["/privacy/", "/terms/", "/support/", "/zh/privacy/", "/zh/terms/", "/zh/support/"];
+      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/"]) {
+      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
@@ -1865,11 +2187,9 @@ async function main() {
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();
   } finally {
-    try {
-      if (browser) await browser.close();
-    } finally {
-      await stopServer(server);
-    }
+    process.removeListener("SIGINT", onSignal);
+    process.removeListener("SIGTERM", onSignal);
+    await cleanup();
   }
 }
 

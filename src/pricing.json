@@ -5,5 +5,7 @@
   "includedTokensLabel": "300M",
   "includedTokensToken": "__INCLUDED_TOKENS__",
   "foundingTokensLabel": "300M",
-  "foundingTokensToken": "__FOUNDING_TOKENS__"
+  "foundingTokensToken": "__FOUNDING_TOKENS__",
+  "freeDeliveries": 3,
+  "freeDeliveriesToken": "__FREE_DELIVERIES__"
 }

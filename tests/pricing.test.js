@@ -8,6 +8,8 @@ const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
+const FREE_DELIVERIES = String(pricing.freeDeliveries);
+const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 
 // The pages whose price mentions the Issue pins (originally 12 across the two
 // cloud pages; #99 added the homepage card and the cost tables since). Every
@@ -168,6 +170,29 @@ describe("Cloud monthly price constant (Issue #102)", () => {
   });
 });
 
+describe("Free delivery allowance constant (Issue #274)", () => {
+  const FREE_PAGES = ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"];
+
+  it("keeps the allowance sourced from pricing.json and tokenized in every source", async () => {
+    expect(pricing.freeDeliveries).toBe(3);
+    for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
+      for (const relativePath of FREE_PAGES) {
+        const html = await readFile(`${dir}${relativePath}`, "utf8");
+        expect(html, `${dir}${relativePath}`).toContain(FREE_DELIVERIES_TOKEN);
+      }
+    }
+  });
+
+  it("serves the allowance through the real Worker path", async () => {
+    for (const relativePath of FREE_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(body, relativePath).toContain(FREE_DELIVERIES);
+    }
+  });
+});
+
 describe("Included tokens constant (Issue #138)", () => {
   // orbi-cloud is the system that enforces this quota, and the two repos
   // cannot reference each other, so the expected value is pinned here with
@@ -242,13 +267,10 @@ describe("Included tokens constant (Issue #138)", () => {
 });
 
 // Issue #147: the measured delivery stats are bare literals — the quota gate
-// above deliberately exempts them — so nothing stopped a page from telling an
-// older snapshot (92.7% / 4,667,630 / $0.04–0.11 / 2026-09-10) of the very
-// measurement /cost/ had already restated as 95.9% / 4,742,066 / $0.06–0.12 /
-// 2026-09-12. Issue #180 moved the table, mix, and dollar range off /cloud/
-// (buyers follow the cost-page link for those); the full extract and the mix
-// arithmetic stay on /cost/. /cloud/'s remaining headline (median / mean) must
-// still equal the cost table, so a number can only move everywhere at once.
+// above deliberately exempts them — so the /cost/ extraction and mix checks
+// below keep that detailed snapshot internally consistent. Issue #277 replaced
+// /cloud/'s self-repository median and mean with the owner-approved customer
+// range; the Cloud check pins that range and rejects the retired figures.
 function measuredStats(html) {
   const row = (label) =>
     html.match(new RegExp(`<tr><th scope="row">(?:${label})</th><td>([\\d,]+)</td></tr>`))?.[1];
@@ -262,14 +284,11 @@ function measuredStats(html) {
   };
 }
 
-function cloudHeadlineStats(html) {
-  return {
-    median: html.match(/(?:Median delivery|单次交付中位) <strong>([\d,]+) tokens<\/strong>/)?.[1],
-    mean: html.match(/(?:mean|均值) <strong>([\d,]+)<\/strong>/)?.[1],
-  };
+function cloudDeliveryRange(html) {
+  return html.match(/(?:85–400 merged deliveries|85–400 次合并交付)/)?.[0];
 }
 
-describe("Measured delivery stats agree across pages (Issue #147)", () => {
+describe("Cloud delivery range stays consistent (Issue #277)", () => {
   const COST_PAGES = ["cost/index.html", "zh/cost/index.html"];
 
   it("extracts every metric from both cost pages, so the gate cannot pass vacuously", async () => {
@@ -283,16 +302,12 @@ describe("Measured delivery stats agree across pages (Issue #147)", () => {
     }
   });
 
-  it("keeps /cloud/'s cost headline on the same median and mean as /cost/", async () => {
+  it("uses the owner-approved range on both Cloud pages", async () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const [costPage, cloudPage] of [
-        ["cost/index.html", "cloud/index.html"],
-        ["zh/cost/index.html", "zh/cloud/index.html"],
-      ]) {
-        const cost = measuredStats(await readFile(`${dir}${costPage}`, "utf8"));
-        const cloud = cloudHeadlineStats(await readFile(`${dir}${cloudPage}`, "utf8"));
-        expect(cloud.median, `${cloudPage} median in ${dir}`).toBe(cost.median);
-        expect(cloud.mean, `${cloudPage} mean in ${dir}`).toBe(cost.mean);
+      for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
+        const html = await readFile(`${dir}${cloudPage}`, "utf8");
+        expect(cloudDeliveryRange(html), `${cloudPage} delivery range in ${dir}`).toBeTruthy();
+        expect(html).not.toMatch(/2,220,637|4,742,066|about 100 deliveries|100 次交付\/月/);
       }
     }
   });

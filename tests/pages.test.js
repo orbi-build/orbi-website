@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -185,6 +185,54 @@ describe("build output is committed (npm run build ran)", () => {
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
   });
 
+  // Issue #279: the build runs before the commit, so a source with
+  // uncommitted changes must carry the current UTC day (the day the change
+  // is committed), not the previous commit's epoch. A clean source keeps the
+  // committed epoch. Both are timezone-independent.
+  describe("lastCommitDate (Issue #279)", () => {
+    let repo;
+    const git = (args) =>
+      execFileSync("git", args, { cwd: repo, encoding: "utf8", stdio: "pipe" });
+
+    beforeAll(async () => {
+      repo = await mkdtemp(join(tmpdir(), "orbi-lastmod-"));
+      git(["init", "-q"]);
+      git(["config", "user.email", "test@orbi.build"]);
+      git(["config", "user.name", "orbi-test"]);
+      await writeFile(join(repo, "page.html"), "<p>one</p>\n");
+      git(["add", "page.html"]);
+      // Commit with a fixed PAST date so the committed epoch's UTC day
+      // (2026-09-19) differs from the current UTC day — otherwise the
+      // clean-source and dirty-source tests cannot tell the behaviors apart.
+      execFileSync("git", ["commit", "-q", "-m", "initial"], {
+        cwd: repo,
+        encoding: "utf8",
+        env: { ...process.env, GIT_COMMITTER_DATE: "2026-09-19T12:00:00Z", GIT_AUTHOR_DATE: "2026-09-19T12:00:00Z" },
+      });
+    });
+
+    afterAll(async () => {
+      if (repo) await rm(repo, { recursive: true, force: true });
+    });
+
+    it("returns the committed epoch's UTC day for a clean source", () => {
+      const epoch = git(["log", "-1", "--format=%ct", "--", "page.html"]).trim();
+      const expected = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
+      // The fixed commit date is 2026-09-19, so this asserts the committed
+      // epoch is used — not the current UTC day.
+      expect(expected).toBe("2026-09-19");
+      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe("2026-09-19");
+    });
+
+    it("returns the current UTC day for a source with uncommitted changes", async () => {
+      await writeFile(join(repo, "page.html"), "<p>two</p>\n"); // dirty, uncommitted
+      const todayUtc = new Date().toISOString().slice(0, 10);
+      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe(todayUtc);
+      // Restore so the clean-source test stays valid on rerun.
+      git(["checkout", "--", "page.html"]);
+    });
+  });
+
   it("leaves no build markers or unfilled slots in shipped pages", () => {
     for (const [, html] of shipped) {
       expect(html).not.toContain("<!--@nav-->");
@@ -233,7 +281,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 12-item footer nav on every content page", () => {
+  it("carries the 16-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -251,9 +299,13 @@ describe("one unified footer on every content page", () => {
         `${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
         "https://status.orbi.build",
+        `${prefix}/privacy/`,
+        `${prefix}/terms/`,
+        `${prefix}/support/`,
         `${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
+        "https://www.opensourcealternatives.to/",
       ]);
     }
   });
@@ -264,6 +316,18 @@ describe("one unified footer on every content page", () => {
       expect(footer, `${output}: YouTube footer anchor drifted`).toContain(
         '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>',
       );
+    }
+  });
+
+  // Issue #270: opensourcealternatives.to requires a crawlable backlink before
+  // the free listing goes live — no nofollow, or the review rejects it.
+  it("links Open Source Alternatives from the footer without nofollow, on en and zh", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: Open Source Alternatives footer anchor drifted`).toContain(
+        '<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>',
+      );
+      expect(footer, `${output}: the backlink must be crawlable`).not.toContain("nofollow");
     }
   });
 
@@ -379,8 +443,8 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
   };
 
   const heroCtaHref = {
-    "cloud/index.html": 'href="/cloud/login?ref=cloud-page"',
-    "zh/cloud/index.html": 'href="/cloud/login?ref=zh-cloud-page"',
+    "cloud/index.html": 'href="/cloud/login"',
+    "zh/cloud/index.html": 'href="/zh/cloud/login"',
   };
 
   const heroCtaBlock = (output) => {
@@ -557,6 +621,46 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   });
 });
 
+// Issue #276: the homepage must distinguish self-hosted execution from Cloud,
+// and the Cloud answer must expose only facts backed by the Cloud implementation.
+describe("privacy boundary copy (Issue #276)", () => {
+  it("qualifies the homepage self-host FAQ in visible copy and JSON-LD", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const html = shipped.get(output);
+      const item = cloudFaqItems(html)[0];
+      expect(item.answer).toMatch(/Self-hosted:|自托管：/);
+      expect(item.answer).toMatch(/Cloud:|Cloud：/);
+      expect(item.answer).not.toMatch(/does not upload your code|不会把你的代码上传到我们运营的服务上/);
+      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
+      expect(String(faq.mainEntity[0].acceptedAnswer.text).replace(/\s+/g, " ").trim()).toBe(item.answer);
+    }
+  });
+
+  it("traces each Cloud privacy fact to its implementation source without dead private links", () => {
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const html = shipped.get(output);
+      expect(html).toContain("runbook/cleanup_completed.py");
+      expect(html).toContain("scripts/provision-runner-sandbox.sh");
+      expect(html).toContain("migrations/0005_tenant_secrets.sql");
+      expect(html).not.toMatch(/href="https:\/\/github\.com\/orbi-build\/orbi-cloud\//);
+      const item = cloudFaqItems(html).find((entry) => /Can you see my code|能看到我的代码/.test(entry.question));
+      expect(item.answer).toMatch(/120-minute quiet period|静默 120 分钟/);
+      expect(item.answer).toMatch(/code, credentials, and delivery artifacts are isolated from other tenants|代码、凭据和交付产物均与其他租户隔离/);
+      expect(item.answer).not.toMatch(/Linux user|UID|Linux 用户/);
+      expect(item.answer).toMatch(/AES-GCM encrypted|AES-GCM 加密存储/);
+    }
+  });
+
+  it("states the implemented worktree and D1 retention boundaries on the privacy pages", () => {
+    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
+      const main = mainRegion(shipped.get(output));
+      expect(main, `${output}: worktree retention drifted`).toMatch(/120-minute quiet period|静默 120 分钟/);
+      expect(main, `${output}: persistent-record retention is missing`).toMatch(/have no automatic expiry|不会自动过期/);
+      expect(main, `${output}: the unimplemented 72-hour retention must not return`).not.toMatch(/72 hours|72 小时/);
+    }
+  });
+});
+
 // Issue #221: status.orbi.build went live 2026-09-18; the only way to find it
 // was to already know the URL. The footer links it on every page (after
 // Releases, no target="_blank", same as GitHub and X) and the cloud FAQ
@@ -599,19 +703,17 @@ describe("status page link (Issue #221)", () => {
   });
 });
 
-// Issue #170: the primary-nav CTA is Start Cloud by default in the shared
-// partial. Walking every built index.html (not a hardcoded page list) is the
-// recurrence gate: a new page that forgets the Cloud login destination fails
-// here instead of silently shipping Apply.
-describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
-  it("defaults the shared partial to Cloud login, not Apply", async () => {
+// Issue #308: the primary-nav CTA introduces Cloud before authorization. Walking
+// every built index.html keeps both language trees on the same funnel contract.
+describe("nav CTA introduces the Cloud page (Issue #308)", () => {
+  it("uses a language-aware Cloud landing href in the shared partial", async () => {
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
-    expect(partial).toContain('href="/cloud/login?ref=nav"');
+    expect(partial).toContain('href="{{CLOUD_HREF}}"');
+    expect(partial).not.toContain('href="/cloud/login"');
     expect(partial).not.toContain('href="/apply"');
-    expect(partial).not.toContain("{{APPLY_HREF}}");
   });
 
-  it("points the primary-nav CTA at /cloud/login on every built index.html", async () => {
+  it("points the primary-nav CTA at the language Cloud page on every built index.html", async () => {
     const listIndex = async (dir, prefix = "") => {
       const out = [];
       for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -632,10 +734,18 @@ describe("nav CTA is Cloud login on every content page (Issue #170)", () => {
       const nav = navRegion(html);
       const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      expect(cta[1], `${output}: nav CTA must be the Cloud login handoff`).toBe("/cloud/login?ref=nav");
-      expect(cta[1], `${output}: nav CTA must not be the Apply form`).not.toBe("/apply");
+      const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
+      expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
+      expect(cta[1], `${output}: nav CTA must not be the Cloud login handoff`).not.toContain("/cloud/login");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
+    }
+  });
+
+  it("keeps Cloud page CTAs on the matching language login handoff", () => {
+    for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
+      const html = shipped.get(output);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(2);
     }
   });
 
@@ -1273,6 +1383,27 @@ print(json.dumps({
     } finally {
       await rm(contentDir, { recursive: true, force: true });
       await rm(outDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("legal contact addresses (Issue #307)", () => {
+  it("uses domain mailboxes on every English and Chinese legal/support page", () => {
+    const expected = {
+      "privacy/index.html": ["privacy@orbi.build", 2],
+      "zh/privacy/index.html": ["privacy@orbi.build", 2],
+      "terms/index.html": ["support@orbi.build", 2],
+      "zh/terms/index.html": ["support@orbi.build", 2],
+      "support/index.html": ["support@orbi.build", 4],
+      "zh/support/index.html": ["support@orbi.build", 4],
+    };
+
+    for (const [output, [address, count]] of Object.entries(expected)) {
+      const html = shipped.get(output);
+      expect(html, `${output} is shipped`).toBeTruthy();
+      expect(html, `${output} must not expose Gmail`).not.toMatch(/gmail\.com/i);
+      expect(html.split(address).length - 1).toBe(count);
+      expect(html).toContain(`mailto:${address}`);
     }
   });
 });

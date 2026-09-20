@@ -9,7 +9,9 @@
   --line: #b8c5c1;
   --line-dark: rgba(220, 238, 230, 0.18);
   --signal: #ffb000;
+  --signal-on-light: #8a5b00;
   --run: #5cd6b5;
+  --run-on-light: #0a6b52;
   --fault: #ef6a62;
   --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
   --body: "Instrument Sans", "Noto Sans SC", sans-serif;
@@ -17,6 +19,11 @@
 }
 
 * { box-sizing: border-box; }
+
+/* Keep the designed heading breaks on desktop, but let mobile text flow naturally. */
+@media (max-width: 767px) {
+  .responsive-break { display: none; }
+}
 
 html {
   scroll-behavior: smooth;
@@ -227,6 +234,26 @@ img {
 
 .eyebrow,
 .section-tag,
+.runtime-proof {
+  padding: 18px 0 8px;
+  text-align: center;
+}
+.runtime-proof-line {
+  margin: 0;
+  color: #c9d8d4;
+  font: 500 .86rem/1.5 var(--mono);
+  letter-spacing: .01em;
+}
+.runtime-proof-line strong { color: #fff; font-size: 1.15rem; }
+.runtime-proof-line a { color: var(--run); }
+.avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
+.avatar-wall-label { margin: 0; color: #a9bbb8; font: 500 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.avatar-wall-list { display: flex; }
+.avatar-wall-list img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
+.avatar-wall-list img:first-child { margin-left: 0; }
+.founding-offer { display: flex; align-items: baseline; gap: 14px; font-size: 1.15rem; }
+.founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
+.founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
 .stats-label,
 .trace-head,
 .trace-index,
@@ -299,6 +326,8 @@ h1 span { color: var(--signal); }
 }
 
 .hero-lede strong { color: #edf5f0; font-weight: 600; }
+/* Keep the denser CJK hero within the same first-screen contract as EN. */
+html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .cta-row {
   display: flex;
@@ -380,6 +409,7 @@ h1 span { color: var(--signal); }
    where the fair-code / self-host / BYOK attributes moved from the hero.
    Same list; only the text color lifts for the light paper background. */
 .trust-line-paper { color: var(--ink-soft); }
+.trust-line-paper li::before { color: var(--run-on-light); }
 
 .factory-trace {
   position: relative;
@@ -876,7 +906,7 @@ h2 {
 .shift-list b { font-size: 0.92rem; }
 .shift-list strong { color: #455b58; font-weight: 500; }
 .shift-list b { font-weight: 600; }
-.shift-list em { color: var(--signal); font-style: normal; }
+.shift-list em { color: var(--signal-on-light); font-style: normal; }
 
 .system-section {
   padding: clamp(100px, 9vw, 150px) 0;
@@ -1024,7 +1054,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: var(--signal);
+  color: var(--signal-on-light);
   font-family: var(--display);
   font-size: 1.7rem;
 }
@@ -1047,6 +1077,8 @@ h2 {
   list-style: none;
 }
 
+.proof-ledger-four { grid-template-columns: repeat(4, 1fr); }
+
 .proof-ledger li {
   display: grid;
   grid-template-columns: 34px 1fr;
@@ -1064,6 +1096,9 @@ h2 {
 .proof-loop { margin: 28px 0 0; }
 .proof-loop-video { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; }
 .proof-loop figcaption { margin-top: 10px; font-family: var(--mono); font-size: 0.82rem; color: var(--ink-soft); }
+.cloud-demo { margin-top: 40px; }
+.night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
+.night .cloud-demo figcaption { color: #9aada9; }
 @media (prefers-reduced-motion: reduce) { .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
 
 .ownership {
@@ -1219,7 +1254,7 @@ h2 {
   height: 26px;
   place-items: center;
   background: var(--paper);
-  color: var(--signal);
+  color: var(--signal-on-light);
 }
 
 .future-loop li:nth-child(3)::after,
@@ -1411,7 +1446,7 @@ h2 {
 .faq-item summary::after {
   content: "+";
   justify-self: end;
-  color: var(--signal);
+  color: var(--signal-on-light);
   font-family: var(--mono);
   font-size: 1.3rem;
   font-weight: 400;
@@ -1639,6 +1674,7 @@ h2 {
   .stat-group { padding: 20px 20px; border-right: 0; border-bottom: 1px solid var(--line-dark); }
   .stat-group:last-child { border-bottom: 0; }
   .stats-groups { grid-template-columns: 1fr; }
+  .avatar-wall { align-items: flex-start; flex-direction: column; gap: 10px; }
   .stats-label { padding: 18px 20px; }
 
   .thesis,
@@ -1676,6 +1712,9 @@ h2 {
   .run-option { min-height: auto; padding: 28px 22px; }
   .run-option .button { align-self: stretch; }
   .pricing-equation { grid-template-columns: 1fr; gap: 10px; padding: 24px 20px; }
+  .runtime-proof { padding: 16px 20px 6px; }
+  .runtime-proof-line { font-size: .75rem; }
+  .founding-offer { align-items: flex-start; flex-wrap: wrap; gap: 8px 12px; }
   .pricing-equation small { grid-column: 1; }
 
   .future-loop { grid-template-columns: 1fr; margin-top: 55px; }

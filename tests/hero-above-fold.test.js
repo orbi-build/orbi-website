@@ -22,9 +22,9 @@ const enLede =
 const zhLede =
   '        <p class="hero-lede"><strong>不用迁移工作流。</strong>Orbi 在仓库里已有的 Issue 上跑完整条交付线。GitHub 始终是唯一事实源。</p>';
 const enFootnote =
-  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors ↗</a></p>';
+  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>';
 const zhFootnote =
-  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/zh/">你的 Issue 够 ai-ready 吗？12 个要素 ↗</a></p>';
+  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/zh/">如何写一张 ai-ready Issue（12 个要素）↗</a></p>';
 const footnoteCss = [
   ".hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }",
   ".hero-footnote a { color: var(--ink-soft); }",

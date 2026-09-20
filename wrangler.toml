@@ -58,6 +58,13 @@ binding = "orbi_applications"
 database_name = "orbi-applications"
 database_id = "9df2048e-004e-48e1-b81e-16826bd49d8a"
 
+# Read-only queries in /stats expose the current Founding availability and
+# public GitHub logins from the Cloud control plane's production data.
+[[d1_databases]]
+binding = "CONTROL_PLANE_DB"
+database_name = "orbi_control_plane"
+database_id = "f43377a6-3c1b-41d3-9018-3339590915ab"
+
 # Must stay last: every key after a table header belongs to that table, so
 # putting this above `assets` swallows it and env.ASSETS becomes undefined.
 [observability]
@@ -92,3 +99,10 @@ zone_name = "orbi.build"
 binding = "orbi_applications"
 database_name = "orbi-applications-test"
 database_id = "3c254d65-e5c6-4488-9b83-dabc3433f092"
+
+# Availability/social proof must reflect the real cohort on beta as well as
+# production; this binding is only used by SELECT statements in /stats.
+[[env.beta.d1_databases]]
+binding = "CONTROL_PLANE_DB"
+database_name = "orbi_control_plane"
+database_id = "f43377a6-3c1b-41d3-9018-3339590915ab"

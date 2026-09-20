@@ -87,6 +87,9 @@ const LANG = {
     faqLabel: "FAQ",
     releasesLabel: "Releases",
     statusLabel: "Status",
+    privacyLabel: "Privacy",
+    termsLabel: "Terms",
+    supportLabel: "Support",
     directionLabel: "Direction",
     roadmapLabel: "Roadmap",
     deepAria: "Compare deep dives",
@@ -117,6 +120,9 @@ const LANG = {
     faqLabel: "常见问题",
     releasesLabel: "发布记录",
     statusLabel: "状态",
+    privacyLabel: "隐私政策",
+    termsLabel: "服务条款",
+    supportLabel: "支持",
     directionLabel: "方向",
     roadmapLabel: "路线图",
     deepAria: "竞品深度对比",
@@ -173,6 +179,7 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     BLOG_HREF: `${t.langPrefix}/blog/`,
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
+    CLOUD_HREF: `${t.langPrefix}/cloud/`,
     LANG_GROUP_ARIA: t.langGroupAria,
     LANG_LINE_A: lineA,
     LANG_LINE_B: lineB,
@@ -205,6 +212,12 @@ export function renderFooter(page) {
     FAQ_LABEL: t.faqLabel,
     RELEASES_LABEL: t.releasesLabel,
     STATUS_LABEL: t.statusLabel,
+    PRIVACY_HREF: `${t.langPrefix}/privacy/`,
+    PRIVACY_LABEL: t.privacyLabel,
+    TERMS_HREF: `${t.langPrefix}/terms/`,
+    TERMS_LABEL: t.termsLabel,
+    SUPPORT_HREF: `${t.langPrefix}/support/`,
+    SUPPORT_LABEL: t.supportLabel,
     DIRECTION_HREF: `${anchorPrefix}#direction`,
     DIRECTION_LABEL: t.directionLabel,
     ROADMAP_LABEL: t.roadmapLabel,
@@ -248,24 +261,37 @@ export function pathToHref(output) {
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
 }
 
-function lastCommitDate(source) {
-  const relativeSource = relative(ROOT, source);
+// The UTC day a source's lastmod carries. %ct is the timezone-independent
+// commit epoch; rendering it to the UTC day matches the untracked-file
+// fallback exactly. A local-day format (%cs, or slicing %cI) moves with the
+// committer's timezone and disagrees with a UTC CI whenever a commit and a
+// build straddle local midnight.
+function utcDay(epochSeconds) {
+  return new Date(Number(epochSeconds) * 1000).toISOString().slice(0, 10);
+}
+
+export function lastCommitDate(source, root = ROOT) {
+  const relativeSource = relative(root, source);
   // Content outside the repository (the fixture builds in the tests) has no
   // git history to ask: same fallback as an untracked file.
   if (relativeSource.startsWith("..")) return new Date().toISOString().slice(0, 10);
   try {
-    // %ct is the timezone-independent commit epoch; rendering it to the UTC
-    // day matches the untracked-file fallback below exactly. A local-day
-    // format (%cs, or slicing %cI) moves with the committer's timezone and
-    // disagrees with a UTC CI whenever a commit and a build straddle local
-    // midnight.
-    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
-      cwd: ROOT,
+    // A source with uncommitted changes is being committed right now: the
+    // build runs before the commit, so git log would return the PREVIOUS
+    // commit's epoch and the shipped sitemap would lag by one commit — a CI
+    // rebuild (file committed) then computes a different lastmod and the
+    // byte-for-byte gate goes red (Issue #279). Use the current UTC day,
+    // the day the change is committed.
+    const dirty = execFileSync("git", ["status", "--porcelain", "--", relativeSource], {
+      cwd: root,
       encoding: "utf8",
     }).trim();
-    return epoch
-      ? new Date(Number(epoch) * 1000).toISOString().slice(0, 10)
-      : new Date().toISOString().slice(0, 10);
+    if (dirty) return new Date().toISOString().slice(0, 10);
+    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
+      cwd: root,
+      encoding: "utf8",
+    }).trim();
+    return epoch ? utcDay(epoch) : new Date().toISOString().slice(0, 10);
   } catch (error) {
     const detail = error.stderr?.toString().trim() || error.message;
     throw new Error(`unable to get git lastmod for ${relativeSource}: ${detail}`);

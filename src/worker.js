@@ -15,6 +15,7 @@ import pricing from "./pricing.json";
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
+const FREE_DELIVERIES = String(pricing.freeDeliveries);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -50,6 +51,7 @@ const STATS_TTL_MS = 300000;
 // entry therefore lives under /cloud/: the login handoff. The retired submit
 // route answers 410; D1 bindings and historical rows stay (Issue #179).
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
+const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 
 function githubHeaders(token) {
@@ -133,7 +135,7 @@ async function loadRepoStats(name, token) {
     ghJson(`/repos/${repo}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} type:issue state:closed`)}`, token),
     ghJson(`/search/issues?q=${encodeURIComponent(`repo:${repo} is:pr is:merged`)}`, token),
-    ghJson(`/repos/${repo}/releases?per_page=100`, token),
+    loadAllReleases(repo, token),
     name === "orbi" ? loadStarHistory(repo, token).catch(() => []) : Promise.resolve([]),
   ]);
   const stats = {
@@ -153,20 +155,50 @@ async function loadRepoStats(name, token) {
   return stats;
 }
 
-async function loadStats(token) {
-  const groups = await Promise.all(
-    STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)),
-  );
-  return { repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])) };
+async function loadAllReleases(repo, token) {
+  const releases = [];
+  for (let page = 1; page <= 10; page += 1) {
+    const batch = await ghJson(`/repos/${repo}/releases?per_page=100&page=${page}`, token);
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    releases.push(...batch);
+    if (batch.length < 100) break;
+  }
+  return releases;
 }
 
-async function statsResponse(request, token) {
+async function loadFoundingAvatars(db) {
+  if (!db) return [];
+  const tenants = await db.prepare("SELECT login FROM tenants WHERE login IS NOT NULL").all();
+  return (tenants?.results || []).map((row) => row.login).filter(Boolean);
+}
+
+async function loadFoundingStats(db) {
+  if (!db) return null;
+  const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
+  return {
+    active: Number(active?.count),
+    limit: 10,
+  };
+}
+
+async function loadStats(token, db) {
+  const [groups, founding] = await Promise.all([
+    Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null))),
+    loadFoundingStats(db).catch(() => null),
+  ]);
+  return {
+    repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])),
+    founding,
+  };
+}
+
+async function statsResponse(request, token, db) {
   const cache = caches.default;
   const cached = await cache.match(STATS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token);
+  const stats = await loadStats(token, db);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -222,13 +254,13 @@ function formatStatusText(stats) {
   return lines.join("\n");
 }
 
-async function statusResponse(request, token) {
+async function statusResponse(request, token, db) {
   const cache = caches.default;
   const cached = await cache.match(STATUS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token);
+  const stats = await loadStats(token, db);
   const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
@@ -270,7 +302,20 @@ async function fetchAsset(request, assets) {
 // The price and quota token replacements above it are unconditional: those
 // values must read the same on every environment, in every carrier a crawler
 // reads.
-async function assetResponse(asset, cloudLoginConfigured) {
+function foundingAvatarMarkup(logins) {
+  return logins.map((login) => {
+    const escaped = String(login).replace(/[&<>\"']/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '\"': "&quot;",
+      "'": "&#39;",
+    })[character]);
+    return `<img alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
+  }).join("");
+}
+
+async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -291,12 +336,15 @@ async function assetResponse(asset, cloudLoginConfigured) {
   let body = html
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
-    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS);
+    .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
+    .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
+    .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
+    .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
     // environment ships dead-end CTAs again (Issue #179).
-    body = body.replace(/href="\/cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
+    body = body.replace(/href="\/(?:zh\/)?cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
   }
   if (body === html) {
     // Nothing changed: the bytes are the asset's own representation, so the
@@ -488,7 +536,7 @@ async function handleFetch(request, env) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN);
+        return await statsResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -508,7 +556,7 @@ async function handleFetch(request, env) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN);
+        return await statusResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {
@@ -521,7 +569,7 @@ async function handleFetch(request, env) {
       }
     }
 
-    if (route === CLOUD_LOGIN_ROUTE) {
+    if (route === CLOUD_LOGIN_ROUTE || route === ZH_CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
 
@@ -547,6 +595,14 @@ async function handleFetch(request, env) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
+    let foundingLogins = [];
+    if (route === "/" || route === "/zh") {
+      try {
+        foundingLogins = await loadFoundingAvatars(env.CONTROL_PLANE_DB);
+      } catch (err) {
+        console.error("founding avatars failed:", err && err.message ? err.message : err);
+      }
+    }
     // The Assets binding answers a directory path without its trailing slash
     // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
     // binding's own canonicalisation, not an unexpected asset redirect: pass
@@ -556,7 +612,7 @@ async function handleFetch(request, env) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL));
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins);
 }
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
@@ -671,7 +727,11 @@ function normalizedSource(url, request) {
 // that skips routing entirely. env.CLOUD_VISIT_URL still supplies the path.
 // A missing binding (local dev, a partial config) falls back to fetch so the
 // page path stays identical either way.
-async function reportVisit(env, payload) {
+// The visit's own request comes along so the bot signals (visitSignals, an
+// await because of the UA hash) are computed here, inside the waitUntil
+// branch — the response path stays synchronous and static-asset requests
+// never classify at all.
+async function reportVisit(env, visitRequest, payload) {
   try {
     const request = new Request(env.CLOUD_VISIT_URL, {
       method: "POST",
@@ -679,7 +739,7 @@ async function reportVisit(env, payload) {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest, payload) }),
       signal: AbortSignal.timeout(5000),
     });
     const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);
@@ -704,10 +764,11 @@ async function reportVisit(env, payload) {
 //   fill an empty slot and never overwrite — github.com must not replace the
 //   tweet that brought the visitor here.
 // Probes and crawlers keep their vid and their page; their visits are marked
-// is_bot=1 (visitSignals, an exact match of our own probes' UAs — #251
-// measured botManagement as absent on this plan) so dashboard
-// queries can exclude them. The response body is never rewritten, so asset
-// validators like ETag survive. Every HTML 200 is reported as one visit.
+// is_bot=1 (visitSignals — the request.cf.asn of a cloud provider, crawler UA
+// substrings, or short-window behavior, Issue #280/#305; botManagement is an
+// Enterprise add-on we do not buy) so dashboard queries can exclude them. The response body is
+// never rewritten, so asset validators like ETag survive. Every HTML 200 is
+// reported as one visit.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
 // on every no-vid response, so a first landing that redirects — www → apex
@@ -738,11 +799,10 @@ function withAttribution(request, response, env, ctx) {
   ) {
     // Signals ride only this reported branch so every static-asset request
     // skips the classification entirely.
-    ctx.waitUntil(reportVisit(env, {
+    ctx.waitUntil(reportVisit(env, request, {
       vid,
       path: url.pathname,
       ref: explicitRef ?? (firstTouch ? source : ""),
-      ...visitSignals(request),
     }));
   }
   const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
@@ -759,7 +819,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit
