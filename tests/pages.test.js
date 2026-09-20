@@ -233,7 +233,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 11-item footer nav on every content page", () => {
+  it("carries the 12-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -247,6 +247,7 @@ describe("one unified footer on every content page", () => {
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
         "https://x.com/xqliu",
+        "https://www.youtube.com/@orbibuild",
         `${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
         "https://status.orbi.build",
@@ -254,6 +255,15 @@ describe("one unified footer on every content page", () => {
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
       ]);
+    }
+  });
+
+  it("links YouTube in the footer with the verbatim anchor, on en and zh (Issue #255)", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: YouTube footer anchor drifted`).toContain(
+        '<a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>',
+      );
     }
   });
 
