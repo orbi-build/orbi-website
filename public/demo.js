@@ -270,6 +270,50 @@
         })
         .then(function (stats) {
           const repos = (stats && stats.repos) || {};
+          const proof = root.parentElement.querySelector("[data-runtime-proof]");
+          const flagship = repos.orbi;
+          const started = flagship && Date.parse(flagship.started);
+          if (proof && flagship && Number.isFinite(flagship.prs_merged) && Number.isFinite(flagship.releases) && Number.isFinite(started)) {
+            proof.querySelector("[data-proof-prs]").textContent = flagship.prs_merged;
+            proof.querySelector("[data-proof-releases]").textContent = flagship.releases;
+            proof.querySelector("[data-proof-since]").textContent = new Intl.DateTimeFormat(lang === "zh" ? "zh-CN" : "en-US", {
+              month: "short",
+              day: "numeric",
+              timeZone: "UTC",
+            }).format(new Date(started));
+            proof.hidden = false;
+          }
+          const founding = stats && stats.founding;
+          document.querySelectorAll("[data-founding-availability]").forEach(function (element) {
+            if (!founding || !Number.isFinite(founding.active) || !Number.isFinite(founding.limit)) return;
+            const left = Math.max(0, founding.limit - founding.active);
+            element.textContent = left > 0
+              ? (lang === "zh" ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
+              : (lang === "zh" ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
+            element.hidden = false;
+          });
+          document.querySelectorAll("[data-avatar-wall]").forEach(function (wall) {
+            const logins = founding && Array.isArray(founding.github_logins) ? founding.github_logins : [];
+            if (!logins.length) return;
+            const list = wall.querySelector("[data-avatar-list]");
+            let failed = false;
+            let remaining = logins.length;
+            logins.forEach(function (login) {
+              const image = document.createElement("img");
+              image.alt = "";
+              image.title = login;
+              image.addEventListener("load", function () {
+                remaining -= 1;
+                if (!failed && remaining === 0) wall.hidden = false;
+              });
+              image.addEventListener("error", function () {
+                failed = true;
+                wall.hidden = true;
+              });
+              image.src = "https://avatars.githubusercontent.com/" + encodeURIComponent(login) + "?s=80";
+              list.appendChild(image);
+            });
+          });
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {
             fillGroup(group, repos[group.getAttribute("data-repo-group")]);
           });
@@ -375,4 +419,23 @@
   document.querySelectorAll(".site-header").forEach(bootNavigation);
   document.querySelectorAll("#factory-trace").forEach(bootFactoryTrace);
   document.querySelectorAll("#orbi-stats").forEach(bootStats);
+  if (document.querySelector("[data-founding-availability]") && !document.querySelector("#orbi-stats")) {
+    fetch("/stats").then(function (response) {
+      if (!response.ok) throw new Error("stats " + response.status);
+      return response.json();
+    }).then(function (stats) {
+      const founding = stats && stats.founding;
+      if (!founding || !Number.isFinite(founding.active) || !Number.isFinite(founding.limit)) return;
+      const left = Math.max(0, founding.limit - founding.active);
+      document.querySelectorAll("[data-founding-availability]").forEach(function (element) {
+        const isZh = document.documentElement.lang.startsWith("zh");
+        element.textContent = left > 0
+          ? (isZh ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
+          : (isZh ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
+        element.hidden = false;
+      });
+    }).catch(function () {
+      // Unavailable pricing data stays hidden; an invented availability is worse than none.
+    });
+  }
 })();

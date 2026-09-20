@@ -337,6 +337,26 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
+  it("loads active founding seats and public GitHub logins from D1", async () => {
+    mockGitHub();
+    const queries = [];
+    const db = {
+      prepare(sql) {
+        queries.push(sql);
+        return {
+          first: async () => ({ count: 4 }),
+          all: async () => ({ results: [{ github_login: "alice" }, { github_login: "bob" }] }),
+        };
+      },
+    };
+    const stats = await loadStats("token", db);
+    expect(stats.founding).toEqual({ active: 4, limit: 10, github_logins: ["alice", "bob"] });
+    expect(queries).toEqual([
+      "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",
+      "SELECT login AS github_login FROM tenants WHERE login IS NOT NULL",
+    ]);
+  });
+
   it("counts orbi-website's successful deploy workflow runs, its fourth metric in place of releases", async () => {
     const calls = mockGitHub();
     const stats = await loadStats("token");
