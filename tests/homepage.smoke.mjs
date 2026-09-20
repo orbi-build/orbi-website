@@ -639,6 +639,67 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.close();
 }
 
+// Issue #267: at the ≤980px breakpoint the hero collapses to one column and
+// came apart on the Z Fold 8's unfolded viewport: the factory-trace figure
+// right-shifted ~372px off the copy's left edge (the 980px rule's
+// margin-left:auto right-aligns the shrink-to-fit figure), the "Prefer to
+// self-host?" CTA sagged 15px below its row-mates (the base .hero-alt
+// margin-top inside a flex-start row), and the trust-line checklist spread
+// across the full column while the copy above it sat on a narrower measure.
+// This measures the repaired geometry — acceptance in pixels, not strings:
+// the figure shares the copy column's left edge, CTAs sharing a visual row
+// share its top (aligned within 1px, or genuinely wrapped to their own row),
+// and no checklist row runs wider than the copy measure the h1 box anchors.
+async function assertHeroSingleColumn(browser, path, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.evaluate(() => document.fonts.ready);
+  const view = `${path} ${size.width}x${size.height}`;
+  const hero = await page.evaluate(() => {
+    const rect = (nodeOrSelector) => {
+      const el = typeof nodeOrSelector === "string" ? document.querySelector(nodeOrSelector) : nodeOrSelector;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top };
+    };
+    return {
+      columns: getComputedStyle(document.querySelector(".hero")).gridTemplateColumns.split(" ").length,
+      copy: rect(".hero-copy"),
+      figure: rect(".hero figure.factory-trace"),
+      ctas: [
+        rect('.hero [data-cta="cloud-start"]'),
+        rect(".hero .hero-alt"),
+        rect(".hero .hero-proof-link"),
+      ],
+      h1: rect(".hero h1"),
+      checklist: [...document.querySelectorAll(".hero .trust-line li")].map(rect),
+    };
+  });
+  // The two-column hero (≥981px) has its own alignment contract; the checks
+  // below are the single-column repair's, so only run where it applies.
+  if (hero.columns === 1) {
+    const leftDrift = Math.abs(hero.figure.left - hero.copy.left);
+    if (leftDrift > 1) {
+      throw new Error(`${view}: figure left ${hero.figure.left} vs .hero-copy left ${hero.copy.left} — drift ${leftDrift}px > 1px`);
+    }
+    const tops = hero.ctas.map((cta) => cta.top).sort((a, b) => a - b);
+    for (let i = 1; i < tops.length; i += 1) {
+      const gap = tops[i] - tops[i - 1];
+      // A wrapped CTA's row starts at least a line below the previous one;
+      // anything between "aligned" and "wrapped" is the 15px sag again.
+      if (gap > 1 && gap < 24) {
+        throw new Error(`${view}: CTA tops ${JSON.stringify(hero.ctas.map((cta) => cta.top))} — a ${gap}px offset is neither aligned nor a line break`);
+      }
+    }
+    for (const row of hero.checklist) {
+      if (row.right > hero.h1.right + 1) {
+        throw new Error(`${view}: checklist row runs to ${row.right}, past the copy column edge ${hero.h1.right}`);
+      }
+    }
+  }
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.close();
+}
+
 // Issue #264: the proof section's delivery loop, retold as measured
 // rendering, not copy: the autoplay contract plus controls one by one —
 // the asset carries a narration track, so a visitor must be able to unmute
@@ -1688,6 +1749,13 @@ async function main() {
     await assertHeroAboveFold(browser, "/", { width: 390, height: 844 }, "hero-fold-en-phone.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 1366, height: 768 }, "hero-fold-zh-laptop.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 390, height: 844 }, "hero-fold-zh-phone.png");
+    // Issue #267: the single-column hero geometry at the breakpoint the
+    // Issue reproduces (960×850, Z Fold 8 unfolded), both languages; the
+    // 1080×960 shot watches the two-column layout just above the breakpoint
+    // for regression. 1440×900 and 390×844 are shot by assertHomepage above.
+    await assertHeroSingleColumn(browser, "/", { width: 960, height: 850 }, "hero-single-en-960.png");
+    await assertHeroSingleColumn(browser, "/zh/", { width: 960, height: 850 }, "hero-single-zh-960.png");
+    await assertHeroSingleColumn(browser, "/", { width: 1080, height: 960 }, "hero-two-en-1080.png");
     // Issue #262: the proof-loop video renders inside its container at the
     // laptop and phone widths the Issue names, with no horizontal scroll,
     // and the reduced-motion visitor gets the static poster.
