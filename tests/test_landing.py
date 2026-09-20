@@ -551,8 +551,20 @@ class LandingTests(unittest.TestCase):
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("IntersectionObserver", js)
         self.assertIn("startStats", js)
-        self.assertIn("2600", js)
+        self.assertIn("countUp(", js)
         self.assertIn('threshold: 0.25', js)
+
+    def test_stats_animation_durations_are_fast_and_staggered(self) -> None:
+        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
+        for old_duration in ("2600", "2400", "2200", "1800", "1450"):
+            self.assertNotIn(old_duration, js)
+        durations = [
+            int(value)
+            for value in re.findall(r"(?:issues|prs|releases|deploys): \[[^,]+, (\d+)\]", js)
+        ]
+        self.assertEqual(len(durations), 4)
+        self.assertEqual(len(set(durations)), 4)
+        self.assertIn("if (prefersReducedMotion() || end === 0)", js)
 
     def test_stats_never_render_a_hollow_record(self) -> None:
         """The live counters are the page's only social proof. When /stats is
