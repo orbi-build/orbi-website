@@ -359,4 +359,34 @@ describe("browser smoke lifecycle", () => {
     const probe = await fetch(`http://127.0.0.1:${port}`).catch(() => null);
     expect(probe).toBeNull();
   }, 10000);
+
+  it("stops the local server before exiting on SIGTERM", async () => {
+    const child = spawn(process.execPath, ["tests/homepage.smoke.mjs"], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    processes.push(child);
+
+    const deadline = Date.now() + 5000;
+    while (!await fetch(`http://127.0.0.1:${port}`).catch(() => null)) {
+      if (Date.now() >= deadline) throw new Error("browser smoke server did not start");
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    child.kill("SIGTERM");
+
+    const result = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        child.kill("SIGKILL");
+        reject(new Error("browser smoke did not exit after SIGTERM"));
+      }, 5000);
+      child.on("error", reject);
+      child.on("exit", (code, signal) => {
+        clearTimeout(timer);
+        resolve({ code, signal });
+      });
+    });
+
+    expect(result).toEqual({ code: 143, signal: null });
+    const probe = await fetch(`http://127.0.0.1:${port}`).catch(() => null);
+    expect(probe).toBeNull();
+  }, 10000);
 });
