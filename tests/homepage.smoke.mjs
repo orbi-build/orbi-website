@@ -140,6 +140,7 @@ function startServer() {
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
               .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
         : file.body;

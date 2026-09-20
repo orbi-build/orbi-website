@@ -337,6 +337,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
+    .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must

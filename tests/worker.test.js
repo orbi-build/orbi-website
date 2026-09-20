@@ -392,8 +392,8 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(stats.repos["orbi-website"].prs_merged).toBe(296);
   });
 
-  it("injects server-rendered avatars into HTML", async () => {
-    const html = '<div data-avatar-list>__FOUNDING_AVATARS__</div>';
+  it("injects server-rendered avatars and makes the wall visible when data exists", async () => {
+    const html = '<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>';
     const response = await assetResponse(
       new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }),
       true,
@@ -403,6 +403,20 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(body).toContain('title="alice"');
     expect(body).toContain('title="bob&amp;co"');
     expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
+    expect(body).not.toContain("__FOUNDING_AVATARS__");
+    expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
+    expect(body).toContain('<section data-avatar-wall >');
+  });
+
+  it("keeps the server-rendered avatar wall hidden when no data exists", async () => {
+    const html = '<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>';
+    const response = await assetResponse(
+      new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }),
+      true,
+    );
+    const body = await response.text();
+    expect(body).toContain('<section data-avatar-wall hidden>');
+    expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
     expect(body).not.toContain("__FOUNDING_AVATARS__");
   });
 
