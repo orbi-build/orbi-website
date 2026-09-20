@@ -404,6 +404,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
    where the fair-code / self-host / BYOK attributes moved from the hero.
    Same list; only the text color lifts for the light paper background. */
 .trust-line-paper { color: var(--ink-soft); }
+.trust-line-paper li::before { color: var(--run-on-light); }
 
 .factory-trace {
   position: relative;
@@ -1048,7 +1049,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: var(--signal);
+  color: var(--signal-on-light);
   font-family: var(--display);
   font-size: 1.7rem;
 }
