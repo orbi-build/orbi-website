@@ -1064,6 +1064,34 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
     }
   }
+  // Issue #275: the onboarding must end with a concrete execution switch,
+  // not merely "the first Issue can start". Assert the rendered four-step
+  // path at both desktop and phone widths; the overflow check below catches
+  // a layout that squeezes or clips the instruction.
+  const stepList = page.locator(".proof-ledger-four");
+  const steps = stepList.locator(":scope > li");
+  if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
+  const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
+  for (const needle of path === "/cloud/"
+    ? ["Label one Issue ai-ready", "<repo>/issues/new?labels=ai-ready", "within 5 minutes", "comments on the Issue"]
+    : ["给一个 Issue 加上 ai-ready 标签", "<repo>/issues/new?labels=ai-ready", "5 分钟内认领", "Issue 下留言"]) {
+    if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
+  }
+  const stepBoxes = await steps.evaluateAll((elements) => elements.map((element) => {
+    const box = element.getBoundingClientRect();
+    return { top: box.top, left: box.left, right: box.right, width: box.width };
+  }));
+  if (size.width > 760) {
+    if (Math.max(...stepBoxes.map(({ top }) => top)) - Math.min(...stepBoxes.map(({ top }) => top)) > 1) {
+      throw new Error(`${path}: four desktop onboarding steps do not fit on one row`);
+    }
+  } else if (!stepBoxes.every((box, index) => index === 0 || box.top > stepBoxes[index - 1].top)) {
+    throw new Error(`${path}: mobile onboarding steps are not stacked in order`);
+  }
+  if (stepBoxes.some(({ left, right, width }) => width <= 0 || left < 0 || right > size.width + 1)) {
+    throw new Error(`${path}: onboarding steps are clipped at ${size.width}px`);
+  }
+  await stepList.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-steps.png")}` });
   if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
   // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
   // its description — never the retired US$15.
