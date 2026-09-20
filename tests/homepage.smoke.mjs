@@ -454,7 +454,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  // The homepage has an autoplaying video, so networkidle depends on media
+  // download timing and can stall the bounded CI suite. The assertions below
+  // explicitly wait for dynamic stats; DOM load is the correct navigation gate.
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -561,7 +564,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     if (!(await pricingSection.isVisible())) {
       throw new Error(`${path}: #pricing is not visible after the Pricing click`);
     }
-    await page.goBack({ waitUntil: "networkidle" });
+    await page.goBack({ waitUntil: "load" });
   }
   const footerHrefs = await page.locator(".site-footer a").evaluateAll((nodes) =>
     nodes.map((a) => a.getAttribute("href"))
@@ -609,7 +612,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 // geometry, not strings.
 async function assertHeroAboveFold(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
     .evaluate((el) => el.getBoundingClientRect().top);
   // Scoped to the hero: a second .trust-line.trust-line-paper sits further
@@ -654,7 +657,7 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
 // and no checklist row runs wider than the copy measure the h1 box anchors.
 async function assertHeroSingleColumn(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   const view = `${path} ${size.width}x${size.height}`;
   const hero = await page.evaluate(() => {
@@ -711,7 +714,7 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
 // the signup attribution this Issue exists for.
 async function assertProofLoop(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
-  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const view = `${path} ${size.width}x${size.height}`;
   const video = page.locator(".proof-loop-video");
   if ((await video.count()) !== 1) throw new Error(`${view}: expected exactly one .proof-loop-video`);
@@ -1602,7 +1605,8 @@ async function assertEvidencePage(browser, path, size, screenshot) {
 async function assertHomeEvidenceEntry(browser, homePath, evidenceHref) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
-    await page.goto(`${targetURL}${homePath}`, { waitUntil: "networkidle" });
+    // Do not wait for networkidle on a page with an autoplaying video.
+    await page.goto(`${targetURL}${homePath}`, { waitUntil: "load" });
     const proof = page.locator('[data-cta="proof"]');
     if ((await proof.count()) !== 1) throw new Error(`${homePath}: expected one hero proof link`);
     if ((await proof.getAttribute("href")) !== evidenceHref) {
@@ -1690,7 +1694,7 @@ async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
     const page = await context.newPage();
-    await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     await page.locator(".install-copy").click();
     // is-copied flips exactly when the write promise resolved, so the
     // clipboard read below cannot race the copy.
