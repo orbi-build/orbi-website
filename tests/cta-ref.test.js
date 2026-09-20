@@ -2,7 +2,7 @@
 // ref belongs to the visitor's attribution cookie; adding a button-position
 // query makes the login handoff overwrite that real channel attribution.
 
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -30,6 +30,16 @@ const builtFiles = [
 
 const read = (file) => readFile(join(ROOT, file), "utf8");
 
+async function walkHtml(dir) {
+  const files = [];
+  for (const entry of await readdir(join(ROOT, dir), { withFileTypes: true })) {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) files.push(...await walkHtml(path));
+    else if (entry.name.endsWith(".html")) files.push(path);
+  }
+  return files;
+}
+
 const cloudLoginHrefs = (html) => [...html.matchAll(/href="(\/cloud\/login[^\"]*)"/g)].map((m) => m[1]);
 
 describe("internal Cloud login CTA attribution (Issue #273)", () => {
@@ -54,5 +64,15 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
     const hrefs = html.flatMap(cloudLoginHrefs);
     expect(hrefs.length).toBeGreaterThanOrEqual(15);
     expect(hrefs).toEqual(hrefs.map(() => "/cloud/login"));
+  });
+
+  it("forbids query-bearing Cloud login links anywhere in source or built HTML", async () => {
+    const files = [...await walkHtml("site"), ...await walkHtml("public")];
+    for (const file of files) {
+      const hrefs = cloudLoginHrefs(await read(file));
+      expect(hrefs, `${file}: internal Cloud login links must preserve campaign attribution`).toEqual(
+        hrefs.map(() => "/cloud/login"),
+      );
+    }
   });
 });

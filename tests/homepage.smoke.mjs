@@ -352,6 +352,76 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   }
 }
 
+// Issue #273: exercise the campaign user's actual browser action. On beta the
+// first request asks the real Worker to plant the ref cookie; the local static
+// fixture cannot do that, so it starts from the same documented precondition.
+// The clicked request must be query-free, carry the campaign cookie, and must
+// not receive a replacement ref cookie from the handoff.
+async function assertCampaignRefSurvivesHeroClick(browser) {
+  const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
+  if (process.env.BASE_URL && expectation !== "oauth-302") return;
+
+  const token = "x-2609201530";
+  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  try {
+    const page = await context.newPage();
+    const consoleErrors = [];
+    const failedRequests = [];
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+    await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    await page.route("**datafa.st/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    page.on("console", (message) => {
+      if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) {
+        consoleErrors.push(message.text());
+      }
+    });
+    page.on("requestfailed", (request) => {
+      if (!isTelemetry(request.url())) failedRequests.push(`${request.method()} ${request.url()}`);
+    });
+
+    await page.goto(`${targetURL}/?ref=${token}`, { waitUntil: "networkidle" });
+    if (!process.env.BASE_URL) {
+      await context.addCookies([{ name: "ref", value: token, url: targetURL }]);
+    }
+    const landedRef = (await context.cookies(targetURL)).find((cookie) => cookie.name === "ref");
+    if (landedRef?.value !== token) {
+      throw new Error(`campaign landing cookie is ${JSON.stringify(landedRef?.value)}, expected ${token}`);
+    }
+    await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
+
+    const handoffResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      const target = new URL(targetURL);
+      return url.origin === target.origin && url.pathname === "/cloud/login";
+    });
+    await page.locator('[data-cta="cloud-start"]').click({ noWaitAfter: true });
+    const response = await handoffResponse;
+    const requestURL = new URL(response.request().url());
+    if (requestURL.search !== "") {
+      throw new Error(`hero CTA sent query-bearing handoff ${requestURL}`);
+    }
+    const requestCookie = (await response.request().allHeaders()).cookie || "";
+    if (!requestCookie.split(/;\s*/).includes(`ref=${token}`)) {
+      throw new Error(`hero CTA handoff lost campaign cookie: ${JSON.stringify(requestCookie)}`);
+    }
+    const setCookies = (await response.headersArray())
+      .filter(({ name }) => name.toLowerCase() === "set-cookie")
+      .map(({ value }) => value);
+    if (setCookies.some((value) => value.startsWith("ref="))) {
+      throw new Error(`hero CTA handoff overwrote campaign ref: ${JSON.stringify(setCookies)}`);
+    }
+    const finalRef = (await context.cookies(targetURL)).find((cookie) => cookie.name === "ref");
+    if (finalRef?.value !== token) {
+      throw new Error(`campaign cookie after hero click is ${JSON.stringify(finalRef?.value)}, expected ${token}`);
+    }
+    if (consoleErrors.length || failedRequests.length) {
+      throw new Error(`campaign handoff console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 // Issue #101: /stats answers one group per repository, and this fixture
 // leaves orbi-cloud null on purpose — a repo that fails must degrade only its
 // own group to the HTML floors while the other two still show live numbers.
@@ -770,7 +840,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh") ? "/cloud/login" : "/cloud/login";
+  const expectedHref = "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -1768,6 +1838,7 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
     await assertHeroAboveFold(browser, "/", { width: 1366, height: 768 }, "hero-fold-en-laptop.png");
