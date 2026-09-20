@@ -88,6 +88,14 @@ describe("bot detection (Issue #280)", () => {
     expect(isBot(requestWith({ ua: BETTER_UPTIME }))).toBe(true);
   });
 
+  it("marks a missing User-Agent as a bot", () => {
+    expect(isBot(requestWith({}))).toBe(true);
+  });
+
+  it("marks an explicitly empty User-Agent as a bot", () => {
+    expect(isBot(requestWith({ ua: "" }))).toBe(true);
+  });
+
   it("marks real browsers human", () => {
     for (const ua of [CHROME_127, SAFARI_17, FIREFOX_127]) {
       expect(isBot(requestWith({ ua })), ua).toBe(false);

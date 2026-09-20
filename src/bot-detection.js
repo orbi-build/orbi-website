@@ -127,6 +127,7 @@ function observeBehavior({ vid, path, fingerprint, now = Date.now() }) {
 export function isBot(request, behavior = {}) {
   if (CLOUD_ASNS.has(request.cf?.asn)) return true;
   const rawUA = request.headers.get("User-Agent") ?? "";
+  if (rawUA === "") return true;
   if (KNOWN_PROBE_UAS.has(rawUA)) return true;
   const ua = rawUA.toLowerCase();
   if (KNOWN_CRAWLER_UAS.some((needle) => ua.includes(needle))) return true;

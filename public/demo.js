@@ -74,7 +74,7 @@
     function advance() {
       paint(current);
       current = (current + 1) % nodes.length;
-      timer = window.setTimeout(advance, current === 0 ? 2600 : 1450);
+      timer = window.setTimeout(advance, current === 0 ? 1200 : 700);
     }
 
     function stop() {
@@ -199,7 +199,7 @@
 
     const total = box.querySelector("[data-star-total]");
     if (total) {
-      countUp(total, stats.stars || values[values.length - 1], 2200);
+      countUp(total, stats.stars || values[values.length - 1], 1000);
     }
     box.hidden = false;
   }
@@ -214,10 +214,10 @@
     // Staggered durations keep the four counters settling at different
     // moments, as before; deploys inherits releases' slot.
     const statFields = {
-      issues: ["issues_closed", 2600],
-      prs: ["prs_merged", 2400],
-      releases: ["releases", 1800],
-      deploys: ["deploys", 1800],
+      issues: ["issues_closed", 1100],
+      prs: ["prs_merged", 1000],
+      releases: ["releases", 800],
+      deploys: ["deploys", 700],
     };
     let startedCounting = false;
 
@@ -225,7 +225,7 @@
       scope.querySelectorAll("[data-stat]").forEach(function (element) {
         const floor = element.getAttribute("data-floor");
         if (floor) {
-          countUp(element, floor, 2000);
+          countUp(element, floor, 900);
         }
       });
     }
@@ -234,7 +234,7 @@
       group.querySelectorAll("[data-stat]").forEach(function (element) {
         const stat = element.getAttribute("data-stat");
         let value;
-        let duration = 2000;
+        let duration = 900;
         if (repo) {
           if (stat === "days") {
             value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
