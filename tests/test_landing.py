@@ -1213,19 +1213,23 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("100% off", offers[0]["description"], offers[0])
 
     def test_the_three_steps_appear_in_order_and_end_at_the_login_button(self) -> None:
-        for page, steps in (
+        # Issue #256: the login buttons carry the page-level ?ref= token the
+        # signup attribution records.
+        for page, steps, login_href in (
             (
                 self.en,
                 ("Sign in with GitHub", "Install the Orbi GitHub App", "Subscribe and connect a repository"),
+                "/cloud/login?ref=cloud-page",
             ),
             (
                 self.zh,
                 ("用 GitHub 登录", "安装 Orbi GitHub App", "订阅并连接仓库"),
+                "/cloud/login?ref=zh-cloud-page",
             ),
         ):
             positions = [page.text.index(step) for step in steps]
             self.assertEqual(positions, sorted(positions), steps)
-            self.assertIn("/cloud/login", [href for _, href in page.hrefs])
+            self.assertIn(login_href, [href for _, href in page.hrefs])
 
     def test_pages_interlink_with_homepage_and_counterpart(self) -> None:
         self.assertIn("/zh/cloud/", [href for _, href in self.en.hrefs])

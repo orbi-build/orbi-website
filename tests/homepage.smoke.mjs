@@ -30,25 +30,27 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #91: the hero claims delivery to a tagged release, and the lede
-// names the three segments no competitor covers — independent review that
-// repairs and reruns, the exact-head merge, the tag + Release.
+// Issue #91: the hero claims delivery to a tagged release. Issue #259 moved
+// the three-segment breakdown to the trust line (heroTrustLine below) and
+// shortened the lede to one sentence pair so the primary CTA stays inside
+// the first screen; the lede keeps the workspace claim and the
+// source-of-truth boundary.
 const releaseClaims = {
   "/": {
     h1: "Turn GitHub Issues into tagged releases",
     lede: [
-      "independent review that repairs code and reruns the suite",
-      "merges the exact reviewed head",
-      "publishes the result as a tagged Release",
+      "No new workspace.",
+      "Orbi runs the delivery line on the Issues already in your repository",
+      "GitHub stays the source of truth",
     ],
     title: "tagged releases",
   },
   "/zh/": {
     h1: "让 GitHub Issue 变成打 Tag 的发布",
     lede: [
-      "能改代码、会重跑测试的独立审查",
-      "只合并审过的那个 Head",
-      "冻结 SHA、打 Tag、发正式 Release",
+      "不用迁移工作流。",
+      "在仓库里已有的 Issue 上跑完整条交付线",
+      "GitHub 始终是唯一事实源",
     ],
     title: "打 Tag 的 Release",
   },
@@ -588,6 +590,45 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.close();
 }
 
+// Issue #259: the hero used to push the primary CTA to 630px — under every
+// competitor's first screen — and the trust line out of a phone's fold
+// (874px at 390×844). The copy fix is pinned byte-exactly in
+// tests/hero-above-fold.test.js; this measurement is the acceptance itself:
+// geometry, not strings.
+async function assertHeroAboveFold(browser, path, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+  const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
+    .evaluate((el) => el.getBoundingClientRect().top);
+  // Scoped to the hero: a second .trust-line.trust-line-paper sits further
+  // down the page (Product attributes).
+  const trust = await page.locator(".hero .trust-line").evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom };
+  });
+  const footnoteTop = await page.locator(".hero .hero-footnote a")
+    .evaluate((el) => el.getBoundingClientRect().top);
+  const view = `${path} ${size.width}x${size.height}`;
+  // Acceptance 2: on a 1366×768 laptop the primary CTA stays above 450px.
+  if (size.width >= 1000 && ctaTop >= 450) {
+    throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
+  }
+  // Acceptance 3: on the same laptop the trust line ends inside the fold.
+  if (size.width >= 1000 && trust.bottom >= 768) {
+    throw new Error(`${view}: trust-line bottom is ${trust.bottom}, must stay < 768`);
+  }
+  // Acceptance 4: on a phone the trust line top stays inside the fold.
+  if (trust.top >= size.height) {
+    throw new Error(`${view}: trust-line top is ${trust.top}, must stay < ${size.height}`);
+  }
+  // Acceptance 5: the 12-factors footnote never precedes the primary CTA.
+  if (footnoteTop <= ctaTop) {
+    throw new Error(`${view}: footnote top ${footnoteTop} must come after the primary CTA top ${ctaTop}`);
+  }
+  await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  await page.close();
+}
+
 // Issue #79: /cloud/ is the indexable page the homepage Cloud CTA leads
 // with. The page must render cleanly at phone and desktop widths, and its
 // login buttons keep the environment's declared login contract: a click
@@ -1038,8 +1079,8 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    if (href !== "/cloud/login") {
-      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login"`);
+    if (href !== "/cloud/login?ref=nav") {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login?ref=nav"`);
     }
     await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
   } finally {
@@ -1529,6 +1570,12 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    // Issue #259: first-screen geometry at the two sizes that decide the
+    // fold — the 1366×768 laptop and the 390×844 phone.
+    await assertHeroAboveFold(browser, "/", { width: 1366, height: 768 }, "hero-fold-en-laptop.png");
+    await assertHeroAboveFold(browser, "/", { width: 390, height: 844 }, "hero-fold-en-phone.png");
+    await assertHeroAboveFold(browser, "/zh/", { width: 1366, height: 768 }, "hero-fold-zh-laptop.png");
+    await assertHeroAboveFold(browser, "/zh/", { width: 390, height: 844 }, "hero-fold-zh-phone.png");
     // Issue #107: follow a real click from every Cloud CTA — hero, card and
     // nav share one promise — to the endpoint CLOUD_LOGIN_EXPECT declares.
     const homepageCloudCtas = [
