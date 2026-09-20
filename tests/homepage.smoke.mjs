@@ -770,7 +770,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh") ? "/cloud/login?ref=zh-video" : "/cloud/login?ref=home-video";
+  const expectedHref = path.startsWith("/zh") ? "/cloud/login" : "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -1254,8 +1254,8 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    if (href !== "/cloud/login?ref=nav") {
-      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login?ref=nav"`);
+    if (href !== "/cloud/login") {
+      throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected "/cloud/login"`);
     }
     await page.screenshot({ path: `${artifacts}/compare-nav-cta${path.replace(/\//g, "-")}.png`, fullPage: false });
   } finally {

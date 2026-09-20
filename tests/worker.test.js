@@ -1300,6 +1300,22 @@ describe("visit attribution (Issue #228)", () => {
       expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
       expect(response.headers.getSetCookie()).toEqual([]);
     });
+
+    it("preserves a campaign ref when a bare internal CTA reaches the handoff (Issue #273)", async () => {
+      globalThis.fetch = vi.fn(async () => new Response("ok"));
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/cloud/login", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=x-2609201530" },
+        }),
+        LOGIN_ENV,
+        collectingCtx(),
+      );
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("location")).toBe("https://beta.orbi.build/api/login");
+      expect(response.headers.getSetCookie()).toEqual([]);
+    });
   });
 
   // Issue #280 restored the two signals #243/#251 had removed: botManagement
