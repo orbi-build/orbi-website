@@ -380,6 +380,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/watch-the-six-steps/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/watch-the-six-steps/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/watch-the-six-steps/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/watch-the-six-steps/"/>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/watch-the-six-steps/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/watch-the-six-steps/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/watch-the-six-steps/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/watch-the-six-steps/"/>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/what-autonomous-actually-means/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/what-autonomous-actually-means/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/what-autonomous-actually-means/"/>
