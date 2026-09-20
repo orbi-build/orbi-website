@@ -355,6 +355,8 @@ h1 span { color: var(--signal); }
   text-underline-offset: 4px;
 }
 .hero-alt a:hover { color: #fff; text-decoration: underline; }
+.hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }
+.hero-footnote a { color: var(--ink-soft); }
 
 .trust-line {
   display: flex;
