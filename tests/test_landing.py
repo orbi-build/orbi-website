@@ -801,19 +801,29 @@ class LandingTests(unittest.TestCase):
                 }
             ],
         )
-        self.assertEqual(beta["d1_databases"][0]["binding"], "orbi_applications")
-        self.assertEqual(beta["d1_databases"][0]["database_name"], "orbi-applications-test")
+        beta_d1 = {entry["binding"]: entry for entry in beta["d1_databases"]}
+        self.assertEqual(beta_d1["orbi_applications"]["database_name"], "orbi-applications-test")
         self.assertEqual(
-            beta["d1_databases"][0]["database_id"],
+            beta_d1["orbi_applications"]["database_id"],
             "3c254d65-e5c6-4488-9b83-dabc3433f092",
         )
+        production_d1 = {entry["binding"]: entry for entry in config["d1_databases"]}
         self.assertEqual(
-            config["d1_databases"][0]["database_name"], "orbi-applications"
+            production_d1["orbi_applications"]["database_name"], "orbi-applications"
         )
         self.assertEqual(
-            config["d1_databases"][0]["database_id"],
+            production_d1["orbi_applications"]["database_id"],
             "9df2048e-004e-48e1-b81e-16826bd49d8a",
         )
+        for bindings in (production_d1, beta_d1):
+            self.assertEqual(
+                bindings["CONTROL_PLANE_DB"]["database_name"],
+                "orbi_control_plane",
+            )
+            self.assertEqual(
+                bindings["CONTROL_PLANE_DB"]["database_id"],
+                "f43377a6-3c1b-41d3-9018-3339590915ab",
+            )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
             ["orbi.build", "www.orbi.build", "aiready.sh"],
@@ -986,7 +996,10 @@ class LandingTests(unittest.TestCase):
 
         self.assertEqual(config["assets"]["binding"], "ASSETS")
         self.assertEqual(config["assets"]["directory"], "./public/")
-        self.assertEqual(len(config["d1_databases"]), 1)
+        self.assertEqual(
+            {database["binding"] for database in config["d1_databases"]},
+            {"orbi_applications", "CONTROL_PLANE_DB"},
+        )
         self.assertEqual(len(config["routes"]), 3)
         # observability must hold only its own keys
         self.assertEqual(

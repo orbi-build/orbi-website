@@ -227,6 +227,26 @@ img {
 
 .eyebrow,
 .section-tag,
+.runtime-proof {
+  padding: 18px 0 8px;
+  text-align: center;
+}
+.runtime-proof-line {
+  margin: 0;
+  color: #c9d8d4;
+  font: 500 .86rem/1.5 var(--mono);
+  letter-spacing: .01em;
+}
+.runtime-proof-line strong { color: #fff; font-size: 1.15rem; }
+.runtime-proof-line a { color: var(--run); }
+.avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
+.avatar-wall-label { margin: 0; color: #a9bbb8; font: 500 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.avatar-wall-list { display: flex; }
+.avatar-wall-list img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
+.avatar-wall-list img:first-child { margin-left: 0; }
+.founding-offer { display: flex; align-items: baseline; gap: 14px; font-size: 1.15rem; }
+.founding-offer .founding-price { color: var(--run); font-size: 1.5rem; }
+.founding-availability { color: var(--run); font: 500 .9rem/1.4 var(--mono); }
 .stats-label,
 .trace-head,
 .trace-index,
@@ -299,6 +319,8 @@ h1 span { color: var(--signal); }
 }
 
 .hero-lede strong { color: #edf5f0; font-weight: 600; }
+/* Keep the denser CJK hero within the same first-screen contract as EN. */
+html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .cta-row {
   display: flex;
@@ -1639,6 +1661,7 @@ h2 {
   .stat-group { padding: 20px 20px; border-right: 0; border-bottom: 1px solid var(--line-dark); }
   .stat-group:last-child { border-bottom: 0; }
   .stats-groups { grid-template-columns: 1fr; }
+  .avatar-wall { align-items: flex-start; flex-direction: column; gap: 10px; }
   .stats-label { padding: 18px 20px; }
 
   .thesis,
@@ -1676,6 +1699,9 @@ h2 {
   .run-option { min-height: auto; padding: 28px 22px; }
   .run-option .button { align-self: stretch; }
   .pricing-equation { grid-template-columns: 1fr; gap: 10px; padding: 24px 20px; }
+  .runtime-proof { padding: 16px 20px 6px; }
+  .runtime-proof-line { font-size: .75rem; }
+  .founding-offer { align-items: flex-start; flex-wrap: wrap; gap: 8px 12px; }
   .pricing-equation small { grid-column: 1; }
 
   .future-loop { grid-template-columns: 1fr; margin-top: 55px; }
