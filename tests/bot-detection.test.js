@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { isBot, visitSignals } from "../src/bot-detection.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { isBot, resetBehaviorSignals, visitSignals } from "../src/bot-detection.js";
 
 // Issue #280: classification rested on an exact match of one probe UA, so
 // the 2856 crawler rows in visitor_events all landed is_bot=0. The two
@@ -16,12 +16,16 @@ describe("bot detection (Issue #280)", () => {
   const GPTBOT = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)";
   const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
 
-  function requestWith({ ua, asn } = {}) {
+  function requestWith({ ua, asn, path = "/" } = {}) {
     const headers = ua === undefined ? {} : { "User-Agent": ua };
-    const request = new Request("https://beta.orbi.build/", { headers });
+    const request = new Request(`https://beta.orbi.build${path}`, { headers });
     if (asn !== undefined) request.cf = { asn };
     return request;
   }
+
+  beforeEach(() => {
+    resetBehaviorSignals();
+  });
 
   // The pinned hashes are the SHA-256 of the UA, first 16 hex characters,
   // computed outside the implementation (openssl dgst -sha256) — the report
@@ -90,6 +94,46 @@ describe("bot detection (Issue #280)", () => {
 
   it("classifies without request.cf at all (local dev): UA-only, human", () => {
     expect(isBot(requestWith({ ua: CHROME_127 }))).toBe(false);
+  });
+
+  it("marks one vid scanning many paths in a short window", async () => {
+    for (let path = 0; path < 11; path += 1) {
+      expect(await visitSignals(requestWith({ ua: CHROME_127, path: `/page-${path}` }), {
+        vid: "scanner",
+        path: `/page-${path}`,
+        ref: "",
+      })).toMatchObject({ is_bot: 0 });
+    }
+    expect(await visitSignals(requestWith({ ua: CHROME_127, path: "/page-11" }), {
+      vid: "scanner",
+      path: "/page-11",
+      ref: "",
+    })).toMatchObject({ is_bot: 1 });
+  });
+
+  it("marks a burst of one-hit vids sharing a source fingerprint", async () => {
+    for (let index = 0; index < 7; index += 1) {
+      expect(await visitSignals(requestWith({ ua: CHROME_127, path: `/page-${index}` }), {
+        vid: `crawler-${index}`,
+        path: `/page-${index}`,
+        ref: "direct",
+      })).toMatchObject({ is_bot: 0 });
+    }
+    expect(await visitSignals(requestWith({ ua: CHROME_127, path: "/page-7" }), {
+      vid: "crawler-7",
+      path: "/page-7",
+      ref: "direct",
+    })).toMatchObject({ is_bot: 1 });
+  });
+
+  it("keeps a normal referred visitor human", async () => {
+    for (const [index, path] of ["/", "/pricing/", "/docs/"].entries()) {
+      expect(await visitSignals(requestWith({ ua: CHROME_127, path }), {
+        vid: "human",
+        path,
+        ref: "x-2609201650",
+      })).toMatchObject({ is_bot: 0 });
+    }
   });
 
   it("returns the verdict with its evidence: asn and ua_hash, never the raw UA", async () => {
