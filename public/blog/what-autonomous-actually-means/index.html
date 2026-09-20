@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>An autonomous coding agent that can tell itself no | Orbi</title>
+  <meta name="description" content="Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.">
+  <link rel="canonical" href="https://orbi.build/blog/what-autonomous-actually-means/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="An autonomous coding agent that can tell itself no">
+  <meta property="og:description" content="Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.">
+  <meta property="og:url" content="https://orbi.build/blog/what-autonomous-actually-means/">
+  <meta property="article:published_time" content="2026-09-20">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/what-autonomous-actually-means/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-20</p>
+        <h1 id="post-title">An autonomous coding agent that can tell itself no</h1>
+        <p class="hero-lede">Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>Search for an autonomous coding agent and you will find a lot of tools that
+open pull requests. That part has been solved for a while. The part nobody
+shows you is the refusal: what happens when something reads the diff and says
+this does not ship.</p>
+<p>I want to walk through one delivery where that happened. The writing part is
+easy to demo. The refusal is not.</p>
+<h2>The delivery</h2>
+<p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> described a real
+defect in our own release code. A change had moved the docs sync before the tag
+push, which opened three windows where a tagged release could exist without its
+docs page.</p>
+<p>The Issue got the <code>ai-ready</code> label. Nothing else was set up.</p>
+<p>Orbi claimed it, worked in an isolated worktree, and opened
+<a href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a> against a recorded base
+commit. So far this is what every agent does.</p>
+<p>Then a second session, with a fresh context and no memory of writing the code,
+read that diff.</p>
+<h2>The refusal</h2>
+<p>Round one came back with one Major finding. Not a style note:</p>
+<blockquote>
+<p><strong>Location:</strong> <code>src/orbi/release.py:2377</code></p>
+<p><strong>Note:</strong> If <code>publish_release</code> fails after the tag is pushed,
+<code>rollback_release_docs</code> removes the docs commit while leaving the remote tag
+published. CI can then observe a released tag without its docs page,
+violating acceptance criteria.</p>
+</blockquote>
+<p>The fix for the bug had reintroduced the bug, in a narrower window. The review
+named the file, the line, the mechanism, and what a correct fix would look like.</p>
+<p>Orbi read the finding, pushed a recovery path, and ran again. Round two came
+back too, this time on coverage: new branches with no tests. Three more commits.</p>
+<p>Nine commits in total, +427/-43, three hours and two minutes from the Issue to
+the merge. Then <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a>,
+with the Issue and the PR listed in the generated notes.</p>
+<p>No human decided anything in that window.</p>
+<h2>The part the screenshots cannot show</h2>
+<p>Here is something I had to label on the video we cut from this run, because the
+frames are misleading on their own.</p>
+<p>The runner posts through my own GitHub account. It has my token, so its commits
+carry my name and its review comments carry my name and my avatar. On screen,
+the review that blocked PR #1023 appears under <code>xqliu</code>, with the badges
+<code>Collaborator</code> and <code>Author</code>.</p>
+<p>A first-time visitor reads that as a developer reviewing his own pull request,
+which is exactly the impression the whole exercise is meant to refute. Directly
+below that comment sits a <code>github-actions</code> comment wearing a <code>Bot</code> badge, so the
+same screen teaches you what a bot looks like here and then shows you a review
+that is not one.</p>
+<p>I cannot make GitHub show it differently. What I can do is say it out loud: that
+was a second model, running in a separate session, and it had no memory of
+writing the code it refused.</p>
+<h2>What changes when the gate can fail</h2>
+<p>An agent that writes code and opens a PR has moved the work to a human. Someone
+still has to read it, decide, and merge. The agent did the typing.</p>
+<p>Making the gate real turned out to be mostly plumbing. The verdict has to be
+bound to a specific commit, or a later push slips past a judgement that was
+issued for an earlier one. And the findings have to be specific enough that a
+fresh session, with no memory of the original work, can act on them: a check
+that only says &quot;not done yet&quot; leaves the next session guessing.</p>
+<p>The harder part is that it has to be allowed to fail the delivery outright. I
+have been comparing notes with a few maintainers who ship gates like this, and
+they all report the same thing: people leave the check advisory, because a
+blocking check slows down rapid iteration.</p>
+<p>I think that is about who is waiting rather than whether the check is right.
+Blocking a human&#39;s PR costs that human time right now, and they feel it.
+Blocking an agent&#39;s PR costs nobody anything, because the agent reads the
+finding and goes again at 3am while everyone is asleep.</p>
+<h2>Trying it</h2>
+<p>The whole loop is one container. systemd runs as PID 1 inside it, which is what
+the cgroup bind is for:</p>
+<pre><code class="language-bash">docker run -d --name orbi \
+  --stop-signal SIGRTMIN+3 \
+  --tmpfs /run --tmpfs /tmp \
+  --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+  -v orbi-deploy:/orbi \
+  -v orbi-work:/work \
+  -e GH_TOKEN=&quot;github_pat_xxx&quot; \
+  -e ORBI_SOURCE_REPO=&quot;OWNER/REPO&quot; \
+  -e ORBI_PI_PROVIDER=deepseek \
+  -e ORBI_PI_MODEL=deepseek-chat \
+  -e ORBI_PI_BASE_URL=https://api.deepseek.com \
+  -e ORBI_PI_API_KEY=&quot;sk-xxx&quot; \
+  ghcr.io/orbi-build/orbi:latest
+</code></pre>
+<p>The engine is whichever model you point those four variables at. Label an Issue
+<code>ai-ready</code> and the next tick picks it up. The review runs as a separate session
+against the frozen head, and nothing merges unless that session passes it.
+Full walkthrough: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>.</p>
+<h2>The ledger</h2>
+<p>This is running on its own repository. As of today, 27 days in: 334 merged pull
+requests from <code>orbi/</code> branches, 51 tagged releases.</p>
+<p>Every one of those is a link you can open, including the reviews that blocked
+something and the commits that came after.</p>
+<p>Orbi is open source and self-hostable:
+<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>.</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <a href="https://docs.orbi.build">Docs</a>
+      <a href="/cloud/">Cloud</a>
+      <a href="/compare/">Compare</a>
+      <a href="https://github.com/orbi-build/orbi">GitHub</a>
+      <a href="https://x.com/xqliu" rel="me">X</a>
+      <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/orbi-build/orbi/releases">Releases</a>
+      <a href="https://status.orbi.build">Status</a>
+      <a href="/#direction">Direction</a>
+      <a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a>
+      <a href="/zh/blog/what-autonomous-actually-means/" lang="zh-CN">中文</a>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>
