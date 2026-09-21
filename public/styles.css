@@ -1493,7 +1493,7 @@ h2 {
 
 .site-footer {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 3fr);
   gap: 34px;
   align-items: center;
   padding-top: 34px;
@@ -1505,7 +1505,7 @@ h2 {
 
 .wordmark-footer { color: var(--ink); }
 .site-footer p { margin: 0; }
-.site-footer nav { gap: 20px; }
+.site-footer nav { flex-wrap: wrap; gap: 20px; }
 .site-footer nav a { text-decoration: none; }
 .site-footer nav a:hover { color: var(--ink); }
 
@@ -1576,7 +1576,7 @@ h2 {
   .pricing-equation small { grid-column: 2; }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .menu-toggle { display: grid; }
 
   .site-header nav {

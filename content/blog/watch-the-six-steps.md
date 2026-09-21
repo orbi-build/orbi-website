@@ -19,19 +19,40 @@ There is now a video of the whole setup: [Orbi Cloud: from zero to a tagged rele
 
 ### Seven key screens from the seven-step flow
 
-<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="1280" height="360" loading="eager"><figcaption>Step 1: Orbi Cloud sign-in screen.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="1280" height="360" loading="eager">
+<figcaption>Step 1: Orbi Cloud sign-in screen.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App installation screen" width="1280" height="720" loading="eager"><figcaption>Step 2: GitHub App installation screen.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-2-install-app.png" alt="GitHub App installation screen" width="1280" height="720" loading="eager">
+<figcaption>Step 2: GitHub App installation screen.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="Repository connection form" width="1280" height="720"><figcaption>Step 3: Repository connection form.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-3-connect-repo.png" alt="Repository connection form" width="1280" height="720">
+<figcaption>Step 3: Repository connection form.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-4-provision.png" alt="Environment provisioning status" width="1280" height="720"><figcaption>Step 4: Environment provisioning status.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-4-provision.png" alt="Environment provisioning status" width="1280" height="720">
+<figcaption>Step 4: Environment provisioning status.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="First Issue status screen" width="1280" height="720"><figcaption>Step 5: First Issue status screen.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-5-first-issue.png" alt="First Issue status screen" width="1280" height="720">
+<figcaption>Step 5: First Issue status screen.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-6-release.png" alt="Release form with version field" width="1280" height="720"><figcaption>Step 6: Release form with version field.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-6-release.png" alt="Release form with version field" width="1280" height="720">
+<figcaption>Step 6: Release form with version field.</figcaption>
+</figure>
 
-<figure class="post-media"><img src="/img/step-7-subscribe.png" alt="Managed Cloud subscription screen" width="1280" height="720"><figcaption>Step 7: Managed Cloud subscription screen.</figcaption></figure>
+<figure class="post-media">
+<img src="/img/step-7-subscribe.png" alt="Managed Cloud subscription screen" width="1280" height="720">
+<figcaption>Step 7: Managed Cloud subscription screen.</figcaption>
+</figure>
 
 The seven steps are the current Cloud onboarding path:
 
