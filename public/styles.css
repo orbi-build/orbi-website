@@ -1514,8 +1514,13 @@ h2 {
   min-width: 0;
   gap: 16px;
 }
-.site-footer .footer-link-group { min-width: 0; }
-.site-footer .footer-link-group a + a { margin-top: 6px; }
+.site-footer nav ul {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer nav li + li { margin-top: 6px; }
 .site-footer nav a {
   display: block;
   overflow-wrap: anywhere;
@@ -1760,6 +1765,7 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
+  .site-footer nav li + li { margin-top: 6px; }
 }
 
 @media (max-width: 430px) {
