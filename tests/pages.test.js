@@ -281,7 +281,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 16-item footer nav on every content page", () => {
+  it("carries the 17-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -291,6 +291,7 @@ describe("one unified footer on every content page", () => {
       const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;
       expect(items, `${page.output}: footer nav drifted`).toEqual([
         page.nav.docsHref,
+        "https://cloud-docs.orbi.build/?ref=footer",
         `${prefix}/cloud/`,
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
@@ -476,11 +477,11 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
 describe("Cloud documentation links (Issue #315)", () => {
   const expectations = {
     "cloud/index.html": {
-      docs: "https://orbi-cloud.mintlify.app",
+      docs: "https://cloud-docs.orbi.build/?ref=cloud-nav",
       selfHost: "https://docs.orbi.build",
     },
     "zh/cloud/index.html": {
-      docs: "https://orbi-cloud.mintlify.app/zh",
+      docs: "https://cloud-docs.orbi.build/?ref=cloud-nav",
       selfHost: "https://docs.orbi.build/zh",
     },
   };
@@ -495,6 +496,9 @@ describe("Cloud documentation links (Issue #315)", () => {
       );
       expect(html, `${output}: self-hosting CTA`).toContain(
         `<a data-cta="install" href="${expected.selfHost}">`,
+      );
+      expect(html, `${output}: visible Cloud docs CTA`).toContain(
+        'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
       );
     }
   });
