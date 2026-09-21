@@ -1293,7 +1293,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
     for (const match of stepImages) {
       expect(match[0]).toContain(`width="2560" height="1440"`);
-      expect(match[0]).toContain(`srcset="${match[1]}"`);
+      expect(match[0]).toContain(`srcset="${match[1]} 2560w"`);
       expect(match[0]).toContain('sizes="(min-width: 900px) 784px, 100vw"');
     }
   });
