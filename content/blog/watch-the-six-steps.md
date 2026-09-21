@@ -3,9 +3,33 @@ title: Watch the seven steps, start to finish
 date: 2026-09-21
 summary: An 83-second video of the whole Orbi Cloud setup, from signing in with GitHub to subscribing after a tagged release. Every frame is the real product, and the seventh step is the one that starts paid delivery.
 lang: en
+author: Orbi
+image: /img/blog-watch-six-steps.png
+video_name: Orbi Cloud setup from zero to a tagged release in seven steps
+video_description: An 83-second walkthrough of the seven-step Orbi Cloud setup from GitHub sign-in through subscription.
+video_thumbnail: /img/blog-watch-six-steps.png
+video_upload_date: 2026-09-21
+video_duration: PT1M23S
+video_embed_url: https://www.youtube.com/embed/_OEaBwrLvvs
 ---
 
 There is now a video of the whole setup: [Orbi Cloud: from zero to a tagged release in seven steps](https://www.youtube.com/watch?v=_OEaBwrLvvs). It runs 83 seconds, it is in English, and it has chapters, so you can jump to the step you are stuck on.
+
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud setup from zero to subscription in seven steps" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Watch the complete seven-step Orbi Cloud setup.</figcaption></figure>
+
+### Six key screens from the seven-step flow
+
+<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="1280" height="720" loading="lazy"><figcaption>Step 1: Orbi Cloud sign-in screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App installation screen" width="1280" height="720" loading="lazy"><figcaption>Step 2: GitHub App installation screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="Repository connection form" width="1280" height="720" loading="lazy"><figcaption>Step 3: Repository connection form.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-4-provision.png" alt="Environment provisioning status" width="1280" height="720" loading="lazy"><figcaption>Step 4: Environment provisioning status.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="First Issue status screen" width="1280" height="720" loading="lazy"><figcaption>Step 5: First Issue status screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-6-release.png" alt="Release form with version field" width="1280" height="720" loading="lazy"><figcaption>Step 6: Release form with version field.</figcaption></figure>
 
 The seven steps are the current Cloud onboarding path:
 
