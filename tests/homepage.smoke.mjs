@@ -899,9 +899,10 @@ async function assertProofLoop(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262: the reduced-motion degradation path a vestibular user actually
-// gets — the autoplaying video is hidden and the static poster takes its
-// place. emulated here, because no string check exercises the media query.
+// Issue #262 / #318: homepage autoplay proof is replaced by its static
+// poster under reduced motion; the narrated, manually controlled Cloud
+// walkthrough stays visible and playable. Emulated here because no string
+// check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
   const page = await browser.newPage({
     viewport: { width: 1366, height: 768 },
@@ -916,11 +917,17 @@ async function assertProofLoopReducedMotion(browser, path) {
       background: getComputedStyle(figure).backgroundImage,
     };
   });
-  if (state.display !== "none") {
-    throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
-  }
-  if (!state.background.includes("delivery-loop-poster.jpg")) {
-    throw new Error(`${path}: reduced motion must show the static poster, got background=${state.background}`);
+  if (path.includes("/cloud/")) {
+    if (state.display === "none") {
+      throw new Error(`${path}: reduced motion must keep the controlled Cloud video visible`);
+    }
+  } else {
+    if (state.display !== "none") {
+      throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
+    }
+    if (!state.background.includes("delivery-loop-poster.jpg")) {
+      throw new Error(`${path}: reduced motion must show the static poster, got background=${state.background}`);
+    }
   }
   await page.close();
 }
@@ -1037,8 +1044,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  // The assertions below explicitly prove playback, so DOM load is the
-  // bounded navigation gate rather than waiting on autoplay network churn.
+  // DOM load is the bounded navigation gate; this narrated video is manually
+  // controlled and must remain paused until the visitor presses play.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   if (!process.env.BASE_URL) {
     const availability = page.locator("[data-founding-availability]");
@@ -1053,35 +1060,40 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await demo.count()) !== 1 || (await video.count()) !== 1) {
     throw new Error(`${path}: expected exactly one Cloud walkthrough video`);
   }
-  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+  for (const attribute of ["playsinline", "controls"]) {
     if ((await video.getAttribute(attribute)) === null) {
       throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
+    }
+  }
+  for (const attribute of ["autoplay", "loop", "muted"]) {
+    if ((await video.getAttribute(attribute)) !== null) {
+      throw new Error(`${path}: narrated Cloud walkthrough must not have ${attribute}`);
     }
   }
   if ((await video.getAttribute("preload")) !== "metadata") {
     throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
   }
-  if ((await video.getAttribute("poster")) !== "/video/delivery-loop-poster.jpg") {
+  if ((await video.getAttribute("poster")) !== "/video/cloud-onboarding-poster.jpg") {
     throw new Error(`${path}: Cloud walkthrough poster is missing`);
+  }
+  if ((await video.getAttribute("src")) !== "/video/cloud-onboarding.mp4") {
+    throw new Error(`${path}: Cloud walkthrough mp4 is not the onboarding recording`);
+  }
+  if ((await demo.locator('source[src="/video/cloud-onboarding.webm"]').count()) !== 1
+    || (await demo.locator('source[src="/video/cloud-onboarding.mp4"]').count()) !== 1) {
+    throw new Error(`${path}: Cloud walkthrough is missing an onboarding source`);
+  }
+  const caption = (await demo.locator("figcaption").textContent()).replace(/\s+/g, " ");
+  if (/coming soon|temporary|即将上线|临时/i.test(caption)) {
+    throw new Error(`${path}: Cloud walkthrough still has placeholder caption copy`);
   }
   const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
-  try {
-    await page.waitForFunction(() => {
-      const video = document.querySelector(".cloud-demo .proof-loop-video");
-      return video && !video.paused && video.readyState >= 3 && video.currentTime > 0;
-    }, null, { timeout: 5000 });
-  } catch {
-    const state = await video.evaluate((element) => ({
-      paused: element.paused,
-      readyState: element.readyState,
-      networkState: element.networkState,
-      currentTime: element.currentTime,
-      error: element.error && element.error.code,
-    }));
-    throw new Error(`${path}: Cloud walkthrough is not playing: ${JSON.stringify(state)}`);
+  const mediaState = await video.evaluate((element) => ({ paused: element.paused, readyState: element.readyState }));
+  if (!mediaState.paused || mediaState.readyState < 1) {
+    throw new Error(`${path}: narrated Cloud walkthrough must load metadata paused, got ${JSON.stringify(mediaState)}`);
   }
 
   const h1Count = await page.locator("h1").count();
