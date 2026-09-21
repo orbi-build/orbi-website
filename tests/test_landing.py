@@ -850,7 +850,7 @@ class LandingTests(unittest.TestCase):
         self.assertIn("branches:\n      - beta", workflow)
         self.assertIn("needs: require-ci", workflow)
         self.assertIn("conclusion", workflow)
-        self.assertIn("gh run list", workflow)
+        self.assertIn("timeout 120s gh run list", workflow)
         # the log must name the branch and commit the deployment was built from
         self.assertIn("git rev-parse HEAD", workflow)
         self.assertIn("GITHUB_REF_NAME", workflow)

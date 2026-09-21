@@ -34,7 +34,7 @@ jobs:
             echo "CI completed successfully for $TEST_SHA"
             exit 0
           fi
-          ci_run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
+          ci_run_id="$(timeout 120s gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
             --branch beta --commit "$TEST_SHA" --status success --limit 1 \
             --json databaseId --jq '.[0].databaseId // empty')"
           if [[ -z "$ci_run_id" ]]; then
