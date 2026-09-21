@@ -302,8 +302,7 @@ h2 {
 
 h1 {
   margin-bottom: 24px;
-  font-size: clamp(2.5rem, 3.3vw, 4rem);
-  line-height: 0.9;
+  font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem);
   max-width: var(--hero-copy-width);
 }
 
@@ -311,10 +310,10 @@ h1 {
    the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
    headline and the hero padding so the buttons stay in the first screen. */
 @media (max-height: 820px) and (min-width: 981px) {
-  .hero { min-height: auto; padding: 60px 0 64px; }
-  h1 { margin-bottom: 20px; }
-  .hero-lede { margin-bottom: 26px; font-size: 1.05rem; }
-  .eyebrow { margin-bottom: 20px; }
+  .hero { min-height: auto; padding: 0 0 64px; }
+  h1 { margin-bottom: 8px; }
+  .hero-lede { margin-bottom: 8px; font-size: 1.05rem; }
+  .eyebrow { margin-bottom: 12px; }
   .trust-line { margin-top: 22px; }
 }
 
@@ -1678,8 +1677,9 @@ h2 {
   .site-header { min-height: 72px; }
   .wordmark { font-size: 1rem; }
 
-  .hero { gap: 56px; padding: 70px 0 58px; }
-  h1 { line-height: 0.91; }
+  .hero { gap: 56px; padding: 10px 0 58px; }
+  .eyebrow { margin-bottom: 12px; }
+  h1 { margin-bottom: 12px; }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }

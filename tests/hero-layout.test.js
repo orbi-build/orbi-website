@@ -10,7 +10,7 @@ describe("shared hero layout (Issue #355)", () => {
     const css = await read("public/styles.css");
 
     expect(css).toContain("--hero-copy-width: 48rem;");
-    expect(css).toContain("font-size: clamp(2.5rem, 3.3vw, 4rem);");
+    expect(css).toContain("font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem);");
     expect(css).toContain("max-width: var(--hero-copy-width);");
     expect(css.match(/max-width: var\(--hero-copy-width\);/g)).toHaveLength(3);
     expect(css).not.toContain("font-size: clamp(3.4rem, 5.4vw, 6rem);");
@@ -19,11 +19,16 @@ describe("shared hero layout (Issue #355)", () => {
 
   it("keeps heading-size changes within 20% across acceptance viewports", async () => {
     const css = await read("public/styles.css");
-    const match = css.match(/h1 \{[\s\S]*?font-size: clamp\(([\d.]+)rem, ([\d.]+)vw, ([\d.]+)rem\);/);
+    const match = css.match(
+      /h1 \{[\s\S]*?font-size: clamp\(([\d.]+)rem, calc\(([\d.]+)rem \+ ([\d.]+)vw\), ([\d.]+)rem\);/,
+    );
     expect(match).not.toBeNull();
 
-    const [, minRem, fluidVw, maxRem] = match.map(Number);
-    const fontSize = (viewport) => Math.min(maxRem * 16, Math.max(minRem * 16, viewport * fluidVw / 100));
+    const [, minRem, baseRem, fluidVw, maxRem] = match.map(Number);
+    const fontSize = (viewport) => Math.min(
+      maxRem * 16,
+      Math.max(minRem * 16, baseRem * 16 + viewport * fluidVw / 100),
+    );
     const sizes = [390, 768, 1024, 1440, 1619].map(fontSize);
 
     for (let index = 1; index < sizes.length; index += 1) {
