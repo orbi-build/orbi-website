@@ -1065,8 +1065,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  // DOM load is the bounded navigation gate; this narrated video is manually
-  // controlled and must remain paused until the visitor presses play.
+  // DOM load is the bounded navigation gate. The Cloud walkthrough requests
+  // muted autoplay; deployed-browser playback remains the maintainer gate.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   if (!process.env.BASE_URL) {
     const availability = page.locator("[data-founding-availability]");
