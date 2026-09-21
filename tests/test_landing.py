@@ -845,7 +845,12 @@ class LandingTests(unittest.TestCase):
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
+        self.assertIn("workflows:\n      - CI", workflow)
+        self.assertIn("types:\n      - completed", workflow)
         self.assertIn("branches:\n      - beta", workflow)
+        self.assertIn("needs: require-ci", workflow)
+        self.assertIn("conclusion", workflow)
+        self.assertIn("timeout 120s gh run list", workflow)
         # the log must name the branch and commit the deployment was built from
         self.assertIn("git rev-parse HEAD", workflow)
         self.assertIn("GITHUB_REF_NAME", workflow)
@@ -853,7 +858,9 @@ class LandingTests(unittest.TestCase):
         self.assertIn("cloudflare/wrangler-action@v4", workflow)
         self.assertIn('node-version: "20.19.0"', workflow)
         self.assertIn('wranglerVersion: "4.34.0"', workflow)
-        self.assertIn("npm test", workflow)
+        self.assertNotIn("npm test", workflow)
+        self.assertIn("npm run test:browser", workflow)
+        self.assertIn("BASE_URL=https://beta.orbi.build", workflow)
         self.assertIn("command: deploy --env beta", workflow)
         self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
         self.assertIn("CLOUDFLARE_ACCOUNT_ID", workflow)
@@ -869,7 +876,7 @@ class LandingTests(unittest.TestCase):
         # regress past a deploy
         self.assertIn('check_page "https://beta.orbi.build/cloud/"', workflow)
         self.assertIn('check_page "https://beta.orbi.build/cloud"', workflow)
-        self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
+        self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
         # environment; beta's is the GitHub OAuth 302 served by Cloud
@@ -970,12 +977,13 @@ class LandingTests(unittest.TestCase):
             self.assertLess(workflow.index("npm ci"), workflow.index("install-deps chromium"))
             self.assertLess(workflow.index("install-deps chromium"), workflow.index("install chromium"))
 
-    def test_ci_workflow_runs_for_pull_requests_not_beta_pushes(self) -> None:
+    def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-        # Issue #348: Deploy beta owns post-merge beta pushes. CI must not
-        # rerun the same tree after the PR gate has already passed.
-        self.assertNotIn("  push:\n", workflow)
+        # Issue #347: CI is the single full-test gate for both PRs and beta
+        # pushes; deploy-beta waits for this workflow instead of rerunning it.
+        self.assertIn("  push:\n    branches:\n      - beta", workflow)
         self.assertIn("pull_request:", workflow)
+        self.assertEqual(workflow.count("npm test"), 1)
         # Issue #210: a newer CI run for the same branch cancels the older one,
         # so a pushed fix never queues behind runs it supersedes; the group is
         # per-branch, not per-repo
