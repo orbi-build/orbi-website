@@ -19,9 +19,9 @@ video_embed_url: https://www.youtube.com/embed/_OEaBwrLvvs
 
 ### 七步流程里的七个关键画面
 
-<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="1280" height="360"><figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="1280" height="360" loading="eager"><figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="1280" height="720"><figcaption>第 2 步：GitHub App 安装页面。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="1280" height="720" loading="eager"><figcaption>第 2 步：GitHub App 安装页面。</figcaption></figure>
 
 <figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="1280" height="720"><figcaption>第 3 步：连接仓库表单。</figcaption></figure>
 
