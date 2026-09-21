@@ -310,6 +310,26 @@ function escAttr(value) {
 
 // --- Blog posts: Markdown files under content/blog (Issue #212) ---
 
+// Blog articles are static output, so their subscription copy must carry the
+// values a reader sees rather than the runtime tokens used by Cloud pages.
+const BLOG_SUBSCRIPTION_VALUES = {
+  __FREE_DELIVERIES__: "3",
+  __CLOUD_MONTHLY_USD__: "79",
+  __INCLUDED_TOKENS__: "300,000,000",
+};
+
+export function assertNoUnfilledPlaceholders(html, output) {
+  const placeholders = [...new Set(html.match(/__[A-Z_]+__/g) ?? [])];
+  if (placeholders.length > 0) {
+    throw new Error(`${output}: rendered HTML has unfilled placeholders: ${placeholders.join(", ")}`);
+  }
+}
+
+function renderBlogBody(html) {
+  return Object.entries(BLOG_SUBSCRIPTION_VALUES)
+    .reduce((out, [token, value]) => out.replaceAll(token, value), html);
+}
+
 // The blog's YAML subset: one `key: value` per line, values are plain
 // single-line strings (they may contain colons — the split is on the first
 // one). This keeps the dependency count at one: marked renders, this reads.
@@ -521,7 +541,7 @@ function renderPost(post, template) {
     DATE: post.date,
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
-    BODY: post.html,
+    BODY: renderBlogBody(post.html),
     FOOTER: toLayout(renderFooter(page), "pretty"),
   });
 }
@@ -701,7 +721,9 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   for (const post of posts) {
     const out = join(outDir, post.output);
     await mkdir(dirname(out), { recursive: true });
-    await writeFile(out, renderPost(post, POST_TEMPLATE));
+    const html = renderPost(post, POST_TEMPLATE);
+    assertNoUnfilledPlaceholders(html, post.output);
+    await writeFile(out, html);
   }
   await writeFile(
     join(outDir, "sitemap.xml"),

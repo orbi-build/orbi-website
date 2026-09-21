@@ -85,10 +85,10 @@
 <li><strong>Provision the environment.</strong> About a minute.</li>
 <li><strong>Your first Issue.</strong> Label it <code>ai-ready</code>, and Orbi writes the code and opens a pull request.</li>
 <li><strong>Cut a release.</strong> Type the version; Orbi bumps it, tags it and publishes the GitHub Release.</li>
-<li><strong>Subscribe.</strong> The first <code>__FREE_DELIVERIES__</code> deliveries are free; then the plan is US$<code>__CLOUD_MONTHLY_USD__</code>/month with <code>__INCLUDED_TOKENS__</code> tokens included. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.</li>
+<li><strong>Subscribe.</strong> The first <code>3</code> deliveries are free; then the plan is US$<code>79</code>/month with <code>300,000,000</code> tokens included. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.</li>
 </ol>
 <h2>The seventh step is the one that starts paid delivery</h2>
-<p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer — an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code>__FREE_DELIVERIES__</code> free deliveries.</p>
+<p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer — an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code>3</code> free deliveries.</p>
 <p>The release step still requires your decision: <em>you decide the version, Orbi never increments it for you.</em> The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care — that is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.</p>
 <p>Step five is one label, and you can add it without leaving the terminal:</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready

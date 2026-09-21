@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { assertNoUnfilledPlaceholders, buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -231,6 +231,18 @@ describe("build output is committed (npm run build ran)", () => {
       // Restore so the clean-source test stays valid on rerun.
       git(["checkout", "--", "page.html"]);
     });
+  });
+
+  it("renders blog subscription values and rejects unfilled placeholders", () => {
+    for (const output of ["blog/watch-the-six-steps/index.html", "zh/blog/watch-the-six-steps/index.html"]) {
+      const html = shipped.get(output);
+      expect(html).toContain("3");
+      expect(html).toContain("US$<code>79</code>");
+      expect(html).toContain("300,000,000");
+      expect(html).not.toMatch(/__[A-Z_]+__/);
+    }
+    expect(() => assertNoUnfilledPlaceholders("<p>__FREE_DELIVERIES__</p>", "fixture.html"))
+      .toThrow("fixture.html: rendered HTML has unfilled placeholders: __FREE_DELIVERIES__");
   });
 
   it("leaves no build markers or unfilled slots in shipped pages", () => {
