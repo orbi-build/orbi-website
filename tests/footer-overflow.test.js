@@ -66,9 +66,10 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
     it(`${name} has no horizontal overflow at every supported width`, async () => {
       const page = await browser.newPage();
       try {
+        await page.setViewportSize({ width: widths[0], height: 900 });
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
-          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
           const footer = page.locator("nav.footer-compare");
           const result = await footer.evaluate((element) => {
             const style = getComputedStyle(element);
