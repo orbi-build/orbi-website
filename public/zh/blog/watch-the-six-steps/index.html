@@ -85,10 +85,10 @@
 <li><strong>开通运行环境</strong>，大约一分钟。</li>
 <li><strong>第一个 Issue</strong> —— 打上 <code>ai-ready</code>，Orbi 开始写代码，写完提 PR。</li>
 <li><strong>发一个版本</strong> —— 你填版本号，Orbi 负责 bump、打 tag、发布 GitHub Release。</li>
-<li><strong>订阅</strong> —— 前 <code>3</code> 次交付免费；之后是每月 US$<code>79</code>，包含 <code>300,000,000</code> tokens。额度用完只会暂停新的交付，不会删除数据，随时可以取消。</li>
+<li><strong>订阅</strong> —— 前 <code>__FREE_DELIVERIES__</code> 次交付免费；之后是每月 US$<code>__CLOUD_MONTHLY_USD__</code>，包含 <code>__INCLUDED_TOKENS__</code> tokens。额度用完只会暂停新的交付，不会删除数据，随时可以取消。</li>
 </ol>
 <h2>第七步是开始付费交付的那一步</h2>
-<p>第一到第六步是配置和交付：你把 Orbi 推断不出来的东西交给它 —— 身份、安装、仓库、运行环境、Issue 和 Release。完成 <code>3</code> 次免费交付后，第七步就是选择 Managed Cloud 计划。</p>
+<p>第一到第六步是配置和交付：你把 Orbi 推断不出来的东西交给它 —— 身份、安装、仓库、运行环境、Issue 和 Release。完成 <code>__FREE_DELIVERIES__</code> 次免费交付后，第七步就是选择 Managed Cloud 计划。</p>
 <p>发版这一步仍然需要你做决定：<strong>版本号由你决定，Orbi 不替你递增</strong>。runner 会改版本文件、打 tag、发布 Release，但它不选那个数字。版本号是一个声明 —— 说这次改了什么、谁该关心 —— 这是产品决策，靠计数器读一个数出来就是在假装它不是。发布范围从同名 Milestone 派生；没有同名 Milestone，发版会停在范围派生这一步，并告诉你为什么。</p>
 <p>第五步就是打一个标签，不用离开终端：</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready
