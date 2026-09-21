@@ -1877,11 +1877,19 @@ class CompareIndexTests(unittest.TestCase):
 
     def test_every_deep_dive_links_its_page(self) -> None:
         """Eleven deep dives, each a link — no internal status badge (Issue #178)."""
-        for html in (self.en_html, self.zh_html):
-            entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
+        for html, href_pattern in (
+            (self.en_html, r"^/compare/[a-z-]+/$"),
+            (self.zh_html, r"^/zh/compare/[a-z-]+/$"),
+        ):
+            dive_list = re.search(r'<ul class="dive-list">(.*?)</ul>', html, re.DOTALL)
+            self.assertIsNotNone(dive_list, "deep-dive list not found")
+            entries = re.findall(r"<li>(.*?)</li>", dive_list.group(1), re.DOTALL)
             self.assertEqual(len(entries), 11, entries)
             for entry in entries:
-                self.assertIn('<a href="', entry, entry)
+                link = re.search(r'<a href="([^"]+)">', entry)
+                self.assertIsNotNone(link, entry)
+                href = link.group(1)
+                self.assertRegex(href, href_pattern, entry)
                 self.assertNotIn("dive-status", entry, entry)
 
     def test_the_closing_heading_names_the_choice_dimension(self) -> None:
