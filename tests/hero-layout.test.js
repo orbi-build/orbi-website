@@ -12,7 +12,7 @@ describe("shared hero layout (Issue #355)", () => {
     expect(css).toContain("--hero-copy-width: 48rem;");
     expect(css).toContain("font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem);");
     expect(css).toContain("max-width: var(--hero-copy-width);");
-    expect(css.match(/max-width: var\(--hero-copy-width\);/g)).toHaveLength(3);
+    expect(css.match(/max-width: var\(--hero-copy-width\);/g)).toHaveLength(2);
     expect(css).not.toContain("font-size: clamp(3.4rem, 5.4vw, 6rem);");
     expect(css).not.toContain("max-width: 9.4em;");
   });

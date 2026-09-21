@@ -1814,8 +1814,6 @@ h2 {
   padding: 84px 0 68px;
 }
 
-.compare-hero .hero-lede { max-width: var(--hero-copy-width); }
-
 .compare-section {
   padding-top: clamp(84px, 9vw, 140px);
   padding-bottom: clamp(84px, 9vw, 140px);
