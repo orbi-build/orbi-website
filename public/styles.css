@@ -1083,8 +1083,15 @@ h2 {
   display: grid;
   grid-template-columns: 34px 1fr;
   gap: 10px 16px;
+  min-width: 0;
   padding: 28px 32px 0 0;
   border-right: 1px solid var(--line);
+}
+
+.proof-ledger code { overflow-wrap: anywhere; }
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .proof-ledger-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .proof-ledger li + li { padding-left: 32px; }
