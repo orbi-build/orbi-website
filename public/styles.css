@@ -1676,8 +1676,7 @@ h2 {
 
   .hero { gap: 56px; padding: 10px 0 58px; }
   .eyebrow { margin-bottom: 12px; }
-  h1 { margin-bottom: 12px; font-size: clamp(3.5rem, 15.5vw, 5rem); }
-  html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
+  h1 { margin-bottom: 12px; font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }

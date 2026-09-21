@@ -37,22 +37,22 @@ const deepDives = [
 // source-of-truth boundary.
 const releaseClaims = {
   "/": {
-    h1: "Turn GitHub Issues into tagged releases",
+    h1: "File an Issue. Get a release.",
     lede: [
       "No new workspace.",
       "Orbi runs the delivery line on the Issues already in your repository",
       "GitHub stays the source of truth",
     ],
-    title: "tagged releases",
+    title: "File an Issue. Get a release.",
   },
   "/zh/": {
-    h1: "让 GitHub Issue 变成打 Tag 的发布",
+    h1: "提个 Issue，收个版本",
     lede: [
       "不用迁移工作流。",
       "在仓库里已有的 Issue 上跑完整条交付线",
       "GitHub 始终是唯一事实源",
     ],
-    title: "打 Tag 的 Release",
+    title: "提个 Issue，收个版本",
   },
 };
 
@@ -973,7 +973,7 @@ const cloudPages = {
     // Issue #237: the title now leads with the search term; the release
     // claim itself stays pinned on the h1 below and in the body.
     title: "Self-hosted or cloud coding agent",
-    h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
+    h1: "Orbi Cloud: file an Issue, get a release",
     loop: "GitHub Issue in, tagged release out",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
@@ -1007,9 +1007,9 @@ const cloudPages = {
   },
   "/zh/cloud/": {
     zh: "/cloud/",
-    title: "GitHub Issue 进，打好 Tag 的 Release 出",
-    h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
-    loop: "GitHub Issue 进，打好 Tag 的 Release 出",
+    title: "提个 Issue，收个版本",
+    h1: "Orbi Cloud：提个 Issue，收个版本",
+    loop: "提个 Issue，收个版本",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
     metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
