@@ -1,12 +1,17 @@
 name: Deploy beta
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - beta
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -14,7 +19,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  require-ci:
+    if: (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require successful CI for the deployed commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            echo "CI completed successfully for $TEST_SHA"
+            exit 0
+          fi
+          ci_run_id="$(timeout 120s gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
+            --branch beta --commit "$TEST_SHA" --status success --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty')"
+          if [[ -z "$ci_run_id" ]]; then
+            echo "::error::No successful CI run found for beta commit $TEST_SHA"
+            exit 1
+          fi
+          echo "Found successful CI run $ci_run_id for $TEST_SHA"
+
   deploy:
+    needs: require-ci
+    if: needs.require-ci.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -22,10 +53,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Record deployed source commit
+        env:
+          DEPLOY_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
         run: |
-          echo "beta deploy source branch: ${GITHUB_REF_NAME}"
+          echo "beta deploy source branch: ${DEPLOY_BRANCH:-$GITHUB_REF_NAME}"
           echo "beta deploy source commit: $(git rev-parse HEAD)"
 
       - name: Set up Node.js
@@ -36,9 +70,6 @@ jobs:
 
       - name: Install dependencies
         run: timeout 300s npm ci
-
-      - name: Run tests before deployment
-        run: timeout 300s npm test
 
       - name: Run landing and deployment contract tests
         run: timeout 300s python3 -m unittest tests.test_landing -v
