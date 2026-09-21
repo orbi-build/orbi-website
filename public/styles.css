@@ -1105,7 +1105,7 @@ h2 {
 .cloud-demo { margin-top: 40px; }
 .night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
 .night .cloud-demo figcaption { color: #9aada9; }
-@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
+@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }
 
 .ownership {
   padding: 110px 0;

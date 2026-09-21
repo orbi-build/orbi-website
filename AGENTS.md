@@ -404,6 +404,17 @@ ffprobe -v error -show_entries format=duration,size \
   -show_entries stream=codec_name,width,height -of default=nw=1 master.mp4
 ```
 
+## 别覆盖浏览器默认值
+
+`line-height`、`font-size` 的相对行为、表单控件外观、焦点环 —— 这些默认值是
+几十年跨语言、跨字体、跨设备的排版经验。写死一个数字覆盖它，等于用一个场景下
+试出来的值否定所有其它场景。
+
+翻车形态：`h1 { line-height: 0.9 }` 让英文大标题看着紧凑，中文字形填满 em box，
+直接行行重叠（#366）。补救时再加一条规则救中文，又多一处要维护的例外。
+
+**先用默认值。** 确实要改时，把作用域收到那一个元素上，并说明为什么默认值不够。
+
 ## Copy
 
 - Every user-facing string exists in both EN and ZH; the mirror gate enforces the
