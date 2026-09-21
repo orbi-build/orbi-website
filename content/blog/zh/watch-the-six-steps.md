@@ -20,37 +20,37 @@ video_embed_url: https://www.youtube.com/embed/_OEaBwrLvvs
 ### 七步流程里的七个关键画面
 
 <figure class="post-media">
-<img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="2560" height="1440" srcset="/img/step-1-sign-in.png 2560w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
+<img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="2560" height="1440" srcset="/img/step-1-sign-in.png" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="2560" height="1440" srcset="/img/step-2-install-app.png 2560w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
+<img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="2560" height="1440" srcset="/img/step-2-install-app.png" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>第 2 步：GitHub App 安装页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="2560" height="1440" srcset="/img/step-3-connect-repo.png 2560w" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="2560" height="1440" srcset="/img/step-3-connect-repo.png" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>第 3 步：连接仓库表单。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-4-provision.png" alt="开通运行环境状态" width="2560" height="1440" srcset="/img/step-4-provision.png 2560w" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-4-provision.png" alt="开通运行环境状态" width="2560" height="1440" srcset="/img/step-4-provision.png" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>第 4 步：开通运行环境状态。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" width="2560" height="1440" srcset="/img/step-5-first-issue.png 2560w" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" width="2560" height="1440" srcset="/img/step-5-first-issue.png" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>第 5 步：第一个 Issue 的状态页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-6-release.png" alt="填写版本号的发版表单" width="2560" height="1440" srcset="/img/step-6-release.png 2560w" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-6-release.png" alt="填写版本号的发版表单" width="2560" height="1440" srcset="/img/step-6-release.png" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>第 6 步：填写版本号的发版表单。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-7-subscribe.png" alt="Managed Cloud 订阅页面" width="2560" height="1440" srcset="/img/step-7-subscribe.png 2560w" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-7-subscribe.png" alt="Managed Cloud 订阅页面" width="2560" height="1440" srcset="/img/step-7-subscribe.png" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>第 7 步：Managed Cloud 订阅页面。</figcaption>
 </figure>
 

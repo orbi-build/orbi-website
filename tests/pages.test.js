@@ -1278,6 +1278,25 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(watch).toContain('"@type":"VideoObject"');
     expect(new Set(posts.map((post) => post.image)).size).toBe(4);
   });
+
+  it("keeps all seven onboarding screenshots uniform and sharp at the largest DPR 2 slot", async () => {
+    const watch = shipped.get("blog/watch-the-six-steps/index.html");
+    const stepImages = [...watch.matchAll(/<img src="(\/img\/step-[^"]+\.png)"[^>]+>/g)];
+    expect(stepImages).toHaveLength(7);
+
+    for (const [, src] of stepImages) {
+      const png = await readFile(join(ROOT, "public", src));
+      expect(png.subarray(1, 4).toString()).toBe("PNG");
+      const width = png.readUInt32BE(16);
+      const height = png.readUInt32BE(20);
+      expect({ src, width, height }).toEqual({ src, width: 2560, height: 1440 });
+    }
+    for (const match of stepImages) {
+      expect(match[0]).toContain(`width="2560" height="1440"`);
+      expect(match[0]).toContain(`srcset="${match[1]}"`);
+      expect(match[0]).toContain('sizes="(min-width: 900px) 784px, 100vw"');
+    }
+  });
 });
 
 // Issue #214: pairing is no longer "same slug or nothing". A post may declare
