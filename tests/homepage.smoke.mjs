@@ -513,9 +513,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // real Worker response through and records it; without BASE_URL the static
   // server has no /stats, so the same handler fulfills the request with the
   // fixture. Either way servedStats carries the exact payload the page
-  // received, and the wait below asserts the render against that payload —
-  // the pre-check above can only pass once a payload was rendered, so the
-  // recorded payload can never miss the window.
+  // received, and the wait below asserts the render against that payload.
   let servedStats = null;
   let liveStatsFetched = false;
   await page.route("**/stats", async (route) => {
@@ -567,8 +565,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   });
 
   // The homepage has an autoplaying video, so networkidle depends on media
-  // download timing and can stall the bounded CI suite. The assertions below
-  // explicitly wait for dynamic stats; DOM load is the correct navigation gate.
+  // download timing and can stall the bounded CI suite. Wait only for the
+  // functional /stats response; DOM load is the correct navigation gate.
+  const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats");
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
@@ -602,6 +601,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
+  await statsResponse.catch(() => {
+    throw new Error(`${path}: /stats was not requested`);
+  });
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
