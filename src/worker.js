@@ -249,6 +249,7 @@ function formatStatusText(stats) {
     "",
     "  Install:  curl -fsSL aiready.sh | sh",
     "  Docs:     https://docs.orbi.build",
+    "  Cloud:    https://cloud-docs.orbi.build/?ref=status",
     "",
   );
   return lines.join("\n");
