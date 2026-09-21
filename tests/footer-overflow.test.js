@@ -68,7 +68,7 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
       try {
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
-          await page.goto(`${baseUrl}${path}`, { waitUntil: "networkidle" });
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
           const footer = page.locator("nav.footer-compare");
           const result = await footer.evaluate((element) => {
             const style = getComputedStyle(element);
