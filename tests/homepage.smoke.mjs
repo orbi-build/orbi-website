@@ -924,9 +924,9 @@ async function assertProofLoop(browser, path, size, screenshot) {
 }
 
 // Issue #262 / #318: homepage autoplay proof is replaced by its static
-// poster under reduced motion; the narrated, manually controlled Cloud
-// walkthrough stays visible and playable. Emulated here because no string
-// check exercises the media query.
+// poster under reduced motion; the Cloud walkthrough follows the same
+// static-poster fallback with its onboarding poster. Emulated here because no
+// string check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
   const page = await browser.newPage({
     viewport: { width: 1366, height: 768 },
@@ -941,17 +941,14 @@ async function assertProofLoopReducedMotion(browser, path) {
       background: getComputedStyle(figure).backgroundImage,
     };
   });
-  if (path.includes("/cloud/")) {
-    if (state.display === "none") {
-      throw new Error(`${path}: reduced motion must keep the controlled Cloud video visible`);
-    }
-  } else {
-    if (state.display !== "none") {
-      throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
-    }
-    if (!state.background.includes("delivery-loop-poster.jpg")) {
-      throw new Error(`${path}: reduced motion must show the static poster, got background=${state.background}`);
-    }
+  if (state.display !== "none") {
+    throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
+  }
+  const expectedPoster = path.includes("/cloud/")
+    ? "cloud-onboarding-poster.jpg"
+    : "delivery-loop-poster.jpg";
+  if (!state.background.includes(expectedPoster)) {
+    throw new Error(`${path}: reduced motion must show ${expectedPoster}, got background=${state.background}`);
   }
   await page.close();
 }
@@ -1089,10 +1086,13 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
     }
   }
-  for (const attribute of ["autoplay", "loop", "muted"]) {
-    if ((await video.getAttribute(attribute)) !== null) {
-      throw new Error(`${path}: narrated Cloud walkthrough must not have ${attribute}`);
+  for (const attribute of ["autoplay", "muted"]) {
+    if ((await video.getAttribute(attribute)) === null) {
+      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
     }
+  }
+  if ((await video.getAttribute("loop")) !== null) {
+    throw new Error(`${path}: Cloud walkthrough must not loop`);
   }
   if ((await video.getAttribute("preload")) !== "metadata") {
     throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
@@ -1116,9 +1116,9 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
   await demo.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-video.png")}` });
-  const mediaState = await video.evaluate((element) => ({ paused: element.paused, readyState: element.readyState }));
-  if (!mediaState.paused || mediaState.readyState < 1) {
-    throw new Error(`${path}: narrated Cloud walkthrough must load metadata paused, got ${JSON.stringify(mediaState)}`);
+  const mediaState = await video.evaluate((element) => ({ muted: element.muted, readyState: element.readyState }));
+  if (!mediaState.muted || mediaState.readyState < 1) {
+    throw new Error(`${path}: Cloud walkthrough must load muted with metadata, got ${JSON.stringify(mediaState)}`);
   }
 
   const h1Count = await page.locator("h1").count();
