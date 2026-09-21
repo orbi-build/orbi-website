@@ -5,8 +5,6 @@ Development contract for `orbi-build/orbi-website` — the orbi.build landing si
 `docs.orbi.build`). This file is self-contained: every rule an agent must obey to
 deliver a change here is stated below, not referenced away.
 
-`CLAUDE.md` is a symlink to this file; the two are always identical.
-
 **Documentation is not the source of truth — and neither is the code.** This file,
 the README and everything under `docs/` describe what the code is meant to do; the
 code, and the deployed behavior it produces, describe only what it currently does,
