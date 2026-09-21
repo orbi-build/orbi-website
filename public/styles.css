@@ -300,7 +300,6 @@ h2 {
 h1 {
   margin-bottom: 24px;
   font-size: clamp(3.4rem, 5.4vw, 6rem);
-  line-height: 0.9;
   max-width: 9.4em;
 }
 
@@ -1676,7 +1675,7 @@ h2 {
   .wordmark { font-size: 1rem; }
 
   .hero { gap: 56px; padding: 70px 0 58px; }
-  h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); line-height: 0.91; }
+  h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); }
   html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
