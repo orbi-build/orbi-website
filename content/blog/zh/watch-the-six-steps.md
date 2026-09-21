@@ -3,9 +3,34 @@ title: 六步跑完，全程录下来了
 date: 2026-09-21
 summary: 一段 66 秒的视频，从 GitHub 登录一路到发出带 tag 的 Release。画面全是产品真实渲染，而第六步是引擎不替你做的那一步。
 lang: zh
+author: Orbi
+image: /img/blog-watch-six-steps.png
+video_name: Orbi Cloud setup from zero to a tagged release
+video_description: A 66-second walkthrough of the Orbi Cloud setup from GitHub sign-in to a tagged release.
+video_thumbnail: /img/blog-watch-six-steps.png
+video_upload_date: 2026-09-21
+video_duration: PT1M6S
+video_embed_url: https://www.youtube.com/embed/4rOzCMwiXhI
 ---
 
 上手流程现在有视频了：[Orbi Cloud: from zero to a tagged release in six steps](https://www.youtube.com/watch?v=4rOzCMwiXhI)。66 秒，英文，带章节，卡在哪一步就跳到哪一步。
+
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/4rOzCMwiXhI" title="Orbi Cloud 从零到带 tag 的 Release" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>观看完整的 Orbi Cloud 上手流程。</figcaption></figure>
+
+### 六个画面
+
+<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" loading="lazy"><figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" loading="lazy"><figcaption>第 2 步：GitHub App 安装页面。</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="连接仓库表单" loading="lazy"><figcaption>第 3 步：连接仓库表单。</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-4-provision.png" alt="开通运行环境状态" loading="lazy"><figcaption>第 4 步：开通运行环境状态。</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" loading="lazy"><figcaption>第 5 步：第一个 Issue 的状态页面。</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-6-release.png" alt="填写版本号的发版表单" loading="lazy"><figcaption>第 6 步：填写版本号的发版表单。</figcaption></figure>
+
 
 六步就是状态页上数的那六步：
 

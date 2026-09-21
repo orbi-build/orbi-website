@@ -10,7 +10,10 @@
   <meta property="og:title" content="Docker 镜像第三次尝试才发布成功">
   <meta property="og:description" content="orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。">
   <meta property="og:url" content="https://orbi.build/zh/blog/docker-image-third-try/">
+  <meta property="og:image" content="https://orbi.build/img/blog-docker-image.png">
+  <meta property="og:image:alt" content="Docker 镜像第三次尝试才发布成功">
   <meta property="article:published_time" content="2026-09-18">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Docker 镜像第三次尝试才发布成功","datePublished":"2026-09-18","author":{"@type":"Person","name":"Orbi"},"image":"https://orbi.build/img/blog-docker-image.png","inLanguage":"zh-CN","description":"orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。","url":"https://orbi.build/zh/blog/docker-image-third-try/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -34,6 +37,10 @@
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
     .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-media img, .post-media iframe { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
   </style>
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>

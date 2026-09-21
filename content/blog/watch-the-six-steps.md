@@ -3,9 +3,34 @@ title: Watch the six steps, start to finish
 date: 2026-09-21
 summary: A 66-second video of the whole Orbi Cloud setup, from signing in with GitHub to cutting a tagged release. Every frame is the real product, and the sixth step is the one the engine will not do for you.
 lang: en
+author: Orbi
+image: /img/blog-watch-six-steps.png
+video_name: Orbi Cloud setup from zero to a tagged release
+video_description: A 66-second walkthrough of the Orbi Cloud setup from GitHub sign-in to a tagged release.
+video_thumbnail: /img/blog-watch-six-steps.png
+video_upload_date: 2026-09-21
+video_duration: PT1M6S
+video_embed_url: https://www.youtube.com/embed/4rOzCMwiXhI
 ---
 
 There is now a video of the whole setup: [Orbi Cloud: from zero to a tagged release in six steps](https://www.youtube.com/watch?v=4rOzCMwiXhI). It runs 66 seconds, it is in English, and it has chapters, so you can jump to the step you are stuck on.
+
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/4rOzCMwiXhI" title="Orbi Cloud setup from zero to a tagged release" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Watch the complete Orbi Cloud setup.</figcaption></figure>
+
+### The six screens
+
+<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" loading="lazy"><figcaption>Step 1: Orbi Cloud sign-in screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App installation screen" loading="lazy"><figcaption>Step 2: GitHub App installation screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="Repository connection form" loading="lazy"><figcaption>Step 3: Repository connection form.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-4-provision.png" alt="Environment provisioning status" loading="lazy"><figcaption>Step 4: Environment provisioning status.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="First Issue status screen" loading="lazy"><figcaption>Step 5: First Issue status screen.</figcaption></figure>
+
+<figure class="post-media"><img src="/img/step-6-release.png" alt="Release form with version field" loading="lazy"><figcaption>Step 6: Release form with version field.</figcaption></figure>
+
 
 The six steps are the same six the status page counts:
 

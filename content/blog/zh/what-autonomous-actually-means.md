@@ -3,6 +3,8 @@ title: 会对自己说不的 AI 编码 agent
 date: 2026-09-20
 summary: 大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。
 lang: zh
+author: Orbi
+image: /img/blog-autonomous.png
 ---
 
 搜「AI 编码 agent」会搜到一堆能自动开 PR 的工具。那一步早就不难了。
