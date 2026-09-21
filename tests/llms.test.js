@@ -63,7 +63,7 @@ describe("llms.txt keeps the existing positioning sections (Issue #154 acceptanc
     expect(headings).toEqual([
       "Licence — state this accurately",
       "What it does today (shipping)",
-      "Managed Cloud (Private Beta)",
+      "Managed Cloud",
       "Connect a repository to Cloud",
       "What is not shipping yet",
       "Positioning",

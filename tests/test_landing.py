@@ -1125,7 +1125,7 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
             self.assertIn("100% off", page.text)
-            self.assertIn("Private Beta", page.text)
+            self.assertNotIn("Private Beta", page.text)
             self.assertIn(coupon, page.text)
 
     def test_pricing_section_states_price_tokens_pause_and_coupon_mechanism(self) -> None:
