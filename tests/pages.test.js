@@ -1285,7 +1285,8 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(stepImages).toHaveLength(7);
 
     for (const [, src] of stepImages) {
-      const png = await readFile(join(ROOT, "public", src));
+      const baseSrc = src.replace(/-2x\.png$/, ".png");
+      const png = await readFile(join(ROOT, "public", baseSrc));
       expect(png.subarray(1, 4).toString()).toBe("PNG");
       const width = png.readUInt32BE(16);
       const height = png.readUInt32BE(20);
@@ -1293,7 +1294,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
     for (const match of stepImages) {
       expect(match[0]).toContain(`width="2560" height="1440"`);
-      expect(match[0]).toContain(`srcset="${match[1]} 2560w"`);
+      expect(match[0]).toContain(`srcset="${match[1]} 2x"`);
       expect(match[0]).toContain('sizes="(min-width: 900px) 784px, 100vw"');
     }
   });
