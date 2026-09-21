@@ -1246,8 +1246,9 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(post.video.embedUrl).toContain("youtube.com/embed");
   });
 
-  it("rejects an image without a non-empty alt and raw HTML outside the media whitelist", () => {
+  it("rejects any image without a non-empty alt and raw HTML outside the media whitelist", () => {
     expect(() => postFromSource("t.md", front(full, '<img src="/x.png">'))).toThrow(/alt/);
+    expect(() => postFromSource("t.md", front(full, "![](/x.png)"))).toThrow(/alt/);
     expect(() => postFromSource("t.md", front(full, "<div>not allowed</div>"))).toThrow(/HTML tag.*div/);
   });
 
@@ -1266,6 +1267,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(post.output);
       expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
       expect(html).toContain(`\"@type\":\"Article\"`);
+      expect(html).toContain(`\"author\":{\"@type\":\"Organization\",\"name\":\"Orbi\"}`);
       expect(html).toContain(`https://orbi.build${post.image}`);
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");

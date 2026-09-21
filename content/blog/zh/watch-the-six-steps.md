@@ -19,17 +19,17 @@ video_embed_url: https://www.youtube.com/embed/4rOzCMwiXhI
 
 ### 六个画面
 
-<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" loading="lazy"><figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="1280" height="720" loading="lazy"><figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" loading="lazy"><figcaption>第 2 步：GitHub App 安装页面。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="1280" height="720" loading="lazy"><figcaption>第 2 步：GitHub App 安装页面。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="连接仓库表单" loading="lazy"><figcaption>第 3 步：连接仓库表单。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="1280" height="720" loading="lazy"><figcaption>第 3 步：连接仓库表单。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-4-provision.png" alt="开通运行环境状态" loading="lazy"><figcaption>第 4 步：开通运行环境状态。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-4-provision.png" alt="开通运行环境状态" width="1280" height="720" loading="lazy"><figcaption>第 4 步：开通运行环境状态。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" loading="lazy"><figcaption>第 5 步：第一个 Issue 的状态页面。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" width="1280" height="720" loading="lazy"><figcaption>第 5 步：第一个 Issue 的状态页面。</figcaption></figure>
 
-<figure class="post-media"><img src="/img/step-6-release.png" alt="填写版本号的发版表单" loading="lazy"><figcaption>第 6 步：填写版本号的发版表单。</figcaption></figure>
+<figure class="post-media"><img src="/img/step-6-release.png" alt="填写版本号的发版表单" width="1280" height="720" loading="lazy"><figcaption>第 6 步：填写版本号的发版表单。</figcaption></figure>
 
 
 六步就是状态页上数的那六步：

@@ -39,8 +39,9 @@ belongs to decides where you edit it.
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
 - `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
   per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
-  `lang`, all four required; optional `mirror`) plus a CommonMark body. Blog
-  bodies may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
+  `lang`, `author`, `image`, all six required; optional `mirror`; posts with a
+  video provide all six `video_*` fields) plus a CommonMark body. Blog bodies
+  may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
   `alt`) and responsive `<iframe>` media tags; other raw HTML, JSON headers and
   nav/footer markers are forbidden. The build renders the body with marked into
   `site/partials/post.html` (the shared nav/footer included), derives the `/blog/`

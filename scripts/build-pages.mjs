@@ -350,6 +350,14 @@ export function validatePostBody(label, body) {
   }
 }
 
+function validateRenderedPostImages(label, html) {
+  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+    if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
+      throw new Error(`${label}: every image in a blog body needs a non-empty alt`);
+    }
+  }
+}
+
 function requiredField(label, fields, name) {
   if (typeof fields[name] !== "string" || fields[name].trim() === "") {
     throw new Error(`${label}: front matter needs a non-empty "${name}"`);
@@ -387,6 +395,8 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
+  const html = marked.parse(body);
+  validateRenderedPostImages(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
@@ -404,7 +414,7 @@ export function postFromSource(displayName, source) {
     author: fields.author,
     image: fields.image,
     video,
-    html: marked.parse(body),
+    html,
   };
 }
 
@@ -490,7 +500,7 @@ function renderPostMeta(post) {
     "@type": "Article",
     headline: post.headline,
     datePublished: post.date,
-    author: { "@type": "Person", name: post.author },
+    author: { "@type": "Organization", name: post.author },
     image,
     inLanguage: post.lang === "zh" ? "zh-CN" : "en",
     description: post.summary,
