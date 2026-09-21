@@ -54,8 +54,9 @@ always will. Details and signup: https://orbi.build/cloud/
 
 ## Connect a repository to Cloud
 
-Agent-executable setup for Managed Cloud. Follow the six steps in order; each
-step states how to tell it is done and where to go when it is not. The Cloud
+Agent-executable setup for Managed Cloud. The onboarding video covers seven
+steps; this operational checklist states how to tell each Cloud action is done
+and where to go when it is not. The Cloud
 console lives on https://orbi.build under /api/ — after sign-in you are on the
 Cloud status page (https://orbi.build/api/), which is the home screen for
 every step below.

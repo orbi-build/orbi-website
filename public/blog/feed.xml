@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Watch the six steps, start to finish</title>
+      <title>Watch the seven steps, start to finish</title>
       <link>https://orbi.build/blog/watch-the-six-steps/</link>
       <guid isPermaLink="true">https://orbi.build/blog/watch-the-six-steps/</guid>
       <pubDate>Mon, 21 Sep 2026 00:00:00 GMT</pubDate>
-      <description>A 66-second video of the whole Orbi Cloud setup, from signing in with GitHub to cutting a tagged release. Every frame is the real product, and the sixth step is the one the engine will not do for you.</description>
+      <description>An 83-second video of the whole Orbi Cloud setup, from signing in with GitHub to subscribing after a tagged release. Every frame is the real product, and the seventh step is the one that starts paid delivery.</description>
     </item>
     <item>
       <title>An autonomous coding agent that can tell itself no</title>
