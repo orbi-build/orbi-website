@@ -37,34 +37,37 @@ afterAll(async () => {
 describe("seven-step blog images (Issue #356)", () => {
   for (const route of routes) {
     for (const width of [390, 1440]) {
-      it(`${route} serves every image at DPR 2 without distortion at ${width}px`, async () => {
-        const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width, height: 900 } });
-        try {
-          await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
-          await page.locator("img[src*='/img/step-']").first().waitFor();
-          const results = await page.locator("img[src*='/img/step-']").evaluateAll((images) => images.map((image) => {
-            const rect = image.getBoundingClientRect();
-            return {
-              naturalWidth: image.naturalWidth,
-              naturalHeight: image.naturalHeight,
-              currentSrc: image.currentSrc,
-              dpr: window.devicePixelRatio,
-              renderedWidth: rect.width,
-              renderedHeight: rect.height,
-              ratio: image.naturalWidth / image.naturalHeight,
-              renderedRatio: rect.width / rect.height,
-            };
-          }));
-          expect(results).toHaveLength(7);
-          for (const result of results) {
-            expect(result.naturalWidth).toBeGreaterThanOrEqual(result.renderedWidth * 2);
-            expect(Math.abs(result.ratio - result.renderedRatio)).toBeLessThan(0.02);
+      for (const dpr of [1, 2]) {
+        it(`${route} serves every image without distortion at ${width}px and DPR ${dpr}`, async () => {
+          const page = await browser.newPage({ deviceScaleFactor: dpr, viewport: { width, height: 900 } });
+          try {
+            await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+            await page.locator("img[src*='/img/step-']").first().waitFor();
+            const results = await page.locator("img[src*='/img/step-']").evaluateAll((images) => images.map((image) => {
+              const rect = image.getBoundingClientRect();
+              return {
+                naturalWidth: image.naturalWidth,
+                naturalHeight: image.naturalHeight,
+                currentSrc: image.currentSrc,
+                dpr: window.devicePixelRatio,
+                renderedWidth: rect.width,
+                renderedHeight: rect.height,
+                ratio: image.naturalWidth / image.naturalHeight,
+                renderedRatio: rect.width / rect.height,
+              };
+            }));
+            expect(results).toHaveLength(7);
+            for (const result of results) {
+              expect(result.currentSrc.endsWith("-2x.png")).toBe(dpr === 2);
+              expect(result.naturalWidth).toBeGreaterThanOrEqual(result.renderedWidth * result.dpr);
+              expect(Math.abs(result.ratio - result.renderedRatio)).toBeLessThan(0.02);
+            }
+            expect(new Set(results.map((result) => result.ratio)).size).toBe(1);
+          } finally {
+            await page.close();
           }
-          expect(new Set(results.map((result) => result.ratio)).size).toBe(1);
-        } finally {
-          await page.close();
-        }
-      });
+        });
+      }
     }
   }
 });
