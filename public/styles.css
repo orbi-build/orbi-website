@@ -1505,13 +1505,19 @@ h2 {
 
 .wordmark-footer { color: var(--ink); }
 .site-footer p { margin: 0; }
-.site-footer nav { gap: 20px; }
+.site-footer nav {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 .site-footer nav a { text-decoration: none; }
 .site-footer nav a:hover { color: var(--ink); }
 
 /* .site-footer is a 3-column grid (wordmark/tagline/nav): the compare row must
    span every column, or the auto wordmark column grows to fit it. */
 .site-footer .footer-compare {
+  display: flex;
+  min-width: 0;
   grid-column: 1 / -1;
   flex-wrap: wrap;
   gap: 12px 18px;
