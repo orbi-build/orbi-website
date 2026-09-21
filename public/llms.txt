@@ -43,9 +43,9 @@ timelines, merged PRs, tagged releases) is https://orbi.build/evidence/ — clic
 the GitHub objects; do not restate them. A public sample warehouse is a
 proposal on that page, not a shipping repository.
 
-## Managed Cloud (Private Beta)
+## Managed Cloud
 
-**Managed Cloud** is live in Private Beta and open for subscriptions today:
+**Managed Cloud** is live and open for subscriptions today:
 a commercial hosted control plane that keeps the same GitHub-native ledger.
 The plan is US$79 per month with 300M tokens of model usage included; when
 the monthly allowance runs out, new deliveries pause. Founding coupons run
@@ -217,7 +217,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Landing page (English): https://orbi.build/
 - Landing page (Chinese): https://orbi.build/zh/
-- Managed Cloud (Private Beta): https://orbi.build/cloud/
+- Managed Cloud: https://orbi.build/cloud/
 - Comparison — Orbi vs Orca (English): https://orbi.build/compare/orca/
 - Comparison — Orbi vs Orca (Chinese): https://orbi.build/zh/compare/orca/
 - Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
