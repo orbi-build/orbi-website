@@ -1009,7 +1009,7 @@ const cloudPages = {
     zh: "/cloud/",
     title: "提个 Issue，收个版本",
     h1: "Orbi Cloud：提个 Issue，收个版本",
-    loop: "提个 Issue，收个版本",
+    loop: "GitHub Issue 进，打好 Tag 的 Release 出",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
     metaNeedle: ["打 Tag", "GitHub Release", "US$79"],

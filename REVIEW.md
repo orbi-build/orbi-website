@@ -101,7 +101,7 @@ html[lang="zh-CN"] h1 span { white-space: nowrap; }
 
 标题用 `<br>` 断行，导致 DOM 文本无空格：
 
-- `Turn GitHub Issuesinto reviewed software`
+- `Turn GitHub Issuesinto reviewed software`（2026-09-04 审查时文案）
 - `A delivery graph.Not a task queue`
 - `From delivering workto continuously evolving software`
 
@@ -182,7 +182,7 @@ html[lang="zh-CN"] h1 span { white-space: nowrap; }
 原报告建议在 `<br>` 前加空格，并称"视觉零影响"。**该方案不可行**。
 
 `tests/test_landing.py:51` 的解析器已用 `" ".join(text_chunks)` 补上分隔符，
-现有断言 `"Turn GitHub Issues into reviewed software"` 正是靠此通过。加空格会产生双空格，
+当时（2026-09-04）的断言 `"Turn GitHub Issues into reviewed software"` 正是靠此通过。加空格会产生双空格，
 使两个断言失败（已实测确认）。
 
 尝试改用 `<span class="line">` + `display:block` 亦无效：该方案能保持测试通过，
