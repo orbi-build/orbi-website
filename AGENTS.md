@@ -224,6 +224,31 @@ The full runbook, including the post-deploy acceptance greps, is
   on the changed flow, console and network error checks, and a screenshot.
 - Preserve unrelated user changes; commit only task-owned paths.
 
+## 验收必须用浏览器看页面，不是查字符串
+
+新功能和回归验证都一样：**打开真实页面，截图，然后用眼睛看那张图**。
+
+grep 页面 HTML 里有没有某个 href、某个 class、某个文案，**不算验证**。这类检查
+对以下情况永远是绿的：
+
+- 元素在，但渲染成了空白框 / 溢出 / 被遮住
+- 链接对，但指向的资源是过期的旧版本
+- 文案对，但在手机宽度下被挤断或截断
+
+实测过的翻车（2026-09-21）：`/cloud/` 的 `cloud-onboarding.mp4` 用 grep 查
+`src=` 完全正确，截图一看是**过期的六步版**（1:06，片头写 Six steps），
+而现行母片是 83 秒的七步版。字符串检查没有任何一条会红。
+
+所以：
+
+- 每个改动的页面，桌面 1440 与手机 390 各截一张，**中英文都要**
+- 截完必须读那张图，确认结构、间距、有没有空白块或截断
+- 涉及媒体资源（视频、图片、字体）时，确认**内容**是对的版本，不只是路径对
+- 改了布局的 PR，对照改动前的截图看
+- 截图里任何「看起来怪」的地方先当缺陷查清；不许写「可能是截图截断」翻篇
+
+`npm test` 与浏览器 smoke 是门禁，不是验收。它们证明没坏，不证明做对了。
+
 ## Copy
 
 - Every user-facing string exists in both EN and ZH; the mirror gate enforces the
