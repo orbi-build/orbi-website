@@ -953,9 +953,11 @@ class LandingTests(unittest.TestCase):
         self.assertIn("gh run list", workflow)
         self.assertIn("git fetch origin beta", workflow)
 
-    def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
+    def test_ci_workflow_runs_for_pull_requests_not_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-        self.assertIn("branches:\n      - beta", workflow)
+        # Issue #348: Deploy beta owns post-merge beta pushes. CI must not
+        # rerun the same tree after the PR gate has already passed.
+        self.assertNotIn("  push:\n", workflow)
         self.assertIn("pull_request:", workflow)
         # Issue #210: a newer CI run for the same branch cancels the older one,
         # so a pushed fix never queues behind runs it supersedes; the group is
