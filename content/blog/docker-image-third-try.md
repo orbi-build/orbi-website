@@ -3,6 +3,8 @@ title: Docker image published on the third try
 date: 2026-09-18
 summary: The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.
 lang: en
+author: Orbi
+image: /img/blog-docker-image.png
 ---
 
 Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) asked for the obvious thing: the container that `3rd/docker/Dockerfile` already builds should be published, so a Docker search lands on something real. The workflow now publishes on every release and on a manual dispatch: `linux/amd64` and `linux/arm64`, tagged with the release version and `latest`, to both `ghcr.io/orbi-build/orbi` and `docker.io/orbibuild/orbi`.

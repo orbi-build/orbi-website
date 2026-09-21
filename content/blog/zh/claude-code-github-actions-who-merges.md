@@ -3,6 +3,8 @@ title: Claude Code 无人值守跑起来之后，谁来按合并
 date: 2026-09-19
 summary: 让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。
 lang: zh
+author: Orbi
+image: /img/blog-claude-actions.png
 ---
 
 想让 Claude Code 无人值守，网上的做法大多停在同一步：接进 GitHub Actions，或者写个循环让它自己跑。这一步好办。麻烦的是跑完之后那个 PR，测试绿了，代码是它写的，评审也是它做的，谁来按合并。

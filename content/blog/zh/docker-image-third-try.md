@@ -3,6 +3,8 @@ title: Docker 镜像第三次尝试才发布成功
 date: 2026-09-18
 summary: orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。
 lang: zh
+author: Orbi
+image: /img/blog-docker-image.png
 ---
 
 Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) 提了一个再直接不过的需求：`3rd/docker/Dockerfile` 已经能构建出可用的容器，它就应该被发布出去，让 Docker 搜索能落在一个真实的结果上。现在的 workflow 会在每次 Release 和手动触发时发布：`linux/amd64` 和 `linux/arm64`，打上 Release 版本号和 `latest` 两个 tag，推到 `ghcr.io/orbi-build/orbi` 和 `docker.io/orbibuild/orbi`。
