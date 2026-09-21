@@ -334,6 +334,16 @@ export function parseFrontMatter(displayName, source) {
 // `mirror` (Issue #214) is the optional declared counterpart slug in the
 // other language directory; collectPosts resolves it to the switcher target
 // once both sides exist.
+function tokenisePostHtml(html) {
+  // Markdown treats underscore-delimited pricing tokens as emphasis. Restore
+  // the exact worker tokens after parsing so rendered posts use the same
+  // pricing source as every other HTML page.
+  return html
+    .replaceAll("FREE_DELIVERIES", "__FREE_DELIVERIES__")
+    .replaceAll("CLOUD_MONTHLY_USD", "__CLOUD_MONTHLY_USD__")
+    .replaceAll("INCLUDED_TOKENS", "__INCLUDED_TOKENS__");
+}
+
 export function postFromSource(displayName, source) {
   const label = `content/blog/${displayName}`;
   const lang = displayName.startsWith("zh/") ? "zh" : "en";
@@ -365,7 +375,7 @@ export function postFromSource(displayName, source) {
     headline: fields.title,
     date: fields.date,
     summary: fields.summary,
-    html: marked.parse(body),
+    html: tokenisePostHtml(marked.parse(body)),
   };
 }
 

@@ -54,8 +54,9 @@ always will. Details and signup: https://orbi.build/cloud/
 
 ## Connect a repository to Cloud
 
-Agent-executable setup for Managed Cloud. Follow the six steps in order; each
-step states how to tell it is done and where to go when it is not. The Cloud
+Agent-executable setup for Managed Cloud. The onboarding video covers seven
+steps; this operational checklist states how to tell each Cloud action is done
+and where to go when it is not. The Cloud
 console lives on https://orbi.build under /api/ — after sign-in you are on the
 Cloud status page (https://orbi.build/api/), which is the home screen for
 every step below.
@@ -192,9 +193,9 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- Watch the six steps, start to finish (English):
+- Watch the seven steps, start to finish (English):
   https://orbi.build/blog/watch-the-six-steps/
-- 六步跑完，全程录下来了 (Chinese):
+- 七步跑完，全程录下来了 (Chinese):
   https://orbi.build/zh/blog/watch-the-six-steps/
 - An autonomous coding agent that can tell itself no (English):
   https://orbi.build/blog/what-autonomous-actually-means/
