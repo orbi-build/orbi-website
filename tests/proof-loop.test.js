@@ -114,7 +114,7 @@ describe("proof-loop markup (Issue #264)", () => {
   it("degrades to the static poster under prefers-reduced-motion", async () => {
     const css = (await readFile(join(ROOT, "public/styles.css"), "utf8")).replace(/\s+/g, " ").trim();
     expect(css, "styles.css: missing the proof-loop reduced-motion poster fallback").toContain(
-      '@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }'
+      '@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }'
     );
   });
 });
