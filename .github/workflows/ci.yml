@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - beta
   pull_request:
 
 # Issue #210: a newer run for the same branch cancels the older one, so a
