@@ -1091,6 +1091,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
+  await demo.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-video.png")}` });
   const mediaState = await video.evaluate((element) => ({ paused: element.paused, readyState: element.readyState }));
   if (!mediaState.paused || mediaState.readyState < 1) {
     throw new Error(`${path}: narrated Cloud walkthrough must load metadata paused, got ${JSON.stringify(mediaState)}`);
