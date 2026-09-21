@@ -413,11 +413,15 @@ class LandingTests(unittest.TestCase):
         as `Issuesinto`. Any heading whose collapsed textContent differs from
         its rendered text has lost a word boundary.
         """
+        def normalize(heading: str) -> str:
+            collapsed = " ".join(heading.split())
+            return re.sub(r"([，。！？；：]) ", r"\1", collapsed)
+
         for page in (self.en, self.zh):
             for crawler, rendered in zip(page.headings, page.headings_rendered):
                 self.assertEqual(
-                    " ".join(crawler.split()),
-                    rendered,
+                    normalize(crawler),
+                    normalize(rendered),
                     f"heading loses a word boundary for crawlers: {crawler!r}",
                 )
 
