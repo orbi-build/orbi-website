@@ -16,13 +16,16 @@
   --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
   --body: "Instrument Sans", "Noto Sans SC", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --hero-copy-width: 48rem;
 }
 
 * { box-sizing: border-box; }
 
-/* Keep the designed heading breaks on desktop, but let mobile text flow naturally. */
+/* Keep authored heading breaks for narrow screens, where they preserve readable chunks. */
+.responsive-break { display: none; }
+
 @media (max-width: 767px) {
-  .responsive-break { display: none; }
+  .responsive-break { display: inline; }
 }
 
 html {
@@ -299,9 +302,9 @@ h2 {
 
 h1 {
   margin-bottom: 24px;
-  font-size: clamp(3.4rem, 5.4vw, 6rem);
+  font-size: clamp(2.5rem, 3.4vw, 4rem);
   line-height: 0.9;
-  max-width: 9.4em;
+  max-width: var(--hero-copy-width);
 }
 
 /* Short viewports (1366x768 laptops land at ~698px of usable height) pushed
@@ -309,7 +312,7 @@ h1 {
    headline and the hero padding so the buttons stay in the first screen. */
 @media (max-height: 820px) and (min-width: 981px) {
   .hero { min-height: auto; padding: 60px 0 64px; }
-  h1 { font-size: clamp(3rem, 4.4vw, 4.4rem); margin-bottom: 20px; }
+  h1 { margin-bottom: 20px; }
   .hero-lede { margin-bottom: 26px; font-size: 1.05rem; }
   .eyebrow { margin-bottom: 20px; }
   .trust-line { margin-top: 22px; }
@@ -318,7 +321,7 @@ h1 {
 h1 span { color: var(--signal); }
 
 .hero-lede {
-  max-width: 48rem;
+  max-width: var(--hero-copy-width);
   margin-bottom: 34px;
   color: #b6c7c3;
   font-size: clamp(1.08rem, 1.4vw, 1.28rem);
@@ -1676,8 +1679,7 @@ h2 {
   .wordmark { font-size: 1rem; }
 
   .hero { gap: 56px; padding: 70px 0 58px; }
-  h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); line-height: 0.91; }
-  html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
+  h1 { line-height: 0.91; }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }
@@ -1812,7 +1814,7 @@ h2 {
   padding: 84px 0 68px;
 }
 
-.compare-hero .hero-lede { max-width: 46rem; }
+.compare-hero .hero-lede { max-width: var(--hero-copy-width); }
 
 .compare-section {
   padding-top: clamp(84px, 9vw, 140px);
