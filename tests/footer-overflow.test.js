@@ -69,30 +69,45 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
           await page.goto(`${baseUrl}${path}`, { waitUntil: "networkidle" });
-          const result = await page.locator("nav.footer-compare").evaluate((footer) => {
-            const style = getComputedStyle(footer);
+          const footer = page.locator("nav.footer-compare");
+          const result = await footer.evaluate((element) => {
+            const style = getComputedStyle(element);
             const documentElement = document.documentElement;
-            const rect = footer.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
+            const links = [...element.querySelectorAll("a")];
             return {
               display: style.display,
+              flexWrap: style.flexWrap,
               minWidth: style.minWidth,
               footerWidth: Math.round(rect.width),
               overflow: documentElement.scrollWidth - documentElement.clientWidth,
-              linkCount: footer.querySelectorAll("a").length,
+              linkCount: links.length,
+              linkRowCount: new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size,
+              linksOutsideFooter: links.some((link) => {
+                const linkRect = link.getBoundingClientRect();
+                return linkRect.left < rect.left || linkRect.right > rect.right;
+              }),
             };
           });
           expect(result.display, `${path} at ${width}px display`).toBe("flex");
+          expect(result.flexWrap, `${path} at ${width}px flex-wrap`).toBe("wrap");
           expect(result.minWidth, `${path} at ${width}px min-width`).toBe("0px");
           expect(result.footerWidth, `${path} at ${width}px footer width`).toBeLessThanOrEqual(width);
           expect(result.overflow, `${path} at ${width}px document overflow`).toBe(0);
           expect(result.linkCount, `${path} at ${width}px links`).toBeGreaterThan(0);
+          expect(result.linksOutsideFooter, `${path} at ${width}px clipped links`).toBe(false);
+          if (width === 390) {
+            expect(result.linkRowCount, `${path} at ${width}px wrapped link rows`).toBeGreaterThan(1);
+          }
           if (width === 1440 || width === 390) {
-            await page.screenshot({ path: `.orbi/footer-overflow-${name}-${width}.png`, fullPage: false });
+            await page.locator("footer.site-footer").screenshot({
+              path: `.orbi/footer-overflow-${name}-${width}.png`,
+            });
           }
         }
       } finally {
         await page.close();
       }
-    });
+    }, 30_000);
   }
 });

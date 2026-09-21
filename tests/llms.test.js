@@ -38,6 +38,18 @@ describe("watch-the-six-steps article (Issue #329)", () => {
   });
 });
 
+describe("seven-step article media parity (Issue #335)", () => {
+  it("renders one step image for each numbered step in both languages", () => {
+    for (const [language, article] of [["English", articleEn], ["Chinese", articleZh]]) {
+      const imageCount = (article.match(/<img[^>]+src=\"\/img\/step-[1-7]-/g) ?? []).length;
+      const stepCount = (article.match(/(?:Step [1-7]:|第 [1-7] 步：)/g) ?? []).length;
+      expect(imageCount, `${language} step image count`).toBe(7);
+      expect(stepCount, `${language} numbered step count`).toBe(7);
+      expect(imageCount).toBe(stepCount);
+    }
+  });
+});
+
 describe("llms.txt model compatibility claim (Issue #296)", () => {
   it("names the OpenAI-compatible boundary without implying native Claude support", () => {
     expect(flat).toContain("any OpenAI-compatible API or a locally hosted model");
