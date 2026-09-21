@@ -393,6 +393,13 @@ ffprobe -v error -show_entries format=duration,size \
 
 - Work on a task feature branch off `beta`; deliver through exactly one PR.
 - Do not push `beta` or `main` directly, and never force-push a shared branch.
+- **One exception: prose-only docs may be pushed straight to `beta`** — this file,
+  the README, and `.md`/`.mdx` bodies under `docs/`. They ship no artifact and
+  change no runtime behavior, so a PR only delays a rule by one round.
+  **Prose only**: anything touching `site/**`, `public/**`, `scripts/**`, tests or
+  CI config goes back to a feature branch and a PR, even for a single line.
+  Before pushing, `git fetch` and rebase onto the current `origin/beta` — keep the
+  history linear, no merge commit.
 - The PR description must contain `Fixes #<issue-number>` so GitHub closes the
   Issue on merge. The keyword works in the PR body and commit messages, never in
   the PR title.
