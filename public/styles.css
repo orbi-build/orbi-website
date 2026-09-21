@@ -300,7 +300,6 @@ h2 {
 h1 {
   margin-bottom: 24px;
   font-size: clamp(3.4rem, 5.4vw, 6rem);
-  line-height: 0.9;
   max-width: 9.4em;
 }
 
@@ -308,10 +307,10 @@ h1 {
    the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
    headline and the hero padding so the buttons stay in the first screen. */
 @media (max-height: 820px) and (min-width: 981px) {
-  .hero { min-height: auto; padding: 60px 0 64px; }
-  h1 { font-size: clamp(3rem, 4.4vw, 4.4rem); margin-bottom: 20px; }
-  .hero-lede { margin-bottom: 26px; font-size: 1.05rem; }
-  .eyebrow { margin-bottom: 20px; }
+  .hero { min-height: auto; padding: 0 0 64px; }
+  h1 { font-size: clamp(3rem, 4.4vw, 4.4rem); margin-bottom: 8px; }
+  .hero-lede { margin-bottom: 8px; font-size: 1.05rem; }
+  .eyebrow { margin-bottom: 12px; }
   .trust-line { margin-top: 22px; }
 }
 
@@ -1106,7 +1105,7 @@ h2 {
 .cloud-demo { margin-top: 40px; }
 .night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
 .night .cloud-demo figcaption { color: #9aada9; }
-@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
+@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }
 
 .ownership {
   padding: 110px 0;
@@ -1675,8 +1674,9 @@ h2 {
   .site-header { min-height: 72px; }
   .wordmark { font-size: 1rem; }
 
-  .hero { gap: 56px; padding: 70px 0 58px; }
-  h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); line-height: 0.91; }
+  .hero { gap: 56px; padding: 10px 0 58px; }
+  .eyebrow { margin-bottom: 12px; }
+  h1 { margin-bottom: 12px; font-size: clamp(3.5rem, 15.5vw, 5rem); }
   html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
