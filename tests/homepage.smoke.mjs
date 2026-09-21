@@ -469,6 +469,10 @@ export const localStatsFixture = {
 // stat) degrades exactly its own element to the HTML data-floor; a /stats
 // that never delivered a payload degrades every group. One repo's failure
 // must never blur the values another group was served (Issue #101).
+export function isDisposedRequestContextError(error) {
+  return typeof error?.message === "string" && error.message.includes("Request context disposed");
+}
+
 export function statsMatchServedStats(served, root = document) {
   const statFields = { issues: "issues_closed", prs: "prs_merged", releases: "releases", deploys: "deploys" };
   const repos = (served && served.repos) || {};
@@ -513,15 +517,23 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // the pre-check above can only pass once a payload was rendered, so the
   // recorded payload can never miss the window.
   let servedStats = null;
+  let liveStatsFetched = false;
   await page.route("**/stats", async (route) => {
-    if (process.env.BASE_URL) {
-      const response = await route.fetch();
+    if (process.env.BASE_URL && !liveStatsFetched) {
+      let response;
+      try {
+        response = await route.fetch();
+      } catch (error) {
+        if (isDisposedRequestContextError(error)) return;
+        throw error;
+      }
       const body = await response.text();
       try {
         servedStats = JSON.parse(body);
       } catch {
         servedStats = null;
       }
+      liveStatsFetched = true;
       await route.fulfill({
         status: response.status(),
         contentType: response.headers()["content-type"] || "application/json",
@@ -529,11 +541,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       });
       return;
     }
-    servedStats = localStatsFixture;
+    if (!process.env.BASE_URL) servedStats = localStatsFixture;
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(localStatsFixture),
+      body: JSON.stringify(servedStats),
     });
   });
   page.on("request", (request) => {
@@ -733,6 +745,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (consoleErrors.length || failedRequests.length) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
+  await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.close();
 }
 

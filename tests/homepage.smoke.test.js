@@ -7,6 +7,7 @@ import {
   localStatsFixture,
   resolveCloudLoginExpect,
   statsMatchServedStats,
+  isDisposedRequestContextError,
 } from "./homepage.smoke.mjs";
 
 const port = 4173;
@@ -79,6 +80,17 @@ afterEach(() => {
   for (const child of processes.splice(0)) {
     if (child.exitCode === null) child.kill("SIGKILL");
   }
+});
+
+describe("disposed request context classification (Issue #324)", () => {
+  it("matches only Playwright's request-context disposal error", () => {
+    expect(isDisposedRequestContextError(new Error("route.fetch: Request context disposed."))).toBe(true);
+    expect(isDisposedRequestContextError(Object.assign(new Error("Request context disposed."), {
+      name: "TargetClosedError2",
+    }))).toBe(true);
+    expect(isDisposedRequestContextError(new Error("route.fetch: network failure"))).toBe(false);
+    expect(isDisposedRequestContextError(new Error("stats render did not match the served /stats payload"))).toBe(false);
+  });
 });
 
 describe("cloud login smoke contract (Issue #74)", () => {
