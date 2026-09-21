@@ -359,11 +359,12 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   }
 }
 
-// Issue #273: exercise the campaign user's actual browser action. On beta the
-// first request asks the real Worker to plant the ref cookie; the local static
-// fixture cannot do that, so it starts from the same documented precondition.
-// The clicked request must be query-free, carry the campaign cookie, and must
-// not receive a replacement ref cookie from the handoff.
+// Issues #273/#322: exercise the campaign user's actual two-step browser
+// journey. On beta the first request asks the real Worker to plant the ref
+// cookie; the local static fixture cannot do that, so it starts from the same
+// documented precondition. The homepage CTA must first introduce Cloud, then
+// the login request must be query-free, carry the campaign cookie, and must not
+// receive a replacement ref cookie from the handoff.
 async function assertCampaignRefSurvivesHeroClick(browser) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
   if (process.env.BASE_URL && expectation !== "oauth-302") return;
@@ -377,6 +378,13 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     await page.route("**datafa.st/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    if (!process.env.BASE_URL) {
+      await page.route("**/stats", (route) => route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(localStatsFixture),
+      }));
+    }
     page.on("console", (message) => {
       if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) {
         consoleErrors.push(message.text());
@@ -400,12 +408,17 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     }
     await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
 
+    await page.locator('[data-cta="cloud-start"]').click();
+    if (new URL(page.url()).pathname !== "/cloud/") {
+      throw new Error(`homepage hero CTA landed at ${page.url()}, expected /cloud/`);
+    }
+
     const handoffResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const target = new URL(targetURL);
       return url.origin === target.origin && url.pathname === "/cloud/login";
     });
-    await page.locator('[data-cta="cloud-start"]').click({ noWaitAfter: true });
+    await page.locator('a.button-signal[href="/cloud/login"]').first().click({ noWaitAfter: true });
     const response = await handoffResponse;
     const requestURL = new URL(response.request().url());
     if (requestURL.search !== "") {
@@ -891,7 +904,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = "/cloud/login";
+  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -1454,17 +1467,19 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #308: exercise the actual homepage navigation journey at each
-// acceptance viewport, then verify the Cloud page's language-specific login
-// handoff without following the interactive GitHub OAuth page.
-async function assertHomeNavCloudFlow(browser, path, size, screenshot) {
+// Issues #308/#322: exercise an actual homepage journey at each acceptance
+// viewport, then verify the Cloud page's language-specific login handoff
+// without following the interactive GitHub OAuth page.
+async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "[data-primary-nav] .nav-apply") {
   const context = await browser.newContext({ viewport: size });
   try {
     const page = await context.newPage();
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const nav = page.locator("[data-primary-nav] .nav-apply");
-    if (!(await nav.isVisible())) await page.locator("[data-menu-toggle]").click();
-    await nav.click();
+    const entry = page.locator(selector);
+    if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
+      await page.locator("[data-menu-toggle]").click();
+    }
+    await entry.click();
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
     if (new URL(page.url()).pathname !== cloudPath) {
       throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
@@ -2081,19 +2096,22 @@ async function main() {
     await assertProofLoop(browser, "/zh/", { width: 390, height: 844 }, "proof-loop-zh-phone.png");
     await assertProofLoopReducedMotion(browser, "/");
     await assertProofLoopReducedMotion(browser, "/zh/");
-    // Issue #107: follow a real click from every Cloud CTA — hero, card and
-    // nav share one promise — to the endpoint CLOUD_LOGIN_EXPECT declares.
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);
-    await assertCtaLandsAtEndpoint(browser, "/zh/", homepageCloudCtas);
-    await assertHomeNavCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
-    await assertHomeNavCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
-    await assertHomeNavCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
-    await assertHomeNavCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
+    // Issue #322: all three body CTAs introduce the language-matching Cloud
+    // page. Exercise every click; the dedicated Cloud checks below own the
+    // subsequent login handoff contract.
+    for (const [label, selector] of homepageCloudCtas) {
+      await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
+      await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
+    }
+    await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
+    await assertHomeCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
+    await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
+    await assertHomeCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
     // Issue #97: both Cloud pages, both languages, phone and desktop widths.
     await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");
