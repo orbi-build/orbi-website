@@ -13,9 +13,30 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
+const articleEn = await readFile(join(ROOT, "public", "blog", "watch-the-six-steps", "index.html"), "utf8");
+const articleZh = await readFile(join(ROOT, "public", "zh", "blog", "watch-the-six-steps", "index.html"), "utf8");
 // The file is hard-wrapped at ~78 columns; prose assertions below match
 // against a whitespace-collapsed copy so a line break never hides a phrase.
 const flat = llms.replace(/\s+/g, " ");
+
+describe("watch-the-six-steps article (Issue #329)", () => {
+  it("ships the current seven-step video and subscription terms in both languages", () => {
+    for (const article of [articleEn, articleZh]) {
+      expect(article).toContain("youtube.com/watch?v=_OEaBwrLvvs");
+      expect(article).toContain("__INCLUDED_TOKENS__");
+      expect(article).toContain("__CLOUD_MONTHLY_USD__");
+      expect(article).toContain("seven");
+    }
+    expect(articleEn).toContain("__FREE_DELIVERIES__");
+    expect(articleEn).toContain("deliveries are free");
+    expect(articleZh).toContain("__FREE_DELIVERIES__");
+    expect(articleZh).toContain("次交付免费");
+    expect(articleEn).toContain("only new deliveries pause");
+    expect(articleZh).toContain("暂停新的交付");
+    expect(llms).toContain("onboarding video covers seven");
+    expect(llms).not.toContain("Follow the six steps");
+  });
+});
 
 describe("llms.txt model compatibility claim (Issue #296)", () => {
   it("names the OpenAI-compatible boundary without implying native Claude support", () => {
