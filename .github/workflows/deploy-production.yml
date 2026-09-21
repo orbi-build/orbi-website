@@ -17,10 +17,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  require-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require main promotion ref
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "production deployment must be dispatched from main (got $GITHUB_REF)" >&2
+            exit 1
+          fi
+
   # The soak gate runs as a separate job BEFORE the approval-gated deploy job,
   # so a promotion rejected for fresh commits fails without ever requesting
   # the approver's attention.
   soak:
+    needs: require-main
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
