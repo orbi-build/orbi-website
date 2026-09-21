@@ -15,11 +15,11 @@ The seven steps are the current Cloud onboarding path:
 4. **Provision the environment.** About a minute.
 5. **Your first Issue.** Label it `ai-ready`, and Orbi writes the code and opens a pull request.
 6. **Cut a release.** Type the version; Orbi bumps it, tags it and publishes the GitHub Release.
-7. **Subscribe.** The first <code>__FREE_DELIVERIES__</code> deliveries are free; then the plan is US$<code>__CLOUD_MONTHLY_USD__</code>/month with <code>__INCLUDED_TOKENS__</code> tokens included. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.
+7. **Subscribe.** The first `__FREE_DELIVERIES__` deliveries are free; then the plan is US$`__CLOUD_MONTHLY_USD__`/month with `__INCLUDED_TOKENS__` tokens included. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.
 
 ## The seventh step is the one that starts paid delivery
 
-Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer — an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code>__FREE_DELIVERIES__</code> free deliveries.
+Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer — an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
 
 The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care — that is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
 
