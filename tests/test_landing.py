@@ -413,11 +413,15 @@ class LandingTests(unittest.TestCase):
         as `Issuesinto`. Any heading whose collapsed textContent differs from
         its rendered text has lost a word boundary.
         """
+        def normalize(heading: str) -> str:
+            collapsed = " ".join(heading.split())
+            return re.sub(r"([，。！？；：]) ", r"\1", collapsed)
+
         for page in (self.en, self.zh):
             for crawler, rendered in zip(page.headings, page.headings_rendered):
                 self.assertEqual(
-                    " ".join(crawler.split()),
-                    rendered,
+                    normalize(crawler),
+                    normalize(rendered),
                     f"heading loses a word boundary for crawlers: {crawler!r}",
                 )
 
@@ -514,13 +518,21 @@ class LandingTests(unittest.TestCase):
         self.assertIn("Disallow: /cloud/login", robots)
         self.assertIn("Disallow: /zh/cloud/login", robots)
 
-    def test_display_headings_have_no_terminal_periods(self) -> None:
+    def test_display_headings_have_no_unapproved_terminal_periods(self) -> None:
+        approved = {"File an Issue. Get a release."}
         for html in (self.en_html, self.zh_html):
             headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            plain = [
+                " ".join(re.sub(r"<[^>]+>", "", heading).split())
+                for heading in headings
+            ]
             self.assertTrue(plain)
             self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
+                [
+                    heading
+                    for heading in plain
+                    if heading.endswith((".", "。")) and heading not in approved
+                ],
                 plain,
             )
 

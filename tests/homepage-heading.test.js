@@ -88,6 +88,17 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
     }
   }, 30_000);
 
+  it("keeps the English heading to at most two lines at 390px", async () => {
+    const page = await browser.newPage();
+    try {
+      await page.goto(baseUrl, { waitUntil: "load", timeout: 25_000 });
+      await page.setViewportSize({ width: 390, height: 900 });
+      expect((await headingMetrics(page)).lines.length).toBeLessThanOrEqual(2);
+    } finally {
+      await page.close();
+    }
+  }, 30_000);
+
   it("keeps the Chinese heading to at most two lines at 761px and 1440px", async () => {
     const page = await browser.newPage();
     try {

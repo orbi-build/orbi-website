@@ -37,22 +37,22 @@ const deepDives = [
 // source-of-truth boundary.
 const releaseClaims = {
   "/": {
-    h1: "Turn GitHub Issues into tagged releases",
+    h1: "File an Issue. Get a release.",
     lede: [
       "No new workspace.",
       "Orbi runs the delivery line on the Issues already in your repository",
       "GitHub stays the source of truth",
     ],
-    title: "tagged releases",
+    title: "File an Issue. Get a release.",
   },
   "/zh/": {
-    h1: "让 GitHub Issue 变成打 Tag 的发布",
+    h1: "提个 Issue，收个版本",
     lede: [
       "不用迁移工作流。",
       "在仓库里已有的 Issue 上跑完整条交付线",
       "GitHub 始终是唯一事实源",
     ],
-    title: "打 Tag 的 Release",
+    title: "提个 Issue，收个版本",
   },
 };
 
@@ -384,6 +384,11 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
         contentType: "application/json",
         body: JSON.stringify(localStatsFixture),
       }));
+      await page.route("**/cloud/login", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<!doctype html><title>Cloud login handoff</title>",
+      }));
     }
     page.on("console", (message) => {
       if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) {
@@ -418,7 +423,9 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
       const target = new URL(targetURL);
       return url.origin === target.origin && url.pathname === "/cloud/login";
     });
-    await page.locator('a.button-signal[href="/cloud/login"]').first().click({ noWaitAfter: true });
+    await page.locator('a.button-signal[href="/cloud/login"]').first().click(
+      process.env.BASE_URL ? { noWaitAfter: true } : {},
+    );
     const response = await handoffResponse;
     const requestURL = new URL(response.request().url());
     if (requestURL.search !== "") {
@@ -567,7 +574,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // The homepage has an autoplaying video, so networkidle depends on media
   // download timing and can stall the bounded CI suite. Wait only for the
   // functional /stats response; DOM load is the correct navigation gate.
-  const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats");
+  const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats").catch(() => null);
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
@@ -601,10 +608,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
-  await statsResponse.catch(() => {
-    throw new Error(`${path}: /stats was not requested`);
-  });
-  if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
+  if (!(await statsResponse) || !statsRequested) throw new Error(`${path}: /stats was not requested`);
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
   // received (the real Worker response on beta, the fixture locally), so the
@@ -973,11 +977,11 @@ const cloudPages = {
     // Issue #237: the title now leads with the search term; the release
     // claim itself stays pinned on the h1 below and in the body.
     title: "Self-hosted or cloud coding agent",
-    h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
+    h1: "Orbi Cloud: file an Issue, get a release",
     loop: "GitHub Issue in, tagged release out",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
-    metaNeedle: ["tagged GitHub Release", "US$79"],
+    metaNeedle: ["US$79"],
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
@@ -1007,12 +1011,12 @@ const cloudPages = {
   },
   "/zh/cloud/": {
     zh: "/cloud/",
-    title: "GitHub Issue 进，打好 Tag 的 Release 出",
-    h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
+    title: "提个 Issue，收个版本",
+    h1: "Orbi Cloud：提个 Issue，收个版本",
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
-    metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
+    metaNeedle: ["US$79"],
     oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
