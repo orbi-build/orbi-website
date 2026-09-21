@@ -20,37 +20,37 @@ There is now a video of the whole setup: [Orbi Cloud: from zero to a tagged rele
 ### Seven key screens from the seven-step flow
 
 <figure class="post-media">
-<img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="1280" height="360" loading="eager">
+<img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="2560" height="1440" srcset="/img/step-1-sign-in.png 1x, /img/step-1-sign-in-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>Step 1: Orbi Cloud sign-in screen.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-2-install-app.png" alt="GitHub App installation screen" width="1280" height="720" loading="eager">
+<img src="/img/step-2-install-app.png" alt="GitHub App installation screen" width="2560" height="1440" srcset="/img/step-2-install-app.png 1x, /img/step-2-install-app-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>Step 2: GitHub App installation screen.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-3-connect-repo.png" alt="Repository connection form" width="1280" height="720">
+<img src="/img/step-3-connect-repo.png" alt="Repository connection form" width="2560" height="1440" srcset="/img/step-3-connect-repo.png 1x, /img/step-3-connect-repo-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>Step 3: Repository connection form.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-4-provision.png" alt="Environment provisioning status" width="1280" height="720">
+<img src="/img/step-4-provision.png" alt="Environment provisioning status" width="2560" height="1440" srcset="/img/step-4-provision.png 1x, /img/step-4-provision-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>Step 4: Environment provisioning status.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-5-first-issue.png" alt="First Issue status screen" width="1280" height="720">
+<img src="/img/step-5-first-issue.png" alt="First Issue status screen" width="2560" height="1440" srcset="/img/step-5-first-issue.png 1x, /img/step-5-first-issue-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>Step 5: First Issue status screen.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-6-release.png" alt="Release form with version field" width="1280" height="720">
+<img src="/img/step-6-release.png" alt="Release form with version field" width="2560" height="1440" srcset="/img/step-6-release.png 1x, /img/step-6-release-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>Step 6: Release form with version field.</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-7-subscribe.png" alt="Managed Cloud subscription screen" width="1280" height="720">
+<img src="/img/step-7-subscribe.png" alt="Managed Cloud subscription screen" width="2560" height="1440" srcset="/img/step-7-subscribe.png 1x, /img/step-7-subscribe-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
 <figcaption>Step 7: Managed Cloud subscription screen.</figcaption>
 </figure>
 
