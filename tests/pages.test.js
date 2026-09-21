@@ -1279,7 +1279,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(new Set(posts.map((post) => post.image)).size).toBe(4);
   });
 
-  it("keeps all seven onboarding screenshots uniform and sharp at the largest DPR 2 slot", async () => {
+  it("keeps all seven onboarding screenshot sources at one uniform 2560 x 1440 size", async () => {
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
     const stepImages = [...watch.matchAll(/<img src="(\/img\/step-[^"]+\.png)"[^>]+>/g)];
     expect(stepImages).toHaveLength(7);
