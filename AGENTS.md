@@ -258,8 +258,10 @@ The full runbook, including the post-deploy acceptance greps, is
   failure is lost. Redirect to a file and keep the exit code.
 - Fail fast with the concrete command, exit code, stdout and stderr; never swallow
   an error or add a silent fallback.
-- UI work drives the real running site with Playwright: real interaction, an assert
-  on the changed flow, console and network error checks, and a screenshot.
+- UI work drives a running site in a browser: real interaction, an assert on the
+  changed flow, console and network error checks, and a screenshot. Headless in the
+  sandbox is a **gate** (it proves nothing broke), **not the acceptance verdict** —
+  see "验收必须用浏览器看页面" below.
 - Preserve unrelated user changes; commit only task-owned paths.
 
 ## 验收必须用浏览器看页面，不是查字符串
@@ -286,6 +288,42 @@ grep 页面 HTML 里有没有某个 href、某个 class、某个文案，**不�
 - 截图里任何「看起来怪」的地方先当缺陷查清；不许写「可能是截图截断」翻篇
 
 `npm test` 与浏览器 smoke 是门禁，不是验收。它们证明没坏，不证明做对了。
+
+### 验收用带界面的浏览器打已部署的环境，headless 只是门禁
+
+| | 跑什么 | 证明什么 |
+|---|---|---|
+| **门禁**（交付方在沙箱里做） | headless Playwright、本地 build 产物 | 没坏、断言成立、能红 |
+| **验收**（谁最终放行谁做） | **带界面的浏览器 + 已部署的环境 URL** | 用户看到的确实是对的 |
+
+**打哪个环境由改动所处阶段决定，不是默认生产：**
+
+| 阶段 | 验收目标 |
+|---|---|
+| 合并到 `beta` 之后 | `beta.orbi.build`（**绝大多数情况是这个**） |
+| 晋升到 `main` / 生产发布之后 | `orbi.build` |
+
+验收 beta 的改动却跑去打生产，测到的是上一个版本，等于没测。
+生产上默认零操作，没有明确要求不要往生产点。
+
+**headless 跑绿 ≠ 验收通过**，它与用户的浏览器在这些地方不同：
+
+- **字体**：headless 用容器里装了什么就用什么。中文回退字体一换字宽就变，
+  「标题断几行」「列宽够不够」这类结论直接失真。
+- **编解码**：headless Chromium 默认不带 H.264/AAC 等专有编解码，视频相关行为测不准。
+- **autoplay 策略**：Chrome 看 Media Engagement Index；真实浏览器有历史，headless
+  每次都是零 engagement 的全新 profile，同一段代码两边结论可能相反。
+- **登录态**：需要会话的页面 headless 打不开。绕开登录去渲染本地 HTML = 绕开验收。
+- **渲染**：headless 默认软件渲染，合成与动画行为可能不同。
+
+**判据不是用哪个工具**（各 agent 手上的浏览器工具不同），**而是满足三条**：
+有界面、有完整字体与编解码、有真实登录态。
+
+**以下都不算 e2e，写进报告也不构成结论**：headless 的截图与读数；`file://` 打开本地
+渲染的 HTML；本地 dev server；打错环境。
+
+问自己一句：**用户打开浏览器访问这个环境，会看到这个吗？**
+不是斩钉截铁的"是"，就不是 e2e。
 
 ## 开票的人：票面只能写沙箱里拿得到的东西
 
@@ -355,6 +393,13 @@ ffprobe -v error -show_entries format=duration,size \
 
 - Work on a task feature branch off `beta`; deliver through exactly one PR.
 - Do not push `beta` or `main` directly, and never force-push a shared branch.
+- **One exception: prose-only docs may be pushed straight to `beta`** — this file,
+  the README, and `.md`/`.mdx` bodies under `docs/`. They ship no artifact and
+  change no runtime behavior, so a PR only delays a rule by one round.
+  **Prose only**: anything touching `site/**`, `public/**`, `scripts/**`, tests or
+  CI config goes back to a feature branch and a PR, even for a single line.
+  Before pushing, `git fetch` and rebase onto the current `origin/beta` — keep the
+  history linear, no merge commit.
 - The PR description must contain `Fixes #<issue-number>` so GitHub closes the
   Issue on merge. The keyword works in the PR body and commit messages, never in
   the PR title.
