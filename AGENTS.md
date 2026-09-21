@@ -250,6 +250,62 @@ grep 页面 HTML 里有没有某个 href、某个 class、某个文案，**不�
 
 `npm test` 与浏览器 smoke 是门禁，不是验收。它们证明没坏，不证明做对了。
 
+## 开票的人：票面只能写沙箱里拿得到的东西
+
+**这一节约束的是开 Issue 的那一方，不是交付方。** 交付跑在一个 **worktree 沙箱**里，
+不是开票那个人的机器。票面里写了沙箱拿不到的东西，交付必然空转到 `ai-blocked`，
+烧掉几轮评审——**这是开票方的缺陷，不是交付方的**。
+
+沙箱里**没有**：宿主机的家目录文件（`~/Videos/...`、`~/Downloads/...`、
+`/home/<someone>/...`）、部署凭据（`.env.e2e`、`~/.cloudflare.env`）、
+GitHub App 私钥、生产数据库写权限、真实的第三方账号。
+
+所以票写完，逐条问：**沙箱里的 agent 拿什么做这一步？**
+
+- 答得上来 → 保留，并把命令原样写进票面
+- 答不上来 → 划给维护者，标注「由维护者补齐，不属于交付方验收范围」，
+  **并且自己先把证据拿到、贴到票或 PR 上**
+
+**引用外部素材时，开票方要先在 runner 主机上实跑一遍取素材的命令**，把验证过的
+命令与产物参数写进票面。没跑过就写上去的命令等于没写。
+
+实测过的翻车（2026-09-21，Issue #325 连挂两轮）：票面写母片在
+`~/Videos/orbi-onboarding-pipeline/out/...`，那是**宿主机**路径；沙箱里没有，
+agent 出了 plan 就再没提交任何东西，HEAD 停在 frozen base，run 被判 `ai-blocked`。
+票面同时给了 YouTube 兜底，但没写怎么取——沙箱里默认的取法也是失败的（见下）。
+两轮都挂在同一个地方，票面从头到尾没被改过。
+
+## 交付方：路径不存在时不要空转
+
+动手前先跑一次存在性检查，不要假设票面给的路径可用：
+
+```bash
+ls -la <票面给的路径> || echo "MISSING — 用兜底来源，或在 Issue 里说明"
+```
+
+**拿不到源文件时，不许静默跑完一个空 run。** 要么用票面给的兜底来源（YouTube 链接、
+仓库内文件、公开 URL），要么在 Issue 留言说清缺什么、试过什么、需要维护者补什么，
+然后停。零 commit 的 run 对任何人都没有价值。
+
+### 从 YouTube 取素材：沙箱没有 JS runtime
+
+沙箱里 `uvx` 与 `ffmpeg` 都有，`yt-dlp` 用 `uvx yt-dlp` 跑。但**没有 JS runtime**，
+YouTube 因此只吐 m3u8，`-f best[height<=720]` 这类选择器会直接报
+`Requested format is not available`。要显式指定走 https 的 dash 格式：
+
+```bash
+uvx yt-dlp --list-formats '<url>'          # 先看有哪些走 https 的格式
+uvx yt-dlp -f '136+140' --merge-output-format mp4 -o master.mp4 '<url>'
+# 136 = 720p h264 video-only，140 = m4a audio；两者都走 https，不需要 JS runtime
+```
+
+取完必须验参数，不要假定拿对了：
+
+```bash
+ffprobe -v error -show_entries format=duration,size \
+  -show_entries stream=codec_name,width,height -of default=nw=1 master.mp4
+```
+
 ## Copy
 
 - Every user-facing string exists in both EN and ZH; the mirror gate enforces the
