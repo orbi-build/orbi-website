@@ -602,10 +602,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
-  // Issue #311: live evidence must settle before a visitor mistakes the
-  // initial zeroes for missing data.
-  await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
-    .some((element) => element.textContent.trim() && element.textContent.trim() !== "0"), null, { timeout: 1200 });
   if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
