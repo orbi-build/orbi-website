@@ -7,8 +7,7 @@
   "scripts": {
     "build": "node scripts/build-pages.mjs",
     "test": "vitest run",
-    "test:browser": "node tests/homepage.smoke.mjs",
-    "postinstall": "playwright install chromium"
+    "test:browser": "node tests/homepage.smoke.mjs"
   },
   "dependencies": {
     "@datafast/ai-crawl": "^1.0.9"

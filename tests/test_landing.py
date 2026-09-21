@@ -960,6 +960,23 @@ class LandingTests(unittest.TestCase):
         self.assertIn("gh run list", workflow)
         self.assertIn("git fetch origin beta", workflow)
 
+    def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
+        package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+        self.assertNotIn("postinstall", package.get("scripts", {}))
+
+        for name in ("ci.yml", "deploy-beta.yml"):
+            workflow = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+            self.assertIn("actions/cache@v4", workflow)
+            self.assertIn("path: ~/.cache/ms-playwright", workflow)
+            self.assertIn("hashFiles('package-lock.json')", workflow)
+            self.assertIn("id: playwright-cache", workflow)
+            self.assertIn("npx playwright install-deps chromium", workflow)
+            self.assertIn("npx playwright install chromium", workflow)
+            self.assertIn("steps.playwright-cache.outputs.cache-hit != 'true'", workflow)
+            self.assertLess(workflow.index("actions/cache@v4"), workflow.index("npm ci"))
+            self.assertLess(workflow.index("npm ci"), workflow.index("install-deps chromium"))
+            self.assertLess(workflow.index("install-deps chromium"), workflow.index("install chromium"))
+
     def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         # Issue #347: CI is the single full-test gate for both PRs and beta
