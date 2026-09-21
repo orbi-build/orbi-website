@@ -25,19 +25,26 @@ describe("Cloud onboarding demo (Issue #292)", () => {
 
       const video = html.match(/<video\b[^>]*class="proof-loop-video"[^>]*>/)?.[0];
       expect(video, `${file}: Cloud video missing`).toBeTruthy();
-      for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+      for (const attribute of ["playsinline", "controls"]) {
         expect(video, `${file}: missing ${attribute}`).toMatch(new RegExp(`\\b${attribute}\\b`));
       }
+      for (const attribute of ["autoplay", "muted"]) {
+        expect(video, `${file}: Cloud video must have ${attribute}`).toMatch(new RegExp(`(?:^|\\s)${attribute}(?:\\s|=|$)`));
+      }
+      expect(video, `${file}: Cloud video must not loop`).not.toMatch(/(?:^|\\s)loop(?:\\s|=|$)/);
       expect(video).toContain('preload="metadata"');
-      expect(video).toContain('poster="/video/delivery-loop-poster.jpg"');
+      expect(video).toContain('poster="/video/cloud-onboarding-poster.jpg"');
+      expect(video).toContain('src="/video/cloud-onboarding.mp4"');
       expect(video).toContain("aria-label=");
-      expect(html).toContain('<source src="/video/delivery-loop.webm" type="video/webm">');
-      expect(html).toContain('<source src="/video/delivery-loop.mp4" type="video/mp4">');
+      expect(html).toContain('<source src="/video/cloud-onboarding.webm" type="video/webm">');
+      expect(html).toContain('<source src="/video/cloud-onboarding.mp4" type="video/mp4">');
+      expect(html).not.toContain("delivery-loop");
+      expect(html).not.toMatch(/coming soon|Temporary preview|临时复用|即将上线/);
     }
   });
 
   it("keeps the reduced-motion poster fallback on the shared video component", async () => {
     const css = await load("public/styles.css");
-    expect(css).toContain('@media (prefers-reduced-motion: reduce) { .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }');
+    expect(css).toContain('@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }');
   });
 });

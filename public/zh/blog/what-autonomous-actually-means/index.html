@@ -10,7 +10,10 @@
   <meta property="og:title" content="会对自己说不的 AI 编码 agent">
   <meta property="og:description" content="大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。">
   <meta property="og:url" content="https://orbi.build/zh/blog/what-autonomous-actually-means/">
+  <meta property="og:image" content="https://orbi.build/img/blog-autonomous.png">
+  <meta property="og:image:alt" content="会对自己说不的 AI 编码 agent">
   <meta property="article:published_time" content="2026-09-20">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"会对自己说不的 AI 编码 agent","datePublished":"2026-09-20","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-autonomous.png","inLanguage":"zh-CN","description":"大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。","url":"https://orbi.build/zh/blog/what-autonomous-actually-means/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -34,6 +37,11 @@
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
     .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-media img, .post-media iframe { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
   </style>
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
@@ -159,22 +167,31 @@ agent 干的是打字那部分。</p>
     </a>
     <p>不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
-      <a href="https://docs.orbi.build/zh">文档</a>
-      <a href="/zh/cloud/">Cloud</a>
-      <a href="/zh/compare/">竞品对比</a>
-      <a href="https://github.com/orbi-build/orbi">GitHub</a>
-      <a href="https://x.com/xqliu" rel="me">X</a>
-      <a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a>
-      <a href="/zh/#faq">常见问题</a>
-      <a href="https://github.com/orbi-build/orbi/releases">发布记录</a>
-      <a href="https://status.orbi.build">状态</a>
-      <a href="/zh/privacy/">隐私政策</a>
-      <a href="/zh/terms/">服务条款</a>
-      <a href="/zh/support/">支持</a>
-      <a href="/zh/#direction">方向</a>
-      <a href="https://github.com/orbi-build/orbi/milestones">路线图</a>
-      <a href="/blog/what-autonomous-actually-means/" lang="en">EN</a>
-      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/blog/what-autonomous-actually-means/" lang="en">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
     </nav>
     <nav class="footer-compare" aria-label="竞品深度对比">
       <span>深度对比</span>

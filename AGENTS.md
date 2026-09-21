@@ -5,8 +5,6 @@ Development contract for `orbi-build/orbi-website` — the orbi.build landing si
 `docs.orbi.build`). This file is self-contained: every rule an agent must obey to
 deliver a change here is stated below, not referenced away.
 
-`CLAUDE.md` is a symlink to this file; the two are always identical.
-
 **Documentation is not the source of truth — and neither is the code.** This file,
 the README and everything under `docs/` describe what the code is meant to do; the
 code, and the deployed behavior it produces, describe only what it currently does,
@@ -18,6 +16,43 @@ not to pick a side: say which document, which file and line, what the code actua
 does, and what the document claims — in the Issue or PR, or as its own Issue.
 A human decides which side is wrong. Never silently follow one and leave the
 contradiction in place for the next delivery to rediscover.
+
+## No Issue in hand? File one — do not edit
+
+**This repository is delivered by Orbi.** Changes come from a ticket that a
+delivery agent executes. They do not come from whoever happens to walk in.
+
+Check this before you touch anything:
+
+| What you have | What to do |
+|---|---|
+| An Issue assigned to you | Deliver it; carry on to `Read first` |
+| "X looks bad" / "X is broken" / "change X" from a person | **File an Issue, then stop** |
+| A problem you spotted yourself | **File an Issue, then stop** |
+
+The test is **whether this repo is on Orbi**, not how small the change is or
+whether you know how to make it. Being able to make it is not a reason to.
+
+**"It's only a doc" is the hole to close.** What you may edit directly is plain
+prose only: `.md` files, the README, this file, ticket bodies and comments.
+**Everything else is a ticket**, including:
+
+- HTML, CSS and templates (`site/partials/*.html`, `public/styles.css`) — that is code
+- The copy table and i18n strings in `scripts/build-pages.mjs` — that is code
+- Build scripts, CI config, tests — that is code
+- "It's one line of CSS", "just layout", "while I'm here" — still code
+
+**What the person filing should bring**: measurements. Rendered dimensions,
+`getBoundingClientRect()` readings, the root cause down to a file and line, a
+script that reproduces it. That saves the delivery agent from measuring it
+again and gives the acceptance criteria something to check against. How to
+write the ticket itself: see "开票的人：票面只能写沙箱里拿得到的东西" below.
+
+**Once it is filed, stop.** After `ai-ready` goes on, that ticket belongs to the
+delivery agent. Pushing your own fix leaves it with a base that has nothing left
+to change, and the delivery ends with
+`the agent delivered no commit on the task branch` — the ticket reads as failed
+when the work was simply done by the wrong party.
 
 ## Read first
 
@@ -39,10 +74,13 @@ belongs to decides where you edit it.
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
 - `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
   per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
-  `lang`, all four required; optional `mirror`) plus a plain CommonMark body;
-  no HTML, no JSON header, no nav/footer markers in a post. The build renders
-  the body with marked into `site/partials/post.html` (the shared nav/footer
-  included), derives the `/blog/` and `/zh/blog/` indexes from the post list,
+  `lang`, `author`, `image`, all six required; optional `mirror`; posts with a
+  video provide all six `video_*` fields) plus a CommonMark body. Blog bodies
+  may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
+  `alt`) and responsive `<iframe>` media tags; other raw HTML, JSON headers and
+  nav/footer markers are forbidden. The build renders the body with marked into
+  `site/partials/post.html` (the shared nav/footer included), derives the `/blog/`
+  and `/zh/blog/` indexes from the post list,
   and writes `/blog/feed.xml` (RSS 2.0, English posts). Pairing (Issue #214):
   a `mirror: <slug>` field names the post's counterpart in the other language
   directory; without it, a same-slug file there pairs by default; with
@@ -220,9 +258,186 @@ The full runbook, including the post-deploy acceptance greps, is
   failure is lost. Redirect to a file and keep the exit code.
 - Fail fast with the concrete command, exit code, stdout and stderr; never swallow
   an error or add a silent fallback.
-- UI work drives the real running site with Playwright: real interaction, an assert
-  on the changed flow, console and network error checks, and a screenshot.
+- UI work drives a running site in a browser: real interaction, an assert on the
+  changed flow, console and network error checks, and a screenshot. Headless in the
+  sandbox is a **gate** (it proves nothing broke), **not the acceptance verdict** —
+  see "验收必须用浏览器看页面" below.
 - Preserve unrelated user changes; commit only task-owned paths.
+
+## 验收必须用浏览器看页面，不是查字符串
+
+新功能和回归验证都一样：**打开真实页面，截图，然后用眼睛看那张图**。
+
+grep 页面 HTML 里有没有某个 href、某个 class、某个文案，**不算验证**。这类检查
+对以下情况永远是绿的：
+
+- 元素在，但渲染成了空白框 / 溢出 / 被遮住
+- 链接对，但指向的资源是过期的旧版本
+- 文案对，但在手机宽度下被挤断或截断
+
+实测过的翻车（2026-09-21）：`/cloud/` 的 `cloud-onboarding.mp4` 用 grep 查
+`src=` 完全正确，截图一看是**过期的六步版**（1:06，片头写 Six steps），
+而现行母片是 83 秒的七步版。字符串检查没有任何一条会红。
+
+所以：
+
+- 每个改动的页面，桌面 1440 与手机 390 各截一张，**中英文都要**
+- 截完必须读那张图，确认结构、间距、有没有空白块或截断
+- 涉及媒体资源（视频、图片、字体）时，确认**内容**是对的版本，不只是路径对
+
+### 图片验收：`naturalWidth !== 0` 什么都证明不了
+
+它只证明文件能解码。糊的、变形的、带着视频角标的图，它照样绿。
+**每张图四条都要过：**
+
+| 查什么 | 怎么查 | 通过线 |
+|---|---|---|
+| 清晰度 | `naturalWidth >= rect.width * devicePixelRatio` | 倍率 ≥ 1.0 |
+| 变形 | 原图宽高比 vs 显示宽高比 | 相差 < 0.02 |
+| 同组统一 | 同组各图原图比例两两比较 | 全部相等 |
+| **图里是什么** | **下载原图，Read 它，看** | 无视频角标 / 水印 / 黑边 / 错内容 |
+
+最后一条没有自动判据。跳过它等于没验收这张图（翻车实例见 #356）。
+- 改了布局的 PR，对照改动前的截图看
+- 截图里任何「看起来怪」的地方先当缺陷查清；不许写「可能是截图截断」翻篇
+
+`npm test` 与浏览器 smoke 是门禁，不是验收。它们证明没坏，不证明做对了。
+
+### 验收用带界面的浏览器打已部署的环境，headless 只是门禁
+
+**这一节约束 e2e 验收方，不是沙箱里的交付方。** 交付方的门禁是 CI + headless。
+**不要把本节要求抄进票面的交付方验收项**，沙箱做不到；那部分写「由维护者补齐」。
+
+| | 跑什么 | 证明什么 |
+|---|---|---|
+| **门禁**（交付方在沙箱里做） | headless Playwright、本地 build 产物 | 没坏、断言成立、能红 |
+| **验收**（谁最终放行谁做） | **带界面的浏览器 + 已部署的环境 URL** | 用户看到的确实是对的 |
+
+**打哪个环境由改动所处阶段决定，不是默认生产：**
+
+| 阶段 | 验收目标 |
+|---|---|
+| 合并到 `beta` 之后 | `beta.orbi.build`（**绝大多数情况是这个**） |
+| 晋升到 `main` / 生产发布之后 | `orbi.build` |
+
+验收 beta 的改动却跑去打生产，测到的是上一个版本，等于没测。
+生产上默认零操作，没有明确要求不要往生产点。
+
+**headless 跑绿 ≠ 验收通过**，它与用户的浏览器在这些地方不同：
+
+- **字体**：headless 用容器里装了什么就用什么。中文回退字体一换字宽就变，
+  「标题断几行」「列宽够不够」这类结论直接失真。
+- **编解码**：headless Chromium 默认不带 H.264/AAC 等专有编解码，视频相关行为测不准。
+- **autoplay 策略**：Chrome 看 Media Engagement Index；真实浏览器有历史，headless
+  每次都是零 engagement 的全新 profile，同一段代码两边结论可能相反。
+- **登录态**：需要会话的页面 headless 打不开。绕开登录去渲染本地 HTML = 绕开验收。
+- **渲染**：headless 默认软件渲染，合成与动画行为可能不同。
+
+**判据不是用哪个工具**（各 agent 手上的浏览器工具不同），**而是满足三条**：
+有界面、有完整字体与编解码、有真实登录态。
+
+**以下都不算 e2e，写进报告也不构成结论**：headless 的截图与读数；`file://` 打开本地
+渲染的 HTML；本地 dev server；打错环境。
+
+问自己一句：**用户打开浏览器访问这个环境，会看到这个吗？**
+不是斩钉截铁的"是"，就不是 e2e。
+
+## 开票前先问：这会不会是有意的？
+
+看到不理解的现象，先查它是不是产品决策、是不是第三方的既定行为、是不是工具本身的
+局限，再判它是缺陷。**查不出依据就问人，别自己认定是 bug 就开票** —— 假票让交付方
+做不该做的改动，烧掉评审轮次。
+
+## gh 列表查询一律带全量参数
+
+`gh api <列表端点>`、`gh issue list`、`gh pr list` 默认只回第一页。
+**空结果不报错** —— 查询成功、退出码 0、没有警告，于是「这一页里没有」
+被当成「不存在」。
+
+- `gh api` 加 `--paginate`
+- `gh issue list` / `gh pr list` 加 `--limit 200 --state all`
+- 查版本用 `gh release list --limit 10`
+
+只想看样本就明说是样本，不要拿它下「不存在」的结论。
+
+## 发布票会自己等里程碑清空，不要手动干预
+
+里程碑里只要还有其它 open Issue，发布票**不会被认领** —— 引擎跳过它并记
+`release_milestone_incomplete`，票保持 `ai-ready`，这是可恢复的等待，不是故障。
+
+所以想让一张票赶上某个版本，**只需把它加进那个里程碑并打 `ai-ready`**。
+不要去停 timer、摘发布票的标签、清 worktree —— 那些只会制造孤儿状态，
+还得再收拾一遍。
+
+唯一的例外是发布已经过了门禁（票面出现 `release gates passed` / `scope verified`）：
+那时范围已锁定，新加的票赶不上这一版，该进下一个里程碑。
+
+## 开票的人：票面只能写沙箱里拿得到的东西
+
+**这一节约束的是开 Issue 的那一方，不是交付方。** 交付跑在一个 **worktree 沙箱**里，
+不是开票那个人的机器。票面里写了沙箱拿不到的东西，交付必然空转到 `ai-blocked`，
+烧掉几轮评审——**这是开票方的缺陷，不是交付方的**。
+
+沙箱里**没有**：宿主机的家目录文件（`~/Videos/...`、`~/Downloads/...`、
+`/home/<someone>/...`）、部署凭据（`.env.e2e`、`~/.cloudflare.env`）、
+GitHub App 私钥、生产数据库写权限、真实的第三方账号。
+
+所以票写完，逐条问：**沙箱里的 agent 拿什么做这一步？**
+
+- 答得上来 → 保留，并把命令原样写进票面
+- 答不上来 → 划给维护者，标注「由维护者补齐，不属于交付方验收范围」，
+  **并且自己先把证据拿到、贴到票或 PR 上**
+
+**引用外部素材时，开票方要先在 runner 主机上实跑一遍取素材的命令**，把验证过的
+命令与产物参数写进票面。没跑过就写上去的命令等于没写。
+
+实测过的翻车（2026-09-21，Issue #325 连挂两轮）：票面写母片在
+`~/Videos/orbi-onboarding-pipeline/out/...`，那是**宿主机**路径；沙箱里没有，
+agent 出了 plan 就再没提交任何东西，HEAD 停在 frozen base，run 被判 `ai-blocked`。
+票面同时给了 YouTube 兜底，但没写怎么取——沙箱里默认的取法也是失败的（见下）。
+两轮都挂在同一个地方，票面从头到尾没被改过。
+
+## 交付方：路径不存在时不要空转
+
+动手前先跑一次存在性检查，不要假设票面给的路径可用：
+
+```bash
+ls -la <票面给的路径> || echo "MISSING — 用兜底来源，或在 Issue 里说明"
+```
+
+**拿不到源文件时，不许静默跑完一个空 run。** 要么用票面给的兜底来源（YouTube 链接、
+仓库内文件、公开 URL），要么在 Issue 留言说清缺什么、试过什么、需要维护者补什么，
+然后停。零 commit 的 run 对任何人都没有价值。
+
+### 从 YouTube 取素材：沙箱没有 JS runtime
+
+沙箱里 `uvx` 与 `ffmpeg` 都有，`yt-dlp` 用 `uvx yt-dlp` 跑。但**没有 JS runtime**，
+YouTube 因此只吐 m3u8，`-f best[height<=720]` 这类选择器会直接报
+`Requested format is not available`。要显式指定走 https 的 dash 格式：
+
+```bash
+uvx yt-dlp --list-formats '<url>'          # 先看有哪些走 https 的格式
+uvx yt-dlp -f '136+140' --merge-output-format mp4 -o master.mp4 '<url>'
+# 136 = 720p h264 video-only，140 = m4a audio；两者都走 https，不需要 JS runtime
+```
+
+取完必须验参数，不要假定拿对了：
+
+```bash
+ffprobe -v error -show_entries format=duration,size \
+  -show_entries stream=codec_name,width,height -of default=nw=1 master.mp4
+```
+
+## 别覆盖浏览器默认值
+
+`line-height`、`font-size` 的相对行为、表单控件外观、焦点环 —— 这些默认值是
+几十年跨语言、跨字体、跨设备的排版经验。写死一个数字覆盖它，等于用一个场景下
+试出来的值否定所有其它场景。
+
+翻车形态：`h1 { line-height: 0.9 }` 让英文大标题看着紧凑，中文字形填满 em box，
+直接行行重叠（#366）。补救时再加一条规则救中文，又多一处要维护的例外。
+
+**先用默认值。** 确实要改时，把作用域收到那一个元素上，并说明为什么默认值不够。
 
 ## Copy
 
@@ -236,6 +451,13 @@ The full runbook, including the post-deploy acceptance greps, is
 
 - Work on a task feature branch off `beta`; deliver through exactly one PR.
 - Do not push `beta` or `main` directly, and never force-push a shared branch.
+- **One exception: prose-only docs may be pushed straight to `beta`** — this file,
+  the README, and `.md`/`.mdx` bodies under `docs/`. They ship no artifact and
+  change no runtime behavior, so a PR only delays a rule by one round.
+  **Prose only**: anything touching `site/**`, `public/**`, `scripts/**`, tests or
+  CI config goes back to a feature branch and a PR, even for a single line.
+  Before pushing, `git fetch` and rebase onto the current `origin/beta` — keep the
+  history linear, no merge commit.
 - The PR description must contain `Fixes #<issue-number>` so GitHub closes the
   Issue on merge. The keyword works in the PR body and commit messages, never in
   the PR title.

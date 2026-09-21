@@ -413,11 +413,15 @@ class LandingTests(unittest.TestCase):
         as `Issuesinto`. Any heading whose collapsed textContent differs from
         its rendered text has lost a word boundary.
         """
+        def normalize(heading: str) -> str:
+            collapsed = " ".join(heading.split())
+            return re.sub(r"([，。！？；：]) ", r"\1", collapsed)
+
         for page in (self.en, self.zh):
             for crawler, rendered in zip(page.headings, page.headings_rendered):
                 self.assertEqual(
-                    " ".join(crawler.split()),
-                    rendered,
+                    normalize(crawler),
+                    normalize(rendered),
                     f"heading loses a word boundary for crawlers: {crawler!r}",
                 )
 
@@ -514,13 +518,21 @@ class LandingTests(unittest.TestCase):
         self.assertIn("Disallow: /cloud/login", robots)
         self.assertIn("Disallow: /zh/cloud/login", robots)
 
-    def test_display_headings_have_no_terminal_periods(self) -> None:
+    def test_display_headings_have_no_unapproved_terminal_periods(self) -> None:
+        approved = {"File an Issue. Get a release."}
         for html in (self.en_html, self.zh_html):
             headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
+            plain = [
+                " ".join(re.sub(r"<[^>]+>", "", heading).split())
+                for heading in headings
+            ]
             self.assertTrue(plain)
             self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
+                [
+                    heading
+                    for heading in plain
+                    if heading.endswith((".", "。")) and heading not in approved
+                ],
                 plain,
             )
 
@@ -845,7 +857,12 @@ class LandingTests(unittest.TestCase):
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
+        self.assertIn("workflows:\n      - CI", workflow)
+        self.assertIn("types:\n      - completed", workflow)
         self.assertIn("branches:\n      - beta", workflow)
+        self.assertIn("needs: require-ci", workflow)
+        self.assertIn("conclusion", workflow)
+        self.assertIn("timeout 120s gh run list", workflow)
         # the log must name the branch and commit the deployment was built from
         self.assertIn("git rev-parse HEAD", workflow)
         self.assertIn("GITHUB_REF_NAME", workflow)
@@ -853,7 +870,9 @@ class LandingTests(unittest.TestCase):
         self.assertIn("cloudflare/wrangler-action@v4", workflow)
         self.assertIn('node-version: "20.19.0"', workflow)
         self.assertIn('wranglerVersion: "4.34.0"', workflow)
-        self.assertIn("npm test", workflow)
+        self.assertNotIn("npm test", workflow)
+        self.assertIn("npm run test:browser", workflow)
+        self.assertIn("BASE_URL=https://beta.orbi.build", workflow)
         self.assertIn("command: deploy --env beta", workflow)
         self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
         self.assertIn("CLOUDFLARE_ACCOUNT_ID", workflow)
@@ -869,7 +888,7 @@ class LandingTests(unittest.TestCase):
         # regress past a deploy
         self.assertIn('check_page "https://beta.orbi.build/cloud/"', workflow)
         self.assertIn('check_page "https://beta.orbi.build/cloud"', workflow)
-        self.assertLess(workflow.index("npm test"), workflow.index("command: deploy"))
+        self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
         # environment; beta's is the GitHub OAuth 302 served by Cloud
@@ -953,10 +972,30 @@ class LandingTests(unittest.TestCase):
         self.assertIn("gh run list", workflow)
         self.assertIn("git fetch origin beta", workflow)
 
-    def test_ci_workflow_triggers_on_beta_push_and_keeps_pull_request(self) -> None:
+    def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
+        package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+        self.assertNotIn("postinstall", package.get("scripts", {}))
+
+        for name in ("ci.yml", "deploy-beta.yml"):
+            workflow = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+            self.assertIn("actions/cache@v4", workflow)
+            self.assertIn("path: ~/.cache/ms-playwright", workflow)
+            self.assertIn("hashFiles('package-lock.json')", workflow)
+            self.assertIn("id: playwright-cache", workflow)
+            self.assertIn("npx playwright install-deps chromium", workflow)
+            self.assertIn("npx playwright install chromium", workflow)
+            self.assertIn("steps.playwright-cache.outputs.cache-hit != 'true'", workflow)
+            self.assertLess(workflow.index("actions/cache@v4"), workflow.index("npm ci"))
+            self.assertLess(workflow.index("npm ci"), workflow.index("install-deps chromium"))
+            self.assertLess(workflow.index("install-deps chromium"), workflow.index("install chromium"))
+
+    def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-        self.assertIn("branches:\n      - beta", workflow)
+        # Issue #347: CI is the single full-test gate for both PRs and beta
+        # pushes; deploy-beta waits for this workflow instead of rerunning it.
+        self.assertIn("  push:\n    branches:\n      - beta", workflow)
         self.assertIn("pull_request:", workflow)
+        self.assertEqual(workflow.count("npm test"), 1)
         # Issue #210: a newer CI run for the same branch cancels the older one,
         # so a pushed fix never queues behind runs it supersedes; the group is
         # per-branch, not per-repo
@@ -1098,7 +1137,7 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn("US$79", page.text)
             self.assertIn(tokens, page.text)
             self.assertIn("100% off", page.text)
-            self.assertIn("Private Beta", page.text)
+            self.assertNotIn("Private Beta", page.text)
             self.assertIn(coupon, page.text)
 
     def test_pricing_section_states_price_tokens_pause_and_coupon_mechanism(self) -> None:
@@ -1877,11 +1916,19 @@ class CompareIndexTests(unittest.TestCase):
 
     def test_every_deep_dive_links_its_page(self) -> None:
         """Eleven deep dives, each a link — no internal status badge (Issue #178)."""
-        for html in (self.en_html, self.zh_html):
-            entries = re.findall(r"<li>(.*?)</li>", html, re.DOTALL)
+        for html, href_pattern in (
+            (self.en_html, r"^/compare/[a-z-]+/$"),
+            (self.zh_html, r"^/zh/compare/[a-z-]+/$"),
+        ):
+            dive_list = re.search(r'<ul class="dive-list">(.*?)</ul>', html, re.DOTALL)
+            self.assertIsNotNone(dive_list, "deep-dive list not found")
+            entries = re.findall(r"<li>(.*?)</li>", dive_list.group(1), re.DOTALL)
             self.assertEqual(len(entries), 11, entries)
             for entry in entries:
-                self.assertIn('<a href="', entry, entry)
+                link = re.search(r'<a href="([^"]+)">', entry)
+                self.assertIsNotNone(link, entry)
+                href = link.group(1)
+                self.assertRegex(href, href_pattern, entry)
                 self.assertNotIn("dive-status", entry, entry)
 
     def test_the_closing_heading_names_the_choice_dimension(self) -> None:

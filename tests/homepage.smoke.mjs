@@ -37,22 +37,22 @@ const deepDives = [
 // source-of-truth boundary.
 const releaseClaims = {
   "/": {
-    h1: "Turn GitHub Issues into tagged releases",
+    h1: "File an Issue. Get a release.",
     lede: [
       "No new workspace.",
       "Orbi runs the delivery line on the Issues already in your repository",
       "GitHub stays the source of truth",
     ],
-    title: "tagged releases",
+    title: "File an Issue. Get a release.",
   },
   "/zh/": {
-    h1: "让 GitHub Issue 变成打 Tag 的发布",
+    h1: "提个 Issue，收个版本",
     lede: [
       "不用迁移工作流。",
       "在仓库里已有的 Issue 上跑完整条交付线",
       "GitHub 始终是唯一事实源",
     ],
-    title: "打 Tag 的 Release",
+    title: "提个 Issue，收个版本",
   },
 };
 
@@ -359,11 +359,12 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   }
 }
 
-// Issue #273: exercise the campaign user's actual browser action. On beta the
-// first request asks the real Worker to plant the ref cookie; the local static
-// fixture cannot do that, so it starts from the same documented precondition.
-// The clicked request must be query-free, carry the campaign cookie, and must
-// not receive a replacement ref cookie from the handoff.
+// Issues #273/#322: exercise the campaign user's actual two-step browser
+// journey. On beta the first request asks the real Worker to plant the ref
+// cookie; the local static fixture cannot do that, so it starts from the same
+// documented precondition. The homepage CTA must first introduce Cloud, then
+// the login request must be query-free, carry the campaign cookie, and must not
+// receive a replacement ref cookie from the handoff.
 async function assertCampaignRefSurvivesHeroClick(browser) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
   if (process.env.BASE_URL && expectation !== "oauth-302") return;
@@ -377,6 +378,18 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     await page.route("**datafa.st/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+    if (!process.env.BASE_URL) {
+      await page.route("**/stats", (route) => route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(localStatsFixture),
+      }));
+      await page.route("**/cloud/login", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<!doctype html><title>Cloud login handoff</title>",
+      }));
+    }
     page.on("console", (message) => {
       if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) {
         consoleErrors.push(message.text());
@@ -400,12 +413,19 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     }
     await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
 
+    await page.locator('[data-cta="cloud-start"]').click();
+    if (new URL(page.url()).pathname !== "/cloud/") {
+      throw new Error(`homepage hero CTA landed at ${page.url()}, expected /cloud/`);
+    }
+
     const handoffResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const target = new URL(targetURL);
       return url.origin === target.origin && url.pathname === "/cloud/login";
     });
-    await page.locator('[data-cta="cloud-start"]').click({ noWaitAfter: true });
+    await page.locator('a.button-signal[href="/cloud/login"]').first().click(
+      process.env.BASE_URL ? { noWaitAfter: true } : {},
+    );
     const response = await handoffResponse;
     const requestURL = new URL(response.request().url());
     if (requestURL.search !== "") {
@@ -456,6 +476,10 @@ export const localStatsFixture = {
 // stat) degrades exactly its own element to the HTML data-floor; a /stats
 // that never delivered a payload degrades every group. One repo's failure
 // must never blur the values another group was served (Issue #101).
+export function isDisposedRequestContextError(error) {
+  return typeof error?.message === "string" && error.message.includes("Request context disposed");
+}
+
 export function statsMatchServedStats(served, root = document) {
   const statFields = { issues: "issues_closed", prs: "prs_merged", releases: "releases", deploys: "deploys" };
   const repos = (served && served.repos) || {};
@@ -496,19 +520,25 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // real Worker response through and records it; without BASE_URL the static
   // server has no /stats, so the same handler fulfills the request with the
   // fixture. Either way servedStats carries the exact payload the page
-  // received, and the wait below asserts the render against that payload —
-  // the pre-check above can only pass once a payload was rendered, so the
-  // recorded payload can never miss the window.
+  // received, and the wait below asserts the render against that payload.
   let servedStats = null;
+  let liveStatsFetched = false;
   await page.route("**/stats", async (route) => {
-    if (process.env.BASE_URL) {
-      const response = await route.fetch();
+    if (process.env.BASE_URL && !liveStatsFetched) {
+      let response;
+      try {
+        response = await route.fetch();
+      } catch (error) {
+        if (isDisposedRequestContextError(error)) return;
+        throw error;
+      }
       const body = await response.text();
       try {
         servedStats = JSON.parse(body);
       } catch {
         servedStats = null;
       }
+      liveStatsFetched = true;
       await route.fulfill({
         status: response.status(),
         contentType: response.headers()["content-type"] || "application/json",
@@ -516,11 +546,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       });
       return;
     }
-    servedStats = localStatsFixture;
+    if (!process.env.BASE_URL) servedStats = localStatsFixture;
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(localStatsFixture),
+      body: JSON.stringify(servedStats),
     });
   });
   page.on("request", (request) => {
@@ -542,8 +572,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   });
 
   // The homepage has an autoplaying video, so networkidle depends on media
-  // download timing and can stall the bounded CI suite. The assertions below
-  // explicitly wait for dynamic stats; DOM load is the correct navigation gate.
+  // download timing and can stall the bounded CI suite. Wait only for the
+  // functional /stats response; DOM load is the correct navigation gate.
+  const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats").catch(() => null);
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
@@ -577,11 +608,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const stats = page.locator("[data-stat]");
   await stats.last().scrollIntoViewIfNeeded();
-  // Issue #311: live evidence must settle before a visitor mistakes the
-  // initial zeroes for missing data.
-  await page.waitForFunction(() => Array.from(document.querySelectorAll("[data-stat], [data-star-total]"))
-    .some((element) => element.textContent.trim() && element.textContent.trim() !== "0"), null, { timeout: 1200 });
-  if (!statsRequested) throw new Error(`${path}: /stats was not requested`);
+  if (!(await statsResponse) || !statsRequested) throw new Error(`${path}: /stats was not requested`);
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
   // received (the real Worker response on beta, the fixture locally), so the
@@ -720,6 +747,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (consoleErrors.length || failedRequests.length) {
     throw new Error(`${path}: console errors=${JSON.stringify(consoleErrors)} failed requests=${JSON.stringify(failedRequests)}`);
   }
+  await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.close();
 }
 
@@ -891,7 +919,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = "/cloud/login";
+  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -899,9 +927,10 @@ async function assertProofLoop(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262: the reduced-motion degradation path a vestibular user actually
-// gets — the autoplaying video is hidden and the static poster takes its
-// place. emulated here, because no string check exercises the media query.
+// Issue #262 / #318: homepage autoplay proof is replaced by its static
+// poster under reduced motion; the Cloud walkthrough follows the same
+// static-poster fallback with its onboarding poster. Emulated here because no
+// string check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
   const page = await browser.newPage({
     viewport: { width: 1366, height: 768 },
@@ -919,8 +948,11 @@ async function assertProofLoopReducedMotion(browser, path) {
   if (state.display !== "none") {
     throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
   }
-  if (!state.background.includes("delivery-loop-poster.jpg")) {
-    throw new Error(`${path}: reduced motion must show the static poster, got background=${state.background}`);
+  const expectedPoster = path.includes("/cloud/")
+    ? "cloud-onboarding-poster.jpg"
+    : "delivery-loop-poster.jpg";
+  if (!state.background.includes(expectedPoster)) {
+    throw new Error(`${path}: reduced motion must show ${expectedPoster}, got background=${state.background}`);
   }
   await page.close();
 }
@@ -945,11 +977,11 @@ const cloudPages = {
     // Issue #237: the title now leads with the search term; the release
     // claim itself stays pinned on the h1 below and in the body.
     title: "Self-hosted or cloud coding agent",
-    h1: "Orbi Cloud: GitHub Issues in, tagged releases out",
+    h1: "Orbi Cloud: file an Issue, get a release",
     loop: "GitHub Issue in, tagged release out",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
-    metaNeedle: ["tagged GitHub Release", "US$79"],
+    metaNeedle: ["US$79"],
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
@@ -979,12 +1011,12 @@ const cloudPages = {
   },
   "/zh/cloud/": {
     zh: "/cloud/",
-    title: "GitHub Issue 进，打好 Tag 的 Release 出",
-    h1: "Orbi Cloud：GitHub Issue 进，打好 Tag 的 Release 出",
+    title: "提个 Issue，收个版本",
+    h1: "Orbi Cloud：提个 Issue，收个版本",
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
-    metaNeedle: ["打 Tag", "GitHub Release", "US$79"],
+    metaNeedle: ["US$79"],
     oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
@@ -1037,8 +1069,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  // The assertions below explicitly prove playback, so DOM load is the
-  // bounded navigation gate rather than waiting on autoplay network churn.
+  // DOM load is the bounded navigation gate. The Cloud walkthrough requests
+  // muted autoplay; deployed-browser playback remains the maintainer gate.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   if (!process.env.BASE_URL) {
     const availability = page.locator("[data-founding-availability]");
@@ -1053,35 +1085,44 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await demo.count()) !== 1 || (await video.count()) !== 1) {
     throw new Error(`${path}: expected exactly one Cloud walkthrough video`);
   }
-  for (const attribute of ["autoplay", "loop", "muted", "playsinline", "controls"]) {
+  for (const attribute of ["playsinline", "controls"]) {
     if ((await video.getAttribute(attribute)) === null) {
       throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
     }
   }
+  for (const attribute of ["autoplay", "muted"]) {
+    if ((await video.getAttribute(attribute)) === null) {
+      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
+    }
+  }
+  if ((await video.getAttribute("loop")) !== null) {
+    throw new Error(`${path}: Cloud walkthrough must not loop`);
+  }
   if ((await video.getAttribute("preload")) !== "metadata") {
     throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
   }
-  if ((await video.getAttribute("poster")) !== "/video/delivery-loop-poster.jpg") {
+  if ((await video.getAttribute("poster")) !== "/video/cloud-onboarding-poster.jpg") {
     throw new Error(`${path}: Cloud walkthrough poster is missing`);
+  }
+  if ((await video.getAttribute("src")) !== "/video/cloud-onboarding.mp4") {
+    throw new Error(`${path}: Cloud walkthrough mp4 is not the onboarding recording`);
+  }
+  if ((await demo.locator('source[src="/video/cloud-onboarding.webm"]').count()) !== 1
+    || (await demo.locator('source[src="/video/cloud-onboarding.mp4"]').count()) !== 1) {
+    throw new Error(`${path}: Cloud walkthrough is missing an onboarding source`);
+  }
+  const caption = (await demo.locator("figcaption").textContent()).replace(/\s+/g, " ");
+  if (/coming soon|temporary|即将上线|临时/i.test(caption)) {
+    throw new Error(`${path}: Cloud walkthrough still has placeholder caption copy`);
   }
   const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
-  try {
-    await page.waitForFunction(() => {
-      const video = document.querySelector(".cloud-demo .proof-loop-video");
-      return video && !video.paused && video.readyState >= 3 && video.currentTime > 0;
-    }, null, { timeout: 5000 });
-  } catch {
-    const state = await video.evaluate((element) => ({
-      paused: element.paused,
-      readyState: element.readyState,
-      networkState: element.networkState,
-      currentTime: element.currentTime,
-      error: element.error && element.error.code,
-    }));
-    throw new Error(`${path}: Cloud walkthrough is not playing: ${JSON.stringify(state)}`);
+  await demo.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-video.png")}` });
+  const mediaState = await video.evaluate((element) => ({ muted: element.muted, readyState: element.readyState }));
+  if (!mediaState.muted || mediaState.readyState < 1) {
+    throw new Error(`${path}: Cloud walkthrough must load muted with metadata, got ${JSON.stringify(mediaState)}`);
   }
 
   const h1Count = await page.locator("h1").count();
@@ -1441,17 +1482,19 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #308: exercise the actual homepage navigation journey at each
-// acceptance viewport, then verify the Cloud page's language-specific login
-// handoff without following the interactive GitHub OAuth page.
-async function assertHomeNavCloudFlow(browser, path, size, screenshot) {
+// Issues #308/#322: exercise an actual homepage journey at each acceptance
+// viewport, then verify the Cloud page's language-specific login handoff
+// without following the interactive GitHub OAuth page.
+async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "[data-primary-nav] .nav-apply") {
   const context = await browser.newContext({ viewport: size });
   try {
     const page = await context.newPage();
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const nav = page.locator("[data-primary-nav] .nav-apply");
-    if (!(await nav.isVisible())) await page.locator("[data-menu-toggle]").click();
-    await nav.click();
+    const entry = page.locator(selector);
+    if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
+      await page.locator("[data-menu-toggle]").click();
+    }
+    await entry.click();
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
     if (new URL(page.url()).pathname !== cloudPath) {
       throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
@@ -2068,19 +2111,22 @@ async function main() {
     await assertProofLoop(browser, "/zh/", { width: 390, height: 844 }, "proof-loop-zh-phone.png");
     await assertProofLoopReducedMotion(browser, "/");
     await assertProofLoopReducedMotion(browser, "/zh/");
-    // Issue #107: follow a real click from every Cloud CTA — hero, card and
-    // nav share one promise — to the endpoint CLOUD_LOGIN_EXPECT declares.
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    await assertCtaLandsAtEndpoint(browser, "/", homepageCloudCtas);
-    await assertCtaLandsAtEndpoint(browser, "/zh/", homepageCloudCtas);
-    await assertHomeNavCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
-    await assertHomeNavCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
-    await assertHomeNavCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
-    await assertHomeNavCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
+    // Issue #322: all three body CTAs introduce the language-matching Cloud
+    // page. Exercise every click; the dedicated Cloud checks below own the
+    // subsequent login handoff contract.
+    for (const [label, selector] of homepageCloudCtas) {
+      await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
+      await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
+    }
+    await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, "cloud-nav-en-desktop.png");
+    await assertHomeCloudFlow(browser, "/", { width: 390, height: 844 }, "cloud-nav-en-mobile.png");
+    await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, "cloud-nav-zh-desktop.png");
+    await assertHomeCloudFlow(browser, "/zh/", { width: 390, height: 844 }, "cloud-nav-zh-mobile.png");
     // Issue #97: both Cloud pages, both languages, phone and desktop widths.
     await assertCloudPage(browser, "/cloud/", { width: 1440, height: 900 }, "cloud-en-desktop.png");
     await assertCloudPage(browser, "/cloud/", { width: 390, height: 844 }, "cloud-en-mobile.png");

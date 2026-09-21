@@ -16,13 +16,16 @@
   --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
   --body: "Instrument Sans", "Noto Sans SC", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --hero-copy-width: 48rem;
 }
 
 * { box-sizing: border-box; }
 
-/* Keep the designed heading breaks on desktop, but let mobile text flow naturally. */
+/* Keep authored heading breaks for narrow screens, where they preserve readable chunks. */
+.responsive-break { display: none; }
+
 @media (max-width: 767px) {
-  .responsive-break { display: none; }
+  .responsive-break { display: inline; }
 }
 
 html {
@@ -299,26 +302,25 @@ h2 {
 
 h1 {
   margin-bottom: 24px;
-  font-size: clamp(3.4rem, 5.4vw, 6rem);
-  line-height: 0.9;
-  max-width: 9.4em;
+  font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem);
+  max-width: var(--hero-copy-width);
 }
 
 /* Short viewports (1366x768 laptops land at ~698px of usable height) pushed
    the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
    headline and the hero padding so the buttons stay in the first screen. */
 @media (max-height: 820px) and (min-width: 981px) {
-  .hero { min-height: auto; padding: 60px 0 64px; }
-  h1 { font-size: clamp(3rem, 4.4vw, 4.4rem); margin-bottom: 20px; }
-  .hero-lede { margin-bottom: 26px; font-size: 1.05rem; }
-  .eyebrow { margin-bottom: 20px; }
+  .hero { min-height: auto; padding: 0 0 64px; }
+  h1 { margin-bottom: 8px; }
+  .hero-lede { margin-bottom: 8px; font-size: 1.05rem; }
+  .eyebrow { margin-bottom: 12px; }
   .trust-line { margin-top: 22px; }
 }
 
 h1 span { color: var(--signal); }
 
 .hero-lede {
-  max-width: 48rem;
+  max-width: var(--hero-copy-width);
   margin-bottom: 34px;
   color: #b6c7c3;
   font-size: clamp(1.08rem, 1.4vw, 1.28rem);
@@ -1083,8 +1085,15 @@ h2 {
   display: grid;
   grid-template-columns: 34px 1fr;
   gap: 10px 16px;
+  min-width: 0;
   padding: 28px 32px 0 0;
   border-right: 1px solid var(--line);
+}
+
+.proof-ledger code { overflow-wrap: anywhere; }
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .proof-ledger-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .proof-ledger li + li { padding-left: 32px; }
@@ -1099,7 +1108,7 @@ h2 {
 .cloud-demo { margin-top: 40px; }
 .night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
 .night .cloud-demo figcaption { color: #9aada9; }
-@media (prefers-reduced-motion: reduce) { .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
+@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }
 
 .ownership {
   padding: 110px 0;
@@ -1493,7 +1502,7 @@ h2 {
 
 .site-footer {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 3fr);
   gap: 34px;
   align-items: center;
   padding-top: 34px;
@@ -1504,14 +1513,35 @@ h2 {
 }
 
 .wordmark-footer { color: var(--ink); }
-.site-footer p { margin: 0; }
-.site-footer nav { gap: 20px; }
-.site-footer nav a { text-decoration: none; }
+.site-footer p {
+  max-width: 18ch;
+  margin: 0;
+}
+.site-footer nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-width: 0;
+  gap: 16px;
+}
+.site-footer nav ul {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer nav li + li { margin-top: 6px; }
+.site-footer nav a {
+  display: block;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
 .site-footer nav a:hover { color: var(--ink); }
 
 /* .site-footer is a 3-column grid (wordmark/tagline/nav): the compare row must
    span every column, or the auto wordmark column grows to fit it. */
 .site-footer .footer-compare {
+  display: flex;
+  min-width: 0;
   grid-column: 1 / -1;
   flex-wrap: wrap;
   gap: 12px 18px;
@@ -1647,9 +1677,9 @@ h2 {
   .site-header { min-height: 72px; }
   .wordmark { font-size: 1rem; }
 
-  .hero { gap: 56px; padding: 70px 0 58px; }
-  h1 { font-size: clamp(3.5rem, 15.5vw, 5rem); line-height: 0.91; }
-  html[lang="zh-CN"] h1 { font-size: clamp(2.9rem, 12.2vw, 3.2rem); }
+  .hero { gap: 56px; padding: 10px 0 58px; }
+  .eyebrow { margin-bottom: 12px; }
+  h1 { margin-bottom: 12px; }
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }
@@ -1733,17 +1763,26 @@ h2 {
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
   .site-footer { grid-template-columns: 1fr; }
-  .site-footer > p { grid-column: 1; grid-row: auto; }
+  .site-footer > p {
+    grid-column: 1;
+    grid-row: auto;
+    max-width: none;
+  }
   .site-footer nav {
     grid-column: 1;
     grid-row: auto;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 12px 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
+  .site-footer nav li + li { margin-top: 6px; }
 }
 
 @media (max-width: 430px) {
+  .site-footer nav {
+    grid-template-columns: 1fr;
+    row-gap: 24px;
+  }
+
   .trace-index { font-size: 0.58rem; }
   .stat strong { font-size: 2.5rem; }
 }
@@ -1774,8 +1813,6 @@ h2 {
   max-width: 68rem;
   padding: 84px 0 68px;
 }
-
-.compare-hero .hero-lede { max-width: 46rem; }
 
 .compare-section {
   padding-top: clamp(84px, 9vw, 140px);

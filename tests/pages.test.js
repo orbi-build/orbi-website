@@ -281,7 +281,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 16-item footer nav on every content page", () => {
+  it("carries the 17-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -291,6 +291,7 @@ describe("one unified footer on every content page", () => {
       const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;
       expect(items, `${page.output}: footer nav drifted`).toEqual([
         page.nav.docsHref,
+        "https://cloud-docs.orbi.build/?ref=footer",
         `${prefix}/cloud/`,
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
@@ -476,11 +477,11 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
 describe("Cloud documentation links (Issue #315)", () => {
   const expectations = {
     "cloud/index.html": {
-      docs: "https://orbi-cloud.mintlify.app",
+      docs: "https://cloud-docs.orbi.build/?ref=cloud-nav",
       selfHost: "https://docs.orbi.build",
     },
     "zh/cloud/index.html": {
-      docs: "https://orbi-cloud.mintlify.app/zh",
+      docs: "https://cloud-docs.orbi.build/?ref=cloud-nav",
       selfHost: "https://docs.orbi.build/zh",
     },
   };
@@ -495,6 +496,9 @@ describe("Cloud documentation links (Issue #315)", () => {
       );
       expect(html, `${output}: self-hosting CTA`).toContain(
         `<a data-cta="install" href="${expected.selfHost}">`,
+      );
+      expect(html, `${output}: visible Cloud docs CTA`).toContain(
+        'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
       );
     }
   });
@@ -1174,7 +1178,7 @@ describe("llms.txt Blog section is generated (Issue #215)", () => {
 describe("blog failure path (Issue #212)", () => {
   const front = (fields) =>
     `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\nBody paragraph.\n`;
-  const full = { title: "T", date: "2026-09-18", summary: "s", lang: "en" };
+  const full = { title: "T", date: "2026-09-18", summary: "s", lang: "en", author: "Orbi", image: "/img/blog-t.png" };
 
   it("fails with the file path when the front-matter block is missing", () => {
     expect(() => postFromSource("t.md", "no front matter here"))
@@ -1221,6 +1225,82 @@ describe("blog failure path (Issue #212)", () => {
   });
 });
 
+describe("blog rich metadata and safe media (Issue #328)", () => {
+  const front = (fields, body = "Body paragraph.") =>
+    `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\n${body}\n`;
+  const full = {
+    title: "T", date: "2026-09-18", summary: "s", lang: "en", author: "Orbi",
+    image: "/img/blog-t.png",
+  };
+
+  it("requires a post image and author, and carries optional video metadata", () => {
+    expect(() => postFromSource("t.md", front({ ...full, author: "" }))).toThrow(/author/);
+    expect(() => postFromSource("t.md", front({ ...full, image: "" }))).toThrow(/image/);
+    const post = postFromSource("t.md", front({
+      ...full,
+      video_name: "Setup",
+      video_description: "The setup.",
+      video_thumbnail: "/img/blog-t.png",
+      video_upload_date: "2026-09-18",
+      video_duration: "PT66S",
+      video_embed_url: "https://www.youtube.com/embed/example",
+    }));
+    expect(post.author).toBe("Orbi");
+    expect(post.image).toBe("/img/blog-t.png");
+    expect(post.video.embedUrl).toContain("youtube.com/embed");
+  });
+
+  it("rejects any image without a non-empty alt and raw HTML outside the media whitelist", () => {
+    expect(() => postFromSource("t.md", front(full, '<img src="/x.png">'))).toThrow(/alt/);
+    expect(() => postFromSource("t.md", front(full, "![](/x.png)"))).toThrow(/alt/);
+    expect(() => postFromSource("t.md", front(full, "<div>not allowed</div>"))).toThrow(/HTML tag.*div/);
+  });
+
+  it("renders allowed figure, image, and iframe HTML", () => {
+    const post = postFromSource("t.md", front(full, '<figure><img src="/x.png" alt="A screen"><iframe src="https://www.youtube.com/embed/x" title="Video"></iframe></figure>'));
+    expect(post.html).toContain('<img src="/x.png" alt="A screen">');
+    expect(post.html).toContain("youtube.com/embed/x");
+  });
+
+  it("fails incomplete video front matter instead of emitting partial structured data", () => {
+    expect(() => postFromSource("t.md", front({ ...full, video_name: "Setup" }))).toThrow(/video/);
+  });
+
+  it("ships one Article per post and a VideoObject for the video post", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
+      expect(html).toContain(`\"@type\":\"Article\"`);
+      expect(html).toContain(`\"author\":{\"@type\":\"Organization\",\"name\":\"Orbi\"}`);
+      expect(html).toContain(`https://orbi.build${post.image}`);
+    }
+    const watch = shipped.get("blog/watch-the-six-steps/index.html");
+    expect(watch).toContain('"@type":"VideoObject"');
+    expect(new Set(posts.map((post) => post.image)).size).toBe(4);
+  });
+
+  it("keeps all seven onboarding screenshot sources at one uniform 2560 x 1440 size", async () => {
+    const watch = shipped.get("blog/watch-the-six-steps/index.html");
+    const stepImages = [...watch.matchAll(/<img src="(\/img\/step-[^"]+\.png)"[^>]+>/g)];
+    expect(stepImages).toHaveLength(7);
+
+    for (const [, src] of stepImages) {
+      const baseSrc = src.replace(/-2x\.png$/, ".png");
+      const png = await readFile(join(ROOT, "public", baseSrc));
+      expect(png.subarray(1, 4).toString()).toBe("PNG");
+      const width = png.readUInt32BE(16);
+      const height = png.readUInt32BE(20);
+      expect({ src, width, height }).toEqual({ src, width: 2560, height: 1440 });
+    }
+    for (const match of stepImages) {
+      expect(match[0]).toContain(`width="2560" height="1440"`);
+      const retinaSrc = match[1].replace(/\.png$/, "-2x.png");
+      expect(match[0]).toContain(`srcset="${match[1]} 1x, ${retinaSrc} 2x"`);
+      expect(match[0]).toContain('sizes="(min-width: 900px) 784px, 100vw"');
+    }
+  });
+});
+
 // Issue #214: pairing is no longer "same slug or nothing". A post may declare
 // `mirror: <slug>` naming its counterpart in the other language directory, a
 // same-slug file pairs by default, and a post with neither publishes alone —
@@ -1229,7 +1309,7 @@ describe("blog failure path (Issue #212)", () => {
 describe("blog mirror pairing (Issue #214)", () => {
   const front = (fields) =>
     `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\nBody paragraph.\n`;
-  const full = { title: "T", date: "2026-09-18", summary: "s", lang: "en" };
+  const full = { title: "T", date: "2026-09-18", summary: "s", lang: "en", author: "Orbi", image: "/img/blog-t.png" };
   const writePost = async (contentDir, name, fields) => {
     await mkdir(dirname(join(contentDir, name)), { recursive: true });
     await writeFile(join(contentDir, name), front(fields));
@@ -1329,6 +1409,8 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}
+author: Orbi
+image: /img/fixture.png
 ---
 
 Intro for ${title} with \`inline code\`.
@@ -1445,6 +1527,8 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
+author: Orbi
+image: /img/fixture.png
 ---
 
 Body of ${title} with [a link](https://docs.orbi.build/docker).

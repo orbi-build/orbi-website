@@ -81,6 +81,8 @@ const LANG = {
     tagline: "Software production that survives the session.",
     footerNavAria: "Footer navigation",
     docsHref: "https://docs.orbi.build",
+    cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
+    cloudDocsLabel: "Cloud Docs",
     applyLabel: "Start Cloud",
     cloudLabel: "Cloud",
     compareLabel: "Compare",
@@ -114,6 +116,8 @@ const LANG = {
     tagline: "不会随 Session 消失的软件生产。",
     footerNavAria: "页脚导航",
     docsHref: "https://docs.orbi.build/zh",
+    cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
+    cloudDocsLabel: "Cloud 文档",
     applyLabel: "开始 Cloud",
     cloudLabel: "Cloud",
     compareLabel: "竞品对比",
@@ -204,6 +208,8 @@ export function renderFooter(page) {
     FOOTER_NAV_ARIA: t.footerNavAria,
     DOCS_HREF: page.nav?.docsHref ?? t.docsHref,
     DOCS_LABEL: t.docsLabel,
+    CLOUD_DOCS_HREF: t.cloudDocsHref,
+    CLOUD_DOCS_LABEL: t.cloudDocsLabel,
     CLOUD_HREF: `${t.langPrefix}/cloud/`,
     CLOUD_LABEL: t.cloudLabel,
     COMPARE_HREF: `${t.langPrefix}/compare/`,
@@ -334,15 +340,57 @@ export function parseFrontMatter(displayName, source) {
 // `mirror` (Issue #214) is the optional declared counterpart slug in the
 // other language directory; collectPosts resolves it to the switcher target
 // once both sides exist.
+const POST_HTML_TAGS = new Set(["figure", "figcaption", "img", "iframe"]);
+
+// Markdown remains CommonMark, but these three tags are deliberately allowed
+// for article media. Rejecting all other raw HTML keeps the content contract
+// small while preserving accessible images and responsive video embeds.
+export function validatePostBody(label, body) {
+  const prose = body.replace(/```[\s\S]*?```/g, "").replace(/`[^`]*`/g, "");
+  for (const match of prose.matchAll(/<\/?([A-Za-z][\w-]*)(?:\s[^>]*)?>/g)) {
+    const tag = match[1].toLowerCase();
+    if (!POST_HTML_TAGS.has(tag)) throw new Error(`${label}: HTML tag <${tag}> is not allowed in blog body`);
+    if (tag === "img" && !match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
+      throw new Error(`${label}: every <img> in a blog body needs a non-empty alt`);
+    }
+  }
+}
+
+function validateRenderedPostImages(label, html) {
+  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+    if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
+      throw new Error(`${label}: every image in a blog body needs a non-empty alt`);
+    }
+  }
+}
+
+function requiredField(label, fields, name) {
+  if (typeof fields[name] !== "string" || fields[name].trim() === "") {
+    throw new Error(`${label}: front matter needs a non-empty "${name}"`);
+  }
+  return fields[name];
+}
+
+function parseVideo(label, fields) {
+  const names = ["video_name", "video_description", "video_thumbnail", "video_upload_date", "video_duration", "video_embed_url"];
+  const present = names.filter((name) => fields[name] !== undefined);
+  if (present.length === 0) return null;
+  if (present.length !== names.length) throw new Error(`${label}: video front matter needs all fields: ${names.join(", ")}`);
+  return {
+    name: requiredField(label, fields, "video_name"),
+    description: requiredField(label, fields, "video_description"),
+    thumbnailUrl: requiredField(label, fields, "video_thumbnail"),
+    uploadDate: requiredField(label, fields, "video_upload_date"),
+    duration: requiredField(label, fields, "video_duration"),
+    embedUrl: requiredField(label, fields, "video_embed_url"),
+  };
+}
+
 export function postFromSource(displayName, source) {
   const label = `content/blog/${displayName}`;
   const lang = displayName.startsWith("zh/") ? "zh" : "en";
   const { fields, body } = parseFrontMatter(label, source);
-  for (const field of ["title", "date", "summary", "lang"]) {
-    if (typeof fields[field] !== "string" || fields[field].trim() === "") {
-      throw new Error(`${label}: front matter needs a non-empty "${field}"`);
-    }
-  }
+  for (const field of ["title", "date", "summary", "lang", "author", "image"]) requiredField(label, fields, field);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) {
     throw new Error(`${label}: front matter needs "date" as YYYY-MM-DD, got "${fields.date}"`);
   }
@@ -352,6 +400,10 @@ export function postFromSource(displayName, source) {
   if (fields.mirror !== undefined && fields.mirror === "") {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
+  validatePostBody(label, body);
+  const html = marked.parse(body);
+  validateRenderedPostImages(label, html);
+  const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
   return {
@@ -365,7 +417,10 @@ export function postFromSource(displayName, source) {
     headline: fields.title,
     date: fields.date,
     summary: fields.summary,
-    html: marked.parse(body),
+    author: fields.author,
+    image: fields.image,
+    video,
+    html,
   };
 }
 
@@ -445,13 +500,40 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
 // matter, so the meta cannot drift from the title/summary/date the post ships.
 function renderPostMeta(post) {
   const url = `https://orbi.build${post.href}`;
+  const image = `https://orbi.build${post.image}`;
+  const article = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.headline,
+    datePublished: post.date,
+    author: { "@type": "Organization", name: post.author },
+    image,
+    inLanguage: post.lang === "zh" ? "zh-CN" : "en",
+    description: post.summary,
+    url,
+  };
+  const blocks = [article];
+  if (post.video) blocks.push({
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: post.video.name,
+    description: post.video.description,
+    thumbnailUrl: post.video.thumbnailUrl.startsWith("http") ? post.video.thumbnailUrl : `https://orbi.build${post.video.thumbnailUrl}`,
+    uploadDate: post.video.uploadDate,
+    duration: post.video.duration,
+    embedUrl: post.video.embedUrl,
+  });
+  const json = (value) => JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e").replaceAll("&", "\\u0026");
   return [
     `  <link rel="canonical" href="${url}">`,
     `  <meta property="og:type" content="article">`,
     `  <meta property="og:title" content="${escAttr(post.headline)}">`,
     `  <meta property="og:description" content="${escAttr(post.summary)}">`,
     `  <meta property="og:url" content="${url}">`,
+    `  <meta property="og:image" content="${image}">`,
+    `  <meta property="og:image:alt" content="${escAttr(post.headline)}">`,
     `  <meta property="article:published_time" content="${post.date}">`,
+    ...blocks.map((block) => `  <script type="application/ld+json">${json(block)}</script>`),
   ].join("\n");
 }
 

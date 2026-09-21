@@ -46,31 +46,50 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
   it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
-    expect(hrefs).toHaveLength(14);
-    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login");
+    expect(hrefs).toHaveLength(8);
+    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
-  it("keeps the existing data-cta markers on homepage Cloud buttons", async () => {
-    const [en, zh] = await Promise.all([read("site/pages/index.html"), read("site/pages/zh/index.html")]);
-    for (const html of [en, zh]) {
-      expect(html).toContain('data-cta="cloud-start" href="/cloud/login"');
-      expect(html).toContain('data-cta="midway-cloud" href="/cloud/login"');
-      expect(html).toContain('data-cta="cloud-start-card" href="/cloud/login"');
+  it("introduces the matching-language Cloud page from all homepage CTAs (Issue #322)", async () => {
+    const expectations = [
+      ["site/pages/index.html", "/cloud/"],
+      ["site/pages/zh/index.html", "/zh/cloud/"],
+    ];
+    for (const [file, landingPath] of expectations) {
+      const html = await read(file);
+      for (const marker of ["cloud-start", "midway-cloud", "cloud-start-card"]) {
+        expect(html, `${file}: ${marker} must introduce Cloud`).toContain(
+          `data-cta="${marker}" href="${landingPath}"`,
+        );
+      }
+      expect(html, `${file}: homepage CTAs must not skip to login`).not.toMatch(
+        /data-cta="(?:cloud-start|midway-cloud|cloud-start-card)" href="\/(?:zh\/)?cloud\/login/,
+      );
+    }
+  });
+
+  it("keeps Cloud login links language-prefixed across Chinese pages", async () => {
+    for (const file of [...await walkHtml("site"), ...await walkHtml("public")]) {
+      if (file.includes("/zh/") || file.startsWith("public/zh/")) {
+        expect(await read(file), `${file}: Chinese pages must use /zh/cloud/login`).not.toContain(
+          'href="/cloud/login',
+        );
+      }
     }
   });
 
   it("ships only bare, language-matching login handoffs in the built pages", async () => {
     const html = await Promise.all(builtFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [builtFiles[index], href]));
-    expect(hrefs.length).toBeGreaterThanOrEqual(14);
-    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login");
+    expect(hrefs.length).toBeGreaterThanOrEqual(8);
+    for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
   it("forbids query-bearing Cloud login links anywhere in source or built HTML", async () => {
     const files = [...await walkHtml("site"), ...await walkHtml("public")];
     for (const file of files) {
       const hrefs = cloudLoginHrefs(await read(file));
-      const expected = file.includes("/zh/") && file.includes("cloud/index") ? "/zh/cloud/login" : "/cloud/login";
+      const expected = file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login";
       expect(hrefs, `${file}: internal Cloud login links must preserve campaign attribution`).toEqual(
         hrefs.map(() => expected),
       );
