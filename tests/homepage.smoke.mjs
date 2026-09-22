@@ -582,6 +582,19 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (heroH1 !== claim.h1) {
     throw new Error(`${path}: hero h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
   }
+  const heroLayout = await hero.locator("h1").evaluate((h1) => {
+    const style = getComputedStyle(h1);
+    return {
+      lines: Math.round(h1.getBoundingClientRect().height / parseFloat(style.lineHeight)),
+      overflows: h1.scrollWidth > h1.clientWidth,
+    };
+  });
+  if (heroLayout.lines !== 1) {
+    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 1`);
+  }
+  if (heroLayout.overflows) {
+    throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
+  }
   const lede = await hero.locator(".hero-lede").textContent();
   for (const segment of claim.lede) {
     if (!lede.includes(segment)) {
@@ -2138,6 +2151,7 @@ async function main() {
     await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
+    await assertHomepage(browser, "/", "/compare/", { width: 360, height: 844 }, "homepage-en-narrow.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
     await assertHomeDocsDropdown(browser, "/", { width: 1440, height: 900 }, "docs-dropdown-en-desktop.png");
