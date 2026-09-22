@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Blog | Orbi</title>
-  <meta name="description" content="Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements, with every number traceable to the issue or run it came from.">
+  <meta name="description" content="Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi; every number traces to an issue, run, or source line.">
   <link rel="canonical" href="https://orbi.build/blog/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/">
@@ -41,7 +41,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/blog/">
   <meta property="og:title" content="Blog">
-  <meta property="og:description" content="Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.">
+  <meta property="og:description" content="Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi; every number traces to an issue, run, or source line.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +61,7 @@
     /* 深色 hero 本身就是分隔，section 的 84px 通用上边距在这里成了一块
        刺眼的空白。列表页单独收紧。 */
     .compare-section { padding-top: 40px; }
-    .post-entry-title { margin: 0 0 6px; font-family: var(--display); font-size: 1.45rem; line-height: 1.25; }
+    .compare-section .post-entry-title { max-width: none; margin: 0 0 6px; font-family: var(--display); font-size: 1.45rem; line-height: 1.25; }
     .post-entry-title a { text-decoration: none; color: var(--ink); }
     .post-entry-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
     .post-entry-meta { margin: 0 0 10px; color: var(--ink-soft); font-family: var(--mono); font-size: 0.82rem; }
@@ -78,9 +78,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="blog-title">
-        <p class="eyebrow">orbi.build · development notes</p>
+        <p class="eyebrow">orbi.build · field notes</p>
         <h1 id="blog-title">Blog</h1>
-        <p class="hero-lede">Notes from shipping Orbi in the open. Every number in every post traces back to an issue or a run you can open.</p>
+        <p class="hero-lede">Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi in public. Every number traces to an issue, run, or source line you can inspect.</p>
       </section>
     </div>
 
