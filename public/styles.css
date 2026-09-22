@@ -794,6 +794,10 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .social-proof-group .social-proof-grid { margin-top: 24px; }
 
+/* A repository or quote group with one record should read as an intentional
+ * full row, not as a half-width card with an empty second track. */
+.social-proof-group .proof-card:only-child { grid-column: 1 / -1; }
+
 .social-proof-more {
   margin: 34px 0 0;
   font-family: var(--mono);
