@@ -128,6 +128,19 @@ describe("comparison capability matrix (Issue #201)", () => {
   });
 });
 
+describe("SEO metadata is descriptive (Issue #405)", () => {
+  it("keeps every rendered page title and description above crawler minimums", () => {
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name=\"description\" content=\"([^\"]*)\"/)?.[1] ?? "";
+      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(30);
+      const minimumDescriptionLength = output.startsWith("zh/") || output === "aiready/zh/index.html" ? 70 : 120;
+      expect(description.length, `${output} description`).toBeGreaterThanOrEqual(minimumDescriptionLength);
+    }
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
