@@ -380,6 +380,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/designing-a-slash-command/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/designing-a-slash-command/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/designing-a-slash-command/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/designing-a-slash-command/"/>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/designing-a-slash-command/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/designing-a-slash-command/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/designing-a-slash-command/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/designing-a-slash-command/"/>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/watch-the-six-steps/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/watch-the-six-steps/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/watch-the-six-steps/"/>

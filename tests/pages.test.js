@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -1225,7 +1225,40 @@ describe("blog failure path (Issue #212)", () => {
   });
 });
 
+describe("blog table rendering (Issue #393)", () => {
+  const front = (body) => `---\ntitle: T\ndate: 2026-09-18\nsummary: s\nlang: en\nauthor: Orbi\nimage: /img/blog-t.png\n---\n\n${body}\n`;
+
+  it("wraps each Markdown table in one scroll container", () => {
+    const post = postFromSource("t.md", front(`| A | B |
+| - | - |
+| 1 | 2 |`));
+    expect(post.html).toContain('<div class="post-table-scroll"><table>');
+    expect(post.html.match(/class="post-table-scroll"/g)).toHaveLength(1);
+  });
+
+  it("wraps nested tables recursively without double-wrapping a table", () => {
+    const html = '<table><tr><td><table><tr><td>x</td></tr></table></td></tr></table>';
+    const wrapped = wrapRenderedTables(html);
+    expect(wrapped).toBe('<div class="post-table-scroll"><table><tr><td><div class="post-table-scroll"><table><tr><td>x</td></tr></table></div></td></tr></table></div>');
+    expect(wrapped.match(/<div class="post-table-scroll"><table/g)).toHaveLength(2);
+  });
+
+  it("defines the table scroll and token-based table styles in the post template", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-table-scroll { overflow-x: auto; }");
+    expect(template).toContain("border-collapse: collapse");
+    expect(template).toContain("border: 1px solid var(--line)");
+    expect(template).toContain("background: var(--paper-2)");
+    expect(template).not.toMatch(/\.post-body table[^}]*#[0-9a-f]{3,8}/i);
+  });
+});
+
 describe("blog rich metadata and safe media (Issue #328)", () => {
+  const expectUniquePostImages = (blogPosts) => {
+    const english = blogPosts.filter((post) => post.lang === "en");
+    expect(new Set(blogPosts.map((post) => post.image)).size).toBe(english.length);
+  };
+
   const front = (fields, body = "Body paragraph.") =>
     `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\n${body}\n`;
   const full = {
@@ -1262,6 +1295,56 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(post.html).toContain("youtube.com/embed/x");
   });
 
+  it("renders accessible inline SVG and keeps local references", () => {
+    const svg = '<figure><svg role="img" aria-label="Pipeline" viewBox="0 0 100 40"><title>Pipeline</title><defs><symbol id="box"><rect width="20" height="10" /></symbol></defs><use href="#box" /></svg><figcaption>Pipeline</figcaption></figure>';
+    const post = postFromSource("t.md", front(full, svg));
+    expect(post.html).toContain('<svg role="img" aria-label="Pipeline"');
+    expect(post.html).toContain('<use href="#box" />');
+  });
+
+  it("rejects every SVG without an accessible name", () => {
+    expect(() => postFromSource("t.md", front(full, '<svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" data-aria-label="not an accessible name"><rect /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Outer"><svg><rect /></svg></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+  });
+
+  it.each([
+    ["script", "<script>alert(1)</script>"],
+    ["foreignObject", "<foreignObject></foreignObject>"],
+    ["animate", "<animate attributeName=\"x\" />"],
+    ["image", "<image href=\"#asset\" />"],
+  ])("rejects SVG tag <%s>", (_tag, element) => {
+    expect(() => postFromSource("t.md", front(full, `<svg role="img" aria-label="Diagram">${element}</svg>`)))
+      .toThrow(/HTML tag/);
+  });
+
+  it("rejects event handlers and external SVG hrefs but permits local hrefs", () => {
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram" onclick="alert(1)"></svg>')))
+      .toThrow(/event handler/);
+    expect(() => postFromSource("t.md", front(full, '<figure onmouseover="alert(1)"><img src="/x" alt="x"></figure>')))
+      .toThrow(/event handler/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="https://example.com/icon.svg#x" /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href=https://example.com/icon.svg#x /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="javascript:alert(1)" /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="#local" /></svg>'))).not.toThrow();
+  });
+
+  it("rechecks SVG safety after Markdown rendering", () => {
+    expect(() => validateRenderedPostBody("content/blog/t.md", '<p><svg role="img" aria-label="Diagram"><use href="https://example.com/x" /></svg></p>'))
+      .toThrow(/external.*href/);
+  });
+
+  it("emits responsive SVG styles in the post template", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-body svg { max-width: 100%; height: auto; }");
+  });
+
   it("fails incomplete video front matter instead of emitting partial structured data", () => {
     expect(() => postFromSource("t.md", front({ ...full, video_name: "Setup" }))).toThrow(/video/);
   });
@@ -1276,7 +1359,20 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
     expect(watch).toContain('"@type":"VideoObject"');
-    expect(new Set(posts.map((post) => post.image)).size).toBe(4);
+    expectUniquePostImages(posts);
+  });
+
+  it("rejects shared images between articles but permits an EN/ZH mirror pair", () => {
+    const sharedImage = "/img/blog-shared.png";
+    expect(() => expectUniquePostImages([
+      { lang: "en", image: sharedImage },
+      { lang: "en", image: sharedImage },
+    ])).toThrow();
+
+    expect(() => expectUniquePostImages([
+      { lang: "en", image: sharedImage },
+      { lang: "zh", image: sharedImage },
+    ])).not.toThrow();
   });
 
   it("keeps all seven onboarding screenshot sources at one uniform 2560 x 1440 size", async () => {

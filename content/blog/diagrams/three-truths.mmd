@@ -1,0 +1,8 @@
+flowchart LR
+  CP["Control plane<br/>knows: v0.2.0"] -. "no path" .-> TOML["Sandbox orbi.toml<br/>knows: nothing"]
+  TOML --> VAR["GitHub repo variable<br/>knows: nothing"]
+  VAR --> LOG["INFO active_milestone_variable_absent<br/>once per tick, forever"]
+  style CP stroke:#0a6b52,stroke-width:3px
+  style TOML stroke:#ef6a62,stroke-width:3px
+  style VAR stroke:#ef6a62,stroke-width:3px
+  style LOG fill:#f7f8f5,stroke:#8a5b00

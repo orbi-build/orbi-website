@@ -346,27 +346,140 @@ export function parseFrontMatter(displayName, source) {
 // other language directory; collectPosts resolves it to the switcher target
 // once both sides exist.
 const POST_HTML_TAGS = new Set(["figure", "figcaption", "img", "iframe"]);
+const POST_SVG_TAGS = new Set([
+  "svg", "title", "desc", "g", "defs", "use", "symbol", "rect", "circle", "ellipse", "line",
+  "polyline", "polygon", "path", "text", "tspan", "textpath", "marker", "lineargradient",
+  "radialgradient", "stop", "clippath", "mask", "pattern",
+]);
 
-// Markdown remains CommonMark, but these three tags are deliberately allowed
-// for article media. Rejecting all other raw HTML keeps the content contract
-// small while preserving accessible images and responsive video embeds.
+const HTML_TAG = /<\/?([A-Za-z][\w-]*)(?:"[^"]*"|'[^']*'|[^'"<>])*>/g;
+const HTML_ATTRIBUTE = /\s([A-Za-z_:][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s'"=<>`]+)))?/g;
+
+function tagAttributes(markup) {
+  const attributes = new Map();
+  for (const match of markup.matchAll(HTML_ATTRIBUTE)) {
+    attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? "");
+  }
+  return attributes;
+}
+
+function requireSvgAccessibleName(label, svg) {
+  const ariaLabel = svg.attributes.get("aria-label")?.trim();
+  const role = svg.attributes.get("role")?.trim().toLowerCase();
+  if (!(role === "img" && ariaLabel) && !svg.hasTitle) {
+    throw new Error(`${label}: every <svg> in a blog body needs a non-empty aria-label with role="img" or a non-empty <title>`);
+  }
+}
+
+function validateSvgMarkup(label, html) {
+  const svgStack = [];
+  const titleStack = [];
+
+  for (const match of html.matchAll(HTML_TAG)) {
+    const markup = match[0];
+    const tag = match[1].toLowerCase();
+    const closing = markup.startsWith("</");
+    const selfClosing = /\/\s*>$/.test(markup);
+    const attributes = closing ? new Map() : tagAttributes(markup);
+
+    for (const name of attributes.keys()) {
+      if (name.startsWith("on")) throw new Error(`${label}: event handler attributes are not allowed in a blog body`);
+    }
+
+    if (closing) {
+      if (tag === "title" && titleStack.length > 0) {
+        const title = titleStack.pop();
+        if (html.slice(title.contentStart, match.index).replace(/<[^>]*>/g, "").trim()) {
+          for (const svg of svgStack) svg.hasTitle = true;
+        }
+      } else if (tag === "svg" && svgStack.length > 0) {
+        requireSvgAccessibleName(label, svgStack.pop());
+      }
+      continue;
+    }
+
+    if (tag === "svg") {
+      const svg = { attributes, hasTitle: false };
+      svgStack.push(svg);
+      if (selfClosing) requireSvgAccessibleName(label, svgStack.pop());
+    }
+
+    if (svgStack.length > 0) {
+      for (const name of ["href", "xlink:href"]) {
+        if (attributes.has(name) && !attributes.get(name).trim().startsWith("#")) {
+          throw new Error(`${label}: external SVG href is not allowed; use a local #id reference`);
+        }
+      }
+      if (tag === "title" && !selfClosing) titleStack.push({ contentStart: match.index + markup.length });
+    }
+  }
+
+  for (const svg of svgStack) requireSvgAccessibleName(label, svg);
+}
+
+// Markdown remains CommonMark, but these tags are deliberately allowed for
+// article media. SVG gets a separate safety/accessibility pass below.
 export function validatePostBody(label, body) {
   const prose = body.replace(/```[\s\S]*?```/g, "").replace(/`[^`]*`/g, "");
   for (const match of prose.matchAll(/<\/?([A-Za-z][\w-]*)(?:\s[^>]*)?>/g)) {
     const tag = match[1].toLowerCase();
-    if (!POST_HTML_TAGS.has(tag)) throw new Error(`${label}: HTML tag <${tag}> is not allowed in blog body`);
+    if (!POST_HTML_TAGS.has(tag) && !POST_SVG_TAGS.has(tag)) throw new Error(`${label}: HTML tag <${tag}> is not allowed in blog body`);
     if (tag === "img" && !match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
       throw new Error(`${label}: every <img> in a blog body needs a non-empty alt`);
     }
   }
+  validateSvgMarkup(label, prose);
 }
 
-function validateRenderedPostImages(label, html) {
+export function wrapRenderedTables(html) {
+  const tableTag = /<\/?table\b[^>]*>/gi;
+
+  function renderRange(start, end) {
+    let output = "";
+    let cursor = start;
+    while (cursor < end) {
+      tableTag.lastIndex = cursor;
+      const opening = tableTag.exec(html);
+      if (!opening || opening.index >= end || opening[0].startsWith("</")) {
+        output += html.slice(cursor, end);
+        break;
+      }
+      output += html.slice(cursor, opening.index);
+      let depth = 1;
+      let scan = opening.index + opening[0].length;
+      let closingStart = -1;
+      let closingEnd = -1;
+      while (depth > 0) {
+        tableTag.lastIndex = scan;
+        const tag = tableTag.exec(html);
+        if (!tag || tag.index >= end) throw new Error("rendered blog table is missing its closing tag");
+        if (tag[0].startsWith("</")) {
+          depth -= 1;
+          if (depth === 0) {
+            closingStart = tag.index;
+            closingEnd = tag.index + tag[0].length;
+          }
+        } else {
+          depth += 1;
+        }
+        scan = tag.index + tag[0].length;
+      }
+      output += `<div class="post-table-scroll">${opening[0]}${renderRange(opening.index + opening[0].length, closingStart)}${html.slice(closingStart, closingEnd)}</div>`;
+      cursor = closingEnd;
+    }
+    return output;
+  }
+
+  return renderRange(0, html.length);
+}
+
+export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
       throw new Error(`${label}: every image in a blog body needs a non-empty alt`);
     }
   }
+  validateSvgMarkup(label, html);
 }
 
 function requiredField(label, fields, name) {
@@ -406,8 +519,8 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = marked.parse(body);
-  validateRenderedPostImages(label, html);
+  const html = wrapRenderedTables(marked.parse(body));
+  validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
