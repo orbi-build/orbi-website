@@ -128,7 +128,10 @@
 于是你敲一个记得一半的版本号，敲错了也没人告诉你——拒绝发生在异步的引擎侧，
 在一张你得自己去找的票上。</p>
 <h2>同一个形状，在配置里</h2>
-<p>第三个实例解释了前两个。</p>
+<figure class="post-media">
+<img src="/img/diagrams/three-truths.svg" alt="三个系统对当前里程碑持有三个不同答案。控制面知道租户要的是 v0.2.0，但没有任何通路把它送到沙箱的 orbi.toml，后者是空的。GitHub 仓库变量忠实镜像了那个空值，于是引擎每个 tick 记一条 active_milestone_variable_absent。" width="880" height="150">
+<figcaption>控制面可以建出一张 release 票，而沙箱仍然认为什么都没在跑。引擎忠实地汇报它被告知的东西，每个 tick 一次，而这条链路上没有任何一环是坏的。</figcaption>
+</figure><p>第三个实例解释了前两个。</p>
 <p>引擎每个 tick 都会把当前里程碑写进仓库变量。这个值来自 <code>config.active_milestone</code>——
 它住在沙箱自己的 <code>orbi.toml</code> 文件里。不是 GitHub，不是我们的控制面。</p>
 <p>所以控制面可以建出一张 release 票，而沙箱仍然认为什么都没在跑。两个系统，两个答案，
@@ -161,9 +164,17 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 <p><code>0600</code>、属主是沙箱用户、没有 <code>authorized_keys</code>。<strong>租户连 SSH 都进不去。</strong>
 没有手改需要对账。</p>
 <p>这让设计比我们假设的更简单：控制面是唯一写者，合并只需保留<strong>其他控制面字段</strong>，
-不存在外部 drift。它还指向一条更强的不变式值得守住：<code>orbi.toml</code> 应该是纯派生产物，
-能仅凭控制面状态完整重建。今天它不是。engine track 和 providers 只活在沙箱里，
-控制面手里是部分真相。那四个同步函数各自维护着真相的一个碎片。</p>
+不存在外部 drift。</p>
+<p>它还指向一条更强的不变式值得守住：<strong><code>orbi.toml</code> 应该是纯派生产物，
+能仅凭控制面状态完整重建。</strong></p>
+<p>今天它不是。engine track 和 providers 只活在沙箱里，控制面手里是部分真相。
+那四个同步函数各自维护着真相的一个碎片，<strong>没有任何一个地方能告诉你一个沙箱应该被配置成什么样。</strong></p>
+<p><strong>派生</strong>与<strong>权威</strong>的这个区别，决定了你会遇到多少这一类缺陷。派生产物可以重新生成、
+可以和意图做 diff、可以被一次扫描修复；而一个只有某台机器持有的权威文件，
+只能靠跑到那台机器上去看。那四个同步函数之所以存在，都是因为某个字段先在沙箱里
+成了权威，之后才不得不补一条改它的路。</p>
+<p>这件事不会一步做完。但知道自己要的是哪条不变式，下一个字段的默认做法就清楚了：
+<strong>控制面持有它，沙箱派生它。</strong></p>
 <h2>拉还是推，也自己解决了</h2>
 <p>配置下发到沙箱，直觉上的取舍是拉（沙箱定时问）还是推（控制面主动触发）。</p>
 <p>推意味着给沙箱主机开入站通道，拉意味着最多一个刷新周期的延迟。
@@ -196,6 +207,16 @@ login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← 正常�
 那个 401 是一条正确的策略撞上一个本该停下的循环的症状。</p>
 <p><strong>先读报错，再读数据——顺序反了，</strong> 我们就是反着做的，于是开了一张根因写错的票，
 后来不得不公开订正。</p>
+<p>值得写下来的不是这个错误本身，而是：<strong>复现反而&quot;证实&quot;了错误的诊断。</strong>
+在沙箱里跑那条失败的命令，返回 <code>401 Bad credentials</code>——这正是凭据问题该有的样子。
+而那个仓库是 public、用维护者 token 读得到，看起来又排除了&quot;仓库没了&quot;。
+两条证据都是真的，都指向错误的方向。</p>
+<p><strong>复现告诉你发生了什么，它不告诉你这件事是不是本该发生。</strong> 数据库里那一行
+<code>repo_status = inactive</code> 才是唯一能区分&quot;这个 token 该好用却没好用&quot;和
+&quot;这个 token 本来就不该被刷新&quot;的东西。而对照组一直就在同一个查询结果里：
+同一个租户的 <strong>active</strong> 仓库完全正常。</p>
+<p>可推广的版本是：<strong>当一个错误能复现时，你确认的是机制，不是诊断。</strong>
+下一个问题永远是&quot;有没有某条策略本来就打算让它这样&quot;——而策略住在数据里，不在日志里。</p>
 <h2>三者的共同点</h2>
 <p>三个缺陷，一个形状：<strong>系统知道一件用户需要知道的事，而没有说出来。</strong></p>
 <p>它知道有哪些里程碑，却让你凭记忆敲一个。它知道有一个决定悬着，

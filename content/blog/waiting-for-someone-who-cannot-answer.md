@@ -75,6 +75,12 @@ later, asynchronously, on a ticket you have to go find.
 
 ## The same shape, in the config
 
+<figure class="post-media">
+<img src="/img/diagrams/three-truths.svg" alt="Three systems holding three different answers about the active milestone. The control plane knows the tenant asked for v0.2.0. No path carries that to the sandbox orbi.toml, which knows nothing. The GitHub repo variable mirrors the empty value, so the engine logs active_milestone_variable_absent once per tick." width="880" height="150">
+<figcaption>The control plane can open a release ticket while the sandbox still believes nothing is in flight. The engine faithfully reports what it was told, once per tick, and nothing in the loop is broken.</figcaption>
+</figure>
+
+
 The third instance is the one that explains the other two.
 
 Our engine writes the active milestone into a repository variable on every tick.
@@ -129,11 +135,26 @@ cannot SSH in. There is no hand-editing to reconcile.
 
 That makes the design simpler than we assumed. The control plane is the sole
 writer, so the merge only has to preserve *other control-plane fields* — there
-is no external drift to detect. And it points at a stronger invariant worth
-holding: `orbi.toml` should be a pure derivative, reconstructible from control
-plane state alone. Today it is not. Engine track and providers live only in the
-sandbox; the control plane holds a partial truth. Those four sync functions each
-maintain a fragment of the real answer.
+is no external drift to detect.
+
+It also points at a stronger invariant worth holding: **`orbi.toml` should be a
+pure derivative, reconstructible from control-plane state alone.**
+
+Today it is not. Engine track and providers live only in the sandbox; the
+control plane holds a partial truth. Those four sync functions each maintain a
+fragment of the real answer, and no single place can tell you what a sandbox is
+supposed to be configured as.
+
+That distinction — *derivative* versus *authoritative* — is the one that
+decides how much of this class of bug you get. A derivative file can be
+regenerated, diffed against intent, and repaired by a sweep. An authoritative
+file that only one machine holds can only be inspected by going there. Every
+one of the four sync functions exists because a field was made authoritative in
+the sandbox first, and a way to change it had to be retrofitted afterwards.
+
+We are not fixing that in one step. But knowing which invariant we want makes
+the next field's default obvious: the control plane holds it, the sandbox
+derives it.
 
 ## The pull-versus-push question answered itself too
 
@@ -192,6 +213,24 @@ symptom of a correct policy meeting a loop that should have stopped.
 Read the error, then read the data. In that order — we did it backwards and
 filed a ticket with the wrong root cause, which then had to be publicly
 corrected.
+
+What makes this worth writing down is not the mistake. It is that reproducing
+the error **confirmed** the wrong diagnosis. Running the failing command inside
+the sandbox returned `401 Bad credentials`, which is exactly what a credential
+problem looks like. The repository was public and readable with a maintainer
+token, which seemed to rule out "the repo is gone". Two pieces of evidence, both
+genuine, both pointing the wrong way.
+
+A reproduction tells you what happens. It does not tell you whether it is
+supposed to happen. The database row — `repo_status = inactive` — was the only
+thing that could distinguish "this token should work and doesn't" from "this
+token was never meant to be refreshed". And the control group was sitting in the
+same query the whole time: the same tenant's *active* repository was working
+perfectly.
+
+The generalisable version: when an error reproduces, you have confirmed the
+mechanism, not the diagnosis. The next question is always whether some policy
+intends this outcome — and policy lives in data, not in logs.
 
 ## What connects them
 

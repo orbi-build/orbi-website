@@ -47,6 +47,18 @@ string in `pyproject.toml` — which is what the release process does, not what
 this command does. A name that makes people expect the wrong side effect is a
 bad name even if it is short.
 
+That last one is worth dwelling on, because it is the rule the other rejections
+follow from. A command name is a promise about side effects. `/advance` promises
+something moved forward but does not say what — the version? the delivery? the
+queue? `bump version` promises a file edit that never happens. Both are short,
+pronounceable, and wrong in the same way: **the reader forms an expectation the
+implementation will not honour.**
+
+`/milestone v0.5.40` makes exactly one promise — the milestone is now v0.5.40 —
+and the three things it does are all in service of making that true. Creating
+the milestone, opening the release ticket, landing the config value: none of
+them is a surprise once you have read the name.
+
 ## Why no @
 
 The second argument: `/milestone` or `@orbi milestone`?
@@ -67,6 +79,14 @@ pointedly, the same engine already runs under two identities in our own org — 
 our bootstrap runner the comment author is a human account, and in a managed
 sandbox it is `orbi-build[bot]`. We confirmed both on our own repository the
 same day. Binding the syntax to a name would break self-hosted users on day one.
+
+The tempting middle path is to accept both: match `@orbi milestone` *and*
+`/milestone`, and let people use whichever they like. We rejected that too, and
+the reason is not aesthetic. Two syntaxes mean two things to document, two
+things to test, and two things that can drift apart when someone adds the third
+command. The mention buys a notification — genuinely useful — but the cost is
+paid on every future command, forever, by everyone maintaining this. A
+notification is not worth a permanent fork in the grammar.
 
 ## The regex is three decisions in one
 
@@ -92,47 +112,8 @@ What it does **not** buy is immunity to fenced code blocks. And that turned out
 to be the most interesting thing we read all day.
 
 <figure class="post-media">
-<svg viewBox="0 0 880 300" role="img" aria-label="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. Prow's fenced-block fix reaches only one of fifty-plus plugins; bors's permission gate is bypassable through a second entry point.">
-<title>The in-ticket command pipeline, and where Prow and bors each leak</title>
-<defs>
-<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-<path d="M0 0 L10 5 L0 10 z" fill="#526566"></path>
-</marker>
-</defs>
-<g font-family="IBM Plex Mono, monospace" font-size="13" fill="#10292c">
-<rect x="8" y="96" width="112" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
-<text x="64" y="123" text-anchor="middle">comment</text>
-<line x1="122" y1="118" x2="146" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="150" y="96" width="120" height="44" rx="6" fill="#f7f8f5" stroke="#8a5b00" stroke-width="2"></rect>
-<text x="210" y="116" text-anchor="middle">strip fences</text>
-<text x="210" y="132" text-anchor="middle" font-size="11" fill="#8a5b00">Prow leaks here</text>
-<line x1="272" y1="118" x2="296" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="300" y="96" width="106" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
-<text x="353" y="123" text-anchor="middle">strip quotes</text>
-<line x1="408" y1="118" x2="432" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="436" y="96" width="104" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
-<text x="488" y="123" text-anchor="middle">author ≠ bot</text>
-<line x1="542" y1="118" x2="566" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="570" y="96" width="124" height="44" rx="6" fill="#f7f8f5" stroke="#8a5b00" stroke-width="2"></rect>
-<text x="632" y="116" text-anchor="middle">permission</text>
-<text x="632" y="132" text-anchor="middle" font-size="11" fill="#8a5b00">bors leaks here</text>
-<line x1="696" y1="118" x2="720" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="724" y="96" width="98" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
-<text x="773" y="123" text-anchor="middle">last wins</text>
-<line x1="773" y1="142" x2="773" y2="182" stroke="#526566" marker-end="url(#ar)"></line>
-<rect x="716" y="186" width="114" height="42" rx="6" fill="#e8eeeb" stroke="#0a6b52" stroke-width="2"></rect>
-<text x="773" y="212" text-anchor="middle" fill="#0a6b52">receipt</text>
-</g>
-<g font-family="Instrument Sans, sans-serif" font-size="12.5" fill="#526566">
-<text x="150" y="60">Prow: the fix exists in pkg/markdown/code_block.go —</text>
-<text x="150" y="78">one call site out of fifty-plus plugins.</text>
-<text x="452" y="262">bors: run/2 is reachable directly, so the gate</text>
-<text x="452" y="280">in run/1 never runs for :retry.</text>
-<text x="8" y="262">Every stage above belongs to the shared layer.</text>
-<text x="8" y="280">A command author supplies a verb, never a regex.</text>
-</g>
-</svg>
-<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them. bors declares permissions correctly but leaves a second door into the handler.</figcaption>
+<img src="/img/diagrams/command-pipeline.svg" alt="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. The fence-stripping and permission stages are highlighted as the two places where Prow and bors respectively leak." width="880" height="120">
+<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them — it leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler — it leaks at “permission”.</figcaption>
 </figure>
 
 ## The bug Prow still has
@@ -254,6 +235,40 @@ version against the candidate set, and an `apply` that runs the three steps.
 Adding a second command becomes "edit one dict, and the tests tell you what else
 you forgot".
 
+<figure class="post-media">
+<svg viewBox="0 0 880 330" role="img" aria-label="Two registries side by side. JOURNAL_EVENTS, already in the repository, is an explicit dict where registration validates: an unregistered name raises, and a binding test pins it against the EN and ZH docs tables and the exporter. TICKET_COMMANDS copies that shape: the dispatcher enforces the declared permission, duplicate verbs raise at import, and the same binding test pins usage and description against the docs.">
+<title>TICKET_COMMANDS copies a registry shape the repository already had</title>
+<g font-family="Instrument Sans, sans-serif" font-size="13" fill="#10292c">
+<rect x="8" y="30" width="410" height="270" rx="8" fill="#f7f8f5" stroke="#b8c5c1"></rect>
+<text x="26" y="58" font-size="14" font-weight="600">JOURNAL_EVENTS</text>
+<text x="26" y="78" font-size="11.5" fill="#526566">src/orbi/journal.py:167 · shipped months ago</text>
+<text x="26" y="112">An explicit dict, written out in the module.</text>
+<text x="26" y="134">No decorators. No entry points. No dynamic import.</text>
+<text x="26" y="170" font-weight="600">Registration is validation</text>
+<text x="26" y="190" font-size="12">event() raises on an unregistered name, so a typo</text>
+<text x="26" y="208" font-size="12">fails immediately instead of writing a bad event.</text>
+<text x="26" y="240" font-weight="600">A binding test pins it three ways</text>
+<text x="26" y="260" font-size="12">EN docs table · ZH docs table · exporter kinds</text>
+<rect x="462" y="30" width="410" height="270" rx="8" fill="#e8eeeb" stroke="#0a6b52" stroke-width="2"></rect>
+<text x="480" y="58" font-size="14" font-weight="600">TICKET_COMMANDS</text>
+<text x="480" y="78" font-size="11.5" fill="#0a6b52">the new one · same shape, nothing invented</text>
+<text x="480" y="112">An explicit dict, written out in the module.</text>
+<text x="480" y="134">A command author edits one entry.</text>
+<text x="480" y="170" font-weight="600">Registration is validation</text>
+<text x="480" y="190" font-size="12">Duplicate name or overlapping verb raises at</text>
+<text x="480" y="208" font-size="12">import — the thing Prow does not check.</text>
+<text x="480" y="240" font-weight="600">A binding test pins it three ways</text>
+<text x="480" y="260" font-size="12">usage · description · the docs table</text>
+<line x1="424" y1="165" x2="454" y2="165" stroke="#526566" stroke-dasharray="4 3"></line>
+<text x="439" y="158" text-anchor="middle" font-size="11" fill="#526566">≡</text>
+</g>
+<g font-family="Instrument Sans, sans-serif" font-size="12.5" fill="#526566">
+<text x="8" y="322">Adding a command becomes "edit one dict, and the tests tell you what else you forgot".</text>
+</g>
+</svg>
+<figcaption>The registry was not designed for this feature. It was already in the repository, holding journal event names, with the property that mattered: registering a thing is what validates it.</figcaption>
+</figure>
+
 ## One command, three idempotent steps
 
 The original ticket said this command changes a config value. That was wrong,
@@ -285,6 +300,36 @@ So `/milestone v0.5.40` does three things, each independently idempotent: create
 the milestone if absent, open the release ticket if absent, land the config
 value. Run it twice and you get one milestone and one ticket.
 
+### The branch we refused to write
+
+Landing the config value has two destinations, because `active_milestone` can
+come from two places: a repository policy file (`.github/orbi.toml`) or the
+host's own config. Write to the wrong one and the value either does not take
+effect or takes effect for the wrong scope.
+
+The obvious implementation is a runtime check: *am I running in a managed
+sandbox or on a self-hosted runner?* We refused to write that branch.
+
+There is no reliable signal for it. The nearest candidate, `engine_source_track`,
+can be set on a bootstrap runner too, so the check would be a heuristic
+pretending to be a fact — and heuristics in a write path fail in the direction
+nobody tests.
+
+More importantly, **the question is the wrong one.** We do not need to know
+where we are running. We need to know where this value came from, and that is
+already known, precisely, by the code that read it: `resolve_policy` in
+`src/orbi/repo_config.py:287-290` knows whether `active_milestone` came from the
+repo policy or the host config, because it is the thing that looked.
+
+So the branch keys off provenance, not environment. Policy-sourced values are
+written back to `.github/orbi.toml` and pushed; host-sourced values go through
+`rewrite_active_milestone_line`. Two paths, one question, and the answer is a
+fact rather than an inference.
+
+This generalises: when you find yourself about to detect your own environment,
+check whether the thing you actually need was already determined by whoever
+supplied the input.
+
 Every step is deterministic. No model is invoked — the command's arguments are
 the input, string substitution is the transformation, and a file write is the
 output. An LLM in that path would add nondeterminism to an operation whose
@@ -312,8 +357,37 @@ That cost is only justified by a command that needs it.
 
 So the question is not "which option is better". It is: **which of those four
 commands do we actually want, and is any of them worth a per-tick scan?** If the
-answer is none for now, the narrow scope stands. We parked it in a discussion
-thread instead of letting the refactor quietly answer it.
+answer is none for now, the narrow scope stands.
+
+### Why "not yet" is a decision and not a dodge
+
+We parked this in a discussion thread rather than settling it, and that choice
+deserves the same scrutiny as the others.
+
+The refactor that lifts the shared layer out (#1294) touches every piece of
+machinery a wider scan would use — the parser, the permission gate, the receipt
+dedupe. It would have been easy, and superficially tidy, to widen the scope
+while we were in there. "We're already touching this code" is the most common
+reason a scope decision gets made by accident.
+
+But look at what the widening actually costs. Receipts currently dedupe by
+scanning one ticket's comment list; across many tickets that needs a different
+mechanism entirely. Every tick gains N API calls plus pagination and rate-limit
+handling. The reachable surface grows from "tickets we opened" to "every
+delivery ticket". Those are not incidental — they are the design of a different
+feature, and they would have been designed in passing, to serve commands nobody
+had specified yet.
+
+The alternative failure is just as real: deciding now to stay narrow, and
+writing that into the architecture so firmly that `/retry` becomes expensive
+later. So #1294 states its own scope neutrality explicitly — it moves code and
+adds nothing, and it does not read the discussion's conclusion.
+
+**The cost of Option B is only justified by a command that needs it.** Until one
+of `/approve`, `/retry`, `/cancel` or `/model` is specified, there is no
+information that would make the choice better than a coin flip. Writing the
+question down, with both option's costs enumerated, is what keeps it from being
+answered by whoever next opens that file.
 
 ## The result
 
