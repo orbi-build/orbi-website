@@ -764,11 +764,10 @@ async function assertHomeDocsDropdown(browser, path, size, screenshot) {
     if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Docs dropdown is open before interaction`);
     await trigger.click();
     await page.keyboard.press("Escape");
-    await page.evaluate(() => {
-      const button = document.querySelector("[data-docs-toggle]");
-      button.focus();
-      button.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
-    });
+    await trigger.evaluate((button) => button.parentElement.previousElementSibling.focus());
+    await page.keyboard.press("Tab");
+    if (!(await trigger.evaluate((button) => button === document.activeElement))) throw new Error(`${path}: Tab did not focus Docs dropdown trigger`);
+    await page.keyboard.press("Enter");
     if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Enter did not open Docs dropdown`);
     const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
     const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
@@ -778,10 +777,7 @@ async function assertHomeDocsDropdown(browser, path, size, screenshot) {
     }
     await page.keyboard.press("Escape");
     if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Escape did not close Docs dropdown`);
-    await page.evaluate(() => {
-      const button = document.querySelector("[data-docs-toggle]");
-      button.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true }));
-    });
+    await page.keyboard.press("Space");
     if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Space did not open Docs dropdown`);
     if ((await trigger.getAttribute("aria-expanded")) !== "true") throw new Error(`${path}: trigger aria-expanded is not true`);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

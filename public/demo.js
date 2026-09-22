@@ -41,13 +41,9 @@
       function toggleDocs() {
         setDocsOpen(docsToggle.getAttribute("aria-expanded") !== "true", false);
       }
+      // A native button already turns Enter and Space into click events. Keep
+      // one activation path so keyboard use cannot toggle the menu twice.
       docsToggle.addEventListener("click", toggleDocs);
-      docsToggle.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          toggleDocs();
-        }
-      });
       docsMenu.addEventListener("click", function (event) {
         if (event.target.closest("a")) setDocsOpen(false, false);
       });
@@ -67,11 +63,11 @@
     });
 
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
-        setOpen(false, true);
-      }
-      if (event.key === "Escape" && docsToggle?.getAttribute("aria-expanded") === "true") {
+      if (event.key !== "Escape") return;
+      if (docsToggle?.getAttribute("aria-expanded") === "true") {
         setDocsOpen(false, true);
+      } else if (toggle.getAttribute("aria-expanded") === "true") {
+        setOpen(false, true);
       }
     });
 
