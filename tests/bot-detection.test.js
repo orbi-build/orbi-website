@@ -48,6 +48,13 @@ describe("bot detection (Issue #280)", () => {
       [14061, "DigitalOcean"],
       [16276, "OVH"],
       [63949, "Linode"],
+      [132203, "Tencent Cloud"],
+      [48090, "DMZHost"],
+      [45102, "Alibaba Cloud"],
+      [213230, "Hetzner Cloud2"],
+      [197540, "netcup"],
+      [45090, "Tencent Cloud"],
+      [64267, "Sprious"],
     ];
     for (const [asn, provider] of cloudAsns) {
       expect(isBot(requestWith({ ua: CHROME_127, asn })), `${provider} AS${asn}`).toBe(true);
@@ -55,8 +62,14 @@ describe("bot detection (Issue #280)", () => {
   });
 
   it("marks residential ASNs human: real people browse from ISP IPs, not datacenters", () => {
-    expect(isBot(requestWith({ ua: CHROME_127, asn: 7922 })), "Comcast AS7922").toBe(false);
-    expect(isBot(requestWith({ ua: CHROME_127, asn: 4134 })), "China Telecom AS4134").toBe(false);
+    for (const asn of [9506, 7922, 4134]) {
+      expect(isBot(requestWith({ ua: CHROME_127, asn })), `residential AS${asn}`).toBe(false);
+    }
+  });
+
+  it("marks ChromeHeadless as a bot regardless of ASN", () => {
+    const headless = `${CHROME_127} HeadlessChrome/127.0.0.0`;
+    expect(isBot(requestWith({ ua: headless, asn: 9506 }))).toBe(true);
   });
 
   it("marks every self-identifying crawler UA a bot", () => {
@@ -119,6 +132,94 @@ describe("bot detection (Issue #280)", () => {
       path: "/page-11",
       ref: "",
     })).toMatchObject({ is_bot: 1 });
+  });
+
+  it("marks a slow one-hit vid scan from durable aggregate evidence", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-22T02:40:00Z"));
+    let prior = 0;
+    const db = {
+      prepare(sql) {
+        expect(sql).toContain("HAVING COUNT(*) = 1");
+        expect(sql).toContain("created_at >= datetime(?, 'unixepoch')");
+        return {
+          bind: (...params) => {
+            expect(params).toEqual([
+              CHROME_127_HASH,
+              9506,
+              1789872000,
+              `slow-crawler-${prior}`,
+              `/page-${prior}`,
+              `slow-crawler-${prior}`,
+            ]);
+            return {
+              first: async () => ({
+                vids: prior,
+                paths: prior,
+                current_path_seen: 0,
+                current_vid_hits: 0,
+              }),
+            };
+          },
+        };
+      },
+    };
+    for (let index = 0; index < 7; index += 1) {
+      expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506, path: `/page-${index}` }), {
+        vid: `slow-crawler-${index}`,
+        path: `/page-${index}`,
+        ref: "direct",
+      }, db)).toMatchObject({ is_bot: 0 });
+      prior += 1;
+    }
+    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506, path: "/page-7" }), {
+      vid: "slow-crawler-7",
+      path: "/page-7",
+      ref: "direct",
+    }, db)).toMatchObject({ is_bot: 1 });
+  });
+
+  it("matches both reported slow-scan shapes over the durable window", async () => {
+    for (const [vids, paths] of [[163, 29], [95, 10]]) {
+      const db = {
+        prepare: () => ({
+          bind: () => ({ first: async () => ({ vids, paths, current_path_seen: 0, current_vid_hits: 0 }) }),
+        }),
+      };
+      expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
+        vid: `reported-shape-${vids}`,
+        path: "/terms/",
+        ref: "direct",
+      }, db)).toMatchObject({ is_bot: 1 });
+    }
+  });
+
+  it("counts singleton vids even when other vids sharing the fingerprint returned", async () => {
+    const db = {
+      prepare: () => ({
+        bind: () => ({
+          first: async () => ({ vids: 7, paths: 7, current_path_seen: 0, current_vid_hits: 0 }),
+        }),
+      }),
+    };
+    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
+      vid: "eighth-singleton",
+      path: "/eighth-path",
+    }, db)).toMatchObject({ is_bot: 1 });
+  });
+
+  it("requires the current path to increase the singleton path breadth", async () => {
+    const db = {
+      prepare: () => ({
+        bind: () => ({
+          first: async () => ({ vids: 7, paths: 7, current_path_seen: 1, current_vid_hits: 0 }),
+        }),
+      }),
+    };
+    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
+      vid: "eighth-singleton",
+      path: "/already-seen",
+    }, db)).toMatchObject({ is_bot: 0 });
   });
 
   it("marks a burst of one-hit vids sharing a source fingerprint", async () => {
