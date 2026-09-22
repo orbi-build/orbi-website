@@ -336,29 +336,29 @@
           <div class="section-heading">
             <h2 class="orbi-section-heading-h2" id="system-title">How Orbi automates
               <br class="responsive-break">GitHub Issue to tagged release</h2>
-            <p class="orbi-section-heading-p">An Issue is the executable unit, but Orbi does not manage Issues in isolation. Epics and milestones hold scope. Dependencies order the work. Review and repair converge each PR. A Release Issue freezes the result into a version.</p>
+            <p >An Issue is the executable unit, but Orbi does not manage Issues in isolation. Epics and milestones hold scope. Dependencies order the work. Review and repair converge each PR. A Release Issue freezes the result into a version.</p>
           </div>
 
           <div class="production-map" role="group" aria-label="Current Orbi production system">
             <div class="map-row" data-capability="epic">
               <div class="map-label"><span>01</span><strong>Coordinate</strong></div>
               <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
-              <p class="orbi-map-row-p">Group outcomes without letting the Runner mistake coordination for execution.</p>
+              <p >Group outcomes without letting the Runner mistake coordination for execution.</p>
             </div>
             <div class="map-row" data-capability="dependency">
               <div class="map-label"><span>02</span><strong>Order</strong></div>
               <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
-              <p class="orbi-map-row-p">Use GitHub's real dependency graph. A task enters production only when its blockers close.</p>
+              <p >Use GitHub's real dependency graph. A task enters production only when its blockers close.</p>
             </div>
             <div class="map-row map-row-signal" data-capability="delivery">
               <div class="map-label"><span>03</span><strong>Deliver</strong></div>
               <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>Tests</span><i></i><span>Review + fix</span><i></i><span>Exact-head merge</span></div>
-              <p class="orbi-map-row-p">A second session may patch the branch. Only its reviewed head is allowed to land.</p>
+              <p >A second session may patch the branch. Only its reviewed head is allowed to land.</p>
             </div>
             <div class="map-row" data-capability="release">
               <div class="map-label"><span>04</span><strong>Release</strong></div>
               <div class="map-track"><span>Freeze SHA</span><i></i><span>Full gate</span><i></i><span>Tag + release</span></div>
-              <p class="orbi-map-row-p">Validate scope and the repository, then publish an immutable version—without an Agent improvising the release.</p>
+              <p >Validate scope and the repository, then publish an immutable version—without an Agent improvising the release.</p>
             </div>
             <div class="recovery-rail">
               <span>RECOVERY BUS</span>
@@ -379,11 +379,11 @@
       <section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
         <div class="section-heading proof-heading">
           <div>
-            <p class="section-tag orbi-section-heading-p orbi-proof-heading-p">PRODUCTION EVIDENCE</p>
+            <p class="section-tag">PRODUCTION EVIDENCE</p>
             <h2 class="orbi-proof-heading-h2 orbi-section-heading-h2" id="proof-title">One Issue, reviewed
               <br class="responsive-break">merged, and released</h2>
           </div>
-          <p class="orbi-section-heading-p orbi-proof-heading-p">Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, PR #193 merged, and the work shipped in Release v0.2.0 with every Issue in scope verified item by item. The record is still inspectable because the record is GitHub.</p>
+          <p >Issue #48 entered the real Orbi repository. An isolated run implemented it, a separate session reviewed the exact diff, PR #193 merged, and the work shipped in Release v0.2.0 with every Issue in scope verified item by item. The record is still inspectable because the record is GitHub.</p>
         </div>
         <div class="proof-flow">
           <a class="proof-shot proof-input" href="https://github.com/orbi-build/orbi/issues/48">
@@ -424,7 +424,7 @@
           <div class="install-block">
             <button class="install-copy" type="button" data-copy aria-label="Copy the install command" data-copied-label="Copied">Copy</button>
             <pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre>
-            <p class="install-needs orbi-install-block-p orbi-midway-p">Needs Python 3.14, git, gh, systemd, and a model endpoint. <code>orbi doctor</code> names whatever is missing.</p>
+            <p class="install-needs orbi-midway-p">Needs Python 3.14, git, gh, systemd, and a model endpoint. <code>orbi doctor</code> names whatever is missing.</p>
             <details class="install-manual">
               <summary>Prefer to run the four steps by hand</summary>
               <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
@@ -461,17 +461,17 @@ orbi setup --config orbi.toml</code></pre>
         <div class="shell">
           <div class="section-heading">
             <div>
-              <p class="section-tag orbi-section-heading-p">RUN IT YOUR WAY</p>
+              <p class="section-tag">RUN IT YOUR WAY</p>
               <h2 class="orbi-section-heading-h2" id="run-orbi-title">Bring your own model
                 <br class="responsive-break">Any OpenAI-compatible API, or local</h2>
             </div>
-            <p class="orbi-section-heading-p">The self-hosted, fair-code core ships today. Managed Cloud is Orbi's commercial managed service on the same GitHub-native ledger — Founding coupons.</p>
+            <p >The self-hosted, fair-code core ships today. Managed Cloud is Orbi's commercial managed service on the same GitHub-native ledger — Founding coupons.</p>
           </div>
           <div class="run-options">
             <article class="run-option run-option-live">
-              <p class="option-state orbi-run-option-p">SHIPPING TODAY</p>
+              <p class="option-state">SHIPPING TODAY</p>
               <h3 class="orbi-run-option-h3">Self-hosted, free forever</h3>
-              <p class="orbi-run-option-p">Run Orbi on your own machine, GPU, and model credentials. The self-hosted delivery core has no platform fee.</p>
+              <p >Run Orbi on your own machine, GPU, and model credentials. The self-hosted delivery core has no platform fee.</p>
               <ul class="orbi-run-option-ul">
                 <li class="orbi-run-option-li">Your repository and keys stay on your machine</li>
                 <li class="orbi-run-option-li">Use local models or any supported provider</li>
@@ -480,9 +480,9 @@ orbi setup --config orbi.toml</code></pre>
               <a class="button button-dark" href="https://docs.orbi.build">Self-host Orbi ↗</a>
             </article>
             <article class="run-option run-option-cloud">
-              <p class="option-state orbi-run-option-p">FOUNDING COUPONS</p>
+              <p class="option-state">FOUNDING COUPONS</p>
               <h3 class="orbi-run-option-h3">Managed Cloud</h3>
-              <p class="orbi-run-option-p"><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong> Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens of model usage included</strong>; when the allowance runs out, new deliveries pause. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
+              <p ><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong> Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens of model usage included</strong>; when the allowance runs out, new deliveries pause. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
               <ul class="orbi-run-option-ul">
                 <li class="orbi-run-option-li">Platform subscription pays for orchestration, recovery, and evidence</li>
                 <li class="orbi-run-option-li">Model usage included: __INCLUDED_TOKENS__ tokens a month; when the allowance runs out, new deliveries pause</li>
@@ -496,20 +496,20 @@ orbi setup --config orbi.toml</code></pre>
       <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
         <div class="direction-head">
           <div>
-            <p class="section-tag orbi-direction-head-p">THE DIRECTION · NOT A SHIPPING CLAIM</p>
+            <p class="section-tag">THE DIRECTION · NOT A SHIPPING CLAIM</p>
             <h2 class="orbi-direction-head-h2" id="direction-title">Where autonomous software
               <br class="responsive-break">development goes next</h2>
           </div>
-          <p class="orbi-direction-head-p">Today, explicit GitHub tasks and Release Issues enter the line. The next horizon is a closed production loop: software supplies evidence from its own operation, Orbi turns that evidence into bounded work, Agents execute, and the result is measured after release.</p>
+          <p >Today, explicit GitHub tasks and Release Issues enter the line. The next horizon is a closed production loop: software supplies evidence from its own operation, Orbi turns that evidence into bounded work, Agents execute, and the result is measured after release.</p>
         </div>
 
         <ol class="future-loop">
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">01 / SENSE</span><strong>Read the software</strong><p class="orbi-future-loop-p">Incidents, telemetry, user feedback, security findings, dependency drift.</p></li>
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">02 / DECIDE</span><strong>Propose the next change</strong><p class="orbi-future-loop-p">Ground work in evidence; order it by goals, dependencies, risk, and cost.</p></li>
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">03 / BUILD</span><strong>Choose the right intelligence</strong><p class="orbi-future-loop-p">One Agent for sequential work, coordinated specialists where work can truly split.</p></li>
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">04 / PROVE</span><strong>Make confidence executable</strong><p class="orbi-future-loop-p">Tests, evaluations, simulations, security rules, and explicit approval boundaries.</p></li>
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">05 / SHIP</span><strong>Control the blast radius</strong><p class="orbi-future-loop-p">Immutable releases, progressive delivery, automatic rollback, complete provenance.</p></li>
-          <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">06 / LEARN</span><strong>Feed outcomes back</strong><p class="orbi-future-loop-p">What worked becomes evidence. What failed becomes a reproducible task—not folklore.</p></li>
+          <li class="orbi-future-loop-li"><span >01 / SENSE</span><strong>Read the software</strong><p class="orbi-future-loop-p">Incidents, telemetry, user feedback, security findings, dependency drift.</p></li>
+          <li class="orbi-future-loop-li"><span >02 / DECIDE</span><strong>Propose the next change</strong><p class="orbi-future-loop-p">Ground work in evidence; order it by goals, dependencies, risk, and cost.</p></li>
+          <li class="orbi-future-loop-li"><span >03 / BUILD</span><strong>Choose the right intelligence</strong><p class="orbi-future-loop-p">One Agent for sequential work, coordinated specialists where work can truly split.</p></li>
+          <li class="orbi-future-loop-li"><span >04 / PROVE</span><strong>Make confidence executable</strong><p class="orbi-future-loop-p">Tests, evaluations, simulations, security rules, and explicit approval boundaries.</p></li>
+          <li class="orbi-future-loop-li"><span >05 / SHIP</span><strong>Control the blast radius</strong><p class="orbi-future-loop-p">Immutable releases, progressive delivery, automatic rollback, complete provenance.</p></li>
+          <li class="orbi-future-loop-li"><span >06 / LEARN</span><strong>Feed outcomes back</strong><p class="orbi-future-loop-p">What worked becomes evidence. What failed becomes a reproducible task—not folklore.</p></li>
         </ol>
 
         <div class="direction-thesis">
@@ -578,10 +578,10 @@ orbi setup --config orbi.toml</code></pre>
       </section>
 
       <section class="closing shell" aria-labelledby="closing-title">
-        <p class="section-tag orbi-closing-p">FAIR-CODE CORE</p>
+        <p class="section-tag">FAIR-CODE CORE</p>
         <h2 class="orbi-closing-h2" id="closing-title">Install the self-hosted agent
           <br class="responsive-break">and turn the lights off</h2>
-        <p class="orbi-closing-p">Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a tagged release.</p>
+        <p >Fair-code. Self-hosted. Bring the model you already trust. Keep GitHub as the record, and let Orbi carry the work to a tagged release.</p>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" href="https://github.com/orbi-build/orbi">View the source</a>
@@ -596,7 +596,7 @@ orbi setup --config orbi.toml</code></pre>
       <span>Orbi</span>
     </a>
     <p class="orbi-site-footer-p">Software production that survives the session.</p>
-    <nav class="orbi-site-footer-nav" aria-label="Footer navigation">
+    <nav aria-label="Footer navigation">
       <ul>
         <li><a href="https://docs.orbi.build">Docs</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>

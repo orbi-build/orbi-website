@@ -141,21 +141,21 @@
         <li class="orbi-event-list-li">
           <span class="event-era">只测了我们自己</span>
           <div>
-            <strong class="orbi-event-list-strong">这是我们仓库的实测区间,不是对所有人的承诺</strong>
+            <strong >这是我们仓库的实测区间,不是对所有人的承诺</strong>
             <p class="orbi-event-list-p">Python、完整 CI、Issue 写得规范,让我们的上下文保持很短。上下文更长、测试更慢、Issue 更模糊的仓库,分布会落在别处。上面的表格是什么就是什么:我们仓库的实测区间。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">缓存是承重墙</span>
           <div>
-            <strong class="orbi-event-list-strong">95.9% 缓存读取,前提是 Provider 支持 prompt caching</strong>
+            <strong >95.9% 缓存读取,前提是 Provider 支持 prompt caching</strong>
             <p class="orbi-event-list-p">整个成本结构压在缓存命中上。换到不支持 prompt caching 的端点 —— 每个 token 都按 miss 计价 —— 同样的工作成本大约要涨一个数量级。外推之前先查你的 Provider。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">按计费口径统计</span>
           <div>
-            <strong class="orbi-event-list-strong">数字是 totalTokens,含缓存读取</strong>
+            <strong >数字是 totalTokens,含缓存读取</strong>
             <p class="orbi-event-list-p">这才是 Provider 实际计费的口径。只算 input + output 会漏掉约 96% 的真实消耗,把数字做好看 —— 那恰恰是这一页反对的事。</p>
           </div>
         </li>
@@ -177,7 +177,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">DEVIN</span>
             <div>
-              <strong class="orbi-event-list-strong">"A daily and weekly usage quota" —— 没有数量,没有单价</strong>
+              <strong >"A daily and weekly usage quota" —— 没有数量,没有单价</strong>
               <p class="orbi-event-list-p">Pro($20/月)包含 "a daily and weekly usage quota";Max($200/月)是 "a significantly larger weekly usage quota (with no daily cap)"。整个页面上,Cognition 没有写出任一档包含多少 ACU、一个 ACU 值多少钱。</p>
               <p class="src-note orbi-event-list-p">来源:<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> —— 核实于 2026-09-11。</p>
             </div>
@@ -185,7 +185,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">FACTORY</span>
             <div>
-              <strong class="orbi-event-list-strong">"~5x Pro usage" / "~10x Pro usage" —— 没有任何绝对值</strong>
+              <strong >"~5x Pro usage" / "~10x Pro usage" —— 没有任何绝对值</strong>
               <p class="orbi-event-list-p">Plus($100/月)是 "~5x Pro usage";Max($200/月)是 "~10x Pro usage"。页面上找不到任何绝对 token 量,也没有 per-token 价格。</p>
               <p class="src-note orbi-event-list-p">来源:<a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> —— 核实于 2026-09-11。</p>
             </div>
@@ -206,9 +206,9 @@
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">
-      <p class="section-tag orbi-closing-p">你的 key,你的账单</p>
+      <p class="section-tag">你的 key,你的账单</p>
       <h2 class="orbi-closing-h2" id="start-title">拿你自己的后台对一遍这些数字</h2>
-      <p class="orbi-closing-p">用你自己的 DeepSeek key 跑 Orbi,Provider 的用量页会显示每一次交付、每一个 token、每一分钱。这就是全部主张:我们和你和账单之间,什么都没有。</p>
+      <p >用你自己的 DeepSeek key 跑 Orbi,Provider 的用量页会显示每一次交付、每一个 token、每一分钱。这就是全部主张:我们和你和账单之间,什么都没有。</p>
       <div class="cta-row">
         <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/zh/compare/">看附出处的竞品对比 →</a>
@@ -222,7 +222,7 @@
       <span>Orbi</span>
     </a>
     <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
-    <nav class="orbi-site-footer-nav" aria-label="页脚导航">
+    <nav aria-label="页脚导航">
       <ul>
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>

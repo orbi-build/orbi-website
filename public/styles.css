@@ -166,7 +166,7 @@ img {
 .menu-toggle[aria-expanded="true"] i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .site-header nav,
-.site-footer .orbi-site-footer-nav {
+.site-footer nav {
   display: flex;
   align-items: center;
   gap: 26px;
@@ -922,7 +922,7 @@ h2 {
 .section-lede,
 .section-heading > p,
 .proof-heading > p,
-.direction-head > .orbi-direction-head-p {
+.direction-head > p {
   max-width: 49rem;
   color: var(--ink-soft);
   font-size: clamp(1.05rem, 1.35vw, 1.25rem);
@@ -982,7 +982,7 @@ h2 {
 }
 
 .section-heading .orbi-section-heading-h2 { margin-bottom: 0; }
-.section-heading > .orbi-section-heading-p { margin-bottom: 6px; }
+.section-heading > p { margin-bottom: 6px; }
 
 .production-map {
   margin-top: 82px;
@@ -1041,7 +1041,7 @@ h2 {
 .map-row-signal .map-track i { background: var(--signal); }
 .map-row-signal .map-track i::after { border-color: var(--signal); }
 
-.map-row > .orbi-map-row-p {
+.map-row > p {
   margin: 0;
   color: var(--ink-soft);
   font-size: 0.9rem;
@@ -1245,7 +1245,7 @@ h2 {
   letter-spacing: -0.04em;
   line-height: 1;
 }
-.run-option > .orbi-run-option-p:not(.option-state) { color: var(--ink-soft); }
+.run-option > p:not(.option-state) { color: var(--ink-soft); }
 .run-option .orbi-run-option-ul {
   flex: 1;
   margin: 12px 0 34px;
@@ -1548,7 +1548,7 @@ h2 {
 }
 
 .closing .orbi-closing-h2 { max-width: 12ch; }
-.closing > .orbi-closing-p:not(.section-tag) { max-width: 48rem; margin-bottom: 34px; color: var(--ink-soft); font-size: 1.1rem; }
+.closing > p:not(.section-tag) { max-width: 48rem; margin-bottom: 34px; color: var(--ink-soft); font-size: 1.1rem; }
 .button-dark { background: var(--ink); color: #fff; }
 .button-dark:hover { background: #1f4142; }
 .button-outline { border-color: var(--ink); color: var(--ink); }
@@ -1572,25 +1572,25 @@ h2 {
   max-width: 18ch;
   margin: 0;
 }
-.site-footer .orbi-site-footer-nav {
+.site-footer nav {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   min-width: 0;
   gap: 16px;
 }
-.site-footer .orbi-site-footer-nav ul {
+.site-footer nav ul {
   min-width: 0;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.site-footer .orbi-site-footer-nav li + li { margin-top: 6px; }
-.site-footer .orbi-site-footer-nav a {
+.site-footer nav li + li { margin-top: 6px; }
+.site-footer nav a {
   display: block;
   overflow-wrap: anywhere;
   text-decoration: none;
 }
-.site-footer .orbi-site-footer-nav a:hover { color: var(--ink); }
+.site-footer nav a:hover { color: var(--ink); }
 
 /* .site-footer is a 3-column grid (wordmark/tagline/nav): the compare row must
    span every column, or the auto wordmark column grows to fit it. */
@@ -1652,7 +1652,7 @@ h2 {
 
   .shift-list { max-width: 760px; }
   .map-row { grid-template-columns: 120px minmax(0, 1fr); padding: 28px 0; }
-  .map-row > .orbi-map-row-p { grid-column: 2; }
+  .map-row > p { grid-column: 2; }
   .map-track-long { flex-wrap: wrap; gap: 6px 0; }
   .map-track-long i { flex: 0 0 24px; }
   .ownership-grid { gap: 60px; }
@@ -1801,7 +1801,7 @@ h2 {
   .system-section { padding: 88px 0; }
   .production-map { margin-top: 55px; }
   .map-row { grid-template-columns: 1fr; gap: 16px; }
-  .map-row > .orbi-map-row-p { grid-column: 1; }
+  .map-row > p { grid-column: 1; }
   .map-track { overflow-x: auto; padding-bottom: 6px; }
   .map-track i { min-width: 20px; }
   .map-track-long { flex-wrap: nowrap; }
@@ -1849,17 +1849,17 @@ h2 {
     grid-row: auto;
     max-width: none;
   }
-  .site-footer .orbi-site-footer-nav {
+  .site-footer nav {
     grid-column: 1;
     grid-row: auto;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
-  .site-footer .orbi-site-footer-nav li + li { margin-top: 6px; }
+  .site-footer nav li + li { margin-top: 6px; }
 }
 
 @media (max-width: 430px) {
-  .site-footer .orbi-site-footer-nav {
+  .site-footer nav {
     grid-template-columns: 1fr;
     row-gap: 24px;
   }
@@ -2031,7 +2031,7 @@ h2 {
   font-size: 0.78rem;
 }
 
-.event-list .orbi-event-list-strong {
+.event-list strong {
   display: block;
   font-family: var(--display);
   font-size: 1.2rem;
@@ -2064,7 +2064,7 @@ h2 {
   border-bottom: 1px solid var(--line);
 }
 
-.source-list .orbi-source-list-strong { font-weight: 600; }
+.source-list strong { font-weight: 600; }
 
 .source-list .orbi-source-list-a { color: var(--ink); text-underline-offset: 3px; }
 

@@ -223,28 +223,28 @@ jobs:
           <li class="orbi-event-list-li">
             <span class="event-era">BOUNDARY 1 · FAIL-OPEN</span>
             <div>
-              <strong class="orbi-event-list-strong">No check runs, nothing to gate — both gates pass</strong>
+              <strong >No check runs, nothing to gate — both gates pass</strong>
               <p class="orbi-event-list-p">A repository without CI runs deliveries end to end. The engine's own evidence line says it plainly: <code>no check runs (nothing to gate)</code>. Nothing blocks — and nothing is verified, because the only automated acceptance gate is the one that isn't installed. One refinement, same code: on a just-pushed release commit in a repository whose frozen base already showed checks, an empty list means &ldquo;not registered yet&rdquo;, and the gate waits for the first check instead of passing. Fail-open is for repositories without CI — not for CI that hasn't spoken yet.</p>
             </div>
           </li>
           <li class="orbi-event-list-li">
             <span class="event-era">BOUNDARY 2 · SKIPPED ≠ RAN</span>
             <div>
-              <strong class="orbi-event-list-strong">Neutral and skipped conclusions count as passing</strong>
+              <strong >Neutral and skipped conclusions count as passing</strong>
               <p class="orbi-event-list-p">The pass set is literally <code>success, neutral, skipped</code>. An e2e job skipped by an <code>if:</code> condition, or filtered out by a <code>paths:</code> filter, concludes <code>skipped</code> — and does not block the merge. A job that didn't run is a job that didn't fail. Point the triggers at the right paths and keep conditions off the jobs a merge depends on.</p>
             </div>
           </li>
           <li class="orbi-event-list-li">
             <span class="event-era">BOUNDARY 3 · THE AGENT WRITES THE TESTS</span>
             <div>
-              <strong class="orbi-event-list-strong">Coverage proves the tests touch the code — not that the code is right</strong>
+              <strong >Coverage proves the tests touch the code — not that the code is right</strong>
               <p class="orbi-event-list-p">The same agent that writes the feature writes the tests. Playwright can prove the button renders and responds; it cannot prove the button belongs on that screen, or that the error message is kind. Small UX drift is exactly what these gates do not catch — judgment about feel stays with a human reviewer, and a green check run is not a UX sign-off.</p>
             </div>
           </li>
           <li class="orbi-event-list-li">
             <span class="event-era">BOUNDARY 4 · REPORTING, KNOWN LIMIT</span>
             <div>
-              <strong class="orbi-event-list-strong">The progress comment's tests line is pytest-specific</strong>
+              <strong >The progress comment's tests line is pytest-specific</strong>
               <p class="orbi-event-list-p">The <code>tests passed / tests failed</code> line in a delivery's progress comment is parsed from the repository's test log, and the parser is tuned to pytest's summary line (<code>1 failed, 155 passed in 4.43s</code>). A Playwright run's summary is not parsed into counts, so a non-Python repository may show no tests line at all. That is a reporting limitation, not a gate change: the gates decide on check runs and never read the test log.</p>
             </div>
           </li>
@@ -258,22 +258,22 @@ jobs:
       <p class="section-lede">Every engine claim on this page was checked against the delivery engine's source on 2026-09-12 — quoted from the code, not paraphrased from documentation.</p>
       <ul class="source-list">
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>check_review_ci</code></a> — the review gate: pass set <code>success/neutral/skipped</code>, one failing check raises, no check runs recorded as &ldquo;nothing to gate&rdquo;</strong>
+          <strong ><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>check_review_ci</code></a> — the review gate: pass set <code>success/neutral/skipped</code>, one failing check raises, no check runs recorded as &ldquo;nothing to gate&rdquo;</strong>
           <span class="source-date">verified 2026-09-12</span>
           <small>github.com/orbi-build/orbi</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener">orbi-build/orbi — src/orbi/release.py, <code>check_release_gates</code></a> — the release gate: same conclusion test, the wait when a known-CI repository's checks have not registered, and the &ldquo;nothing to gate&rdquo; evidence line</strong>
+          <strong ><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener">orbi-build/orbi — src/orbi/release.py, <code>check_release_gates</code></a> — the release gate: same conclusion test, the wait when a known-CI repository's checks have not registered, and the &ldquo;nothing to gate&rdquo; evidence line</strong>
           <span class="source-date">verified 2026-09-12</span>
           <small>github.com/orbi-build/orbi</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://docs.github.com/en/rest/checks/runs" rel="noopener">GitHub Checks API — check runs</a> — the <code>conclusion</code> enum the gates filter</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.github.com/en/rest/checks/runs" rel="noopener">GitHub Checks API — check runs</a> — the <code>conclusion</code> enum the gates filter</strong>
           <span class="source-date">verified 2026-09-12</span>
           <small>docs.github.com</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>read_test_result</code></a> — the pytest-specific progress-comment parser (boundary 4)</strong>
+          <strong ><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener">orbi-build/orbi — src/orbi/runner.py, <code>read_test_result</code></a> — the pytest-specific progress-comment parser (boundary 4)</strong>
           <span class="source-date">verified 2026-09-12</span>
           <small>github.com/orbi-build/orbi</small>
         </li>
@@ -281,9 +281,9 @@ jobs:
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">
-      <p class="section-tag orbi-closing-p">ONE COMMIT AWAY</p>
+      <p class="section-tag">ONE COMMIT AWAY</p>
       <h2 class="orbi-closing-h2" id="start-title">Install the gate you want Orbi to enforce</h2>
-      <p class="orbi-closing-p">Pick the layer you want guaranteed — logic, integration, or the business loop — and put its suite in CI. From the next delivery on, Orbi checks it on every PR head and every release commit, and refuses to merge or tag past a red run.</p>
+      <p >Pick the layer you want guaranteed — logic, integration, or the business loop — and put its suite in CI. From the next delivery on, Orbi checks it on every PR head and every release commit, and refuses to merge or tag past a red run.</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build">Set up Orbi <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/cloud/">Or let Cloud run the line →</a>

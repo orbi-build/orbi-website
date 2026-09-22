@@ -192,28 +192,28 @@
         <li class="orbi-event-list-li">
           <span class="event-era">交付闭环</span>
           <div>
-            <strong class="orbi-event-list-strong">GitHub Issue 进，打好 Tag 的 Release 出</strong>
+            <strong >GitHub Issue 进，打好 Tag 的 Release 出</strong>
             <p class="orbi-event-list-p">能改代码、会重跑测试的独立审查，exact-head merge（只合并审过的那个 Head），再到冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">模型</span>
           <div>
-            <strong class="orbi-event-list-strong">模型用量包含在内，成本摊在明面上</strong>
+            <strong >模型用量包含在内，成本摊在明面上</strong>
             <p class="orbi-event-list-p">计划内含每月 __INCLUDED_TOKENS__ token；额度用完后，新交付暂停，没有按 token 计费的超额账单。单次交付的实测成本就写在下面。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">运营</span>
           <div>
-            <strong class="orbi-event-list-strong">恢复、合并门禁、独立审查</strong>
+            <strong >恢复、合并门禁、独立审查</strong>
             <p class="orbi-event-list-p">交付产线的运营层，由我们承担。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">发版</span>
           <div>
-            <strong class="orbi-event-list-strong">发版由你发起，Orbi 来执行</strong>
+            <strong >发版由你发起，Orbi 来执行</strong>
             <p class="orbi-event-list-p">发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打。发版的测试验收就是你仓库的 CI 结果——release commit 上的 GitHub Actions check run——所以 <a href="/zh/guides/ci-gates/">CI 里放什么，决定了 Orbi 替你保证什么</a>：放单测，它保证代码逻辑；放业务流程的 e2e，它保证业务闭环。不放 CI 也是一种选择：没有任何 check run 时，两道门禁都放行，release 照样能发——只是失去了唯一的测试验收闸门。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
           </div>
         </li>
@@ -232,7 +232,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">FOUNDING PARTNER · 限 10 位</span>
             <div>
-              <strong class="orbi-event-list-strong">前 10 位订阅者是共建者，不是试用用户</strong>
+              <strong >前 10 位订阅者是共建者，不是试用用户</strong>
               <p class="orbi-event-list-p">Founding Partner 的订阅永久免费；每月 __FOUNDING_TOKENS__ token 由 Orbi 承担；被采纳的 Issue 直接影响产品方向。</p>
               <p class="orbi-event-list-p">条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送按月发放，与这条贡献同步续期——滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
             </div>
@@ -343,9 +343,9 @@
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">
-      <p class="section-tag orbi-closing-p">创始试点</p>
+      <p class="section-tag">创始试点</p>
       <h2 class="orbi-closing-h2" id="start-title">从第一个 Issue 开始</h2>
-      <p class="orbi-closing-p">用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
+      <p >用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
       <div class="cta-row">
         <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/zh/">Orbi 本身能做什么 →</a>

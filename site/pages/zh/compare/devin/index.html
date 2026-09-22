@@ -115,7 +115,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">ACU 时代</span>
             <div>
-              <strong class="orbi-event-list-strong">用量按 Agent Compute Units 计量</strong>
+              <strong >用量按 Agent Compute Units 计量</strong>
               <p class="orbi-event-list-p">自助套餐按「订阅 + Agent Compute Units（ACU）消耗」付费。这个单位至今仍在企业合同中使用：客户「consume Agent Compute Units (ACUs) against the volume in their order form」（按订单量消耗 ACU）。</p>
               <p class="src-note orbi-event-list-p">来源：<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">docs.devin.ai——用量计量</a>——核实于 2026-09-07。</p>
             </div>
@@ -123,7 +123,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">改写</span>
             <div>
-              <strong class="orbi-event-list-strong">套餐结构在存量用户身上被替换</strong>
+              <strong >套餐结构在存量用户身上被替换</strong>
               <p class="orbi-event-list-p">自助计费被重写为「额度 + 积分」模型：「Legacy Core plan users have been migrated to the Free plan」（旧 Core 套餐用户已被迁移到 Free 套餐），而今天的按需积分「the same dollar value as the ACUs you're used to」（与你习惯的 ACU 等值）。这个决定不是 Cognition 之外的任何人做的。</p>
               <p class="src-note orbi-event-list-p">来源：<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai——自助套餐</a>——核实于 2026-09-07。</p>
             </div>
@@ -131,7 +131,7 @@
           <li class="orbi-event-list-li">
             <span class="event-era">今天</span>
             <div>
-              <strong class="orbi-event-list-strong">先扣额度，再烧积分——然后功能停摆</strong>
+              <strong >先扣额度，再烧积分——然后功能停摆</strong>
               <p class="orbi-event-list-p">Free、Pro $20/月、Max $200/月、Teams 最低 $80/月（全席位 $40/月）。套餐额度覆盖会话；按需积分「fund any work past your plan's included quota」（为超出额度的部分付费），按月滚存、购买后永不过期。额度用尽时，「Automations stop running and Devin Review switches to its smart diff viewer」（自动化停止运行，Devin Review 降级为只读 diff 视图）。用量按 Devin 实际执行的工作计量——动作的数量与复杂度、机器时间、网络流量——文档本身也为此提供了按成员封顶和标记低效提示词的 Coach 来治理。</p>
               <p class="src-note orbi-event-list-p">来源：<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai——自助套餐</a>；<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">用量计量</a>——价格为文档于 2026-09-07 的数字。</p>
             </div>
@@ -193,7 +193,7 @@
         <p class="section-lede">两者都从被指派的任务产出到经过审查的 PR。选择取决于你买的是什么：把别人的工程师当服务租用，还是拥有一条自己的产线。</p>
         <div class="run-options">
           <article class="run-option run-option-live">
-            <p class="option-state orbi-run-option-p">选 DEVIN，如果你要</p>
+            <p class="option-state">选 DEVIN，如果你要</p>
             <h3 class="orbi-run-option-h3">一个托管的人工智能工程师</h3>
             <ul class="orbi-run-option-ul">
               <li class="orbi-run-option-li">无需安装、运行、维护任何东西——机器、模型、升级都由 vendor 承担</li>
@@ -204,7 +204,7 @@
             <a class="button button-dark" href="https://devin.ai" rel="noopener">访问 Devin ↗</a>
           </article>
           <article class="run-option run-option-cloud">
-            <p class="option-state orbi-run-option-p">选 ORBI，如果你要</p>
+            <p class="option-state">选 ORBI，如果你要</p>
             <h3 class="orbi-run-option-h3">一条自己拥有的交付产线</h3>
             <ul class="orbi-run-option-ul">
               <li class="orbi-run-option-li">成本由你自己的硬件和模型封顶——provider 额度（如有）可以做到零成本，且没有按任务计价器</li>
@@ -224,27 +224,27 @@
       <p class="section-lede">本页每一条事实都对应下列来源之一，全部于 2026-09-07 核实；本页是一个快照，做架构决策前请再查一次来源。有一处如实说明：devin.ai 自己的定价页在核实时无法直接访问（被一道访问墙挡住），因此以上计费事实取自 Devin 官方文档。</p>
       <ul class="source-list">
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://cognition.com" rel="noopener">Cognition 官网</a>——「the first autonomous software engineer」、自研 SWE 模型线、点名客户</strong>
+          <strong ><a class="orbi-source-list-a" href="https://cognition.com" rel="noopener">Cognition 官网</a>——「the first autonomous software engineer」、自研 SWE 模型线、点名客户</strong>
           <span class="source-date">核实于 2026-09-07</span>
           <small>cognition.com</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://docs.devin.ai" rel="noopener">Devin 官方文档</a>——任务入口（Slack/Teams、网页应用、Linear/Jira、CLI 交接、API）、云端工作区、「from prompt to PR」</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.devin.ai" rel="noopener">Devin 官方文档</a>——任务入口（Slack/Teams、网页应用、Linear/Jira、CLI 交接、API）、云端工作区、「from prompt to PR」</strong>
           <span class="source-date">核实于 2026-09-07</span>
           <small>docs.devin.ai</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin 官方文档——自助套餐</a>——套餐价格、额度与按需积分、ACU 迁移、积分用尽后停摆的功能</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin 官方文档——自助套餐</a>——套餐价格、额度与按需积分、ACU 迁移、积分用尽后停摆的功能</strong>
           <span class="source-date">核实于 2026-09-07</span>
           <small>docs.devin.ai/admin/billing/self-serve</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">Devin 官方文档——用量计量</a>——企业 ACU、消耗依据什么计量、用量策略与 Devin Coach</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">Devin 官方文档——用量计量</a>——企业 ACU、消耗依据什么计量、用量策略与 Devin Coach</strong>
           <span class="source-date">核实于 2026-09-07</span>
           <small>docs.devin.ai/admin/billing/usage</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong class="orbi-source-list-strong"><a class="orbi-source-list-a" href="https://docs.orbi.build/zh">Orbi 文档</a>与 <a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 仓库——对比中的 Orbi 列</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.orbi.build/zh">Orbi 文档</a>与 <a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 仓库——对比中的 Orbi 列</strong>
           <span class="source-date">核实于 2026-09-07</span>
           <small>docs.orbi.build · github.com/orbi-build/orbi</small>
         </li>
@@ -252,15 +252,15 @@
     </section>
 
     <section class="closing shell" aria-labelledby="closing-title">
-      <p class="section-tag orbi-closing-p">fair-code 核心</p>
+      <p class="section-tag">fair-code 核心</p>
       <h2 class="orbi-closing-h2" id="closing-title">委托的两种形状</h2>
-      <p class="orbi-closing-p">按你委托的东西选：在 vendor 云里租用的工程师，还是在自己仓库里运营的产线。如果是后者，Orbi 自托管免费——给一个 Issue 打上 <code>ai-ready</code> label，key 留在你手里。</p>
+      <p >按你委托的东西选：在 vendor 云里租用的工程师，还是在自己仓库里运营的产线。如果是后者，Orbi 自托管免费——给一个 Issue 打上 <code>ai-ready</code> label，key 留在你手里。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">安装 Orbi <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="/zh/compare/">全部对比</a>
         <a class="text-link" href="/zh/#faq">先看常见问题 →</a>
       </div>
-    <p class="orbi-closing-p"><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors</a></p></section>
+    <p ><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors</a></p></section>
   </main>
 
 <!--@footer-->

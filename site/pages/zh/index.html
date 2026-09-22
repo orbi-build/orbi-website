@@ -311,29 +311,29 @@
         <div class="section-heading">
           <h2 class="orbi-section-heading-h2" id="system-title">Orbi 如何把 GitHub Issue
             <br class="responsive-break">自动做成正式发布版本</h2>
-          <p class="orbi-section-heading-p">Issue 是最小执行单元，但 Orbi 管的不是孤立 Issue：Epic 和 Milestone 确定范围，blockedBy 排定依赖，Review/Fix 让 PR 收敛，Release Issue 把一组结果冻结成版本。</p>
+          <p >Issue 是最小执行单元，但 Orbi 管的不是孤立 Issue：Epic 和 Milestone 确定范围，blockedBy 排定依赖，Review/Fix 让 PR 收敛，Release Issue 把一组结果冻结成版本。</p>
         </div>
 
         <div class="production-map" role="group" aria-label="Orbi 当前生产系统">
           <div class="map-row" data-capability="epic">
             <div class="map-label"><span>01</span><strong>组织</strong></div>
             <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
-            <p class="orbi-map-row-p">聚合多个结果，但不让 Runner 把协调事项错当成可执行任务。</p>
+            <p >聚合多个结果，但不让 Runner 把协调事项错当成可执行任务。</p>
           </div>
           <div class="map-row" data-capability="dependency">
             <div class="map-label"><span>02</span><strong>排序</strong></div>
             <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
-            <p class="orbi-map-row-p">读取 GitHub 原生依赖；前置关闭以后，任务才自然进入生产。</p>
+            <p >读取 GitHub 原生依赖；前置关闭以后，任务才自然进入生产。</p>
           </div>
           <div class="map-row map-row-signal" data-capability="delivery">
             <div class="map-label"><span>03</span><strong>交付</strong></div>
             <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>测试</span><i></i><span>审查 + 修复</span><i></i><span>精确合并</span></div>
-            <p class="orbi-map-row-p">第二场会话可以直接修复分支；只有刚刚审过的那个 Head 可以进入主分支。</p>
+            <p >第二场会话可以直接修复分支；只有刚刚审过的那个 Head 可以进入主分支。</p>
           </div>
           <div class="map-row" data-capability="release">
             <div class="map-label"><span>04</span><strong>发版</strong></div>
             <div class="map-track"><span>冻结 SHA</span><i></i><span>完整门禁</span><i></i><span>Tag + Release</span></div>
-            <p class="orbi-map-row-p">逐项核对范围和仓库状态，再发布不可变版本；发版不是让 Agent 临场发挥。</p>
+            <p >逐项核对范围和仓库状态，再发布不可变版本；发版不是让 Agent 临场发挥。</p>
           </div>
           <div class="recovery-rail">
             <span>恢复总线</span>
@@ -354,11 +354,11 @@
     <section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
       <div class="section-heading proof-heading">
         <div>
-          <p class="section-tag orbi-section-heading-p orbi-proof-heading-p">真实生产证据</p>
+          <p class="section-tag">真实生产证据</p>
           <h2 class="orbi-proof-heading-h2 orbi-section-heading-h2" id="proof-title">一个 Issue：审查、
             <br class="responsive-break">合并、发版全过程</h2>
         </div>
-        <p class="orbi-section-heading-p orbi-proof-heading-p">Issue #48 进入真实的 Orbi 仓库。隔离运行完成实现，另一场会话审查同一份 Diff，PR #193 随后合并，最终随 Release v0.2.0 出厂——范围里的每个 Issue 都逐项核对过。今天仍然可以检查全过程，因为 GitHub 本身就是记录。</p>
+        <p >Issue #48 进入真实的 Orbi 仓库。隔离运行完成实现，另一场会话审查同一份 Diff，PR #193 随后合并，最终随 Release v0.2.0 出厂——范围里的每个 Issue 都逐项核对过。今天仍然可以检查全过程，因为 GitHub 本身就是记录。</p>
       </div>
       <div class="proof-flow">
         <a class="proof-shot proof-input" href="https://github.com/orbi-build/orbi/issues/48">
@@ -399,7 +399,7 @@
         <div class="install-block">
           <button class="install-copy" type="button" data-copy aria-label="复制安装命令" data-copied-label="已复制">复制</button>
           <pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre>
-          <p class="install-needs orbi-install-block-p orbi-midway-p">需要 Python 3.14、git、gh、systemd 和一个模型端点。缺什么，<code>orbi doctor</code> 会直接点出来。</p>
+          <p class="install-needs orbi-midway-p">需要 Python 3.14、git、gh、systemd 和一个模型端点。缺什么，<code>orbi doctor</code> 会直接点出来。</p>
           <details class="install-manual">
             <summary>想手动执行这四步命令</summary>
             <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
@@ -436,17 +436,17 @@ orbi setup --config orbi.toml</code></pre>
       <div class="shell">
         <div class="section-heading">
           <div>
-            <p class="section-tag orbi-section-heading-p">按你的方式运行</p>
+            <p class="section-tag">按你的方式运行</p>
             <h2 class="orbi-section-heading-h2" id="run-orbi-title">自带模型即可
               <br class="responsive-break">任何兼容 OpenAI 的 API，或本地模型</h2>
           </div>
-          <p class="orbi-section-heading-p">fair-code 核心今天已经可用。托管 Cloud 是 Orbi 在同一 GitHub 账本上的商业托管服务——Founding coupons。</p>
+          <p >fair-code 核心今天已经可用。托管 Cloud 是 Orbi 在同一 GitHub 账本上的商业托管服务——Founding coupons。</p>
         </div>
         <div class="run-options">
           <article class="run-option run-option-live">
-            <p class="option-state orbi-run-option-p">今天已经可用</p>
+            <p class="option-state">今天已经可用</p>
             <h3 class="orbi-run-option-h3">自托管，永久免费</h3>
-            <p class="orbi-run-option-p">在自己的机器、GPU 和模型凭证上运行 Orbi。自托管交付核心不收平台费。</p>
+            <p >在自己的机器、GPU 和模型凭证上运行 Orbi。自托管交付核心不收平台费。</p>
             <ul class="orbi-run-option-ul">
               <li class="orbi-run-option-li">仓库和密钥留在自己的机器上</li>
               <li class="orbi-run-option-li">使用本地模型或任意受支持的 Provider</li>
@@ -455,9 +455,9 @@ orbi setup --config orbi.toml</code></pre>
             <a class="button button-dark" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
           </article>
           <article class="run-option run-option-cloud">
-            <p class="option-state orbi-run-option-p">FOUNDING COUPONS</p>
+            <p class="option-state">FOUNDING COUPONS</p>
             <h3 class="orbi-run-option-h3">托管 Cloud</h3>
-            <p class="orbi-run-option-p"><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>之后正价 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token 模型用量</strong>，额度用完后新交付暂停。Founding 券 100% off，限量发放；券发完即正价，不是涨价。交付可靠性继续留在 fair-code 核心。</p>
+            <p ><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>之后正价 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token 模型用量</strong>，额度用完后新交付暂停。Founding 券 100% off，限量发放；券发完即正价，不是涨价。交付可靠性继续留在 fair-code 核心。</p>
             <ul class="orbi-run-option-ul">
               <li class="orbi-run-option-li">平台订阅支付协调、恢复和交付证据</li>
               <li class="orbi-run-option-li">模型用量包含在内：每月 __INCLUDED_TOKENS__ token，额度用完后新交付暂停</li>
@@ -471,20 +471,20 @@ orbi setup --config orbi.toml</code></pre>
     <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
       <div class="direction-head">
         <div>
-          <p class="section-tag orbi-direction-head-p">正在建设的方向 · 不是已上线清单</p>
+          <p class="section-tag">正在建设的方向 · 不是已上线清单</p>
           <h2 class="orbi-direction-head-h2" id="direction-title">自主软件开发
             <br class="responsive-break">的下一步是什么</h2>
         </div>
-        <p class="orbi-direction-head-p">今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
+        <p >今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
       </div>
 
       <ol class="future-loop">
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">01 / 感知</span><strong>读取软件现场</strong><p class="orbi-future-loop-p">故障、遥测、用户反馈、安全发现、依赖漂移。</p></li>
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">02 / 决策</span><strong>提出下一项改动</strong><p class="orbi-future-loop-p">让工作有证据，再按目标、依赖、风险和成本排序。</p></li>
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">03 / 生产</span><strong>选择合适的智能</strong><p class="orbi-future-loop-p">顺序任务用一个 Agent；真正可拆的任务才组织专业 Agent 协作。</p></li>
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">04 / 证明</span><strong>把信心写成可执行门禁</strong><p class="orbi-future-loop-p">测试、Eval、模拟、安全策略和明确的人工审批边界。</p></li>
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">05 / 发布</span><strong>控制影响范围</strong><p class="orbi-future-loop-p">不可变 Release、渐进交付、自动回滚和完整来源记录。</p></li>
-        <li class="orbi-future-loop-li"><span class="orbi-future-loop-span">06 / 学习</span><strong>让结果回到下一轮</strong><p class="orbi-future-loop-p">有效做法成为证据；失败成为可复现任务，而不是口耳相传。</p></li>
+        <li class="orbi-future-loop-li"><span >01 / 感知</span><strong>读取软件现场</strong><p class="orbi-future-loop-p">故障、遥测、用户反馈、安全发现、依赖漂移。</p></li>
+        <li class="orbi-future-loop-li"><span >02 / 决策</span><strong>提出下一项改动</strong><p class="orbi-future-loop-p">让工作有证据，再按目标、依赖、风险和成本排序。</p></li>
+        <li class="orbi-future-loop-li"><span >03 / 生产</span><strong>选择合适的智能</strong><p class="orbi-future-loop-p">顺序任务用一个 Agent；真正可拆的任务才组织专业 Agent 协作。</p></li>
+        <li class="orbi-future-loop-li"><span >04 / 证明</span><strong>把信心写成可执行门禁</strong><p class="orbi-future-loop-p">测试、Eval、模拟、安全策略和明确的人工审批边界。</p></li>
+        <li class="orbi-future-loop-li"><span >05 / 发布</span><strong>控制影响范围</strong><p class="orbi-future-loop-p">不可变 Release、渐进交付、自动回滚和完整来源记录。</p></li>
+        <li class="orbi-future-loop-li"><span >06 / 学习</span><strong>让结果回到下一轮</strong><p class="orbi-future-loop-p">有效做法成为证据；失败成为可复现任务，而不是口耳相传。</p></li>
       </ol>
 
       <div class="direction-thesis">
@@ -553,10 +553,10 @@ orbi setup --config orbi.toml</code></pre>
     </section>
 
     <section class="closing shell" aria-labelledby="closing-title">
-      <p class="section-tag orbi-closing-p">fair-code 核心</p>
+      <p class="section-tag">fair-code 核心</p>
       <h2 class="orbi-closing-h2" id="closing-title">装上这个自托管 Agent，
         <br class="responsive-break">然后关灯</h2>
-      <p class="orbi-closing-p">Fair-code，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到打 Tag 的正式发布。</p>
+      <p >Fair-code，自托管。接上你已经信任的模型。GitHub 继续做账本，让 Orbi 把工作推进到打 Tag 的正式发布。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="https://github.com/orbi-build/orbi">查看源码</a>
