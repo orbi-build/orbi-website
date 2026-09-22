@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildPages } from "../scripts/build-pages.mjs";
 
 const existingRoutes = [
+  "/blog/",
   "/blog/claude-code-github-actions-who-merges/",
   "/blog/docker-image-third-try/",
   "/blog/watch-the-six-steps/",
@@ -83,6 +84,22 @@ async function overflowAt(route, width) {
 }
 
 describe("blog tables stay within the viewport (Issue #393)", () => {
+  it("keeps each blog title as wide as its summary (Issue #402)", async () => {
+    for (const route of ["/blog/", "/zh/blog/"]) {
+      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+        const widths = await page.locator(".post-entry").first().evaluate((entry) => ({
+          title: entry.querySelector(".post-entry-title").getBoundingClientRect().width,
+          summary: entry.querySelector(".post-entry-summary").getBoundingClientRect().width,
+        }));
+        expect(widths.title, `${route}: title width leaked from compare sections`).toBe(widths.summary);
+      } finally {
+        await page.close();
+      }
+    }
+  });
+
   it("contains all five wide tables at mobile and desktop widths", async () => {
     for (const width of widths) {
       const result = await overflowAt("/blog/table-fixture/", width);

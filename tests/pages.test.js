@@ -458,9 +458,9 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
       const block = heroCtaBlock(output);
       const button = block.indexOf(heroCtaHref[output]);
       expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
-      const paragraph = block.indexOf("<p>");
+      const paragraph = block.search(/<p(?: class="[^"]+")?>/);
       expect(paragraph, `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
-      const text = block.match(/<p>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
+      const text = block.match(/<p(?: class="[^"]+")?>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
       expect(text, `${output}: CTA microcopy drifted`).toBe(expected);
     }
   });
@@ -490,12 +490,12 @@ describe("Cloud documentation links (Issue #315)", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
       const chrome = navRegion(html) + footerRegion(html);
-      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}">`);
+      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
       expect(chrome, `${output}: engine docs must not be in Cloud Docs chrome`).not.toContain(
-        `href="${expected.selfHost}">`,
+        `href="${expected.selfHost}"`,
       );
       expect(html, `${output}: self-hosting CTA`).toContain(
-        `<a data-cta="install" href="${expected.selfHost}">`,
+        `data-cta="install" href="${expected.selfHost}">`,
       );
       expect(html, `${output}: visible Cloud docs CTA`).toContain(
         'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
