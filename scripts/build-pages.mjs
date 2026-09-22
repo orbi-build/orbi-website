@@ -431,6 +431,48 @@ export function validatePostBody(label, body) {
   validateSvgMarkup(label, prose);
 }
 
+export function wrapRenderedTables(html) {
+  const tableTag = /<\/?table\b[^>]*>/gi;
+
+  function renderRange(start, end) {
+    let output = "";
+    let cursor = start;
+    while (cursor < end) {
+      tableTag.lastIndex = cursor;
+      const opening = tableTag.exec(html);
+      if (!opening || opening.index >= end || opening[0].startsWith("</")) {
+        output += html.slice(cursor, end);
+        break;
+      }
+      output += html.slice(cursor, opening.index);
+      let depth = 1;
+      let scan = opening.index + opening[0].length;
+      let closingStart = -1;
+      let closingEnd = -1;
+      while (depth > 0) {
+        tableTag.lastIndex = scan;
+        const tag = tableTag.exec(html);
+        if (!tag || tag.index >= end) throw new Error("rendered blog table is missing its closing tag");
+        if (tag[0].startsWith("</")) {
+          depth -= 1;
+          if (depth === 0) {
+            closingStart = tag.index;
+            closingEnd = tag.index + tag[0].length;
+          }
+        } else {
+          depth += 1;
+        }
+        scan = tag.index + tag[0].length;
+      }
+      output += `<div class="post-table-scroll">${opening[0]}${renderRange(opening.index + opening[0].length, closingStart)}${html.slice(closingStart, closingEnd)}</div>`;
+      cursor = closingEnd;
+    }
+    return output;
+  }
+
+  return renderRange(0, html.length);
+}
+
 export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
@@ -477,7 +519,7 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = marked.parse(body);
+  const html = wrapRenderedTables(marked.parse(body));
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
