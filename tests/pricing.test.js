@@ -194,22 +194,18 @@ describe("Free delivery allowance constant (Issue #274)", () => {
 });
 
 describe("Included tokens constant (Issue #138)", () => {
-  // orbi-cloud is the system that enforces this quota, and the two repos
-  // cannot reference each other, so the expected value is pinned here with
-  // its source: orbi-build/orbi-cloud (branch beta) wrangler.toml [vars]
-  // MONTHLY_TOKEN_LIMITS = '{ "default": ... }', read at runtime by
-  // that repo's src/guard.ts monthlyTokenLimit(). If orbi-cloud changes its
-  // default, this assertion goes red and pricing.json must move in the same
-  // change — the drift that shipped "2 billion" here against the cloud's
-  // 3 亿 (website#137) is what this pin exists to stop. The pin has moved
-  // twice: orbi-cloud#339 (2026-09-13) raised the enforced default
-  // 300000000 → 2000000000 for the US$79 / 2B pilot promise, and the
+  // Cloud enforces this quota outside this repository, so the expected value
+  // is manually pinned here. The website and Cloud must change it together;
+  // if the enforced default changes, this assertion goes red and pricing.json
+  // must move in the same change. The drift that shipped "2 billion" here
+  // against the enforced 3 亿 value (website#137) is what this pin exists to
+  // stop. The pin has moved twice: the enforced default briefly rose from
+  // 300000000 to 2000000000 for the US$79 / 2B pilot promise, and the
   // maintainer's quota ruling in website#145 (2026-09-13) set both tiers
-  // back to 300000000 — the tiers differ in price, not quota. Unlike the
-  // #339 move, the control plane has not landed its side yet: orbi-cloud#342
-  // (open when this pin moved) tracks beta's 2000000000 → 300000000, so the
-  // pin leads the enforced default until that change lands.
-  it("matches orbi-cloud's MONTHLY_TOKEN_LIMITS.default", () => {
+  // back to 300000000 — the tiers differ in price, not quota. The pin may
+  // lead the live enforced value until the corresponding external change
+  // lands.
+  it("matches the enforced monthly token quota", () => {
     expect(pricing.includedTokens).toBe(300000000);
   });
 

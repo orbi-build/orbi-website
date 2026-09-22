@@ -175,9 +175,9 @@ anyone to look at, and a human merges `beta → main` when a change should
 reach production. That merge is the only "shipping" event, and it is not a
 version.
 
-The sibling repositories work differently — `orbi-build/orbi` and
-`orbi-build/orbi-cloud` both version, release, and gate claims on
-`active_milestone`. Do not carry their habits over.
+The `orbi-build/orbi` repository works differently — it versions,
+releases, and gates claims on `active_milestone`. Do not carry those
+habits over.
 
 ## Branch flow and deployment
 
