@@ -51,6 +51,15 @@ jobs:
         run: timeout 300s npx playwright install chromium
       - name: Run unit tests
         run: timeout 300s npm test
+
+      # Browser-driven layout regressions (hero scale, heading line boxes,
+      # Cloud card overflow, footer overflow, blog step images). They live
+      # in CI, not in the deploy gates: tests/test_landing.py:934 forbids
+      # `playwright install` in deploy-production.yml, because a deploy gate
+      # that owns design assertions rolled a correct build back three times
+      # in one day on 2026-09-10.
+      - name: Run browser layout tests
+        run: timeout 600s npm run test:ui
       - name: Run landing and deployment contract tests
         # Issue #103: the deploy workflows run these contract tests; PR CI
         # must run the same check set or a contract violation ships green

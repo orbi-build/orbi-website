@@ -114,8 +114,4 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
     }
   }, 30_000);
 
-  it("does not declare a fixed line-height for h1", async () => {
-    const styles = await readFile("public/styles.css", "utf8");
-    expect(styles).not.toMatch(/(?:^|\n)\s*h1(?:\s*,[^\{]*)?\s*\{[^}]*line-height\s*:/);
-  });
 });
