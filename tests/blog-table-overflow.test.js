@@ -82,6 +82,90 @@ async function overflowAt(route, width) {
   }
 }
 
+async function blogLayoutAt(route, width) {
+  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  try {
+    await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+    return await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      entries: [...document.querySelectorAll(".post-entry")].map((entry) => {
+        const title = entry.querySelector(".post-entry-title");
+        const summary = entry.querySelector(".post-entry-summary");
+        const titleStyle = getComputedStyle(title);
+        return {
+          titleWidth: title.getBoundingClientRect().width,
+          summaryWidth: summary.getBoundingClientRect().width,
+          titleHeight: title.getBoundingClientRect().height,
+          titleLineHeight: Number.parseFloat(titleStyle.lineHeight),
+          titleText: title.textContent.trim(),
+        };
+      }),
+    }));
+  } finally {
+    await page.close();
+  }
+}
+
+async function comparisonHeadingAt(route) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  try {
+    await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+    return await page.locator(".compare-section h2").first().evaluate((heading) => {
+      const expected = document.createElement("span");
+      const style = getComputedStyle(heading);
+      expected.style.cssText = `position:absolute; width:26ch; font:${style.font};`;
+      document.body.append(expected);
+      const expectedWidth = expected.getBoundingClientRect().width;
+      expected.remove();
+      return {
+        maxWidth: getComputedStyle(heading).maxWidth,
+        width: heading.getBoundingClientRect().width,
+        expectedWidth,
+      };
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+describe("blog titles use the post entry width (Issue #401)", () => {
+  it("matches title and summary widths in both languages and keeps long English titles on one line", async () => {
+    for (const route of ["/blog/", "/zh/blog/"]) {
+      const result = await blogLayoutAt(route, 1440);
+      expect(result.overflow, `${route} at desktop document overflow`).toBe(0);
+      for (const entry of result.entries) {
+        expect(entry.titleWidth, `${route} title width for ${entry.titleText}`).toBeCloseTo(entry.summaryWidth, 1);
+      }
+      if (route === "/blog/") {
+        for (const title of [
+          "Waiting for an answer the user can't give",
+          "An autonomous coding agent that can tell itself no",
+        ]) {
+          const entry = result.entries.find((candidate) => candidate.titleText === title);
+          expect(entry, `missing title ${title}`).toBeDefined();
+          expect(entry.titleHeight, `${title} should fit on one line`).toBeLessThanOrEqual(entry.titleLineHeight + 1);
+        }
+      }
+    }
+  });
+
+  it("wraps narrow titles without document overflow", async () => {
+    for (const route of ["/blog/", "/zh/blog/"]) {
+      const result = await blogLayoutAt(route, 390);
+      expect(result.overflow, `${route} at mobile document overflow`).toBe(0);
+      expect(result.entries.some((entry) => entry.titleHeight > entry.titleLineHeight + 1)).toBe(true);
+    }
+  });
+
+  it("keeps comparison headings constrained by the shared comparison rule", async () => {
+    for (const route of ["/compare/", "/zh/compare/"]) {
+      const result = await comparisonHeadingAt(route);
+      expect(Number.parseFloat(result.maxWidth), route).toBeCloseTo(result.expectedWidth, 1);
+      expect(result.width, route).toBeCloseTo(result.expectedWidth, 1);
+    }
+  });
+});
+
 describe("blog tables stay within the viewport (Issue #393)", () => {
   it("contains all five wide tables at mobile and desktop widths", async () => {
     for (const width of widths) {
