@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -1222,6 +1222,34 @@ describe("blog failure path (Issue #212)", () => {
   it("fails with the file path when lang contradicts the file's directory", () => {
     expect(() => postFromSource("zh/t.md", front({ ...full, lang: "en" })))
       .toThrow(/content\/blog\/zh\/t\.md[\s\S]*lang/);
+  });
+});
+
+describe("blog table rendering (Issue #393)", () => {
+  const front = (body) => `---\ntitle: T\ndate: 2026-09-18\nsummary: s\nlang: en\nauthor: Orbi\nimage: /img/blog-t.png\n---\n\n${body}\n`;
+
+  it("wraps each Markdown table in one scroll container", () => {
+    const post = postFromSource("t.md", front(`| A | B |
+| - | - |
+| 1 | 2 |`));
+    expect(post.html).toContain('<div class="post-table-scroll"><table>');
+    expect(post.html.match(/class="post-table-scroll"/g)).toHaveLength(1);
+  });
+
+  it("wraps nested tables recursively without double-wrapping a table", () => {
+    const html = '<table><tr><td><table><tr><td>x</td></tr></table></td></tr></table>';
+    const wrapped = wrapRenderedTables(html);
+    expect(wrapped).toBe('<div class="post-table-scroll"><table><tr><td><div class="post-table-scroll"><table><tr><td>x</td></tr></table></div></td></tr></table></div>');
+    expect(wrapped.match(/<div class="post-table-scroll"><table/g)).toHaveLength(2);
+  });
+
+  it("defines the table scroll and token-based table styles in the post template", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-table-scroll { overflow-x: auto; }");
+    expect(template).toContain("border-collapse: collapse");
+    expect(template).toContain("border: 1px solid var(--line)");
+    expect(template).toContain("background: var(--paper-2)");
+    expect(template).not.toMatch(/\.post-body table[^}]*#[0-9a-f]{3,8}/i);
   });
 });
 
