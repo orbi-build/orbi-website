@@ -135,16 +135,30 @@ describe("bot detection (Issue #280)", () => {
   });
 
   it("marks a slow one-hit vid scan from durable aggregate evidence", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-22T02:40:00Z"));
     let prior = 0;
     const db = {
       prepare(sql) {
-        expect(sql).toContain("COUNT(DISTINCT vid)");
-        expect(sql).toContain("COUNT(DISTINCT path)");
+        expect(sql).toContain("HAVING COUNT(*) = 1");
+        expect(sql).toContain("created_at >= datetime(?, 'unixepoch')");
         return {
           bind: (...params) => {
-            expect(params).toHaveLength(4);
+            expect(params).toEqual([
+              CHROME_127_HASH,
+              9506,
+              1789872000,
+              `slow-crawler-${prior}`,
+              `/page-${prior}`,
+              `slow-crawler-${prior}`,
+            ]);
             return {
-              first: async () => ({ rows: prior, vids: prior, paths: prior }),
+              first: async () => ({
+                vids: prior,
+                paths: prior,
+                current_path_seen: 0,
+                current_vid_hits: 0,
+              }),
             };
           },
         };
@@ -169,7 +183,7 @@ describe("bot detection (Issue #280)", () => {
     for (const [vids, paths] of [[163, 29], [95, 10]]) {
       const db = {
         prepare: () => ({
-          bind: () => ({ first: async () => ({ rows: vids, paths, vids, current_vid_hits: 0 }) }),
+          bind: () => ({ first: async () => ({ vids, paths, current_path_seen: 0, current_vid_hits: 0 }) }),
         }),
       };
       expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
@@ -178,6 +192,34 @@ describe("bot detection (Issue #280)", () => {
         ref: "direct",
       }, db)).toMatchObject({ is_bot: 1 });
     }
+  });
+
+  it("counts singleton vids even when other vids sharing the fingerprint returned", async () => {
+    const db = {
+      prepare: () => ({
+        bind: () => ({
+          first: async () => ({ vids: 7, paths: 7, current_path_seen: 0, current_vid_hits: 0 }),
+        }),
+      }),
+    };
+    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
+      vid: "eighth-singleton",
+      path: "/eighth-path",
+    }, db)).toMatchObject({ is_bot: 1 });
+  });
+
+  it("requires the current path to increase the singleton path breadth", async () => {
+    const db = {
+      prepare: () => ({
+        bind: () => ({
+          first: async () => ({ vids: 7, paths: 7, current_path_seen: 1, current_vid_hits: 0 }),
+        }),
+      }),
+    };
+    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
+      vid: "eighth-singleton",
+      path: "/already-seen",
+    }, db)).toMatchObject({ is_bot: 0 });
   });
 
   it("marks a burst of one-hit vids sharing a source fingerprint", async () => {

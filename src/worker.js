@@ -740,7 +740,7 @@ async function reportVisit(env, visitRequest, payload) {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest, payload, env.CONTROL_PLANE_DB) }),
+      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest, payload, env.VISITOR_EVENTS_DB) }),
       signal: AbortSignal.timeout(5000),
     });
     const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);

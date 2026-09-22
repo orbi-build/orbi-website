@@ -65,6 +65,13 @@ binding = "CONTROL_PLANE_DB"
 database_name = "orbi_control_plane"
 database_id = "f43377a6-3c1b-41d3-9018-3339590915ab"
 
+# Durable bot behavior must read the same visitor_events database that the
+# environment's CLOUD service writes: production here, isolated e2e on beta.
+[[d1_databases]]
+binding = "VISITOR_EVENTS_DB"
+database_name = "orbi_control_plane"
+database_id = "f43377a6-3c1b-41d3-9018-3339590915ab"
+
 # Must stay last: every key after a table header belongs to that table, so
 # putting this above `assets` swallows it and env.ASSETS becomes undefined.
 [observability]
@@ -106,3 +113,8 @@ database_id = "3c254d65-e5c6-4488-9b83-dabc3433f092"
 binding = "CONTROL_PLANE_DB"
 database_name = "orbi_control_plane"
 database_id = "f43377a6-3c1b-41d3-9018-3339590915ab"
+
+[[env.beta.d1_databases]]
+binding = "VISITOR_EVENTS_DB"
+database_name = "orbi_control_plane_e2e"
+database_id = "4c9d878f-f4cc-472a-b324-b6a32da9b159"

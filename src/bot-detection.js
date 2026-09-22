@@ -145,24 +145,36 @@ export function isBot(request, behavior = {}) {
 }
 
 async function durableSlowScan(db, { asn, uaHash, vid, path, now }) {
-  const since = new Date(now - DURABLE_BEHAVIOR_WINDOW_MS).toISOString();
+  const sinceEpochSeconds = Math.floor((now - DURABLE_BEHAVIOR_WINDOW_MS) / 1000);
   try {
     const result = await db.prepare(`
-      SELECT COUNT(*) AS rows,
-             COUNT(DISTINCT vid) AS vids,
+      WITH matching_events AS (
+        SELECT vid, path
+        FROM visitor_events
+        WHERE kind = 'visit'
+          AND ua_hash = ?
+          AND asn = ?
+          AND created_at >= datetime(?, 'unixepoch')
+      ), one_hit_vids AS (
+        SELECT vid, MIN(path) AS path
+        FROM matching_events
+        WHERE vid <> ?
+        GROUP BY vid
+        HAVING COUNT(*) = 1
+      )
+      SELECT COUNT(*) AS vids,
              COUNT(DISTINCT path) AS paths,
-             SUM(CASE WHEN vid = ? THEN 1 ELSE 0 END) AS current_vid_hits
-      FROM visitor_events
-      WHERE ua_hash = ? AND asn = ? AND created_at >= ?
-    `).bind(vid, uaHash, asn, since).first();
-    const rows = Number(result?.rows ?? 0);
+             COALESCE(MAX(path = ?), 0) AS current_path_seen,
+             (SELECT COUNT(*) FROM matching_events WHERE vid = ?) AS current_vid_hits
+      FROM one_hit_vids
+    `).bind(uaHash, asn, sinceEpochSeconds, vid, path, vid).first();
     const vids = Number(result?.vids ?? 0);
     const paths = Number(result?.paths ?? 0);
     const currentVidHits = Number(result?.current_vid_hits ?? 0);
-    return currentVidHits === 0
-      && rows === vids
-      && vids + 1 >= BURST_VID_THRESHOLD
-      && paths + 1 >= DURABLE_PATH_BREADTH_THRESHOLD;
+    const currentIsOneHit = currentVidHits === 0;
+    const currentAddsPath = currentIsOneHit && Number(result?.current_path_seen ?? 0) === 0;
+    return vids + (currentIsOneHit ? 1 : 0) >= BURST_VID_THRESHOLD
+      && paths + (currentAddsPath ? 1 : 0) >= DURABLE_PATH_BREADTH_THRESHOLD;
   } catch (error) {
     console.warn("bot_behavior_query_failed:", error && error.message ? error.message : error);
     return false;

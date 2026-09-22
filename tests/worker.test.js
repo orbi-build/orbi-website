@@ -1026,7 +1026,7 @@ describe("visit attribution (Issue #228)", () => {
     let prior = 0;
     const db = {
       prepare: () => ({
-        bind: () => ({ first: async () => ({ rows: prior, vids: prior, paths: prior, current_vid_hits: 0 }) }),
+        bind: () => ({ first: async () => ({ vids: prior, paths: prior, current_path_seen: 0, current_vid_hits: 0 }) }),
       }),
     };
     const fetchMock = vi.fn(async () => new Response("ok"));
@@ -1044,7 +1044,7 @@ describe("visit attribution (Issue #228)", () => {
       });
       request.cf = { asn: 9506 };
       const ctx = collectingCtx();
-      await worker.fetch(request, env({ ASSETS: assetServer(routes), CONTROL_PLANE_DB: db }), ctx);
+      await worker.fetch(request, env({ ASSETS: assetServer(routes), VISITOR_EVENTS_DB: db }), ctx);
       await flush(ctx);
       expect(await visitBody(visitCalls(fetchMock).at(-1))).toMatchObject({
         is_bot: index === 7 ? 1 : 0,
