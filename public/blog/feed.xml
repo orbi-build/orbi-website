@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Designing one slash command, and reading two that came before</title>
+      <link>https://orbi.build/blog/designing-a-slash-command/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/designing-a-slash-command/</guid>
+      <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
+      <description>We needed a way for a tenant to answer a question our engine asks on a GitHub ticket. Building it meant reading Prow and bors-ng at source, where we found a code-block bug that still fires today and a privilege escalation created by having two ways into the same function. Here is every tradeoff, with the line numbers.</description>
+    </item>
+    <item>
+      <title>Our engine waited for an answer the user could not give</title>
+      <link>https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</guid>
+      <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.</description>
+    </item>
+    <item>
       <title>Watch the seven steps, start to finish</title>
       <link>https://orbi.build/blog/watch-the-six-steps/</link>
       <guid isPermaLink="true">https://orbi.build/blog/watch-the-six-steps/</guid>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our engine waited for an answer the user could not give | Orbi</title>
+  <meta name="description" content="A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.">
+  <link rel="canonical" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Our engine waited for an answer the user could not give">
+  <meta property="og:description" content="A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.">
+  <meta property="og:url" content="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/">
+  <meta property="og:image" content="https://orbi.build/img/blog-waiting.png">
+  <meta property="og:image:alt" content="Our engine waited for an answer the user could not give">
+  <meta property="article:published_time" content="2026-09-22">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Our engine waited for an answer the user could not give","datePublished":"2026-09-22","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-waiting.png","inLanguage":"en","description":"A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.","url":"https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-media img, .post-media iframe { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    /* Tables: the first post to use one overflowed 390px by 48px, because the
+       template had no table rules at all. The wrapper scrolls instead of
+       pushing the page wide, matching how <pre> already behaves. */
+    .post-table { overflow-x: auto; margin: 18px 0; }
+    .post-body table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+    .post-body th { background: var(--paper-2); font-weight: 600; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/waiting-for-someone-who-cannot-answer/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-22</p>
+        <h1 id="post-title">Our engine waited for an answer the user could not give</h1>
+        <p class="hero-lede">A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>There is a failure mode that does not look like failure. Nothing crashes. No
+error is logged. The system is doing exactly what it was designed to do, which
+is wait — and the person it is waiting for has no idea, and no way to respond.</p>
+<p>We shipped three of these. We found them in one afternoon, because we finally
+became our own customer.</p>
+<h2>The waiting is correct</h2>
+<p>Our engine will not advance a version on its own. When a milestone closes, an
+idle tick opens a ticket: this version is complete, here are the candidates,
+which one is next. Then it stops.</p>
+<p>That lock is deliberate and we are not removing it. Deciding what ships next is
+a product decision. An engine that picks the next version number because the
+previous one filled up has confused a counter with a judgement.</p>
+<p>So the ticket is right. The pause is right. What was wrong is the sentence
+inside the ticket:</p>
+<blockquote>
+<p>Please run <code>orbi milestone set &lt;target&gt;</code> to advance <code>active_milestone</code>.</p>
+</blockquote>
+<p>That instruction assumes a CLI and a shell on the host. A managed tenant has
+neither — their sandbox runs on our hardware, which is the entire point of it
+being managed. The engine asked a question, on a ticket the tenant could read,
+and accepted only an answer they could not produce.</p>
+<p>Worse, managed sandboxes never rendered <code>auto_next_milestone = false</code> at all. So
+they did not get the ticket either. The engine paused silently and waited for a
+decision that nobody had been asked to make.</p>
+<h2>The day we noticed</h2>
+<p>On 2026-09-22 we migrated <code>orbi-build/orbi</code> — the engine&#39;s own repository — onto
+our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.</p>
+<p>Then the milestone closed, and everything stopped. No notification. No error.
+Delivery simply ceased, until a human noticed, created the v0.5.40 milestone by
+hand with <code>gh api</code>, and edited the policy file directly.</p>
+<p>We had been running this gap in production for our customers. It took putting
+our own release line behind it to feel it.</p>
+<h2>The same shape, in the UI</h2>
+<p>Later the same day, a full walkthrough of the product — register, install the
+App, connect a repo, provision a sandbox, file an issue, deliver, merge, release
+— surfaced the second instance.</p>
+<p>The status page has a release form. It is a text box. You type a version number
+from memory, and that string becomes the release scope.</p>
+<p>The page never shows you which milestones exist. We checked:
+<code>grep -rn &quot;milestone&quot; src/pages/status.ts src/page.ts</code> returns nothing. Not one
+line. Meanwhile, six hundred lines away in the same file, the page does this for
+issues:</p>
+<blockquote>
+<p>These issues have not been handed to Orbi yet: label an issue <code>ai-ready</code> and
+Orbi will start on it.</p>
+</blockquote>
+<p>The page already scans GitHub on your behalf and lists what you can act on. It
+just never extended that courtesy to milestones. So you type a version you half
+remember, and if you get it wrong nothing tells you — the rejection happens
+later, asynchronously, on a ticket you have to go find.</p>
+<h2>The same shape, in the config</h2>
+<p>The third instance is the one that explains the other two.</p>
+<p>Our engine writes the active milestone into a repository variable on every tick.
+The value comes from <code>config.active_milestone</code> — which lives in the sandbox&#39;s own
+<code>orbi.toml</code> file. Not GitHub. Not our control plane.</p>
+<p>So the control plane can create a release ticket while the sandbox still
+believes nothing is in flight. Two systems, two answers, no reconciliation. In
+our production logs, every tick, for the repository we had just walked through:</p>
+<pre><code>INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
+</code></pre>
+<p>Then we looked at how a field gets from the control plane into that file, and
+found there is no general mechanism at all. There are four separate
+hand-written sync functions — <code>sync_orbi_toml_engine_track</code>,
+<code>sync_orbi_toml_providers</code>, <code>sync_orbi_toml_oauth</code>, plus the initial render —
+each one added for a single field, each one staging a temp file and swapping it
+atomically. The comments record the accretion:</p>
+<pre><code class="language-bash"># Issue #116: the connect-time base branch rides the payload and must reach
+#             the rendered orbi.toml
+# Issue #770: attribution_footer rides the same way
+</code></pre>
+<p>Adding one field means editing four files. Which is why nobody added
+<code>active_milestone</code>: <code>grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
+returns nothing. The control plane does not know the field exists.</p>
+<h2>What the tenant can and cannot touch</h2>
+<p>One design question resolved itself once we looked at the filesystem.</p>
+<p>We were about to specify merge semantics for &quot;what if the tenant edited a managed
+field by hand&quot;. Then we checked:</p>
+<pre><code class="language-console">$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
+-rw------- 1 orbi-... orbi-... 926 Sep 22 06:39 orbi.toml
+
+$ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
+-rw------- ... id_ed25519       # outbound deploy key
+-rw-r--r-- ... id_ed25519.pub
+-rw------- ... known_hosts
+                                # no authorized_keys
+</code></pre>
+<p>Mode 0600, owned by the sandbox user, and no <code>authorized_keys</code>. The tenant
+cannot SSH in. There is no hand-editing to reconcile.</p>
+<p>That makes the design simpler than we assumed. The control plane is the sole
+writer, so the merge only has to preserve <em>other control-plane fields</em> — there
+is no external drift to detect. And it points at a stronger invariant worth
+holding: <code>orbi.toml</code> should be a pure derivative, reconstructible from control
+plane state alone. Today it is not. Engine track and providers live only in the
+sandbox; the control plane holds a partial truth. Those four sync functions each
+maintain a fragment of the real answer.</p>
+<h2>The pull-versus-push question answered itself too</h2>
+<p>For pushing config down to sandboxes, the obvious tradeoff is pull (the sandbox
+asks on a schedule) versus push (the control plane triggers a refresh).</p>
+<p>Push means opening an inbound channel to sandbox hosts. Pull means a delay of up
+to one refresh interval. The usual move is to weigh latency against attack
+surface.</p>
+<p>Except the interval is already one minute:</p>
+<pre><code class="language-console">$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
+OnUnitActiveSec=1min
+</code></pre>
+<p>And the refresh endpoint&#39;s query is <code>WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>
+— every live sandbox, every minute, not just pending ones. So a pull costs at
+most sixty seconds, on an action that already waits for the engine&#39;s next claim.
+There is no tradeoff to weigh. Push would open an inbound path to buy less than
+a minute.</p>
+<p>Measuring the thing before arguing about it took two commands.</p>
+<h2>A wrong diagnosis, corrected by the database</h2>
+<p>While reading production logs we found 288 identical errors in six hours:</p>
+<pre><code>ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
+subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
+</code></pre>
+<p>The obvious read was credential rot, so that is what we wrote down. Reproducing
+it inside the sandbox gave <code>401 Bad credentials</code> — which seemed to confirm it,
+especially since the repository is public and readable with a maintainer token.</p>
+<p>Then we checked the database, and the diagnosis collapsed:</p>
+<pre><code>login=cdredfox    tenant=inactive  codeduck          repo=inactive
+login=zzuu080603  tenant=active    VCPToolBox-macOS  repo=inactive   ← failing
+login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← fine
+</code></pre>
+<p>Both failing sandboxes belong to <strong>inactive</strong> repositories. The refresh endpoint
+filters on <code>status = &#39;active&#39;</code>, so those tokens are never refreshed — by design,
+correctly. The same tenant&#39;s active repository works perfectly. That is the
+control group, sitting right there in the same query.</p>
+<p>The real defect was never credentials. It is that we keep reconciling milestones
+for repositories that were switched off, forever, once per tick. The 401 is a
+symptom of a correct policy meeting a loop that should have stopped.</p>
+<p>Read the error, then read the data. In that order — we did it backwards and
+filed a ticket with the wrong root cause, which then had to be publicly
+corrected.</p>
+<h2>What connects them</h2>
+<p>Three defects, one shape: <strong>the system knew something the user needed, and did
+not say it.</strong></p>
+<p>It knew which milestones existed, and made you type one from memory. It knew a
+decision was pending, and told you to use a CLI you do not have. It knew the
+control plane&#39;s intent, and left the sandbox holding a different answer.</p>
+<p>None of them logs an error, because none of them is an error. Every component is
+doing its job. The gap is between components, in the space where a human was
+supposed to be handed something and was not.</p>
+<p>That space is invisible from inside the code. You cannot grep for it, and your
+tests will not fail on it, because nothing is broken. You find it by standing
+where the user stands — which for us meant moving our own release line onto our
+own product and waiting for it to stall.</p>
+<p>It stalled in four hours.</p>
+<hr>
+<p><em>The tickets, all filed on 2026-09-22:
+<a href="https://github.com/orbi-build/orbi-cloud/issues/878">orbi-cloud#878</a> (no path
+for a managed tenant to decide),
+<a href="https://github.com/orbi-build/orbi-cloud/issues/869">orbi-cloud#869</a> (list the
+milestones in the UI),
+<a href="https://github.com/orbi-build/orbi-cloud/issues/870">orbi-cloud#870</a> (a general
+config push instead of a fifth hand-written sync), and
+<a href="https://github.com/orbi-build/orbi/issues/1283">orbi#1283</a> (the one whose root
+cause we got wrong first).</em></p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p>Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="https://docs.orbi.build">Docs</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
+        <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/compare/">Compare</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
+        <li><a href="https://status.orbi.build">Status</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+      </ul>
+      <ul>
+        <li><a href="/support/">Support</a></li>
+        <li><a href="/#direction">Direction</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
+        <li><a href="/zh/blog/waiting-for-someone-who-cannot-answer/" lang="zh-CN">中文</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+</body>
+</html>

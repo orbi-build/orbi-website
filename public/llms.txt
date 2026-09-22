@@ -193,6 +193,14 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Designing one slash command, and reading two that came before (English):
+  https://orbi.build/blog/designing-a-slash-command/
+- Our engine waited for an answer the user could not give (English):
+  https://orbi.build/blog/waiting-for-someone-who-cannot-answer/
+- 设计一条斜杠命令，顺便读了前人的两份源码 (Chinese):
+  https://orbi.build/zh/blog/designing-a-slash-command/
+- 我们的引擎在等一个用户给不出的答案 (Chinese):
+  https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/
 - Watch the seven steps, start to finish (English):
   https://orbi.build/blog/watch-the-six-steps/
 - 七步跑完，全程录下来了 (Chinese):
