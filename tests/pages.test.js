@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -1260,6 +1260,56 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     const post = postFromSource("t.md", front(full, '<figure><img src="/x.png" alt="A screen"><iframe src="https://www.youtube.com/embed/x" title="Video"></iframe></figure>'));
     expect(post.html).toContain('<img src="/x.png" alt="A screen">');
     expect(post.html).toContain("youtube.com/embed/x");
+  });
+
+  it("renders accessible inline SVG and keeps local references", () => {
+    const svg = '<figure><svg role="img" aria-label="Pipeline" viewBox="0 0 100 40"><title>Pipeline</title><defs><symbol id="box"><rect width="20" height="10" /></symbol></defs><use href="#box" /></svg><figcaption>Pipeline</figcaption></figure>';
+    const post = postFromSource("t.md", front(full, svg));
+    expect(post.html).toContain('<svg role="img" aria-label="Pipeline"');
+    expect(post.html).toContain('<use href="#box" />');
+  });
+
+  it("rejects every SVG without an accessible name", () => {
+    expect(() => postFromSource("t.md", front(full, '<svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" data-aria-label="not an accessible name"><rect /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Outer"><svg><rect /></svg></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+  });
+
+  it.each([
+    ["script", "<script>alert(1)</script>"],
+    ["foreignObject", "<foreignObject></foreignObject>"],
+    ["animate", "<animate attributeName=\"x\" />"],
+    ["image", "<image href=\"#asset\" />"],
+  ])("rejects SVG tag <%s>", (_tag, element) => {
+    expect(() => postFromSource("t.md", front(full, `<svg role="img" aria-label="Diagram">${element}</svg>`)))
+      .toThrow(/HTML tag/);
+  });
+
+  it("rejects event handlers and external SVG hrefs but permits local hrefs", () => {
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram" onclick="alert(1)"></svg>')))
+      .toThrow(/event handler/);
+    expect(() => postFromSource("t.md", front(full, '<figure onmouseover="alert(1)"><img src="/x" alt="x"></figure>')))
+      .toThrow(/event handler/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="https://example.com/icon.svg#x" /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href=https://example.com/icon.svg#x /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="javascript:alert(1)" /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="#local" /></svg>'))).not.toThrow();
+  });
+
+  it("rechecks SVG safety after Markdown rendering", () => {
+    expect(() => validateRenderedPostBody("content/blog/t.md", '<p><svg role="img" aria-label="Diagram"><use href="https://example.com/x" /></svg></p>'))
+      .toThrow(/external.*href/);
+  });
+
+  it("emits responsive SVG styles in the post template", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-body svg { max-width: 100%; height: auto; }");
   });
 
   it("fails incomplete video front matter instead of emitting partial structured data", () => {
