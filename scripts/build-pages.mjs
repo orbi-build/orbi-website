@@ -346,19 +346,51 @@ export function parseFrontMatter(displayName, source) {
 // other language directory; collectPosts resolves it to the switcher target
 // once both sides exist.
 const POST_HTML_TAGS = new Set(["figure", "figcaption", "img", "iframe"]);
+const POST_SVG_TAGS = new Set([
+  "svg", "title", "desc", "g", "defs", "use", "symbol", "rect", "circle", "ellipse", "line",
+  "polyline", "polygon", "path", "text", "tspan", "textpath", "marker", "lineargradient",
+  "radialgradient", "stop", "clippath", "mask", "pattern",
+]);
 
-// Markdown remains CommonMark, but these three tags are deliberately allowed
-// for article media. Rejecting all other raw HTML keeps the content contract
-// small while preserving accessible images and responsive video embeds.
+function svgAttribute(markup, name) {
+  return markup.match(new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, "i"))?.[2] ?? null;
+}
+
+function validateSvgMarkup(label, html) {
+  for (const match of html.matchAll(/<svg\b[^>]*?(?:\/>|>([\s\S]*?)<\/svg\s*>)/gi)) {
+    const opening = match[0].slice(0, match[0].indexOf(">") + 1);
+    const ariaLabel = svgAttribute(opening, "aria-label")?.trim();
+    const role = svgAttribute(opening, "role")?.trim().toLowerCase();
+    const title = match[1]?.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1].replace(/<[^>]*>/g, "").trim();
+    if (!(role === "img" && ariaLabel) && !title) {
+      throw new Error(`${label}: every <svg> in a blog body needs a non-empty aria-label with role="img" or a non-empty <title>`);
+    }
+
+    if (/\son[a-z][\w:.-]*(?:\s|=|>)/i.test(match[0])) {
+      throw new Error(`${label}: SVG event handler attributes are not allowed`);
+    }
+    for (const attribute of match[0].matchAll(/\s([A-Za-z_:][\w:.-]*)\s*=\s*(["'])(.*?)\2/gs)) {
+      const name = attribute[1].toLowerCase();
+      const value = attribute[3].trim();
+      if (name === "href" || name === "xlink:href") {
+        if (!value.startsWith("#")) throw new Error(`${label}: external SVG href is not allowed; use a local #id reference`);
+      }
+    }
+  }
+}
+
+// Markdown remains CommonMark, but these tags are deliberately allowed for
+// article media. SVG gets a separate safety/accessibility pass below.
 export function validatePostBody(label, body) {
   const prose = body.replace(/```[\s\S]*?```/g, "").replace(/`[^`]*`/g, "");
   for (const match of prose.matchAll(/<\/?([A-Za-z][\w-]*)(?:\s[^>]*)?>/g)) {
     const tag = match[1].toLowerCase();
-    if (!POST_HTML_TAGS.has(tag)) throw new Error(`${label}: HTML tag <${tag}> is not allowed in blog body`);
+    if (!POST_HTML_TAGS.has(tag) && !POST_SVG_TAGS.has(tag)) throw new Error(`${label}: HTML tag <${tag}> is not allowed in blog body`);
     if (tag === "img" && !match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
       throw new Error(`${label}: every <img> in a blog body needs a non-empty alt`);
     }
   }
+  validateSvgMarkup(label, prose);
 }
 
 function validateRenderedPostImages(label, html) {
@@ -367,6 +399,7 @@ function validateRenderedPostImages(label, html) {
       throw new Error(`${label}: every image in a blog body needs a non-empty alt`);
     }
   }
+  validateSvgMarkup(label, html);
 }
 
 function requiredField(label, fields, name) {
