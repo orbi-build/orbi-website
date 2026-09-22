@@ -774,7 +774,10 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   display: grid;
   /* minmax(0, 1fr), not 1fr: a card whose title carries a long URL must not
    * inflate its track's min-content and push the grid past the container. */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four current cards should read as a deliberate 2×2 set, not a full
+   * row followed by an orphan. The same rhythm also keeps each evidence
+   * repository group easy to scan; mobile collapses to one column below. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-top: 48px;
 }
@@ -790,6 +793,10 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 }
 
 .social-proof-group .social-proof-grid { margin-top: 24px; }
+
+/* A repository or quote group with one record should read as an intentional
+ * full row, not as a half-width card with an empty second track. */
+.social-proof-group .proof-card:only-child { grid-column: 1 / -1; }
 
 .social-proof-more {
   margin: 34px 0 0;

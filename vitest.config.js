@@ -30,6 +30,7 @@ const BROWSER_SUITES = [
   "tests/hero-layout.test.js",
   "tests/homepage-heading.test.js",
   "tests/homepage.smoke.test.js",
+  "tests/social-proof-layout.test.js",
 ];
 
 // `.worktrees/` holds the delivery runner's per-Issue checkouts — full copies
