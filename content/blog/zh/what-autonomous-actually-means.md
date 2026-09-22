@@ -1,7 +1,7 @@
 ---
-title: 会对自己说不的 AI 编码 agent
+title: 会对自己说不的 AI 编码 agent · Orbi
 date: 2026-09-20
-summary: 大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。
+summary: 大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。 这篇文章还记录具体背景、关键取舍、可复核的运行结果，以及读者可以继续查看的源码和交付证据。
 lang: zh
 author: Orbi
 image: /img/blog-autonomous.png
