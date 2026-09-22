@@ -352,31 +352,69 @@ const POST_SVG_TAGS = new Set([
   "radialgradient", "stop", "clippath", "mask", "pattern",
 ]);
 
-function svgAttribute(markup, name) {
-  return markup.match(new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, "i"))?.[2] ?? null;
+const HTML_TAG = /<\/?([A-Za-z][\w-]*)(?:"[^"]*"|'[^']*'|[^'"<>])*>/g;
+const HTML_ATTRIBUTE = /\s([A-Za-z_:][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s'"=<>`]+)))?/g;
+
+function tagAttributes(markup) {
+  const attributes = new Map();
+  for (const match of markup.matchAll(HTML_ATTRIBUTE)) {
+    attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? "");
+  }
+  return attributes;
+}
+
+function requireSvgAccessibleName(label, svg) {
+  const ariaLabel = svg.attributes.get("aria-label")?.trim();
+  const role = svg.attributes.get("role")?.trim().toLowerCase();
+  if (!(role === "img" && ariaLabel) && !svg.hasTitle) {
+    throw new Error(`${label}: every <svg> in a blog body needs a non-empty aria-label with role="img" or a non-empty <title>`);
+  }
 }
 
 function validateSvgMarkup(label, html) {
-  for (const match of html.matchAll(/<svg\b[^>]*?(?:\/>|>([\s\S]*?)<\/svg\s*>)/gi)) {
-    const opening = match[0].slice(0, match[0].indexOf(">") + 1);
-    const ariaLabel = svgAttribute(opening, "aria-label")?.trim();
-    const role = svgAttribute(opening, "role")?.trim().toLowerCase();
-    const title = match[1]?.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1].replace(/<[^>]*>/g, "").trim();
-    if (!(role === "img" && ariaLabel) && !title) {
-      throw new Error(`${label}: every <svg> in a blog body needs a non-empty aria-label with role="img" or a non-empty <title>`);
+  const svgStack = [];
+  const titleStack = [];
+
+  for (const match of html.matchAll(HTML_TAG)) {
+    const markup = match[0];
+    const tag = match[1].toLowerCase();
+    const closing = markup.startsWith("</");
+    const selfClosing = /\/\s*>$/.test(markup);
+    const attributes = closing ? new Map() : tagAttributes(markup);
+
+    for (const name of attributes.keys()) {
+      if (name.startsWith("on")) throw new Error(`${label}: event handler attributes are not allowed in a blog body`);
     }
 
-    if (/\son[a-z][\w:.-]*(?:\s|=|>)/i.test(match[0])) {
-      throw new Error(`${label}: SVG event handler attributes are not allowed`);
-    }
-    for (const attribute of match[0].matchAll(/\s([A-Za-z_:][\w:.-]*)\s*=\s*(["'])(.*?)\2/gs)) {
-      const name = attribute[1].toLowerCase();
-      const value = attribute[3].trim();
-      if (name === "href" || name === "xlink:href") {
-        if (!value.startsWith("#")) throw new Error(`${label}: external SVG href is not allowed; use a local #id reference`);
+    if (closing) {
+      if (tag === "title" && titleStack.length > 0) {
+        const title = titleStack.pop();
+        if (html.slice(title.contentStart, match.index).replace(/<[^>]*>/g, "").trim()) {
+          for (const svg of svgStack) svg.hasTitle = true;
+        }
+      } else if (tag === "svg" && svgStack.length > 0) {
+        requireSvgAccessibleName(label, svgStack.pop());
       }
+      continue;
+    }
+
+    if (tag === "svg") {
+      const svg = { attributes, hasTitle: false };
+      svgStack.push(svg);
+      if (selfClosing) requireSvgAccessibleName(label, svgStack.pop());
+    }
+
+    if (svgStack.length > 0) {
+      for (const name of ["href", "xlink:href"]) {
+        if (attributes.has(name) && !attributes.get(name).trim().startsWith("#")) {
+          throw new Error(`${label}: external SVG href is not allowed; use a local #id reference`);
+        }
+      }
+      if (tag === "title" && !selfClosing) titleStack.push({ contentStart: match.index + markup.length });
     }
   }
+
+  for (const svg of svgStack) requireSvgAccessibleName(label, svg);
 }
 
 // Markdown remains CommonMark, but these tags are deliberately allowed for
@@ -393,7 +431,7 @@ export function validatePostBody(label, body) {
   validateSvgMarkup(label, prose);
 }
 
-function validateRenderedPostImages(label, html) {
+export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
       throw new Error(`${label}: every image in a blog body needs a non-empty alt`);
@@ -440,7 +478,7 @@ export function postFromSource(displayName, source) {
   }
   validatePostBody(label, body);
   const html = marked.parse(body);
-  validateRenderedPostImages(label, html);
+  validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;

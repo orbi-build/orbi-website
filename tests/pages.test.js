@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -1269,8 +1269,12 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(post.html).toContain('<use href="#box" />');
   });
 
-  it("rejects an SVG without an accessible name", () => {
+  it("rejects every SVG without an accessible name", () => {
     expect(() => postFromSource("t.md", front(full, '<svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" data-aria-label="not an accessible name"><rect /></svg>')))
+      .toThrow(/svg.*aria-label.*title/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Outer"><svg><rect /></svg></svg>')))
       .toThrow(/svg.*aria-label.*title/);
   });
 
@@ -1284,14 +1288,23 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       .toThrow(/HTML tag/);
   });
 
-  it("rejects SVG event handlers and external hrefs but permits local hrefs", () => {
+  it("rejects event handlers and external SVG hrefs but permits local hrefs", () => {
     expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram" onclick="alert(1)"></svg>')))
       .toThrow(/event handler/);
+    expect(() => postFromSource("t.md", front(full, '<figure onmouseover="alert(1)"><img src="/x" alt="x"></figure>')))
+      .toThrow(/event handler/);
     expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="https://example.com/icon.svg#x" /></svg>')))
+      .toThrow(/external.*href/);
+    expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href=https://example.com/icon.svg#x /></svg>')))
       .toThrow(/external.*href/);
     expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="javascript:alert(1)" /></svg>')))
       .toThrow(/external.*href/);
     expect(() => postFromSource("t.md", front(full, '<svg role="img" aria-label="Diagram"><use href="#local" /></svg>'))).not.toThrow();
+  });
+
+  it("rechecks SVG safety after Markdown rendering", () => {
+    expect(() => validateRenderedPostBody("content/blog/t.md", '<p><svg role="img" aria-label="Diagram"><use href="https://example.com/x" /></svg></p>'))
+      .toThrow(/external.*href/);
   });
 
   it("emits responsive SVG styles in the post template", async () => {
