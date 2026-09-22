@@ -1,0 +1,10 @@
+flowchart LR
+  A[comment] --> B[strip fences]
+  B --> C[strip quotes]
+  C --> D[author ≠ bot]
+  D --> E[permission]
+  E --> F[last wins]
+  F --> G[receipt]
+  style B stroke:#8a5b00,stroke-width:3px
+  style E stroke:#8a5b00,stroke-width:3px
+  style G stroke:#0a6b52,stroke-width:3px

@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Designing one slash command</title>
+      <link>https://orbi.build/blog/designing-a-slash-command/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/designing-a-slash-command/</guid>
+      <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.</description>
+    </item>
+    <item>
+      <title>Waiting for an answer the user can't give</title>
+      <link>https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</guid>
+      <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.</description>
+    </item>
+    <item>
       <title>Watch the seven steps, start to finish</title>
       <link>https://orbi.build/blog/watch-the-six-steps/</link>
       <guid isPermaLink="true">https://orbi.build/blog/watch-the-six-steps/</guid>
