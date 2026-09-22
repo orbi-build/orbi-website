@@ -1266,7 +1266,7 @@ h2 {
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
-.run-option .cloud-access .orbi-cloud-access-a { color: var(--ink); text-underline-offset: 3px; }
+.run-option .cloud-access a { color: var(--ink); text-underline-offset: 3px; }
 
 .pricing-equation {
   display: grid;

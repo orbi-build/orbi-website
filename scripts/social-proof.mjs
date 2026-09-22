@@ -136,7 +136,7 @@ function renderDeliveryCard(record, copy) {
   return [
     `      <article class="proof-card">`,
     `        <p class="proof-card-repo">${esc(record.repo)}</p>`,
-    `        <h3 class="proof-card-title"><a href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.title)}</a></h3>`,
+    `        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.title)}</a></h3>`,
     `        <p class="proof-card-meta"><time datetime="${esc(record.merged_at)}">${esc(String(record.merged_at).slice(0, 10))}</time></p>`,
     // `no human review` only when there were zero: a non-zero count is never
     // claimed (the build has no data shape that would let it claim one).
@@ -148,14 +148,14 @@ function renderDeliveryCard(record, copy) {
 function renderQuoteCard(record, copy) {
   const lines = [
     `      <article class="proof-card proof-card-quote">`,
-    `        <blockquote class="proof-card-quote-text"><p>${esc(record.quote)}</p></blockquote>`,
+    `        <blockquote class="proof-card-quote-text"><p class="orbi-proof-card-quote-text-p">${esc(record.quote)}</p></blockquote>`,
     `        <p class="proof-card-person"><span class="proof-card-name">${esc(record.person)}</span> <a class="proof-card-handle" href="${esc(record.person_url)}" rel="noopener">${esc(record.handle)}</a></p>`,
   ];
   // A PR line underneath only when the quote actually carries a repository —
   // a quote must never borrow a record it does not belong to.
   if (isDelivery(record)) {
     lines.push(
-      `        <p class="proof-card-meta"><a href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.repo)}#${record.pr}</a></p>`,
+      `        <p class="proof-card-meta"><a class="orbi-proof-card-meta-a" href="${esc(githubPrUrl(record.repo, record.pr))}" rel="noopener">${esc(record.repo)}#${record.pr}</a></p>`,
     );
   }
   lines.push(`      </article>`);
@@ -172,12 +172,12 @@ function renderHomeSection(records, lang) {
   return [
     `      <section class="social-proof shell" id="social-proof" aria-labelledby="social-proof-title">`,
     `        <p class="section-tag">${copy.homeTag}</p>`,
-    `        <h2 id="social-proof-title">${copy.homeTitle}</h2>`,
+    `        <h2 class="orbi-social-proof-h2" id="social-proof-title">${copy.homeTitle}</h2>`,
     `        <p class="section-lede">${copy.homeLede}</p>`,
     `        <div class="social-proof-grid">`,
     ...cards,
     `        </div>`,
-    `        <p class="social-proof-more"><a href="${copy.evidenceHref}">${copy.deliveriesLine(records.filter(isDelivery).length)} →</a></p>`,
+    `        <p class="social-proof-more"><a class="orbi-social-proof-more-a" href="${copy.evidenceHref}">${copy.deliveriesLine(records.filter(isDelivery).length)} →</a></p>`,
     `      </section>`,
   ].join("\n");
 }
@@ -209,7 +209,7 @@ function renderEvidenceSection(records, lang) {
   return [
     `      <section class="social-proof shell" id="third-party" aria-labelledby="third-party-title">`,
     `        <p class="section-tag">${copy.evidenceTag}</p>`,
-    `        <h2 id="third-party-title">${copy.evidenceTitle}</h2>`,
+    `        <h2 class="orbi-social-proof-h2" id="third-party-title">${copy.evidenceTitle}</h2>`,
     `        <p class="section-lede">${copy.evidenceLede}</p>`,
     ...groups,
     `      </section>`,

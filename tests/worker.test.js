@@ -403,6 +403,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(body).toContain('title="alice"');
     expect(body).toContain('title="bob&amp;co"');
     expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
+    expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(2);
     expect(body).not.toContain("__FOUNDING_AVATARS__");
     expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
     expect(body).toContain('<section data-avatar-wall >');

@@ -284,8 +284,8 @@ describe("one unified footer on every content page", () => {
   it("carries the 17-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
-      const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
-        || region(footer, '<nav aria-label="页脚导航">', "</nav>");
+      const nav = region(footer, '<nav class="orbi-site-footer-nav" aria-label="Footer navigation">', "</nav>")
+        || region(footer, '<nav class="orbi-site-footer-nav" aria-label="页脚导航">', "</nav>");
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
       const prefix = page.lang === "zh" ? "/zh" : "";
       const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;

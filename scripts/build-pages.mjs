@@ -183,7 +183,7 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
     DOCS_ITEM: n.docsDropdown
-      ? `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.docsMenuId}" data-docs-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.docsMenuId}" role="menu" data-docs-menu><a href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`
+      ? `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.docsMenuId}" data-docs-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.docsMenuId}" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`
       : `<a href="${n.docsHref}">${t.docsLabel}</a>`,
     BLOG_HREF: `${t.langPrefix}/blog/`,
     BLOG_LABEL: t.blogLabel,

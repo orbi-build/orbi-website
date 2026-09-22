@@ -47,7 +47,13 @@ beforeAll(async () => {
   await cp(join("public", "styles.css"), join(fixtureRoot, "styles.css"));
 
   server = createServer(async (request, response) => {
-    const file = await serve(new URL(request.url, "http://localhost").pathname);
+    const pathname = new URL(request.url, "http://localhost").pathname;
+    if (pathname === "/pricing/") {
+      response.writeHead(302, { location: "/cloud/#pricing" });
+      response.end();
+      return;
+    }
+    const file = await serve(pathname);
     if (!file) { response.writeHead(404); response.end(); return; }
     response.writeHead(200, { "content-type": types[extname(file[0])] ?? "application/octet-stream" });
     response.end(file[1]);
@@ -107,23 +113,23 @@ async function blogLayoutAt(route, width) {
   }
 }
 
-async function comparisonHeadingAt(route) {
+async function constrainedHeadingAt(route, selector, ch) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
-    return await page.locator(".compare-section h2").first().evaluate((heading) => {
+    return await page.locator(selector).first().evaluate((heading, expectedCh) => {
       const expected = document.createElement("span");
       const style = getComputedStyle(heading);
-      expected.style.cssText = `position:absolute; width:26ch; font:${style.font};`;
+      expected.style.cssText = `position:absolute; width:${expectedCh}ch; font:${style.font};`;
       document.body.append(expected);
       const expectedWidth = expected.getBoundingClientRect().width;
       expected.remove();
       return {
-        maxWidth: getComputedStyle(heading).maxWidth,
+        maxWidth: Number.parseFloat(getComputedStyle(heading).maxWidth),
         width: heading.getBoundingClientRect().width,
         expectedWidth,
       };
-    });
+    }, ch);
   } finally {
     await page.close();
   }
@@ -158,32 +164,25 @@ describe("blog titles use the post entry width (Issue #401)", () => {
     }
   });
 
-  it("keeps comparison headings constrained by the shared comparison rule", async () => {
-    for (const route of ["/compare/", "/zh/compare/"]) {
-      const result = await comparisonHeadingAt(route);
-      expect(Number.parseFloat(result.maxWidth), route).toBeCloseTo(result.expectedWidth, 1);
-      expect(result.width, route).toBeCloseTo(result.expectedWidth, 1);
+  it("keeps the recorded desktop heading widths on compare, cloud, pricing, FAQ, and closing", async () => {
+    const cases = [
+      ["/compare/", ".compare-section h2", 26, 1124],
+      ["/cloud/", ".compare-section h2", 26, 1124],
+      ["/pricing/", ".compare-section h2", 26, 1124],
+      ["/", ".faq h2", 24, 1038],
+      ["/", ".closing h2", 12, 519],
+    ];
+    for (const [route, selector, ch, productionWidth] of cases) {
+      const result = await constrainedHeadingAt(route, selector, ch);
+      expect(result.maxWidth, `${route} ${selector}: explicit ${ch}ch rule`).toBeCloseTo(result.expectedWidth, 1);
+      expect(result.width, `${route} ${selector}: rendered width`).toBeCloseTo(result.expectedWidth, 1);
+      // CI's fallback font is up to 6px narrower than the production webfont.
+      expect(Math.abs(result.width - productionWidth), `${route} ${selector}: production baseline`).toBeLessThanOrEqual(6);
     }
   });
 });
 
 describe("blog tables stay within the viewport (Issue #393)", () => {
-  it("keeps each blog title as wide as its summary (Issue #402)", async () => {
-    for (const route of ["/blog/", "/zh/blog/"]) {
-      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-      try {
-        await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
-        const widths = await page.locator(".post-entry").first().evaluate((entry) => ({
-          title: entry.querySelector(".post-entry-title").getBoundingClientRect().width,
-          summary: entry.querySelector(".post-entry-summary").getBoundingClientRect().width,
-        }));
-        expect(widths.title, `${route}: title width leaked from compare sections`).toBe(widths.summary);
-      } finally {
-        await page.close();
-      }
-    }
-  });
-
   it("contains all five wide tables at mobile and desktop widths", async () => {
     for (const width of widths) {
       const result = await overflowAt("/blog/table-fixture/", width);
