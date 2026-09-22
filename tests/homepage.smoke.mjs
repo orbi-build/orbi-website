@@ -94,7 +94,7 @@ const sharedAttributes = {
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
 const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
 const localFoundingAvatars = localFoundingLogins
-  .map((login) => `<img alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
   .join("");
 
 const CONTENT_TYPES = {

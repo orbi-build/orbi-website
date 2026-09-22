@@ -356,7 +356,7 @@ class LandingTests(unittest.TestCase):
             hero_start = html.index('class="trust-line"')
             hero_line = html[hero_start:html.index("</ul>", hero_start)]
             for claim in claims[html]:
-                self.assertIn(f"<li>{claim}</li>", hero_line, claim)
+                self.assertRegex(hero_line, rf'<li(?: class="[^"]+")?>{re.escape(claim)}</li>', claim)
             for attribute in shared[html]:
                 self.assertNotIn(attribute, hero_line, attribute)
             system_at = html.index('id="system"')
@@ -1938,10 +1938,10 @@ class CompareIndexTests(unittest.TestCase):
         ):
             dive_list = re.search(r'<ul class="dive-list">(.*?)</ul>', html, re.DOTALL)
             self.assertIsNotNone(dive_list, "deep-dive list not found")
-            entries = re.findall(r"<li>(.*?)</li>", dive_list.group(1), re.DOTALL)
+            entries = re.findall(r'<li(?: class="[^"]+")?>(.*?)</li>', dive_list.group(1), re.DOTALL)
             self.assertEqual(len(entries), 11, entries)
             for entry in entries:
-                link = re.search(r'<a href="([^"]+)">', entry)
+                link = re.search(r'<a(?: class="[^"]+")? href="([^"]+)">', entry)
                 self.assertIsNotNone(link, entry)
                 href = link.group(1)
                 self.assertRegex(href, href_pattern, entry)
