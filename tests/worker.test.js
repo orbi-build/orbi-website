@@ -1021,6 +1021,39 @@ describe("visit attribution (Issue #228)", () => {
     }
   });
 
+  it("uses the durable UA/ASN scan aggregate in the real reporting chain", async () => {
+    resetBehaviorSignals();
+    let prior = 0;
+    const db = {
+      prepare: () => ({
+        bind: () => ({ first: async () => ({ rows: prior, vids: prior, paths: prior, current_vid_hits: 0 }) }),
+      }),
+    };
+    const fetchMock = vi.fn(async () => new Response("ok"));
+    globalThis.fetch = fetchMock;
+    const routes = Object.fromEntries(Array.from({ length: 8 }, (_, index) => [
+      `/slow-${index}`,
+      { ...HTML_PAGE, body: `<html><body>slow ${index}</body></html>` },
+    ]));
+    for (let index = 0; index < 8; index += 1) {
+      const request = new Request(`https://beta.orbi.build/slow-${index}`, {
+        headers: {
+          Cookie: `vid=SlowCrawlerVid${index}`,
+          "User-Agent": "Mozilla/5.0 Chrome/127.0.0.0",
+        },
+      });
+      request.cf = { asn: 9506 };
+      const ctx = collectingCtx();
+      await worker.fetch(request, env({ ASSETS: assetServer(routes), CONTROL_PLANE_DB: db }), ctx);
+      await flush(ctx);
+      expect(await visitBody(visitCalls(fetchMock).at(-1))).toMatchObject({
+        is_bot: index === 7 ? 1 : 0,
+        asn: 9506,
+      });
+      prior += 1;
+    }
+  });
+
   it("seeds the vid cookie without Secure over http", async () => {
     globalThis.fetch = vi.fn(async () => new Response("ok"));
     const ctx = collectingCtx();

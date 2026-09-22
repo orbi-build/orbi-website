@@ -29,6 +29,13 @@ const CLOUD_ASNS = new Set([
   14061, // DigitalOcean
   16276, // OVH
   63949, // Linode
+  132203, // Tencent Cloud
+  48090, // DMZHost
+  45102, // Alibaba Cloud
+  213230, // Hetzner Cloud2
+  197540, // netcup
+  45090, // Tencent Cloud
+  64267, // Sprious
 ]);
 
 const KNOWN_PROBE_UAS = new Set([
@@ -50,6 +57,7 @@ const KNOWN_CRAWLER_UAS = [
   "dotbot",
   "petalbot",
   "yandexbot",
+  "headless",
   // Generic fallback: no real browser UA contains any of these.
   "bot",
   "crawler",
@@ -57,17 +65,17 @@ const KNOWN_CRAWLER_UAS = [
 ];
 
 const BEHAVIOR_WINDOW_MS = 5 * 60 * 1000;
+const DURABLE_BEHAVIOR_WINDOW_MS = 48 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 30 * 1000;
 const PATH_BREADTH_THRESHOLD = 12;
+const DURABLE_PATH_BREADTH_THRESHOLD = 8;
 const BURST_VID_THRESHOLD = 8;
 const MAX_TRACKED_VIDS = 1024;
 const MAX_TRACKED_FINGERPRINTS = 256;
 const MAX_VIDS_PER_FINGERPRINT = 64;
 
-// This is deliberately process-local and bounded by both age and cardinality.
-// It is only an additional signal: a cold isolate has no behavior history and
-// the request still gets the ASN/UA verdict. Durable state would require a
-// schema change in the Cloud receiver, which is explicitly outside this issue.
+// These maps are only the short-window fast path. Slow scans use the durable
+// visitor_events aggregate below, so a cold isolate does not lose that signal.
 const behaviorByVid = new Map();
 const burstByFingerprint = new Map();
 let nextPruneAt = 0;
@@ -131,7 +139,34 @@ export function isBot(request, behavior = {}) {
   if (KNOWN_PROBE_UAS.has(rawUA)) return true;
   const ua = rawUA.toLowerCase();
   if (KNOWN_CRAWLER_UAS.some((needle) => ua.includes(needle))) return true;
-  return behavior.manyPaths === true || behavior.oneHitVidBurst === true;
+  return behavior.manyPaths === true
+    || behavior.oneHitVidBurst === true
+    || behavior.slowScan === true;
+}
+
+async function durableSlowScan(db, { asn, uaHash, vid, path, now }) {
+  const since = new Date(now - DURABLE_BEHAVIOR_WINDOW_MS).toISOString();
+  try {
+    const result = await db.prepare(`
+      SELECT COUNT(*) AS rows,
+             COUNT(DISTINCT vid) AS vids,
+             COUNT(DISTINCT path) AS paths,
+             SUM(CASE WHEN vid = ? THEN 1 ELSE 0 END) AS current_vid_hits
+      FROM visitor_events
+      WHERE ua_hash = ? AND asn = ? AND created_at >= ?
+    `).bind(vid, uaHash, asn, since).first();
+    const rows = Number(result?.rows ?? 0);
+    const vids = Number(result?.vids ?? 0);
+    const paths = Number(result?.paths ?? 0);
+    const currentVidHits = Number(result?.current_vid_hits ?? 0);
+    return currentVidHits === 0
+      && rows === vids
+      && vids + 1 >= BURST_VID_THRESHOLD
+      && paths + 1 >= DURABLE_PATH_BREADTH_THRESHOLD;
+  } catch (error) {
+    console.warn("bot_behavior_query_failed:", error && error.message ? error.message : error);
+    return false;
+  }
 }
 
 // Reset is used by the focused tests so independent visitor journeys do not
@@ -145,7 +180,7 @@ export function resetBehaviorSignals() {
 // The verdict travels with its inputs: the asn that was seen and a hash of
 // the UA (SHA-256, first 16 hex) — enough to re-derive the classification,
 // never enough to identify the visitor.
-export async function visitSignals(request, visit = {}) {
+export async function visitSignals(request, visit = {}, db) {
   const ua = request.headers.get("User-Agent") ?? "";
   const uaHash = (await sha256Hex(ua)).slice(0, 16);
   const clientIp = request.headers.get("CF-Connecting-IP");
@@ -161,6 +196,15 @@ export async function visitSignals(request, visit = {}) {
     path: visit.path,
     fingerprint,
   });
+  if (db && request.cf?.asn !== undefined && request.cf?.asn !== null && visit.vid && visit.path) {
+    behavior.slowScan = await durableSlowScan(db, {
+      asn: request.cf.asn,
+      path: visit.path,
+      uaHash,
+      vid: visit.vid,
+      now: Date.now(),
+    });
+  }
   return {
     is_bot: isBot(request, behavior) ? 1 : 0,
     asn: request.cf?.asn ?? null,
