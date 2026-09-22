@@ -1226,6 +1226,11 @@ describe("blog failure path (Issue #212)", () => {
 });
 
 describe("blog rich metadata and safe media (Issue #328)", () => {
+  const expectUniquePostImages = (blogPosts) => {
+    const english = blogPosts.filter((post) => post.lang === "en");
+    expect(new Set(blogPosts.map((post) => post.image)).size).toBe(english.length);
+  };
+
   const front = (fields, body = "Body paragraph.") =>
     `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\n${body}\n`;
   const full = {
@@ -1326,7 +1331,20 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
     expect(watch).toContain('"@type":"VideoObject"');
-    expect(new Set(posts.map((post) => post.image)).size).toBe(4);
+    expectUniquePostImages(posts);
+  });
+
+  it("rejects shared images between articles but permits an EN/ZH mirror pair", () => {
+    const sharedImage = "/img/blog-shared.png";
+    expect(() => expectUniquePostImages([
+      { lang: "en", image: sharedImage },
+      { lang: "en", image: sharedImage },
+    ])).toThrow();
+
+    expect(() => expectUniquePostImages([
+      { lang: "en", image: sharedImage },
+      { lang: "zh", image: sharedImage },
+    ])).not.toThrow();
   });
 
   it("keeps all seven onboarding screenshot sources at one uniform 2560 x 1440 size", async () => {
