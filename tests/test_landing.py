@@ -851,6 +851,22 @@ class LandingTests(unittest.TestCase):
                 "f43377a6-3c1b-41d3-9018-3339590915ab",
             )
         self.assertEqual(
+            production_d1["VISITOR_EVENTS_DB"]["database_name"],
+            "orbi_control_plane",
+        )
+        self.assertEqual(
+            production_d1["VISITOR_EVENTS_DB"]["database_id"],
+            "f43377a6-3c1b-41d3-9018-3339590915ab",
+        )
+        self.assertEqual(
+            beta_d1["VISITOR_EVENTS_DB"]["database_name"],
+            "orbi_control_plane_e2e",
+        )
+        self.assertEqual(
+            beta_d1["VISITOR_EVENTS_DB"]["database_id"],
+            "4c9d878f-f4cc-472a-b324-b6a32da9b159",
+        )
+        self.assertEqual(
             [route["pattern"] for route in config["routes"]],
             ["orbi.build", "www.orbi.build", "aiready.sh"],
         )
@@ -1051,7 +1067,7 @@ class LandingTests(unittest.TestCase):
         self.assertEqual(config["assets"]["directory"], "./public/")
         self.assertEqual(
             {database["binding"] for database in config["d1_databases"]},
-            {"orbi_applications", "CONTROL_PLANE_DB"},
+            {"orbi_applications", "CONTROL_PLANE_DB", "VISITOR_EVENTS_DB"},
         )
         self.assertEqual(len(config["routes"]), 3)
         # observability must hold only its own keys
