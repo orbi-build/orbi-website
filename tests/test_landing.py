@@ -608,10 +608,10 @@ class LandingTests(unittest.TestCase):
     def test_stats_show_three_repos_and_never_link_the_private_repos(self) -> None:
         """Issue #101: the LIVE block argues "Orbi builds Orbi" per repo —
         website, Cloud control plane, and Orbi itself, each on its own
-        numbers. Issue #160: orbi-website is private too, same as orbi-cloud:
-        a clickable 404 is a broken promise, a visible「私有仓库 / Private」
-        label is honesty, so both groups are shown but never linked — only
-        the public orbi-build/orbi repo is."""
+        numbers. Issue #160 originally kept orbi-website private alongside
+        orbi-cloud. On 2026-09-22, orbi-website became public, so it is now
+        linked like orbi-build/orbi; only the still-private cloud group keeps
+        its visible「私有仓库 / Private」label."""
         for page, html, lang, private_label in (
             (self.en, self.en_html, "en", "Private"),
             (self.zh, self.zh_html, "zh", "私有仓库"),
@@ -624,12 +624,12 @@ class LandingTests(unittest.TestCase):
             self.assertEqual(groups, ["orbi", "orbi-website", "orbi-cloud"], groups)
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://github.com/orbi-build/orbi", hrefs)
-            self.assertNotIn("https://github.com/orbi-build/orbi-website", hrefs)
+            self.assertIn("https://github.com/orbi-build/orbi-website", hrefs)
             self.assertNotIn("https://github.com/orbi-build/orbi-cloud", hrefs)
-            # Both private repos carry the visible label, and the purposes
-            # read as the bootstrap loop in the page's language.
+            # Only the private cloud repo carries the visible label, and the
+            # purposes read as the bootstrap loop in the page's language.
             self.assertEqual(
-                html.count(f'<span class="stat-private">{private_label}</span>'), 2, html,
+                html.count(f'<span class="stat-private">{private_label}</span>'), 1, html,
             )
             purposes = {
                 "en": ["Orbi itself", "This website", "Cloud control plane"],
