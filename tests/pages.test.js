@@ -1256,6 +1256,16 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expect(() => postFromSource("t.md", front(full, "<div>not allowed</div>"))).toThrow(/HTML tag.*div/);
   });
 
+  it("wraps every table in a horizontal scroll container", () => {
+    // The first post to use a table overflowed 390px by 48px: the template
+    // had no table rules, so a wide table pushed the whole page sideways.
+    // The wrapper gives a table the same contract <pre> already has.
+    const post = postFromSource("t.md", front(full, "| a | b |\n| --- | --- |\n| 1 | 2 |\n"));
+    expect(post.html).toContain('<div class="post-table"><table>');
+    expect(post.html).toContain("</table></div>");
+    expect(post.html.match(/<div class="post-table">/g)).toHaveLength(1);
+  });
+
   it("renders allowed figure, image, and iframe HTML", () => {
     const post = postFromSource("t.md", front(full, '<figure><img src="/x.png" alt="A screen"><iframe src="https://www.youtube.com/embed/x" title="Video"></iframe></figure>'));
     expect(post.html).toContain('<img src="/x.png" alt="A screen">');

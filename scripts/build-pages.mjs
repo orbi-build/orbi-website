@@ -431,6 +431,13 @@ export function validatePostBody(label, body) {
   validateSvgMarkup(label, prose);
 }
 
+// A Markdown table is the one block that can be wider than the column at any
+// viewport. Wrapping each one in a scroll container keeps a wide table from
+// pushing the whole page sideways — the same contract `pre` already has.
+function wrapTables(html) {
+  return html.replace(/<table>[\s\S]*?<\/table>/g, (table) => `<div class="post-table">${table}</div>`);
+}
+
 export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
@@ -477,7 +484,7 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = marked.parse(body);
+  const html = wrapTables(marked.parse(body));
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
