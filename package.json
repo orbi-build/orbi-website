@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-pages.mjs",
-    "test": "vitest run",
-    "test:browser": "node tests/homepage.smoke.mjs"
+    "test": "vitest run --project=node",
+    "test:browser": "node tests/homepage.smoke.mjs",
+    "test:ui": "vitest run --project=browser"
   },
   "dependencies": {
     "@datafast/ai-crawl": "^1.0.9"
