@@ -1117,6 +1117,37 @@ print(json.dumps({
   });
 });
 
+describe("blog positioning copy (Issue #398)", () => {
+  const meta = (html) => html.match(/<meta name="description" content="([^"]+)">/)?.[1];
+  const og = (html) => html.match(/<meta property="og:description" content="([^"]+)">/)?.[1];
+  const eyebrow = (html) => html.match(/<p class="eyebrow">([^<]+)<\/p>/)?.[1];
+  const hero = (html) => html.match(/<p class="hero-lede">([^<]+)<\/p>/)?.[1];
+
+  it("keeps both language pages broad, traceable, and within metadata limits", () => {
+    const en = shipped.get("blog/index.html");
+    const zh = shipped.get("zh/blog/index.html");
+    const enMeta = meta(en);
+    const zhMeta = meta(zh);
+    expect(enMeta.length).toBeGreaterThanOrEqual(150);
+    expect(enMeta.length).toBeLessThanOrEqual(160);
+    expect(zhMeta.length).toBeGreaterThanOrEqual(70);
+    expect(zhMeta.length).toBeLessThanOrEqual(80);
+    expect(og(en)).toBe(enMeta);
+    expect(og(zh)).toBe(zhMeta);
+    expect(eyebrow(en).split(/\s+/)).toHaveLength(4);
+    expect(eyebrow(zh).replace(/[^\u4e00-\u9fff]/g, "").length).toBeLessThanOrEqual(8);
+    for (const copy of [enMeta, zhMeta, hero(en), hero(zh)]) {
+      expect(copy).toMatch(/issue|Issue/);
+      expect(copy).toMatch(/run|运行记录/);
+      expect(copy).toMatch(/source line|源码行号/);
+    }
+    expect(enMeta).toMatch(/industry analysis/);
+    expect(enMeta).toMatch(/architecture trade-offs/);
+    expect(zhMeta).toContain("行业与同类产品分析");
+    expect(zhMeta).toContain("架构取舍");
+  });
+});
+
 // Issue #215: the Blog section of llms.txt is generated from content/blog/**
 // like the indexes, feed and sitemap — adding a post never needs a second
 // manual edit in another file. The hand-written prose (every section above
