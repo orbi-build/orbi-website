@@ -109,28 +109,8 @@ jobs:
           node-version: "20.19.0"
           cache: npm
 
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
       - name: Install dependencies
         run: timeout 300s npm ci
-
-      # `npm test` (vitest) includes browser-driven suites — hero-layout,
-      # homepage-heading, cloud-layout, footer-overflow, blog-step-images.
-      # Without Chromium they all fail with "Executable doesn't exist", which
-      # is what blocked this promotion on 2026-09-22: deploy-beta.yml installs
-      # it, this workflow did not, so any new browser test reddened production
-      # deploys only.
-      - name: Install Chromium system dependencies
-        run: timeout 300s npx playwright install-deps chromium
-
-      - name: Install Chromium for browser tests
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: timeout 300s npx playwright install chromium
 
       - name: Run tests before deployment
         run: timeout 300s npm test
