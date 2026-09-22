@@ -1,7 +1,7 @@
 ---
-title: Our engine waited for an answer the user could not give
+title: Waiting for an answer the user can't give
 date: 2026-09-22
-summary: A release engine that pauses for a human decision is correct. Ours paused, then told the user to run a CLI command on a machine they do not have access to. We moved our own repository onto our hosted product and hit the gap the same day. Three versions of the same mistake, found in one afternoon.
+summary: Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.
 lang: en
 author: Orbi
 image: /img/blog-waiting.png

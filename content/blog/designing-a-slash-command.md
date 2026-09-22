@@ -1,7 +1,7 @@
 ---
-title: Designing one slash command, and reading two that came before
+title: Designing one slash command
 date: 2026-09-22
-summary: We needed a way for a tenant to answer a question our engine asks on a GitHub ticket. Building it meant reading Prow and bors-ng at source, where we found a code-block bug that still fires today and a privilege escalation created by having two ways into the same function. Here is every tradeoff, with the line numbers.
+summary: Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.
 lang: en
 author: Orbi
 image: /img/blog-slash-command.png
@@ -90,6 +90,50 @@ It buys three things at once:
 
 What it does **not** buy is immunity to fenced code blocks. And that turned out
 to be the most interesting thing we read all day.
+
+<figure class="post-media">
+<svg viewBox="0 0 880 300" role="img" aria-label="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. Prow's fenced-block fix reaches only one of fifty-plus plugins; bors's permission gate is bypassable through a second entry point.">
+<title>The in-ticket command pipeline, and where Prow and bors each leak</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="#526566"></path>
+</marker>
+</defs>
+<g font-family="IBM Plex Mono, monospace" font-size="13" fill="#10292c">
+<rect x="8" y="96" width="112" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
+<text x="64" y="123" text-anchor="middle">comment</text>
+<line x1="122" y1="118" x2="146" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="150" y="96" width="120" height="44" rx="6" fill="#f7f8f5" stroke="#8a5b00" stroke-width="2"></rect>
+<text x="210" y="116" text-anchor="middle">strip fences</text>
+<text x="210" y="132" text-anchor="middle" font-size="11" fill="#8a5b00">Prow leaks here</text>
+<line x1="272" y1="118" x2="296" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="300" y="96" width="106" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
+<text x="353" y="123" text-anchor="middle">strip quotes</text>
+<line x1="408" y1="118" x2="432" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="436" y="96" width="104" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
+<text x="488" y="123" text-anchor="middle">author ≠ bot</text>
+<line x1="542" y1="118" x2="566" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="570" y="96" width="124" height="44" rx="6" fill="#f7f8f5" stroke="#8a5b00" stroke-width="2"></rect>
+<text x="632" y="116" text-anchor="middle">permission</text>
+<text x="632" y="132" text-anchor="middle" font-size="11" fill="#8a5b00">bors leaks here</text>
+<line x1="696" y1="118" x2="720" y2="118" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="724" y="96" width="98" height="44" rx="6" fill="#f7f8f5" stroke="#b8c5c1"></rect>
+<text x="773" y="123" text-anchor="middle">last wins</text>
+<line x1="773" y1="142" x2="773" y2="182" stroke="#526566" marker-end="url(#ar)"></line>
+<rect x="716" y="186" width="114" height="42" rx="6" fill="#e8eeeb" stroke="#0a6b52" stroke-width="2"></rect>
+<text x="773" y="212" text-anchor="middle" fill="#0a6b52">receipt</text>
+</g>
+<g font-family="Instrument Sans, sans-serif" font-size="12.5" fill="#526566">
+<text x="150" y="60">Prow: the fix exists in pkg/markdown/code_block.go —</text>
+<text x="150" y="78">one call site out of fifty-plus plugins.</text>
+<text x="452" y="262">bors: run/2 is reachable directly, so the gate</text>
+<text x="452" y="280">in run/1 never runs for :retry.</text>
+<text x="8" y="262">Every stage above belongs to the shared layer.</text>
+<text x="8" y="280">A command author supplies a verb, never a regex.</text>
+</g>
+</svg>
+<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them. bors declares permissions correctly but leaves a second door into the handler.</figcaption>
+</figure>
 
 ## The bug Prow still has
 
