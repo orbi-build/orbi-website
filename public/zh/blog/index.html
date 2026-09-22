@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>博客 | Orbi</title>
+  <title>Orbi 技术博客：交付记录与工程判断（Blog） | Orbi</title>
   <meta name="description" content="这里公开记录 Orbi 的交付过程、行业与同类产品分析、架构取舍和技术判断；文章中的每个数字都能追溯到可查阅的 Issue、运行记录或源码行号。">
   <link rel="canonical" href="https://orbi.build/zh/blog/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/">
@@ -86,22 +86,22 @@
     <section class="compare-section shell" aria-label="文章列表">
       <div class="post-list">
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/designing-a-slash-command/">设计一条斜杠命令，顺便读了前人的两份源码</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/designing-a-slash-command/">设计一条斜杠命令：从 Prow 与 bors-ng 源码推导</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-22">2026-09-22</time></p>
-      <p class="post-entry-summary">命名、语法、正则锚定、注册表形状——一条票内命令背后的四个取舍，对照 Prow 与 bors-ng 的源码逐条推导，每条带行号。</p>
+      <p class="post-entry-summary">命名、语法、正则锚定和注册表形状：对照 Prow 与 bors-ng 源码逐条推导票内斜杠命令背后的四个取舍，每项都附可查的源码行号和实现证据。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/waiting-for-someone-who-cannot-answer/">我们的引擎在等一个用户给不出的答案</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/waiting-for-someone-who-cannot-answer/">我们的引擎为何在等待一个托管用户无法给出的答案</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-22">2026-09-22</time></p>
-      <p class="post-entry-summary">引擎为人的决定而暂停，却只接受托管租户给不出的答案。同一个缺口的三种形态，一个下午全部找出，附命令输出与数据库证据。</p>
+      <p class="post-entry-summary">引擎为人的决定而暂停，却只接受托管租户无法提供的答案。文章复盘同一个交互缺口的三种形态，以及一个下午内取得的命令输出、数据库证据和具体修复。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/watch-the-six-steps/">七步跑完，全程录下来了</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/watch-the-six-steps/">七步跑完，全程录下来了：83 秒 Orbi Cloud 交付记录</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-21">2026-09-21</time></p>
       <p class="post-entry-summary">一段 83 秒的视频，从 GitHub 登录一路到发出带 tag 的 Release，再到订阅。画面全是产品真实渲染，而第七步是开始付费交付的那一步。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/what-autonomous-actually-means/">会对自己说不的 AI 编码 agent</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/what-autonomous-actually-means/">会对自己说不的 AI 编码 agent：真实交付中的独立评审</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-20">2026-09-20</time></p>
       <p class="post-entry-summary">大部分自称无人值守的 agent 停在开出 PR 那一步。真正难的不是让模型写代码，是让另一个模型读完这份 diff 之后拒绝它。这里是一次真实交付，评审拦了两轮，commit 和 release 都能点开看。</p>
     </article>
@@ -111,7 +111,7 @@
       <p class="post-entry-summary">让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/docker-image-third-try/">Docker 镜像第三次尝试才发布成功</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/docker-image-third-try/">Docker 镜像第三次尝试：从构建上下文到发布成功</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-18">2026-09-18</time></p>
       <p class="post-entry-summary">orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。</p>
     </article>

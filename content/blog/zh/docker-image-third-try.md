@@ -1,5 +1,5 @@
 ---
-title: Docker 镜像第三次尝试才发布成功
+title: Docker 镜像第三次尝试：从构建上下文到发布成功
 date: 2026-09-18
 summary: orbi 镜像在 2026-09-17 的第三次发布运行中到达 GHCR 和 Docker Hub。此前有三种不同的失败：发布 job 使用的构建上下文与验证 job 不同，Dockerfile 路径按工作区根目录解析，修复分支自己的 PR 检查把 ref 1044/merge 变成了非法镜像 tag。
 lang: zh
