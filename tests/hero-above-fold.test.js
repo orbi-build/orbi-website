@@ -50,13 +50,13 @@ describe("hero copy: lede + 12-factors footnote (Issue #259)", () => {
     const source = await read("site/pages/index.html");
     // Contiguous: the footnote line directly follows the trust line's </ul>.
     expect(source).toContain(enFootnote);
-    expect(source.match(/hero-footnote/g)).toHaveLength(1);
+    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
   });
 
   it("moves the 12-factors link below the trust line in Chinese, to aiready.sh/zh/", async () => {
     const source = await read("site/pages/zh/index.html");
     expect(source).toContain(zhFootnote);
-    expect(source.match(/hero-footnote/g)).toHaveLength(1);
+    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
   });
 
   it("first screen order: lede, CTA, trust line, footnote", async () => {
