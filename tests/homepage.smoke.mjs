@@ -751,6 +751,58 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.close();
 }
 
+async function assertHomeDocsDropdown(browser, path, size, screenshot) {
+  const page = await browser.newPage({ viewport: size });
+  try {
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const trigger = page.locator("[data-docs-toggle]");
+    if (await trigger.count() !== 1) throw new Error(`${path}: expected one Docs dropdown trigger`);
+    const menu = page.locator("[data-docs-menu]");
+    if (await menu.count() !== 1) throw new Error(`${path}: expected one Docs dropdown menu`);
+    const menuToggle = page.locator("[data-menu-toggle]");
+    if (size.width <= 900) await menuToggle.click();
+    if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Docs dropdown is open before interaction`);
+    await trigger.click();
+    await page.keyboard.press("Escape");
+    await trigger.evaluate((button) => button.parentElement.previousElementSibling.focus());
+    await page.keyboard.press("Tab");
+    if (!(await trigger.evaluate((button) => button === document.activeElement))) throw new Error(`${path}: Tab did not focus Docs dropdown trigger`);
+    await page.keyboard.press("Enter");
+    if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Enter did not open Docs dropdown`);
+    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
+    const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
+    const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
+      throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
+    }
+    await page.keyboard.press("Escape");
+    if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Escape did not close Docs dropdown`);
+    await page.keyboard.press("Space");
+    if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Space did not open Docs dropdown`);
+    if ((await trigger.getAttribute("aria-expanded")) !== "true") throw new Error(`${path}: trigger aria-expanded is not true`);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (overflow > 0) throw new Error(`${path}: Docs dropdown causes horizontal overflow of ${overflow}px at ${size.width}px`);
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+  } finally {
+    await page.close();
+  }
+}
+
+async function assertCloudDocsNav(browser, path) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  try {
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const docs = page.locator("[data-primary-nav] a").filter({ hasText: path.startsWith("/zh") ? "文档" : "Docs" });
+    if (await docs.count() !== 1) throw new Error(`${path}: Cloud nav Docs must remain one link`);
+    if (await docs.getAttribute("href") !== "https://cloud-docs.orbi.build/?ref=cloud-nav") {
+      throw new Error(`${path}: Cloud nav Docs href changed`);
+    }
+    if (await page.locator("[data-docs-toggle]").count() !== 0) throw new Error(`${path}: Cloud page gained home Docs dropdown`);
+  } finally {
+    await page.close();
+  }
+}
+
 // Issue #259: the hero used to push the primary CTA to 630px — under every
 // competitor's first screen — and the trust line out of a phone's fold
 // (874px at 390×844). The copy fix is pinned byte-exactly in
@@ -2088,6 +2140,12 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 390, height: 844 }, "homepage-en-mobile.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
+    await assertHomeDocsDropdown(browser, "/", { width: 1440, height: 900 }, "docs-dropdown-en-desktop.png");
+    await assertHomeDocsDropdown(browser, "/", { width: 390, height: 844 }, "docs-dropdown-en-mobile.png");
+    await assertHomeDocsDropdown(browser, "/zh/", { width: 1440, height: 900 }, "docs-dropdown-zh-desktop.png");
+    await assertHomeDocsDropdown(browser, "/zh/", { width: 390, height: 844 }, "docs-dropdown-zh-mobile.png");
+    await assertCloudDocsNav(browser, "/cloud/");
+    await assertCloudDocsNav(browser, "/zh/cloud/");
     await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
