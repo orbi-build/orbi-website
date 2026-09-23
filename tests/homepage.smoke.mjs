@@ -97,6 +97,10 @@ const localFoundingAvatars = localFoundingLogins
   .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
   .join("");
 
+export function countServerRenderedAvatars(html) {
+  return html.match(/<img\b[^>]*class=["'][^"']*\borbi-avatar-wall-list-img\b[^"']*["'][^>]*>/g)?.length ?? 0;
+}
+
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -605,7 +609,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // download timing and can stall the bounded CI suite. Wait only for the
   // functional /stats response; DOM load is the correct navigation gate.
   const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats").catch(() => null);
-  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  const navigationResponse = await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  let serverAvatarCount;
+  if (process.env.BASE_URL) {
+    if (!navigationResponse?.ok()) {
+      throw new Error(`${path}: homepage HTML answered ${navigationResponse?.status() ?? "no response"}`);
+    }
+    serverAvatarCount = countServerRenderedAvatars(await navigationResponse.text());
+    if (serverAvatarCount < 1) {
+      throw new Error(`${path}: server-rendered homepage contains no avatars`);
+    }
+  }
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -678,18 +692,30 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
-  // the aggregate endpoint stays identity-free and all 11 injected images
-  // finish loading before the wall becomes visible.
+  // the aggregate endpoint stays identity-free and every rendered image
+  // finishes loading before the wall becomes visible. Local mode additionally
+  // pins all 11 injected identities below.
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
   }
   const wall = page.locator("[data-avatar-wall]");
-  if ((await wall.locator("img").count()) !== 11) {
+  const browserAvatarCount = await wall.locator("img").count();
+  if (process.env.BASE_URL && browserAvatarCount !== serverAvatarCount) {
+    throw new Error(`${path}: browser rendered ${browserAvatarCount} avatars, server HTML rendered ${serverAvatarCount}`);
+  }
+  if (!process.env.BASE_URL && browserAvatarCount !== 11) {
     throw new Error(`${path}: expected 11 server-rendered avatars`);
   }
-  await wall.locator("img").last().waitFor({ state: "visible" });
+  const images = wall.locator("img");
+  for (let index = 0; index < browserAvatarCount; index += 1) {
+    const image = images.nth(index);
+    await image.waitFor({ state: "visible" });
+    if (!(await image.evaluate((element) => element.complete && element.naturalWidth > 0))) {
+      throw new Error(`${path}: avatar ${index + 1} did not load`);
+    }
+  }
   if (!process.env.BASE_URL) {
-    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    const titles = await images.evaluateAll((items) => items.map((image) => image.title));
     if (titles.join("|") !== localFoundingLogins.join("|")) {
       throw new Error(`${path}: server-rendered avatar identities changed`);
     }
