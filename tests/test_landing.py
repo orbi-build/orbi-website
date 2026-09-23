@@ -176,8 +176,12 @@ class LandingTests(unittest.TestCase):
         self.assertIn("Do not describe Orbi as OSI open source", licence)
         self.assertIn("self-hosted and fair-code", llms)
         for html in (self.en_html, self.zh_html):
+            search_title = re.search(r"<title>([^<]+)</title>", html).group(1)
+            search_description = re.search(
+                r'name="description" content="([^"]+)"', html
+            ).group(1)
             slots = [
-                ("title", re.search(r"<title>([^<]+)</title>", html).group(1)),
+                ("title", search_title),
                 ("og:title", re.search(r'property="og:title" content="([^"]+)"', html).group(1)),
                 ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
             ]
@@ -185,6 +189,8 @@ class LandingTests(unittest.TestCase):
                 self.assertNotIn("open-source", text.lower(), (slot, text))
                 self.assertNotIn("open source", text.lower(), (slot, text))
                 self.assertNotIn("开源", text, (slot, text))
+            self.assertIn("fair-code", search_title + " " + search_description)
+            for slot, text in slots[1:]:
                 self.assertIn("fair-code", text, (slot, text))
 
     def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:

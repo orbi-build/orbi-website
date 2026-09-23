@@ -1200,16 +1200,16 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (!pageTitle.includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(pageTitle)} does not carry the release claim`);
   }
-  // The three meta descriptions carry the same advanced claim.
-  const metaDescriptions = await Promise.all([
-    'meta[name="description"]',
+  // Issue #413 gives search descriptions a strict language-specific length.
+  // The independently authored social descriptions keep the price claim.
+  const socialDescriptions = await Promise.all([
     'meta[property="og:description"]',
     'meta[name="twitter:description"]',
   ].map((selector) => page.locator(selector).getAttribute("content")));
   for (const needle of claim.metaNeedle) {
-    for (const content of metaDescriptions) {
+    for (const content of socialDescriptions) {
       if (!content.includes(needle)) {
-        throw new Error(`${path}: meta description ${JSON.stringify(content)} is missing ${JSON.stringify(needle)}`);
+        throw new Error(`${path}: social description ${JSON.stringify(content)} is missing ${JSON.stringify(needle)}`);
       }
     }
   }
