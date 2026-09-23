@@ -3,6 +3,16 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import pricing from "../src/pricing.json";
+
+const pricingReplacements = {
+  [pricing.freeDeliveriesToken]: String(pricing.freeDeliveries),
+  [pricing.monthlyUsdToken]: String(pricing.cloudMonthlyUsd),
+  [pricing.includedTokensToken]: String(pricing.includedTokensLabel),
+  [pricing.foundingTokensToken]: String(pricing.foundingTokensLabel),
+  [pricing.measuredSmallRepositoryDeliveryRangeToken]: String(pricing.measuredSmallRepositoryDeliveryRange),
+  [pricing.measuredLargeCodebaseDeliveriesToken]: String(pricing.measuredLargeCodebaseDeliveries),
+};
 
 const pages = [
   ["cloud-en", "/cloud/"],
@@ -56,20 +66,14 @@ describe("Cloud onboarding cards fit every supported width (Issue #354)", () => 
       const page = await browser.newPage();
       try {
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
-        await page.evaluate(() => {
-          const replacements = {
-            __FREE_DELIVERIES__: "3",
-            __CLOUD_MONTHLY_USD__: "79",
-            __INCLUDED_TOKENS__: "300M",
-            __FOUNDING_TOKENS__: "300M",
-          };
+        await page.evaluate((replacements) => {
           const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
           const nodes = [];
           while (walker.nextNode()) nodes.push(walker.currentNode);
           for (const node of nodes) {
-            node.nodeValue = node.nodeValue.replace(/__(?:FREE_DELIVERIES|CLOUD_MONTHLY_USD|INCLUDED_TOKENS|FOUNDING_TOKENS)__/g, (value) => replacements[value]);
+            node.nodeValue = node.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
           }
-        });
+        }, pricingReplacements);
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
           const result = await page.locator(".proof-ledger-four").evaluate((list) => {
