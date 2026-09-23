@@ -209,9 +209,9 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/what-autonomous-actually-means/
 - 会对自己说不的 AI 编码 agent：真实交付中的独立评审 (Chinese):
   https://orbi.build/zh/blog/what-autonomous-actually-means/
-- Claude Code in GitHub Actions stops at the pull request. Who merges it? (English):
+- Claude Code in Actions: who merges? (English):
   https://orbi.build/blog/claude-code-github-actions-who-merges/
-- Claude Code 无人值守跑起来之后，谁来按合并 (Chinese):
+- Claude Code 无人值守之后，谁来合并 PR (Chinese):
   https://orbi.build/zh/blog/claude-code-github-actions-who-merges/
 - Docker image published on the third try (English):
   https://orbi.build/blog/docker-image-third-try/

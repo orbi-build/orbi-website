@@ -1,7 +1,7 @@
 ---
-title: Claude Code in GitHub Actions stops at the pull request. Who merges it?
+title: Claude Code in Actions: who merges?
 date: 2026-09-19
-summary: The official Claude Code Action implements changes and reviews pull requests inside your own runner. It does not merge and it does not release. This is what the rest of the path looks like when a system closes it instead of a person, measured on a repository where 431 pull requests merged this way.
+summary: Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.
 lang: en
 author: Orbi
 image: /img/blog-claude-actions.png
