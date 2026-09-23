@@ -114,6 +114,14 @@ def parse(path: Path) -> tuple[str, PageParser]:
     html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
     html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
     html = html.replace(PRICING["foundingTokensToken"], str(PRICING["foundingTokensLabel"]))
+    html = html.replace(
+        PRICING["measuredSmallRepositoryDeliveryRangeToken"],
+        str(PRICING["measuredSmallRepositoryDeliveryRange"]),
+    )
+    html = html.replace(
+        PRICING["measuredLargeCodebaseDeliveriesToken"],
+        str(PRICING["measuredLargeCodebaseDeliveries"]),
+    )
     page = PageParser()
     page.feed(html)
     return html, page
@@ -1258,7 +1266,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "roughly 20–40 merged deliveries at the task sizes we measured in September 2026",
+                    f"Depending on ticket size: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1266,7 +1274,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    "按 2026 年 9 月实测的任务大小，大约 20–40 次合并交付",
+                    f"取决于票的大小：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
                     "prompt caching",
                 ),
                 "/zh/cost/",

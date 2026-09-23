@@ -8,6 +8,8 @@
   "foundingTokensToken": "__FOUNDING_TOKENS__",
   "freeDeliveries": 3,
   "freeDeliveriesToken": "__FREE_DELIVERIES__",
-  "measuredDeliveryRange": "20–40",
-  "measuredDeliveryRangeToken": "__MEASURED_DELIVERY_RANGE__"
+  "measuredSmallRepositoryDeliveryRange": "60–160",
+  "measuredSmallRepositoryDeliveryRangeToken": "__MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__",
+  "measuredLargeCodebaseDeliveries": 25,
+  "measuredLargeCodebaseDeliveriesToken": "__MEASURED_LARGE_CODEBASE_DELIVERIES__"
 }

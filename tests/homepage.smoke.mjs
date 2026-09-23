@@ -140,6 +140,14 @@ function startServer() {
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll(
+                pricing.measuredSmallRepositoryDeliveryRangeToken,
+                String(pricing.measuredSmallRepositoryDeliveryRange),
+              )
+              .replaceAll(
+                pricing.measuredLargeCodebaseDeliveriesToken,
+                String(pricing.measuredLargeCodebaseDeliveries),
+              )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
               .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
@@ -1070,7 +1078,7 @@ const cloudPages = {
       "US$79", "300M tokens", "new deliveries pause", "100% off",
       // Issue #277: Cloud gives a range rather than a misleading single-point
       // conversion; the detailed measurement remains on /cost/.
-      "roughly 20–40 merged deliveries at the task sizes we measured in September 2026", "prompt caching",
+      "Depending on ticket size: about 60–160 merged deliveries for typical tickets in a small repository, about 25 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1103,7 +1111,7 @@ const cloudPages = {
       // the same label, 300M since #145)
       "US$79", "300M token", "新交付暂停", "100% off",
       // Issue #277: Cloud gives the owner-approved delivery range.
-      "按 2026 年 9 月实测的任务大小，大约 20–40 次合并交付", "prompt caching",
+      "取决于票的大小：小仓库的常见票大约 60–160 次合并交付，像 Orbi 引擎这样的大代码库大约 25 次（2026 年 9 月实测）", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
