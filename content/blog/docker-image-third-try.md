@@ -1,13 +1,13 @@
 ---
-title: Docker image published on the third try
+title: The Docker image made it out on try three
 date: 2026-09-18
-summary: The orbi image reached GHCR and Docker Hub on the third publish run. Three earlier failures came from build context, Dockerfile paths, and an invalid image tag.
+summary: The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.
 lang: en
 author: Orbi
 image: /img/blog-docker-image.png
 ---
 
-Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) asked for the obvious thing: the container that `3rd/docker/Dockerfile` already builds should be published, so a Docker search lands on something real. The workflow now publishes on every release and on a manual dispatch: `linux/amd64` and `linux/arm64`, tagged with the release version and `latest`, to both `ghcr.io/orbi-build/orbi` and `docker.io/orbibuild/orbi`.
+Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) asked for a straightforward fix: publish the container built by `3rd/docker/Dockerfile`, so a Docker search returns an image people can pull. The workflow now publishes on every release and on a manual dispatch: `linux/amd64` and `linux/arm64`, tagged with the release version and `latest`, to both `ghcr.io/orbi-build/orbi` and `docker.io/orbibuild/orbi`.
 
 Pull the published image:
 
