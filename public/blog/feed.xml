@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/k8e-rejected-then-merged/</link>
       <guid isPermaLink="true">https://orbi.build/blog/k8e-rejected-then-merged/</guid>
       <pubDate>Wed, 23 Sep 2026 00:00:00 GMT</pubDate>
-      <description>A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.</description>
+      <description>An etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, was rejected, fixed and merged, then the issue closed by mistake. What went wrong, and why.</description>
     </item>
     <item>
       <title>Designing one slash command</title>
