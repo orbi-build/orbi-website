@@ -1193,6 +1193,8 @@ describe("visit attribution (Issue #228)", () => {
       { url: "https://beta.orbi.build/?source=News.Site", expected: "news.site" },
       { url: `https://beta.orbi.build/?ref=${"x".repeat(33)}`, expected: "direct" },
       { url: "https://beta.orbi.build/", headers: { Referer: "https://News.Ycombinator.com/item?id=1" }, expected: "news.ycombinator.com" },
+      { url: "https://beta.orbi.build/", headers: { Referer: "https://orbi.build/" }, expected: "direct" },
+      { url: "https://beta.orbi.build/", headers: { Referer: "https://cloud-docs.orbi.build/x" }, expected: "direct" },
       { url: "https://beta.orbi.build/", headers: { Referer: "javascript:alert(1)" }, expected: "direct" },
       { url: "https://beta.orbi.build/", headers: {}, expected: "direct" },
     ];
@@ -1257,6 +1259,27 @@ describe("visit attribution (Issue #228)", () => {
       expect(response.headers.getSetCookie()).toContain(`ref=news.ycombinator.com; ${REF_ATTRS}; Secure`);
       await flush(ctx);
     });
+
+    it.each(["https://orbi.build/", "https://cloud-docs.orbi.build/x"])(
+      "does not seed an internal referer as ref and reports it as direct (%s)",
+      async (referer) => {
+        const fetchMock = vi.fn(async () => new Response("ok"));
+        globalThis.fetch = fetchMock;
+        const ctx = collectingCtx();
+
+        const response = await worker.fetch(
+          new Request("https://beta.orbi.build/", { headers: { Referer: referer } }),
+          env(),
+          ctx,
+        );
+
+        expect(response.headers.getSetCookie()).toEqual([
+          expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+        ]);
+        await flush(ctx);
+        expect(await visitBody(visitCalls(fetchMock)[0])).toMatchObject({ ref: "direct" });
+      },
+    );
 
     it("leaves the ref slot empty on a direct first visit, so a later ?ref= lands as true first touch (Issue #240)", async () => {
       globalThis.fetch = vi.fn(async () => new Response("ok"));
