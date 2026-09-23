@@ -127,6 +127,14 @@ function startServer() {
   const server = createServer(async (request, response) => {
     try {
       const { pathname } = new URL(request.url, "http://127.0.0.1");
+      // The site Worker answers the engagement beacon with 204 (src/worker.js
+      // engagementResponse); the stand-in does the same.
+      if (pathname === "/cloud/e" && request.method === "POST") {
+        request.resume();
+        response.writeHead(204);
+        response.end();
+        return;
+      }
       const file = await serveFile(pathname);
       if (!file) {
         response.writeHead(404);
@@ -194,6 +202,20 @@ export function resolveCloudLoginExpect(raw) {
     );
   }
   return raw;
+}
+
+// Every page ships the engagement beacon (POST /cloud/e), which the site
+// Worker answers with 204. A stand-in that 404s it turns a page-leave beacon
+// into a console error whenever it lands before a check ends (flaky CI).
+export async function assertEngagementEndpoint(targetURL) {
+  const response = await fetch(`${targetURL}/cloud/e`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ kind: "engaged", path: "/" }),
+  });
+  if (response.status !== 204) {
+    throw new Error(`POST /cloud/e answered ${response.status}, expected 204 like the site Worker`);
+  }
 }
 
 export async function assertCloudLoginRedirect(targetURL) {
@@ -2146,6 +2168,7 @@ async function main() {
         : {}),
       headless: true,
     });
+    await assertEngagementEndpoint(targetURL);
     await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");
