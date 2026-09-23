@@ -7,5 +7,7 @@
   "foundingTokensLabel": "300M",
   "foundingTokensToken": "__FOUNDING_TOKENS__",
   "freeDeliveries": 3,
-  "freeDeliveriesToken": "__FREE_DELIVERIES__"
+  "freeDeliveriesToken": "__FREE_DELIVERIES__",
+  "measuredDeliveryRange": "20–40",
+  "measuredDeliveryRangeToken": "__MEASURED_DELIVERY_RANGE__"
 }

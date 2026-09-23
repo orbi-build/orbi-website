@@ -1258,7 +1258,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    "85–400 merged deliveries",
+                    "roughly 20–40 merged deliveries at the task sizes we measured in September 2026",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1266,7 +1266,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    "85–400 次合并交付",
+                    "按 2026 年 9 月实测的任务大小，大约 20–40 次合并交付",
                     "prompt caching",
                 ),
                 "/zh/cost/",

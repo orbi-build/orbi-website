@@ -10,6 +10,8 @@ const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
+const MEASURED_DELIVERY_RANGE = pricing.measuredDeliveryRange;
+const MEASURED_DELIVERY_RANGE_TOKEN = pricing.measuredDeliveryRangeToken;
 
 // The pages whose price mentions the Issue pins (originally 12 across the two
 // cloud pages; #99 added the homepage card and the cost tables since). Every
@@ -280,10 +282,6 @@ function measuredStats(html) {
   };
 }
 
-function cloudDeliveryRange(html) {
-  return html.match(/(?:85–400 merged deliveries|85–400 次合并交付)/)?.[0];
-}
-
 describe("Cloud delivery range stays consistent (Issue #277)", () => {
   const COST_PAGES = ["cost/index.html", "zh/cost/index.html"];
 
@@ -298,13 +296,29 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     }
   });
 
-  it("uses the owner-approved range on both Cloud pages", async () => {
+  it("uses the measured source-backed range on both Cloud pages", async () => {
+    expect(MEASURED_DELIVERY_RANGE_TOKEN).not.toBe(MEASURED_DELIVERY_RANGE);
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
-      for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
+      for (const [cloudPage, language] of [["cloud/index.html", "en"], ["zh/cloud/index.html", "zh"]]) {
         const html = await readFile(`${dir}${cloudPage}`, "utf8");
-        expect(cloudDeliveryRange(html), `${cloudPage} delivery range in ${dir}`).toBeTruthy();
+        const rangeToken = MEASURED_DELIVERY_RANGE_TOKEN;
+        expect(html).toContain(rangeToken);
+        expect(html).not.toMatch(/85[–-]400/);
+        expect(html.split(rangeToken).length - 1).toBe(2);
         expect(html).not.toMatch(/2,220,637|4,742,066|about 100 deliveries|100 次交付\/月/);
       }
+    }
+  });
+
+  it("serves both Cloud pages with the source-backed measured wording", async () => {
+    for (const [cloudPage, language, range] of [
+      ["cloud/index.html", "en", `roughly ${MEASURED_DELIVERY_RANGE} merged deliveries at the task sizes we measured in September 2026`],
+      ["zh/cloud/index.html", "zh", `按 2026 年 9 月实测的任务大小，大约 ${MEASURED_DELIVERY_RANGE} 次合并交付`],
+    ]) {
+      const raw = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
+      const served = await (await serve(raw, `/${cloudPage.replace("index.html", "")}`)).text();
+      expect(served).not.toMatch(/85[–-]400/);
+      expect(served.split(range).length - 1).toBe(2);
     }
   });
 

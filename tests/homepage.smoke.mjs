@@ -1070,7 +1070,7 @@ const cloudPages = {
       "US$79", "300M tokens", "new deliveries pause", "100% off",
       // Issue #277: Cloud gives a range rather than a misleading single-point
       // conversion; the detailed measurement remains on /cost/.
-      "85–400 merged deliveries", "prompt caching",
+      "roughly 20–40 merged deliveries at the task sizes we measured in September 2026", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1103,7 +1103,7 @@ const cloudPages = {
       // the same label, 300M since #145)
       "US$79", "300M token", "新交付暂停", "100% off",
       // Issue #277: Cloud gives the owner-approved delivery range.
-      "85–400 次合并交付", "prompt caching",
+      "按 2026 年 9 月实测的任务大小，大约 20–40 次合并交付", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
