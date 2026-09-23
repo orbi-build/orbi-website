@@ -62,4 +62,4 @@ gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_HEAD"
 
 ## 相关
 
-继续阅读：[CI 门禁](/zh/compare/claude-code/) 与 [Claude Code 对比](/zh/guides/ci-gates/)。
+继续阅读：[Claude Code 对比](/zh/compare/claude-code/)、[CI 门禁指南](/zh/guides/ci-gates/)与 [Cloud](/zh/cloud/)。

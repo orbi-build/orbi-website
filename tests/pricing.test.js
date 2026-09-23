@@ -14,6 +14,8 @@ const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepository
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSmallRepositoryDeliveryRangeToken;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
 const MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN = pricing.measuredLargeCodebaseDeliveriesToken;
+const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
+const MEASURED_SNAPSHOT_DELIVERIES_TOKEN = pricing.measuredSnapshotDeliveriesToken;
 
 // The pages whose price mentions the Issue pins (originally 12 across the two
 // cloud pages; #99 added the homepage card and the cost tables since). Every
@@ -310,6 +312,23 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
         expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(2);
         expect(html).not.toMatch(/2,220,637|4,742,066|about 100 deliveries|100 次交付\/月/);
       }
+    }
+  });
+
+  it("serves the cost-page reconciliation from pricing.json", async () => {
+    expect(MEASURED_SNAPSHOT_DELIVERIES_TOKEN).not.toBe(MEASURED_SNAPSHOT_DELIVERIES);
+    for (const [costPage, wording] of [
+      ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
+      ["zh/cost/index.html", `折算约为 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
+    ]) {
+      const raw = await readFile(`${PUBLIC_DIR}${costPage}`, "utf8");
+      expect(raw).toContain(MEASURED_SNAPSHOT_DELIVERIES_TOKEN);
+      expect(raw).toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      const served = await (await serve(raw, `/${costPage.replace("index.html", "")}`)).text();
+      expect(served).toContain(wording);
+      expect(served).toContain(`href="/${costPage.startsWith("zh/") ? "zh/" : ""}cloud/#pricing"`);
+      expect(served).not.toContain(MEASURED_SNAPSHOT_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
     }
   });
 

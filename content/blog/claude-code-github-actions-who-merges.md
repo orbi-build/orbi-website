@@ -62,4 +62,4 @@ Or take the three conditions and build them into whatever you already run. The c
 
 ## Related
 
-Read the [CI gates](/compare/claude-code/) and [Claude Code comparison](/guides/ci-gates/).
+Read the [Claude Code comparison](/compare/claude-code/), [CI gates guide](/guides/ci-gates/), and [Cloud](/cloud/).

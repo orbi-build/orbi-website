@@ -177,8 +177,8 @@ approvals still apply.
 pull request, labels, and run ID live in GitHub rather than in a process, so a
 restart reconstructs the same run, branch, worktree, and PR.
 
-**What does it cost?** Self-hosting is free forever. Managed Cloud (Private
-Beta) is US$79 per month with 300M tokens of model usage included. What the
+**What does it cost?** Self-hosting is free forever. Managed Cloud is open for
+subscriptions at US$79 per month with 300M tokens of model usage included. What the
 model usage itself costs is measured, not
 estimated: 46 real deliveries aggregated as of 2026-09-12 put the median delivery
 at 2,220,637 totalTokens and the mean at 4,742,066 — roughly $0.06–0.12 per

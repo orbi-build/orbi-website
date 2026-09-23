@@ -869,6 +869,24 @@ async function walkPages(dir) {
 let NAV_PARTIAL;
 let FOOTER_PARTIAL;
 
+function renderLlmsFull(template, renderedPages, matrixCsv) {
+  const sections = {
+    "<!--@cost-body-->": renderedPages.get("cost/index.html"),
+    "<!--@evidence-body-->": renderedPages.get("evidence/index.html"),
+  };
+  let output = template;
+  for (const [marker, html] of Object.entries(sections)) {
+    const body = html?.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1]?.trim();
+    if (!body) throw new Error(`llms-full.txt cannot extract ${marker} source body`);
+    if (!output.includes(marker)) throw new Error(`llms-full.txt is missing ${marker}`);
+    output = output.replace(marker, body);
+  }
+  if (!output.includes("<!--@comparison-matrix-->")) {
+    throw new Error("llms-full.txt is missing <!--@comparison-matrix-->");
+  }
+  return output.replace("<!--@comparison-matrix-->", matrixCsv.trim()).trimEnd() + "\n";
+}
+
 export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
@@ -885,6 +903,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   const postsFor = (indexSource) =>
     posts.filter((post) => post.lang === (indexSource.startsWith("zh/") ? "zh" : "en"));
   await mkdir(outDir, { recursive: true });
+  const renderedPages = new Map();
   for (const page of pages) {
     let html = page.body;
     if (page.nav) {
@@ -926,6 +945,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
     const out = join(outDir, page.output);
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
+    renderedPages.set(page.output, html);
   }
   for (const post of posts) {
     const out = join(outDir, post.output);
@@ -939,7 +959,14 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   await mkdir(join(outDir, "blog"), { recursive: true });
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
   await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
-  await writeFile(join(outDir, "llms-full.txt"), await readFile(join(ROOT, "site", "llms-full.txt"), "utf8"));
+  await writeFile(
+    join(outDir, "llms-full.txt"),
+    renderLlmsFull(
+      await readFile(join(ROOT, "site", "llms-full.txt"), "utf8"),
+      renderedPages,
+      await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8"),
+    ),
+  );
   return pages.length + posts.length;
 }
 

@@ -14,6 +14,8 @@ import { describe, expect, it } from "vitest";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
 const llmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
+const matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
+const sitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
 const articleEn = await readFile(join(ROOT, "public", "blog", "watch-the-six-steps", "index.html"), "utf8");
 const articleZh = await readFile(join(ROOT, "public", "zh", "blog", "watch-the-six-steps", "index.html"), "utf8");
 // The file is hard-wrapped at ~78 columns; prose assertions below match
@@ -52,13 +54,43 @@ describe("seven-step article media parity (Issue #335)", () => {
 });
 
 describe("llms-full.txt content asset (Issue #438)", () => {
-  it("contains the cost, evidence, and comparison matrix material", () => {
-    expect(llmsFull).toContain("# Orbi in one paragraph + key numbers");
-    expect(llmsFull).toContain("/cost/");
-    expect(llmsFull).toContain("/evidence/");
-    expect(llmsFull).toContain("product,independent_review,blocks_merge_on_findings");
-    expect(llmsFull).toContain("4,742,066");
+  it("opens with the product paragraph and key numbers in exactly five lines", () => {
+    expect(llmsFull.split("\n").slice(0, 5)).toEqual([
+      "# Orbi in one paragraph + key numbers",
+      "",
+      "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
+      "",
+      "Key numbers: Cloud is US$79/month with 300M model tokens; about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.",
+    ]);
   });
+
+  it("contains the complete cost and evidence bodies, not summaries", () => {
+    for (const text of [
+      "46 real deliveries, measured on our own repository",
+      "Cents per delivery at DeepSeek V4.1 Flash list prices",
+      "Three things this page does not claim",
+      "Competitors quote quotas. We quote tokens and prices.",
+      "Three deliveries you can open",
+      "Issue #852, merged PR #854, Release v0.5.5",
+      "Issue #842, merged PR #845, Release v0.5.4",
+      "Issue #825, merged PR #830, Release v0.5.3",
+    ]) expect(llmsFull).toContain(text);
+  });
+
+  it("contains the comparison matrix byte-for-byte", () => {
+    expect(llmsFull).toContain(matrixCsv.trim());
+  });
+});
+
+it("describes Managed Cloud consistently as open for subscriptions", () => {
+  expect(flat).toContain("is live and open for subscriptions today");
+  expect(flat).not.toContain("Private Beta");
+});
+
+it("lists the same comparison pages as the sitemap", () => {
+  const from = (text) => [...text.matchAll(/https:\/\/orbi\.build(\/(?:zh\/)?compare\/(?:[a-z-]+\/)?)(?=\s|<)/g)]
+    .map((match) => match[1]);
+  expect([...new Set(from(llms))].sort()).toEqual([...new Set(from(sitemap))].sort());
 });
 
 describe("llms.txt model compatibility claim (Issue #296)", () => {
