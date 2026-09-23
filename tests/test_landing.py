@@ -425,13 +425,11 @@ class LandingTests(unittest.TestCase):
                     f"heading loses a word boundary for crawlers: {crawler!r}",
                 )
 
-    def test_share_cards_exist_and_agree_on_one_title(self) -> None:
-        """Every share/search slot must exist and the three title slots must
-        stay one sentence: a drifted og:title/twitter:title shows a share
-        card that previews a different headline than the page it links to.
-        The wording itself is copy and stays unpinned (Issue #112)."""
+    def test_share_cards_exist_and_agree_on_one_social_title(self) -> None:
+        """Every share slot exists and the independently authored Open Graph
+        and Twitter titles agree. Issue #413 intentionally gives the search
+        title its own 60-character limit without rewriting social metadata."""
         for html in (self.en_html, self.zh_html):
-            title = re.search(r"<title>([^<]+)</title>", html).group(1)
             slots = [
                 ("description", r'name="description" content="([^"]+)"'),
                 ("og:title", r'property="og:title" content="([^"]+)"'),
@@ -440,11 +438,12 @@ class LandingTests(unittest.TestCase):
                 ("twitter:title", r'name="twitter:title" content="([^"]+)"'),
                 ("twitter:description", r'name="twitter:description" content="([^"]+)"'),
             ]
+            values = {}
             for slot, pattern in slots:
-                self.assertIsNotNone(re.search(pattern, html), slot)
-            for slot, pattern in slots:
-                if slot.endswith("title"):
-                    self.assertEqual(re.search(pattern, html).group(1), title, slot)
+                match = re.search(pattern, html)
+                self.assertIsNotNone(match, slot)
+                values[slot] = match.group(1)
+            self.assertEqual(values["og:title"], values["twitter:title"])
 
     def test_cloud_section_is_marked_a_direction(self) -> None:
         """The Cloud section must be marked a direction, not a shipping

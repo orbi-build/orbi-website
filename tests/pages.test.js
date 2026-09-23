@@ -131,26 +131,34 @@ describe("comparison capability matrix (Issue #201)", () => {
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   it("keeps every sitemap HTML page within title, description, and heading limits", () => {
     const violations = [];
-    const sitemapOutputs = new Set([
-      ...pages.filter((page) => !page.standalone).map((page) => page.output),
-      ...posts.map((post) => post.output),
-    ]);
+    const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
+      .map((match) => match[1])
+      .map((urlPath) => urlPath.endsWith("/")
+        ? `${urlPath.slice(1)}index.html`
+        : (urlPath.endsWith(".html") ? urlPath.slice(1) : null))
+      .filter(Boolean);
 
-    for (const [output, html] of shipped) {
-      if (!sitemapOutputs.has(output)) continue;
+    for (const output of sitemapOutputs) {
+      const route = `/${output.replace(/index\.html$/, "")}`;
+      const html = shipped.get(output);
+      if (html === undefined) {
+        violations.push(`${route} HTML output missing (maximum missing pages: 0)`);
+        continue;
+      }
       // Comments can contain examples of metadata and headings; they are not
       // part of the rendered document or its SEO contract.
       const rendered = html.replace(/<!--[\s\S]*?-->/g, "");
       const title = rendered.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? "";
       const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
       const h1Count = (rendered.match(/<h1\b/gi) || []).length;
-      const isChinese = output.startsWith("zh/");
+      const isChinese = route.startsWith("/zh/");
       const descriptionMin = isChinese ? 70 : 150;
       const descriptionMax = isChinese ? 80 : 160;
-      if (title.length > 60) violations.push(`${output} title length ${title.length} > 60`);
-      if (description.length < descriptionMin) violations.push(`${output} description length ${description.length} < ${descriptionMin}`);
-      if (description.length > descriptionMax) violations.push(`${output} description length ${description.length} > ${descriptionMax}`);
-      if (h1Count !== 1) violations.push(`${output} h1 count ${h1Count} != 1`);
+      if (title.length > 60) violations.push(`${route} title length ${title.length}, maximum 60`);
+      if (description.length < descriptionMin || description.length > descriptionMax) {
+        violations.push(`${route} description length ${description.length}, expected ${descriptionMin}-${descriptionMax} (maximum ${descriptionMax})`);
+      }
+      if (h1Count !== 1) violations.push(`${route} h1 count ${h1Count}, maximum 1 (expected exactly 1)`);
     }
 
     expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
