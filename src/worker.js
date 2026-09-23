@@ -747,7 +747,8 @@ function refererHost(request) {
   try {
     const url = new URL(value);
     const host = url.hostname.toLowerCase();
-    return (url.protocol === "http:" || url.protocol === "https:") && SOURCE_HOST.test(host) ? host : null;
+    const isInternal = host === "orbi.build" || host.endsWith(".orbi.build");
+    return (url.protocol === "http:" || url.protocol === "https:") && SOURCE_HOST.test(host) && !isInternal ? host : null;
   } catch {
     return null;
   }
