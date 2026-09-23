@@ -15,6 +15,15 @@ describe("bot detection (Issue #280)", () => {
   const FIREFOX_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0";
   const GPTBOT = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)";
   const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
+  const BOT_LIST_DB = {
+    prepare(sql) {
+      return {
+        all: async () => sql.includes("bot_asns")
+          ? { results: [16509, 14618, 15169, 396982, 8075, 24940, 14061, 16276, 63949, 132203, 48090, 45102, 213230, 197540, 45090, 64267].map((asn) => ({ asn })) }
+          : { results: [{ needle: "claudebot" }, { needle: "headless" }, { needle: "bot" }, { needle: "crawler" }, { needle: "spider" }] },
+      };
+    },
+  };
 
   function requestWith({ ua, asn, ip, path = "/" } = {}) {
     const headers = ua === undefined ? {} : { "User-Agent": ua };
@@ -37,7 +46,7 @@ describe("bot detection (Issue #280)", () => {
   const GPTBOT_HASH = "d1e6777ea082ce0f";
   const EMPTY_UA_HASH = "e3b0c44298fc1c14";
 
-  it("marks every cloud-provider ASN a bot, browser UA or not", () => {
+  it("marks every cloud-provider ASN a bot, browser UA or not", async () => {
     const cloudAsns = [
       [16509, "AWS us-east"],
       [14618, "AWS us-east-1 ec2"],
@@ -57,22 +66,22 @@ describe("bot detection (Issue #280)", () => {
       [64267, "Sprious"],
     ];
     for (const [asn, provider] of cloudAsns) {
-      expect(isBot(requestWith({ ua: CHROME_127, asn })), `${provider} AS${asn}`).toBe(true);
+      expect(await isBot(requestWith({ ua: CHROME_127, asn }), {}, BOT_LIST_DB), `${provider} AS${asn}`).toBe(true);
     }
   });
 
-  it("marks residential ASNs human: real people browse from ISP IPs, not datacenters", () => {
+  it("marks residential ASNs human: real people browse from ISP IPs, not datacenters", async () => {
     for (const asn of [9506, 7922, 4134]) {
-      expect(isBot(requestWith({ ua: CHROME_127, asn })), `residential AS${asn}`).toBe(false);
+      expect(await isBot(requestWith({ ua: CHROME_127, asn }), {}, BOT_LIST_DB), `residential AS${asn}`).toBe(false);
     }
   });
 
-  it("marks ChromeHeadless as a bot regardless of ASN", () => {
+  it("marks ChromeHeadless as a bot regardless of ASN", async () => {
     const headless = `${CHROME_127} HeadlessChrome/127.0.0.0`;
-    expect(isBot(requestWith({ ua: headless, asn: 9506 }))).toBe(true);
+    expect(await isBot(requestWith({ ua: headless, asn: 9506 }), {}, BOT_LIST_DB)).toBe(true);
   });
 
-  it("marks every self-identifying crawler UA a bot", () => {
+  it("marks every self-identifying crawler UA a bot", async () => {
     const crawlerUAs = [
       GPTBOT,
       "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
@@ -87,36 +96,74 @@ describe("bot detection (Issue #280)", () => {
       "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)",
     ];
     for (const ua of crawlerUAs) {
-      expect(isBot(requestWith({ ua })), ua).toBe(true);
+      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(true);
     }
   });
 
-  it("marks the generic bot/crawler/spider fallback substrings a bot, any case", () => {
+  it("marks the generic bot/crawler/spider fallback substrings a bot, any case", async () => {
     for (const ua of ["foo/1.0 (bot)", "SomeCrawler/2.0", "x-spider/1", "AnythingBot/3.0"]) {
-      expect(isBot(requestWith({ ua })), ua).toBe(true);
+      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(true);
     }
   });
 
-  it("marks our own Better Uptime probe a bot", () => {
-    expect(isBot(requestWith({ ua: BETTER_UPTIME }))).toBe(true);
+  it("marks our own Better Uptime probe a bot", async () => {
+    expect(await isBot(requestWith({ ua: BETTER_UPTIME }))).toBe(true);
   });
 
-  it("marks a missing User-Agent as a bot", () => {
-    expect(isBot(requestWith({}))).toBe(true);
+  it("marks a missing User-Agent as a bot", async () => {
+    expect(await isBot(requestWith({}))).toBe(true);
   });
 
-  it("marks an explicitly empty User-Agent as a bot", () => {
-    expect(isBot(requestWith({ ua: "" }))).toBe(true);
+  it("marks an explicitly empty User-Agent as a bot", async () => {
+    expect(await isBot(requestWith({ ua: "" }))).toBe(true);
   });
 
-  it("marks real browsers human", () => {
+  it("marks real browsers human", async () => {
     for (const ua of [CHROME_127, SAFARI_17, FIREFOX_127]) {
-      expect(isBot(requestWith({ ua })), ua).toBe(false);
+      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(false);
     }
   });
 
-  it("classifies without request.cf at all (local dev): UA-only, human", () => {
-    expect(isBot(requestWith({ ua: CHROME_127 }))).toBe(false);
+  it("classifies without request.cf at all (local dev): UA-only, human", async () => {
+    expect(await isBot(requestWith({ ua: CHROME_127 }))).toBe(false);
+  });
+
+  it("loads ASN and UA decisions from the database and refreshes after the TTL", async () => {
+    vi.useFakeTimers();
+    const tables = { asns: [{ asn: 7922 }], needles: [{ needle: "claudebot" }] };
+    const db = {
+      prepare(sql) {
+        return { all: async () => ({ results: sql.includes("bot_asns") ? tables.asns : tables.needles }) };
+      },
+    };
+    const claude = requestWith({ ua: "ClaudeBot/1.0", asn: 9506 });
+    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 1 });
+    tables.asns.length = 0;
+    tables.needles.length = 0;
+    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 1 });
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
+    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 0 });
+  });
+
+  it("treats a failed bot-list query as non-bot while retaining behavior rules", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const db = { prepare: () => ({ all: async () => { throw new Error("database unavailable"); } }) };
+    try {
+      expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509 }), {}, db)).toMatchObject({ is_bot: 0 });
+      for (let index = 0; index < 11; index += 1) {
+        expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509, path: `/behavior-${index}` }), {
+          vid: "behavior-fallback",
+          path: `/behavior-${index}`,
+        }, db)).toMatchObject({ is_bot: 0 });
+      }
+      expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509, path: "/behavior-11" }), {
+        vid: "behavior-fallback",
+        path: "/behavior-11",
+      }, db)).toMatchObject({ is_bot: 1 });
+      expect(warn).toHaveBeenCalledWith("bot_lists_query_failed:", "database unavailable");
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("marks one vid scanning many paths in a short window", async () => {
@@ -281,7 +328,7 @@ describe("bot detection (Issue #280)", () => {
   });
 
   it("returns the verdict with its evidence: asn and ua_hash, never the raw UA", async () => {
-    const signals = await visitSignals(requestWith({ ua: GPTBOT, asn: 16509 }));
+    const signals = await visitSignals(requestWith({ ua: GPTBOT, asn: 16509 }), {}, BOT_LIST_DB);
     expect(signals).toEqual({ is_bot: 1, asn: 16509, ua_hash: GPTBOT_HASH });
     expect(JSON.stringify(signals)).not.toContain("GPTBot");
   });

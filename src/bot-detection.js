@@ -21,48 +21,12 @@
 // judgment inputs with the row (asn, ua_hash — never the raw UA, which is
 // PII), so a verdict later found wrong can be re-derived from the stored
 // evidence instead of being wrong forever.
-const CLOUD_ASNS = new Set([
-  16509, 14618, // AWS
-  15169, 396982, // GCP
-  8075, // Azure
-  24940, // Hetzner
-  14061, // DigitalOcean
-  16276, // OVH
-  63949, // Linode
-  132203, // Tencent Cloud
-  48090, // DMZHost
-  45102, // Alibaba Cloud
-  213230, // Hetzner Cloud2
-  197540, // netcup
-  45090, // Tencent Cloud
-  64267, // Sprious
-]);
+const BOT_LIST_TTL_MS = 5 * 60 * 1000;
+let botListsCache = null;
 
 const KNOWN_PROBE_UAS = new Set([
   "Better Uptime Bot Mozilla/5.0",
 ]);
-
-// Lowercase needles, matched against the lowercased UA. The named crawlers
-// self-identify and stay caught even if the generic fallback ever has to be
-// narrowed over a false positive.
-const KNOWN_CRAWLER_UAS = [
-  "gptbot",
-  "claudebot",
-  "ccbot",
-  "bytespider",
-  "ahrefsbot",
-  "semrushbot",
-  "dataforseobot",
-  "mj12bot",
-  "dotbot",
-  "petalbot",
-  "yandexbot",
-  "headless",
-  // Generic fallback: no real browser UA contains any of these.
-  "bot",
-  "crawler",
-  "spider",
-];
 
 const BEHAVIOR_WINDOW_MS = 5 * 60 * 1000;
 const DURABLE_BEHAVIOR_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -132,13 +96,41 @@ function observeBehavior({ vid, path, fingerprint, now = Date.now() }) {
   };
 }
 
-export function isBot(request, behavior = {}) {
-  if (CLOUD_ASNS.has(request.cf?.asn)) return true;
+async function loadBotLists(db) {
+  const now = Date.now();
+  if (botListsCache && botListsCache.db === db && botListsCache.expiresAt > now) return botListsCache;
+
+  if (!db) {
+    return { asns: new Set(), needles: [], expiresAt: now + BOT_LIST_TTL_MS, db };
+  }
+
+  try {
+    const [asnRows, uaRows] = await Promise.all([
+      db.prepare("SELECT asn FROM bot_asns").all(),
+      db.prepare("SELECT needle FROM bot_ua_needles").all(),
+    ]);
+    botListsCache = {
+      asns: new Set((asnRows?.results ?? []).map((row) => Number(row.asn))),
+      needles: (uaRows?.results ?? []).map((row) => String(row.needle).toLowerCase()),
+      expiresAt: now + BOT_LIST_TTL_MS,
+      db,
+    };
+    return botListsCache;
+  } catch (error) {
+    console.warn("bot_lists_query_failed:", error && error.message ? error.message : error);
+    botListsCache = { asns: new Set(), needles: [], expiresAt: now + BOT_LIST_TTL_MS, db };
+    return botListsCache;
+  }
+}
+
+export async function isBot(request, behavior = {}, db) {
+  const lists = await loadBotLists(db);
+  if (lists.asns.has(Number(request.cf?.asn))) return true;
   const rawUA = request.headers.get("User-Agent") ?? "";
   if (rawUA === "") return true;
   if (KNOWN_PROBE_UAS.has(rawUA)) return true;
   const ua = rawUA.toLowerCase();
-  if (KNOWN_CRAWLER_UAS.some((needle) => ua.includes(needle))) return true;
+  if (lists.needles.some((needle) => ua.includes(needle))) return true;
   return behavior.manyPaths === true
     || behavior.oneHitVidBurst === true
     || behavior.slowScan === true;
@@ -187,6 +179,7 @@ export function resetBehaviorSignals() {
   behaviorByVid.clear();
   burstByFingerprint.clear();
   nextPruneAt = 0;
+  botListsCache = null;
 }
 
 // The verdict travels with its inputs: the asn that was seen and a hash of
@@ -218,7 +211,7 @@ export async function visitSignals(request, visit = {}, db) {
     });
   }
   return {
-    is_bot: isBot(request, behavior) ? 1 : 0,
+    is_bot: await isBot(request, behavior, db) ? 1 : 0,
     asn: request.cf?.asn ?? null,
     ua_hash: uaHash,
   };

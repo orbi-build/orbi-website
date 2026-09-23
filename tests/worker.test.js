@@ -906,6 +906,15 @@ describe("visit attribution (Issue #228)", () => {
   // stores the judgment inputs, never the raw UA).
   const EMPTY_UA_HASH = "e3b0c44298fc1c14";
   const realFetch = globalThis.fetch;
+  const BOT_LIST_DB = {
+    prepare(sql) {
+      return {
+        all: async () => sql.includes("bot_asns")
+          ? { results: [{ asn: 16509 }] }
+          : { results: [{ needle: "gptbot" }, { needle: "bot" }, { needle: "crawler" }, { needle: "spider" }] },
+      };
+    },
+  };
   const HTML_PAGE = {
     body: "<html><head><title>page</title></head><body>page</body></html>",
     headers: { "Content-Type": "text/html; charset=utf-8", ETag: '"asset-etag-1"' },
@@ -950,6 +959,7 @@ describe("visit attribution (Issue #228)", () => {
       CLOUD_VISIT_URL: VISIT_URL,
       WEBSITE_SECRET: SECRET,
       CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
+      VISITOR_EVENTS_DB: BOT_LIST_DB,
       ...overrides,
     };
   }
