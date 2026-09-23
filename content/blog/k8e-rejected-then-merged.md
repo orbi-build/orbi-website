@@ -23,10 +23,11 @@ At 13:21 the review on the maintainer's account came back **REQUEST_CHANGES**, w
   The history in question:
 
   ```
-  key k at revision 3
-  CAS A  expect rev 3, write a   acknowledged at rev 4
-  CAS B  expect rev 3, write b   outcome unknown
-  after recovery: k = b        oracle: OK
+  k is at rev 3
+  A: CAS rev3 -> a  acked
+  B: CAS rev3 -> b  unknown
+  recovered: k = b
+  oracle: OK   (should fail)
   ```
 
 - **R2: the process being killed was also the one taking notes.** The recorder ran inside the process the test SIGKILLs. A write could be acknowledged and then killed before the acknowledgement reached the log. That write gets downgraded to "unknown", and losing it passes the test. The issue had asked for exactly the opposite: the recorder must sit outside the node under test.

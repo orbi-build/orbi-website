@@ -23,10 +23,11 @@ Orbi 在 11:37（UTC+8）开了 [PR #613](https://github.com/xiaods/k8e/pull/613
   对应的操作历史：
 
   ```
-  key k at revision 3
-  CAS A  expect rev 3, write a   acknowledged at rev 4
-  CAS B  expect rev 3, write b   outcome unknown
-  after recovery: k = b        oracle: OK
+  k is at rev 3
+  A: CAS rev3 -> a  acked
+  B: CAS rev3 -> b  unknown
+  recovered: k = b
+  oracle: OK   (should fail)
   ```
 
 - **R2：被杀的进程同时在记账。** 记录器跑在测试要 SIGKILL 的那个进程里。一次写入可能已经被确认，但确认还没写进日志进程就被杀了。这条写入会被降级成「未知」，它丢了测试照样通过。票面要求的恰恰相反：记录器必须在被测节点之外。
