@@ -119,7 +119,7 @@ oracle: OK   (should fail)
 <li><strong>14:54:</strong> Orbi&#39;s own independent review produced no verdict line, so its result couldn&#39;t be parsed.</li>
 <li><strong>15:19:</strong> its resume check demanded <code>Fixes #612</code> in the PR body. That was the exact line the maintainer&#39;s review had rightly asked to remove.</li>
 </ol>
-<p>Orbi never cleared the third one. Worse, the failed check didn&#39;t fail only this ticket. It crashed the whole runner process serving his repository: 84 times between 15:19 and 22:10, by the runner&#39;s own log, which stalled his entire queue (<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>). At 19:59 the maintainer commented on the issue, 继续修复吧 (&quot;go ahead and keep fixing&quot;). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.</p>
+<p>Orbi never cleared the third one. Worse, the failed check didn&#39;t fail only this ticket. It crashed the whole runner process serving his repository: 84 times between 15:19 and 22:10, by the runner&#39;s own log, which stalled his entire queue. The public write-up, <a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>, was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 (&quot;go ahead and keep fixing&quot;). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.</p>
 <h3>The fix</h3>
 <p>At 15:05 one commit, <code>f8e9dd9c</code>, addressed all three findings:</p>
 <ul>

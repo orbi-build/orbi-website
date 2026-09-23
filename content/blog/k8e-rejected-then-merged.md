@@ -47,7 +47,7 @@ The review wasn't the only thing going wrong. Orbi's engine reported three failu
 2. **14:54:** Orbi's own independent review produced no verdict line, so its result couldn't be parsed.
 3. **15:19:** its resume check demanded `Fixes #612` in the PR body. That was the exact line the maintainer's review had rightly asked to remove.
 
-Orbi never cleared the third one. Worse, the failed check didn't fail only this ticket. It crashed the whole runner process serving his repository: 84 times between 15:19 and 22:10, by the runner's own log, which stalled his entire queue ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). At 19:59 the maintainer commented on the issue, 继续修复吧 ("go ahead and keep fixing"). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.
+Orbi never cleared the third one. Worse, the failed check didn't fail only this ticket. It crashed the whole runner process serving his repository: 84 times between 15:19 and 22:10, by the runner's own log, which stalled his entire queue. The public write-up, [orbi#1219](https://github.com/orbi-build/orbi/issues/1219), was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 ("go ahead and keep fixing"). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.
 
 ### The fix
 
