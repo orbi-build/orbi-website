@@ -1,7 +1,7 @@
 ---
 title: Rejected, fixed, merged: Orbi in a k8s distro
 date: 2026-09-23
-summary: An etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and what it got wrong.
+summary: An etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, was rejected, fixed and merged, then the issue closed by mistake. What went wrong, and why.
 lang: en
 author: Orbi
 image: /img/blog-k8e.png
@@ -47,7 +47,7 @@ The review wasn't the only thing going wrong. Orbi's engine reported three failu
 2. **14:54:** Orbi's own independent review produced no verdict line, so its result couldn't be parsed.
 3. **15:19:** its resume check demanded `Fixes #612` in the PR body. That was the exact line the maintainer's review had rightly asked to remove.
 
-Orbi never cleared the third one. Worse, the failed check crashed the whole runner process serving his repository, not just this ticket: 77 times in 24 hours, which stalled his entire queue ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). At 19:59 the maintainer commented on the issue, 继续修复吧 ("go ahead and keep fixing"). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.
+Orbi never cleared the third one. Worse, the failed check didn't fail only this ticket. It crashed the whole runner process serving his repository: 84 times between 15:19 and 22:10, by the runner's own log, which stalled his entire queue ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). At 19:59 the maintainer commented on the issue, 继续修复吧 ("go ahead and keep fixing"). Nothing happened after that. A rule that is right for single-shot issues is wrong for a phased one. The engine held to the rule, and the human reviewer was right.
 
 ### The fix
 
@@ -65,7 +65,7 @@ At 22:12 the second review came back **APPROVED**. It traced each fix and set tw
 
 The review was wrong about that commit message. GitHub closes an issue when a closing keyword in a merged commit message points at it, not only when the keyword is in the PR body. One second after the merge, #612 closed as *completed*, closed by Orbi's first commit. Only phase one of four had landed. The first review had warned about exactly this. It happened anyway, through the one place nobody fixed.
 
-That is Orbi's fourth mistake on this ticket, and the most consequential. Our engine wrote `Fixes #612` into the commit because its rules require it. Both reviews flagged it, and the issue still closed. As of this writing, #612 is still closed.
+That is Orbi's fourth mistake on this ticket, and the most consequential. Our engine's rules require `Fixes #N` in the PR body, and the delivery agent also put it in its first commit message. Both reviews flagged the keyword: the first in the PR body, the second in the commit. The issue still closed. As of this writing, #612 is still closed.
 
 ### The second PR: 3 hours 12 minutes from open to merge
 
@@ -75,6 +75,6 @@ The next day brought [#614](https://github.com/xiaods/k8e/issues/614): rqlite co
 
 It doesn't show that Orbi gets things right the first time. It didn't. The maintainer had to step in: he unblocked the issue and put it back in the queue, he asked Orbi to keep going when it stalled, and in the end he merged past a rule of Orbi's that was wrong for his ticket. And a four-phase issue still got closed after phase one.
 
-What it does show is a loop where the review can say no, with reasons, and the fix lands on the same PR. On a hard ticket in someone else's codebase, that loop took 10 and a half hours from PR open to merge. It also shows every failure, Orbi's included, sitting in the public record, where anyone can check this post against it. Two things changed in Orbi afterwards ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). A bad PR body now fails only its own ticket and no longer kills the runner. And a phased initiative is no longer carried by one issue: each phase becomes a child issue whose PR closes that child, and only that child.
+What it does show is a loop where the review can say no, with reasons, and the fix lands on the same PR. On a hard ticket in someone else's codebase, that loop took 10 and a half hours from PR open to merge. It also shows every failure, Orbi's included, sitting in the public record, where anyone can check this post against it. Two things changed in Orbi afterwards ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). A bad PR body now fails only its own ticket and no longer kills the runner. And Orbi's workflow contract now says a phased initiative must not be carried by one issue: the maintainer splits each phase into a child issue, and each child's PR closes that child and only that child.
 
 If you maintain a repo with a queue of well-specified issues, [Orbi Cloud](https://orbi.build/cloud/?ref=blog-k8e) runs the same loop on yours.
