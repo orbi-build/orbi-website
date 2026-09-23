@@ -97,6 +97,10 @@ const localFoundingAvatars = localFoundingLogins
   .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
   .join("");
 
+export function countServerRenderedAvatars(html) {
+  return html.match(/<img\b[^>]*class=["'][^"']*\borbi-avatar-wall-list-img\b[^"']*["'][^>]*>/g)?.length ?? 0;
+}
+
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -683,13 +687,40 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
   }
+  let serverAvatarCount;
+  if (process.env.BASE_URL) {
+    const context = await request.newContext();
+    try {
+      const response = await context.get(`${targetURL}${path}`);
+      if (!response.ok()) {
+        throw new Error(`${path}: homepage HTML answered ${response.status()}`);
+      }
+      serverAvatarCount = countServerRenderedAvatars(await response.text());
+    } finally {
+      await context.dispose();
+    }
+    if (serverAvatarCount < 1) {
+      throw new Error(`${path}: server-rendered homepage contains no avatars`);
+    }
+  }
   const wall = page.locator("[data-avatar-wall]");
-  if ((await wall.locator("img").count()) !== 11) {
+  const browserAvatarCount = await wall.locator("img").count();
+  if (process.env.BASE_URL && browserAvatarCount !== serverAvatarCount) {
+    throw new Error(`${path}: browser rendered ${browserAvatarCount} avatars, server HTML rendered ${serverAvatarCount}`);
+  }
+  if (!process.env.BASE_URL && browserAvatarCount !== 11) {
     throw new Error(`${path}: expected 11 server-rendered avatars`);
   }
-  await wall.locator("img").last().waitFor({ state: "visible" });
+  const images = wall.locator("img");
+  for (let index = 0; index < browserAvatarCount; index += 1) {
+    const image = images.nth(index);
+    await image.waitFor({ state: "visible" });
+    if (!(await image.evaluate((element) => element.complete && element.naturalWidth > 0))) {
+      throw new Error(`${path}: avatar ${index + 1} did not load`);
+    }
+  }
   if (!process.env.BASE_URL) {
-    const titles = await wall.locator("img").evaluateAll((images) => images.map((image) => image.title));
+    const titles = await images.evaluateAll((items) => items.map((image) => image.title));
     if (titles.join("|") !== localFoundingLogins.join("|")) {
       throw new Error(`${path}: server-rendered avatar identities changed`);
     }
