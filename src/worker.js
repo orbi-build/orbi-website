@@ -53,6 +53,13 @@ const STATS_TTL_MS = 300000;
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
 const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
+const ENGAGEMENT_ROUTE = "/cloud/e";
+const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
+const ENGAGEMENT_DETAILS = new Set([
+  "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
+  "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
+]);
+const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
 function githubHeaders(token) {
   if (!token) {
@@ -312,7 +319,7 @@ function foundingAvatarMarkup(logins) {
       '\"': "&quot;",
       "'": "&#39;",
     })[character]);
-    return `<img alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
+    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
   }).join("");
 }
 
@@ -500,7 +507,7 @@ async function aireadyResponse(request, url, assets) {
   return Response.redirect(`https://orbi.build${url.pathname}${url.search}`, 302);
 }
 
-async function handleFetch(request, env) {
+async function handleFetch(request, env, ctx) {
     const url = new URL(request.url);
     const canonicalHost = HOST_ALIASES[url.hostname];
     if (canonicalHost) {
@@ -570,6 +577,10 @@ async function handleFetch(request, env) {
       }
     }
 
+    if (route === ENGAGEMENT_ROUTE) {
+      return engagementResponse(request, env, ctx);
+    }
+
     if (route === CLOUD_LOGIN_ROUTE || route === ZH_CLOUD_LOGIN_ROUTE) {
       return cloudLoginResponse(request, env.CLOUD_LOGIN_URL);
     }
@@ -618,6 +629,38 @@ async function handleFetch(request, env) {
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
 // trailing-slash canonicalisation; anything else is not ours to follow.
+async function engagementResponse(request, env, ctx) {
+  if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
+  let event;
+  try {
+    event = await request.json();
+  } catch {
+    return new Response(null, { status: 400, headers: SECURITY_HEADERS });
+  }
+  const kind = event?.kind;
+  const detail = event?.detail;
+  const valid = ENGAGEMENT_KINDS.has(kind)
+    && (kind === "engaged" ? detail === undefined
+      : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
+        : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
+  if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
+
+  const path = typeof event.path === "string" && event.path.startsWith("/")
+    ? event.path.slice(0, 200)
+    : new URL(request.url).pathname;
+  const payload = { kind, path };
+  if (kind !== "engaged") payload.detail = detail;
+  const vid = cookieFrom(request, "vid");
+  if (vid) payload.vid = vid;
+  if (env.CLOUD_VISIT_URL && env.WEBSITE_SECRET) {
+    // Engagement is deliberately a bypass: the browser gets a fast 204 even
+    // when the Cloud binding is unavailable or rejects the report.
+    const report = reportVisit(env, request, payload);
+    if (ctx?.waitUntil) ctx.waitUntil(report);
+  }
+  return new Response(null, { status: 204, headers: SECURITY_HEADERS });
+}
+
 function trailingSlashRedirect(asset, url) {
   if (![301, 307, 308].includes(asset.status)) return null;
   const location = asset.headers.get("Location");

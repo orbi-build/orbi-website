@@ -1,5 +1,5 @@
 ---
-title: 七步跑完，全程录下来了
+title: 七步跑完，全程录下来了：83 秒 Orbi Cloud 交付记录
 date: 2026-09-21
 summary: 一段 83 秒的视频，从 GitHub 登录一路到发出带 tag 的 Release，再到订阅。画面全是产品真实渲染，而第七步是开始付费交付的那一步。
 lang: zh

@@ -22,12 +22,12 @@ const enLede =
 const zhLede =
   '        <p class="hero-lede"><strong>不用迁移工作流。</strong>Orbi 在仓库里已有的 Issue 上跑完整条交付线。GitHub 始终是唯一事实源。</p>';
 const enFootnote =
-  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>';
+  '</ul>\n        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>';
 const zhFootnote =
-  '</ul>\n        <p class="hero-footnote"><a href="https://aiready.sh/zh/">如何写一张 ai-ready Issue（12 个要素）↗</a></p>';
+  '</ul>\n        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/zh/">如何写一张 ai-ready Issue（12 个要素）↗</a></p>';
 const footnoteCss = [
   ".hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }",
-  ".hero-footnote a { color: var(--ink-soft); }",
+  ".hero-footnote .orbi-hero-footnote-a { color: var(--ink-soft); }",
 ].join("\n");
 
 const ledeElement = (page) => /<p class="hero-lede">[\s\S]*?<\/p>/.exec(page)[0];
@@ -50,13 +50,13 @@ describe("hero copy: lede + 12-factors footnote (Issue #259)", () => {
     const source = await read("site/pages/index.html");
     // Contiguous: the footnote line directly follows the trust line's </ul>.
     expect(source).toContain(enFootnote);
-    expect(source.match(/hero-footnote/g)).toHaveLength(1);
+    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
   });
 
   it("moves the 12-factors link below the trust line in Chinese, to aiready.sh/zh/", async () => {
     const source = await read("site/pages/zh/index.html");
     expect(source).toContain(zhFootnote);
-    expect(source.match(/hero-footnote/g)).toHaveLength(1);
+    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
   });
 
   it("first screen order: lede, CTA, trust line, footnote", async () => {
@@ -75,7 +75,7 @@ describe("hero copy: lede + 12-factors footnote (Issue #259)", () => {
   it("adds .hero-footnote after the .hero-alt rules", async () => {
     const css = await read("public/styles.css");
     expect(css).toContain(footnoteCss);
-    expect(css.indexOf(".hero-footnote {")).toBeGreaterThan(css.indexOf(".hero-alt a:hover"));
+    expect(css.indexOf(".hero-footnote {")).toBeGreaterThan(css.indexOf(".hero-alt .orbi-hero-alt-a:hover"));
   });
 
   it("English lede is at most 22 words", async () => {

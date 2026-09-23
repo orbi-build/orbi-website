@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blog | Orbi</title>
-  <meta name="description" content="Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi; every number traces to an issue, run, or source line.">
+  <title>Engineering delivery notes and technical judgment | Orbi</title>
+  <meta name="description" content="Read delivery notes, industry analysis, architecture trade-offs, and judgment from building Orbi; every number traces to an Issue, run, or source line.">
   <link rel="canonical" href="https://orbi.build/blog/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/">
@@ -19,7 +19,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/blog/">
   <meta property="og:title" content="Blog">
-  <meta property="og:description" content="Delivery notes, industry analysis, architecture trade-offs, and technical judgment from building Orbi; every number traces to an issue, run, or source line.">
+  <meta property="og:description" content="Read delivery notes, industry analysis, architecture trade-offs, and judgment from building Orbi; every number traces to an Issue, run, or source line.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,25 +100,25 @@
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/watch-the-six-steps/">Watch the seven steps, start to finish</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-21">2026-09-21</time></p>
-      <p class="post-entry-summary">An 83-second video of the whole Orbi Cloud setup, from signing in with GitHub to subscribing after a tagged release. Every frame is the real product, and the seventh step is the one that starts paid delivery.</p>
+      <p class="post-entry-summary">An 83-second video follows the real Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The seventh step starts paid delivery for Cloud.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/what-autonomous-actually-means/">An autonomous coding agent that can tell itself no</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-20">2026-09-20</time></p>
-      <p class="post-entry-summary">Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.</p>
+      <p class="post-entry-summary">Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/blog/claude-code-github-actions-who-merges/">Claude Code in GitHub Actions stops at the pull request. Who merges it?</a></h2>
+      <h2 class="post-entry-title"><a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who merges?</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-19">2026-09-19</time></p>
-      <p class="post-entry-summary">The official Claude Code Action implements changes and reviews pull requests inside your own runner. It does not merge and it does not release. This is what the rest of the path looks like when a system closes it instead of a person, measured on a repository where 431 pull requests merged this way.</p>
+      <p class="post-entry-summary">Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/docker-image-third-try/">Docker image published on the third try</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-18">2026-09-18</time></p>
-      <p class="post-entry-summary">The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.</p>
+      <p class="post-entry-summary">The orbi image reached GHCR and Docker Hub on the third publish run. Three earlier failures came from build context, Dockerfile paths, and an invalid image tag.</p>
     </article>
       </div>
-      <p class="src-note">Reading by feed? The RSS 2.0 feed of the English posts lives at <a href="/blog/feed.xml">/blog/feed.xml</a>.</p>
+      <p class="src-note">Reading by feed? The RSS 2.0 feed of the English posts lives at <a class="orbi-src-note-a" href="/blog/feed.xml">/blog/feed.xml</a>.</p>
     </section>
   </main>
 
@@ -127,7 +127,7 @@
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>
     </a>
-    <p>Software production that survives the session.</p>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
     <nav aria-label="Footer navigation">
       <ul>
         <li><a href="https://docs.orbi.build">Docs</a></li>
@@ -176,5 +176,22 @@
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
-</body>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
 </html>

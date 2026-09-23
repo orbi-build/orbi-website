@@ -228,7 +228,7 @@ img {
 
 .nav-docs-menu.is-open { display: grid; gap: 2px; }
 
-.nav-docs-menu a {
+.nav-docs-menu .orbi-nav-docs-menu-a {
   display: flex;
   align-items: center;
   min-height: 42px;
@@ -238,7 +238,7 @@ img {
   white-space: nowrap;
 }
 
-.nav-docs-menu a:hover { background: rgba(237, 245, 240, 0.08); color: #fff; }
+.nav-docs-menu .orbi-nav-docs-menu-a:hover { background: rgba(237, 245, 240, 0.08); color: #fff; }
 
 .site-header nav > a.nav-apply {
   min-width: 76px;
@@ -303,12 +303,12 @@ img {
   letter-spacing: .01em;
 }
 .runtime-proof-line strong { color: #fff; font-size: 1.15rem; }
-.runtime-proof-line a { color: var(--run); }
+.runtime-proof-line .orbi-runtime-proof-line-a { color: var(--run); }
 .avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
 .avatar-wall-label { margin: 0; color: #a9bbb8; font: 500 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
 .avatar-wall-list { display: flex; }
-.avatar-wall-list img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
-.avatar-wall-list img:first-child { margin-left: 0; }
+.avatar-wall-list .orbi-avatar-wall-list-img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
+.avatar-wall-list .orbi-avatar-wall-list-img:first-child { margin-left: 0; }
 .founding-offer { display: flex; align-items: baseline; gap: 14px; font-size: 1.15rem; }
 .founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
 .founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
@@ -317,7 +317,7 @@ img {
 .trace-index,
 .factory-trace figcaption span,
 .proof-shot > span,
-.future-loop > li > span,
+.future-loop > .orbi-future-loop-li > span,
 .ownership-map span {
   font-family: var(--mono);
   font-size: 0.7rem;
@@ -421,7 +421,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 .hero-proof-link:hover { color: #fff; }
 .hero-ctas { align-items: flex-start; }
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
-.hero-primary p {
+.hero-primary .orbi-hero-primary-p {
   max-width: 22rem;
   margin: 0;
   color: #91aaa4;
@@ -434,15 +434,15 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   font-size: 0.84rem;
   line-height: 1.5;
 }
-.hero-alt a {
+.hero-alt .orbi-hero-alt-a {
   color: #d4e1dd;
   font-weight: 600;
   text-decoration: none;
   text-underline-offset: 4px;
 }
-.hero-alt a:hover { color: #fff; text-decoration: underline; }
+.hero-alt .orbi-hero-alt-a:hover { color: #fff; text-decoration: underline; }
 .hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }
-.hero-footnote a { color: var(--ink-soft); }
+.hero-footnote .orbi-hero-footnote-a { color: var(--ink-soft); }
 
 .trust-line {
   display: flex;
@@ -456,7 +456,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   font-size: 0.72rem;
 }
 
-.trust-line li::before {
+.trust-line .orbi-trust-line-li::before {
   content: "✓";
   margin-right: 7px;
   color: var(--run);
@@ -466,7 +466,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
    where the fair-code / self-host / BYOK attributes moved from the hero.
    Same list; only the text color lifts for the light paper background. */
 .trust-line-paper { color: var(--ink-soft); }
-.trust-line-paper li::before { color: var(--run-on-light); }
+.trust-line-paper .orbi-trust-line-paper-li::before { color: var(--run-on-light); }
 
 .factory-trace {
   position: relative;
@@ -712,8 +712,8 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   letter-spacing: 0.02em;
 }
 
-.stat-repo a { color: #edf5f0; text-underline-offset: 3px; }
-.stat-repo a:hover { color: var(--run); }
+.stat-repo .orbi-stat-repo-a { color: #edf5f0; text-underline-offset: 3px; }
+.stat-repo .orbi-stat-repo-a:hover { color: var(--run); }
 .stat-repo b { color: #edf5f0; font-weight: 600; }
 .stat-purpose { color: #9aada9; }
 
@@ -768,13 +768,16 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   padding-bottom: clamp(84px, 9vw, 140px);
 }
 
-.social-proof h2 { max-width: 22ch; }
+.social-proof .orbi-social-proof-h2 { max-width: 22ch; }
 
 .social-proof-grid {
   display: grid;
   /* minmax(0, 1fr), not 1fr: a card whose title carries a long URL must not
    * inflate its track's min-content and push the grid past the container. */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four current cards should read as a deliberate 2×2 set, not a full
+   * row followed by an orphan. The same rhythm also keeps each evidence
+   * repository group easy to scan; mobile collapses to one column below. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-top: 48px;
 }
@@ -790,6 +793,10 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 }
 
 .social-proof-group .social-proof-grid { margin-top: 24px; }
+
+/* A repository or quote group with one record should read as an intentional
+ * full row, not as a half-width card with an empty second track. */
+.social-proof-group .proof-card:only-child { grid-column: 1 / -1; }
 
 .social-proof-more {
   margin: 34px 0 0;
@@ -819,16 +826,16 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 }
 
 /* PR titles may carry long URLs: wrap them, never overflow the card. */
-.proof-card-title a {
+.proof-card-title .orbi-proof-card-title-a {
   color: inherit;
   text-decoration: none;
   text-underline-offset: 3px;
   overflow-wrap: anywhere;
 }
-.proof-card-title a:hover { text-decoration: underline; }
+.proof-card-title .orbi-proof-card-title-a:hover { text-decoration: underline; }
 
 .proof-card-meta { margin: 0; color: #4b615d; font-family: var(--mono); font-size: 0.72rem; }
-.proof-card-meta a { color: inherit; text-underline-offset: 3px; }
+.proof-card-meta .orbi-proof-card-meta-a { color: inherit; text-underline-offset: 3px; }
 
 .proof-card-review {
   margin: 0;
@@ -841,7 +848,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 /* Quote card: the quotation mark and the larger type carry the distinction. */
 .proof-card-quote-text { margin: 0; }
-.proof-card-quote-text p {
+.proof-card-quote-text .orbi-proof-card-quote-text-p {
   margin: 0;
   font-family: var(--display);
   font-size: 1.25rem;
@@ -867,8 +874,8 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 .night .social-proof .section-tag { color: #829a96; }
 .night .social-proof .section-lede { color: #9aada9; }
 .night .social-proof-more { color: #9aada9; }
-.night .social-proof-more a { color: #edf5f0; text-underline-offset: 3px; }
-.night .social-proof-more a:hover { color: #fff; }
+.night .social-proof-more .orbi-social-proof-more-a { color: #edf5f0; text-underline-offset: 3px; }
+.night .social-proof-more .orbi-social-proof-more-a:hover { color: #fff; }
 
 .night .proof-card {
   border: 1px solid var(--line-dark);
@@ -878,7 +885,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 .night .proof-card-repo { color: #9aada9; }
 .night .proof-card-title { color: #edf5f0; }
 .night .proof-card-meta { color: #9aada9; }
-.night .proof-card-meta a { color: #edf5f0; }
+.night .proof-card-meta .orbi-proof-card-meta-a { color: #edf5f0; }
 .night .proof-card-review { border-top-color: var(--line-dark); color: #9aada9; }
 .night .proof-card-person { color: #edf5f0; }
 .night .proof-card-handle { color: #9aada9; }
@@ -944,7 +951,7 @@ h2 {
   list-style: none;
 }
 
-.shift-list li {
+.shift-list .orbi-shift-list-li {
   display: grid;
   grid-template-columns: 36px 1fr auto 1.25fr;
   gap: 16px;
@@ -981,7 +988,7 @@ h2 {
   align-items: end;
 }
 
-.section-heading h2 { margin-bottom: 0; }
+.section-heading .orbi-section-heading-h2 { margin-bottom: 0; }
 .section-heading > p { margin-bottom: 6px; }
 
 .production-map {
@@ -1062,10 +1069,10 @@ h2 {
   font-size: 0.68rem;
 }
 
-.recovery-rail p { margin: 0; font-size: 0.83rem; }
+.recovery-rail .orbi-recovery-rail-p { margin: 0; font-size: 0.83rem; }
 
 .proof-heading { align-items: end; }
-.proof-heading h2 { margin-bottom: 0; }
+.proof-heading .orbi-proof-heading-h2 { margin-bottom: 0; }
 
 /* Issue -> PR -> release: the headline promises a tagged release, so the
    evidence strip has to show one. Three shots, two arrows. */
@@ -1104,7 +1111,7 @@ h2 {
   color: #edf5f0;
 }
 
-.proof-shot img { width: 100%; height: auto; }
+.proof-shot .orbi-proof-shot-img { width: 100%; height: auto; }
 
 .proof-arrow {
   display: flex;
@@ -1136,7 +1143,7 @@ h2 {
 
 .proof-ledger-four { grid-template-columns: repeat(4, 1fr); }
 
-.proof-ledger li {
+.proof-ledger .orbi-proof-ledger-li {
   display: grid;
   grid-template-columns: 34px 1fr;
   gap: 10px 16px;
@@ -1151,11 +1158,11 @@ h2 {
   .proof-ledger-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.proof-ledger li + li { padding-left: 32px; }
-.proof-ledger li:last-child { border-right: 0; }
+.proof-ledger .orbi-proof-ledger-li + li { padding-left: 32px; }
+.proof-ledger .orbi-proof-ledger-li:last-child { border-right: 0; }
 .proof-ledger span { grid-row: 1 / span 2; color: #4b615d; font-family: var(--mono); font-size: 0.7rem; }
 .proof-ledger strong { font-family: var(--display); font-size: 1.1rem; }
-.proof-ledger p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; }
+.proof-ledger .orbi-proof-ledger-p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; }
 
 .proof-loop { margin: 28px 0 0; }
 .proof-loop-video { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; }
@@ -1179,8 +1186,8 @@ h2 {
 }
 
 .section-tag-dark { color: #9fb7b1; }
-.ownership h2 { margin-bottom: 24px; font-size: clamp(3rem, 4.5vw, 5.4rem); }
-.ownership p:not(.section-tag) { max-width: 37rem; color: #b8cac5; }
+.ownership .orbi-ownership-h2 { margin-bottom: 24px; font-size: clamp(3rem, 4.5vw, 5.4rem); }
+.ownership .orbi-ownership-p:not(.section-tag) { max-width: 37rem; color: #b8cac5; }
 
 .ownership-map {
   display: grid;
@@ -1237,7 +1244,7 @@ h2 {
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
-.run-option h3 {
+.run-option .orbi-run-option-h3 {
   margin-bottom: 18px;
   font-family: var(--display);
   font-size: clamp(2rem, 3vw, 3.2rem);
@@ -1246,14 +1253,14 @@ h2 {
   line-height: 1;
 }
 .run-option > p:not(.option-state) { color: var(--ink-soft); }
-.run-option ul {
+.run-option .orbi-run-option-ul {
   flex: 1;
   margin: 12px 0 34px;
   padding-left: 20px;
   color: var(--ink-soft);
   font-size: 0.9rem;
 }
-.run-option li + li { margin-top: 9px; }
+.run-option .orbi-run-option-li + li { margin-top: 9px; }
 .run-option .button { align-self: flex-start; }
 .run-option .cloud-access {
   margin: 18px 0 0;
@@ -1287,7 +1294,7 @@ h2 {
 .pricing-equation strong { font-family: var(--display); font-size: 1.2rem; }
 .pricing-equation small { color: #a9bbb8; font-size: 0.76rem; }
 
-.direction-head h2 { margin-bottom: 0; }
+.direction-head .orbi-direction-head-h2 { margin-bottom: 0; }
 
 .future-loop {
   display: grid;
@@ -1299,7 +1306,7 @@ h2 {
   list-style: none;
 }
 
-.future-loop li {
+.future-loop .orbi-future-loop-li {
   position: relative;
   min-height: 260px;
   padding: 28px;
@@ -1307,7 +1314,7 @@ h2 {
   border-bottom: 1px solid var(--line);
 }
 
-.future-loop li::after {
+.future-loop .orbi-future-loop-li::after {
   content: "→";
   position: absolute;
   top: 21px;
@@ -1321,11 +1328,11 @@ h2 {
   color: var(--signal-on-light);
 }
 
-.future-loop li:nth-child(3)::after,
-.future-loop li:last-child::after { content: none; }
-.future-loop > li > span { color: #4b615d; }
+.future-loop .orbi-future-loop-li:nth-child(3)::after,
+.future-loop .orbi-future-loop-li:last-child::after { content: none; }
+.future-loop > .orbi-future-loop-li > span { color: #4b615d; }
 .future-loop strong { display: block; margin: 52px 0 12px; font-family: var(--display); font-size: 1.35rem; letter-spacing: -0.02em; }
-.future-loop p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+.future-loop .orbi-future-loop-p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
 
 .direction-thesis {
   display: grid;
@@ -1339,7 +1346,7 @@ h2 {
   line-height: 1.35;
 }
 
-.direction-thesis p { margin-bottom: 0; }
+.direction-thesis .orbi-direction-thesis-p { margin-bottom: 0; }
 .direction-thesis strong { color: #006c5b; }
 
 /* Mid-page conversion point: the CTAs sat at 7%, 62% and 97%, leaving the
@@ -1356,7 +1363,7 @@ h2 {
   background: var(--paper-2);
 }
 
-.midway p {
+.midway .orbi-midway-p {
   flex: 1 1 22rem;
   margin: 0;
   font-family: var(--display);
@@ -1472,7 +1479,7 @@ h2 {
   background: var(--paper-2);
 }
 
-.faq h2 { max-width: 24ch; }
+.faq .orbi-faq-h2 { max-width: 24ch; }
 
 .faq-list {
   margin-top: 62px;
@@ -1527,7 +1534,7 @@ h2 {
   padding: 0 0 28px;
 }
 
-.faq-answer p {
+.faq-answer .orbi-faq-answer-p {
   grid-column: 2;
   max-width: 58rem;
   margin: 0;
@@ -1535,7 +1542,7 @@ h2 {
   font-size: 0.98rem;
 }
 
-.faq-answer p + p { margin-top: 12px; }
+.faq-answer .orbi-faq-answer-p + p { margin-top: 12px; }
 .faq-answer code {
   padding: 1px 6px;
   background: #dfe7e4;
@@ -1547,7 +1554,7 @@ h2 {
   border-top: 1px solid var(--line);
 }
 
-.closing h2 { max-width: 12ch; }
+.closing .orbi-closing-h2 { max-width: 12ch; }
 .closing > p:not(.section-tag) { max-width: 48rem; margin-bottom: 34px; color: var(--ink-soft); font-size: 1.1rem; }
 .button-dark { background: var(--ink); color: #fff; }
 .button-dark:hover { background: #1f4142; }
@@ -1568,7 +1575,7 @@ h2 {
 }
 
 .wordmark-footer { color: var(--ink); }
-.site-footer p {
+.site-footer .orbi-site-footer-p {
   max-width: 18ch;
   margin: 0;
 }
@@ -1714,7 +1721,7 @@ h2 {
     transform: none;
   }
 
-  .nav-docs-menu a {
+  .nav-docs-menu .orbi-nav-docs-menu-a {
     min-height: 42px;
     white-space: normal;
   }
@@ -1794,7 +1801,7 @@ h2 {
   .closing { padding-top: 88px; padding-bottom: 88px; }
   h2 { font-size: clamp(2.8rem, 13vw, 4.2rem); line-height: 1; }
   .thesis { gap: 60px; }
-  .shift-list li { grid-template-columns: 28px 1fr auto 1.2fr; gap: 8px; padding: 19px 0; }
+  .shift-list .orbi-shift-list-li { grid-template-columns: 28px 1fr auto 1.2fr; gap: 8px; padding: 19px 0; }
   .shift-list strong,
   .shift-list b { font-size: 0.76rem; }
 
@@ -1811,8 +1818,8 @@ h2 {
   .proof-arrow { flex-direction: row; justify-content: center; gap: 8px; transform: rotate(90deg); }
   .proof-arrow span { transform: rotate(-90deg); }
   .proof-ledger { grid-template-columns: 1fr; margin-top: 60px; }
-  .proof-ledger li,
-  .proof-ledger li + li { padding: 24px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .proof-ledger .orbi-proof-ledger-li,
+  .proof-ledger .orbi-proof-ledger-li + li { padding: 24px 0; border-right: 0; border-bottom: 1px solid var(--line); }
 
   .ownership { padding: 82px 0; }
   .ownership-map { grid-template-columns: 1fr; gap: 0; }
@@ -1829,10 +1836,10 @@ h2 {
   .pricing-equation small { grid-column: 1; }
 
   .future-loop { grid-template-columns: 1fr; margin-top: 55px; }
-  .future-loop li { min-height: 220px; }
-  .future-loop li::after,
-  .future-loop li:nth-child(3)::after { top: auto; right: 20px; bottom: -13px; content: "↓"; }
-  .future-loop li:last-child::after { content: none; }
+  .future-loop .orbi-future-loop-li { min-height: 220px; }
+  .future-loop .orbi-future-loop-li::after,
+  .future-loop .orbi-future-loop-li:nth-child(3)::after { top: auto; right: 20px; bottom: -13px; content: "↓"; }
+  .future-loop .orbi-future-loop-li:last-child::after { content: none; }
   .future-loop strong { margin-top: 38px; }
   .direction-thesis { grid-template-columns: 1fr; gap: 28px; font-size: 1.3rem; }
 
@@ -1844,7 +1851,7 @@ h2 {
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
   .site-footer { grid-template-columns: 1fr; }
-  .site-footer > p {
+  .site-footer > .orbi-site-footer-p {
     grid-column: 1;
     grid-row: auto;
     max-width: none;
@@ -1905,7 +1912,7 @@ h2 {
   background: var(--paper-2);
 }
 
-.compare-section h2 { max-width: 26ch; }
+.compare-section .orbi-compare-section-h2 { max-width: 26ch; }
 
 /* Inline source citations: one line under a fact group or a timeline event,
    mono and quiet, so the claim and its provenance stay visually attached. */
@@ -1918,7 +1925,7 @@ h2 {
   line-height: 1.6;
 }
 
-.src-note a { color: inherit; }
+.src-note .orbi-src-note-a { color: inherit; }
 
 /* Issue #89: the delivery rows' verbatim vendor quotes, rendered as a
    footnote block directly under the matrix so every 是/No in the three new
@@ -1945,7 +1952,7 @@ h2 {
 
 .claim-quote-text { color: var(--ink); }
 
-.claim-quote-src a { color: inherit; }
+.claim-quote-src .orbi-claim-quote-src-a { color: inherit; }
 
 /* The differences table scrolls inside its own box on narrow screens, per the
    .install-block precedent: a table in a shell must never drag the page. */
@@ -2015,7 +2022,7 @@ h2 {
   list-style: none;
 }
 
-.event-list li {
+.event-list .orbi-event-list-li {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
   gap: 6px 28px;
@@ -2040,7 +2047,7 @@ h2 {
   line-height: 1.25;
 }
 
-.event-list p { margin: 8px 0 0; color: var(--ink-soft); }
+.event-list .orbi-event-list-p { margin: 8px 0 0; color: var(--ink-soft); }
 .event-list .src-note { grid-column: 2; }
 
 /* Honest-choice cards reuse the run-option pair; these cards answer a
@@ -2056,7 +2063,7 @@ h2 {
   list-style: none;
 }
 
-.source-list li {
+.source-list .orbi-source-list-li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 130px;
   gap: 4px 28px;
@@ -2066,7 +2073,7 @@ h2 {
 
 .source-list strong { font-weight: 600; }
 
-.source-list a { color: var(--ink); text-underline-offset: 3px; }
+.source-list .orbi-source-list-a { color: var(--ink); text-underline-offset: 3px; }
 
 .source-list .source-date {
   padding-top: 3px;
@@ -2090,9 +2097,9 @@ h2 {
   list-style: none;
 }
 
-.dive-list li { border-bottom: 1px solid var(--line); }
+.dive-list .orbi-dive-list-li { border-bottom: 1px solid var(--line); }
 
-.dive-list a {
+.dive-list .orbi-dive-list-a {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 28px;
@@ -2102,9 +2109,9 @@ h2 {
   text-decoration: none;
 }
 
-.dive-list a:hover strong { color: #0b5f50; }
+.dive-list .orbi-dive-list-a:hover strong { color: #0b5f50; }
 
-.dive-list strong {
+.dive-list .orbi-dive-list-strong {
   font-family: var(--display);
   font-size: 1.35rem;
   font-weight: 600;
@@ -2122,7 +2129,7 @@ h2 {
 
 .dive-list .dive-status.is-live { color: #0b5f50; }
 
-.dive-list p {
+.dive-list .orbi-dive-list-p {
   grid-column: 1 / -1;
   margin: 0;
   color: var(--ink-soft);
@@ -2131,13 +2138,13 @@ h2 {
 @media (max-width: 760px) {
   .compare-hero { padding: 64px 0 48px; }
 
-  .event-list li { grid-template-columns: 1fr; gap: 4px; }
+  .event-list .orbi-event-list-li { grid-template-columns: 1fr; gap: 4px; }
   .event-list .src-note { grid-column: 1; }
 
   .compare-choice .run-options { margin-top: 36px; }
 
-  .source-list li { grid-template-columns: 1fr; gap: 2px; }
+  .source-list .orbi-source-list-li { grid-template-columns: 1fr; gap: 2px; }
   .source-list .source-date { padding-top: 0; text-align: left; }
 
-  .dive-list a { grid-template-columns: 1fr; }
+  .dive-list .orbi-dive-list-a { grid-template-columns: 1fr; }
 }

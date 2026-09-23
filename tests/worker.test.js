@@ -403,6 +403,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(body).toContain('title="alice"');
     expect(body).toContain('title="bob&amp;co"');
     expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
+    expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(2);
     expect(body).not.toContain("__FOUNDING_AVATARS__");
     expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
     expect(body).toContain('<section data-avatar-wall >');
@@ -905,6 +906,15 @@ describe("visit attribution (Issue #228)", () => {
   // stores the judgment inputs, never the raw UA).
   const EMPTY_UA_HASH = "e3b0c44298fc1c14";
   const realFetch = globalThis.fetch;
+  const BOT_LIST_DB = {
+    prepare(sql) {
+      return {
+        all: async () => sql.includes("bot_asns")
+          ? { results: [{ asn: 16509 }] }
+          : { results: [{ needle: "gptbot" }, { needle: "bot" }, { needle: "crawler" }, { needle: "spider" }] },
+      };
+    },
+  };
   const HTML_PAGE = {
     body: "<html><head><title>page</title></head><body>page</body></html>",
     headers: { "Content-Type": "text/html; charset=utf-8", ETag: '"asset-etag-1"' },
@@ -949,6 +959,7 @@ describe("visit attribution (Issue #228)", () => {
       CLOUD_VISIT_URL: VISIT_URL,
       WEBSITE_SECRET: SECRET,
       CLOUD: { fetch: (...args) => globalThis.fetch(...args) },
+      VISITOR_EVENTS_DB: BOT_LIST_DB,
       ...overrides,
     };
   }

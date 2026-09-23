@@ -42,10 +42,10 @@ describe("light-surface accent contrast", () => {
   it.each([
     [".founding-offer .founding-price", "run-on-light"],
     [".founding-availability", "run-on-light"],
-    [".trust-line-paper li::before", "run-on-light"],
+    [".trust-line-paper .orbi-trust-line-paper-li::before", "run-on-light"],
     [".shift-list em", "signal-on-light"],
     [".proof-arrow", "signal-on-light"],
-    [".future-loop li::after", "signal-on-light"],
+    [".future-loop .orbi-future-loop-li::after", "signal-on-light"],
     [".faq-item summary::after", "signal-on-light"],
   ])("uses the light-surface token for %s", (selector, token) => {
     expect(declaration(selector)).toMatch(new RegExp(`color:\\s*var\\(--${token}\\)`));

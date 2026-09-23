@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Claude Code 无人值守跑起来之后，谁来按合并 | Orbi</title>
-  <meta name="description" content="让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。">
+  <title>Claude Code 无人值守之后，谁来合并 PR | Orbi</title>
+  <meta name="description" content="Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。">
   <link rel="canonical" href="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Claude Code 无人值守跑起来之后，谁来按合并">
-  <meta property="og:description" content="让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。">
+  <meta property="og:title" content="Claude Code 无人值守之后，谁来合并 PR">
+  <meta property="og:description" content="Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。">
   <meta property="og:url" content="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
   <meta property="og:image" content="https://orbi.build/img/blog-claude-actions.png">
-  <meta property="og:image:alt" content="Claude Code 无人值守跑起来之后，谁来按合并">
+  <meta property="og:image:alt" content="Claude Code 无人值守之后，谁来合并 PR">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 无人值守跑起来之后，谁来按合并","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"zh-CN","description":"让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 无人值守之后，谁来合并 PR","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"zh-CN","description":"Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,8 +83,8 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">博客 · 2026-09-19</p>
-        <h1 id="post-title">Claude Code 无人值守跑起来之后，谁来按合并</h1>
-        <p class="hero-lede">让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。</p>
+        <h1 id="post-title">Claude Code 无人值守之后，谁来合并 PR</h1>
+        <p class="hero-lede">Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。</p>
       </section>
     </div>
 
@@ -130,7 +130,7 @@
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>
     </a>
-    <p>不会随 Session 消失的软件生产。</p>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
       <ul>
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
@@ -179,5 +179,22 @@
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
-</body>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
 </html>

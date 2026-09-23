@@ -197,25 +197,25 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/designing-a-slash-command/
 - Waiting for an answer the user can't give (English):
   https://orbi.build/blog/waiting-for-someone-who-cannot-answer/
-- 设计一条斜杠命令，顺便读了前人的两份源码 (Chinese):
+- 设计一条斜杠命令：从 Prow 与 bors-ng 源码推导 (Chinese):
   https://orbi.build/zh/blog/designing-a-slash-command/
-- 我们的引擎在等一个用户给不出的答案 (Chinese):
+- 我们的引擎为何在等待一个托管用户无法给出的答案 (Chinese):
   https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/
 - Watch the seven steps, start to finish (English):
   https://orbi.build/blog/watch-the-six-steps/
-- 七步跑完，全程录下来了 (Chinese):
+- 七步跑完，全程录下来了：83 秒 Orbi Cloud 交付记录 (Chinese):
   https://orbi.build/zh/blog/watch-the-six-steps/
 - An autonomous coding agent that can tell itself no (English):
   https://orbi.build/blog/what-autonomous-actually-means/
-- 会对自己说不的 AI 编码 agent (Chinese):
+- 会对自己说不的 AI 编码 agent：真实交付中的独立评审 (Chinese):
   https://orbi.build/zh/blog/what-autonomous-actually-means/
-- Claude Code in GitHub Actions stops at the pull request. Who merges it? (English):
+- Claude Code in Actions: who merges? (English):
   https://orbi.build/blog/claude-code-github-actions-who-merges/
-- Claude Code 无人值守跑起来之后，谁来按合并 (Chinese):
+- Claude Code 无人值守之后，谁来合并 PR (Chinese):
   https://orbi.build/zh/blog/claude-code-github-actions-who-merges/
 - Docker image published on the third try (English):
   https://orbi.build/blog/docker-image-third-try/
-- Docker 镜像第三次尝试才发布成功 (Chinese):
+- Docker 镜像第三次尝试：从构建上下文到发布成功 (Chinese):
   https://orbi.build/zh/blog/docker-image-third-try/
 
 ## Links

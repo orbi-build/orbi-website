@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi Cloud — 提个 Issue，收个版本 | Orbi</title>
-  <meta name="description" content="Orbi Cloud 是 Orbi 的托管运行方式：托管 Runner 从你的仓库领取 GitHub Issue，实现、独立审查并修复，只合并审过的那个 Head，最后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。含 __INCLUDED_TOKENS__ token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off。">
+  <meta name="description" content="Orbi Cloud 托管 GitHub 交付：提 Issue、独立审查修复、合并准确版本并发布 Release，并说明执行边界与事实来源。">
   <link rel="canonical" href="https://orbi.build/zh/cloud/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cloud/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/">
@@ -161,12 +161,12 @@
         <p class="hero-lede"><strong>同一条 GitHub 账本上的托管 Runner。</strong>Orbi Cloud 从你的仓库领取 Issue，完成实现，跑独立审查与修复门禁，只合并审过的那个 Head，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。模型用量包含在计划内——每月 __INCLUDED_TOKENS__ token；交付产线由我们来运营——每次交付都由你添加 ai-ready 标签触发。</p>
         <div class="cta-row hero-ctas">
           <div class="hero-primary">
-            <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
-            <p>下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。</p>
-            <p><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong></p>
+            <a class="button button-signal" data-cta="cloud-hero" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+            <p class="orbi-hero-primary-p">下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。</p>
+            <p class="orbi-hero-primary-p"><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong></p>
           </div>
-          <p class="hero-alt">需要了解怎么开始？<a href="https://cloud-docs.orbi.build/?ref=cloud-page">查看 Cloud 文档 ↗</a></p>
-          <p class="hero-alt">想自己部署？<a data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
+          <p class="hero-alt">需要了解怎么开始？<a class="orbi-hero-alt-a" data-cta="cloud-docs" href="https://cloud-docs.orbi.build/?ref=cloud-page">查看 Cloud 文档 ↗</a></p>
+          <p class="hero-alt">想自己部署？<a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
         </div>
         <figure class="proof-loop cloud-demo">
           <video
@@ -186,35 +186,35 @@
 
     <section class="compare-section shell" aria-labelledby="what-title">
       <p class="section-tag">ORBI CLOUD 是什么</p>
-      <h2 id="what-title">托管 Runner，GitHub 仍是唯一事实源</h2>
+      <h2 class="orbi-compare-section-h2" id="what-title">托管 Runner，GitHub 仍是唯一事实源</h2>
       <p class="section-lede">Orbi Cloud 跑的是与自托管 Orbi 相同的 GitHub 原生产线——Issue 进，Worktree、测试、独立审查与修复、精确合并——只是运行在由我们维护的基础设施上。你的工作流一点不变：Issue、PR 和发布证据都留在你自己的仓库里。</p>
       <ul class="event-list">
-        <li>
+        <li class="orbi-event-list-li">
           <span class="event-era">交付闭环</span>
           <div>
-            <strong>GitHub Issue 进，打好 Tag 的 Release 出</strong>
-            <p>能改代码、会重跑测试的独立审查，exact-head merge（只合并审过的那个 Head），再到冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
+            <strong >GitHub Issue 进，打好 Tag 的 Release 出</strong>
+            <p class="orbi-event-list-p">能改代码、会重跑测试的独立审查，exact-head merge（只合并审过的那个 Head），再到冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone——你的仓库本来就懂这条闭环，不需要引入第二个工作区。</p>
           </div>
         </li>
-        <li>
+        <li class="orbi-event-list-li">
           <span class="event-era">模型</span>
           <div>
-            <strong>模型用量包含在内，成本摊在明面上</strong>
-            <p>计划内含每月 __INCLUDED_TOKENS__ token；额度用完后，新交付暂停，没有按 token 计费的超额账单。单次交付的实测成本就写在下面。</p>
+            <strong >模型用量包含在内，成本摊在明面上</strong>
+            <p class="orbi-event-list-p">计划内含每月 __INCLUDED_TOKENS__ token；额度用完后，新交付暂停，没有按 token 计费的超额账单。单次交付的实测成本就写在下面。</p>
           </div>
         </li>
-        <li>
+        <li class="orbi-event-list-li">
           <span class="event-era">运营</span>
           <div>
-            <strong>恢复、合并门禁、独立审查</strong>
-            <p>交付产线的运营层，由我们承担。</p>
+            <strong >恢复、合并门禁、独立审查</strong>
+            <p class="orbi-event-list-p">交付产线的运营层，由我们承担。</p>
           </div>
         </li>
-        <li>
+        <li class="orbi-event-list-li">
           <span class="event-era">发版</span>
           <div>
-            <strong>发版由你发起，Orbi 来执行</strong>
-            <p>发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打。发版的测试验收就是你仓库的 CI 结果——release commit 上的 GitHub Actions check run——所以 <a href="/zh/guides/ci-gates/">CI 里放什么，决定了 Orbi 替你保证什么</a>：放单测，它保证代码逻辑；放业务流程的 e2e，它保证业务闭环。不放 CI 也是一种选择：没有任何 check run 时，两道门禁都放行，release 照样能发——只是失去了唯一的测试验收闸门。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
+            <strong >发版由你发起，Orbi 来执行</strong>
+            <p class="orbi-event-list-p">发版从不是全自动。你开一张 release 票并打上 ai-release 标签——这个标签只有人能打。发版的测试验收就是你仓库的 CI 结果——release commit 上的 GitHub Actions check run——所以 <a href="/zh/guides/ci-gates/">CI 里放什么，决定了 Orbi 替你保证什么</a>：放单测，它保证代码逻辑；放业务流程的 e2e，它保证业务闭环。不放 CI 也是一种选择：没有任何 check run 时，两道门禁都放行，release 照样能发——只是失去了唯一的测试验收闸门。之后 Orbi 冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。</p>
           </div>
         </li>
       </ul>
@@ -223,18 +223,18 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">价格</p>
-        <h2 id="pricing-title">免费：前 __FREE_DELIVERIES__ 次合并交付；之后 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token</h2>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">免费：前 __FREE_DELIVERIES__ 次合并交付；之后 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token</h2>
         <p class="section-lede"><strong>前 __FREE_DELIVERIES__ 次合并交付免费。</strong>失败的交付不扣额度。之后正价为<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，包含托管 Runner——协调、恢复和合并门禁都在内——并含 <strong>__INCLUDED_TOKENS__ token 的模型用量</strong>（__INCLUDED_TOKENS__ token 大约能跑 85–400 次合并交付，取决于任务大小）；额度用完后，新交付暂停。</p>
         <p class="founding-offer"><strong>Founding Partner</strong> <strong class="founding-price">US$0</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
         <p>Founding 券 100% off，限量发放。Founding Partner——前 10 位订阅者——凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。</p>
         <p>单次交付的实测 token 成本——样本、分位、竞品引证——在<a href="/zh/cost/">成本页</a>。</p>
         <ul class="event-list">
-          <li>
+          <li class="orbi-event-list-li">
             <span class="event-era">FOUNDING PARTNER · 限 10 位</span>
             <div>
-              <strong>前 10 位订阅者是共建者，不是试用用户</strong>
-              <p>Founding Partner 的订阅永久免费；每月 __FOUNDING_TOKENS__ token 由 Orbi 承担；被采纳的 Issue 直接影响产品方向。</p>
-              <p>条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送按月发放，与这条贡献同步续期——滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
+              <strong >前 10 位订阅者是共建者，不是试用用户</strong>
+              <p class="orbi-event-list-p">Founding Partner 的订阅永久免费；每月 __FOUNDING_TOKENS__ token 由 Orbi 承担；被采纳的 Issue 直接影响产品方向。</p>
+              <p class="orbi-event-list-p">条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送按月发放，与这条贡献同步续期——滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
             </div>
           </li>
         </ul>
@@ -243,34 +243,34 @@
 
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">成本，实测</p>
-      <h2 id="cost-title">我们不在你的 token 上赚差价</h2>
+      <h2 class="orbi-compare-section-h2" id="cost-title">我们不在你的 token 上赚差价</h2>
       <p class="section-lede">__INCLUDED_TOKENS__ token 大约能跑 <strong>85–400 次合并交付</strong>，取决于任务大小。这套成本结构建立在 provider 支持 prompt caching 上。完整样本、分位、限制和竞品引证见<a href="/zh/cost/">成本页</a>。</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
       <p class="section-tag">点击之后</p>
-      <h2 id="steps-title">从登录到交付第一个 Issue，只有四步</h2>
+      <h2 class="orbi-compare-section-h2" id="steps-title">从登录到交付第一个 Issue，只有四步</h2>
       <p class="section-lede">不用注册新密码，也不用迁移工作区。整条路径都在 GitHub 上：</p>
       <ol class="proof-ledger proof-ledger-four">
-        <li>
+        <li class="orbi-proof-ledger-li">
           <span>01</span>
           <strong>用 GitHub 登录</strong>
-          <p>一次 OAuth 点击。仓库和账号都是你的，不需要单独的 Orbi 凭证。</p>
+          <p class="orbi-proof-ledger-p">一次 OAuth 点击。仓库和账号都是你的，不需要单独的 Orbi 凭证。</p>
         </li>
-        <li>
+        <li class="orbi-proof-ledger-li">
           <span>02</span>
           <strong>安装 Orbi GitHub App</strong>
-          <p>选择允许 Runner 工作的仓库；随时可以在 GitHub 一侧撤销授权。</p>
+          <p class="orbi-proof-ledger-p">选择允许 Runner 工作的仓库；随时可以在 GitHub 一侧撤销授权。</p>
         </li>
-        <li>
+        <li class="orbi-proof-ledger-li">
           <span>03</span>
           <strong>连接仓库</strong>
-          <p>连接第一个仓库，随后我们开通你的 Runner。前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</p>
+          <p class="orbi-proof-ledger-p">连接第一个仓库，随后我们开通你的 Runner。前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</p>
         </li>
-        <li>
+        <li class="orbi-proof-ledger-li">
           <span>04</span>
           <strong>给一个 Issue 加上 ai-ready 标签</strong>
-          <p>打开 <code>&lt;repo&gt;/issues/new?labels=ai-ready</code>，写清楚要改什么，再加上这个标签。Orbi 会在 5 分钟内认领，并在执行过程中在 Issue 下留言。只有成功合并的交付计入终身额度；失败或未合并结束的交付会退还这次额度。</p>
+          <p class="orbi-proof-ledger-p">打开 <code>&lt;repo&gt;/issues/new?labels=ai-ready</code>，写清楚要改什么，再加上这个标签。Orbi 会在 5 分钟内认领，并在执行过程中在 Issue 下留言。只有成功合并的交付计入终身额度；失败或未合并结束的交付会退还这次额度。</p>
         </li>
       </ol>
     </section>
@@ -278,64 +278,64 @@
     <section class="faq" id="faq" aria-labelledby="faq-title">
       <div class="shell">
         <p class="section-tag">开始之前</p>
-        <h2 id="faq-title">买家在点「开始 Cloud」之前
+        <h2 class="orbi-faq-h2" id="faq-title">买家在点「开始 Cloud」之前
           <br class="responsive-break">卡住的问题</h2>
 
         <div class="faq-list">
           <details class="faq-item" open>
             <summary><span>01</span>券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？</summary>
             <div class="faq-answer">
-              <p>Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。</p>
-              <p>登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
+              <p class="orbi-faq-answer-p">Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。</p>
+              <p class="orbi-faq-answer-p">登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
             </div>
           </details>
 
           <details class="faq-item" open>
             <summary><span>02</span>__INCLUDED_TOKENS__ token 用完了会怎样？</summary>
             <div class="faq-answer">
-              <p>计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。</p>
+              <p class="orbi-faq-answer-p">计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>03</span>一个订阅能接几个仓库？</summary>
             <div class="faq-answer">
-              <p>每个订阅同时只接 1 个 active 仓库。可以更换：连接另一个仓库会停用原来的，并为新仓库重新开通。原仓库有进行中的交付时，暂时无法更换。</p>
+              <p class="orbi-faq-answer-p">每个订阅同时只接 1 个 active 仓库。可以更换：连接另一个仓库会停用原来的，并为新仓库重新开通。原仓库有进行中的交付时，暂时无法更换。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>04</span>你们能看到我的代码吗？</summary>
             <div class="faq-answer">
-              <p>托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。</p>
+              <p class="orbi-faq-answer-p">托管 Runner 会把你的仓库 clone 到我们运维的机器上——这就是托管的含义。GitHub 仍是唯一事实源：Issue、PR 和发布证据都留在你自己的仓库里。GitHub App 授权哪些仓库由你选，随时可以在 GitHub 一侧撤销。</p>
               <!-- 事实来源（私有运维仓库，不作为用户链接）：
                    orbi-cloud/runbook/cleanup_completed.py
                    orbi-cloud/scripts/provision-runner-sandbox.sh
                    orbi-cloud/migrations/0005_tenant_secrets.sql -->
-              <p>保留：交付进入终态后，worktree 会在静默 120 分钟后销毁；进行中和可恢复的交付 worktree 会保留。</p>
-              <p>隔离：每个租户的代码、凭据和交付产物均与其他租户隔离。</p>
-              <p>模型 API key：BYOK 密钥在控制面以 AES-GCM 加密存储；API 读取只返回掩码值，解密只用于注入 Runner。</p>
+              <p class="orbi-faq-answer-p">保留：交付进入终态后，worktree 会在静默 120 分钟后销毁；进行中和可恢复的交付 worktree 会保留。</p>
+              <p class="orbi-faq-answer-p">隔离：每个租户的代码、凭据和交付产物均与其他租户隔离。</p>
+              <p class="orbi-faq-answer-p">模型 API key：BYOK 密钥在控制面以 AES-GCM 加密存储；API 读取只返回掩码值，解密只用于注入 Runner。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>05</span>Founding Partner 每月一个被采纳的 Issue，没做到会怎样？</summary>
             <div class="faq-answer">
-              <p>条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。</p>
+              <p class="orbi-faq-answer-p">条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>06</span>自托管和 Cloud 能同时用吗？</summary>
             <div class="faq-answer">
-              <p>可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。</p>
+              <p class="orbi-faq-answer-p">可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>07</span>Orbi Cloud 出故障了怎么办？</summary>
             <div class="faq-answer">
-              <p>故障会发布在公开的状态页 <a href="https://status.orbi.build">status.orbi.build</a> 上，页面展示实时状态和最近 60 天的历史记录。</p>
+              <p class="orbi-faq-answer-p">故障会发布在公开的状态页 <a href="https://status.orbi.build">status.orbi.build</a> 上，页面展示实时状态和最近 60 天的历史记录。</p>
             </div>
           </details>
         </div>
@@ -344,10 +344,10 @@
 
     <section class="closing shell" aria-labelledby="start-title">
       <p class="section-tag">创始试点</p>
-      <h2 id="start-title">从第一个 Issue 开始</h2>
-      <p>用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
+      <h2 class="orbi-closing-h2" id="start-title">从第一个 Issue 开始</h2>
+      <p >用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
       <div class="cta-row">
-        <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
+        <a class="button button-signal" data-cta="pricing" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/zh/">Orbi 本身能做什么 →</a>
       </div>
     </section>
@@ -358,7 +358,7 @@
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>
     </a>
-    <p>不会随 Session 消失的软件生产。</p>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
       <ul>
         <li><a href="https://cloud-docs.orbi.build/?ref=cloud-nav">文档</a></li>
@@ -407,5 +407,22 @@
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
-</body>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
 </html>

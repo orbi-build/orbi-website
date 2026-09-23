@@ -1,7 +1,7 @@
 ---
-title: 设计一条斜杠命令，顺便读了前人的两份源码
+title: 设计一条斜杠命令：从 Prow 与 bors-ng 源码推导
 date: 2026-09-22
-summary: 命名、语法、正则锚定、注册表形状——一条票内命令背后的四个取舍，对照 Prow 与 bors-ng 的源码逐条推导，每条带行号。
+summary: 命名、语法、正则锚定和注册表形状：对照 Prow 与 bors-ng 源码逐条推导票内斜杠命令背后的四个取舍，每项都附可查的源码行号和实现证据。
 lang: zh
 author: Orbi
 image: /img/blog-slash-command.png

@@ -128,6 +128,51 @@ describe("comparison capability matrix (Issue #201)", () => {
   });
 });
 
+describe("SEO metadata is descriptive (Issue #405, #413)", () => {
+  it("keeps every sitemap HTML page within title, description, and heading limits", () => {
+    const violations = [];
+    const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
+      .map((match) => match[1])
+      .map((urlPath) => urlPath.endsWith("/")
+        ? `${urlPath.slice(1)}index.html`
+        : (urlPath.endsWith(".html") ? urlPath.slice(1) : null))
+      .filter(Boolean);
+
+    for (const output of sitemapOutputs) {
+      const route = `/${output.replace(/index\.html$/, "")}`;
+      const html = shipped.get(output);
+      if (html === undefined) {
+        violations.push(`${route} HTML output missing (maximum missing pages: 0)`);
+        continue;
+      }
+      // Comments can contain examples of metadata and headings; they are not
+      // part of the rendered document or its SEO contract.
+      const rendered = html.replace(/<!--[\s\S]*?-->/g, "");
+      const title = rendered.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? "";
+      const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
+      const h1Count = (rendered.match(/<h1\b/gi) || []).length;
+      const isChinese = route.startsWith("/zh/");
+      const descriptionMin = isChinese ? 70 : 150;
+      const descriptionMax = isChinese ? 80 : 160;
+      if (title.length > 60) violations.push(`${route} title length ${title.length}, maximum 60`);
+      if (description.length < descriptionMin || description.length > descriptionMax) {
+        violations.push(`${route} description length ${description.length}, expected ${descriptionMin}-${descriptionMax} (maximum ${descriptionMax})`);
+      }
+      if (h1Count !== 1) violations.push(`${route} h1 count ${h1Count}, maximum 1 (expected exactly 1)`);
+    }
+
+    expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
+  });
+
+  it("keeps every rendered page title above the crawler minimum", () => {
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(30);
+    }
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
@@ -395,17 +440,17 @@ describe("per-page head parameters (title / description / canonical)", () => {
   it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
     const expected = {
       "compare/devin/index.html": {
-        title: "Open-source Devin alternative: Orbi vs Devin, with the bill | Orbi",
+        title: "Open-source Devin alternative: Orbi vs Devin | Orbi",
         description:
-          "Looking for an open-source Devin alternative? A sourced comparison of Orbi and Devin: ACU credit billing versus measured per-delivery cost, cloud execution versus self-hosted, model lock-in, and when each one wins. Every claim sourced and dated.",
+          "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
       },
       "compare/github-copilot-coding-agent/index.html": {
-        title: "GitHub Copilot coding agent alternative: who merges the PR | Orbi",
+        title: "Copilot coding agent alternative: who merges PR | Orbi",
         description:
-          "A GitHub Copilot coding agent alternative that merges and releases. Sourced comparison: Copilot cannot approve or merge its own pull requests; Orbi runs independent review, an exact-head merge gate, and a tagged release. Cost and auditability compared.",
+          "Orbi vs GitHub Copilot coding agent: compare cloud sandbox delivery with local BYOK control, review, merge ownership, cost, and auditability in practice today.",
       },
       "cost/index.html": {
-        title: "AI coding agent cost comparison: what one delivery actually costs | Orbi",
+        title: "AI coding agent cost: what one delivery costs | Orbi",
       },
       "cloud/index.html": {
         title: "Self-hosted or cloud coding agent: Orbi Cloud | Orbi",
@@ -458,9 +503,9 @@ describe("cloud hero CTA microcopy (Issue #156)", () => {
       const block = heroCtaBlock(output);
       const button = block.indexOf(heroCtaHref[output]);
       expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
-      const paragraph = block.indexOf("<p>");
+      const paragraph = block.search(/<p(?: class="[^"]+")?>/);
       expect(paragraph, `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
-      const text = block.match(/<p>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
+      const text = block.match(/<p(?: class="[^"]+")?>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
       expect(text, `${output}: CTA microcopy drifted`).toBe(expected);
     }
   });
@@ -490,12 +535,12 @@ describe("Cloud documentation links (Issue #315)", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
       const chrome = navRegion(html) + footerRegion(html);
-      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}">`);
+      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
       expect(chrome, `${output}: engine docs must not be in Cloud Docs chrome`).not.toContain(
-        `href="${expected.selfHost}">`,
+        `href="${expected.selfHost}"`,
       );
       expect(html, `${output}: self-hosting CTA`).toContain(
-        `<a data-cta="install" href="${expected.selfHost}">`,
+        `data-cta="install" href="${expected.selfHost}">`,
       );
       expect(html, `${output}: visible Cloud docs CTA`).toContain(
         'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
