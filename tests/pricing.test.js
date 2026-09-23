@@ -313,15 +313,35 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     }
   });
 
+  it("keeps each Cloud measured-cost sentence to one colon", async () => {
+    for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const html = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
+      const costSection = html.match(/<section[^>]+aria-labelledby="cost-title"[\s\S]*?<\/section>/)?.[0];
+      expect(costSection, cloudPage).toBeTruthy();
+      const lede = costSection.match(/<p class="section-lede">([\s\S]*?)<\/p>/)?.[1]
+        .replace(/<[^>]+>/g, "");
+      expect(lede, cloudPage).toBeTruthy();
+      for (const sentence of lede.split(/[.!?。！？]/)) {
+        expect((sentence.match(/[：:]/g) ?? []).length, `${cloudPage}: ${sentence}`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   it("serves both Cloud pages with both source-backed measurements", async () => {
-    for (const [cloudPage, wording] of [
-      ["cloud/index.html", `Depending on ticket size: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`],
-      ["zh/cloud/index.html", `取决于票的大小：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`],
+    for (const [cloudPage, wordings] of [
+      ["cloud/index.html", [
+        `Depending on ticket size: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
+        `${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, or about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
+      ]],
+      ["zh/cloud/index.html", [
+        `取决于票的大小：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
+        `小仓库的常见票合并 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次，像 Orbi 引擎这样的大代码库约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
+      ]],
     ]) {
       const raw = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
       const served = await (await serve(raw, `/${cloudPage.replace("index.html", "")}`)).text();
       expect(served).not.toMatch(/85[–-]400/);
-      expect(served.split(wording).length - 1).toBe(2);
+      for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
       expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
       expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
     }
