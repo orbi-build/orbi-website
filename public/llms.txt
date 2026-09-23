@@ -197,29 +197,29 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/k8e-rejected-then-merged/
 - Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了 (Chinese):
   https://orbi.build/zh/blog/k8e-rejected-then-merged/
-- Designing one slash command (English):
+- How one slash command got its shape (English):
   https://orbi.build/blog/designing-a-slash-command/
-- Waiting for an answer the user can't give (English):
+- The engine waited for an answer users could not give (English):
   https://orbi.build/blog/waiting-for-someone-who-cannot-answer/
-- 设计一条斜杠命令：从 Prow 与 bors-ng 源码推导 (Chinese):
+- 一条斜杠命令在票里是怎么定下来的：从名字到权限边界 (Chinese):
   https://orbi.build/zh/blog/designing-a-slash-command/
-- 我们的引擎为何在等待一个托管用户无法给出的答案 (Chinese):
+- 引擎等来的答案，托管用户给不了：三个交互缺口记录 (Chinese):
   https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/
-- Watch the seven steps, start to finish (English):
+- Seven steps of an Orbi Cloud setup, on video (English):
   https://orbi.build/blog/watch-the-six-steps/
-- 七步跑完，全程录下来了：83 秒 Orbi Cloud 交付记录 (Chinese):
+- Orbi Cloud 七步上手流程，83 秒看完 (Chinese):
   https://orbi.build/zh/blog/watch-the-six-steps/
-- An autonomous coding agent that can tell itself no (English):
+- What an autonomous coding agent does when it says no (English):
   https://orbi.build/blog/what-autonomous-actually-means/
-- 会对自己说不的 AI 编码 agent：真实交付中的独立评审 (Chinese):
+- AI 编码 agent 说不之后，交付会怎样？ (Chinese):
   https://orbi.build/zh/blog/what-autonomous-actually-means/
-- Claude Code in Actions: who merges? (English):
+- Claude Code in Actions: who presses merge? (English):
   https://orbi.build/blog/claude-code-github-actions-who-merges/
-- Claude Code 无人值守之后，谁来合并 PR (Chinese):
+- Claude Code 跑完之后，谁来合并 PR (Chinese):
   https://orbi.build/zh/blog/claude-code-github-actions-who-merges/
-- Docker image published on the third try (English):
+- The Docker image made it out on try three (English):
   https://orbi.build/blog/docker-image-third-try/
-- Docker 镜像第三次尝试：从构建上下文到发布成功 (Chinese):
+- Docker 镜像到第三次才发布成功：三次失败记录 (Chinese):
   https://orbi.build/zh/blog/docker-image-third-try/
 
 ## Links

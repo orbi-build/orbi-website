@@ -145,8 +145,8 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       }
       if (route === "/blog/") {
         for (const title of [
-          "Waiting for an answer the user can't give",
-          "An autonomous coding agent that can tell itself no",
+          "The engine waited for an answer users could not give",
+          "What an autonomous coding agent does when it says no",
         ]) {
           const entry = result.entries.find((candidate) => candidate.titleText === title);
           expect(entry, `missing title ${title}`).toBeDefined();

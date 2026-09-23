@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Claude Code in Actions: who merges? | Orbi</title>
-  <meta name="description" content="Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.">
+  <title>Claude Code in Actions: who presses merge? | Orbi</title>
+  <meta name="description" content="Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.">
   <link rel="canonical" href="https://orbi.build/blog/claude-code-github-actions-who-merges/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Claude Code in Actions: who merges?">
-  <meta property="og:description" content="Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.">
+  <meta property="og:title" content="Claude Code in Actions: who presses merge?">
+  <meta property="og:description" content="Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.">
   <meta property="og:url" content="https://orbi.build/blog/claude-code-github-actions-who-merges/">
   <meta property="og:image" content="https://orbi.build/img/blog-claude-actions.png">
-  <meta property="og:image:alt" content="Claude Code in Actions: who merges?">
+  <meta property="og:image:alt" content="Claude Code in Actions: who presses merge?">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who merges?","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"en","description":"Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who presses merge?","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"en","description":"Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,14 +83,14 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">Blog · 2026-09-19</p>
-        <h1 id="post-title">Claude Code in Actions: who merges?</h1>
-        <p class="hero-lede">Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.</p>
+        <h1 id="post-title">Claude Code in Actions: who presses merge?</h1>
+        <p class="hero-lede">Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>If you have wired <a href="https://github.com/anthropics/claude-code-action">Claude Code</a> into GitHub Actions, you already have the first half. The action answers questions, implements fixes, reviews a pull request, and posts progress back to the thread. Its own feature list ends there: implementation and review. Merging the result and cutting a release stay outside the action.</p>
-<p>That boundary is deliberate and it is the right default for a general-purpose action. But it leaves a question every team hits on day two: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?</p>
+<p>Once <a href="https://github.com/anthropics/claude-code-action">Claude Code</a> is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.</p>
+<p>That boundary makes sense for a general-purpose action. It still leaves the question teams meet almost immediately: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?</p>
 <p>For the last month the answer on my own repository has been: nobody. 431 pull requests merged, 416 Issues walked the full delivery path, 40 releases tagged and published. I have not read the diffs. This post is what had to exist for that to be a reasonable thing to do rather than a reckless one.</p>
 <h2>The model is not the bottleneck</h2>
 <p>The failure people expect is that the model writes something wrong. That happens, and tests catch most of it. The failure that actually costs you is different: the thing that decides &quot;this is good enough to merge&quot; is the same session that wrote the code, or it is a person who stopped reading carefully three weeks ago.</p>

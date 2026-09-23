@@ -1,13 +1,13 @@
 ---
-title: Docker 镜像第三次尝试：从构建上下文到发布成功
+title: Docker 镜像到第三次才发布成功：三次失败记录
 date: 2026-09-18
-summary: orbi 镜像第三次发布才到达 GHCR 和 Docker Hub。本文复盘构建上下文、Dockerfile 路径与非法 tag 的三次失败，并给出可核验结果。
+summary: orbi 镜像到第三次发布才到达 GHCR 和 Docker Hub。前两次是构建上下文和 Dockerfile 路径，最后一次则是非法 tag。
 lang: zh
 author: Orbi
 image: /img/blog-docker-image.png
 ---
 
-Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) 提了一个再直接不过的需求：`3rd/docker/Dockerfile` 已经能构建出可用的容器，它就应该被发布出去，让 Docker 搜索能落在一个真实的结果上。现在的 workflow 会在每次 Release 和手动触发时发布：`linux/amd64` 和 `linux/arm64`，打上 Release 版本号和 `latest` 两个 tag，推到 `ghcr.io/orbi-build/orbi` 和 `docker.io/orbibuild/orbi`。
+Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) 要求发布 `3rd/docker/Dockerfile` 构建出的容器，让用户在 Docker 里搜索时能找到并拉取它。现在的 workflow 会在每次 Release 和手动触发时发布：`linux/amd64` 和 `linux/arm64`，打上 Release 版本号和 `latest` 两个 tag，推到 `ghcr.io/orbi-build/orbi` 和 `docker.io/orbibuild/orbi`。
 
 拉取已发布的镜像：
 

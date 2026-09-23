@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>An autonomous coding agent that can tell itself no | Orbi</title>
-  <meta name="description" content="Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.">
+  <title>What an autonomous coding agent does when it says no | Orbi</title>
+  <meta name="description" content="Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.">
   <link rel="canonical" href="https://orbi.build/blog/what-autonomous-actually-means/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="An autonomous coding agent that can tell itself no">
-  <meta property="og:description" content="Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.">
+  <meta property="og:title" content="What an autonomous coding agent does when it says no">
+  <meta property="og:description" content="Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.">
   <meta property="og:url" content="https://orbi.build/blog/what-autonomous-actually-means/">
   <meta property="og:image" content="https://orbi.build/img/blog-autonomous.png">
-  <meta property="og:image:alt" content="An autonomous coding agent that can tell itself no">
+  <meta property="og:image:alt" content="What an autonomous coding agent does when it says no">
   <meta property="article:published_time" content="2026-09-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"An autonomous coding agent that can tell itself no","datePublished":"2026-09-20","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-autonomous.png","inLanguage":"en","description":"Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.","url":"https://orbi.build/blog/what-autonomous-actually-means/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"What an autonomous coding agent does when it says no","datePublished":"2026-09-20","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-autonomous.png","inLanguage":"en","description":"Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.","url":"https://orbi.build/blog/what-autonomous-actually-means/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,18 +83,17 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">Blog · 2026-09-20</p>
-        <h1 id="post-title">An autonomous coding agent that can tell itself no</h1>
-        <p class="hero-lede">Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.</p>
+        <h1 id="post-title">What an autonomous coding agent does when it says no</h1>
+        <p class="hero-lede">Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>Search for an autonomous coding agent and you will find a lot of tools that
-open pull requests. That part has been solved for a while. The part nobody
-shows you is the refusal: what happens when something reads the diff and says
-this does not ship.</p>
-<p>I want to walk through one delivery where that happened. The writing part is
-easy to demo. The refusal is not.</p>
+<p>Search for an autonomous coding agent and you will find plenty of tools
+that open pull requests. The missing part is what happens when another system
+reads the diff and refuses to ship it.</p>
+<p>Here is one delivery where that happened. Writing the code is easy to demo;
+watching a reviewer refuse it is harder.</p>
 <h2>The delivery</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> described a real
 defect in our own release code. A change had moved the docs sync before the tag

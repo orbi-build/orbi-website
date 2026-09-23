@@ -1,7 +1,7 @@
 ---
-title: Watch the seven steps, start to finish
+title: Seven steps of an Orbi Cloud setup, on video
 date: 2026-09-21
-summary: An 83-second video follows the real Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The seventh step starts paid delivery for Cloud.
+summary: An 83-second video follows the Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The final step starts paid Cloud delivery here.
 lang: en
 author: Orbi
 image: /img/blog-watch-six-steps.png
@@ -13,7 +13,7 @@ video_duration: PT1M23S
 video_embed_url: https://www.youtube.com/embed/_OEaBwrLvvs
 ---
 
-There is now a video of the whole setup: [Orbi Cloud: from zero to a tagged release in seven steps](https://www.youtube.com/watch?v=_OEaBwrLvvs). It runs 83 seconds, it is in English, and it has chapters, so you can jump to the step you are stuck on.
+The full setup is now on video: [Orbi Cloud: from zero to a tagged release in seven steps](https://www.youtube.com/watch?v=_OEaBwrLvvs). It is 83 seconds long, in English, and divided into chapters so you can skip to the step where you are stuck.
 
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud setup from zero to subscription in seven steps" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Watch the complete seven-step Orbi Cloud setup.</figcaption></figure>
 
@@ -58,7 +58,7 @@ The seven steps are the current Cloud onboarding path:
 
 1. **Sign in** with your GitHub identity.
 2. **Install the Orbi GitHub App** on your account.
-3. **Connect a repository** — the repo and the base branch Orbi works from.
+3. **Connect a repository**: the repo and the base branch Orbi works from.
 4. **Provision the environment.** About a minute.
 5. **Your first Issue.** Label it `ai-ready`, and Orbi writes the code and opens a pull request.
 6. **Cut a release.** Type the version; Orbi bumps it, tags it and publishes the GitHub Release.
@@ -66,9 +66,9 @@ The seven steps are the current Cloud onboarding path:
 
 ## The seventh step is the one that starts paid delivery
 
-Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer — an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
+Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
 
-The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care — that is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
+The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
 
 Step five is one label, and you can add it without leaving the terminal:
 
