@@ -609,7 +609,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // download timing and can stall the bounded CI suite. Wait only for the
   // functional /stats response; DOM load is the correct navigation gate.
   const statsResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/stats").catch(() => null);
-  await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  const navigationResponse = await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+  let serverAvatarCount;
+  if (process.env.BASE_URL) {
+    if (!navigationResponse?.ok()) {
+      throw new Error(`${path}: homepage HTML answered ${navigationResponse?.status() ?? "no response"}`);
+    }
+    serverAvatarCount = countServerRenderedAvatars(await navigationResponse.text());
+    if (serverAvatarCount < 1) {
+      throw new Error(`${path}: server-rendered homepage contains no avatars`);
+    }
+  }
   const hero = page.locator(".hero");
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
@@ -682,26 +692,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
-  // the aggregate endpoint stays identity-free and all 11 injected images
-  // finish loading before the wall becomes visible.
+  // the aggregate endpoint stays identity-free and every rendered image
+  // finishes loading before the wall becomes visible. Local mode additionally
+  // pins all 11 injected identities below.
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
-  }
-  let serverAvatarCount;
-  if (process.env.BASE_URL) {
-    const context = await request.newContext();
-    try {
-      const response = await context.get(`${targetURL}${path}`);
-      if (!response.ok()) {
-        throw new Error(`${path}: homepage HTML answered ${response.status()}`);
-      }
-      serverAvatarCount = countServerRenderedAvatars(await response.text());
-    } finally {
-      await context.dispose();
-    }
-    if (serverAvatarCount < 1) {
-      throw new Error(`${path}: server-rendered homepage contains no avatars`);
-    }
   }
   const wall = page.locator("[data-avatar-wall]");
   const browserAvatarCount = await wall.locator("img").count();
