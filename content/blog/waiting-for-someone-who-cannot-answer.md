@@ -1,19 +1,19 @@
 ---
-title: Waiting for an answer the user can't give
+title: The engine waited for an answer users could not give
 date: 2026-09-22
-summary: Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.
+summary: Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.
 lang: en
 author: Orbi
 image: /img/blog-waiting.png
 mirror: waiting-for-someone-who-cannot-answer
 ---
 
-There is a failure mode that does not look like failure. Nothing crashes. No
-error is logged. The system is doing exactly what it was designed to do, which
-is wait — and the person it is waiting for has no idea, and no way to respond.
+Some failures look like a quiet system. Nothing crashes or logs an error. The
+engine is waiting as designed, but the person it is waiting for does not know
+what to do and has no way to answer.
 
-We shipped three of these. We found them in one afternoon, because we finally
-became our own customer.
+We shipped three versions of this mistake. We found them in one afternoon,
+when we tried the product as our own customer.
 
 ## The waiting is correct
 
@@ -31,7 +31,7 @@ inside the ticket:
 > Please run `orbi milestone set <target>` to advance `active_milestone`.
 
 That instruction assumes a CLI and a shell on the host. A managed tenant has
-neither — their sandbox runs on our hardware, which is the entire point of it
+neither； their sandbox runs on our hardware, which is the entire point of it
 being managed. The engine asked a question, on a ticket the tenant could read,
 and accepted only an answer they could not produce.
 
@@ -41,7 +41,7 @@ decision that nobody had been asked to make.
 
 ## The day we noticed
 
-On 2026-09-22 we migrated `orbi-build/orbi` — the engine's own repository — onto
+On 2026-09-22 we migrated `orbi-build/orbi`； the engine's own repository； onto
 our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.
 
 Then the milestone closed, and everything stopped. No notification. No error.
@@ -53,9 +53,9 @@ our own release line behind it to feel it.
 
 ## The same shape, in the UI
 
-Later the same day, a full walkthrough of the product — register, install the
+Later the same day, a full walkthrough of the product； register, install the
 App, connect a repo, provision a sandbox, file an issue, deliver, merge, release
-— surfaced the second instance.
+; surfaced the second instance.
 
 The status page has a release form. It is a text box. You type a version number
 from memory, and that string becomes the release scope.
@@ -70,7 +70,7 @@ issues:
 
 The page already scans GitHub on your behalf and lists what you can act on. It
 just never extended that courtesy to milestones. So you type a version you half
-remember, and if you get it wrong nothing tells you — the rejection happens
+remember, and if you get it wrong nothing tells you； the rejection happens
 later, asynchronously, on a ticket you have to go find.
 
 ## The same shape, in the config
@@ -84,7 +84,7 @@ later, asynchronously, on a ticket you have to go find.
 The third instance is the one that explains the other two.
 
 Our engine writes the active milestone into a repository variable on every tick.
-The value comes from `config.active_milestone` — which lives in the sandbox's own
+The value comes from `config.active_milestone`； which lives in the sandbox's own
 `orbi.toml` file. Not GitHub. Not our control plane.
 
 So the control plane can create a release ticket while the sandbox still
@@ -97,8 +97,8 @@ INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
 
 Then we looked at how a field gets from the control plane into that file, and
 found there is no general mechanism at all. There are four separate
-hand-written sync functions — `sync_orbi_toml_engine_track`,
-`sync_orbi_toml_providers`, `sync_orbi_toml_oauth`, plus the initial render —
+hand-written sync functions； `sync_orbi_toml_engine_track`,
+`sync_orbi_toml_providers`, `sync_orbi_toml_oauth`, plus the initial render;
 each one added for a single field, each one staging a temp file and swapping it
 atomically. The comments record the accretion:
 
@@ -134,7 +134,7 @@ Mode 0600, owned by the sandbox user, and no `authorized_keys`. The tenant
 cannot SSH in. There is no hand-editing to reconcile.
 
 That makes the design simpler than we assumed. The control plane is the sole
-writer, so the merge only has to preserve *other control-plane fields* — there
+writer, so the merge only has to preserve *other control-plane fields*； there
 is no external drift to detect.
 
 It also points at a stronger invariant worth holding: **`orbi.toml` should be a
@@ -145,7 +145,7 @@ control plane holds a partial truth. Those four sync functions each maintain a
 fragment of the real answer, and no single place can tell you what a sandbox is
 supposed to be configured as.
 
-That distinction — *derivative* versus *authoritative* — is the one that
+That distinction； *derivative* versus *authoritative*； is the one that
 decides how much of this class of bug you get. A derivative file can be
 regenerated, diffed against intent, and repaired by a sweep. An authoritative
 file that only one machine holds can only be inspected by going there. Every
@@ -173,7 +173,7 @@ OnUnitActiveSec=1min
 ```
 
 And the refresh endpoint's query is `WHERE r.status = 'active' AND t.status = 'active'`
-— every live sandbox, every minute, not just pending ones. So a pull costs at
+; every live sandbox, every minute, not just pending ones. So a pull costs at
 most sixty seconds, on an action that already waits for the engine's next claim.
 There is no tradeoff to weigh. Push would open an inbound path to buy less than
 a minute.
@@ -190,7 +190,7 @@ subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
 ```
 
 The obvious read was credential rot, so that is what we wrote down. Reproducing
-it inside the sandbox gave `401 Bad credentials` — which seemed to confirm it,
+it inside the sandbox gave `401 Bad credentials`； which seemed to confirm it,
 especially since the repository is public and readable with a maintainer token.
 
 Then we checked the database, and the diagnosis collapsed:
@@ -202,7 +202,7 @@ login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← fine
 ```
 
 Both failing sandboxes belong to **inactive** repositories. The refresh endpoint
-filters on `status = 'active'`, so those tokens are never refreshed — by design,
+filters on `status = 'active'`, so those tokens are never refreshed； by design,
 correctly. The same tenant's active repository works perfectly. That is the
 control group, sitting right there in the same query.
 
@@ -210,7 +210,7 @@ The real defect was never credentials. It is that we keep reconciling milestones
 for repositories that were switched off, forever, once per tick. The 401 is a
 symptom of a correct policy meeting a loop that should have stopped.
 
-Read the error, then read the data. In that order — we did it backwards and
+Read the error, then read the data. In that order； we did it backwards and
 filed a ticket with the wrong root cause, which then had to be publicly
 corrected.
 
@@ -222,7 +222,7 @@ token, which seemed to rule out "the repo is gone". Two pieces of evidence, both
 genuine, both pointing the wrong way.
 
 A reproduction tells you what happens. It does not tell you whether it is
-supposed to happen. The database row — `repo_status = inactive` — was the only
+supposed to happen. The database row； `repo_status = inactive`； was the only
 thing that could distinguish "this token should work and doesn't" from "this
 token was never meant to be refreshed". And the control group was sitting in the
 same query the whole time: the same tenant's *active* repository was working
@@ -230,7 +230,7 @@ perfectly.
 
 The generalisable version: when an error reproduces, you have confirmed the
 mechanism, not the diagnosis. The next question is always whether some policy
-intends this outcome — and policy lives in data, not in logs.
+intends this outcome； and policy lives in data, not in logs.
 
 ## What connects them
 
@@ -247,7 +247,7 @@ supposed to be handed something and was not.
 
 That space is invisible from inside the code. You cannot grep for it, and your
 tests will not fail on it, because nothing is broken. You find it by standing
-where the user stands — which for us meant moving our own release line onto our
+where the user stands； which for us meant moving our own release line onto our
 own product and waiting for it to stall.
 
 It stalled in four hours.

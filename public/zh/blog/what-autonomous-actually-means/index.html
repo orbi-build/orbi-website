@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>会对自己说不的 AI 编码 agent：真实交付中的独立评审 | Orbi</title>
-  <meta name="description" content="大部分无人值守 agent 停在 PR。本文记录另一个模型两次拒绝代码的一次真实交付，commit 和 Release 都能点击核验，具体来源已列明。">
+  <title>AI 编码 agent 说不之后，交付会怎样？ | Orbi</title>
+  <meta name="description" content="大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，commit 和 Release 都能点开查看。这里把过程说清楚。">
   <link rel="canonical" href="https://orbi.build/zh/blog/what-autonomous-actually-means/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="会对自己说不的 AI 编码 agent：真实交付中的独立评审">
-  <meta property="og:description" content="大部分无人值守 agent 停在 PR。本文记录另一个模型两次拒绝代码的一次真实交付，commit 和 Release 都能点击核验，具体来源已列明。">
+  <meta property="og:title" content="AI 编码 agent 说不之后，交付会怎样？">
+  <meta property="og:description" content="大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，commit 和 Release 都能点开查看。这里把过程说清楚。">
   <meta property="og:url" content="https://orbi.build/zh/blog/what-autonomous-actually-means/">
   <meta property="og:image" content="https://orbi.build/img/blog-autonomous.png">
-  <meta property="og:image:alt" content="会对自己说不的 AI 编码 agent：真实交付中的独立评审">
+  <meta property="og:image:alt" content="AI 编码 agent 说不之后，交付会怎样？">
   <meta property="article:published_time" content="2026-09-20">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"会对自己说不的 AI 编码 agent：真实交付中的独立评审","datePublished":"2026-09-20","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-autonomous.png","inLanguage":"zh-CN","description":"大部分无人值守 agent 停在 PR。本文记录另一个模型两次拒绝代码的一次真实交付，commit 和 Release 都能点击核验，具体来源已列明。","url":"https://orbi.build/zh/blog/what-autonomous-actually-means/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 编码 agent 说不之后，交付会怎样？","datePublished":"2026-09-20","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-autonomous.png","inLanguage":"zh-CN","description":"大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，commit 和 Release 都能点开查看。这里把过程说清楚。","url":"https://orbi.build/zh/blog/what-autonomous-actually-means/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,15 +83,14 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">博客 · 2026-09-20</p>
-        <h1 id="post-title">会对自己说不的 AI 编码 agent：真实交付中的独立评审</h1>
-        <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录另一个模型两次拒绝代码的一次真实交付，commit 和 Release 都能点击核验，具体来源已列明。</p>
+        <h1 id="post-title">AI 编码 agent 说不之后，交付会怎样？</h1>
+        <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，commit 和 Release 都能点开查看。这里把过程说清楚。</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>搜「AI 编码 agent」会搜到一堆能自动开 PR 的工具。那一步早就不难了。</p>
-<p>没人给你看的是拒绝：有个东西读完 diff，说这个不能发。</p>
-<p>我想讲一次真的发生了这件事的交付。写代码那部分好演，拒绝不好演。</p>
+<p>搜「AI 编码 agent」，会看到很多能自动开 PR 的工具。开 PR 已经不难。</p>
+<p>少有人展示的是拒绝：另一个东西读完 diff，判断这份代码不能发。下面这次交付真的发生过。</p>
 <h2>这次交付</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> 是我们自己发版代码里的一个真实缺陷：
 有个改动把文档同步挪到了打 tag 之前，于是开出三个窗口，让「已发布的 tag」可能没有对应的文档页。</p>
@@ -120,7 +119,7 @@
 <p>runner 是拿我自己的 GitHub 账号发东西的。它用我的 token，所以它的 commit 署我的名，
 它的评审意见也署我的名、配我的头像。屏幕上，拦下 PR #1023 的那条评审显示在
 <code>xqliu</code> 名下，徽章写着 <code>Collaborator</code> 和 <code>Author</code>。</p>
-<p>第一次看到的人会把这读成「一个开发者在审自己的 PR」—— 恰恰是这整件事要反驳的东西。
+<p>第一次看到的人会把这读成「一个开发者在审自己的 PR」， 恰恰是这整件事要反驳的东西。
 而那条评论正下方，坐着一条 <code>github-actions</code> 的评论，带着 <code>Bot</code> 徽章。
 同一屏先教会你「机器人长这样」，再给你看一条不是机器人的评审。</p>
 <p>我没法让 GitHub 显示成别的样子。我能做的是把它说出来：那是第二个模型，
@@ -130,12 +129,12 @@
 agent 干的是打字那部分。</p>
 <p>把闸门做成真的，多半是管道活。verdict 必须绑定到某个具体 commit，
 否则后来的推送会绕过一个为更早的 commit 出具的判断。finding 也必须具体到
-<strong>一个全新的、不记得原始工作的会话能据此动手</strong> —— 只会说「还没完成」的检查，
+<strong>一个全新的、不记得原始工作的会话能据此动手</strong> ， 只会说「还没完成」的检查，
 会让下一个会话去猜。</p>
 <p>更难的部分是，它得被允许直接把整次交付判死。我最近在和几个做类似闸门的维护者对账，
 他们说的是同一件事：大家都把检查留成 advisory，因为会拦的检查拖慢迭代速度。</p>
 <p>我觉得这件事的关键是谁在等，而不是检查对不对。拦一个人的 PR，当场花掉那个人的时间，
-他能感觉到。拦一个 agent 的 PR，不花任何人的时间 —— agent 读完 finding 自己再跑一遍，
+他能感觉到。拦一个 agent 的 PR，不花任何人的时间 ， agent 读完 finding 自己再跑一遍，
 凌晨三点，所有人都在睡觉。</p>
 <h2>自己试</h2>
 <p>整条流水线是一个容器。systemd 在里面当 PID 1，那几行 cgroup 挂载就是为了这个：</p>

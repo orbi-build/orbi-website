@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Designing one slash command | Orbi</title>
-  <meta name="description" content="Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.">
+  <title>How one slash command got its shape | Orbi</title>
+  <meta name="description" content="A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.">
   <link rel="canonical" href="https://orbi.build/blog/designing-a-slash-command/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Designing one slash command">
-  <meta property="og:description" content="Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.">
+  <meta property="og:title" content="How one slash command got its shape">
+  <meta property="og:description" content="A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.">
   <meta property="og:url" content="https://orbi.build/blog/designing-a-slash-command/">
   <meta property="og:image" content="https://orbi.build/img/blog-slash-command.png">
-  <meta property="og:image:alt" content="Designing one slash command">
+  <meta property="og:image:alt" content="How one slash command got its shape">
   <meta property="article:published_time" content="2026-09-22">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Designing one slash command","datePublished":"2026-09-22","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-slash-command.png","inLanguage":"en","description":"Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.","url":"https://orbi.build/blog/designing-a-slash-command/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"How one slash command got its shape","datePublished":"2026-09-22","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-slash-command.png","inLanguage":"en","description":"A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.","url":"https://orbi.build/blog/designing-a-slash-command/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,21 +83,18 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">Blog · 2026-09-22</p>
-        <h1 id="post-title">Designing one slash command</h1>
-        <p class="hero-lede">Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.</p>
+        <h1 id="post-title">How one slash command got its shape</h1>
+        <p class="hero-lede">A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>Our engine opens a ticket when it finishes a milestone. The ticket says: this
-version is done, here are the candidates, tell me which one is next. Then it
-waits, on purpose.</p>
-<p>The waiting is deliberate. Automatic version advancement is locked off, because
-deciding what ships next is not a decision a release engine should make for you.</p>
-<p>The problem was the answer. The ticket told you to run
-<code>orbi milestone set v0.5.40</code> — a CLI command, on the host machine. Our managed
-tenants have neither. Their sandbox runs on our hardware. So the engine was
-asking a question that its own audience could not answer.</p>
+<p>When our engine finishes a milestone, it opens a ticket with the candidates for the next version and waits for a choice. That pause is intentional.</p>
+<p>Automatic version advancement stays off. The release engine should not choose what ships next.</p>
+<p>The problem was the answer. The ticket asked people to run
+<code>orbi milestone set v0.5.40</code>, a CLI command on the host machine. Managed
+tenants have neither a host shell nor that CLI. Their sandbox runs on our
+hardware, so the engine was asking them for something they could not do.</p>
 <p>Closing that gap meant building an in-ticket command: comment <code>/milestone v0.5.40</code>
 and the engine does the rest. It is one small feature. It took a day of design
 because almost every choice in it has been made before, by people who then had
@@ -107,7 +104,7 @@ to live with it.</p>
 it is wrong.</p>
 <p>In-ticket commands are named after states, not actions. Prow has <code>/lgtm</code>,
 <code>/hold</code>, <code>/approve</code>. bors has <code>bors r+</code>. None of them is an imperative verb.
-This is not a style preference — it comes from what the command means. A CLI
+This is not a style preference； it comes from what the command means. A CLI
 says <em>do this thing</em>, so a verb fits. An in-ticket command says <em>set it to this</em>,
 so a noun fits. <code>/milestone v0.5.40</code> reads as &quot;milestone: v0.5.40&quot;, the same
 shape as <code>/hold</code>.</p>
@@ -116,16 +113,16 @@ shape as <code>/hold</code>.</p>
 documentation says the word once. <code>advance</code> would have been a third name for a
 thing that already has two.</p>
 <p>We also rejected <code>bump version</code>, because it reads like editing the version
-string in <code>pyproject.toml</code> — which is what the release process does, not what
+string in <code>pyproject.toml</code>； which is what the release process does, not what
 this command does. A name that makes people expect the wrong side effect is a
 bad name even if it is short.</p>
 <p>That last one is worth dwelling on, because it is the rule the other rejections
 follow from. A command name is a promise about side effects. <code>/advance</code> promises
-something moved forward but does not say what — the version? the delivery? the
+something moved forward but does not say what； the version? the delivery? the
 queue? <code>bump version</code> promises a file edit that never happens. Both are short,
 pronounceable, and wrong in the same way: <strong>the reader forms an expectation the
 implementation will not honour.</strong></p>
-<p><code>/milestone v0.5.40</code> makes exactly one promise — the milestone is now v0.5.40 —
+<p><code>/milestone v0.5.40</code> makes exactly one promise； the milestone is now v0.5.40;
 and the three things it does are all in service of making that true. Creating
 the milestone, opening the release ticket, landing the config value: none of
 them is a surprise once you have read the name.</p>
@@ -140,7 +137,7 @@ A syntax that hardcodes <code>@name</code> cannot be forked.</p>
 its name is globally unique, and the mention buys a notification and
 autocomplete for free.</p>
 <p>We are the first kind. The engine is open source and self-hostable. More
-pointedly, the same engine already runs under two identities in our own org — on
+pointedly, the same engine already runs under two identities in our own org； on
 our bootstrap runner the comment author is a human account, and in a managed
 sandbox it is <code>orbi-build[bot]</code>. We confirmed both on our own repository the
 same day. Binding the syntax to a name would break self-hosted users on day one.</p>
@@ -148,7 +145,7 @@ same day. Binding the syntax to a name would break self-hosted users on day one.
 <code>/milestone</code>, and let people use whichever they like. We rejected that too, and
 the reason is not aesthetic. Two syntaxes mean two things to document, two
 things to test, and two things that can drift apart when someone adds the third
-command. The mention buys a notification — genuinely useful — but the cost is
+command. The mention buys a notification； genuinely useful； but the cost is
 paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.</p>
 <h2>The regex is three decisions in one</h2>
@@ -156,7 +153,7 @@ notification is not worth a permanent fork in the grammar.</p>
 <pre><code>(?mi)^/milestone[\t ]+(\S+)[\t ]*$
 </code></pre>
 <p>Prow writes this in Go. bors splits the comment into lines and anchors each one
-in Elixir. Two unrelated implementations, same choice — which is usually a sign
+in Elixir. Two unrelated implementations, same choice； which is usually a sign
 the choice is load-bearing.</p>
 <p>It buys three things at once:</p>
 <ul>
@@ -170,7 +167,7 @@ slash off the line start</li>
 to be the most interesting thing we read all day.</p>
 <figure class="post-media">
 <img src="/img/diagrams/command-pipeline.svg" alt="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. The fence-stripping and permission stages are highlighted as the two places where Prow and bors respectively leak." width="880" height="120">
-<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them — it leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler — it leaks at “permission”.</figcaption>
+<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them； it leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler； it leaks at “permission”.</figcaption>
 </figure><h2>The bug Prow still has</h2>
 <p>A regex does not parse Markdown. If you write a comment explaining how to use
 <code>/hold</code>, and you put the example inside triple backticks, the regex sees a line
@@ -185,7 +182,7 @@ pkg/markdown/code_block.go:25   (the definition)
 <p>One call site. Out of fifty-plus plugins. Writing <code>/hold</code> inside a fenced block
 on Prow fires today.</p>
 <p>This is not a criticism of Prow&#39;s engineers; it is a structural consequence of
-where they put the regex. Prow gives every plugin its own pattern —
+where they put the regex. Prow gives every plugin its own pattern;
 <code>pkg/plugins/hold/hold.go:41</code> has <code>(?mi)^/hold(\s.*)?$</code> written out locally. The
 convention is repo-wide but nothing enforces it, and when each command owns its
 own matching, <strong>a fix to the shared sanitiser cannot reach them</strong>. The fix
@@ -199,7 +196,7 @@ never given the opportunity to write either one.</p>
 bors has the better design and the worse bug.</p>
 <p>Prow makes permission each plugin&#39;s job. There is a shared helper,
 <code>TrustedUser(...)</code> at <code>pkg/plugins/trigger/trigger.go:253</code>, but a plugin has to
-remember to call it, and the standard differs per plugin — <code>lgtm.go:291</code> checks
+remember to call it, and the standard differs per plugin； <code>lgtm.go:291</code> checks
 collaborator status, while <code>override.go:317</code> accepts repo admin <em>or</em> a GitHub
 team <em>or</em> top-level OWNERS. Worse, the <code>WhoCanUse</code> string shown in help
 (<code>override.go:251</code>) and the code that actually authorises (<code>override.go:326</code>)
@@ -236,7 +233,7 @@ nondeterministic goroutine order. We raise on a duplicate name and on
 overlapping verbs, at import time.</p>
 <h2>The registry already existed</h2>
 <p>The shape we landed on was not invented for this. Our journal module has had it
-for months — <code>JOURNAL_EVENTS</code> at <code>src/orbi/journal.py:167</code> is an explicit dict,
+for months； <code>JOURNAL_EVENTS</code> at <code>src/orbi/journal.py:167</code> is an explicit dict,
 written out in the module. No decorators discovering things, no entry points, no
 dynamic import. Registration <em>is</em> validation: <code>event()</code> raises on an
 unregistered name, so a typo fails immediately instead of writing a silently
@@ -255,7 +252,7 @@ class CommandSpec:
 
 TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 </code></pre>
-<p>The shared layer owns — and solely owns — regex construction with the anchor,
+<p>The shared layer owns； and solely owns； regex construction with the anchor,
 fenced-block stripping, quoted-line stripping, skipping the runner&#39;s own
 comments, permission enforcement, last-occurrence-wins, and receipts.
 <code>milestone_command.py</code> shrinks to a registrant: a <code>validate</code> that checks the
@@ -283,7 +280,7 @@ you forgot&quot;.</p>
 <text x="480" y="134">A command author edits one entry.</text>
 <text x="480" y="170" font-weight="600">Registration is validation</text>
 <text x="480" y="190" font-size="12">Duplicate name or overlapping verb raises at</text>
-<text x="480" y="208" font-size="12">import — the thing Prow does not check.</text>
+<text x="480" y="208" font-size="12">import； the thing Prow does not check.</text>
 <text x="480" y="240" font-weight="600">A binding test pins it three ways</text>
 <text x="480" y="260" font-size="12">usage · description · the docs table</text>
 <line x1="424" y1="165" x2="454" y2="165" stroke="#526566" stroke-dasharray="4 3"></line>
@@ -315,7 +312,7 @@ and finding out why took a grep.</p>
 </tr>
 <tr>
 <td>Land <code>active_milestone</code></td>
-<td>Yes — <code>rewrite_active_milestone_line</code></td>
+<td>Yes； <code>rewrite_active_milestone_line</code></td>
 </tr>
 </tbody></table></div>
 <p>The evidence was sitting in our own repository: v0.5.40&#39;s milestone had been
@@ -324,7 +321,7 @@ created by hand with <code>gh api</code>, and its release ticket did not exist a
 ticket template lives at <code>.github/release-ticket-template.md</code>, fully specified.
 But <code>grep -rn &quot;release-ticket-template&quot; src/ prompts/ AGENTS.md</code> returns nothing.
 No code has ever read it. Maintainers had been filling it in with a local
-client-side tool — a patch installed on exactly one machine. <strong>Managed tenants
+client-side tool； a patch installed on exactly one machine. <strong>Managed tenants
 were hitting the unpatched original.</strong></p>
 <p>The fix is not to ship that local tool. It depends on a specific client, and
 which client a tenant uses is not ours to decide. What belongs in the engine is
@@ -341,7 +338,7 @@ effect or takes effect for the wrong scope.</p>
 sandbox or on a self-hosted runner?</em> We refused to write that branch.</p>
 <p>There is no reliable signal for it. The nearest candidate, <code>engine_source_track</code>,
 can be set on a bootstrap runner too, so the check would be a heuristic
-pretending to be a fact — and heuristics in a write path fail in the direction
+pretending to be a fact； and heuristics in a write path fail in the direction
 nobody tests.</p>
 <p>More importantly, <strong>the question is the wrong one.</strong> We do not need to know
 where we are running. We need to know where this value came from, and that is
@@ -355,7 +352,7 @@ fact rather than an inference.</p>
 <p>This generalises: when you find yourself about to detect your own environment,
 check whether the thing you actually need was already determined by whoever
 supplied the input.</p>
-<p>Every step is deterministic. No model is invoked — the command&#39;s arguments are
+<p>Every step is deterministic. No model is invoked； the command&#39;s arguments are
 the input, string substitution is the transformation, and a file write is the
 output. An LLM in that path would add nondeterminism to an operation whose
 entire value is being predictable.</p>
@@ -368,7 +365,7 @@ conditions stacked. Outside that intersection, a <code>/command</code> is never 
 <p>That is the narrowest possible scope, and it was the right call for a first
 command. But it decides which commands can <em>exist</em>. <code>/approve</code> to clear a review
 gate, <code>/retry</code> to requeue a blocked delivery, <code>/cancel</code> to stop one in flight,
-<code>/model</code> to override for a single run — none of them has anywhere to land,
+<code>/model</code> to override for a single run； none of them has anywhere to land,
 because delivery tickets are opened by humans and the engine never opens a
 confirmation ticket for them.</p>
 <p>Widening the scope to scan every <code>ai-*</code> ticket costs N extra API calls per tick,
@@ -381,7 +378,7 @@ answer is none for now, the narrow scope stands.</p>
 <p>We parked this in a discussion thread rather than settling it, and that choice
 deserves the same scrutiny as the others.</p>
 <p>The refactor that lifts the shared layer out (#1294) touches every piece of
-machinery a wider scan would use — the parser, the permission gate, the receipt
+machinery a wider scan would use； the parser, the permission gate, the receipt
 dedupe. It would have been easy, and superficially tidy, to widen the scope
 while we were in there. &quot;We&#39;re already touching this code&quot; is the most common
 reason a scope decision gets made by accident.</p>
@@ -389,12 +386,12 @@ reason a scope decision gets made by accident.</p>
 scanning one ticket&#39;s comment list; across many tickets that needs a different
 mechanism entirely. Every tick gains N API calls plus pagination and rate-limit
 handling. The reachable surface grows from &quot;tickets we opened&quot; to &quot;every
-delivery ticket&quot;. Those are not incidental — they are the design of a different
+delivery ticket&quot;. Those are not incidental； they are the design of a different
 feature, and they would have been designed in passing, to serve commands nobody
 had specified yet.</p>
 <p>The alternative failure is just as real: deciding now to stay narrow, and
 writing that into the architecture so firmly that <code>/retry</code> becomes expensive
-later. So #1294 states its own scope neutrality explicitly — it moves code and
+later. So #1294 states its own scope neutrality explicitly； it moves code and
 adds nothing, and it does not read the discussion&#39;s conclusion.</p>
 <p><strong>The cost of Option B is only justified by a command that needs it.</strong> Until one
 of <code>/approve</code>, <code>/retry</code>, <code>/cancel</code> or <code>/model</code> is specified, there is no
@@ -408,7 +405,7 @@ is specified and queued.</p>
 <p>The part worth keeping is not the feature. It is that two mature systems, both
 of which solved this before us, each left one defect visible in their source:
 Prow&#39;s fix that cannot reach its callers, and bors&#39;s gate with a second door.
-Both are the same class of mistake — a correct decision placed where it can be
+Both are the same class of mistake； a correct decision placed where it can be
 bypassed.</p>
 <p>We got to read both before writing ours. That is the actual luxury of building
 on open source, and it is worth the day it costs.</p>

@@ -91,34 +91,34 @@
       <p class="post-entry-summary">Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/designing-a-slash-command/">设计一条斜杠命令：从 Prow 与 bors-ng 源码推导</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/designing-a-slash-command/">一条斜杠命令在票里是怎么定下来的：从名字到权限边界</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-22">2026-09-22</time></p>
-      <p class="post-entry-summary">命名、语法、正则锚定和注册表形状：对照 Prow 与 bors-ng 源码逐条推导票内斜杠命令背后的四个取舍，每项都附可查的源码行号和实现证据。</p>
+      <p class="post-entry-summary">一条票内斜杠命令的名字、语法、正则锚点和注册表怎么定：对照 Prow 与 bors-ng 的源码，记录四个取舍和对应的源码行号，不绕弯子看。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/waiting-for-someone-who-cannot-answer/">我们的引擎为何在等待一个托管用户无法给出的答案</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/waiting-for-someone-who-cannot-answer/">引擎等来的答案，托管用户给不了：三个交互缺口记录</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-22">2026-09-22</time></p>
-      <p class="post-entry-summary">引擎为人的决定而暂停，却只接受托管租户无法提供的答案。文章复盘同一个交互缺口的三种形态，以及一个下午内取得的命令输出、数据库证据和具体修复。</p>
+      <p class="post-entry-summary">引擎为人的决定而暂停，却要求托管租户执行一条没有的命令。本文复盘这个交互缺口的三种形态，以及一个下午找到的命令输出、数据库证据和具体修复结果。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/watch-the-six-steps/">七步跑完，全程录下来了：83 秒 Orbi Cloud 交付记录</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/watch-the-six-steps/">Orbi Cloud 七步上手流程，83 秒看完</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-21">2026-09-21</time></p>
-      <p class="post-entry-summary">一段 83 秒的视频，从 GitHub 登录一路到发出带 tag 的 Release，再到订阅。画面全是产品真实渲染，而第七步是开始付费交付的那一步。</p>
+      <p class="post-entry-summary">83 秒视频记录 Orbi Cloud 从 GitHub 登录到带 tag 的 Release 和订阅。最后一步进入 Cloud 的付费交付流程。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/what-autonomous-actually-means/">会对自己说不的 AI 编码 agent：真实交付中的独立评审</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/what-autonomous-actually-means/">AI 编码 agent 说不之后，交付会怎样？</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-20">2026-09-20</time></p>
-      <p class="post-entry-summary">大部分无人值守 agent 停在 PR。本文记录另一个模型两次拒绝代码的一次真实交付，commit 和 Release 都能点击核验，具体来源已列明。</p>
+      <p class="post-entry-summary">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，commit 和 Release 都能点开查看。这里把过程说清楚。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 无人值守之后，谁来合并 PR</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 跑完之后，谁来合并 PR</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-19">2026-09-19</time></p>
-      <p class="post-entry-summary">Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。</p>
+      <p class="post-entry-summary">Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/docker-image-third-try/">Docker 镜像第三次尝试：从构建上下文到发布成功</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/docker-image-third-try/">Docker 镜像到第三次才发布成功：三次失败记录</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-18">2026-09-18</time></p>
-      <p class="post-entry-summary">orbi 镜像第三次发布才到达 GHCR 和 Docker Hub。本文复盘构建上下文、Dockerfile 路径与非法 tag 的三次失败，并给出可核验结果。</p>
+      <p class="post-entry-summary">orbi 镜像到第三次发布才到达 GHCR 和 Docker Hub。前两次是构建上下文和 Dockerfile 路径，最后一次则是非法 tag。</p>
     </article>
       </div>
       <p class="src-note">偏好订阅阅读？英文文章的 RSS 2.0 订阅源在 <a class="orbi-src-note-a" href="/blog/feed.xml">/blog/feed.xml</a>。</p>

@@ -1,19 +1,18 @@
 ---
-title: An autonomous coding agent that can tell itself no
+title: What an autonomous coding agent does when it says no
 date: 2026-09-20
-summary: Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.
+summary: Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.
 lang: en
 author: Orbi
 image: /img/blog-autonomous.png
 ---
 
-Search for an autonomous coding agent and you will find a lot of tools that
-open pull requests. That part has been solved for a while. The part nobody
-shows you is the refusal: what happens when something reads the diff and says
-this does not ship.
+Search for an autonomous coding agent and you will find plenty of tools
+that open pull requests. The missing part is what happens when another system
+reads the diff and refuses to ship it.
 
-I want to walk through one delivery where that happened. The writing part is
-easy to demo. The refusal is not.
+Here is one delivery where that happened. Writing the code is easy to demo;
+watching a reviewer refuse it is harder.
 
 ## The delivery
 

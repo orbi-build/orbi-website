@@ -1,24 +1,21 @@
 ---
-title: Designing one slash command
+title: How one slash command got its shape
 date: 2026-09-22
-summary: Naming, syntax, regex anchoring, registry shape: four tradeoffs behind one in-ticket command, read against Prow and bors-ng at source, with line numbers.
+summary: A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.
 lang: en
 author: Orbi
 image: /img/blog-slash-command.png
 mirror: designing-a-slash-command
 ---
 
-Our engine opens a ticket when it finishes a milestone. The ticket says: this
-version is done, here are the candidates, tell me which one is next. Then it
-waits, on purpose.
+When our engine finishes a milestone, it opens a ticket with the candidates for the next version and waits for a choice. That pause is intentional.
 
-The waiting is deliberate. Automatic version advancement is locked off, because
-deciding what ships next is not a decision a release engine should make for you.
+Automatic version advancement stays off. The release engine should not choose what ships next.
 
-The problem was the answer. The ticket told you to run
-`orbi milestone set v0.5.40` — a CLI command, on the host machine. Our managed
-tenants have neither. Their sandbox runs on our hardware. So the engine was
-asking a question that its own audience could not answer.
+The problem was the answer. The ticket asked people to run
+`orbi milestone set v0.5.40`, a CLI command on the host machine. Managed
+tenants have neither a host shell nor that CLI. Their sandbox runs on our
+hardware, so the engine was asking them for something they could not do.
 
 Closing that gap meant building an in-ticket command: comment `/milestone v0.5.40`
 and the engine does the rest. It is one small feature. It took a day of design
@@ -32,7 +29,7 @@ it is wrong.
 
 In-ticket commands are named after states, not actions. Prow has `/lgtm`,
 `/hold`, `/approve`. bors has `bors r+`. None of them is an imperative verb.
-This is not a style preference — it comes from what the command means. A CLI
+This is not a style preference； it comes from what the command means. A CLI
 says *do this thing*, so a verb fits. An in-ticket command says *set it to this*,
 so a noun fits. `/milestone v0.5.40` reads as "milestone: v0.5.40", the same
 shape as `/hold`.
@@ -43,18 +40,18 @@ documentation says the word once. `advance` would have been a third name for a
 thing that already has two.
 
 We also rejected `bump version`, because it reads like editing the version
-string in `pyproject.toml` — which is what the release process does, not what
+string in `pyproject.toml`； which is what the release process does, not what
 this command does. A name that makes people expect the wrong side effect is a
 bad name even if it is short.
 
 That last one is worth dwelling on, because it is the rule the other rejections
 follow from. A command name is a promise about side effects. `/advance` promises
-something moved forward but does not say what — the version? the delivery? the
+something moved forward but does not say what； the version? the delivery? the
 queue? `bump version` promises a file edit that never happens. Both are short,
 pronounceable, and wrong in the same way: **the reader forms an expectation the
 implementation will not honour.**
 
-`/milestone v0.5.40` makes exactly one promise — the milestone is now v0.5.40 —
+`/milestone v0.5.40` makes exactly one promise； the milestone is now v0.5.40;
 and the three things it does are all in service of making that true. Creating
 the milestone, opening the release ticket, landing the config value: none of
 them is a surprise once you have read the name.
@@ -75,7 +72,7 @@ its name is globally unique, and the mention buys a notification and
 autocomplete for free.
 
 We are the first kind. The engine is open source and self-hostable. More
-pointedly, the same engine already runs under two identities in our own org — on
+pointedly, the same engine already runs under two identities in our own org； on
 our bootstrap runner the comment author is a human account, and in a managed
 sandbox it is `orbi-build[bot]`. We confirmed both on our own repository the
 same day. Binding the syntax to a name would break self-hosted users on day one.
@@ -84,7 +81,7 @@ The tempting middle path is to accept both: match `@orbi milestone` *and*
 `/milestone`, and let people use whichever they like. We rejected that too, and
 the reason is not aesthetic. Two syntaxes mean two things to document, two
 things to test, and two things that can drift apart when someone adds the third
-command. The mention buys a notification — genuinely useful — but the cost is
+command. The mention buys a notification； genuinely useful； but the cost is
 paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.
 
@@ -97,7 +94,7 @@ Anchoring at the start of a line, with the multiline flag:
 ```
 
 Prow writes this in Go. bors splits the comment into lines and anchors each one
-in Elixir. Two unrelated implementations, same choice — which is usually a sign
+in Elixir. Two unrelated implementations, same choice； which is usually a sign
 the choice is load-bearing.
 
 It buys three things at once:
@@ -113,7 +110,7 @@ to be the most interesting thing we read all day.
 
 <figure class="post-media">
 <img src="/img/diagrams/command-pipeline.svg" alt="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. The fence-stripping and permission stages are highlighted as the two places where Prow and bors respectively leak." width="880" height="120">
-<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them — it leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler — it leaks at “permission”.</figcaption>
+<figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them； it leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler； it leaks at “permission”.</figcaption>
 </figure>
 
 ## The bug Prow still has
@@ -136,7 +133,7 @@ One call site. Out of fifty-plus plugins. Writing `/hold` inside a fenced block
 on Prow fires today.
 
 This is not a criticism of Prow's engineers; it is a structural consequence of
-where they put the regex. Prow gives every plugin its own pattern —
+where they put the regex. Prow gives every plugin its own pattern;
 `pkg/plugins/hold/hold.go:41` has `(?mi)^/hold(\s.*)?$` written out locally. The
 convention is repo-wide but nothing enforces it, and when each command owns its
 own matching, **a fix to the shared sanitiser cannot reach them**. The fix
@@ -154,7 +151,7 @@ bors has the better design and the worse bug.
 
 Prow makes permission each plugin's job. There is a shared helper,
 `TrustedUser(...)` at `pkg/plugins/trigger/trigger.go:253`, but a plugin has to
-remember to call it, and the standard differs per plugin — `lgtm.go:291` checks
+remember to call it, and the standard differs per plugin； `lgtm.go:291` checks
 collaborator status, while `override.go:317` accepts repo admin *or* a GitHub
 team *or* top-level OWNERS. Worse, the `WhoCanUse` string shown in help
 (`override.go:251`) and the code that actually authorises (`override.go:326`)
@@ -203,7 +200,7 @@ overlapping verbs, at import time.
 ## The registry already existed
 
 The shape we landed on was not invented for this. Our journal module has had it
-for months — `JOURNAL_EVENTS` at `src/orbi/journal.py:167` is an explicit dict,
+for months； `JOURNAL_EVENTS` at `src/orbi/journal.py:167` is an explicit dict,
 written out in the module. No decorators discovering things, no entry points, no
 dynamic import. Registration *is* validation: `event()` raises on an
 unregistered name, so a typo fails immediately instead of writing a silently
@@ -226,7 +223,7 @@ class CommandSpec:
 TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 ```
 
-The shared layer owns — and solely owns — regex construction with the anchor,
+The shared layer owns； and solely owns； regex construction with the anchor,
 fenced-block stripping, quoted-line stripping, skipping the runner's own
 comments, permission enforcement, last-occurrence-wins, and receipts.
 `milestone_command.py` shrinks to a registrant: a `validate` that checks the
@@ -256,7 +253,7 @@ you forgot".
 <text x="480" y="134">A command author edits one entry.</text>
 <text x="480" y="170" font-weight="600">Registration is validation</text>
 <text x="480" y="190" font-size="12">Duplicate name or overlapping verb raises at</text>
-<text x="480" y="208" font-size="12">import — the thing Prow does not check.</text>
+<text x="480" y="208" font-size="12">import； the thing Prow does not check.</text>
 <text x="480" y="240" font-weight="600">A binding test pins it three ways</text>
 <text x="480" y="260" font-size="12">usage · description · the docs table</text>
 <line x1="424" y1="165" x2="454" y2="165" stroke="#526566" stroke-dasharray="4 3"></line>
@@ -280,7 +277,7 @@ A complete advance needs three things to happen. We had one of them:
 |---|---|
 | Create the milestone | **None.** `create_milestone` and `milestones --method POST` had zero hits repo-wide |
 | Open the release ticket | **None.** Only `arm_release_ticket`, which labels an *existing* ticket |
-| Land `active_milestone` | Yes — `rewrite_active_milestone_line` |
+| Land `active_milestone` | Yes； `rewrite_active_milestone_line` |
 
 The evidence was sitting in our own repository: v0.5.40's milestone had been
 created by hand with `gh api`, and its release ticket did not exist at all.
@@ -289,7 +286,7 @@ The reason it had gone unnoticed for so long is more uncomfortable. A release
 ticket template lives at `.github/release-ticket-template.md`, fully specified.
 But `grep -rn "release-ticket-template" src/ prompts/ AGENTS.md` returns nothing.
 No code has ever read it. Maintainers had been filling it in with a local
-client-side tool — a patch installed on exactly one machine. **Managed tenants
+client-side tool； a patch installed on exactly one machine. **Managed tenants
 were hitting the unpatched original.**
 
 The fix is not to ship that local tool. It depends on a specific client, and
@@ -312,7 +309,7 @@ sandbox or on a self-hosted runner?* We refused to write that branch.
 
 There is no reliable signal for it. The nearest candidate, `engine_source_track`,
 can be set on a bootstrap runner too, so the check would be a heuristic
-pretending to be a fact — and heuristics in a write path fail in the direction
+pretending to be a fact； and heuristics in a write path fail in the direction
 nobody tests.
 
 More importantly, **the question is the wrong one.** We do not need to know
@@ -330,7 +327,7 @@ This generalises: when you find yourself about to detect your own environment,
 check whether the thing you actually need was already determined by whoever
 supplied the input.
 
-Every step is deterministic. No model is invoked — the command's arguments are
+Every step is deterministic. No model is invoked； the command's arguments are
 the input, string substitution is the transformation, and a file write is the
 output. An LLM in that path would add nondeterminism to an operation whose
 entire value is being predictable.
@@ -347,7 +344,7 @@ conditions stacked. Outside that intersection, a `/command` is never seen.
 That is the narrowest possible scope, and it was the right call for a first
 command. But it decides which commands can *exist*. `/approve` to clear a review
 gate, `/retry` to requeue a blocked delivery, `/cancel` to stop one in flight,
-`/model` to override for a single run — none of them has anywhere to land,
+`/model` to override for a single run； none of them has anywhere to land,
 because delivery tickets are opened by humans and the engine never opens a
 confirmation ticket for them.
 
@@ -365,7 +362,7 @@ We parked this in a discussion thread rather than settling it, and that choice
 deserves the same scrutiny as the others.
 
 The refactor that lifts the shared layer out (#1294) touches every piece of
-machinery a wider scan would use — the parser, the permission gate, the receipt
+machinery a wider scan would use； the parser, the permission gate, the receipt
 dedupe. It would have been easy, and superficially tidy, to widen the scope
 while we were in there. "We're already touching this code" is the most common
 reason a scope decision gets made by accident.
@@ -374,13 +371,13 @@ But look at what the widening actually costs. Receipts currently dedupe by
 scanning one ticket's comment list; across many tickets that needs a different
 mechanism entirely. Every tick gains N API calls plus pagination and rate-limit
 handling. The reachable surface grows from "tickets we opened" to "every
-delivery ticket". Those are not incidental — they are the design of a different
+delivery ticket". Those are not incidental； they are the design of a different
 feature, and they would have been designed in passing, to serve commands nobody
 had specified yet.
 
 The alternative failure is just as real: deciding now to stay narrow, and
 writing that into the architecture so firmly that `/retry` becomes expensive
-later. So #1294 states its own scope neutrality explicitly — it moves code and
+later. So #1294 states its own scope neutrality explicitly； it moves code and
 adds nothing, and it does not read the discussion's conclusion.
 
 **The cost of Option B is only justified by a command that needs it.** Until one
@@ -398,7 +395,7 @@ is specified and queued.
 The part worth keeping is not the feature. It is that two mature systems, both
 of which solved this before us, each left one defect visible in their source:
 Prow's fix that cannot reach its callers, and bors's gate with a second door.
-Both are the same class of mistake — a correct decision placed where it can be
+Both are the same class of mistake； a correct decision placed where it can be
 bypassed.
 
 We got to read both before writing ours. That is the actual luxury of building

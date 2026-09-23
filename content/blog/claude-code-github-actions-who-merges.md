@@ -1,15 +1,15 @@
 ---
-title: Claude Code in Actions: who merges?
+title: Claude Code in Actions: who presses merge?
 date: 2026-09-19
-summary: Claude Code Action implements and reviews pull requests in your runner, but it does not merge or release. This is the evidence-backed path that closes the gap.
+summary: Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.
 lang: en
 author: Orbi
 image: /img/blog-claude-actions.png
 ---
 
-If you have wired [Claude Code](https://github.com/anthropics/claude-code-action) into GitHub Actions, you already have the first half. The action answers questions, implements fixes, reviews a pull request, and posts progress back to the thread. Its own feature list ends there: implementation and review. Merging the result and cutting a release stay outside the action.
+Once [Claude Code](https://github.com/anthropics/claude-code-action) is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.
 
-That boundary is deliberate and it is the right default for a general-purpose action. But it leaves a question every team hits on day two: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?
+That boundary makes sense for a general-purpose action. It still leaves the question teams meet almost immediately: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?
 
 For the last month the answer on my own repository has been: nobody. 431 pull requests merged, 416 Issues walked the full delivery path, 40 releases tagged and published. I have not read the diffs. This post is what had to exist for that to be a reasonable thing to do rather than a reckless one.
 

@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Claude Code 无人值守之后，谁来合并 PR | Orbi</title>
-  <meta name="description" content="Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。">
+  <title>Claude Code 跑完之后，谁来合并 PR | Orbi</title>
+  <meta name="description" content="Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。">
   <link rel="canonical" href="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Claude Code 无人值守之后，谁来合并 PR">
-  <meta property="og:description" content="Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。">
+  <meta property="og:title" content="Claude Code 跑完之后，谁来合并 PR">
+  <meta property="og:description" content="Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。">
   <meta property="og:url" content="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
   <meta property="og:image" content="https://orbi.build/img/blog-claude-actions.png">
-  <meta property="og:image:alt" content="Claude Code 无人值守之后，谁来合并 PR">
+  <meta property="og:image:alt" content="Claude Code 跑完之后，谁来合并 PR">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 无人值守之后，谁来合并 PR","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"zh-CN","description":"Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 跑完之后，谁来合并 PR","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions.png","inLanguage":"zh-CN","description":"Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,15 +83,15 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">博客 · 2026-09-19</p>
-        <h1 id="post-title">Claude Code 无人值守之后，谁来合并 PR</h1>
-        <p class="hero-lede">Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。</p>
+        <h1 id="post-title">Claude Code 跑完之后，谁来合并 PR</h1>
+        <p class="hero-lede">Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>想让 Claude Code 无人值守，网上的做法大多停在同一步：接进 GitHub Actions，或者写个循环让它自己跑。这一步好办。麻烦的是跑完之后那个 PR，测试绿了，代码是它写的，评审也是它做的，谁来按合并。</p>
+<p>把 Claude Code 接进 GitHub Actions，或者写个循环让它自己跑，并不难。难的是它跑完以后：PR 在那里，测试是绿的，代码和评审都来自它，合并按钮该由谁来按。</p>
 <p>我这边现在的答案是没有人按。一个月 431 个 PR 合进主干，416 张 Issue 走完全流程，发了 40 个版本。代码我基本不读。</p>
-<p>听起来像在赌，其实中间有几样东西必须存在，下面一个个说。</p>
+<p>听起来像在赌。要让这件事站得住，流程里得补上几道具体的检查。</p>
 <h2>模型不是瓶颈</h2>
 <p>大家担心的是模型写错。这确实会发生，测试能拦住大部分。真正贵的是另一种：判断「这东西可以合了」的，还是写它的那个会话；或者是一个三周前就不再认真看了的人。</p>
 <p>所以第一条：评审的不能是写代码的那一个。同一个会话里换个 prompt 再跑一遍不算，得另起一个进程、全新上下文、等 PR 建好之后读冻结的 diff。它不知道实现时在想什么。我一开始觉得这是缺点，后来发现正好：一段代码要是非得知道作者当时怎么想才看得懂，那它还没写完。</p>

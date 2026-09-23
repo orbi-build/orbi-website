@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Waiting for an answer the user can't give | Orbi</title>
-  <meta name="description" content="Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.">
+  <title>The engine waited for an answer users could not give | Orbi</title>
+  <meta name="description" content="Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.">
   <link rel="canonical" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Waiting for an answer the user can't give">
-  <meta property="og:description" content="Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.">
+  <meta property="og:title" content="The engine waited for an answer users could not give">
+  <meta property="og:description" content="Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.">
   <meta property="og:url" content="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/">
   <meta property="og:image" content="https://orbi.build/img/blog-waiting.png">
-  <meta property="og:image:alt" content="Waiting for an answer the user can't give">
+  <meta property="og:image:alt" content="The engine waited for an answer users could not give">
   <meta property="article:published_time" content="2026-09-22">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Waiting for an answer the user can't give","datePublished":"2026-09-22","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-waiting.png","inLanguage":"en","description":"Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.","url":"https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The engine waited for an answer users could not give","datePublished":"2026-09-22","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-waiting.png","inLanguage":"en","description":"Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.","url":"https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,17 +83,17 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">Blog · 2026-09-22</p>
-        <h1 id="post-title">Waiting for an answer the user can't give</h1>
-        <p class="hero-lede">Our engine paused for a human decision, then accepted only an answer the tenant could not give. Three versions of that mistake, found in one afternoon.</p>
+        <h1 id="post-title">The engine waited for an answer users could not give</h1>
+        <p class="hero-lede">Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.</p>
       </section>
     </div>
 
     <article class="post-body">
-<p>There is a failure mode that does not look like failure. Nothing crashes. No
-error is logged. The system is doing exactly what it was designed to do, which
-is wait — and the person it is waiting for has no idea, and no way to respond.</p>
-<p>We shipped three of these. We found them in one afternoon, because we finally
-became our own customer.</p>
+<p>Some failures look like a quiet system. Nothing crashes or logs an error. The
+engine is waiting as designed, but the person it is waiting for does not know
+what to do and has no way to answer.</p>
+<p>We shipped three versions of this mistake. We found them in one afternoon,
+when we tried the product as our own customer.</p>
 <h2>The waiting is correct</h2>
 <p>Our engine will not advance a version on its own. When a milestone closes, an
 idle tick opens a ticket: this version is complete, here are the candidates,
@@ -107,14 +107,14 @@ inside the ticket:</p>
 <p>Please run <code>orbi milestone set &lt;target&gt;</code> to advance <code>active_milestone</code>.</p>
 </blockquote>
 <p>That instruction assumes a CLI and a shell on the host. A managed tenant has
-neither — their sandbox runs on our hardware, which is the entire point of it
+neither； their sandbox runs on our hardware, which is the entire point of it
 being managed. The engine asked a question, on a ticket the tenant could read,
 and accepted only an answer they could not produce.</p>
 <p>Worse, managed sandboxes never rendered <code>auto_next_milestone = false</code> at all. So
 they did not get the ticket either. The engine paused silently and waited for a
 decision that nobody had been asked to make.</p>
 <h2>The day we noticed</h2>
-<p>On 2026-09-22 we migrated <code>orbi-build/orbi</code> — the engine&#39;s own repository — onto
+<p>On 2026-09-22 we migrated <code>orbi-build/orbi</code>； the engine&#39;s own repository； onto
 our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.</p>
 <p>Then the milestone closed, and everything stopped. No notification. No error.
 Delivery simply ceased, until a human noticed, created the v0.5.40 milestone by
@@ -122,9 +122,9 @@ hand with <code>gh api</code>, and edited the policy file directly.</p>
 <p>We had been running this gap in production for our customers. It took putting
 our own release line behind it to feel it.</p>
 <h2>The same shape, in the UI</h2>
-<p>Later the same day, a full walkthrough of the product — register, install the
+<p>Later the same day, a full walkthrough of the product； register, install the
 App, connect a repo, provision a sandbox, file an issue, deliver, merge, release
-— surfaced the second instance.</p>
+; surfaced the second instance.</p>
 <p>The status page has a release form. It is a text box. You type a version number
 from memory, and that string becomes the release scope.</p>
 <p>The page never shows you which milestones exist. We checked:
@@ -137,7 +137,7 @@ Orbi will start on it.</p>
 </blockquote>
 <p>The page already scans GitHub on your behalf and lists what you can act on. It
 just never extended that courtesy to milestones. So you type a version you half
-remember, and if you get it wrong nothing tells you — the rejection happens
+remember, and if you get it wrong nothing tells you； the rejection happens
 later, asynchronously, on a ticket you have to go find.</p>
 <h2>The same shape, in the config</h2>
 <figure class="post-media">
@@ -145,7 +145,7 @@ later, asynchronously, on a ticket you have to go find.</p>
 <figcaption>The control plane can open a release ticket while the sandbox still believes nothing is in flight. The engine faithfully reports what it was told, once per tick, and nothing in the loop is broken.</figcaption>
 </figure><p>The third instance is the one that explains the other two.</p>
 <p>Our engine writes the active milestone into a repository variable on every tick.
-The value comes from <code>config.active_milestone</code> — which lives in the sandbox&#39;s own
+The value comes from <code>config.active_milestone</code>； which lives in the sandbox&#39;s own
 <code>orbi.toml</code> file. Not GitHub. Not our control plane.</p>
 <p>So the control plane can create a release ticket while the sandbox still
 believes nothing is in flight. Two systems, two answers, no reconciliation. In
@@ -154,8 +154,8 @@ our production logs, every tick, for the repository we had just walked through:<
 </code></pre>
 <p>Then we looked at how a field gets from the control plane into that file, and
 found there is no general mechanism at all. There are four separate
-hand-written sync functions — <code>sync_orbi_toml_engine_track</code>,
-<code>sync_orbi_toml_providers</code>, <code>sync_orbi_toml_oauth</code>, plus the initial render —
+hand-written sync functions； <code>sync_orbi_toml_engine_track</code>,
+<code>sync_orbi_toml_providers</code>, <code>sync_orbi_toml_oauth</code>, plus the initial render;
 each one added for a single field, each one staging a temp file and swapping it
 atomically. The comments record the accretion:</p>
 <pre><code class="language-bash"># Issue #116: the connect-time base branch rides the payload and must reach
@@ -181,7 +181,7 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 <p>Mode 0600, owned by the sandbox user, and no <code>authorized_keys</code>. The tenant
 cannot SSH in. There is no hand-editing to reconcile.</p>
 <p>That makes the design simpler than we assumed. The control plane is the sole
-writer, so the merge only has to preserve <em>other control-plane fields</em> — there
+writer, so the merge only has to preserve <em>other control-plane fields</em>； there
 is no external drift to detect.</p>
 <p>It also points at a stronger invariant worth holding: <strong><code>orbi.toml</code> should be a
 pure derivative, reconstructible from control-plane state alone.</strong></p>
@@ -189,7 +189,7 @@ pure derivative, reconstructible from control-plane state alone.</strong></p>
 control plane holds a partial truth. Those four sync functions each maintain a
 fragment of the real answer, and no single place can tell you what a sandbox is
 supposed to be configured as.</p>
-<p>That distinction — <em>derivative</em> versus <em>authoritative</em> — is the one that
+<p>That distinction； <em>derivative</em> versus <em>authoritative</em>； is the one that
 decides how much of this class of bug you get. A derivative file can be
 regenerated, diffed against intent, and repaired by a sweep. An authoritative
 file that only one machine holds can only be inspected by going there. Every
@@ -209,7 +209,7 @@ surface.</p>
 OnUnitActiveSec=1min
 </code></pre>
 <p>And the refresh endpoint&#39;s query is <code>WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>
-— every live sandbox, every minute, not just pending ones. So a pull costs at
+; every live sandbox, every minute, not just pending ones. So a pull costs at
 most sixty seconds, on an action that already waits for the engine&#39;s next claim.
 There is no tradeoff to weigh. Push would open an inbound path to buy less than
 a minute.</p>
@@ -220,7 +220,7 @@ a minute.</p>
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
 </code></pre>
 <p>The obvious read was credential rot, so that is what we wrote down. Reproducing
-it inside the sandbox gave <code>401 Bad credentials</code> — which seemed to confirm it,
+it inside the sandbox gave <code>401 Bad credentials</code>； which seemed to confirm it,
 especially since the repository is public and readable with a maintainer token.</p>
 <p>Then we checked the database, and the diagnosis collapsed:</p>
 <pre><code>login=cdredfox    tenant=inactive  codeduck          repo=inactive
@@ -228,13 +228,13 @@ login=zzuu080603  tenant=active    VCPToolBox-macOS  repo=inactive   ← failing
 login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← fine
 </code></pre>
 <p>Both failing sandboxes belong to <strong>inactive</strong> repositories. The refresh endpoint
-filters on <code>status = &#39;active&#39;</code>, so those tokens are never refreshed — by design,
+filters on <code>status = &#39;active&#39;</code>, so those tokens are never refreshed； by design,
 correctly. The same tenant&#39;s active repository works perfectly. That is the
 control group, sitting right there in the same query.</p>
 <p>The real defect was never credentials. It is that we keep reconciling milestones
 for repositories that were switched off, forever, once per tick. The 401 is a
 symptom of a correct policy meeting a loop that should have stopped.</p>
-<p>Read the error, then read the data. In that order — we did it backwards and
+<p>Read the error, then read the data. In that order； we did it backwards and
 filed a ticket with the wrong root cause, which then had to be publicly
 corrected.</p>
 <p>What makes this worth writing down is not the mistake. It is that reproducing
@@ -244,14 +244,14 @@ problem looks like. The repository was public and readable with a maintainer
 token, which seemed to rule out &quot;the repo is gone&quot;. Two pieces of evidence, both
 genuine, both pointing the wrong way.</p>
 <p>A reproduction tells you what happens. It does not tell you whether it is
-supposed to happen. The database row — <code>repo_status = inactive</code> — was the only
+supposed to happen. The database row； <code>repo_status = inactive</code>； was the only
 thing that could distinguish &quot;this token should work and doesn&#39;t&quot; from &quot;this
 token was never meant to be refreshed&quot;. And the control group was sitting in the
 same query the whole time: the same tenant&#39;s <em>active</em> repository was working
 perfectly.</p>
 <p>The generalisable version: when an error reproduces, you have confirmed the
 mechanism, not the diagnosis. The next question is always whether some policy
-intends this outcome — and policy lives in data, not in logs.</p>
+intends this outcome； and policy lives in data, not in logs.</p>
 <h2>What connects them</h2>
 <p>Three defects, one shape: <strong>the system knew something the user needed, and did
 not say it.</strong></p>
@@ -263,7 +263,7 @@ doing its job. The gap is between components, in the space where a human was
 supposed to be handed something and was not.</p>
 <p>That space is invisible from inside the code. You cannot grep for it, and your
 tests will not fail on it, because nothing is broken. You find it by standing
-where the user stands — which for us meant moving our own release line onto our
+where the user stands； which for us meant moving our own release line onto our
 own product and waiting for it to stall.</p>
 <p>It stalled in four hours.</p>
 <hr>
