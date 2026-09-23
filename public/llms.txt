@@ -193,6 +193,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Rejected, fixed, merged: Orbi in a k8s distro (English):
+  https://orbi.build/blog/k8e-rejected-then-merged/
+- 被打回、修好、合并：Orbi 在一个 k8s 发行版里 (Chinese):
+  https://orbi.build/zh/blog/k8e-rejected-then-merged/
 - Designing one slash command (English):
   https://orbi.build/blog/designing-a-slash-command/
 - Waiting for an answer the user can't give (English):

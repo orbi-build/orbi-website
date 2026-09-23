@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Rejected, fixed, merged: Orbi in a k8s distro</title>
+      <link>https://orbi.build/blog/k8e-rejected-then-merged/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/k8e-rejected-then-merged/</guid>
+      <pubDate>Wed, 23 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.</description>
+    </item>
+    <item>
       <title>Designing one slash command</title>
       <link>https://orbi.build/blog/designing-a-slash-command/</link>
       <guid isPermaLink="true">https://orbi.build/blog/designing-a-slash-command/</guid>
