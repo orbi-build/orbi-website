@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Rejected, fixed, merged: Orbi in a k8s distro</title>
+      <title>The k8e etcd ticket that closed too early</title>
       <link>https://orbi.build/blog/k8e-rejected-then-merged/</link>
       <guid isPermaLink="true">https://orbi.build/blog/k8e-rejected-then-merged/</guid>
       <pubDate>Wed, 23 Sep 2026 00:00:00 GMT</pubDate>
-      <description>An etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, was rejected, fixed and merged, then the issue closed by mistake. What went wrong, and why.</description>
+      <description>Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. The review rejected it, Orbi fixed it, and the four-phase issue closed after phase one.</description>
     </item>
     <item>
       <title>Designing one slash command</title>
