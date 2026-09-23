@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>被打回、修好、合并：Orbi 在一个 k8s 发行版里 | Orbi</title>
+  <meta name="description" content="Orbi 给 497 星的 k8s 发行版 k8e 写了 2941 行 etcd 测试，第一版被打回。评审抓到了什么，Orbi 怎么修，第二张票为何只用三小时。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/k8e-rejected-then-merged/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="被打回、修好、合并：Orbi 在一个 k8s 发行版里">
+  <meta property="og:description" content="Orbi 给 497 星的 k8s 发行版 k8e 写了 2941 行 etcd 测试，第一版被打回。评审抓到了什么，Orbi 怎么修，第二张票为何只用三小时。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/k8e-rejected-then-merged/">
+  <meta property="og:image" content="https://orbi.build/img/blog-k8e.png">
+  <meta property="og:image:alt" content="被打回、修好、合并：Orbi 在一个 k8s 发行版里">
+  <meta property="article:published_time" content="2026-09-23">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"被打回、修好、合并：Orbi 在一个 k8s 发行版里","datePublished":"2026-09-23","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-k8e.png","inLanguage":"zh-CN","description":"Orbi 给 497 星的 k8s 发行版 k8e 写了 2941 行 etcd 测试，第一版被打回。评审抓到了什么，Orbi 怎么修，第二张票为何只用三小时。","url":"https://orbi.build/zh/blog/k8e-rejected-then-merged/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">中文</span>
+          <a href="/blog/k8e-rejected-then-merged/" lang="en">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-23</p>
+        <h1 id="post-title">被打回、修好、合并：Orbi 在一个 k8s 发行版里</h1>
+        <p class="hero-lede">Orbi 给 497 星的 k8s 发行版 k8e 写了 2941 行 etcd 测试，第一版被打回。评审抓到了什么，Orbi 怎么修，第二张票为何只用三小时。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p><a href="https://github.com/xiaods/k8e">k8e</a> 是一个内嵌 etcd 的 Kubernetes 发行版，497 星，维护者是 Tommy Xiao。9 月 20 日他开了 <a href="https://github.com/xiaods/k8e/issues/612">#612</a>：给嵌入式 etcd 设计一套端到端健壮性测试，分四个阶段做。第一阶段是故障后安全恢复，之后是多节点故障、备份可恢复、长期稳定性。</p>
+<p>他把这张票交给了 Orbi。下面按公开的 PR 和评审记录讲后来发生的事。</p>
+<h3>第一版被打回</h3>
+<p>Orbi 在 11:37（UTC+8）开了 <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a>，只做第一阶段：10 个新文件，2941 行。里面有操作历史记录器、恢复判定器（oracle），还有三个测试：写入中途 SIGKILL 子进程、WAL 损坏、quota。</p>
+<p>13:21，维护者账号上的评审给出 <strong>REQUEST_CHANGES</strong>，三条发现：</p>
+<ul>
+<li><p><strong>R1：判定器接受了一个不可能的状态。</strong> 假设两个 CAS 都预期 revision 3，A 已确认成功，B 结果未知。如果恢复后读到的是 B 的值，这不可能发生，因为后执行的那个比较必然失败。判定器却接受了，因为它把未知结果的 CAS 当成了无条件写入。</p>
+<p>对应的操作历史：</p>
+<pre><code>key k at revision 3
+CAS A  expect rev 3, write a   acknowledged at rev 4
+CAS B  expect rev 3, write b   outcome unknown
+after recovery: k = b        oracle: OK
+</code></pre>
+</li>
+<li><p><strong>R2：被杀的进程同时在记账。</strong> 记录器跑在测试要 SIGKILL 的那个进程里。一次写入可能已经被确认，但确认还没写进日志进程就被杀了。这条写入会被降级成「未知」，它丢了测试照样通过。票面要求的恰恰相反：记录器必须在被测节点之外。</p>
+</li>
+<li><p><strong>R3：空值被当成不存在。</strong> 空 payload 不做哈希，判定器就把「写入了空值」读成「键不存在」。空值键丢了，测试也能通过。</p>
+</li>
+</ul>
+<p>评审还指出，PR 正文里的 <code>Fixes #612</code> 会在只完成第一阶段时就关掉整张四阶段的票。</p>
+<p>这几条都不是代码风格问题。每一条都意味着测试会在没恢复对的时候报「恢复正确」。对一套测试来说，这是最坏的失败：虚假的安全感。</p>
+<h3>怎么修的</h3>
+<p>一个 commit，<code>f8e9dd9c</code>，三条全改：</p>
+<ul>
+<li>预期 revision 早于该键最后一次确认 revision 的未知 CAS，现在会被剔除。</li>
+<li>子进程只托管 etcd 成员，客户端和记录器移到父进程，被杀之后记录器还活着。</li>
+<li>每次 put 和 CAS 的 payload 都做哈希，空字符串也不例外。</li>
+</ul>
+<p>每一条都补了正反两个方向的测试。PR 正文改成「Part of #612 — this PR lands the phase-1 layer only」。</p>
+<p>22:12，第二轮评审给出 <strong>APPROVED</strong>。它逐条核对了修复，提了两个合并前条件：独立跑一遍 race 测试；早期一个 commit message 里残留的 <code>Fixes #612</code> 要去掉。剩下的覆盖缺口，设计文档里已经写明，评审也一一列了出来。22:13 维护者本人点了合并。CI 共 801 个测试，新增 49 个，0 失败。</p>
+<h3>同一个 PR 上，Orbi 自己的错</h3>
+<p>两轮评审之间，Orbi 的引擎在 PR 上公开报了三次自己的失败：</p>
+<ol>
+<li>想加一个该仓库不存在的标签 <code>ai-awaiting-merge</code>。</li>
+<li>自己的独立评审输出里没有结论行，结果解析不出来。</li>
+<li>续跑校验要求正文里必须有 <code>Fixes #612</code>，而这正是维护者评审要求删掉的那一行，删得有道理。</li>
+</ol>
+<p>每次失败都公开写在 PR 上，然后重试。第三条最值得讲：这条规则对一次做完的票是对的，对分阶段的票是错的，是人工评审发现的。</p>
+<h3>第二张票用了 3 小时 12 分</h3>
+<p>第二天是 <a href="https://github.com/xiaods/k8e/issues/614">#614</a>：rqlite 兼容性，M0 关口。<a href="https://github.com/xiaods/k8e/pull/615">PR #615</a> 改了 11 个文件，加了 3294 行，16:49 开出。他的账号上先出现一条 LoopX 评审意见，20:00 他批准，20:01 Orbi 自己合并。合并门禁只要求一次人工批准。</p>
+<h3>这件事说明什么</h3>
+<p>它不能说明 Orbi 一次就能做对。这次没有一次做对。</p>
+<p>它说明的是一个维护者能接受的循环：票面定范围；评审可以说不，并给出理由；修复落在同一个 PR 上；没做完的部分写清楚，不假装已经关了。在别人的代码库里接一张难票，这个循环走完用了十个半小时。</p>
+<p>如果你维护的仓库里也排着一串写清楚了的 issue，<a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 可以在你的仓库里跑同样的循环。</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/blog/k8e-rejected-then-merged/" lang="en">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>

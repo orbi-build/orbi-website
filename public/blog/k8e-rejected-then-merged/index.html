@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rejected, fixed, merged: Orbi in a k8s distro | Orbi</title>
+  <meta name="description" content="A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.">
+  <link rel="canonical" href="https://orbi.build/blog/k8e-rejected-then-merged/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Rejected, fixed, merged: Orbi in a k8s distro">
+  <meta property="og:description" content="A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.">
+  <meta property="og:url" content="https://orbi.build/blog/k8e-rejected-then-merged/">
+  <meta property="og:image" content="https://orbi.build/img/blog-k8e.png">
+  <meta property="og:image:alt" content="Rejected, fixed, merged: Orbi in a k8s distro">
+  <meta property="article:published_time" content="2026-09-23">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Rejected, fixed, merged: Orbi in a k8s distro","datePublished":"2026-09-23","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-k8e.png","inLanguage":"en","description":"A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.","url":"https://orbi.build/blog/k8e-rejected-then-merged/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/k8e-rejected-then-merged/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-23</p>
+        <h1 id="post-title">Rejected, fixed, merged: Orbi in a k8s distro</h1>
+        <p class="hero-lede">A 2,941-line etcd test suite Orbi wrote for k8e, a 497-star Kubernetes distro, came back REQUEST_CHANGES. What the review caught, what Orbi fixed, and why.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Tommy Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>: design an end-to-end robustness suite for the embedded etcd, in four phases. Safe recovery after a crash comes first. Multi-node failure, backup restore and long-running stability come after it.</p>
+<p>He labelled it for Orbi. This post is what happened next, taken from the public PR and its reviews.</p>
+<h3>The first version was rejected</h3>
+<p>Orbi opened <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a> at 11:37 (UTC+8): phase one only, 10 new files, 2,941 lines. It had an operation history recorder, a recovery oracle, a SIGKILL test that kills a child process mid-write, a WAL corruption test and a quota test.</p>
+<p>At 13:21 the review on the maintainer&#39;s account came back <strong>REQUEST_CHANGES</strong>, with three findings:</p>
+<ul>
+<li><p><strong>R1: the oracle accepted an impossible state.</strong> Say two CAS writes both expect revision 3. A is acknowledged and B&#39;s outcome is unknown. If recovery then shows B&#39;s value, that can&#39;t happen: whichever write ran second must have failed its compare. The oracle accepted it anyway, because it treated an unknown CAS as an unconditional put.</p>
+<p>The history in question:</p>
+<pre><code>key k at revision 3
+CAS A  expect rev 3, write a   acknowledged at rev 4
+CAS B  expect rev 3, write b   outcome unknown
+after recovery: k = b        oracle: OK
+</code></pre>
+</li>
+<li><p><strong>R2: the process being killed was also the one taking notes.</strong> The recorder ran inside the process the test SIGKILLs. A write could be acknowledged and then killed before the acknowledgement reached the log. That write gets downgraded to &quot;unknown&quot;, and losing it passes the test. The issue had asked for exactly the opposite: the recorder must sit outside the node under test.</p>
+</li>
+<li><p><strong>R3: an empty value looked like a missing key.</strong> An empty payload was never hashed, so the oracle read &quot;written as empty&quot; as &quot;does not exist&quot;. A lost empty key would pass.</p>
+</li>
+</ul>
+<p>The review also said the PR body&#39;s <code>Fixes #612</code> would close a four-phase issue after phase one.</p>
+<p>Nothing in that list is style. Each finding meant the suite would report &quot;recovered correctly&quot; when it hadn&#39;t. For a test suite, that&#39;s the worst failure there is: false safety.</p>
+<h3>The fix</h3>
+<p>One commit, <code>f8e9dd9c</code>, addressed all three. An unknown CAS whose expected revision is older than the key&#39;s last acknowledged revision is now dropped. The child process only hosts the etcd member, while the parent runs the client and the recorder, so the recorder survives the kill. Every put and CAS payload is hashed, the empty string included. New oracle tests cover both directions of each finding. The PR body now reads &quot;Part of #612 — this PR lands the phase-1 layer only&quot;.</p>
+<p>At 22:12 the second review came back <strong>APPROVED</strong>. It traced each fix and listed two conditions: run the race tests independently, and drop a stale <code>Fixes #612</code> from an early commit message. It also listed the remaining gaps, which the design doc already disclosed. The maintainer merged it himself at 22:13. CI: 801 tests, 49 new, 0 failing.</p>
+<h3>Orbi&#39;s own mistakes on the same PR</h3>
+<p>Between the two reviews, Orbi&#39;s engine posted three failures of its own on the PR:</p>
+<ol>
+<li>It tried to add a label the repository didn&#39;t have (<code>ai-awaiting-merge</code>).</li>
+<li>Its independent review produced no verdict line, so the result couldn&#39;t be parsed.</li>
+<li>Its resume check demanded <code>Fixes #612</code> in the body, the exact line the maintainer&#39;s review had rightly asked to remove.</li>
+</ol>
+<p>Each one was reported on the PR, in the open, and retried. The third is the instructive one. A rule that is right for single-shot issues was wrong for a phased one, and the human reviewer caught it.</p>
+<h3>The second ticket took 3 hours 12 minutes</h3>
+<p>The next day brought <a href="https://github.com/xiaods/k8e/issues/614">#614</a>: rqlite compatibility, the M0 gate. <a href="https://github.com/xiaods/k8e/pull/615">PR #615</a> added 3,294 lines across 11 files. It opened at 16:49. A LoopX review was posted from his account, he approved at 20:00, and Orbi merged at 20:01 because an approval was the only thing the merge gate required.</p>
+<h3>What this shows</h3>
+<p>It doesn&#39;t show that Orbi gets things right the first time. It didn&#39;t.</p>
+<p>It shows the loop a maintainer can live with. The ticket sets the scope. The review can say no, with reasons. The fix lands on the same PR, and the gaps stay written down instead of being quietly treated as closed. On a hard ticket in someone else&#39;s codebase, that loop took 10 and a half hours.</p>
+<p>If you maintain a repo with a queue of well-specified issues, <a href="https://orbi.build/cloud/?ref=blog-k8e">Orbi Cloud</a> runs the same loop on yours.</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="https://docs.orbi.build">Docs</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
+        <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/compare/">Compare</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
+        <li><a href="https://status.orbi.build">Status</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+      </ul>
+      <ul>
+        <li><a href="/support/">Support</a></li>
+        <li><a href="/#direction">Direction</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
+        <li><a href="/zh/blog/k8e-rejected-then-merged/" lang="zh-CN">中文</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>
