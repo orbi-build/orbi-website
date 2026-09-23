@@ -195,7 +195,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Rejected, fixed, merged: Orbi in a k8s distro (English):
   https://orbi.build/blog/k8e-rejected-then-merged/
-- 被打回、修好、合并：Orbi 在一个 k8s 发行版里 (Chinese):
+- Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了 (Chinese):
   https://orbi.build/zh/blog/k8e-rejected-then-merged/
 - Designing one slash command (English):
   https://orbi.build/blog/designing-a-slash-command/
