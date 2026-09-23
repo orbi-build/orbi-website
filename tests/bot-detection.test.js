@@ -128,21 +128,36 @@ describe("bot detection (Issue #280)", () => {
     expect(await isBot(requestWith({ ua: CHROME_127 }))).toBe(false);
   });
 
-  it("loads ASN and UA decisions from the database and refreshes after the TTL", async () => {
+  it("refreshes ASN decisions from the database after the TTL", async () => {
     vi.useFakeTimers();
-    const tables = { asns: [{ asn: 7922 }], needles: [{ needle: "claudebot" }] };
+    const tables = { asns: [{ asn: 7922 }], needles: [] };
     const db = {
       prepare(sql) {
         return { all: async () => ({ results: sql.includes("bot_asns") ? tables.asns : tables.needles }) };
       },
     };
-    const claude = requestWith({ ua: "ClaudeBot/1.0", asn: 9506 });
-    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 1 });
+    const request = requestWith({ ua: CHROME_127, asn: 7922 });
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
     tables.asns.length = 0;
-    tables.needles.length = 0;
-    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 1 });
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
     vi.advanceTimersByTime(5 * 60 * 1000 + 1);
-    expect(await visitSignals(claude, {}, db)).toMatchObject({ is_bot: 0 });
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 0 });
+  });
+
+  it("refreshes UA substring decisions from the database after the TTL", async () => {
+    vi.useFakeTimers();
+    const tables = { asns: [], needles: [{ needle: "claudebot" }] };
+    const db = {
+      prepare(sql) {
+        return { all: async () => ({ results: sql.includes("bot_asns") ? tables.asns : tables.needles }) };
+      },
+    };
+    const request = requestWith({ ua: "ClaudeBot/1.0", asn: 9506 });
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
+    tables.needles.length = 0;
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
+    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 0 });
   });
 
   it("treats a failed bot-list query as non-bot while retaining behavior rules", async () => {
