@@ -193,6 +193,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- The k8e etcd ticket that closed too early (English):
+  https://orbi.build/blog/k8e-rejected-then-merged/
+- Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了 (Chinese):
+  https://orbi.build/zh/blog/k8e-rejected-then-merged/
 - Designing one slash command (English):
   https://orbi.build/blog/designing-a-slash-command/
 - Waiting for an answer the user can't give (English):

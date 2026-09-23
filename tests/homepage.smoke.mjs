@@ -127,6 +127,14 @@ function startServer() {
   const server = createServer(async (request, response) => {
     try {
       const { pathname } = new URL(request.url, "http://127.0.0.1");
+      // The site Worker answers the engagement beacon with 204 (src/worker.js
+      // engagementResponse); the stand-in does the same.
+      if (pathname === "/cloud/e" && request.method === "POST") {
+        request.resume();
+        response.writeHead(204);
+        response.end();
+        return;
+      }
       const file = await serveFile(pathname);
       if (!file) {
         response.writeHead(404);
@@ -140,6 +148,14 @@ function startServer() {
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
+              .replaceAll(
+                pricing.measuredSmallRepositoryDeliveryRangeToken,
+                String(pricing.measuredSmallRepositoryDeliveryRange),
+              )
+              .replaceAll(
+                pricing.measuredLargeCodebaseDeliveriesToken,
+                String(pricing.measuredLargeCodebaseDeliveries),
+              )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
               .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
           )
@@ -194,6 +210,20 @@ export function resolveCloudLoginExpect(raw) {
     );
   }
   return raw;
+}
+
+// Every page ships the engagement beacon (POST /cloud/e), which the site
+// Worker answers with 204. A stand-in that 404s it turns a page-leave beacon
+// into a console error whenever it lands before a check ends (flaky CI).
+export async function assertEngagementEndpoint(targetURL) {
+  const response = await fetch(`${targetURL}/cloud/e`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ kind: "engaged", path: "/" }),
+  });
+  if (response.status !== 204) {
+    throw new Error(`POST /cloud/e answered ${response.status}, expected 204 like the site Worker`);
+  }
 }
 
 export async function assertCloudLoginRedirect(targetURL) {
@@ -1070,7 +1100,7 @@ const cloudPages = {
       "US$79", "300M tokens", "new deliveries pause", "100% off",
       // Issue #277: Cloud gives a range rather than a misleading single-point
       // conversion; the detailed measurement remains on /cost/.
-      "85–400 merged deliveries", "prompt caching",
+      "Depending on ticket size: about 60–160 merged deliveries for typical tickets in a small repository, about 25 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1103,7 +1133,7 @@ const cloudPages = {
       // the same label, 300M since #145)
       "US$79", "300M token", "新交付暂停", "100% off",
       // Issue #277: Cloud gives the owner-approved delivery range.
-      "85–400 次合并交付", "prompt caching",
+      "取决于票的大小：小仓库的常见票大约 60–160 次合并交付，像 Orbi 引擎这样的大代码库大约 25 次（2026 年 9 月实测）", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
@@ -2146,6 +2176,7 @@ async function main() {
         : {}),
       headless: true,
     });
+    await assertEngagementEndpoint(targetURL);
     await assertCloudLoginRedirect(targetURL);
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");

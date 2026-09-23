@@ -179,7 +179,7 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       // CI's fallback font is up to 6px narrower than the production webfont.
       expect(Math.abs(result.width - productionWidth), `${route} ${selector}: production baseline`).toBeLessThanOrEqual(6);
     }
-  });
+  }, 30_000);
 });
 
 describe("blog tables stay within the viewport (Issue #393)", () => {

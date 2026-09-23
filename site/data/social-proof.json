@@ -1,5 +1,29 @@
 [
   {
+    "repo": "xiaods/k8e",
+    "pr": 615,
+    "merged_at": "2026-09-21T12:01:21Z",
+    "human_reviews": 2,
+    "title": "M0：兼容规范和 rqlite 能力验证",
+    "quote": null,
+    "person": null,
+    "handle": null,
+    "person_url": null,
+    "consent": null
+  },
+  {
+    "repo": "xiaods/k8e",
+    "pr": 613,
+    "merged_at": "2026-09-20T14:13:00Z",
+    "human_reviews": 2,
+    "title": "test(etcd): 设计并分阶段落地嵌入式 etcd 健壮性 E2E 方案",
+    "quote": null,
+    "person": null,
+    "handle": null,
+    "person_url": null,
+    "consent": null
+  },
+  {
     "repo": "SHUKE-LABS/mat-site",
     "pr": 16,
     "merged_at": "2026-09-19T00:41:18Z",

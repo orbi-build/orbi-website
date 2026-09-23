@@ -16,6 +16,8 @@ const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
+const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
+const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -346,6 +348,11 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
+    .replaceAll(
+      pricing.measuredSmallRepositoryDeliveryRangeToken,
+      MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE,
+    )
+    .replaceAll(pricing.measuredLargeCodebaseDeliveriesToken, MEASURED_LARGE_CODEBASE_DELIVERIES)
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {

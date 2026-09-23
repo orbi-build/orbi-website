@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The k8e etcd ticket that closed too early | Orbi</title>
+  <meta name="description" content="Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.">
+  <link rel="canonical" href="https://orbi.build/blog/k8e-rejected-then-merged/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="The k8e etcd ticket that closed too early">
+  <meta property="og:description" content="Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.">
+  <meta property="og:url" content="https://orbi.build/blog/k8e-rejected-then-merged/">
+  <meta property="og:image" content="https://orbi.build/img/blog-k8e.png">
+  <meta property="og:image:alt" content="The k8e etcd ticket that closed too early">
+  <meta property="article:published_time" content="2026-09-23">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"The k8e etcd ticket that closed too early","datePublished":"2026-09-23","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-k8e.png","inLanguage":"en","description":"Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.","url":"https://orbi.build/blog/k8e-rejected-then-merged/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/k8e-rejected-then-merged/" lang="zh-CN">中文</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-23</p>
+        <h1 id="post-title">The k8e etcd ticket that closed too early</h1>
+        <p class="hero-lede">Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>, asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.</p>
+<p>At 10:28 (UTC+8) he added the <code>ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
+<h3>The first version was rejected</h3>
+<p>Orbi opened <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a> at 11:37 with phase one only: 10 new files, 2,483 lines. It had an operation history recorder, a recovery oracle, a SIGKILL test that kills a child process mid-write, a WAL corruption test and a quota test.</p>
+<p>At 11:46 the maintainer posted what SonarCloud and DeepSource had flagged. Orbi started pushing fixes at 11:57.</p>
+<p>At 13:21 the review on the maintainer&#39;s account came back <strong>REQUEST_CHANGES</strong>. By then the PR was 2,695 lines, and the review had three findings:</p>
+<ul>
+<li><p><strong>R1: the oracle accepted an impossible state.</strong> Say two CAS writes both expect revision 3. A is acknowledged and B&#39;s outcome is unknown. If recovery shows B&#39;s value, something went wrong, because whichever write ran second must have failed its compare. The oracle accepted it anyway: it treated an unknown CAS as an unconditional put.</p>
+<p>The history in question:</p>
+<pre><code>k is at rev 3
+A: CAS rev3 -&gt; a  acked
+B: CAS rev3 -&gt; b  unknown
+recovered: k = b
+oracle: OK   (should fail)
+</code></pre>
+</li>
+<li><p><strong>R2: the process being killed was also the one taking notes.</strong> The recorder ran inside the process the test SIGKILLs. A write could be acknowledged, and the process killed before the acknowledgement reached the log. That write would be logged as &quot;unknown&quot;, so losing it would pass the test. The issue had asked for the recorder to sit outside the node under test.</p>
+</li>
+<li><p><strong>R3: an empty value looked like a missing key.</strong> An empty payload was never hashed, so the oracle read &quot;written as empty&quot; as &quot;does not exist&quot;. A lost empty key would pass.</p>
+</li>
+</ul>
+<p>The review also said the PR body&#39;s <code>Fixes #612</code> would close a four-phase issue after phase one.</p>
+<p>None of the three was about style. Each meant the suite could report &quot;recovered correctly&quot; when the data had not recovered. A test suite that does that gives you confidence you haven&#39;t earned, which is worse than having no suite at all.</p>
+<h3>Orbi&#39;s own mistakes on the same PR</h3>
+<p>Orbi&#39;s engine also reported three failures of its own, each in a PR comment:</p>
+<ol>
+<li>At 12:28 it tried to add a label the repository didn&#39;t have (<code>ai-awaiting-merge</code>). At 12:37 the engine gave up and marked the issue <code>ai-blocked</code>, which hands the next step to a human. The maintainer removed that label at 14:16 and put <code>ai-ready</code> back at 14:41, and the work resumed.</li>
+<li>At 14:54 Orbi&#39;s own independent review produced no verdict line, so its result couldn&#39;t be parsed.</li>
+<li>At 15:19 its resume check demanded <code>Fixes #612</code> in the PR body, the same line the maintainer&#39;s review had rightly asked Orbi to remove.</li>
+</ol>
+<p>Orbi never cleared the third one, and the failure spread beyond the ticket: it crashed the whole runner process serving his repository, 84 times between 15:19 and 22:10 by the runner&#39;s own log, and his entire queue stalled. The public write-up, <a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>, was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 (&quot;go ahead and keep fixing&quot;). Nothing happened after that. The rule that every PR body must say <code>Fixes</code> works for a single-shot issue and is wrong for a phased one; the engine enforced it anyway, and the human reviewer was right.</p>
+<h3>The fix</h3>
+<p>At 15:05 one commit, <code>f8e9dd9c</code>, addressed all three findings. An unknown CAS whose expected revision is older than the key&#39;s last acknowledged revision is now dropped. The child process only hosts the etcd member, while the parent runs the client and the recorder, so the recorder survives the kill. Every put and CAS payload is hashed, including the empty string.</p>
+<p>New tests cover R1 and R3 in both directions. The PR body now reads &quot;Part of #612 — this PR lands the phase-1 layer only&quot;.</p>
+<p>At 22:12 the second review came back <strong>APPROVED</strong>. It traced each fix and set two conditions. The first was to run the race tests independently. The second was to drop a stale <code>Fixes #612</code> from Orbi&#39;s first commit message; the review called that one optional, because it believed only the PR body closes issues. It also listed the remaining gaps, which the design doc already disclosed. The maintainer merged it himself at 22:13, 38 seconds later, and the record doesn&#39;t show either condition being carried out first. CI on the merged head: 801 tests, 49 new, 0 failing.</p>
+<h3>The issue closed anyway</h3>
+<p>The review was wrong about that commit message. GitHub also closes an issue when a closing keyword in a merged commit message points at it. One second after the merge, #612 closed as <em>completed</em>, closed by Orbi&#39;s first commit, with one phase of four landed. The first review had warned about exactly this outcome, and it came through the one place nobody had fixed.</p>
+<p>That was Orbi&#39;s fourth mistake on this ticket, and the one with the biggest consequence. Our engine&#39;s rules require <code>Fixes #N</code> in the PR body, and the delivery agent also put it in its first commit message. Both reviews flagged the keyword, the first in the PR body and the second in the commit. As of this writing, #612 is still closed.</p>
+<h3>The second PR: 3 hours 12 minutes from open to merge</h3>
+<p>The next day brought <a href="https://github.com/xiaods/k8e/issues/614">#614</a>, rqlite compatibility for the M0 gate. The maintainer labelled it at 15:21. <a href="https://github.com/xiaods/k8e/pull/615">PR #615</a> added 3,294 lines across 11 files. It opened at 16:49 and was waiting for approval from 17:33. A LoopX review was posted from the maintainer&#39;s account, he approved at 20:00:52, and Orbi merged 29 seconds later.</p>
+<h3>Looking back</h3>
+<p>Orbi did not get this right the first time. The maintainer had to unblock the issue and put it back in the queue, ask Orbi to keep going when it stalled, and finally merge past one of Orbi&#39;s rules that was wrong for his ticket. The four-phase issue still closed after phase one.</p>
+<p>When the review said no, it gave reasons, and the fix landed on the same PR. On a hard ticket in someone else&#39;s codebase, that took 10 and a half hours from PR open to merge. Every failure, Orbi&#39;s included, is in the public record, so you can check this post against it.</p>
+<p>Two things changed in Orbi afterwards (<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>). A bad PR body now fails only its own ticket and no longer kills the runner. And Orbi&#39;s workflow contract now says a phased initiative must not be carried by one issue: the maintainer splits each phase into a child issue, and each child&#39;s PR closes that child and nothing else.</p>
+<p>If you maintain a repo with a queue of well-specified issues, <a href="https://orbi.build/cloud/?ref=blog-k8e">Orbi Cloud</a> runs the same loop on yours.</p>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="https://docs.orbi.build">Docs</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
+        <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/compare/">Compare</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
+        <li><a href="https://status.orbi.build">Status</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+      </ul>
+      <ul>
+        <li><a href="/support/">Support</a></li>
+        <li><a href="/#direction">Direction</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
+        <li><a href="/zh/blog/k8e-rejected-then-merged/" lang="zh-CN">中文</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>

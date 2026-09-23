@@ -93,6 +93,14 @@ describe("social-proof consent gate (Issue #226)", () => {
     expect(built.get("index.html")).toContain("Tommy Xiao");
   });
 
+  it("contains both xiaods/k8e deliveries in the source data", async () => {
+    const records = JSON.parse(await readFile(SOCIAL_PROOF_JSON, "utf8"));
+    expect(records.filter(({ repo, pr }) => repo === "xiaods/k8e" && [613, 615].includes(pr))).toEqual([
+      expect.objectContaining({ repo: "xiaods/k8e", pr: 615, merged_at: "2026-09-21T12:01:21Z", human_reviews: 2 }),
+      expect.objectContaining({ repo: "xiaods/k8e", pr: 613, merged_at: "2026-09-20T14:13:00Z", human_reviews: 2 }),
+    ]);
+  });
+
   it("fails on a record that is neither a delivery nor a quote, so no record silently vanishes", async () => {
     const orphan = { repo: null, pr: null, merged_at: "2026-09-18T00:00:00Z", human_reviews: 0, title: "orphan", quote: null, person: null, handle: null, person_url: null, consent: null };
     await withFixture([orphan], async (path, out) =>
@@ -114,13 +122,15 @@ describe("homepage social-proof section (Issue #226)", () => {
     }
   });
 
-  it("renders one quote card and the three seeded deliveries, quotes first, newest first", () => {
+  it("renders one quote card and the five seeded deliveries, quotes first, newest first", () => {
     const html = built.get("index.html");
     const section = sectionOf(html, "social-proof");
-    expect(cardsOf(section)).toHaveLength(4);
+    expect(cardsOf(section)).toHaveLength(6);
     expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
     const order = [
       section.indexOf("Tommy Xiao"),
+      section.indexOf("k8e/pull/615"),
+      section.indexOf("k8e/pull/613"),
       section.indexOf("mat-site/pull/16"),
       section.indexOf("mat-site/pull/14"),
       section.indexOf("Tianshu-harness/pull/3"),
@@ -129,7 +139,7 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(order.every((at) => at > -1)).toBe(true);
   });
 
-  it("shows the merge date and a no-human-review line on every delivery card", () => {
+  it("shows the merge date and preserves the no-human-review lines", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
     expect(section.match(/class="proof-card-review">no human review<\/p>/g)).toHaveLength(3);
     expect(section).toContain('<time datetime="2026-09-19T00:41:18Z">2026-09-19</time>');
@@ -138,16 +148,16 @@ describe("homepage social-proof section (Issue #226)", () => {
   it("carries the computed count line linking /evidence/#third-party", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
     expect(section).toContain('href="/evidence/#third-party"');
-    expect(section).toContain("3 deliveries in other people's repositories");
-    expect(section).not.toContain("4 deliveries");
+    expect(section).toContain("5 deliveries in other people's repositories");
+    expect(section).not.toContain("3 deliveries");
   });
 
   it("mirrors the same structure on the zh homepage with zh copy", () => {
     const section = sectionOf(built.get("zh/index.html"), "social-proof");
-    expect(cardsOf(section)).toHaveLength(4);
+    expect(cardsOf(section)).toHaveLength(6);
     expect(section.match(/class="proof-card proof-card-quote"/g)).toHaveLength(1);
     expect(section).toContain('href="/zh/evidence/#third-party"');
-    expect(section).toContain("他人仓库中已有 3 次交付");
+    expect(section).toContain("他人仓库中已有 5 次交付");
     expect(section).toContain("无人类 review");
     // Same data, same markup: the EN and ZH sections carry the same links.
     const count = (html) => sectionOf(html, "social-proof").match(/<a /g).length;
@@ -160,11 +170,11 @@ describe("homepage social-proof section (Issue #226)", () => {
     expect(card).not.toContain("github.com");
   });
 
-  it("never mentions k8e (Issue #226 acceptance 6)", async () => {
+  it("includes both k8e PR links in the generated homepages", () => {
     for (const output of ["index.html", "zh/index.html"]) {
-      expect(built.get(output)).not.toContain("k8e");
+      expect(built.get(output)).toContain("https://github.com/xiaods/k8e/pull/613");
+      expect(built.get(output)).toContain("https://github.com/xiaods/k8e/pull/615");
     }
-    await expect(readFile(SOCIAL_PROOF_JSON, "utf8")).resolves.not.toContain("k8e");
   });
 });
 
@@ -175,16 +185,20 @@ describe("/evidence/ #third-party section (Issue #226)", () => {
       const records = html.indexOf('id="records"');
       const third = html.indexOf('<section class="social-proof shell" id="third-party"');
       expect(third, `${output}: #third-party missing`).toBeGreaterThan(records);
-      expect(cardsOf(sectionOf(html, "third-party"))).toHaveLength(4);
+      const section = sectionOf(html, "third-party");
+      expect(cardsOf(section)).toHaveLength(6);
+      expect(section).toContain("https://github.com/xiaods/k8e/pull/613");
+      expect(section).toContain("https://github.com/xiaods/k8e/pull/615");
     }
   });
 
   it("groups the two mat-site deliveries under one repository heading", () => {
     const section = sectionOf(built.get("evidence/index.html"), "third-party");
     const groups = [...section.matchAll(/<h3 class="social-proof-group-title">([\s\S]*?)<\/h3>/g)].map((m) => m[1]);
-    expect(groups).toHaveLength(3); // two repositories + the quotes group
-    expect(groups[0]).toContain("SHUKE-LABS/mat-site");
-    const matGroup = section.slice(section.indexOf(groups[0]), section.indexOf("zzuu080603/Tianshu-harness", section.indexOf(groups[0])));
+    expect(groups).toHaveLength(4); // three repositories + the quotes group
+    expect(groups[0]).toContain("xiaods/k8e");
+    expect(groups[1]).toContain("SHUKE-LABS/mat-site");
+    const matGroup = section.slice(section.indexOf(groups[1]), section.indexOf("zzuu080603/Tianshu-harness", section.indexOf(groups[1])));
     expect(cardsOf(matGroup)).toHaveLength(2);
   });
 
@@ -222,6 +236,9 @@ describe("third-party repository name is plain text (Issue #232)", () => {
       );
       expect(section, `${output}: the repository name vanished from the cards`).toContain(
         '<p class="proof-card-repo">SHUKE-LABS/mat-site</p>',
+      );
+      expect(section, `${output}: the k8e repository name vanished from the cards`).toContain(
+        '<p class="proof-card-repo">xiaods/k8e</p>',
       );
       if (id === "third-party") {
         expect(section, `${output}: the repository name vanished from the group title`).toContain(
