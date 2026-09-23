@@ -1,7 +1,7 @@
 ---
 title: Claude Code 跑完之后，谁来合并 PR
 date: 2026-09-19
-summary: Claude Code 会写代码、评审 PR，却不会替你合并或发版。本文从真实记录出发，看看交付链还缺谁，以及证据如何留下。本文只讲流程和结果。
+summary: Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。
 lang: zh
 author: Orbi
 image: /img/blog-claude-actions.png

@@ -58,7 +58,7 @@ The seven steps are the current Cloud onboarding path:
 
 1. **Sign in** with your GitHub identity.
 2. **Install the Orbi GitHub App** on your account.
-3. **Connect a repository**； the repo and the base branch Orbi works from.
+3. **Connect a repository**: the repo and the base branch Orbi works from.
 4. **Provision the environment.** About a minute.
 5. **Your first Issue.** Label it `ai-ready`, and Orbi writes the code and opens a pull request.
 6. **Cut a release.** Type the version; Orbi bumps it, tags it and publishes the GitHub Release.
@@ -66,9 +66,9 @@ The seven steps are the current Cloud onboarding path:
 
 ## The seventh step is the one that starts paid delivery
 
-Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer； an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
+Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the `__FREE_DELIVERIES__` free deliveries.
 
-The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care； that is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
+The release step still requires your decision: *you decide the version, Orbi never increments it for you.* The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.
 
 Step five is one label, and you can add it without leaving the terminal:
 

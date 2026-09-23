@@ -1,7 +1,7 @@
 ---
 title: 一条斜杠命令在票里是怎么定下来的：从名字到权限边界
 date: 2026-09-22
-summary: 一条票内斜杠命令的名字、语法、正则锚点和注册表怎么定：对照 Prow 与 bors-ng 的源码，记录四个取舍和对应的源码行号，不绕弯子看。
+summary: 一条票内斜杠命令的名字、语法、正则锚点和注册表怎么定：对照 Prow 与 bors-ng 的源码，记录四个取舍、对应源码行号，以及两套成熟实现各自留下的缺口。
 lang: zh
 author: Orbi
 image: /img/blog-slash-command.png
