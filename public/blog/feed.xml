@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/k8e-rejected-then-merged/</link>
       <guid isPermaLink="true">https://orbi.build/blog/k8e-rejected-then-merged/</guid>
       <pubDate>Wed, 23 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. The review rejected it, Orbi fixed it, and the four-phase issue closed after phase one.</description>
+      <description>Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.</description>
     </item>
     <item>
       <title>Designing one slash command</title>

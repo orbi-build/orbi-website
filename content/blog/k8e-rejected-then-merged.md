@@ -1,7 +1,7 @@
 ---
 title: The k8e etcd ticket that closed too early
 date: 2026-09-23
-summary: Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. The review rejected it, Orbi fixed it, and the four-phase issue closed after phase one.
+summary: Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.
 lang: en
 author: Orbi
 image: /img/blog-k8e.png
@@ -37,7 +37,7 @@ At 13:21 the review on the maintainer's account came back **REQUEST_CHANGES**. B
 
 The review also said the PR body's `Fixes #612` would close a four-phase issue after phase one.
 
-Each finding meant the suite could report "recovered correctly" when the data had not recovered. A test suite that does that gives you confidence you haven't earned, which is worse than having no suite at all.
+None of the three was about style. Each meant the suite could report "recovered correctly" when the data had not recovered. A test suite that does that gives you confidence you haven't earned, which is worse than having no suite at all.
 
 ### Orbi's own mistakes on the same PR
 
