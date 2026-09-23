@@ -32,6 +32,25 @@ const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 
+// Inline, first-party engagement telemetry. It sends only event metadata and
+// uses Beacon so page exits do not block navigation or rendering.
+const ENGAGEMENT_SCRIPT = `<script>(()=>{
+  const endpoint="/cloud/e", sent=new Set(), start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, maxDepth=0;
+  const send=(kind,detail)=>{const key=kind+(detail?":"+detail:"");if(sent.has(key))return;sent.add(key);const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"}));}catch(error){console.warn("engagement_report_failed",error);}};
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true,once:false}));
+  const depth=()=>{const max=document.documentElement.scrollHeight-innerHeight;maxDepth=Math.max(maxDepth,max<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/max*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  const check=()=>{if(visible&&interacted&&visibleMs+Date.now()-visibleAt>=10000)send("engaged");};
+  setTimeout(check,10000);
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();send("scroll_depth",Math.max(25,Math.min(100,Math.ceil(maxDepth/25)*25)));};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();setTimeout(check,10000);}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script>`;
+
 // The four pages that carry the data-driven social-proof section (Issue #226):
 // the two homes render the capped grid, the two evidence pages the full
 // grouped list. A page in this map without the <!--@social-proof--> marker
@@ -723,7 +742,7 @@ function renderPost(post, template) {
     SUMMARY: escAttr(post.summary),
     BODY: post.html,
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  });
+  }).replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -878,6 +897,8 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
     } else if (html.includes("<!--@footer-->")) {
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
     }
+    if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
+    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);

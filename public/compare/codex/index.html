@@ -53,4 +53,19 @@
 <p><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors</a></p></main>
 <footer class="site-footer shell"><a class="wordmark wordmark-footer" href="/" aria-label="Orbi home"><img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt=""><span>Orbi</span></a><p class="orbi-site-footer-p">Software production that survives the session.</p><nav aria-label="Footer navigation"><ul><li><a href="https://docs.orbi.build">Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/cloud/">Cloud</a></li><li><a href="/compare/">Compare</a></li></ul><ul><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li><li><a href="/#faq">FAQ</a></li></ul><ul><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li></ul><ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/zh/compare/codex/" lang="zh-CN">中文</a></li><li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li></ul></nav><nav class="footer-compare" aria-label="Compare deep dives"><span>Compare</span><a href="/compare/orca/">Orbi vs Orca</a><a href="/compare/openclaw/">Orbi vs OpenClaw</a><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot coding agent</a><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a><a href="/compare/claude-code/">Orbi vs Claude Code</a><a href="/compare/openhands/">Orbi vs OpenHands</a><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a><a href="/compare/codex/">Orbi vs OpenAI Codex</a><a href="/compare/devin/">Orbi vs Devin</a><a href="/compare/jules/">Orbi vs Google Jules</a><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></nav></footer>
 <script src="/demo.js" defer></script>
-</body></html>
+<script>(()=>{
+  const endpoint="/cloud/e", sent=new Set(), start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, maxDepth=0;
+  const send=(kind,detail)=>{const key=kind+(detail?":"+detail:"");if(sent.has(key))return;sent.add(key);const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"}));}catch(error){console.warn("engagement_report_failed",error);}};
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true,once:false}));
+  const depth=()=>{const max=document.documentElement.scrollHeight-innerHeight;maxDepth=Math.max(maxDepth,max<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/max*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  const check=()=>{if(visible&&interacted&&visibleMs+Date.now()-visibleAt>=10000)send("engaged");};
+  setTimeout(check,10000);
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();send("scroll_depth",Math.max(25,Math.min(100,Math.ceil(maxDepth/25)*25)));};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();setTimeout(check,10000);}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body></html>
