@@ -83,3 +83,8 @@ Every screen in the video is the product rendering, not a mockup: the sign-in ca
 If you want to read instead of watch, the same path is in the docs: [docs.orbi.build](https://docs.orbi.build). If you want to run the whole thing on your own machine instead of ours, that is the same product, [free to self-host](https://github.com/orbi-build/orbi).
 
 Start here: [orbi.build/cloud](https://orbi.build/cloud/?ref=blog-seven-steps).
+
+
+## Related
+
+Read the [Google Jules comparison](/compare/jules/) and [Cloud](/cloud/).

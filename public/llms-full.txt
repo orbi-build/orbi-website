@@ -1,0 +1,284 @@
+# Orbi in one paragraph + key numbers
+
+Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
+
+Key numbers: Cloud is US$79/month with 300M model tokens; about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.
+
+## /cost/ — What one Issue delivery actually costs
+
+<div class="night">
+      <section class="compare-hero shell" aria-labelledby="cost-title">
+        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-12 · n=46</p>
+        <h1 id="cost-title">What one Issue delivery actually costs</h1>
+        <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 46 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,742,066</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.12</strong>, and <strong>100 issues ≈ $6–12</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
+        <div class="cta-row">
+          <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+          <p class="hero-alt">Self-hosting? The delivery core is free forever — <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">run Orbi yourself ↗</a></p>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" aria-labelledby="measured-title">
+      <p class="section-tag">THE MEASUREMENT</p>
+      <h2 class="orbi-compare-section-h2" id="measured-title">46 real deliveries, measured on our own repository</h2>
+      <p class="section-lede">Every Orbi delivery runs two agent sessions — the implementation, then an independent review that can repair the branch and rerun the suite. As of <strong>2026-09-12</strong> we aggregated the session logs of <strong>n=46 deliveries</strong> of the orbi repository itself (Python, full CI, issues written to spec). The sample is whatever worktrees are on disk that day — it moves as worktrees get cleaned up — so <strong>n is a snapshot as of the stated date, not a permanent fact</strong>. Here is the complete per-delivery distribution of <code>totalTokens</code> — the count the provider actually bills, cache reads included:</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Quantile</th><th scope="col">totalTokens per delivery</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">p50 (median)</th><td>2,220,637</td></tr>
+            <tr><th scope="row">p75</th><td>3,961,248</td></tr>
+            <tr><th scope="row">p90</th><td>13,290,932</td></tr>
+            <tr><th scope="row">p95</th><td>16,555,250</td></tr>
+            <tr><th scope="row">Max</th><td>37,627,783</td></tr>
+            <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
+          </tbody>
+        </table>
+      <p class="src-note">The 2026-09-12 snapshot mean of 4,742,066 tokens works out to about __MEASURED_SNAPSHOT_DELIVERIES__ deliveries per __INCLUDED_TOKENS__ tokens. The Cloud pricing page uses about __MEASURED_LARGE_CODEBASE_DELIVERIES__ deliveries because it was measured later on large-codebase deliveries; the samples contain different task sizes. See <a href="/cloud/#pricing">Cloud pricing</a> for the current plan number.</p>
+      <p class="src-note">Source, so anyone can re-derive it: the agent session logs of the orbi-build/orbi repository's git worktrees (<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>), aggregated 2026-09-12. One delivery = one worktree's implement + review sessions; a delivery's totalTokens = the sum of <code>usage.totalTokens</code> over every logged record; n = worktrees whose logs carry at least one usage record (older or newer sessions without usage logging are not countable); percentiles by nearest rank. The sample moves as worktrees are cleaned up. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="money-title">
+      <div class="shell">
+        <p class="section-tag">WHAT THAT MEANS IN MONEY</p>
+        <h2 class="orbi-compare-section-h2" id="money-title">Cents per delivery at DeepSeek V4.1 Flash list prices</h2>
+        <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. Apply those list prices to the measured distribution:</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col">Scenario</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">One delivery (mean, 4.74M tokens)</th><td>$0.058</td><td>$0.115</td></tr>
+              <tr><th scope="row">One delivery (max observed, 37.6M tokens)</th><td>$0.46</td><td>$0.92</td></tr>
+              <tr><th scope="row">100 issues (mean mix)</th><td>~$5.77</td><td>~$11.55</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Money computed at the measured token mix (95.9% / 3.4% / 0.7%) against DeepSeek's published deepseek-flash list prices — <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">api-docs.deepseek.com/quick_start/pricing</a>, verified 2026-09-11.</p>
+      </div>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="limits-title">
+      <p class="section-tag">READ THE LIMITS FIRST</p>
+      <h2 class="orbi-compare-section-h2" id="limits-title">Three things this page does not claim</h2>
+      <ul class="event-list">
+        <li class="orbi-event-list-li">
+          <span class="event-era">OUR REPO ONLY</span>
+          <div>
+            <strong >This is our repository's measured range — not a promise to everyone</strong>
+            <p class="orbi-event-list-p">Python, a full CI suite, and issues written to spec keep our context short. A repository with longer context, slower tests, or vaguer issues lands elsewhere in the distribution. Treat the tables above as what they are: our repo's measured range.</p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">CACHING IS LOAD-BEARING</span>
+          <div>
+            <strong >95.9% cache reads assumes the provider supports prompt caching</strong>
+            <p class="orbi-event-list-p">The whole cost structure rests on cache hits. On an endpoint without prompt caching — where every token bills as a miss — the same work costs roughly an order of magnitude more. Check your provider before extrapolating.</p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">TOTAL TOKENS, AS BILLED</span>
+          <div>
+            <strong >Numbers are totalTokens, cache reads included</strong>
+            <p class="orbi-event-list-p">That is the line the provider actually bills. Counting only input + output would hide about 96% of the real consumption and flatter the number — the opposite of what this page is for.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" aria-labelledby="why-title">
+      <p class="section-tag">WHY IT'S SO CHEAP</p>
+      <h2 class="orbi-compare-section-h2" id="why-title">A cache hit costs 1/50 of a miss — and 95.9% of the work is cache hits</h2>
+      <p class="section-lede">Each delivery re-reads the same repository context: the tree, the conventions, the issue, the failing tests. Prompt caching turns that repeated reading into billed hits at $0.003/1M instead of misses at $0.15/1M. That single ratio is why a full delivery — implementation plus independent review that can repair and rerun — costs cents. It is also the honest question to ask any BYOK agent vendor: <strong>what share of your tokens are cache hits, and what does your provider charge for each?</strong></p>
+    </section>
+
+    <section class="compare-section compare-section-tint" aria-labelledby="comparison-title">
+      <div class="shell">
+        <p class="section-tag">THE $200 TIER, FOR REFERENCE</p>
+        <h2 class="orbi-compare-section-h2" id="comparison-title">Competitors quote quotas. We quote tokens and prices.</h2>
+        <p class="section-lede">The managed agents at the $200 tier do not publish what your money buys. Verified against their own documentation:</p>
+        <ul class="event-list">
+          <li class="orbi-event-list-li">
+            <span class="event-era">DEVIN</span>
+            <div>
+              <strong >"A daily and weekly usage quota" — no quantity, no unit price</strong>
+              <p class="orbi-event-list-p">Pro ($20/month) includes "a daily and weekly usage quota"; Max ($200/month) adds "a significantly larger weekly usage quota (with no daily cap)". Nowhere on the page does Cognition state how many ACUs either plan includes or what one ACU costs.</p>
+              <p class="src-note orbi-event-list-p">Source: <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> — verified 2026-09-11.</p>
+            </div>
+          </li>
+          <li class="orbi-event-list-li">
+            <span class="event-era">FACTORY</span>
+            <div>
+              <strong >"~5x Pro usage" / "~10x Pro usage" — no absolute values</strong>
+              <p class="orbi-event-list-p">Plus ($100/month) is "~5x Pro usage"; Max ($200/month) is "~10x Pro usage". The page states no absolute token quantity and no per-token price anywhere.</p>
+              <p class="src-note orbi-event-list-p">Source: <a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> — verified 2026-09-11.</p>
+            </div>
+          </li>
+        </ul>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th scope="col"></th><th scope="col">Subscription</th><th scope="col">Model fee</th><th scope="col">Total</th><th scope="col">Tagged Release out</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Orbi + DeepSeek</th><td>$0 self-hosted; or US$__CLOUD_MONTHLY_USD__/mo Cloud — __INCLUDED_TOKENS__ tokens included (Founding coupon 100% off, limited)</td><td>~$6–12 measured self-hosted; included in Cloud</td><td>$6–12 self-hosted; US$__CLOUD_MONTHLY_USD__ Cloud</td><td>Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td>$200</td><td>Quota not published</td><td>$200+</td><td>Docs stop at PR ("from prompt to PR")</td></tr>
+              <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage", no absolute value</td><td>$200+</td><td>No tag/Release step documented</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Devin row per <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>; Factory row per <a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> — both verified 2026-09-11. Orbi model fee: the measured range above.</p>
+      </div>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">YOUR KEY, YOUR BILL</p>
+      <h2 class="orbi-closing-h2" id="start-title">Check these numbers against your own dashboard</h2>
+      <p >Run Orbi with your own DeepSeek key and the provider's usage page shows every delivery, every token, every cent. That is the whole pitch: nothing sits between you and your bill.</p>
+      <div class="cta-row">
+        <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/compare/">Read the sourced competitor comparisons →</a>
+      </div>
+    </section>
+
+## /evidence/ — Public delivery evidence
+
+<div class="night">
+      <section class="compare-hero shell" aria-labelledby="evidence-title">
+        <p class="eyebrow">Evidence · public GitHub records · verified 2026-09-14</p>
+        <h1 id="evidence-title">Orbi builds Orbi. The record is GitHub</h1>
+        <p class="hero-lede"><strong>Orbi is the delivery line that ships Orbi.</strong> Three public deliveries from orbi-build/orbi are below. Open an Issue to read the runner's comments; open a PR to see a merge with no human review. Each sample tells you what to look at. Click them.</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="#records">Open the public records</a>
+          <a class="text-link" href="/cloud/">How a release runs, end to end →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" id="records" aria-labelledby="records-title">
+      <p class="section-tag">PUBLIC RECORDS</p>
+      <h2 class="orbi-compare-section-h2" id="records-title">Three deliveries you can open</h2>
+      <p class="section-lede">Each row is a real object in the public <a href="https://github.com/orbi-build/orbi" rel="noopener">orbi-build/orbi</a> repository. Further tagged releases sit on the <a href="https://github.com/orbi-build/orbi/releases" rel="noopener" data-evidence="release">releases ledger</a>.</p>
+      <ul class="event-list">
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.5.5</span>
+          <div>
+            <strong >Issue #852, merged PR #854, Release v0.5.5</strong>
+            <p class="orbi-event-list-p">A PyPI trusted-publishing failure entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.5.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #854 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/852" rel="noopener">Issue #852 timeline</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/854" rel="noopener">PR #854</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.5" rel="noopener">Release v0.5.5</a>
+            </p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.5.4</span>
+          <div>
+            <strong >Issue #842, merged PR #845, Release v0.5.4</strong>
+            <p class="orbi-event-list-p">An external-PR takeover that never claimed a ticket without a milestone entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.4.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #845 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/842" rel="noopener">Issue #842 timeline</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/845" rel="noopener">PR #845</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.4" rel="noopener">Release v0.5.4</a>
+            </p>
+          </div>
+        </li>
+        <li class="orbi-event-list-li">
+          <span class="event-era">v0.5.3</span>
+          <div>
+            <strong >Issue #825, merged PR #830, Release v0.5.3</strong>
+            <p class="orbi-event-list-p">A stuck run after a 502 entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.3.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #830 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="src-note orbi-event-list-p">
+              <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/825" rel="noopener">Issue #825 timeline</a>
+              · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/830" rel="noopener">PR #830</a>
+              · <a class="orbi-src-note-a" data-evidence="release" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.3" rel="noopener">Release v0.5.3</a>
+            </p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+          <section class="social-proof shell" id="third-party" aria-labelledby="third-party-title">
+        <p class="section-tag">THIRD-PARTY RECORDS</p>
+        <h2 class="orbi-social-proof-h2" id="third-party-title">Deliveries in other people's repositories</h2>
+        <p class="section-lede">Every third-party delivery and quote, grouped by repository: the pull requests Orbi opened in repositories it does not own, and what the people running it said. Newest first.</p>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">xiaods/k8e</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card">
+        <p class="proof-card-repo">xiaods/k8e</p>
+        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/615" rel="noopener">M0：兼容规范和 rqlite 能力验证</a></h3>
+        <p class="proof-card-meta"><time datetime="2026-09-21T12:01:21Z">2026-09-21</time></p>
+      </article>
+      <article class="proof-card">
+        <p class="proof-card-repo">xiaods/k8e</p>
+        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/xiaods/k8e/pull/613" rel="noopener">test(etcd): 设计并分阶段落地嵌入式 etcd 健壮性 E2E 方案</a></h3>
+        <p class="proof-card-meta"><time datetime="2026-09-20T14:13:00Z">2026-09-20</time></p>
+      </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">SHUKE-LABS/mat-site</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card">
+        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
+        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/16" rel="noopener">Replace terminal logo and favicon with new four-agent My AI Team artwork</a></h3>
+        <p class="proof-card-meta"><time datetime="2026-09-19T00:41:18Z">2026-09-19</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+      <article class="proof-card">
+        <p class="proof-card-repo">SHUKE-LABS/mat-site</p>
+        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/SHUKE-LABS/mat-site/pull/14" rel="noopener">Let mat-site use the same slogan as https://shukelabs.com/products/my-ai-team/ does</a></h3>
+        <p class="proof-card-meta"><time datetime="2026-09-18T21:06:02Z">2026-09-18</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">zzuu080603/Tianshu-harness</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card">
+        <p class="proof-card-repo">zzuu080603/Tianshu-harness</p>
+        <h3 class="proof-card-title"><a class="orbi-proof-card-title-a" href="https://github.com/zzuu080603/Tianshu-harness/pull/3" rel="noopener">buildOaiRequest 每轮 5+ 趟全量扫描的性能战役（战略票）</a></h3>
+        <p class="proof-card-meta"><time datetime="2026-09-18T02:15:53Z">2026-09-18</time></p>
+        <p class="proof-card-review">no human review</p>
+      </article>
+          </div>
+        </div>
+        <div class="social-proof-group">
+          <h3 class="social-proof-group-title">Quotes</h3>
+          <div class="social-proof-grid">
+      <article class="proof-card proof-card-quote">
+        <blockquote class="proof-card-quote-text"><p class="orbi-proof-card-quote-text-p">orbi 全自动控制流程还是很棒的，继续保持</p></blockquote>
+        <p class="proof-card-person"><span class="proof-card-name">Tommy Xiao</span> <a class="proof-card-handle" href="https://x.com/xds2000" rel="noopener">@xds2000</a></p>
+      </article>
+          </div>
+        </div>
+      </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">THE LOOP IS THE PRODUCT</p>
+      <h2 class="orbi-closing-h2" id="start-title">Inspect the record, then run the line</h2>
+      <p >If the public timelines are the evidence you wanted, the next step is the same GitHub-native loop on your repository — self-hosted, or Cloud.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="https://docs.orbi.build">Set up Orbi <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/cloud/">Or let Cloud run the line →</a>
+      </div>
+    </section>
+
+## /compare/matrix.csv
+
+product,independent_review,blocks_merge_on_findings,merges_the_pr,publishes_the_release,self_host,license,source_url,verified
+Orbi,yes,yes,yes,yes,yes,yes,https://docs.orbi.build,2026-09-17
+Orca,not documented,not documented,not documented,not documented,yes,yes,https://github.com/stablyai/orca/blob/main/README.md,2026-09-12
+OpenClaw,not documented,not documented,not documented,not documented,yes,yes,https://github.com/openclaw/openclaw,2026-09-07
+GitHub Copilot coding agent,not documented,no (official docs),not documented,not documented,no (official docs),not documented,https://docs.github.com/en/copilot/concepts/agents/coding-agent,2026-09-07
+Claude Managed Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://www.anthropic.com/engineering/managed-agents,2026-09-07
+Claude Code,yes,no (official docs),not documented,not documented,no (official docs),not documented,https://code.claude.com/docs/en/code-review,2026-09-17
+OpenHands,yes,not documented,not documented,not documented,yes,yes,https://github.com/All-Hands-AI/OpenHands,2026-09-07
+Hermes Agent,not documented,not documented,not documented,not documented,yes,yes,https://github.com/NousResearch/hermes-agent,2026-09-07
+OpenAI Codex,not documented,not documented,not documented,not documented,no (official docs),not documented,https://platform.openai.com/docs/codex,2026-09-07
+Devin,not documented,not documented,yes,not documented,no (official docs),not documented,https://docs.devin.ai/work-with-devin/devin-review,2026-09-07
+Google Jules,not documented,not documented,not documented,not documented,no (official docs),not documented,https://jules.google/docs/running-tasks/,2026-09-17
+Cursor Cloud Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://cursor.com/docs/cloud-agent,2026-09-17

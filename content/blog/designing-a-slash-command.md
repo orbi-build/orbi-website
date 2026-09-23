@@ -71,7 +71,7 @@ Dependabot and Copilot use `@bot`. They can: there is exactly one Dependabot,
 its name is globally unique, and the mention buys a notification and
 autocomplete for free.
 
-We are the first kind. The engine is open source and self-hostable. More
+We are the first kind. The engine is source-available, fair-code, and self-hostable. More
 pointedly, the same engine already runs under two identities in our own org. On
 our bootstrap runner the comment author is a human account, and in a managed
 sandbox it is `orbi-build[bot]`. We confirmed both on our own repository the
@@ -399,7 +399,7 @@ Both are the same class of mistake: a correct decision placed where it can be
 bypassed.
 
 We got to read both before writing ours. That is the actual luxury of building
-on open source, and it is worth the day it costs.
+on source-available software, and it is worth the day it costs.
 
 ---
 
@@ -410,3 +410,8 @@ shared layer), and
 [#1295](https://github.com/orbi-build/orbi/discussions/1295) (where commands
 should be read from). Every Prow and bors line number above was grepped at HEAD
 on 2026-09-22, not recalled.*
+
+
+## Related
+
+Read the [Cursor comparison](/compare/cursor/) and [Cloud](/cloud/).

@@ -18,6 +18,7 @@ const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
+const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -337,9 +338,10 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(key, value);
   }
-  const isHtml = asset.status === 200
-    && (headers.get("Content-Type") || "").startsWith("text/html");
-  if (!isHtml) {
+  const contentType = headers.get("Content-Type") || "";
+  const isTemplatedText = asset.status === 200
+    && (contentType.startsWith("text/html") || contentType.startsWith("text/plain"));
+  if (!isTemplatedText) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
@@ -353,6 +355,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
       MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE,
     )
     .replaceAll(pricing.measuredLargeCodebaseDeliveriesToken, MEASURED_LARGE_CODEBASE_DELIVERIES)
+    .replaceAll(pricing.measuredSnapshotDeliveriesToken, MEASURED_SNAPSHOT_DELIVERIES)
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {

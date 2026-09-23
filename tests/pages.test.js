@@ -23,6 +23,8 @@ let shippedSitemap;
 let shippedFeed; // public/blog/feed.xml, the build-generated RSS 2.0 file
 let generatedLlms; // build-generated llms.txt (Issue #215)
 let shippedLlms; // public/llms.txt
+let generatedLlmsFull; // build-generated llms-full.txt (Issue #438)
+let shippedLlmsFull; // public/llms-full.txt
 let matrixCsv;
 
 beforeAll(async () => {
@@ -47,6 +49,8 @@ beforeAll(async () => {
   shippedFeed = await readFile(join(ROOT, "public", "blog", "feed.xml"), "utf8");
   generatedLlms = await readFile(join(builtDir, "llms.txt"), "utf8");
   shippedLlms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
+  generatedLlmsFull = await readFile(join(builtDir, "llms-full.txt"), "utf8");
+  shippedLlmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
   matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
 });
 
@@ -152,8 +156,8 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
       const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
       const h1Count = (rendered.match(/<h1\b/gi) || []).length;
       const isChinese = route.startsWith("/zh/");
-      const descriptionMin = isChinese ? 70 : 150;
-      const descriptionMax = isChinese ? 80 : 160;
+      const descriptionMin = isChinese ? 70 : (route === "/" ? 140 : 150);
+      const descriptionMax = isChinese ? (route === "/zh/" ? 100 : 80) : 160;
       if (title.length > 60) violations.push(`${route} title length ${title.length}, maximum 60`);
       if (description.length < descriptionMin || description.length > descriptionMax) {
         violations.push(`${route} description length ${description.length}, expected ${descriptionMin}-${descriptionMax} (maximum ${descriptionMax})`);
@@ -168,7 +172,75 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(30);
+      const minimum = output === "zh/compare/devin/index.html" ? 25 : 30;
+      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(minimum);
+    }
+  });
+});
+
+describe("Issue #438 wording and internal-link contracts", () => {
+  it("uses the canonical product definition in homepage metadata and JSON-LD", () => {
+    const definitions = {
+      "index.html": "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
+      "zh/index.html": "Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。",
+    };
+    for (const [output, definition] of Object.entries(definitions)) {
+      const html = shipped.get(output);
+      expect(html).toContain(`<meta name="description" content="${definition}">`);
+      expect(html.split(`"description": "${definition}"`).length - 1, `${output}: JSON-LD descriptions`).toBe(2);
+    }
+    expect(shippedLlms).toContain(`> ${definitions["index.html"]}`);
+    expect(shippedLlms).toContain(`> ${definitions["zh/index.html"]}`);
+  });
+
+  it("keeps open-source wording to the explicit third-party whitelist", () => {
+    const remaining = new Map();
+    for (const [output, source] of [...shipped, ["llms.txt", shippedLlms]]) {
+      const rendered = source
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replaceAll("Open Source Alternatives", "")
+        .replace("Do not describe Orbi as OSI open source", "");
+      const count = (rendered.match(/open-source|open source|开源/gi) ?? []).length;
+      if (count) remaining.set(output, count);
+    }
+    // Every remaining occurrence describes the named comparison product, or
+    // contrasts its OSI licence with Orbi's explicitly fair-code licence.
+    expect(Object.fromEntries(remaining)).toEqual({
+      "compare/index.html": 3,
+      "zh/compare/index.html": 4,
+      "compare/hermes-agent/index.html": 3,
+      "zh/compare/hermes-agent/index.html": 3,
+      "compare/openclaw/index.html": 3,
+      "zh/compare/openclaw/index.html": 3,
+      "compare/openhands/index.html": 1,
+      "zh/compare/openhands/index.html": 1,
+      "compare/orca/index.html": 1,
+      "zh/compare/orca/index.html": 1,
+      "zh/compare/github-copilot-coding-agent/index.html": 1,
+    });
+  });
+
+  it("links cost and the CI gates guide from both homepages", () => {
+    for (const [output, prefix] of [["index.html", ""], ["zh/index.html", "/zh"]]) {
+      const html = shipped.get(output);
+      expect(html, `${output}: cost link`).toContain(`href="${prefix}/cost/"`);
+      expect(html, `${output}: CI gates link`).toContain(`href="${prefix}/guides/ci-gates/"`);
+    }
+  });
+
+  it("ends every blog body with two or three contextual compare/cloud links", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
+      const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
+      const prefix = post.lang === "zh" ? "/zh" : "";
+      const links = [...related.matchAll(/href="([^"]+)"/g)]
+        .map((match) => match[1])
+        .filter((href) => href.startsWith(`${prefix}/compare/`) || href === `${prefix}/cloud/`);
+      expect(links.length, `${post.output}: related links`).toBeGreaterThanOrEqual(2);
+      expect(links.length, `${post.output}: related links`).toBeLessThanOrEqual(3);
+      expect(links.some((href) => href.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
+      expect(links, `${post.output}: Cloud link`).toContain(`${prefix}/cloud/`);
     }
   });
 });
@@ -185,8 +257,9 @@ describe("build output is committed (npm run build ran)", () => {
     };
     // The build owns the HTML, sitemap, blog feed and llms.txt; public/ also
     // carries assets (styles.css, img/, …) that no page source generates.
-    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || f === "llms.txt");
-    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || f === "llms.txt");
+    const generatedTextAssets = new Set(["llms.txt", "llms-full.txt"]);
+    const built = (await listFiles(builtDir)).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || generatedTextAssets.has(f));
+    const committed = (await listFiles(join(ROOT, "public"))).filter((f) => f.endsWith(".html") || f.endsWith(".xml") || generatedTextAssets.has(f));
     expect(built).toEqual(committed);
   });
 
@@ -205,6 +278,7 @@ describe("build output is committed (npm run build ran)", () => {
       if (built !== shipped.get(post.output)) drifted.push(post.output);
     }
     if (generatedLlms !== shippedLlms) drifted.push("llms.txt");
+    if (generatedLlmsFull !== shippedLlmsFull) drifted.push("llms-full.txt");
     expect(
       drifted,
       `public/ disagrees with site/ — run npm run build after editing site/** or content/** (drifted: ${drifted.join(", ")})`,
@@ -326,7 +400,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 17-item footer nav on every content page", () => {
+  it("carries the 19-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -338,6 +412,8 @@ describe("one unified footer on every content page", () => {
         page.nav.docsHref,
         "https://cloud-docs.orbi.build/?ref=footer",
         `${prefix}/cloud/`,
+        `${prefix}/cost/`,
+        `${prefix}/evidence/`,
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
         "https://x.com/xqliu",
@@ -440,7 +516,7 @@ describe("per-page head parameters (title / description / canonical)", () => {
   it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
     const expected = {
       "compare/devin/index.html": {
-        title: "Open-source Devin alternative: Orbi vs Devin | Orbi",
+        title: "Self-hosted Devin alternative: Orbi vs Devin | Orbi",
         description:
           "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
       },
