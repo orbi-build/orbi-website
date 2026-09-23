@@ -128,15 +128,39 @@ describe("comparison capability matrix (Issue #201)", () => {
   });
 });
 
-describe("SEO metadata is descriptive (Issue #405)", () => {
-  it("keeps every rendered page title and description above crawler minimums", () => {
+describe("SEO metadata is descriptive (Issue #405, #413)", () => {
+  it("keeps every sitemap HTML page within title, description, and heading limits", () => {
+    const violations = [];
+    const sitemapOutputs = new Set([
+      ...pages.filter((page) => !page.standalone).map((page) => page.output),
+      ...posts.map((post) => post.output),
+    ]);
+
+    for (const [output, html] of shipped) {
+      if (!sitemapOutputs.has(output)) continue;
+      // Comments can contain examples of metadata and headings; they are not
+      // part of the rendered document or its SEO contract.
+      const rendered = html.replace(/<!--[\s\S]*?-->/g, "");
+      const title = rendered.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? "";
+      const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
+      const h1Count = (rendered.match(/<h1\b/gi) || []).length;
+      const isChinese = output.startsWith("zh/");
+      const descriptionMin = isChinese ? 70 : 150;
+      const descriptionMax = isChinese ? 80 : 160;
+      if (title.length > 60) violations.push(`${output} title length ${title.length} > 60`);
+      if (description.length < descriptionMin) violations.push(`${output} description length ${description.length} < ${descriptionMin}`);
+      if (description.length > descriptionMax) violations.push(`${output} description length ${description.length} > ${descriptionMax}`);
+      if (h1Count !== 1) violations.push(`${output} h1 count ${h1Count} != 1`);
+    }
+
+    expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
+  });
+
+  it("keeps every rendered page title above the crawler minimum", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-      const description = html.match(/<meta name=\"description\" content=\"([^\"]*)\"/)?.[1] ?? "";
       expect(title.length, `${output} title`).toBeGreaterThanOrEqual(30);
-      const minimumDescriptionLength = output.startsWith("zh/") || output === "aiready/zh/index.html" ? 70 : 120;
-      expect(description.length, `${output} description`).toBeGreaterThanOrEqual(minimumDescriptionLength);
     }
   });
 });
@@ -408,17 +432,17 @@ describe("per-page head parameters (title / description / canonical)", () => {
   it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
     const expected = {
       "compare/devin/index.html": {
-        title: "Open-source Devin alternative: Orbi vs Devin, with the bill | Orbi",
+        title: "Open-source Devin alternative: Orbi vs Devin | Orbi",
         description:
-          "Looking for an open-source Devin alternative? A sourced comparison of Orbi and Devin: ACU credit billing versus measured per-delivery cost, cloud execution versus self-hosted, model lock-in, and when each one wins. Every claim sourced and dated.",
+          "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
       },
       "compare/github-copilot-coding-agent/index.html": {
-        title: "GitHub Copilot coding agent alternative: who merges the PR | Orbi",
+        title: "Copilot coding agent alternative: who merges PR | Orbi",
         description:
-          "A GitHub Copilot coding agent alternative that merges and releases. Sourced comparison: Copilot cannot approve or merge its own pull requests; Orbi runs independent review, an exact-head merge gate, and a tagged release. Cost and auditability compared.",
+          "Orbi vs GitHub Copilot coding agent: compare cloud sandbox delivery with local BYOK control, review, merge ownership, cost, and auditability in practice today.",
       },
       "cost/index.html": {
-        title: "AI coding agent cost comparison: what one delivery actually costs | Orbi",
+        title: "AI coding agent cost: what one delivery costs | Orbi",
       },
       "cloud/index.html": {
         title: "Self-hosted or cloud coding agent: Orbi Cloud | Orbi",

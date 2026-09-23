@@ -1,7 +1,7 @@
 ---
 title: Watch the seven steps, start to finish
 date: 2026-09-21
-summary: An 83-second video of the whole Orbi Cloud setup, from signing in with GitHub to subscribing after a tagged release. Every frame is the real product, and the seventh step is the one that starts paid delivery.
+summary: An 83-second video follows the real Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The seventh step starts paid delivery for Cloud.
 lang: en
 author: Orbi
 image: /img/blog-watch-six-steps.png

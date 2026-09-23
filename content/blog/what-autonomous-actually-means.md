@@ -1,7 +1,7 @@
 ---
 title: An autonomous coding agent that can tell itself no
 date: 2026-09-20
-summary: Most agents that call themselves autonomous stop at the pull request. The interesting question is not whether a model can write the code, it is what happens when a second model reads that code and refuses it. Here is one delivery where the review blocked twice, with the commits and the release to check.
+summary: Most autonomous coding agents stop at a pull request. This delivery shows a second model refusing the diff twice, with commits and a release you can inspect.
 lang: en
 author: Orbi
 image: /img/blog-autonomous.png

@@ -1,7 +1,7 @@
 ---
-title: Claude Code 无人值守跑起来之后，谁来按合并
+title: Claude Code 无人值守之后，谁来合并 PR
 date: 2026-09-19
-summary: 让 Claude Code 自己跑不难，难的是它写完之后谁决定能不能进主干。这篇写我这一个月的做法：评审换一个会话、合并前重查三个条件、发版交给状态机，一个月 431 个 PR 我一行代码没读。
+summary: Claude Code 能写代码和评审 PR，却不会替你合并或发版。本文用真实记录说明谁来关闭这条交付链，以及如何保留完整证据，具体来源已列明。
 lang: zh
 author: Orbi
 image: /img/blog-claude-actions.png

@@ -1,7 +1,7 @@
 ---
 title: Docker image published on the third try
 date: 2026-09-18
-summary: The orbi image reached GHCR and Docker Hub on the third publish run of 2026-09-17. Three different failures came first: the publish job built from a different context than the verify job, the Dockerfile path resolved from the workspace root, and the fix's own pull-request checks turned the ref 1044/merge into an invalid image tag.
+summary: The orbi image reached GHCR and Docker Hub on the third publish run. Three earlier failures came from build context, Dockerfile paths, and an invalid image tag.
 lang: en
 author: Orbi
 image: /img/blog-docker-image.png
