@@ -10,7 +10,7 @@ mirror: k8e-rejected-then-merged
 
 [k8e](https://github.com/xiaods/k8e) is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened [issue #612](https://github.com/xiaods/k8e/issues/612), asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.
 
-At 10:28 (UTC+8) he added the `ai-ready` label. Everything below comes from the public PR, its reviews and the issue's label history.
+At 10:28 (UTC+8) he added the `ai-ready` label. The times and numbers below come from the public PR, its reviews and the issue's label history, except the runner crash count, which comes from the runner's log.
 
 ### The first version was rejected
 

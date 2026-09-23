@@ -90,7 +90,7 @@
 
     <article class="post-body">
 <p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>, asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.</p>
-<p>At 10:28 (UTC+8) he added the <code>ai-ready</code> label. Everything below comes from the public PR, its reviews and the issue&#39;s label history.</p>
+<p>At 10:28 (UTC+8) he added the <code>ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
 <h3>The first version was rejected</h3>
 <p>Orbi opened <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a> at 11:37 with phase one only: 10 new files, 2,483 lines. It had an operation history recorder, a recovery oracle, a SIGKILL test that kills a child process mid-write, a WAL corruption test and a quota test.</p>
 <p>At 11:46 the maintainer posted what SonarCloud and DeepSource had flagged. Orbi started pushing fixes at 11:57.</p>
