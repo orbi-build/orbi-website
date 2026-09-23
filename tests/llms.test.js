@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
+const llmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
 const articleEn = await readFile(join(ROOT, "public", "blog", "watch-the-six-steps", "index.html"), "utf8");
 const articleZh = await readFile(join(ROOT, "public", "zh", "blog", "watch-the-six-steps", "index.html"), "utf8");
 // The file is hard-wrapped at ~78 columns; prose assertions below match
@@ -47,6 +48,16 @@ describe("seven-step article media parity (Issue #335)", () => {
       expect(stepCount, `${language} numbered step count`).toBe(7);
       expect(imageCount).toBe(stepCount);
     }
+  });
+});
+
+describe("llms-full.txt content asset (Issue #438)", () => {
+  it("contains the cost, evidence, and comparison matrix material", () => {
+    expect(llmsFull).toContain("# Orbi in one paragraph + key numbers");
+    expect(llmsFull).toContain("/cost/");
+    expect(llmsFull).toContain("/evidence/");
+    expect(llmsFull).toContain("product,independent_review,blocks_merge_on_findings");
+    expect(llmsFull).toContain("4,742,066");
   });
 });
 

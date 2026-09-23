@@ -119,7 +119,7 @@
 <code>k8s-ci-robot</code>，OpenShift 用 <code>openshift-ci-robot</code>。把 <code>@名字</code> 写死进语法，就没法 fork。</p>
 <p>Dependabot 和 Copilot 用 <code>@bot</code>。它们可以：全世界只有一个 Dependabot，名字全局唯一，
 还能顺便蹭到 mention 通知和自动补全。</p>
-<p>我们属于前一类。引擎开源、支持自部署。更直接的证据是：同一套引擎已经在我们自己的组织里
+<p>我们属于前一类。引擎源码可得、采用 fair-code 并支持自托管。更直接的证据是：同一套引擎已经在我们自己的组织里
 以两种身份运行，自举 runner 上 comment 作者是人类账号，托管沙箱里是 <code>orbi-build[bot]</code>。
 两者我们当天都在自己的仓库上实测确认过。把语法绑定到名字，自部署用户第一天就用不了。</p>
 <p>诱人的中间路线是两者都接受：<code>@orbi milestone</code> 和 <code>/milestone</code> 都匹配，谁爱用哪个用哪个。
@@ -327,13 +327,15 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 <p>值得留下的不是这个功能。是两个成熟系统，它们都在我们之前解决过这个问题，
 各自在源码里留下一处可见的缺陷：Prow 的修复到不了调用方，bors 的闸门有第二道门。
 两者是同一类错误：<strong>一个正确的决定，被放在了可以绕过它的位置。</strong></p>
-<p>我们有机会在动手之前把两边都读一遍。这才是建立在开源之上的真正奢侈，值那一天。</p>
+<p>我们有机会在动手之前把两边都读一遍。这才是建立在源码可得软件之上的真正奢侈，值那一天。</p>
 <hr>
 <p><em>相关票：<a href="https://github.com/orbi-build/orbi/issues/1290">#1290</a>（设计）、
 <a href="https://github.com/orbi-build/orbi/pull/1293">#1293</a>（实现）、
 <a href="https://github.com/orbi-build/orbi/issues/1294">#1294</a>（抽共享层）、
 <a href="https://github.com/orbi-build/orbi/discussions/1295">#1295</a>（命令该从哪读）。
 上文所有 Prow 与 bors 的行号均为 2026-09-22 在 HEAD 上 grep 所得，不是凭记忆。</em></p>
+<h2>相关</h2>
+<p>继续阅读：<a href="/zh/compare/cursor/">Cursor 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
     </article>
   </main>
@@ -349,6 +351,8 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
         <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
         <li><a href="/zh/compare/">竞品对比</a></li>
       </ul>
       <ul>

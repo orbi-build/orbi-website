@@ -92,6 +92,7 @@ const LANG = {
     navAria: "Primary navigation",
     systemLabel: "How it works",
     costLabel: "Pricing",
+    evidenceLabel: "Evidence",
     docsLabel: "Docs",
     selfHostedDocsLabel: "Self-hosted Docs",
     cloudDocsNavLabel: "Cloud Docs",
@@ -129,6 +130,7 @@ const LANG = {
     navAria: "主导航",
     systemLabel: "产品怎么运作",
     costLabel: "价格",
+    evidenceLabel: "证据",
     docsLabel: "文档",
     selfHostedDocsLabel: "自托管文档",
     cloudDocsNavLabel: "Cloud 文档",
@@ -238,6 +240,10 @@ export function renderFooter(page) {
     CLOUD_DOCS_LABEL: t.cloudDocsLabel,
     CLOUD_HREF: `${t.langPrefix}/cloud/`,
     CLOUD_LABEL: t.cloudLabel,
+    COST_HREF: `${t.langPrefix}/cost/`,
+    COST_LABEL: t.costLabel,
+    EVIDENCE_HREF: `${t.langPrefix}/evidence/`,
+    EVIDENCE_LABEL: t.evidenceLabel,
     COMPARE_HREF: `${t.langPrefix}/compare/`,
     COMPARE_LABEL: t.compareLabel,
     FAQ_HREF: `${anchorPrefix}#faq`,
@@ -933,6 +939,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   await mkdir(join(outDir, "blog"), { recursive: true });
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
   await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
+  await writeFile(join(outDir, "llms-full.txt"), await readFile(join(ROOT, "site", "llms-full.txt"), "utf8"));
   return pages.length + posts.length;
 }
 

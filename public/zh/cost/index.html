@@ -111,7 +111,7 @@
             <tr><th scope="row">均值</th><td>4,742,066</td></tr>
           </tbody>
         </table>
-      </div>
+      <p class="src-note">2026-09-12 快照的均值 4,742,066 tokens 折算约为 __MEASURED_SNAPSHOT_DELIVERIES__ 次 __INCLUDED_TOKENS__ token 交付。Cloud 定价页采用约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次，因为之后按大代码库交付重新测得；两组样本的任务规模不同。当前计划数字见 <a href="/zh/cloud/#pricing">Cloud 定价</a>。</p>
       <p class="src-note">数据来源,任何人可按此复核:orbi-build/orbi 仓库各 git worktree 的 Agent session 日志(<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>),聚合于 2026-09-12。一次交付 = 一个 worktree 的 implement + review session;单次 totalTokens = 该 worktree 全部记录的 <code>usage.totalTokens</code> 之和;n = 日志中含至少一条 usage 记录的 worktree 数(不记 usage 的新旧 session 不计);分位用 nearest-rank。样本会随 worktree 清理而变化。token 的去向:<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
     </section>
 
@@ -227,6 +227,8 @@
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
         <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
         <li><a href="/zh/compare/">竞品对比</a></li>
       </ul>
       <ul>

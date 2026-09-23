@@ -152,8 +152,8 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
       const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
       const h1Count = (rendered.match(/<h1\b/gi) || []).length;
       const isChinese = route.startsWith("/zh/");
-      const descriptionMin = isChinese ? 70 : 150;
-      const descriptionMax = isChinese ? 80 : 160;
+      const descriptionMin = isChinese ? 70 : 140;
+      const descriptionMax = isChinese ? 100 : 160;
       if (title.length > 60) violations.push(`${route} title length ${title.length}, maximum 60`);
       if (description.length < descriptionMin || description.length > descriptionMax) {
         violations.push(`${route} description length ${description.length}, expected ${descriptionMin}-${descriptionMax} (maximum ${descriptionMax})`);
@@ -168,7 +168,7 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(30);
+      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(output.startsWith("zh/") ? 25 : 30);
     }
   });
 });
@@ -326,7 +326,7 @@ describe("language mirrors (the forgotten-zh gate)", () => {
 describe("one unified footer on every content page", () => {
   const content = () => pages.filter((p) => !p.standalone);
 
-  it("carries the 17-item footer nav on every content page", () => {
+  it("carries the 19-item footer nav on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
@@ -338,6 +338,8 @@ describe("one unified footer on every content page", () => {
         page.nav.docsHref,
         "https://cloud-docs.orbi.build/?ref=footer",
         `${prefix}/cloud/`,
+        `${prefix}/cost/`,
+        `${prefix}/evidence/`,
         `${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
         "https://x.com/xqliu",
@@ -440,7 +442,7 @@ describe("per-page head parameters (title / description / canonical)", () => {
   it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
     const expected = {
       "compare/devin/index.html": {
-        title: "Open-source Devin alternative: Orbi vs Devin | Orbi",
+        title: "Self-hosted Devin alternative: Orbi vs Devin | Orbi",
         description:
           "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
       },

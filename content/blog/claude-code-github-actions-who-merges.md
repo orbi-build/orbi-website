@@ -58,3 +58,8 @@ You do not need to replace it. The action is the execution layer; what is missin
 [Orbi](https://github.com/orbi-build/orbi) is my implementation of exactly that, fair-code and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. Its engine can run Claude Code, Codex or any OpenAI-compatible model underneath, so if you already have the action working, the model side of your setup does not change.
 
 Or take the three conditions and build them into whatever you already run. The conditions matter more than whose code enforces them.
+
+
+## Related
+
+Read the [CI gates](/compare/claude-code/) and [Claude Code comparison](/guides/ci-gates/).

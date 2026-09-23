@@ -83,3 +83,8 @@ gh issue edit <number> --add-label ai-ready
 不想看视频想读文字，同一条路径在文档里：[docs.orbi.build/zh](https://docs.orbi.build/zh)。不想跑在我们的机器上、想自己跑，那是同一个产品，[可以免费自托管](https://github.com/orbi-build/orbi)。
 
 从这里开始：[orbi.build/zh/cloud](https://orbi.build/zh/cloud/?ref=blog-seven-steps)。
+
+
+## 相关
+
+继续阅读：[Google Jules 对比](/zh/compare/jules/) 与 [Cloud](/zh/cloud/)。

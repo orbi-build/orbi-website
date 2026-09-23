@@ -1,0 +1,34 @@
+# Orbi in one paragraph + key numbers
+
+Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases. Cloud is US$79/month with 300M model tokens included; current large-codebase measurement is about 25 merged deliveries per 300M tokens. A 2026-09-12 snapshot of 46 deliveries had a 4,742,066-token mean, or about 63 deliveries per 300M tokens for that different task-size sample.
+
+## Cost — What one Issue delivery actually costs
+
+The /cost/ page measures 46 real Orbi deliveries as of 2026-09-12. Median totalTokens was 2,220,637, mean 4,742,066, p75 3,961,248, p90 13,290,932, p95 16,555,250, and maximum 37,627,783. The measured token mix was 95.9% cache reads, 3.4% input, and 0.7% output. At DeepSeek V4.1 Flash list prices, the mean delivery was about $0.06–0.12 and 100 issues about $6–12. The snapshot mean works out to about 63 deliveries per 300M tokens; Cloud pricing uses about 25 for later large-codebase deliveries because task sizes differ.
+
+Read the full cost page: https://orbi.build/cost/
+Read the Chinese cost page: https://orbi.build/zh/cost/
+
+## Evidence — Bootstrap evidence
+
+The /evidence/ page links to public GitHub Issue timelines, independently reviewed and merged pull requests, and tagged releases showing how Orbi builds Orbi. It is an inspectable record, not a restatement of claims.
+
+Read the evidence page: https://orbi.build/evidence/
+Read the Chinese evidence page: https://orbi.build/zh/evidence/
+
+## Comparison matrix
+
+product,independent_review,blocks_merge_on_findings,merges_the_pr,publishes_the_release,self_host,license,source_url,verified
+Orbi,yes,yes,yes,yes,yes,yes,https://docs.orbi.build,2026-09-17
+Orca,not documented,not documented,not documented,not documented,yes,yes,https://github.com/stablyai/orca/blob/main/README.md,2026-09-12
+OpenClaw,not documented,not documented,not documented,not documented,yes,yes,https://github.com/openclaw/openclaw,2026-09-07
+GitHub Copilot coding agent,not documented,no (official docs),not documented,not documented,no (official docs),not documented,https://docs.github.com/en/copilot/concepts/agents/coding-agent,2026-09-07
+Claude Managed Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://www.anthropic.com/engineering/managed-agents,2026-09-07
+Claude Code,yes,no (official docs),not documented,not documented,no (official docs),not documented,https://code.claude.com/docs/en/code-review,2026-09-17
+OpenHands,yes,not documented,not documented,not documented,yes,yes,https://github.com/All-Hands-AI/OpenHands,2026-09-07
+Hermes Agent,not documented,not documented,not documented,not documented,yes,yes,https://github.com/NousResearch/hermes-agent,2026-09-07
+OpenAI Codex,not documented,not documented,not documented,not documented,no (official docs),not documented,https://platform.openai.com/docs/codex,2026-09-07
+Devin,not documented,not documented,yes,not documented,no (official docs),not documented,https://docs.devin.ai/work-with-devin/devin-review,2026-09-07
+Google Jules,not documented,not documented,not documented,not documented,no (official docs),not documented,https://jules.google/docs/running-tasks/,2026-09-17
+Cursor Cloud Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://cursor.com/docs/cloud-agent,2026-09-17
+

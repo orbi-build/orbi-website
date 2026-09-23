@@ -59,3 +59,8 @@ Docker Hub overview 步骤带着 `continue-on-error: true` 运行。发布承诺
 ## 拉镜像，建 Issue，收 PR
 
 [docs.orbi.build/docker](https://docs.orbi.build/docker) 上的 Quick start 会带你从 `docker pull` 走到第一次交付。镜像主页在 [hub.docker.com/r/orbibuild/orbi](https://hub.docker.com/r/orbibuild/orbi)。
+
+
+## 相关
+
+继续阅读：[OpenHands 对比](/zh/compare/openhands/) 与 [Cloud](/zh/cloud/)。
