@@ -1993,6 +1993,32 @@ h2 {
   font-weight: 600;
 }
 
+.compare-table th:first-child,
+.compare-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--paper-2);
+}
+
+.compare-table thead th:first-child { z-index: 2; }
+
+@media (max-width: 760px) {
+  .compare-table th:first-child,
+  .compare-table td:first-child {
+    width: 120px;
+    max-width: 120px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .compare-table th:nth-child(2),
+  .compare-table td:nth-child(2) {
+    width: 100px;
+    max-width: 100px;
+  }
+}
+
 .compare-table tbody tr:last-child th,
 .compare-table tbody tr:last-child td { border-bottom: 0; }
 
