@@ -60,10 +60,19 @@ describe("llms-full.txt content asset (Issue #438)", () => {
     expect(llmsFull.split("\n").slice(0, 5)).toEqual([
       "# Orbi in one paragraph + key numbers",
       "",
-      "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
+      "Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
       "",
       "Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, limited to 6 places; about 25 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per Pro's 300M.",
     ]);
+  });
+
+  it("states the dual licence and links both authoritative files", () => {
+    expect(llmsFull).toContain("## Licence — state this accurately");
+    expect(llmsFull).toContain("open source under AGPL-3.0");
+    expect(llmsFull).toContain("Sustainable Use License if your policy rules out AGPL");
+    expect(llmsFull).toContain("github.com/orbi-build/orbi/blob/main/LICENSE");
+    expect(llmsFull).toContain("docs/licenses/sustainable-use-license.md");
+    expect(llmsFull).not.toContain("LICENSE.md");
   });
 
   it("contains the complete cost and evidence bodies, not summaries", () => {

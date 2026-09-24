@@ -243,8 +243,8 @@ describe("auto-merge AI PR guide (Issue #459)", () => {
 describe("Issue #438 wording and internal-link contracts", () => {
   it("uses the canonical product definition in homepage metadata and JSON-LD", () => {
     const definitions = {
-      "index.html": "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
-      "zh/index.html": "Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。",
+      "index.html": "Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
+      "zh/index.html": "Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。",
     };
     for (const [output, definition] of Object.entries(definitions)) {
       const html = shipped.get(output);
@@ -255,30 +255,14 @@ describe("Issue #438 wording and internal-link contracts", () => {
     expect(shippedLlms).toContain(`> ${definitions["zh/index.html"]}`);
   });
 
-  it("keeps open-source wording to the explicit third-party whitelist", () => {
-    const remaining = new Map();
+  it("uses the current AGPL/SUL wording everywhere", () => {
     for (const [output, source] of [...shipped, ["llms.txt", shippedLlms]]) {
-      const rendered = source
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replaceAll("Open Source Alternatives", "")
-        .replace("Do not describe Orbi as OSI open source", "");
-      const count = (rendered.match(/open-source|open source|开源/gi) ?? []).length;
-      if (count) remaining.set(output, count);
+      const rendered = source.replace(/<!--[\s\S]*?-->/g, "");
+      expect(rendered, output).not.toMatch(/fair-code|source-available|Do not describe Orbi as OSI open source/i);
+      expect(rendered, output).not.toContain("blob/main/LICENSE.md");
     }
-    // Every remaining occurrence describes the named comparison product, or
-    // contrasts its OSI licence with Orbi's explicitly fair-code licence.
-    expect(Object.fromEntries(remaining)).toEqual({
-      "compare/index.html": 3,
-      "zh/compare/index.html": 4,
-      "compare/hermes-agent/index.html": 3,
-      "zh/compare/hermes-agent/index.html": 3,
-      "compare/openclaw/index.html": 3,
-      "zh/compare/openclaw/index.html": 3,
-      "compare/openhands/index.html": 1,
-      "zh/compare/openhands/index.html": 1,
-      "compare/orca/index.html": 1,
-      "zh/compare/orca/index.html": 1,
-    });
+    expect(shippedLlms).toContain("AGPL-3.0");
+    expect(shippedLlms).toContain("Sustainable Use License");
   });
 
   it("links cost and the CI gates guide from both homepages", () => {
