@@ -987,10 +987,10 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
-        # the soak gate: promoted commits must have aged on origin/beta before
-        # the approval-gated deploy job starts, so a rejected promotion never
-        # requests the approver's attention; the hotfix escape skips soak but
-        # never the environment approval
+        # the soak gate: the promoted snapshot must have completed a successful
+        # beta deployment before the approval-gated deploy job starts, so a
+        # rejected promotion never requests the approver's attention; the
+        # hotfix escape skips soak but never the environment approval
         self.assertIn("actions: read", workflow)
         soak_at = workflow.index("  soak:")
         deploy_at = workflow.index("  deploy:")
@@ -1003,7 +1003,8 @@ class LandingTests(unittest.TestCase):
         self.assertIn("skip_soak", workflow)
         self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
         self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
-        self.assertIn("gh run list", workflow)
+        self.assertIn("scripts/check-beta-soak.mjs", workflow)
+        self.assertIn("actions/workflows/deploy-beta.yml/runs?status=success", workflow)
         self.assertIn("git fetch origin beta", workflow)
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
