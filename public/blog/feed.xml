@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Why Orbi is open source again</title>
+      <link>https://orbi.build/blog/orbi-is-open-source-again/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-is-open-source-again/</guid>
+      <pubDate>Thu, 24 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Orbi began on Apache-2.0 and switched to the Sustainable Use License on Sep 4. From v0.5.44 it is AGPL-3.0, or the SUL if AGPL is ruled out. Here is why.</description>
+    </item>
+    <item>
       <title>The k8e etcd ticket that closed too early</title>
       <link>https://orbi.build/blog/k8e-rejected-then-merged/</link>
       <guid isPermaLink="true">https://orbi.build/blog/k8e-rejected-then-merged/</guid>

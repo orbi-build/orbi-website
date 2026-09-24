@@ -185,6 +185,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Why Orbi is open source again (English):
+  https://orbi.build/blog/orbi-is-open-source-again/
+- Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0 (Chinese):
+  https://orbi.build/zh/blog/orbi-is-open-source-again/
 - The k8e etcd ticket that closed too early (English):
   https://orbi.build/blog/k8e-rejected-then-merged/
 - Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了 (Chinese):
