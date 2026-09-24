@@ -17,6 +17,18 @@ does, and what the document claims — in the Issue or PR, or as its own Issue.
 A human decides which side is wrong. Never silently follow one and leave the
 contradiction in place for the next delivery to rediscover.
 
+## 公开仓库：不写经营数据
+
+本仓库公开可见。Issue、PR、commit 和页面中不得写入以下经营或内部信息：
+
+- 订阅数与营收；
+- 租户与客户名单（公开证据页已展示且获同意的除外）；
+- 访客与漏斗数据；
+- 生产库表结构与内部主机地址；
+- 机器人判定规则（ASN、UA 列表）。
+
+需要公开记录判断时，只记录结论，不记录上述数据的具体值。
+
 ## No Issue in hand? File one — do not edit
 
 **This repository is delivered by Orbi.** Changes come from a ticket that a
@@ -221,8 +233,9 @@ Before opening the PR:
   Conflicts are listed under the tree hash; fix them on `beta` first.
 - **Soak reality check.** The soak gate (`PROD_MIN_SOAK_HOURS`, repo variable,
   default 4) protects real users, so it may be skipped only when there are none.
-  Count active subscriptions read-only against the control-plane database and
-  record the value in the promotion issue either way — never assume it:
+  Check active subscriptions read-only against the control-plane database, but
+  record only the conclusion in the promotion issue: `有活跃订阅，须满足 soak` or
+  `无活跃订阅，可 skip_soak` — never record a count or other operating data:
   `timeout 90 npx wrangler d1 execute orbi_control_plane_e2e --remote --command "SELECT status, COUNT(*) AS n FROM subscriptions GROUP BY status" --json`
   (run from an orbi-cloud checkout). `subscriptions=0` means the wait protects
   nobody: merge any time and, if the soak job would still fail on commit age,
