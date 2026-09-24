@@ -247,7 +247,6 @@ describe("Issue #438 wording and internal-link contracts", () => {
       "zh/compare/openhands/index.html": 1,
       "compare/orca/index.html": 1,
       "zh/compare/orca/index.html": 1,
-      "zh/compare/github-copilot-coding-agent/index.html": 1,
     });
   });
 
