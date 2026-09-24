@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>DeepSeek as an unattended coding agent, per merged PR</title>
+      <link>https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</guid>
+      <pubDate>Thu, 24 Sep 2026 00:00:00 GMT</pubDate>
+      <description>See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</description>
+    </item>
+    <item>
       <title>Why Orbi is open source again</title>
       <link>https://orbi.build/blog/orbi-is-open-source-again/</link>
       <guid isPermaLink="true">https://orbi.build/blog/orbi-is-open-source-again/</guid>

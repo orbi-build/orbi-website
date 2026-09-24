@@ -187,8 +187,12 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- DeepSeek as an unattended coding agent, per merged PR (English):
+  https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/
 - Why Orbi is open source again (English):
   https://orbi.build/blog/orbi-is-open-source-again/
+- 用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花多少钱 (Chinese):
+  https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/
 - Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0 (Chinese):
   https://orbi.build/zh/blog/orbi-is-open-source-again/
 - The k8e etcd ticket that closed too early (English):

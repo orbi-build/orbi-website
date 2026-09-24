@@ -806,7 +806,7 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       expect(html, output).not.toContain("$1–3");
-      if (!output.endsWith("cost/index.html") && !output.endsWith("zh/cost/index.html")) {
+      if (!output.endsWith("cost/index.html") && !output.endsWith("zh/cost/index.html") && !output.includes("deepseek-coding-agent-cost-per-merged-pr") && output !== "blog/index.html" && output !== "zh/blog/index.html") {
         expect(html, output).not.toContain("per merged PR");
         expect(html, output).not.toContain("每个合并 PR 约");
       }
