@@ -129,7 +129,7 @@ requests from `orbi/` branches, 51 tagged releases.
 Every one of those is a link you can open, including the reviews that blocked
 something and the commits that came after.
 
-Orbi is source-available, fair-code, and self-hostable:
+Orbi is open source under AGPL-3.0, and self-hostable:
 [github.com/orbi-build/orbi](https://github.com/orbi-build/orbi).
 
 

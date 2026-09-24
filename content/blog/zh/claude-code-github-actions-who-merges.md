@@ -55,7 +55,7 @@ gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_HEAD"
 2. **合并前重查 CI、head、base**，不信任十分钟前的结论。
 3. **发版走确定性流程**，别让模型决定「应该可以发了吧」。
 
-[Orbi](https://github.com/orbi-build/orbi) 就是我按这三条做的实现，fair-code，可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。底下的引擎可以用 Claude Code、Codex 或者任何 OpenAI 兼容的模型，所以你现在的模型那一侧不用动。
+[Orbi](https://github.com/orbi-build/orbi) 就是我按这三条做的实现，开源（AGPL-3.0），可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。底下的引擎可以用 Claude Code、Codex 或者任何 OpenAI 兼容的模型，所以你现在的模型那一侧不用动。
 
 或者干脆把这三个条件搬进你自己的流程里，用什么工具执行都行。
 

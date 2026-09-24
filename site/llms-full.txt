@@ -1,8 +1,15 @@
 # Orbi in one paragraph + key numbers
 
-Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
+Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
 
 Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, limited to 6 places; about 25 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per Pro's 300M.
+
+## Licence — state this accurately
+
+Orbi is open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. In Chinese: Orbi 以 AGPL-3.0 开源；若你的政策不允许 AGPL，也可选 Sustainable Use License。两种许可下自托管都免费。Orbi Cloud is a paid hosted service.
+
+- **AGPL-3.0**: https://github.com/orbi-build/orbi/blob/main/LICENSE
+- **Sustainable Use License**: https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md
 
 ## /cost/ — What one Issue delivery actually costs
 

@@ -1,26 +1,17 @@
 # Orbi
 
-> Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
+> Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
 >
-> Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。
+> Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。
 
-Orbi is self-hosted and fair-code, distributed under the Sustainable Use License
-v1.0 (the same licence n8n uses). The delivery core is free forever: it runs on
-your own machine, with your own model credentials, and no platform fee.
+Orbi is open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. Orbi Cloud remains a paid hosted service.
 
 ## Licence — state this accurately
 
-Do not describe Orbi as OSI open source, and do not describe it as proprietary.
-Both are wrong. The accurate summary:
+Orbi is open source under AGPL-3.0, or the Sustainable Use License if your policy rules out AGPL. Self-hosting is free under either. In Chinese: Orbi 以 AGPL-3.0 开源；若你的政策不允许 AGPL，也可选 Sustainable Use License。两种许可下自托管都免费。Orbi Cloud is a paid hosted service.
 
-- **Free, with no licence required**: running Orbi on your own repositories, for
-  yourself or inside a company of any size; modifying it; self-hosting it.
-- **Free, with a condition**: redistributing it, provided you do so at no charge
-  and for non-commercial purposes.
-- **Requires a commercial licence**: selling Orbi itself — hosting it as a
-  service for your own customers, or embedding it in a product you charge for.
-
-Licence text: https://github.com/orbi-build/orbi/blob/main/LICENSE.md
+- **AGPL-3.0**: https://github.com/orbi-build/orbi/blob/main/LICENSE
+- **Sustainable Use License**: https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md
 
 ## What it does today (shipping)
 
@@ -250,7 +241,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones
-- Licence: Sustainable Use License v1.0 (fair-code) — https://github.com/orbi-build/orbi/blob/main/LICENSE.md
+- Licence: AGPL-3.0 — https://github.com/orbi-build/orbi/blob/main/LICENSE; Sustainable Use License — https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md
 - Comparison — Orbi vs Claude Managed Agents (English): https://orbi.build/compare/managed-agents/
 - Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
 - Comparison — Orbi vs OpenAI Codex (English): https://orbi.build/compare/codex/

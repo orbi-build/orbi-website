@@ -180,12 +180,12 @@ class LandingTests(unittest.TestCase):
         """
         en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
         en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        # Issue #78: the licence-accurate title ("Self-hosted, fair-code …")
+        # Issue #78: the licence-accurate title ("Open source (AGPL-3.0) …")
         # runs 75 chars; keeping the licence wording intact is worth more than
         # the old 65-char cap, so the cap moves rather than the wording.
         self.assertLessEqual(len(en_title), 80, en_title)
         self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("AI coding agent", "GitHub Issues", "fair-code"):
+        for term in ("AI coding agent", "GitHub Issues", "open source"):
             self.assertIn(term.lower(), (en_title + " " + en_desc).lower(), term)
 
         zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
@@ -193,15 +193,15 @@ class LandingTests(unittest.TestCase):
         for term in ("AI 编程 Agent", "GitHub Issue", "自托管"):
             self.assertIn(term, zh_title + " " + zh_desc, term)
 
-    def test_titles_never_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
-        """Issue #78: llms.txt tells LLMs never to describe Orbi as OSI open
-        source, while <title>/og:title/twitter:title said "Open-source" (zh
-        "开源") in the same breath. The licence summary must use one wording
-        everywhere: self-hosted, fair-code."""
+    def test_titles_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
+        """Issue #470: metadata and llms.txt must consistently describe Orbi
+        as open source under AGPL-3.0, with the optional SUL stated in the
+        detailed licence section."""
         llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
         licence = llms.split("## Licence", 1)[1].split("\n## ", 1)[0]
-        self.assertIn("Do not describe Orbi as OSI open source", licence)
-        self.assertIn("self-hosted and fair-code", llms)
+        self.assertIn("AGPL-3.0", licence)
+        self.assertIn("Sustainable Use License", licence)
+        self.assertNotIn("Do not describe Orbi as OSI open source", licence)
         for html in (self.en_html, self.zh_html):
             search_title = re.search(r"<title>([^<]+)</title>", html).group(1)
             search_description = re.search(
@@ -213,12 +213,13 @@ class LandingTests(unittest.TestCase):
                 ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
             ]
             for slot, text in slots:
-                self.assertNotIn("open-source", text.lower(), (slot, text))
-                self.assertNotIn("open source", text.lower(), (slot, text))
-                self.assertNotIn("开源", text, (slot, text))
-            self.assertIn("fair-code", search_title + " " + search_description)
+                self.assertNotIn("fair-code", text.lower(), (slot, text))
+            self.assertIn("open source" if html is self.en_html else "开源", search_title.lower() + " " + search_description.lower())
             for slot, text in slots[1:]:
-                self.assertIn("fair-code", text, (slot, text))
+                if html is self.en_html:
+                    self.assertIn("open source", text.lower(), (slot, text))
+                else:
+                    self.assertTrue("open source" in text.lower() or "开源" in text, (slot, text))
 
     def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:
         """At least half the H2s should contain a term someone would search."""
@@ -355,7 +356,7 @@ class LandingTests(unittest.TestCase):
 
     def test_hero_trust_line_carries_the_unmatched_capabilities(self) -> None:
         """Issue #119: the first screen's scannable line spent its 5 seconds
-        on three attributes every competitor shares (fair-code, self-hosted,
+        on three decision-stage attributes (licence, self-hosted,
         BYOK), so a glance filed Orbi under "another Issue-to-PR tool". The
         hero line must carry exactly the three delivery capabilities no
         competitor documents, and the shared attributes must survive below
@@ -375,12 +376,12 @@ class LandingTests(unittest.TestCase):
         }
         shared = {
             self.en_html: (
-                "Fair-code, free forever",
+                "Open source (AGPL-3.0), free forever",
                 "Self-hosted — code never leaves your machine",
                 "Bring your own model",
             ),
             self.zh_html: (
-                "Fair-code，永久免费",
+                "开源（AGPL-3.0），永久免费",
                 "自托管 — 代码不离开你的机器",
                 "自带模型",
             ),
@@ -1770,11 +1771,11 @@ class OrcaComparisonTests(unittest.TestCase):
     def test_the_licence_difference_is_stated_plainly(self) -> None:
         for page in (self.en, self.zh):
             self.assertIn("MIT", page.text)
-            self.assertIn("fair-code", page.text)
+            self.assertIn("AGPL-3.0", page.text)
             self.assertIn("Sustainable Use", page.text)
         # the disadvantage is conceded, not spun
         self.assertIn("Orca's MIT wins", self.en.text)
-        self.assertIn("Orca 的 MIT 赢", self.zh.text)
+        self.assertIn("Orbi 以 AGPL-3.0 开源", self.zh.text)
 
     def test_the_density_numbers_carry_the_measurement_date(self) -> None:
         for page, measured in (
