@@ -826,6 +826,45 @@ const jsonLdGraph = (html) => {
   return scripts.flatMap((data) => data["@graph"] ?? [data]);
 };
 
+describe("Issue-to-merged-PR landing pages (Issue #514)", () => {
+  const landingPages = [
+    { output: "issue-to-merged-pr/index.html", descriptionRange: [150, 160] },
+    { output: "zh/issue-to-merged-pr/index.html", descriptionRange: [70, 80] },
+  ];
+
+  it("keeps the requested SEO limits, one H1, and parseable FAQPage data", () => {
+    for (const { output, descriptionRange } of landingPages) {
+      const html = shipped.get(output);
+      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name="description" content="([^"]*)">/)?.[1] ?? "";
+      expect(title.length, `${output}: title length`).toBeLessThanOrEqual(60);
+      expect(description.length, `${output}: description minimum`).toBeGreaterThanOrEqual(descriptionRange[0]);
+      expect(description.length, `${output}: description maximum`).toBeLessThanOrEqual(descriptionRange[1]);
+      expect(countMatches(html, /<h1\b/g), `${output}: H1 count`).toBe(1);
+      const faqPages = jsonLdGraph(html).filter((node) => node["@type"] === "FAQPage");
+      expect(faqPages, `${output}: one parseable FAQPage`).toHaveLength(1);
+      expect(faqPages[0].mainEntity.length, `${output}: FAQ question count`).toBeGreaterThanOrEqual(3);
+      expect(faqPages[0].mainEntity.length, `${output}: FAQ question count`).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it("ships mutual hreflang, discovery entries, and all requested internal links", () => {
+    for (const { output } of landingPages) {
+      const html = shipped.get(output);
+      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/issue-to-merged-pr/"');
+      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/issue-to-merged-pr/"');
+    }
+    expect(shippedSitemap).toContain("https://orbi.build/issue-to-merged-pr/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/issue-to-merged-pr/");
+    expect(shippedLlms).toContain("https://orbi.build/issue-to-merged-pr/");
+    expect(shippedLlms).toContain("https://orbi.build/zh/issue-to-merged-pr/");
+    for (const output of ["index.html", "cloud/index.html", "guides/auto-merge-ai-prs/index.html"]) {
+      expect(shipped.get(output), output).toContain('href="/issue-to-merged-pr/"');
+      expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/issue-to-merged-pr/"');
+    }
+  });
+});
+
 describe("cloud buyer FAQ (Issue #166)", () => {
   it("sits between the three-step section and the closing CTA on both languages", () => {
     for (const { output } of CLOUD_FAQ_PAGES) {
