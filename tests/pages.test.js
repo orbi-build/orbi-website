@@ -473,6 +473,7 @@ describe("one unified footer on every content page", () => {
         "https://github.com/orbi-build/orbi/milestones",
         pathToHref(page.mirror),
         "https://www.opensourcealternatives.to/",
+        "https://ezbdc.dashu.ai/",
       ]);
     }
   });
@@ -495,6 +496,16 @@ describe("one unified footer on every content page", () => {
         '<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>',
       );
       expect(footer, `${output}: the backlink must be crawlable`).not.toContain("nofollow");
+    }
+  });
+
+  it("links ez背单词 from the footer without nofollow, on en and zh", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const footer = footerRegion(shipped.get(output));
+      expect(footer, `${output}: ez背单词 footer anchor drifted`).toContain(
+        '<a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>',
+      );
+      expect(footer, `${output}: the ez背单词 backlink must be crawlable`).not.toContain("nofollow");
     }
   });
 
