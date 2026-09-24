@@ -77,8 +77,8 @@ describe("llms-full.txt content asset (Issue #438)", () => {
 
   it("contains the complete cost and evidence bodies, not summaries", () => {
     for (const text of [
-      "46 real deliveries, measured on our own repository",
-      "Cents per delivery at DeepSeek V4.1 Flash list prices",
+      "20 merged pull requests, measured on our own repository",
+      "Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices",
       "Three things this page does not claim",
       "Competitors quote quotas. We quote tokens and prices.",
       "Three deliveries you can open",

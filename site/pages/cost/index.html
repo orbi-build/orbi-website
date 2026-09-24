@@ -25,8 +25,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI coding agent cost: what one delivery costs | Orbi</title>
-  <meta name="description" content="See what one Orbi delivery costs in tokens: measured runs, provider pricing, a practical estimate for 100 Issues, and the limits behind every number today.">
+  <title>AI coding agent cost per pull request, measured | Orbi</title>
+  <meta name="description" content="Measured cost per merged pull request for an AI coding agent: 20 Orbi PRs, median $0.125 off-peak, with transparent methodology, prices, and limits today.">
   <link rel="canonical" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
@@ -63,7 +63,8 @@
     "@graph": [
       {
         "@type": "WebPage",
-        "name": "What one Issue delivery actually costs — measured",
+        "name": "AI coding agent cost per pull request, measured | Orbi",
+        "description": "Measured cost per merged pull request for an AI coding agent: 20 Orbi PRs, median $0.125 off-peak, with transparent methodology, prices, and limits today.",
         "url": "https://orbi.build/cost/",
         "inLanguage": "en",
         "isPartOf": {
@@ -72,6 +73,14 @@
           "url": "https://orbi.build/"
         },
         "about": { "@id": "https://orbi.build/#software" }
+      },
+      {
+        "@type": "Dataset",
+        "name": "Orbi cost per merged pull request",
+        "description": "Measured token usage and estimated DeepSeek Flash cost for 20 merged pull requests in the orbi-build/orbi repository.",
+        "temporalCoverage": "2026-09-22/2026-09-24",
+        "variableMeasured": ["Cost per merged pull request", "Tokens per merged pull request"],
+        "url": "https://orbi.build/cost/"
       }
     ]
   }
@@ -86,7 +95,7 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
         <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-12 · n=46</p>
-        <h1 id="cost-title">What one Issue delivery actually costs</h1>
+        <h1 id="cost-title">What an AI coding agent costs per merged pull request</h1>
         <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 46 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,742,066</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.12</strong>, and <strong>100 issues ≈ $6–12</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
@@ -95,8 +104,27 @@
       </section>
     </div>
 
+    <section class="compare-section shell" aria-labelledby="merged-pr-title">
+      <p class="section-tag">COST PER MERGED PULL REQUEST</p>
+      <h2 class="orbi-compare-section-h2" id="merged-pr-title">20 merged pull requests, measured on our own repository</h2>
+      <p class="section-lede">The clearest unit is a merged PR, not an abstract token quota. From <strong>2026-09-22 09:44 UTC to 2026-09-24 12:03 UTC</strong>, we measured <strong>20 merged PRs</strong> in the orbi-build/orbi repository. Every sample used <code>deepseek-flash</code> (DeepSeek-V4.1-Flash). Per merged PR, the median was <strong>10,612,802 tokens</strong>; the median runtime was <strong>60.4 minutes</strong> across a median <strong>156 model requests</strong>.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">Statistic</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Median cost per merged PR</th><td>$0.125</td><td>$0.249</td></tr>
+            <tr><th scope="row">Mean cost per merged PR</th><td>$0.152</td><td>$0.304</td></tr>
+            <tr><th scope="row">P90 cost per merged PR</th><td>$0.298</td><td>$0.597</td></tr>
+            <tr><th scope="row">Maximum cost per merged PR</th><td>$0.417</td><td>$0.834</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">These estimates use DeepSeek's official <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash pricing</a>, checked 2026-09-24: cache hit $0.003 per million tokens, cache miss $0.15 per million, and output $0.60 per million. Peak weekday hours (01:00–04:00 and 06:00–10:00 UTC) are double. The sample's token mix: cache reads account for 97.1%; input 1.9%; output 1.0%.</p>
+      <p class="src-note">Why these numbers differ from the older figures below: the old sample counts 46 worktrees, including unmerged work and small changes; this sample counts only merged PRs. The 20 PRs are the public Issues <a href="https://github.com/orbi-build/orbi/issues/1289">#1289</a>, <a href="https://github.com/orbi-build/orbi/issues/1290">#1290</a>, <a href="https://github.com/orbi-build/orbi/issues/1231">#1231</a>, <a href="https://github.com/orbi-build/orbi/issues/1262">#1262</a>, <a href="https://github.com/orbi-build/orbi/issues/1304">#1304</a>, <a href="https://github.com/orbi-build/orbi/issues/1306">#1306</a>, <a href="https://github.com/orbi-build/orbi/issues/1307">#1307</a>, <a href="https://github.com/orbi-build/orbi/issues/933">#933</a>, <a href="https://github.com/orbi-build/orbi/issues/898">#898</a>, <a href="https://github.com/orbi-build/orbi/issues/856">#856</a>, <a href="https://github.com/orbi-build/orbi/issues/610">#610</a>, <a href="https://github.com/orbi-build/orbi/issues/1259">#1259</a>, <a href="https://github.com/orbi-build/orbi/issues/1294">#1294</a>, <a href="https://github.com/orbi-build/orbi/issues/1322">#1322</a>, <a href="https://github.com/orbi-build/orbi/issues/1324">#1324</a>, <a href="https://github.com/orbi-build/orbi/issues/1088">#1088</a>, <a href="https://github.com/orbi-build/orbi/issues/1328">#1328</a>, <a href="https://github.com/orbi-build/orbi/issues/1332">#1332</a>, <a href="https://github.com/orbi-build/orbi/issues/1337">#1337</a>, and <a href="https://github.com/orbi-build/orbi/issues/1336">#1336</a>. See also <a href="/compare/devin/">Devin comparison</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PRs guide</a>.</p>
+    </section>
+
     <section class="compare-section shell" aria-labelledby="measured-title">
-      <p class="section-tag">THE MEASUREMENT</p>
+      <p class="section-tag">THE MEASUREMENT · PER DELIVERY (INCLUDING UNMERGED)</p>
       <h2 class="orbi-compare-section-h2" id="measured-title">46 real deliveries, measured on our own repository</h2>
       <p class="section-lede">Every Orbi delivery runs two agent sessions — the implementation, then an independent review that can repair the branch and rerun the suite. As of <strong>2026-09-12</strong> we aggregated the session logs of <strong>n=46 deliveries</strong> of the orbi repository itself (Python, full CI, issues written to spec). The sample is whatever worktrees are on disk that day — it moves as worktrees get cleaned up — so <strong>n is a snapshot as of the stated date, not a permanent fact</strong>. Here is the complete per-delivery distribution of <code>totalTokens</code> — the count the provider actually bills, cache reads included:</p>
       <div class="compare-table-wrap">
@@ -118,7 +146,7 @@
     <section class="compare-section compare-section-tint" aria-labelledby="money-title">
       <div class="shell">
         <p class="section-tag">WHAT THAT MEANS IN MONEY</p>
-        <h2 class="orbi-compare-section-h2" id="money-title">Cents per delivery at DeepSeek V4.1 Flash list prices</h2>
+        <h2 class="orbi-compare-section-h2" id="money-title">Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices</h2>
         <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. Apply those list prices to the measured distribution:</p>
         <div class="compare-table-wrap">
           <table class="compare-table">
