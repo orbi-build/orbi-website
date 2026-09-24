@@ -876,21 +876,41 @@ const jsonLdGraph = (html) => {
   return scripts.flatMap((data) => data["@graph"] ?? [data]);
 };
 
-describe("Issue-to-merged-PR landing pages (Issue #514)", () => {
+describe("Issue-to-release landing pages (Issue #514)", () => {
   const landingPages = [
-    { output: "issue-to-merged-pr/index.html", descriptionRange: [150, 160] },
-    { output: "zh/issue-to-merged-pr/index.html", descriptionRange: [70, 80] },
+    {
+      output: "issue-to-release/index.html",
+      descriptionRange: [150, 160],
+      title: "AI agent: GitHub Issue to merged PR and release | Orbi",
+      h1: "From a GitHub Issue to a tagged release",
+      releaseTerm: "release",
+      firstSentence: "The endpoint is a tagged release, not a pull request.",
+    },
+    {
+      output: "zh/issue-to-release/index.html",
+      descriptionRange: [70, 80],
+      title: "AI agent：从 GitHub Issue 到合并与发版 | Orbi",
+      h1: "从 GitHub Issue 到打了 tag 的 Release",
+      releaseTerm: "发版",
+      firstSentence: "交付终点是发版，不是 PR。",
+    },
   ];
 
-  it("keeps the requested SEO limits, one H1, and parseable FAQPage data", () => {
-    for (const { output, descriptionRange } of landingPages) {
+  it("keeps the requested release positioning, SEO limits, one H1, and parseable FAQPage data", () => {
+    for (const { output, descriptionRange, title: expectedTitle, h1: expectedH1, releaseTerm, firstSentence } of landingPages) {
       const html = shipped.get(output);
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
       const description = html.match(/<meta name="description" content="([^"]*)">/)?.[1] ?? "";
+      const h1s = [...html.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((match) => match[1]);
+      const hero = stripTags(region(html, '<p class="hero-lede">', "</p>"));
+      expect(title, `${output}: exact title`).toBe(expectedTitle);
       expect(title.length, `${output}: title length`).toBeLessThanOrEqual(60);
       expect(description.length, `${output}: description minimum`).toBeGreaterThanOrEqual(descriptionRange[0]);
       expect(description.length, `${output}: description maximum`).toBeLessThanOrEqual(descriptionRange[1]);
-      expect(countMatches(html, /<h1\b/g), `${output}: H1 count`).toBe(1);
+      expect(description.toLowerCase(), `${output}: description positions the endpoint as release`).toContain(releaseTerm.toLowerCase());
+      expect(h1s, `${output}: exact single H1`).toEqual([expectedH1]);
+      expect(hero.startsWith(firstSentence), `${output}: hero first sentence`).toBe(true);
+      expect(firstSentence.toLowerCase(), `${output}: hero first sentence says release`).toContain(releaseTerm.toLowerCase());
       const faqPages = jsonLdGraph(html).filter((node) => node["@type"] === "FAQPage");
       expect(faqPages, `${output}: one parseable FAQPage`).toHaveLength(1);
       expect(faqPages[0].mainEntity.length, `${output}: FAQ question count`).toBeGreaterThanOrEqual(3);
@@ -901,16 +921,16 @@ describe("Issue-to-merged-PR landing pages (Issue #514)", () => {
   it("ships mutual hreflang, discovery entries, and all requested internal links", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
-      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/issue-to-merged-pr/"');
-      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/issue-to-merged-pr/"');
+      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/issue-to-release/"');
+      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/issue-to-release/"');
     }
-    expect(shippedSitemap).toContain("https://orbi.build/issue-to-merged-pr/");
-    expect(shippedSitemap).toContain("https://orbi.build/zh/issue-to-merged-pr/");
-    expect(shippedLlms).toContain("https://orbi.build/issue-to-merged-pr/");
-    expect(shippedLlms).toContain("https://orbi.build/zh/issue-to-merged-pr/");
+    expect(shippedSitemap).toContain("https://orbi.build/issue-to-release/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/issue-to-release/");
+    expect(shippedLlms).toContain("https://orbi.build/issue-to-release/");
+    expect(shippedLlms).toContain("https://orbi.build/zh/issue-to-release/");
     for (const output of ["index.html", "cloud/index.html", "guides/auto-merge-ai-prs/index.html"]) {
-      expect(shipped.get(output), output).toContain('href="/issue-to-merged-pr/"');
-      expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/issue-to-merged-pr/"');
+      expect(shipped.get(output), output).toContain('href="/issue-to-release/"');
+      expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/issue-to-release/"');
     }
   });
 });
