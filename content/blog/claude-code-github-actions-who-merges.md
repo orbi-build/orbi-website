@@ -4,7 +4,7 @@ date: 2026-09-19
 summary: Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.
 lang: en
 author: Orbi
-image: /img/blog-claude-actions.png
+image: /img/blog-claude-actions-card.png
 ---
 
 Once [Claude Code](https://github.com/anthropics/claude-code-action) is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.
