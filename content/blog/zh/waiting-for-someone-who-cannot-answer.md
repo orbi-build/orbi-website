@@ -213,10 +213,9 @@ login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← 正常�
 ---
 
 *相关票，全部开于 2026-09-22：
-[orbi-cloud#878](https://github.com/orbi-build/orbi-cloud/issues/878)（托管租户没有决定通路）、
-[orbi-cloud#869](https://github.com/orbi-build/orbi-cloud/issues/869)（界面列出里程碑）、
-[orbi-cloud#870](https://github.com/orbi-build/orbi-cloud/issues/870)（通用配置下发，
-而不是第五个手写同步函数）、
+orbi-cloud#878（托管租户没有决定通路）、
+orbi-cloud#869（界面列出里程碑）、
+orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
 [orbi#1283](https://github.com/orbi-build/orbi/issues/1283)（根因一开始写错的那张）。*
 
 
