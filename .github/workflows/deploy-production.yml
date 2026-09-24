@@ -71,11 +71,10 @@ jobs:
           trap 'rm -f "$runs_file"' EXIT
           timeout 120s gh api --paginate --slurp \
             "repos/${GH_REPO}/actions/workflows/deploy-beta.yml/runs?status=success&per_page=100" > "$runs_file"
-          args=(--snapshot-sha "$beta_snapshot" --required-hours "${PROD_MIN_SOAK_HOURS:-4}" --runs-file "$runs_file")
-          if [[ "$SKIP_SOAK" == "true" ]]; then
-            args+=(--skip-soak)
-          fi
-          timeout 120s node scripts/check-beta-soak.mjs "${args[@]}"
+          timeout 120s node scripts/check-beta-soak.mjs \
+            --snapshot-sha "$beta_snapshot" \
+            --required-hours "$required" \
+            --runs-file "$runs_file"
 
   deploy:
     needs: soak

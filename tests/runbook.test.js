@@ -57,12 +57,24 @@ function setup() {
   return { repo, now, snapshot, betaHead };
 }
 
+function betaDeployment(headSha, deployedAt, overrides = {}) {
+  return {
+    head_sha: headSha,
+    head_branch: "beta",
+    conclusion: "success",
+    updated_at: deployedAt,
+    ...overrides,
+  };
+}
+
 describe("production promotion soak script", () => {
   it("passes a five-hour-old beta deployment despite a newer beta head", () => {
     const { repo, now, snapshot, betaHead } = setup();
     try {
-      const result = check(repo, snapshot, [{ head_sha: betaHead, conclusion: "success", created_at: new Date((now - 5 * 3600) * 1000).toISOString() }], 4, now);
+      const deployedAt = new Date((now - 5 * 3600) * 1000).toISOString();
+      const result = check(repo, snapshot, [betaDeployment(betaHead, deployedAt)], 4, now);
       expect(result.status).toBe(0);
+      expect(result.stdout).toContain(`First successful beta deployment containing snapshot: ${deployedAt}`);
       expect(result.stdout).toContain("Snapshot beta soak age: 5.0h");
     } finally { rmSync(repo, { recursive: true, force: true }); }
   });
@@ -70,16 +82,20 @@ describe("production promotion soak script", () => {
   it("fails a one-hour-old deployment and reports the remaining time", () => {
     const { repo, now, snapshot, betaHead } = setup();
     try {
-      const result = check(repo, snapshot, [{ head_sha: betaHead, conclusion: "success", created_at: new Date((now - 3600) * 1000).toISOString() }], 4, now);
+      const result = check(repo, snapshot, [betaDeployment(betaHead, new Date((now - 3600) * 1000).toISOString())], 4, now);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("Retry in about 3.0h");
     } finally { rmSync(repo, { recursive: true, force: true }); }
   });
 
-  it("uses beta deployment time rather than the old commit author time", () => {
+  it("uses beta deployment completion time rather than run creation or commit author time", () => {
     const { repo, now, snapshot, betaHead } = setup();
     try {
-      const result = check(repo, snapshot, [{ head_sha: betaHead, conclusion: "success", created_at: new Date((now - 20 * 60) * 1000).toISOString() }], 4, now);
+      const result = check(repo, snapshot, [betaDeployment(
+        betaHead,
+        new Date((now - 20 * 60) * 1000).toISOString(),
+        { created_at: new Date((now - 10 * 3600) * 1000).toISOString() },
+      )], 4, now);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("only 0.3h");
     } finally { rmSync(repo, { recursive: true, force: true }); }
@@ -98,7 +114,7 @@ describe("production promotion soak script", () => {
     const { repo, now, snapshot } = setup();
     try {
       const runs = [];
-      expect(check(repo, snapshot, runs, 4, now, ["--skip-soak"]).status).toBe(0);
+      expect(check(repo, snapshot, runs, "invalid but skipped", now, ["--skip-soak"]).status).toBe(0);
       expect(check(repo, snapshot, runs, 0, now).status).toBe(0);
     } finally { rmSync(repo, { recursive: true, force: true }); }
   });

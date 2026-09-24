@@ -22,15 +22,16 @@ function option(name, required = true) {
 }
 
 const skipSoak = process.argv.includes("--skip-soak");
+if (skipSoak) {
+  console.log("skip_soak requested (hotfix); the production environment approval still applies.");
+  process.exit(0);
+}
+
 const requiredText = option("--required-hours");
 if (!/^[0-9]+(?:\.[0-9]+)?$/.test(requiredText)) {
   usage(`PROD_MIN_SOAK_HOURS must be a non-negative number, got: ${requiredText}`);
 }
 const requiredHours = Number(requiredText);
-if (skipSoak) {
-  console.log("skip_soak requested (hotfix); the production environment approval still applies.");
-  process.exit(0);
-}
 if (requiredHours === 0) {
   console.log("PROD_MIN_SOAK_HOURS=0: soak check disabled.");
   process.exit(0);
@@ -59,12 +60,12 @@ const successfulRuns = runs
   .map((run) => ({
     ...run,
     headSha: run.headSha ?? run.head_sha,
-    createdAt: run.createdAt ?? run.created_at,
+    deployedAt: run.updatedAt ?? run.updated_at,
     headBranch: run.headBranch ?? run.head_branch,
   }))
-  .filter((run) => (!run.conclusion || run.conclusion === "success") && run.headSha && run.createdAt)
-  .filter((run) => !run.headBranch || run.headBranch === "beta")
-  .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
+  .filter((run) => run.conclusion === "success" && run.headSha && run.headBranch === "beta")
+  .filter((run) => Number.isFinite(Date.parse(run.deployedAt)))
+  .sort((left, right) => Date.parse(left.deployedAt) - Date.parse(right.deployedAt));
 
 function containsSnapshot(headSha) {
   try {
@@ -85,10 +86,10 @@ if (!deployment) {
   process.exit(1);
 }
 
-const deployedAt = Date.parse(deployment.createdAt) / 1000;
+const deployedAt = Date.parse(deployment.deployedAt) / 1000;
 const age = (now - deployedAt) / 3600;
 console.log(`Beta snapshot: ${snapshot}`);
-console.log(`First successful beta deployment containing snapshot: ${deployment.createdAt} (headSha ${deployment.headSha})`);
+console.log(`First successful beta deployment containing snapshot: ${deployment.deployedAt} (headSha ${deployment.headSha})`);
 console.log(`Snapshot beta soak age: ${age.toFixed(1)}h (required: ${requiredHours}h)`);
 if (age >= requiredHours) {
   console.log("Soak check passed.");
