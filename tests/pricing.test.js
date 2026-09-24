@@ -45,6 +45,8 @@ const TOKENS_LABEL = String(pricing.includedTokensLabel);
 const TOKEN_PAGES = PRICE_PAGES;
 const CLOUD_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
 
+const PRICING_ACTION_WRAPPER = /<div class="pricing-card-actions">[\s\S]*?<\/div>/g;
+
 // An included-quota literal: a round token count sitting next to the word
 // "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
 // the exact forms the 2B-vs-3 亿 drift of website#137 shipped). Two kinds of
@@ -109,6 +111,21 @@ function serve(raw, path) {
     },
   });
 }
+
+describe("Pricing card action alignment (Issue #472)", () => {
+  it("uses one bottom-aligned action wrapper for every Cloud pricing card", async () => {
+    const css = await readFile(`${PUBLIC_DIR}../public/styles.css`, "utf8");
+    expect(css).toContain(".pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: auto; }");
+    expect(css).toContain(".pricing-card { display: flex; flex-direction: column;");
+    expect(css).not.toContain(".pricing-card-featured { border: 2px solid var(--signal); transform: translateY(-8px); }");
+
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await rawPage(relativePath);
+      expect(html.match(PRICING_ACTION_WRAPPER), relativePath).toHaveLength(3);
+      expect(html.match(/class="pricing-card-actions"/g), relativePath).toHaveLength(3);
+    }
+  });
+});
 
 describe("Cloud monthly price constant (Issue #102)", () => {
   it("ships every price occurrence as the token, never as a literal", async () => {
