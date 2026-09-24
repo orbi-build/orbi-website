@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DeepSeek as an unattended coding agent, per merged PR | Orbi</title>
+  <title>DeepSeek coding agent cost per merged PR | Orbi</title>
   <meta name="description" content="See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.">
   <link rel="canonical" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="DeepSeek as an unattended coding agent, per merged PR">
+  <meta property="og:title" content="DeepSeek coding agent cost per merged PR">
   <meta property="og:description" content="See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.">
   <meta property="og:url" content="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/">
   <meta property="og:image" content="https://orbi.build/img/blog-deepseek.png">
-  <meta property="og:image:alt" content="DeepSeek as an unattended coding agent, per merged PR">
+  <meta property="og:image:alt" content="DeepSeek coding agent cost per merged PR">
   <meta property="article:published_time" content="2026-09-24">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"DeepSeek as an unattended coding agent, per merged PR","datePublished":"2026-09-24","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-deepseek.png","inLanguage":"en","description":"See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.","url":"https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"DeepSeek coding agent cost per merged PR","datePublished":"2026-09-24","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-deepseek.png","inLanguage":"en","description":"See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.","url":"https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -83,7 +83,7 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="post-title">
         <p class="eyebrow">Blog · 2026-09-24</p>
-        <h1 id="post-title">DeepSeek as an unattended coding agent, per merged PR</h1>
+        <h1 id="post-title">DeepSeek coding agent cost per merged PR</h1>
         <p class="hero-lede">See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</p>
       </section>
     </div>
@@ -97,7 +97,7 @@
 <li><strong>$0.125</strong> median and <strong>$0.417</strong> maximum outside peak hours.</li>
 <li><strong>$0.249</strong> median and <strong>$0.834</strong> maximum during peak hours.</li>
 </ul>
-<p>The figures use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">official pricing</a>. Peak hours are weekdays 01:00–04:00 and 06:00–10:00 UTC. For an unattended coding agent, scheduling around those windows is a practical cost control. The <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a> explains the delivery loop; this post puts a price on its merged-PR unit.</p>
+<p>The figures use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">official pricing</a>. Peak prices are double the off-peak rates during weekdays 01:00–04:00 and 06:00–10:00 UTC. For an unattended coding agent, scheduling around those windows is a practical cost control. The <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a> explains the delivery loop; this post puts a price on its merged-PR unit.</p>
 <h2>Why the number stays low</h2>
 <p>Of the tokens in these runs, <strong>97.1% were cache reads</strong>. A cache hit costs $0.003 per one million tokens; a cache miss costs $0.15 per one million. That is <strong>1/50</strong> of the uncached price. Orbi&#39;s session structure repeatedly reuses the same context, so the context needed for an independent review and its fixes is not paid for as a fresh read each time.</p>
 <p>One caveat matters: when the cache-hit rate drops below 90%, cost rises quickly. The median is useful for planning, but your own context shape and review rounds determine the result.</p>
@@ -111,7 +111,7 @@
       &quot;api&quot;: &quot;openai-completions&quot;,
       &quot;apiKey&quot;: &quot;$DEEPSEEK_API_KEY&quot;,
       &quot;models&quot;: [
-        {&quot;id&quot;: &quot;deepseek-chat&quot;, &quot;name&quot;: &quot;DeepSeek Chat&quot;, &quot;contextWindow&quot;: 131072, &quot;maxTokens&quot;: 8192}
+        {&quot;id&quot;: &quot;deepseek-flash&quot;, &quot;name&quot;: &quot;DeepSeek Flash&quot;, &quot;contextWindow&quot;: 131072, &quot;maxTokens&quot;: 16384}
       ]
     }
   }
@@ -124,7 +124,7 @@
 <h2>What to take away</h2>
 <p>Measure cost per merged PR, keep the cache-hit rate above 90%, and move unattended work outside peak hours when that fits your queue. The important unit is not a model call in isolation: it is the complete path from GitHub Issue to PR, independent review, merge, and tagged release. Orbi&#39;s own 20-PR sample makes that path inspectable, and the <a href="/cost/">cost page</a> keeps the full table in one place.</p>
 <h2>Related</h2>
-<p>Read the <a href="/cost/">cost table</a>, <a href="/cloud/">Cloud</a>, and <a href="/compare/">comparison pages</a>.</p>
+<p>Read the <a href="/cost/">cost table</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a>.</p>
 
 <section class="subscribe-box" aria-labelledby="subscribe-title">
   <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>

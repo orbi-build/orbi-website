@@ -97,7 +97,7 @@
 <li>非高峰时段中位数 <strong>$0.125</strong>，最高 <strong>$0.417</strong>。</li>
 <li>高峰时段中位数 <strong>$0.249</strong>，最高 <strong>$0.834</strong>。</li>
 </ul>
-<p>价格依据 <a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek 官方价目表</a>。高峰是工作日 UTC 01:00–04:00 和 06:00–10:00。无人值守任务如果能避开这两个时间段，就能少付一部分钱。<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>讲的是流程，这篇只给这条合并 PR 的流程标上价格。</p>
+<p>价格依据 <a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek 官方价目表</a>。高峰价格翻倍，时段是工作日 UTC 01:00–04:00 和 06:00–10:00。无人值守任务如果能避开这两个时间段，就能少付一部分钱。<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>讲的是流程，这篇只给这条合并 PR 的流程标上价格。</p>
 <h2>便宜的原因：大多数 token 是缓存读</h2>
 <p>这些运行里 <strong>97.1% 是缓存读</strong>。缓存命中每 100 万 token 收 $0.003，未命中则是 $0.15，也就是 <strong>1/50</strong>。Orbi 的会话结构会反复复用同一段上下文，所以独立评审和后续修复不必每次都把相同内容当成全新的输入来读。</p>
 <p>有一个门槛值得盯住：缓存命中率低于九成后，成本会上升得很快。中位数适合做预算起点，但你的上下文长度和评审轮数才决定实际账单。</p>
@@ -111,7 +111,7 @@
       &quot;api&quot;: &quot;openai-completions&quot;,
       &quot;apiKey&quot;: &quot;$DEEPSEEK_API_KEY&quot;,
       &quot;models&quot;: [
-        {&quot;id&quot;: &quot;deepseek-chat&quot;, &quot;name&quot;: &quot;DeepSeek Chat&quot;, &quot;contextWindow&quot;: 131072, &quot;maxTokens&quot;: 8192}
+        {&quot;id&quot;: &quot;deepseek-flash&quot;, &quot;name&quot;: &quot;DeepSeek Flash&quot;, &quot;contextWindow&quot;: 131072, &quot;maxTokens&quot;: 16384}
       ]
     }
   }
@@ -124,7 +124,7 @@
 <h2>可以带走的两个判断</h2>
 <p>第一，记账时用每个合并 PR，而不是只看一次模型调用；第二，把缓存命中率保持在九成以上，并在队列允许时避开高峰。无人值守编程智能体的完整成本路径，是 GitHub Issue → PR → 独立评审 → 合并 → 打 tag 发 Release。Orbi 自己的这 20 个 PR 都留有公开记录，完整表格在<a href="/zh/cost/">成本页</a>。</p>
 <h2>相关</h2>
-<p>继续阅读：<a href="/zh/cost/">成本表</a>、<a href="/zh/cloud/">Cloud</a>和<a href="/zh/compare/">对比页</a>。</p>
+<p>继续阅读：<a href="/zh/cost/">成本表</a>、<a href="/zh/cloud/">Cloud</a>和<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
 
 <section class="subscribe-box" aria-labelledby="subscribe-title">
   <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>

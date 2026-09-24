@@ -19,7 +19,7 @@ Orbi 把 GitHub Issue 交付成经过独立评审、已合并的 PR，再打 tag
 - 非高峰时段中位数 **$0.125**，最高 **$0.417**。
 - 高峰时段中位数 **$0.249**，最高 **$0.834**。
 
-价格依据 [DeepSeek 官方价目表](https://api-docs.deepseek.com/quick_start/pricing)。高峰是工作日 UTC 01:00–04:00 和 06:00–10:00。无人值守任务如果能避开这两个时间段，就能少付一部分钱。[自动合并 AI PR 指南](/zh/guides/auto-merge-ai-prs/)讲的是流程，这篇只给这条合并 PR 的流程标上价格。
+价格依据 [DeepSeek 官方价目表](https://api-docs.deepseek.com/quick_start/pricing)。高峰价格翻倍，时段是工作日 UTC 01:00–04:00 和 06:00–10:00。无人值守任务如果能避开这两个时间段，就能少付一部分钱。[自动合并 AI PR 指南](/zh/guides/auto-merge-ai-prs/)讲的是流程，这篇只给这条合并 PR 的流程标上价格。
 
 ## 便宜的原因：大多数 token 是缓存读
 
@@ -41,7 +41,7 @@ Orbi 跑在 Pi 上，模型可以接 OpenAI 兼容 API 或 Codex 订阅，**不�
       "api": "openai-completions",
       "apiKey": "$DEEPSEEK_API_KEY",
       "models": [
-        {"id": "deepseek-chat", "name": "DeepSeek Chat", "contextWindow": 131072, "maxTokens": 8192}
+        {"id": "deepseek-flash", "name": "DeepSeek Flash", "contextWindow": 131072, "maxTokens": 16384}
       ]
     }
   }
@@ -63,4 +63,4 @@ export DEEPSEEK_API_KEY="your-key"
 
 ## 相关
 
-继续阅读：[成本表](/zh/cost/)、[Cloud](/zh/cloud/)和[对比页](/zh/compare/)。
+继续阅读：[成本表](/zh/cost/)、[Cloud](/zh/cloud/)和[自动合并 AI PR 指南](/zh/guides/auto-merge-ai-prs/)。

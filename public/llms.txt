@@ -187,7 +187,7 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- DeepSeek as an unattended coding agent, per merged PR (English):
+- DeepSeek coding agent cost per merged PR (English):
   https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/
 - Why Orbi is open source again (English):
   https://orbi.build/blog/orbi-is-open-source-again/
