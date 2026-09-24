@@ -212,16 +212,10 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
 
   it("requires every local Open Graph PNG to be 1200×630 (Issue #502)", async () => {
     const violations = [];
-    const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
-      .map((match) => match[1])
-      .map((urlPath) => urlPath.endsWith("/")
-        ? `${urlPath.slice(1)}index.html`
-        : (urlPath.endsWith(".html") ? urlPath.slice(1) : null))
-      .filter(Boolean);
 
-    for (const output of sitemapOutputs) {
-      const html = shipped.get(output);
-      const imageUrl = html?.match(/<meta\s+property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1];
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      const imageUrl = html.match(/<meta\s+property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1];
       const image = imageUrl?.startsWith("http") ? new URL(imageUrl).pathname : imageUrl;
       if (!image?.startsWith("/img/") || !image.endsWith(".png")) {
         violations.push(`${output}: og:image is not a local PNG (${imageUrl ?? "missing"})`);
