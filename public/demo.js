@@ -357,6 +357,41 @@
     observer.observe(root);
   }
 
+  function bootPricingToggle(root) {
+    const intervalButtons = Array.from(root.querySelectorAll("[data-pricing-interval]"));
+    const prices = Array.from(document.querySelectorAll("[data-pricing-price]"));
+    const details = Array.from(document.querySelectorAll("[data-pricing-detail]"));
+    const ctas = Array.from(document.querySelectorAll("[data-pricing-cta]"));
+    const checkout = {
+      solo: { year: "/api/checkout?plan=solo&interval=year", month: "/api/checkout?plan=solo" },
+      pro: { year: "/api/checkout?plan=pro&interval=year", month: "/api/checkout?plan=pro" },
+    };
+    function setInterval(interval) {
+      intervalButtons.forEach(function (button) {
+        const selected = button.getAttribute("data-pricing-interval") === interval;
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      prices.forEach(function (price) {
+        price.textContent = price.getAttribute(`data-${interval}-price`);
+      });
+      details.forEach(function (detail) {
+        detail.textContent = detail.getAttribute(`data-${interval}-detail`);
+      });
+      ctas.forEach(function (cta) {
+        const plan = cta.getAttribute("data-pricing-cta");
+        cta.href = checkout[plan][interval];
+        cta.dataset.cta = `pricing-${plan}-${interval}`;
+      });
+    }
+    intervalButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setInterval(button.getAttribute("data-pricing-interval"));
+      });
+    });
+    setInterval("year");
+  }
+
   /* One-click copy for the install commands.
    *
    * navigator.clipboard needs a secure context and can still reject (denied
@@ -426,6 +461,7 @@
     });
   }
 
+  document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
   document.querySelectorAll("#factory-trace").forEach(bootFactoryTrace);

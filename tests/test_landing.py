@@ -1184,8 +1184,8 @@ class CloudLandingPageTests(unittest.TestCase):
 
     def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
         for page, headline in (
-            (self.en, "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills."),
-            (self.zh, "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"),
+            (self.en, "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills."),
+            (self.zh, "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"),
         ):
             self.assertIn(headline, page.text)
             self.assertIn("US$0", page.text)

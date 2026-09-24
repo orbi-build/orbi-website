@@ -72,6 +72,8 @@ const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
   "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
   "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
+  "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
+  "pricing-pro-year", "pricing-pro-month",
 ]);
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
@@ -348,6 +350,11 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.soloMonthlyUsdToken, SOLO_MONTHLY_USD)
     .replaceAll(pricing.soloAnnualUsdToken, SOLO_ANNUAL_USD)
     .replaceAll(pricing.proAnnualUsdToken, PRO_ANNUAL_USD)
+    .replaceAll(pricing.soloAnnualMonthlyUsdToken, String(pricing.soloAnnualMonthlyUsd))
+    .replaceAll(pricing.proAnnualMonthlyUsdToken, String(pricing.proAnnualMonthlyUsd))
+    .replaceAll(pricing.soloAnnualSavingsPercentToken, String(pricing.soloAnnualSavingsPercent))
+    .replaceAll(pricing.proAnnualSavingsPercentToken, String(pricing.proAnnualSavingsPercent))
+    .replaceAll(pricing.annualSavingsPercentToken, String(pricing.annualSavingsPercent))
     .replaceAll(pricing.soloIncludedTokensToken, SOLO_INCLUDED_TOKENS)
     .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
     .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
@@ -651,10 +658,8 @@ async function handleFetch(request, env, ctx) {
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
 // trailing-slash canonicalisation; anything else is not ours to follow.
-function subscriptionReturnUrl(value, request) {
-  const fallback = new URL(request.url);
-  fallback.search = "";
-  fallback.hash = "";
+function subscriptionReturnUrl(value, request, lang) {
+  const fallback = new URL(lang === "zh" ? "/zh/" : "/", request.url);
   if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
   try {
     const target = new URL(value.slice(0, 500), request.url);
@@ -691,7 +696,7 @@ async function subscribeResponse(request, env) {
   }
   const email = typeof fields?.email === "string" ? fields.email.trim() : "";
   const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
-  const returnUrl = subscriptionReturnUrl(fields?.return_to, request);
+  const returnUrl = subscriptionReturnUrl(fields?.return_to, request, lang);
   const return_to = `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
   if (!email || !lang) return subscriptionResponse(request, 400, { error: "invalid_request", return_to });
   if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {

@@ -30,8 +30,14 @@ describe("browser engagement endpoint", () => {
   it.each([
     ["engaged", undefined],
     ["cta_click", "cloud-hero"],
+    ["cta_click", "pricing-year"],
+    ["cta_click", "pricing-month"],
+    ["cta_click", "pricing-solo-year"],
+    ["cta_click", "pricing-solo-month"],
+    ["cta_click", "pricing-pro-year"],
+    ["cta_click", "pricing-pro-month"],
     ["scroll_depth", "75"],
-  ])("forwards %s with the visitor identity", async (kind, detail) => {
+  ])("forwards %s/%s with the visitor identity", async (kind, detail) => {
     const reports = [];
     const env = envFor({
       fetch: async request => {

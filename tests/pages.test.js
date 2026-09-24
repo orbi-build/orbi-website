@@ -186,6 +186,30 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
     expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
   });
 
+  it("requires social sharing metadata on every sitemap HTML page", () => {
+    const missing = [];
+    const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
+      .map((match) => match[1])
+      .map((urlPath) => urlPath.endsWith("/")
+        ? `${urlPath.slice(1)}index.html`
+        : (urlPath.endsWith(".html") ? urlPath.slice(1) : null))
+      .filter(Boolean);
+
+    for (const output of sitemapOutputs) {
+      const html = shipped.get(output);
+      const rendered = html?.replace(/<!--[\s\S]*?-->/g, "") ?? "";
+      for (const contract of [
+        /<meta\s+property=["']og:title["'][^>]*>/i,
+        /<meta\s+property=["']og:image["'][^>]*>/i,
+        /<meta\s+name=["']twitter:card["'][^>]*>/i,
+      ]) {
+        if (!contract.test(rendered)) missing.push(`${output}: ${contract.source}`);
+      }
+    }
+
+    expect(missing, `Missing social sharing metadata:\n${missing.join("\n")}`).toEqual([]);
+  });
+
   it("keeps every rendered page title above the crawler minimum", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
@@ -699,6 +723,19 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
 
 // Issue #165: buyers looking for the subscription price get Pricing in the
 // primary nav (the /cloud/ PRICING section), not the measured-cost essay.
+describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
+  it("uses fixed-monthly headings and removes the unsupported per-PR claim from every shipped HTML page", () => {
+    expect(shipped.get("cloud/index.html")).toContain("A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+    expect(shipped.get("zh/cloud/index.html")).toContain("按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。");
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      expect(html, output).not.toContain("$1–3");
+      expect(html, output).not.toContain("per merged PR");
+      expect(html, output).not.toContain("每个合并 PR 约");
+    }
+  });
+});
+
 describe("pricing nav entry (Issue #165)", () => {
   it("anchors the PRICING section on both Cloud pages", () => {
     for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {

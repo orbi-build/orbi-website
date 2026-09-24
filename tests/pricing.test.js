@@ -11,6 +11,11 @@ const USD = String(pricing.cloudMonthlyUsd);
 const SOLO_USD = String(pricing.soloMonthlyUsd);
 const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
 const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const SOLO_ANNUAL_MONTHLY_USD = String(pricing.soloAnnualMonthlyUsd);
+const PRO_ANNUAL_MONTHLY_USD = String(pricing.proAnnualMonthlyUsd);
+const SOLO_ANNUAL_SAVINGS_PERCENT = String(pricing.soloAnnualSavingsPercent);
+const PRO_ANNUAL_SAVINGS_PERCENT = String(pricing.proAnnualSavingsPercent);
+const ANNUAL_SAVINGS_PERCENT = String(pricing.annualSavingsPercent);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
@@ -44,6 +49,8 @@ const TOKENS = pricing.includedTokensToken;
 const TOKENS_LABEL = String(pricing.includedTokensLabel);
 const TOKEN_PAGES = PRICE_PAGES;
 const CLOUD_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
+
+const PRICING_ACTION_WRAPPER = /<div class="pricing-card-actions">[\s\S]*?<\/div>/g;
 
 // An included-quota literal: a round token count sitting next to the word
 // "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
@@ -109,6 +116,22 @@ function serve(raw, path) {
     },
   });
 }
+
+describe("Pricing card action alignment (Issue #472)", () => {
+  it("uses one bottom-aligned action wrapper for every Cloud pricing card", async () => {
+    const css = await readFile(`${PUBLIC_DIR}../public/styles.css`, "utf8");
+    expect(css).toContain(".pricing-card-actions { margin-top: auto; }");
+    expect(css).not.toContain("min-height: 110px");
+    expect(css).toContain(".pricing-card { display: flex; flex-direction: column;");
+    expect(css).not.toContain(".pricing-card-featured { border: 2px solid var(--signal); transform: translateY(-8px); }");
+
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await rawPage(relativePath);
+      expect(html.match(PRICING_ACTION_WRAPPER), relativePath).toHaveLength(3);
+      expect(html.match(/class="pricing-card-actions"/g), relativePath).toHaveLength(3);
+    }
+  });
+});
 
 describe("Cloud monthly price constant (Issue #102)", () => {
   it("ships every price occurrence as the token, never as a literal", async () => {
@@ -472,6 +495,27 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
     }
   });
 
+  it("calculates annual monthly prices and savings from the plan prices", () => {
+    expect(pricing.soloAnnualMonthlyUsd).toBe(Math.round(pricing.soloAnnualUsd / 12));
+    expect(pricing.proAnnualMonthlyUsd).toBe(Math.round(pricing.proAnnualUsd / 12));
+    expect(pricing.soloAnnualSavingsPercent).toBe(Math.round((1 - pricing.soloAnnualUsd / (pricing.soloMonthlyUsd * 12)) * 100));
+    expect(pricing.proAnnualSavingsPercent).toBe(Math.round((1 - pricing.proAnnualUsd / (pricing.cloudMonthlyUsd * 12)) * 100));
+    expect(pricing.annualSavingsPercent).toBe(Math.max(
+      pricing.soloAnnualSavingsPercent,
+      pricing.proAnnualSavingsPercent,
+    ));
+  });
+
+  it("uses the annual monthly equivalent in both homepage summaries", async () => {
+    for (const relativePath of ["index.html", "zh/index.html"]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_MONTHLY_USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_MONTHLY_USD}`);
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+    }
+  });
+
   it("pins the approved plan prices and allowances", () => {
     expect(pricing).toMatchObject({
       soloMonthlyUsd: 29,
@@ -491,16 +535,31 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       const body = await response.text();
       expect(body, relativePath).toContain(`US$${SOLO_USD}`);
       expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_MONTHLY_USD}`);
       expect(body, relativePath).toContain(`US$${USD}`);
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_MONTHLY_USD}`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `省 ${ANNUAL_SAVINGS_PERCENT}%`
+        : `Save ${ANNUAL_SAVINGS_PERCENT}%`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `按年付 US$${SOLO_ANNUAL_USD}，比按月省 ${SOLO_ANNUAL_SAVINGS_PERCENT}%`
+        : `Billed yearly: US$${SOLO_ANNUAL_USD}; save ${SOLO_ANNUAL_SAVINGS_PERCENT}%`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `按年付 US$${PRO_ANNUAL_USD}，比按月省 ${PRO_ANNUAL_SAVINGS_PERCENT}%`
+        : `Billed yearly: US$${PRO_ANNUAL_USD}; save ${PRO_ANNUAL_SAVINGS_PERCENT}%`);
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
+      expect(body, relativePath).not.toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).not.toContain('href="/api/checkout?plan=pro"');
+      expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
+      expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
+      expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
-        : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+        ? "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"
+        : "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
         : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
@@ -532,6 +591,11 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloMonthlyUsdToken,
         pricing.soloAnnualUsdToken,
         pricing.proAnnualUsdToken,
+        pricing.soloAnnualMonthlyUsdToken,
+        pricing.proAnnualMonthlyUsdToken,
+        pricing.soloAnnualSavingsPercentToken,
+        pricing.proAnnualSavingsPercentToken,
+        pricing.annualSavingsPercentToken,
         pricing.soloIncludedTokensToken,
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
