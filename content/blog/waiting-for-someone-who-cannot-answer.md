@@ -263,3 +263,8 @@ milestones in the UI),
 config push instead of a fifth hand-written sync), and
 [orbi#1283](https://github.com/orbi-build/orbi/issues/1283) (the one whose root
 cause we got wrong first).*
+
+
+## Related
+
+Read the [Managed agents comparison](/compare/managed-agents/) and [Cloud](/cloud/).

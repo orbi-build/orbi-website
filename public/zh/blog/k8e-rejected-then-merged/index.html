@@ -139,6 +139,21 @@ oracle: OK   (should fail)
 <p>不过评审说「不行」的时候理由是具体的，修复也落在同一个 PR 上。在别人的代码库里接一张难票，从开 PR 到合并用了十个半小时。所有失败，包括 Orbi 自己的，都留在公开记录里，可以拿这篇文章去对。</p>
 <p>事后 Orbi 改了两处（<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>）。一是 PR 正文不合规时，只让这一张票失败，不再拖垮整个 runner。二是工作流规范里写明：分期的工作不要用一张票承载，维护者先把每一期拆成子票，每张子票的 PR 只关它自己。</p>
 <p>如果你的仓库里也排着一串写清楚了的 issue，可以让 <a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 在你的仓库里跑同样的流程。</p>
+<h2>相关</h2>
+<p>继续阅读：<a href="/zh/compare/devin/">Devin 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <input type="hidden" name="return_to" value="/zh/blog/k8e-rejected-then-merged/">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
 
     </article>
   </main>
@@ -154,6 +169,8 @@ oracle: OK   (should fail)
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
         <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
         <li><a href="/zh/compare/">竞品对比</a></li>
       </ul>
       <ul>
@@ -193,6 +210,7 @@ oracle: OK   (should fail)
   </footer>
 
   <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->

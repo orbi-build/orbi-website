@@ -13,11 +13,22 @@ import pricing from "./pricing.json";
 // coverage (orbi-cloud#338) is a quota mention, so it ships as a token too,
 // never as a round literal the quota-literal gate would reject.
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
+const SOLO_MONTHLY_USD = String(pricing.soloMonthlyUsd);
+const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
+const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const SOLO_INCLUDED_TOKENS = String(pricing.soloIncludedTokensLabel);
+const SOLO_REPOSITORIES = String(pricing.soloRepositories);
+const PRO_REPOSITORIES = String(pricing.proRepositories);
+const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredSoloLargeCodebaseDeliveries);
+const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
 
 const HOST_ALIASES = {
   "www.orbi.build": "orbi.build",
@@ -55,6 +66,7 @@ const STATS_TTL_MS = 300000;
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
 const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
+const SUBSCRIBE_ROUTE = "/subscribe";
 const ENGAGEMENT_ROUTE = "/cloud/e";
 const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
@@ -181,33 +193,20 @@ async function loadFoundingAvatars(db) {
   return (tenants?.results || []).map((row) => row.login).filter(Boolean);
 }
 
-async function loadFoundingStats(db) {
-  if (!db) return null;
-  const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
-  return {
-    active: Number(active?.count),
-    limit: 10,
-  };
-}
-
-async function loadStats(token, db) {
-  const [groups, founding] = await Promise.all([
-    Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null))),
-    loadFoundingStats(db).catch(() => null),
-  ]);
+async function loadStats(token) {
+  const groups = await Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)));
   return {
     repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])),
-    founding,
   };
 }
 
-async function statsResponse(request, token, db) {
+async function statsResponse(request, token) {
   const cache = caches.default;
   const cached = await cache.match(STATS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token, db);
+  const stats = await loadStats(token);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -264,13 +263,13 @@ function formatStatusText(stats) {
   return lines.join("\n");
 }
 
-async function statusResponse(request, token, db) {
+async function statusResponse(request, token) {
   const cache = caches.default;
   const cached = await cache.match(STATUS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token, db);
+  const stats = await loadStats(token);
   const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
@@ -337,14 +336,23 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(key, value);
   }
-  const isHtml = asset.status === 200
-    && (headers.get("Content-Type") || "").startsWith("text/html");
-  if (!isHtml) {
+  const contentType = headers.get("Content-Type") || "";
+  const isTemplatedText = asset.status === 200
+    && (contentType.startsWith("text/html") || contentType.startsWith("text/plain"));
+  if (!isTemplatedText) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
   let body = html
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
+    .replaceAll(pricing.soloMonthlyUsdToken, SOLO_MONTHLY_USD)
+    .replaceAll(pricing.soloAnnualUsdToken, SOLO_ANNUAL_USD)
+    .replaceAll(pricing.proAnnualUsdToken, PRO_ANNUAL_USD)
+    .replaceAll(pricing.soloIncludedTokensToken, SOLO_INCLUDED_TOKENS)
+    .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
+    .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
+    .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
+    .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
@@ -352,7 +360,10 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
       pricing.measuredSmallRepositoryDeliveryRangeToken,
       MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE,
     )
+    .replaceAll(pricing.measuredSoloRepositoryDeliveryRangeToken, MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE)
     .replaceAll(pricing.measuredLargeCodebaseDeliveriesToken, MEASURED_LARGE_CODEBASE_DELIVERIES)
+    .replaceAll(pricing.measuredSoloLargeCodebaseDeliveriesToken, MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES)
+    .replaceAll(pricing.measuredSnapshotDeliveriesToken, MEASURED_SNAPSHOT_DELIVERIES)
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
   if (!cloudLoginConfigured) {
@@ -551,7 +562,7 @@ async function handleFetch(request, env, ctx) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
+        return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -571,7 +582,7 @@ async function handleFetch(request, env, ctx) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
+        return await statusResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {
@@ -598,6 +609,10 @@ async function handleFetch(request, env, ctx) {
 
     if (route === APPLY_ROUTE) {
       return goneResponse();
+    }
+
+    if (route === SUBSCRIBE_ROUTE) {
+      return subscribeResponse(request, env);
     }
 
     // Issue #165: /pricing is a permanent alias of the /cloud/ PRICING
@@ -636,6 +651,82 @@ async function handleFetch(request, env, ctx) {
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
 // trailing-slash canonicalisation; anything else is not ours to follow.
+function subscriptionReturnUrl(value, request) {
+  const fallback = new URL(request.url);
+  fallback.search = "";
+  fallback.hash = "";
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
+  try {
+    const target = new URL(value.slice(0, 500), request.url);
+    return target.origin === fallback.origin ? target : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function subscriptionResponse(request, status, body) {
+  const wantsJson = (request.headers.get("Accept") || "").includes("application/json");
+  if (wantsJson) {
+    const { return_to: _returnTo, ...jsonBody } = body;
+    return new Response(JSON.stringify(jsonBody), {
+      status,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const location = subscriptionReturnUrl(body.return_to, request);
+  if (status >= 200 && status < 300) location.searchParams.set("subscribed", "1");
+  else location.searchParams.set("subscribe_error", status === 400 ? "invalid" : "unavailable");
+  return Response.redirect(location, 303);
+}
+
+async function subscribeResponse(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
+  let fields;
+  try {
+    fields = (request.headers.get("Content-Type") || "").includes("application/json")
+      ? await request.json()
+      : Object.fromEntries(await request.formData());
+  } catch {
+    return subscriptionResponse(request, 400, { error: "invalid_request", return_to: new URL(request.url).pathname });
+  }
+  const email = typeof fields?.email === "string" ? fields.email.trim() : "";
+  const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
+  const returnUrl = subscriptionReturnUrl(fields?.return_to, request);
+  const return_to = `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
+  if (!email || !lang) return subscriptionResponse(request, 400, { error: "invalid_request", return_to });
+  if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {
+    console.error("subscribe_unavailable: Cloud subscription configuration is missing");
+    return subscriptionResponse(request, 503, { error: "unavailable", return_to });
+  }
+  const payload = {
+    email,
+    ref: cookieFrom(request, "ref") || "",
+    vid: cookieFrom(request, "vid") || "",
+    lang,
+  };
+  try {
+    const cloudRequest = new Request(env.CLOUD_SUBSCRIBE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.WEBSITE_SECRET}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000),
+    });
+    const response = await (env.CLOUD ? env.CLOUD.fetch(cloudRequest) : fetch(cloudRequest));
+    if (response.status === 400) return subscriptionResponse(request, 400, { error: "invalid_email", return_to });
+    if (!response.ok) {
+      console.error("subscribe_upstream_rejected", response.status);
+      return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+    }
+    return subscriptionResponse(request, 200, { ok: true, return_to });
+  } catch (err) {
+    console.error("subscribe_failed:", err && err.message ? err.message : err);
+    return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+  }
+}
+
 async function engagementResponse(request, env, ctx) {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
   let event;
@@ -871,7 +962,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit

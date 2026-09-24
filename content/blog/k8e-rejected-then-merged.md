@@ -76,3 +76,8 @@ When the review said no, it gave reasons, and the fix landed on the same PR. On 
 Two things changed in Orbi afterwards ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). A bad PR body now fails only its own ticket and no longer kills the runner. And Orbi's workflow contract now says a phased initiative must not be carried by one issue: the maintainer splits each phase into a child issue, and each child's PR closes that child and nothing else.
 
 If you maintain a repo with a queue of well-specified issues, [Orbi Cloud](https://orbi.build/cloud/?ref=blog-k8e) runs the same loop on yours.
+
+
+## Related
+
+Read the [Devin comparison](/compare/devin/) and [Cloud](/cloud/).

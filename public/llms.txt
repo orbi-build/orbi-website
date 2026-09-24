@@ -1,9 +1,8 @@
 # Orbi
 
-> A GitHub-native software production system. It takes the Issues, dependencies,
-> Epics, milestones, and releases that already exist in a repository and carries
-> them through implementation, independent review, recovery, and exact-head
-> merge. GitHub stays the source of truth; no second workspace is introduced.
+> Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
+>
+> Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。
 
 Orbi is self-hosted and fair-code, distributed under the Sustainable Use License
 v1.0 (the same licence n8n uses). The delivery core is free forever: it runs on
@@ -47,9 +46,11 @@ proposal on that page, not a shipping repository.
 
 **Managed Cloud** is live and open for subscriptions today:
 a commercial hosted control plane that keeps the same GitHub-native ledger.
-The plan is US$79 per month with 300M tokens of model usage included; when
-the monthly allowance runs out, new deliveries pause. Founding coupons run
-100% off while they last. Fully self-hosting the core costs nothing and
+Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year,
+100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M
+tokens, 5 repositories). Failed deliveries are free; when
+the allowance runs out, new deliveries pause with no overage bill. Founding
+partners get 50% off forever, limited to 6 places. Fully self-hosting the core costs nothing and
 always will. Details and signup: https://orbi.build/cloud/
 
 ## Connect a repository to Cloud
@@ -76,12 +77,11 @@ every step below.
    Applications → Installed GitHub Apps → Orbi → Repository access, add the
    target repository, and retry.
 
-3. **Subscribe.** Open https://orbi.build/api/checkout and complete Stripe
-   checkout. Founding coupons run 100% off while they last; the regular plan
-   is US$79/month with 300M model tokens included. Done: the status page
-   shows an active plan and no longer asks you to subscribe. If not: re-open
-   /api/checkout; when the coupon supply has run out, the regular price
-   applies.
+3. **Subscribe.** Choose Solo at https://orbi.build/api/checkout?plan=solo or Pro at
+   https://orbi.build/api/checkout?plan=pro and complete Stripe checkout.
+   Founding partners get 50% off forever, limited to 6 places; use code __FOUNDING_PROMO_CODE__ at checkout. Done: the status page
+   shows an active plan and no longer asks you to subscribe. If not: re-open the checkout link for the plan you chose; when the founding
+   places are filled, the regular price applies.
 
 4. **Connect the repository.** On https://orbi.build/api/connect pick the
    repository and its base branch from the dropdowns and submit. Done: the
@@ -178,8 +178,9 @@ approvals still apply.
 pull request, labels, and run ID live in GitHub rather than in a process, so a
 restart reconstructs the same run, branch, worktree, and PR.
 
-**What does it cost?** Self-hosting is free forever. Managed Cloud (Private
-Beta) is US$79 per month with 300M tokens of model usage included. What the
+**What does it cost?** Self-hosting is free forever. Managed Cloud offers Free (3 merged deliveries), Solo (US$29/month or
+US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year,
+300M tokens, 5 repositories). What the
 model usage itself costs is measured, not
 estimated: 46 real deliveries aggregated as of 2026-09-12 put the median delivery
 at 2,220,637 totalTokens and the mean at 4,742,066 — roughly $0.06–0.12 per
@@ -231,6 +232,10 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Landing page (Chinese): https://orbi.build/zh/
 - Managed Cloud: https://orbi.build/cloud/
 - Comparison — Orbi vs Orca (English): https://orbi.build/compare/orca/
+- Comparisons index (English): https://orbi.build/compare/
+- Comparisons index (Chinese): https://orbi.build/zh/compare/
+- Comparison — Orbi vs Claude Code (English): https://orbi.build/compare/claude-code/
+- Comparison — Orbi vs Claude Code (Chinese): https://orbi.build/zh/compare/claude-code/
 - Comparison — Orbi vs Orca (Chinese): https://orbi.build/zh/compare/orca/
 - Comparison — Orbi vs OpenClaw (English): https://orbi.build/compare/openclaw/
 - Comparison — Orbi vs OpenClaw (Chinese): https://orbi.build/zh/compare/openclaw/
@@ -252,5 +257,12 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Cost transparency — what one delivery costs (Chinese): https://orbi.build/zh/cost/
 - Comparison — Orbi vs OpenHands (English): https://orbi.build/compare/openhands/
 - Comparison — Orbi vs OpenHands (Chinese): https://orbi.build/zh/compare/openhands/
+- Comparison — Orbi vs Cursor Cloud Agents (English): https://orbi.build/compare/cursor/
+- Comparison — Orbi vs Cursor Cloud Agents (Chinese): https://orbi.build/zh/compare/cursor/
+- Comparison — Orbi vs Google Jules (English): https://orbi.build/compare/jules/
+- Comparison — Orbi vs Google Jules (Chinese): https://orbi.build/zh/compare/jules/
+- CI gates guide (English): https://orbi.build/guides/ci-gates/
+- CI gates guide (Chinese): https://orbi.build/zh/guides/ci-gates/
+- Auto-merge AI pull requests safely guide: https://orbi.build/guides/auto-merge-ai-prs/
 - Bootstrap evidence — Orbi builds Orbi (English): https://orbi.build/evidence/
 - Bootstrap evidence — Orbi builds Orbi (Chinese): https://orbi.build/zh/evidence/

@@ -8,10 +8,20 @@ import pricing from "../src/pricing.json";
 const pricingReplacements = {
   [pricing.freeDeliveriesToken]: String(pricing.freeDeliveries),
   [pricing.monthlyUsdToken]: String(pricing.cloudMonthlyUsd),
+  [pricing.soloMonthlyUsdToken]: String(pricing.soloMonthlyUsd),
+  [pricing.soloAnnualUsdToken]: String(pricing.soloAnnualUsd),
+  [pricing.proAnnualUsdToken]: String(pricing.proAnnualUsd),
+  [pricing.soloIncludedTokensToken]: String(pricing.soloIncludedTokensLabel),
+  [pricing.soloRepositoriesToken]: String(pricing.soloRepositories),
+  [pricing.proRepositoriesToken]: String(pricing.proRepositories),
+  [pricing.foundingPartnerLimitToken]: String(pricing.foundingPartnerLimit),
+  [pricing.foundingPromoCodeToken]: pricing.foundingPromoCode,
   [pricing.includedTokensToken]: String(pricing.includedTokensLabel),
   [pricing.foundingTokensToken]: String(pricing.foundingTokensLabel),
   [pricing.measuredSmallRepositoryDeliveryRangeToken]: String(pricing.measuredSmallRepositoryDeliveryRange),
+  [pricing.measuredSoloRepositoryDeliveryRangeToken]: String(pricing.measuredSoloRepositoryDeliveryRange),
   [pricing.measuredLargeCodebaseDeliveriesToken]: String(pricing.measuredLargeCodebaseDeliveries),
+  [pricing.measuredSoloLargeCodebaseDeliveriesToken]: String(pricing.measuredSoloLargeCodebaseDeliveries),
 };
 
 const pages = [

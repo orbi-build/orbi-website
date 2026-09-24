@@ -116,6 +116,21 @@ docker pull docker.io/orbibuild/orbi:latest
 <p>The first release after the fixes, v0.5.18, published green end to end. That is the state the next release inherits.</p>
 <h2>Pull the image, create an Issue, get a PR</h2>
 <p>The Quick start on <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> takes you from <code>docker pull</code> to a first delivery. The image overview lives on <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
+<h2>Related</h2>
+<p>Read the <a href="/compare/openhands/">OpenHands comparison</a> and <a href="/cloud/">Cloud</a>.</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <input type="hidden" name="return_to" value="/blog/docker-image-third-try/">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
 
     </article>
   </main>
@@ -131,6 +146,8 @@ docker pull docker.io/orbibuild/orbi:latest
         <li><a href="https://docs.orbi.build">Docs</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
         <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/cost/">Pricing</a></li>
+        <li><a href="/evidence/">Evidence</a></li>
         <li><a href="/compare/">Compare</a></li>
       </ul>
       <ul>
@@ -170,6 +187,7 @@ docker pull docker.io/orbibuild/orbi:latest
   </footer>
 
   <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->

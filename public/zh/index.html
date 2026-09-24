@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>自托管 AI 编程 Agent：提个 Issue，收个版本 | Orbi</title>
-  <meta name="description" content="Orbi 是自托管的 fair-code AI 编程 Agent，把 GitHub Issue 交付成审查、合并并可核验的 Release，使用你的模型与仓库。">
+  <meta name="description" content="Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。">
   <link rel="canonical" href="https://orbi.build/zh/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -43,6 +43,7 @@
         "name": "Orbi",
         "url": "https://orbi.build/",
         "logo": "https://orbi.build/logo-mark.svg",
+        "description": "Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。",
         "sameAs": [
           "https://github.com/orbi-build",
           "https://x.com/xqliu"
@@ -68,7 +69,7 @@
         "downloadUrl": "https://github.com/orbi-build/orbi",
         "license": "https://github.com/orbi-build/orbi/blob/main/LICENSE.md",
         "isAccessibleForFree": true,
-        "description": "Orbi 是 GitHub 原生的软件生产系统：读取仓库里已有的 Issue、依赖、Epic、Milestone 和 Release，推进到实现、独立审查、故障恢复、精确合并和打 Tag 的发布，GitHub 始终是唯一事实源。",
+        "description": "Orbi 是一个自托管的 fair-code AI 编程 agent：你给 GitHub Issue 打上 ai-ready，它写代码、开 PR、交给独立评审，评审通过才合并并发版。",
         "featureList": [
           "Epic 与 Milestone 确定范围",
           "读取 GitHub 原生 blockedBy 依赖排序",
@@ -112,7 +113,7 @@
             "name": "Orbi 和 GitHub Copilot、Cursor 有什么区别？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Copilot 和 Cursor 是编辑器，让你敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领 Issue，在隔离的 Worktree 里干活，交回一个已合并的 PR。另一场会话审查同一份 Diff、直接修复、重跑测试，只有通过审查的 Commit 才允许合并。"
+              "text": "Copilot 和 Cursor 是编辑器，让你敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领 Issue，在隔离的 Worktree 里干活，过评审、合并，一直做到打 tag 发版。另一场会话审查同一份 Diff、直接修复、重跑测试，只有通过审查的 Commit 才允许合并。"
             }
           },
           {
@@ -136,7 +137,7 @@
             "name": "Orbi 真的免费吗？托管 Cloud 是什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "自托管核心在 Sustainable Use License（fair-code）下永久免费：在自己的仓库上跑 Orbi 不花钱，个人用、公司内部用都一样，不限规模。只有把 Orbi 本身卖出去才需要商业授权——托管成服务卖给你的客户，或嵌入你收费的产品。托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。Founding 券 100% off，限量发放。"
+              "text": "自托管核心在 Sustainable Use License（fair-code）下永久免费：在自己的仓库上跑 Orbi 不花钱，个人用、公司内部用都一样，不限规模。只有把 Orbi 本身卖出去才需要商业授权——托管成服务卖给你的客户，或嵌入你收费的产品。托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。"
             }
           }
         ]
@@ -477,7 +478,7 @@ orbi setup --config orbi.toml</code></pre>
             <h2 class="orbi-section-heading-h2" id="run-orbi-title">自带模型即可
               <br class="responsive-break">任何兼容 OpenAI 的 API，或本地模型</h2>
           </div>
-          <p >fair-code 核心今天已经可用。托管 Cloud 是 Orbi 在同一 GitHub 账本上的商业托管服务——Founding coupons。</p>
+          <p >fair-code 核心今天已经可用。托管 Cloud 是 Orbi 在同一 GitHub 账本上的商业托管服务——另有创始会员优惠。</p>
         </div>
         <div class="run-options">
           <article class="run-option run-option-live">
@@ -492,12 +493,12 @@ orbi setup --config orbi.toml</code></pre>
             <a class="button button-dark" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
           </article>
           <article class="run-option run-option-cloud">
-            <p class="option-state">FOUNDING COUPONS</p>
+            <p class="option-state">创始会员</p>
             <h3 class="orbi-run-option-h3">托管 Cloud</h3>
-            <p ><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>之后正价 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token 模型用量</strong>，额度用完后新交付暂停。Founding 券 100% off，限量发放；券发完即正价，不是涨价。交付可靠性继续留在 fair-code 核心。</p>
+            <p ><strong>前 __FREE_DELIVERIES__ 次合并交付免费——不用绑卡，不用订阅。</strong>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>付费档：Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token</strong>，额度用完后新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。交付可靠性继续留在 fair-code 核心。</p>
             <ul class="orbi-run-option-ul">
               <li class="orbi-run-option-li">平台订阅支付协调、恢复和交付证据</li>
-              <li class="orbi-run-option-li">模型用量包含在内：每月 __INCLUDED_TOKENS__ token，额度用完后新交付暂停</li>
+              <li class="orbi-run-option-li">模型用量包含在内：Solo 每月 __SOLO_INCLUDED_TOKENS__ token，Pro 每月 __INCLUDED_TOKENS__，额度用完后新交付暂停</li>
             </ul>
             <a class="button button-signal" data-cta="cloud-start-card" href="/zh/cloud/">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
           </article>
@@ -557,7 +558,7 @@ orbi setup --config orbi.toml</code></pre>
           <details class="faq-item">
             <summary><span>03</span>和 Copilot、Cursor 有什么区别？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">那些是编辑器——让你在敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领一个 Issue，在隔离的 Worktree 里干活，最后交回一个已合并的 PR。</p>
+              <p class="orbi-faq-answer-p">那些是编辑器——让你在敲键盘时更快。Orbi 管的是没人敲键盘的时候：从 Backlog 领一个 Issue，在隔离的 Worktree 里干活，过评审、合并，一直做到打 tag 发版。</p>
               <p class="orbi-faq-answer-p">真正的区别在代码写完之后。另一场会话审查同一份 Diff、直接修复、重跑全量测试，只有通过审查的那个 Commit 才允许合并。这个审查环节才是产品本身。</p>
             </div>
           </details>
@@ -582,7 +583,7 @@ orbi setup --config orbi.toml</code></pre>
             <summary><span>06</span>真的免费吗？托管 Cloud 是什么？</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">自托管核心在 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md">Sustainable Use License</a> 下永久免费：在自己的仓库上跑 Orbi 不花钱，个人用、公司内部用都一样，不限规模。只有把 Orbi 本身卖出去才需要商业授权——托管成服务卖给客户，或嵌入你收费的产品。</p>
-              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。计划是一个托管控制面，按平台订阅计费——含 __INCLUDED_TOKENS__ token 模型用量。Founding 券 100% off，限量发放；券发完即正价，不是涨价。</p>
+              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。付费档为 Solo（每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token）和 Pro（每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token）。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</p>
             </div>
           </details>
         </div>
@@ -597,6 +598,7 @@ orbi setup --config orbi.toml</code></pre>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">部署 Orbi <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="https://github.com/orbi-build/orbi">查看源码</a>
+        <a class="text-link" href="/zh/guides/ci-gates/">阅读 CI 门禁指南 →</a>
         <a class="text-link" href="#faq">还有疑问？看常见问题 →</a>
       </div>
     </section>
@@ -613,6 +615,8 @@ orbi setup --config orbi.toml</code></pre>
         <li><a href="https://docs.orbi.build/zh">文档</a></li>
         <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
         <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
         <li><a href="/zh/compare/">竞品对比</a></li>
       </ul>
       <ul>

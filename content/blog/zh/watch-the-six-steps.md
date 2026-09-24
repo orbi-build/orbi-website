@@ -62,7 +62,7 @@ Orbi Cloud 的上手流程拍成了视频：[Orbi Cloud: from zero to a tagged r
 4. **开通运行环境**，大约一分钟。
 5. **第一个 Issue**，打上 `ai-ready`，Orbi 开始写代码，写完提 PR。
 6. **发一个版本**，你填版本号，Orbi 负责 bump、打 tag、发布 GitHub Release。
-7. **订阅**，前 `__FREE_DELIVERIES__` 次交付免费；之后是每月 US$`__CLOUD_MONTHLY_USD__`，包含 `__INCLUDED_TOKENS__` tokens。额度用完只会暂停新的交付，不会删除数据，随时可以取消。
+7. **订阅**，前 `__FREE_DELIVERIES__` 次交付免费；付费档为 Solo（每月 US$`__SOLO_MONTHLY_USD__`，含 `__SOLO_INCLUDED_TOKENS__` tokens）和 Pro（每月 US$`__CLOUD_MONTHLY_USD__`，含 `__INCLUDED_TOKENS__` tokens）。额度用完只会暂停新的交付，不会删除数据，随时可以取消。
 
 ## 第七步是开始付费交付的那一步
 
@@ -83,3 +83,8 @@ gh issue edit <number> --add-label ai-ready
 不想看视频想读文字，同一条路径在文档里：[docs.orbi.build/zh](https://docs.orbi.build/zh)。不想跑在我们的机器上、想自己跑，那是同一个产品，[可以免费自托管](https://github.com/orbi-build/orbi)。
 
 从这里开始：[orbi.build/zh/cloud](https://orbi.build/zh/cloud/?ref=blog-seven-steps)。
+
+
+## 相关
+
+继续阅读：[Google Jules 对比](/zh/compare/jules/) 与 [Cloud](/zh/cloud/)。

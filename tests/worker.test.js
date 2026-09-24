@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetBehaviorSignals } from "../src/bot-detection.js";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
+import pricing from "../src/pricing.json";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
@@ -337,24 +338,11 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  it("loads active founding seats without exposing tenant identities in stats", async () => {
+  it("does not query founding subscriptions or expose founding stats", async () => {
     mockGitHub();
-    const queries = [];
-    const db = {
-      prepare(sql) {
-        queries.push(sql);
-        return {
-          first: async () => ({ count: 4 }),
-          all: async () => ({ results: [{ github_login: "alice" }, { github_login: "bob" }] }),
-        };
-      },
-    };
+    const db = { prepare() { throw new Error("subscriptions query must not run"); } };
     const stats = await loadStats("token", db);
-    expect(stats.founding).toEqual({ active: 4, limit: 10 });
-    expect(stats.founding).not.toHaveProperty("github_logins");
-    expect(queries).toEqual([
-      "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",
-    ]);
+    expect(stats).not.toHaveProperty("founding");
   });
 
   it("loads tenant logins only for server-rendered avatar markup", async () => {
@@ -454,11 +442,13 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     };
     const request = new Request("https://orbi.build/stats");
     const first = await statsResponse(request, "token");
+    const firstPayload = await first.json();
     const callsAfterFirst = calls.length;
     expect(callsAfterFirst).toBeGreaterThan(0);
+    expect(firstPayload).not.toHaveProperty("founding");
     const second = await statsResponse(request, "token");
     expect(calls).toHaveLength(callsAfterFirst);
-    expect(await second.json()).toEqual(await first.json());
+    expect(await second.json()).toEqual(firstPayload);
   });
 
   // Issue #134: /stats/ is the same endpoint with the site's natural trailing
@@ -684,6 +674,65 @@ describe("plaintext /status (Issue #173)", () => {
     const body = await status.text();
     expect(body.startsWith("{")).toBe(false);
     expect(body).toMatch(/issues closed/);
+  });
+});
+
+describe("email subscription route (Issue #442)", () => {
+  const cloudUrl = "https://cloud.test/api/internal/subscribe";
+  const env = (cloud) => ({ CLOUD_SUBSCRIBE_URL: cloudUrl, WEBSITE_SECRET: "subscribe-secret", CLOUD: { fetch: cloud } });
+
+  it("forwards email, first-touch attribution, language, and secret", async () => {
+    let sent;
+    const cloud = async (request) => { sent = request; return new Response("ok"); };
+    const request = new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", Cookie: "vid=visitor-1; ref=x-2609240130" },
+      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+    });
+    const response = await subscribeResponse(request, env(cloud));
+    expect(response.status).toBe(200);
+    expect(sent.url).toBe(cloudUrl);
+    expect(sent.headers.get("Authorization")).toBe("Bearer subscribe-secret");
+    expect(await sent.json()).toEqual({ email: "ada@example.com", ref: "x-2609240130", vid: "visitor-1", lang: "en" });
+    expect(await response.json()).toEqual({ ok: true });
+  });
+
+  it("returns invalid-email failure when Cloud returns 400", async () => {
+    const request = new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: "not-an-email", lang: "zh", return_to: "/zh/cost/" }),
+    });
+    const response = await subscribeResponse(request, env(async () => new Response("bad", { status: 400 })));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid_email" });
+  });
+
+  it("redirects no-JS form submissions back to the page", async () => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "email=ada%40example.com&lang=zh&return_to=%2Fzh%2Fevidence%2F",
+    }), env(async () => new Response("ok")));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/evidence/?subscribed=1");
+  });
+
+  it("does not mislabel an unavailable upstream as an invalid email", async () => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+    }), env(async () => new Response("down", { status: 503 })));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/evidence/?subscribe_error=unavailable");
+  });
+
+  it.each([
+    "https://evil.example/",
+    "/\\evil.example/",
+  ])("does not allow an external no-JS redirect via %s", async (returnTo) => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ email: "ada@example.com", lang: "en", return_to: returnTo }),
+    }), env(async () => new Response("ok")));
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/subscribe?subscribed=1");
   });
 });
 

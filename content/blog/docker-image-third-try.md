@@ -59,3 +59,8 @@ The first release after the fixes, v0.5.18, published green end to end. That is 
 ## Pull the image, create an Issue, get a PR
 
 The Quick start on [docs.orbi.build/docker](https://docs.orbi.build/docker) takes you from `docker pull` to a first delivery. The image overview lives on [hub.docker.com/r/orbibuild/orbi](https://hub.docker.com/r/orbibuild/orbi).
+
+
+## Related
+
+Read the [OpenHands comparison](/compare/openhands/) and [Cloud](/cloud/).

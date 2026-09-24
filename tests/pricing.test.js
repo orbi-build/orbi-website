@@ -8,12 +8,23 @@ const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
+const SOLO_USD = String(pricing.soloMonthlyUsd);
+const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
+const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSmallRepositoryDeliveryRangeToken;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSoloRepositoryDeliveryRangeToken;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
 const MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN = pricing.measuredLargeCodebaseDeliveriesToken;
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredSoloLargeCodebaseDeliveries);
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN = pricing.measuredSoloLargeCodebaseDeliveriesToken;
+const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
+const MEASURED_SNAPSHOT_DELIVERIES_TOKEN = pricing.measuredSnapshotDeliveriesToken;
 
 // The pages whose price mentions the Issue pins (originally 12 across the two
 // cloud pages; #99 added the homepage card and the cost tables since). Every
@@ -32,6 +43,7 @@ const PRICE_PAGES = [
 const TOKENS = pricing.includedTokensToken;
 const TOKENS_LABEL = String(pricing.includedTokensLabel);
 const TOKEN_PAGES = PRICE_PAGES;
+const CLOUD_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
 
 // An included-quota literal: a round token count sitting next to the word
 // "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
@@ -57,7 +69,7 @@ function quotaLiterals(html) {
 // The JSON-LD carrier states the price without a currency sign, so its
 // `"price": "…"` form counts too.
 function literalPrice(value) {
-  return new RegExp(`\\$${value}(?![\\d,])|"price":\\s*"${value}"`, "g");
+  return new RegExp(`\\$${value}(?![\\d,])|"(?:price|highPrice)":\\s*"${value}"`, "g");
 }
 
 // A "$79" without the US prefix: the cost tables used to write the monthly
@@ -136,7 +148,7 @@ describe("Cloud monthly price constant (Issue #102)", () => {
     }
   });
 
-  it("keeps the JSON-LD Offer valid and priced at the constant", async () => {
+  it("keeps the JSON-LD offers valid and priced at both plan constants", async () => {
     for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
@@ -144,12 +156,14 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       expect(scripts.length, relativePath).toBeGreaterThan(0);
       const offers = scripts.flatMap((script) => {
         const data = JSON.parse(script); // throws if the substitution broke the structure
-        return (data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
+        return (data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
       });
       expect(offers, relativePath).toHaveLength(1);
-      expect(offers[0].price, relativePath).toBe(USD);
-      expect(offers[0].description, relativePath).toContain("100% off");
-      // website#145: the Offer description is what search engines and LLMs
+      expect(offers[0].lowPrice, relativePath).toBe(SOLO_USD);
+      expect(offers[0].highPrice, relativePath).toBe(USD);
+      expect(offers[0].offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
+      expect(offers[0].description, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
+      // website#145: the aggregate description is what search engines and LLMs
       // scrape — it must carry the rendered quota label, never the token or
       // a stale literal.
       expect(offers[0].description, relativePath).toContain(TOKENS_LABEL);
@@ -234,18 +248,6 @@ describe("Included tokens constant (Issue #138)", () => {
     }
   });
 
-  // Issue #143: the Founding Partner gift (orbi-cloud#338, 300M/month) rides
-  // the same token seam — only the two cloud pages carry it, and a visitor
-  // must read the rendered label, never the token or a literal.
-  it("serves the Founding Partner gift label through the same seam", async () => {
-    for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
-      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
-      const body = await response.text();
-      expect(body, relativePath).not.toContain(pricing.foundingTokensToken);
-      expect(body, relativePath).toContain(pricing.foundingTokensLabel);
-    }
-  });
-
   it("catches the exact literals this gate exists for", () => {
     for (const sample of ["2B tokens", "2 billion tokens", "300M tokens", "20 亿 token", "3 亿 tokens"]) {
       expect(quotaLiterals(sample).length, sample).toBeGreaterThan(0);
@@ -313,6 +315,23 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     }
   });
 
+  it("serves the cost-page reconciliation from pricing.json", async () => {
+    expect(MEASURED_SNAPSHOT_DELIVERIES_TOKEN).not.toBe(MEASURED_SNAPSHOT_DELIVERIES);
+    for (const [costPage, wording] of [
+      ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per Pro's ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
+      ["zh/cost/index.html", `折算约为 Pro 的 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
+    ]) {
+      const raw = await readFile(`${PUBLIC_DIR}${costPage}`, "utf8");
+      expect(raw).toContain(MEASURED_SNAPSHOT_DELIVERIES_TOKEN);
+      expect(raw).toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      const served = await (await serve(raw, `/${costPage.replace("index.html", "")}`)).text();
+      expect(served).toContain(wording);
+      expect(served).toContain(`href="/${costPage.startsWith("zh/") ? "zh/" : ""}cloud/#pricing"`);
+      expect(served).not.toContain(MEASURED_SNAPSHOT_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
+    }
+  });
+
   it("keeps each Cloud measured-cost sentence to one colon", async () => {
     for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
       const html = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
@@ -330,11 +349,11 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   it("serves both Cloud pages with both source-backed measurements", async () => {
     for (const [cloudPage, wordings] of [
       ["cloud/index.html", [
-        `Depending on ticket size: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
+        `Solo's ${pricing.soloIncludedTokensLabel} allowance: about ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine; Pro's ${pricing.includedTokensLabel} allowance: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
         `${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, or about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
       ]],
       ["zh/cloud/index.html", [
-        `取决于票的大小：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
+        `Solo 的 ${pricing.soloIncludedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} 次；Pro 的 ${pricing.includedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
         `小仓库的常见票合并 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次，像 Orbi 引擎这样的大代码库约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
       ]],
     ]) {
@@ -344,6 +363,9 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
       for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
       expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
       expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN);
+      expect(served).not.toContain(MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).toContain(FOUNDING_PROMO_CODE);
     }
   });
 
@@ -397,28 +419,127 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
     expect(denials, "llms.txt must not deny that Cloud ships or sells").toEqual([]);
   });
 
-  it("prices Cloud exactly as pricing.json, never as a drifted literal", async () => {
+  it("prices every Cloud plan exactly as pricing.json, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    // Every US$-prefixed figure in the file is the monthly price (measured
-    // per-delivery costs keep the bare-$ form, so a drifted price cannot
-    // hide among them), always with the site-wide US prefix.
+    const expected = new Set([SOLO_USD, SOLO_ANNUAL_USD, USD, PRO_ANNUAL_USD].map((value) => `US$${value}`));
     const usdLiterals = [...raw.matchAll(/US\$\d+(?:\.\d+)?/g)].map((match) => match[0]);
-    expect(usdLiterals.length, "llms.txt should state the Cloud price").toBeGreaterThan(0);
-    for (const literal of usdLiterals) {
-      expect(literal, "llms.txt US$ literal").toBe(`US$${USD}`);
+    expect(new Set(usdLiterals), "llms.txt should state all Cloud prices").toEqual(expected);
+    for (const value of expected) {
+      expect(raw.match(barePrice(value.slice(3))), `bare ${value.slice(2)} without the US prefix`).toBeNull();
     }
-    expect(raw.match(barePrice(USD)), "bare $79 without the US prefix").toBeNull();
   });
 
-  it("states the included quota exactly as pricing.json, never as a drifted literal", async () => {
+  it("states both included quotas exactly as pricing.json, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    // The same quotaLiterals shape the pages gate uses; the measured
-    // per-delivery figures stay exempt by that regex, so only the round
-    // quota label is allowed to match.
+    const expected = new Set([`${pricing.soloIncludedTokensLabel} tokens`, `${TOKENS_LABEL} tokens`]);
     const quotas = quotaLiterals(raw);
-    expect(quotas.length, "llms.txt should state the included quota").toBeGreaterThan(0);
-    for (const quota of quotas) {
-      expect(quota.literal, `llms.txt quota literal at ${quota.index}`).toBe(`${TOKENS_LABEL} tokens`);
+    expect(new Set(quotas.map(({ literal }) => literal.replace(/\s+/g, " "))), "llms.txt should state both plan quotas").toEqual(expected);
+  });
+});
+
+describe("Three-tier Cloud pricing (Issue #441)", () => {
+  it("keeps Cloud copy tier-specific and removes unsupported availability claims", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body.toLowerCase(), relativePath).not.toContain("priority queue");
+      expect(body, relativePath).not.toContain("优先队列");
+      expect(body, relativePath).not.toContain("data-founding-availability");
+      expect(body, relativePath).not.toMatch(/(?:Pro:|Pro：)(?:\s|每月)*300M/);
+    }
+  });
+
+  it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
+    for (const [relativePath, metadata, card] of [
+      ["cloud/index.html", "Solo includes 100M tokens of model usage per month; Pro includes 300M", "Model usage included: 100M tokens a month on Solo, 300M on Pro"],
+      ["zh/cloud/index.html", "Solo 每月含 100M token 模型用量，Pro 每月含 300M", "模型用量包含在内：Solo 每月 100M token，Pro 每月 300M"],
+    ]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath).toContain(metadata);
+      const homePath = relativePath.startsWith("zh/") ? "zh/index.html" : "index.html";
+      const home = await (await serve(await rawPage(homePath), `/${homePath.replace(/index\.html$/, "")}`)).text();
+      expect(home, homePath).toContain(card);
+    }
+  });
+
+  it("publishes Solo and Pro as two structured offers", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const data = JSON.parse(body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1]);
+      const offer = data["@graph"].find((entry) => entry["@id"]?.endsWith("#offer"));
+      expect(offer["@type"], relativePath).toBe("AggregateOffer");
+      expect(offer.offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
+    }
+  });
+
+  it("pins the approved plan prices and allowances", () => {
+    expect(pricing).toMatchObject({
+      soloMonthlyUsd: 29,
+      soloAnnualUsd: 290,
+      cloudMonthlyUsd: 79,
+      proAnnualUsd: 790,
+      soloIncludedTokensLabel: "100M",
+      soloRepositories: 1,
+      proRepositories: 5,
+      foundingPartnerLimit: 6,
+    });
+  });
+
+  it("renders pricing.json values, exact outcome copy, and checkout links on both Cloud pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).toContain(`US$${SOLO_USD}`);
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
+        : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
+        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
+      expect(body, relativePath).not.toContain("Founding Partner");
+      expect(body, relativePath).not.toContain("永久免费");
+      expect(body, relativePath).not.toContain("BYOK model key");
+    }
+  });
+
+  it("renders tier-specific repository limits in visible FAQ and JSON-LD", async () => {
+    const faqCopy = {
+      "cloud/index.html": `Free and Solo each have a simultaneous repository limit of ${pricing.soloRepositories}. Connecting a different repository deactivates the previous one and provisions the new one. A switch is blocked while a delivery is in flight on the bound repository. Pro has a simultaneous repository limit of ${pricing.proRepositories}. Once all are connected, deactivate one before connecting another.`,
+      "zh/cloud/index.html": `Free 和 Solo 同时最多各接 ${pricing.soloRepositories} 个仓库。连接另一个仓库会停用原来的，并为新仓库重新开通；原仓库有进行中的交付时，暂时无法更换。Pro 同时最多接 ${pricing.proRepositories} 个仓库。达到上限后，先停用一个已连接的仓库，再连接新的仓库。`,
+    };
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath).toContain(faqCopy[relativePath]);
+      expect(body.split(faqCopy[relativePath]).length - 1, relativePath).toBe(2);
+      expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
+        ? "每个订阅同时只接 1 个 active 仓库"
+        : "Each subscription keeps one active repository");
+    }
+  });
+
+  it("keeps every tier value tokenized in the source pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const token of [
+        pricing.soloMonthlyUsdToken,
+        pricing.soloAnnualUsdToken,
+        pricing.proAnnualUsdToken,
+        pricing.soloIncludedTokensToken,
+        pricing.soloRepositoriesToken,
+        pricing.proRepositoriesToken,
+        pricing.foundingPartnerLimitToken,
+        pricing.foundingPromoCodeToken,
+        pricing.measuredSoloRepositoryDeliveryRangeToken,
+        pricing.measuredSoloLargeCodebaseDeliveriesToken,
+      ]) expect(html, relativePath).toContain(token);
     }
   });
 });

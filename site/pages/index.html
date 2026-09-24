@@ -28,7 +28,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Self-hosted AI coding agent: File an Issue. Get a release.</title>
-  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent that turns GitHub Issues into reviewed, merged releases with your model, repository, and evidence in hand.">
+  <meta name="description" content="Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.">
   <link rel="canonical" href="https://orbi.build/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/">
@@ -69,6 +69,7 @@
         "name": "Orbi",
         "url": "https://orbi.build/",
         "logo": "https://orbi.build/logo-mark.svg",
+        "description": "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
         "sameAs": [
           "https://github.com/orbi-build",
           "https://x.com/xqliu"
@@ -92,7 +93,7 @@
         "downloadUrl": "https://github.com/orbi-build/orbi",
         "license": "https://github.com/orbi-build/orbi/blob/main/LICENSE.md",
         "isAccessibleForFree": true,
-        "description": "Orbi is a GitHub-native software production system. It runs the Issues, dependencies, Epics, milestones, and releases already in a repository through implementation, independent review, recovery, exact-head merge, and tagged releases, keeping GitHub as the source of truth.",
+        "description": "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
         "featureList": [
           "Epic and milestone scoping",
           "Native GitHub blockedBy dependency ordering",
@@ -134,7 +135,7 @@
             "name": "How is Orbi different from GitHub Copilot or Cursor?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and returns a merged pull request. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
+              "text": "Copilot and Cursor are editors that make you faster while you type. Orbi works when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and takes it through review and merge to a tagged release. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit merges."
             }
           },
           {
@@ -158,7 +159,7 @@
             "name": "Is Orbi free, and what is Managed Cloud?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The self-hosted core is free forever under the Sustainable Use License (fair-code): running Orbi on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is required only to sell Orbi itself — hosting it as a service for your customers, or embedding it in a paid product. Managed Cloud starts with GitHub login: sign in, install the App, and subscribe. Founding coupons are 100% off, limited supply."
+              "text": "The self-hosted core is free forever under the Sustainable Use License (fair-code): running Orbi on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is required only to sell Orbi itself — hosting it as a service for your customers, or embedding it in a paid product. Managed Cloud starts with GitHub login: sign in, install the App, and subscribe. Founding partners get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places."
             }
           }
         ]
@@ -438,7 +439,7 @@ orbi setup --config orbi.toml</code></pre>
               <h2 class="orbi-section-heading-h2" id="run-orbi-title">Bring your own model
                 <br class="responsive-break">Any OpenAI-compatible API, or local</h2>
             </div>
-            <p >The self-hosted, fair-code core ships today. Managed Cloud is Orbi's commercial managed service on the same GitHub-native ledger — Founding coupons.</p>
+            <p >The self-hosted, fair-code core ships today. Managed Cloud is Orbi's commercial managed service on the same GitHub-native ledger — with a founding partner offer.</p>
           </div>
           <div class="run-options">
             <article class="run-option run-option-live">
@@ -453,12 +454,12 @@ orbi setup --config orbi.toml</code></pre>
               <a class="button button-dark" href="https://docs.orbi.build">Self-host Orbi ↗</a>
             </article>
             <article class="run-option run-option-cloud">
-              <p class="option-state">FOUNDING COUPONS</p>
+              <p class="option-state">FOUNDING PARTNERS</p>
               <h3 class="orbi-run-option-h3">Managed Cloud</h3>
-              <p ><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong> Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens of model usage included</strong>; when the allowance runs out, new deliveries pause. Founding coupon 100% off, limited supply; once coupons run out, it's the regular price, not a hike. Core delivery reliability remains fair-code.</p>
+              <p ><strong>First __FREE_DELIVERIES__ merged deliveries are free — no card, no subscription.</strong> Connect GitHub to Orbi's proprietary hosted control plane: issues in, reviewed and released software out — without operating the delivery line yourself. <strong>Paid plans: Solo at US$__SOLO_MONTHLY_USD__/month with __SOLO_INCLUDED_TOKENS__ tokens, or Pro at US$__CLOUD_MONTHLY_USD__/month with __INCLUDED_TOKENS__ tokens</strong>; when the allowance runs out, new deliveries pause. Founding partners get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places. Core delivery reliability remains fair-code.</p>
               <ul class="orbi-run-option-ul">
                 <li class="orbi-run-option-li">Platform subscription pays for orchestration, recovery, and evidence</li>
-                <li class="orbi-run-option-li">Model usage included: __INCLUDED_TOKENS__ tokens a month; when the allowance runs out, new deliveries pause</li>
+                <li class="orbi-run-option-li">Model usage included: __SOLO_INCLUDED_TOKENS__ tokens a month on Solo, __INCLUDED_TOKENS__ on Pro; when the allowance runs out, new deliveries pause</li>
               </ul>
               <a class="button button-signal" data-cta="cloud-start-card" href="/cloud/">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
             </article>
@@ -518,7 +519,7 @@ orbi setup --config orbi.toml</code></pre>
             <details class="faq-item">
               <summary><span>03</span>How is this different from Copilot or Cursor?</summary>
               <div class="faq-answer">
-                <p class="orbi-faq-answer-p">Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and comes back with a merged pull request.</p>
+                <p class="orbi-faq-answer-p">Those are editors — they make you faster while you are typing. Orbi is what happens when nobody is typing: it takes an Issue from your backlog, works in an isolated worktree, and takes it through review and merge to a tagged release.</p>
                 <p class="orbi-faq-answer-p">The difference that matters is what happens after the code is written. A second session reviews the exact diff, repairs it, and reruns the suite, and only the reviewed commit is allowed to merge. That review step is the product.</p>
               </div>
             </details>
@@ -543,7 +544,7 @@ orbi setup --config orbi.toml</code></pre>
               <summary><span>06</span>Is it really free, and what is Managed Cloud?</summary>
               <div class="faq-answer">
                 <p class="orbi-faq-answer-p">The self-hosted core is free forever under the <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE.md">Sustainable Use License</a>: running it on your own repositories costs nothing, for yourself or inside a company of any size. A commercial licence is needed only to sell Orbi itself — hosting it for your customers, or embedding it in a paid product.</p>
-                <p class="orbi-faq-answer-p">Managed Cloud starts with GitHub: sign in, install the App, and subscribe. The plan is a hosted control plane billed as a platform subscription — __INCLUDED_TOKENS__ tokens of model usage included. Founding coupons are 100% off, limited supply; once coupons run out, it's the regular price, not a hike.</p>
+                <p class="orbi-faq-answer-p">Managed Cloud starts with GitHub: sign in, install the App, and subscribe. Paid plans are Solo at US$__SOLO_MONTHLY_USD__/month with __SOLO_INCLUDED_TOKENS__ tokens and Pro at US$__CLOUD_MONTHLY_USD__/month with __INCLUDED_TOKENS__ tokens. Founding partners get 50% off forever, limited to __FOUNDING_PARTNER_LIMIT__ places.</p>
               </div>
             </details>
           </div>
@@ -558,6 +559,7 @@ orbi setup --config orbi.toml</code></pre>
         <div class="cta-row">
           <a class="button button-dark" href="https://docs.orbi.build">Install Orbi <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" href="https://github.com/orbi-build/orbi">View the source</a>
+          <a class="text-link" href="/guides/ci-gates/">Read the CI gates guide →</a>
           <a class="text-link" href="#faq">Questions first? Read the FAQ →</a>
         </div>
       </section>

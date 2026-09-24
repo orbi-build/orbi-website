@@ -92,6 +92,7 @@ const LANG = {
     navAria: "Primary navigation",
     systemLabel: "How it works",
     costLabel: "Pricing",
+    evidenceLabel: "Evidence",
     docsLabel: "Docs",
     selfHostedDocsLabel: "Self-hosted Docs",
     cloudDocsNavLabel: "Cloud Docs",
@@ -129,6 +130,7 @@ const LANG = {
     navAria: "主导航",
     systemLabel: "产品怎么运作",
     costLabel: "价格",
+    evidenceLabel: "证据",
     docsLabel: "文档",
     selfHostedDocsLabel: "自托管文档",
     cloudDocsNavLabel: "Cloud 文档",
@@ -238,6 +240,10 @@ export function renderFooter(page) {
     CLOUD_DOCS_LABEL: t.cloudDocsLabel,
     CLOUD_HREF: `${t.langPrefix}/cloud/`,
     CLOUD_LABEL: t.cloudLabel,
+    COST_HREF: `${t.langPrefix}/cost/`,
+    COST_LABEL: t.costLabel,
+    EVIDENCE_HREF: `${t.langPrefix}/evidence/`,
+    EVIDENCE_LABEL: t.evidenceLabel,
     COMPARE_HREF: `${t.langPrefix}/compare/`,
     COMPARE_LABEL: t.compareLabel,
     FAQ_HREF: `${anchorPrefix}#faq`,
@@ -715,6 +721,22 @@ const POST_LANG = {
 
 // A post's page: the rendered CommonMark body inside the post template, with
 // the shared nav and footer rendered exactly as for site/pages/**.
+function renderSubscribe(lang, returnPath) {
+  const zh = lang === "zh";
+  return fill(SUBSCRIBE_PARTIAL, {
+    SUBSCRIBE_TITLE: zh ? "每周一个真实交付" : "One real delivery, every week",
+    SUBSCRIBE_SUCCESS: zh ? "已订阅" : "Subscribed",
+    SUBSCRIBE_INVALID: zh ? "邮箱格式不对" : "That email address doesn't look right",
+    SUBSCRIBE_UNAVAILABLE: zh ? "暂时无法订阅，请重试。" : "Subscription is temporarily unavailable. Please try again.",
+    SUBSCRIBE_LABEL: zh ? "邮箱地址" : "Email address",
+    SUBSCRIBE_PLACEHOLDER: zh ? "你的邮箱" : "you@example.com",
+    SUBSCRIBE_LANG: lang,
+    SUBSCRIBE_RETURN: returnPath,
+    SUBSCRIBE_BUTTON: zh ? "订阅" : "Subscribe",
+    SUBSCRIBE_NOTE: zh ? "每周一封，讲一次真实交付。随时退订。" : "One email a week about one real delivery. Unsubscribe anytime.",
+  });
+}
+
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
   const page = {
@@ -743,6 +765,7 @@ function renderPost(post, template) {
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
     BODY: post.html,
+    SUBSCRIBE: renderSubscribe(post.lang, post.href),
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
 }
@@ -862,10 +885,30 @@ async function walkPages(dir) {
 
 let NAV_PARTIAL;
 let FOOTER_PARTIAL;
+let SUBSCRIBE_PARTIAL;
+
+function renderLlmsFull(template, renderedPages, matrixCsv) {
+  const sections = {
+    "<!--@cost-body-->": renderedPages.get("cost/index.html"),
+    "<!--@evidence-body-->": renderedPages.get("evidence/index.html"),
+  };
+  let output = template;
+  for (const [marker, html] of Object.entries(sections)) {
+    const body = html?.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1]?.trim();
+    if (!body) throw new Error(`llms-full.txt cannot extract ${marker} source body`);
+    if (!output.includes(marker)) throw new Error(`llms-full.txt is missing ${marker}`);
+    output = output.replace(marker, body);
+  }
+  if (!output.includes("<!--@comparison-matrix-->")) {
+    throw new Error("llms-full.txt is missing <!--@comparison-matrix-->");
+  }
+  return output.replace("<!--@comparison-matrix-->", matrixCsv.trim()).trimEnd() + "\n";
+}
 
 export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
+  SUBSCRIBE_PARTIAL = await readFile(join(PARTIALS_DIR, "subscribe.html"), "utf8");
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
@@ -879,6 +922,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   const postsFor = (indexSource) =>
     posts.filter((post) => post.lang === (indexSource.startsWith("zh/") ? "zh" : "en"));
   await mkdir(outDir, { recursive: true });
+  const renderedPages = new Map();
   for (const page of pages) {
     let html = page.body;
     if (page.nav) {
@@ -920,6 +964,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
     const out = join(outDir, page.output);
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
+    renderedPages.set(page.output, html);
   }
   for (const post of posts) {
     const out = join(outDir, post.output);
@@ -933,6 +978,14 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   await mkdir(join(outDir, "blog"), { recursive: true });
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
   await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
+  await writeFile(
+    join(outDir, "llms-full.txt"),
+    renderLlmsFull(
+      await readFile(join(ROOT, "site", "llms-full.txt"), "utf8"),
+      renderedPages,
+      await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8"),
+    ),
+  );
   return pages.length + posts.length;
 }
 

@@ -42,7 +42,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Require promoted commits to have soaked on beta
+      - name: Require promoted snapshot to have soaked on beta
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -50,40 +50,31 @@ jobs:
           SKIP_SOAK: ${{ inputs.skip_soak }}
         run: |
           set -euo pipefail
-          if [[ "$SKIP_SOAK" == "true" ]]; then
-            echo "skip_soak requested (hotfix); the production environment approval still applies."
-            exit 0
-          fi
           required="${PROD_MIN_SOAK_HOURS:-4}"
-          if ! [[ "$required" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
-            echo "::error::PROD_MIN_SOAK_HOURS must be a non-negative number, got: ${required}"
-            exit 1
+          if [[ "$SKIP_SOAK" == "true" ]]; then
+            timeout 120s node scripts/check-beta-soak.mjs --required-hours "$required" --skip-soak
+            exit 0
           fi
           if [[ "$required" == "0" ]]; then
-            echo "PROD_MIN_SOAK_HOURS=0: soak check disabled."
+            timeout 120s node scripts/check-beta-soak.mjs --required-hours "$required"
             exit 0
           fi
-          # The previous production version is the last successful run of this
-          # workflow; the promotion is what beta has that it does not.
-          previous="$(timeout 120s gh run list --workflow deploy-production.yml --status success --limit 1 --json headSha --jq '.[0].headSha // empty')"
-          if [[ -z "$previous" ]]; then
-            echo "No previous successful production deployment; nothing to soak-check against yet."
-            exit 0
-          fi
-          timeout 120s git fetch origin beta
-          newest="$(git log --no-merges --format=%ct "$GITHUB_SHA" --not "$previous" | sort -nr | head -1)"
-          if [[ -z "$newest" ]]; then
-            echo "No new promoted commits since the previous production version ${previous}; soak satisfied."
-            exit 0
-          fi
-          age="$(awk -v now="$(date +%s)" -v t="$newest" 'BEGIN {printf "%.1f", (now - t) / 3600}')"
-          if awk -v a="$age" -v r="$required" 'BEGIN {exit !(a + 0 >= r + 0)}'; then
-            echo "Soak check passed: the newest promoted commit has been on origin/beta for ${age}h (required: ${required}h)."
-          else
-            remaining="$(awk -v a="$age" -v r="$required" 'BEGIN {printf "%.1f", r - a}')"
-            echo "::error::Soak check failed: the promotion contains commit(s) that have been on origin/beta for only ${age}h; PROD_MIN_SOAK_HOURS requires ${required}h. Retry in about ${remaining}h, or dispatch this workflow with skip_soak for a hotfix."
+          parents="$(git rev-list --parents -n 1 "$GITHUB_SHA")"
+          read -r merge_sha main_parent beta_snapshot _ <<< "$parents"
+          if [[ "$merge_sha" != "$GITHUB_SHA" || -z "$beta_snapshot" ]]; then
+            echo "::error::production commit $GITHUB_SHA is not a merge commit with a beta snapshot parent"
             exit 1
           fi
+          echo "Production promotion snapshot: $beta_snapshot"
+          timeout 120s git fetch origin beta
+          runs_file="$(mktemp)"
+          trap 'rm -f "$runs_file"' EXIT
+          timeout 120s gh api --paginate --slurp \
+            "repos/${GH_REPO}/actions/workflows/deploy-beta.yml/runs?status=success&per_page=100" > "$runs_file"
+          timeout 120s node scripts/check-beta-soak.mjs \
+            --snapshot-sha "$beta_snapshot" \
+            --required-hours "$required" \
+            --runs-file "$runs_file"
 
   deploy:
     needs: soak

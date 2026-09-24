@@ -112,6 +112,17 @@ class PageParser(HTMLParser):
 def parse(path: Path) -> tuple[str, PageParser]:
     html = path.read_text(encoding="utf-8")
     html = html.replace(PRICING["monthlyUsdToken"], str(PRICING["cloudMonthlyUsd"]))
+    for token_key, value_key in (
+        ("soloMonthlyUsdToken", "soloMonthlyUsd"),
+        ("soloAnnualUsdToken", "soloAnnualUsd"),
+        ("proAnnualUsdToken", "proAnnualUsd"),
+        ("soloIncludedTokensToken", "soloIncludedTokensLabel"),
+        ("soloRepositoriesToken", "soloRepositories"),
+        ("proRepositoriesToken", "proRepositories"),
+        ("foundingPartnerLimitToken", "foundingPartnerLimit"),
+        ("foundingPromoCodeToken", "foundingPromoCode"),
+    ):
+        html = html.replace(PRICING[token_key], str(PRICING[value_key]))
     html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
     html = html.replace(PRICING["foundingTokensToken"], str(PRICING["foundingTokensLabel"]))
     html = html.replace(
@@ -119,8 +130,16 @@ def parse(path: Path) -> tuple[str, PageParser]:
         str(PRICING["measuredSmallRepositoryDeliveryRange"]),
     )
     html = html.replace(
+        PRICING["measuredSoloRepositoryDeliveryRangeToken"],
+        str(PRICING["measuredSoloRepositoryDeliveryRange"]),
+    )
+    html = html.replace(
         PRICING["measuredLargeCodebaseDeliveriesToken"],
         str(PRICING["measuredLargeCodebaseDeliveries"]),
+    )
+    html = html.replace(
+        PRICING["measuredSoloLargeCodebaseDeliveriesToken"],
+        str(PRICING["measuredSoloLargeCodebaseDeliveries"]),
     )
     page = PageParser()
     page.feed(html)
@@ -471,18 +490,13 @@ class LandingTests(unittest.TestCase):
             self.assertEqual(cloud_sections[0].get("data-status"), "direction")
 
     def test_cloud_entry_is_github_login_not_an_application(self) -> None:
-        for page, price, explainer in (
-            (self.en, "US$79/month", "/cloud/"),
-            (self.zh, "US$79/月", "/zh/cloud/"),
+        for page, explainer in (
+            (self.en, "/cloud/"),
+            (self.zh, "/zh/cloud/"),
         ):
-            # Issue #99: the price sits on the card before the click, and the
-            # /cloud/ explainer stays reachable from the footer. The Start
-            # Cloud CTA's own target is a product decision (#99 sends it
-            # straight to /cloud/login) and the served href is additionally
-            # rewritten per environment by the Worker, so no page test pins it
-            # (Issue #103). Issue #179 retired /apply: Cloud entry is GitHub
-            # login, never an application form.
-            self.assertIn(price, page.text)
+            # Issue #441: both paid tiers sit on the card before the click.
+            self.assertIn("US$29", page.text)
+            self.assertIn("US$79", page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
             self.assertFalse(any(href == "/apply" for _, href in page.hrefs))
 
@@ -982,10 +996,10 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
-        # the soak gate: promoted commits must have aged on origin/beta before
-        # the approval-gated deploy job starts, so a rejected promotion never
-        # requests the approver's attention; the hotfix escape skips soak but
-        # never the environment approval
+        # the soak gate: the promoted snapshot must have completed a successful
+        # beta deployment before the approval-gated deploy job starts, so a
+        # rejected promotion never requests the approver's attention; the
+        # hotfix escape skips soak but never the environment approval
         self.assertIn("actions: read", workflow)
         soak_at = workflow.index("  soak:")
         deploy_at = workflow.index("  deploy:")
@@ -998,7 +1012,8 @@ class LandingTests(unittest.TestCase):
         self.assertIn("skip_soak", workflow)
         self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
         self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
-        self.assertIn("gh run list", workflow)
+        self.assertIn("scripts/check-beta-soak.mjs", workflow)
+        self.assertIn("actions/workflows/deploy-beta.yml/runs?status=success", workflow)
         self.assertIn("git fetch origin beta", workflow)
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
@@ -1133,7 +1148,7 @@ class CloudLandingPageTests(unittest.TestCase):
         for html in (self.en_html, self.zh_html):
             self.assertEqual(len(re.findall(r"<h1[\s>]", html)), 1)
 
-    def test_share_cards_and_jsonld_name_webpage_and_offer(self) -> None:
+    def test_share_cards_and_jsonld_name_webpage_and_aggregate_offer(self) -> None:
         for html in (self.en_html, self.zh_html):
             for meta in (
                 'property="og:title"',
@@ -1152,108 +1167,28 @@ class CloudLandingPageTests(unittest.TestCase):
                 nodes = data.get("@graph", [data])
                 types += [node.get("@type") for node in nodes]
             self.assertIn("WebPage", types, types)
-            self.assertIn("Offer", types, types)
+            self.assertIn("AggregateOffer", types, types)
 
-    def test_body_states_the_regular_price_and_the_founding_coupon(self) -> None:
-        """Issue #108 + #137 + #138 (#145 relabeled the quota): the regular
-        US$79 price, the included-token quota (rendered from the pricing.json
-        label, so zh rides "300M" too), and the coupon mechanism must be
-        readable body text, not only structured data."""
-        for page, coupon, tokens in (
-            (self.en, "Founding coupon", "300M tokens"),
-            (self.zh, "Founding 券", "300M token"),
+    def test_body_states_all_plans_and_the_founding_offer(self) -> None:
+        """Issue #441: the rendered Cloud pages carry all approved prices,
+        allowances, and founding terms from pricing.json."""
+        for page, founding in (
+            (self.en, "Founding partners: 50% off forever, 6 places; use code FOUNDING50 at checkout"),
+            (self.zh, "创始会员永久 5 折，限 6 位；结账时输入 FOUNDING50"),
         ):
-            self.assertIn("US$79", page.text)
-            self.assertIn(tokens, page.text)
-            self.assertIn("100% off", page.text)
-            self.assertNotIn("Private Beta", page.text)
-            self.assertIn(coupon, page.text)
+            for value in ("US$29", "US$290", "US$79", "US$790", "100M", "300M"):
+                self.assertIn(value, page.text)
+            self.assertIn(founding, page.text)
+            self.assertNotIn("100% off", page.text)
+            self.assertNotIn("订阅永久免费", page.text)
 
-    def test_pricing_section_states_price_tokens_pause_and_coupon_mechanism(self) -> None:
-        """Issue #108 + #137 + #138: $79 regular, the included-token quota
-        (rendered from the pricing.json label), and the honest over-limit
-        behavior — new deliveries pause; no overage price is promised because
-        no per-token billing is implemented (cloud removes `ai-ready` instead)
-        — plus the coupon mechanism: the terms a subscriber agrees to
-        must be readable before subscribing. The framing around them stays
-        unpinned (Issue #112)."""
-        for page, needles in (
-            (
-                self.en,
-                (
-                    "US$79 per month",
-                    "300M tokens of model usage",
-                    "when the allowance runs out, new deliveries pause",
-                    "100% off",
-                ),
-            ),
-            (
-                self.zh,
-                (
-                    "US$79",
-                    "300M token",
-                    "新交付暂停",
-                    "100% off",
-                    "限量",
-                ),
-            ),
+    def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
+        for page, headline in (
+            (self.en, "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills."),
+            (self.zh, "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"),
         ):
-            for needle in needles:
-                self.assertIn(needle, page.text, needle)
-
-    def test_founding_partner_block_states_identity_benefits_and_condition(self) -> None:
-        """Issue #143 (orbi-cloud#338): the Founding Partner identity — limited
-        to 10, subscription free forever, Orbi covers 300M tokens a month,
-        accepted Issues steer the product — and the explicit entry
-        condition (one accepted Issue per month) must be readable body text on
-        both language pages. A concrete condition can be self-screened; a vague
-        "give us feedback" cannot. The grant's mechanism is stated in the open:
-        issued monthly, renewed in step with the accepted Issue. The 300M rides
-        the pricing.json foundingTokens seam (since website#145 it equals the
-        plan's included quota — the tiers differ in price, not quota), so the
-        needles here match the rendered label — zh rides "300M" the same way."""
-        for page, needles in (
-            (
-                self.en,
-                (
-                    "FOUNDING PARTNER · LIMITED TO 10",
-                    "subscription is free forever",
-                    "300M tokens are covered by Orbi each month",
-                    "accepted Issues steer the product",
-                    "one Issue per month that we accept",
-                    "granted a month at a time",
-                    "renews in step with that contribution",
-                ),
-            ),
-            (
-                self.zh,
-                (
-                    "FOUNDING PARTNER · 限 10 位",
-                    "订阅永久免费",
-                    "每月 300M token 由 Orbi 承担",
-                    "被采纳的 Issue 直接影响产品方向",
-                    "每月提交 1 个被采纳的 Issue",
-                    "按月发放",
-                    "同步续期",
-                ),
-            ),
-        ):
-            for needle in needles:
-                self.assertIn(needle, page.text, needle)
-            self.assertNotRegex(page.text, r"限时\s*\d", "no fixed month cap on the grant")
-
-    def test_forever_words_never_attach_to_the_token_grant(self) -> None:
-        """Issue #143 red line: 「永久」/forever is written only on commitments
-        that are real — the subscription (Stripe coupon duration=forever) and
-        the free self-hosted core. The token grant is month to month, so no
-        sentence may couple a forever word to it: asked "how long do the
-        tokens last?", the page must answer with the monthly mechanism, not a
-        permanence claim."""
-        for page in (self.en, self.zh):
-            sentences = [s for s in re.split(r"[。；.!;?]", page.text) if s.strip()]
-            for sentence in sentences:
-                if re.search(r"永久|forever|permanently|permanent", sentence, re.IGNORECASE):
-                    self.assertNotIn("token", sentence.lower(), sentence)
+            self.assertIn(headline, page.text)
+            self.assertIn("US$0", page.text)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
         """Issue #277: /cloud/ keeps the owner-approved delivery range and
@@ -1266,7 +1201,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    f"Depending on ticket size: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
+                    f"Solo's {PRICING['soloIncludedTokensLabel']} allowance: about {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredSoloLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine; Pro's {PRICING['includedTokensLabel']} allowance: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1274,7 +1209,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    f"取决于票的大小：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
+                    f"Solo 的 {PRICING['soloIncludedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredSoloLargeCodebaseDeliveries']} 次；Pro 的 {PRICING['includedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
                     "prompt caching",
                 ),
                 "/zh/cost/",
@@ -1287,22 +1222,24 @@ class CloudLandingPageTests(unittest.TestCase):
             for href in competitor_hrefs:
                 self.assertNotIn(href, hrefs, href)
 
-    def test_offer_jsonld_prices_the_regular_plan(self) -> None:
-        """Issue #108: JSON-LD prices the regular plan at 79 with the coupon in
-        the description — a wrong Offer price reaches search engines and
-        checkout previews without anyone scrolling the page. The meta
-        descriptions' wording stays unpinned (Issue #112)."""
-        for html in (self.en_html, self.zh_html):
+    def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
+        for html, founding in (
+            (self.en_html, "50% off forever"),
+            (self.zh_html, "永久 5 折"),
+        ):
             scripts = re.findall(
                 r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL
             )
             offers = []
             for script in scripts:
                 data = json.loads(script)
-                offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "Offer"]
+                offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "AggregateOffer"]
             self.assertEqual(len(offers), 1, offers)
-            self.assertEqual(offers[0]["price"], "79", offers[0])
-            self.assertIn("100% off", offers[0]["description"], offers[0])
+            self.assertEqual(offers[0]["lowPrice"], "29", offers[0])
+            self.assertEqual(offers[0]["highPrice"], "79", offers[0])
+            self.assertEqual([offer["price"] for offer in offers[0]["offers"]], ["29", "79"])
+            self.assertIn(founding, offers[0]["description"], offers[0])
+            self.assertIn("6", offers[0]["description"], offers[0])
 
     def test_the_four_steps_appear_in_order_and_end_at_delivery(self) -> None:
         # Issue #256: the login buttons carry the page-level ?ref= token the
