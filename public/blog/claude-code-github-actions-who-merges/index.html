@@ -10,10 +10,10 @@
   <meta property="og:title" content="Claude Code in Actions: who presses merge?">
   <meta property="og:description" content="Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.">
   <meta property="og:url" content="https://orbi.build/blog/claude-code-github-actions-who-merges/">
-  <meta property="og:image" content="https://orbi.build/img/og-claude-code-github-actions-who-merges.png">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-actions-card.png">
   <meta property="og:image:alt" content="Claude Code in Actions: who presses merge?">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who presses merge?","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/og-claude-code-github-actions-who-merges.png","inLanguage":"en","description":"Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code in Actions: who presses merge?","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions-card.png","inLanguage":"en","description":"Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.","url":"https://orbi.build/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -119,7 +119,7 @@
 <li><strong>A merge gate that re-checks CI, head and base</strong> at merge time rather than trusting a verdict from ten minutes ago.</li>
 <li><strong>A release path that is deterministic</strong>, so that shipping is not a model deciding it is probably fine.</li>
 </ol>
-<p><a href="https://github.com/orbi-build/orbi">Orbi</a> is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. Its engine can run Claude Code, Codex or any OpenAI-compatible model underneath, so if you already have the action working, the model side of your setup does not change.</p>
+<p><a href="https://github.com/orbi-build/orbi">Orbi</a> is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. It runs on the Pi agent harness with your own model: any OpenAI-compatible API, or a Codex subscription. Claude Code is not one of its engines.</p>
 <p>Or take the three conditions and build them into whatever you already run. The conditions matter more than whose code enforces them.</p>
 <h2>Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a>, <a href="/guides/ci-gates/">CI gates guide</a>, and <a href="/cloud/">Cloud</a>.</p>

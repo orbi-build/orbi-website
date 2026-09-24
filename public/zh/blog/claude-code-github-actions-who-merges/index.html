@@ -10,10 +10,10 @@
   <meta property="og:title" content="Claude Code 跑完之后，谁来合并 PR">
   <meta property="og:description" content="Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。">
   <meta property="og:url" content="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/">
-  <meta property="og:image" content="https://orbi.build/img/og-claude-code-github-actions-who-merges.png">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-actions-card.png">
   <meta property="og:image:alt" content="Claude Code 跑完之后，谁来合并 PR">
   <meta property="article:published_time" content="2026-09-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 跑完之后，谁来合并 PR","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/og-claude-code-github-actions-who-merges.png","inLanguage":"zh-CN","description":"Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 跑完之后，谁来合并 PR","datePublished":"2026-09-19","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-claude-actions-card.png","inLanguage":"zh-CN","description":"Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。","url":"https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -119,7 +119,7 @@
 <li><strong>合并前重查 CI、head、base</strong>，不信任十分钟前的结论。</li>
 <li><strong>发版走确定性流程</strong>，别让模型决定「应该可以发了吧」。</li>
 </ol>
-<p><a href="https://github.com/orbi-build/orbi">Orbi</a> 就是我按这三条做的实现，开源（AGPL-3.0），可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。底下的引擎可以用 Claude Code、Codex 或者任何 OpenAI 兼容的模型，所以你现在的模型那一侧不用动。</p>
+<p><a href="https://github.com/orbi-build/orbi">Orbi</a> 就是我按这三条做的实现，开源（AGPL-3.0），可以自己部署，而且它在自己身上跑：上面那 431 个 PR 全是公开的，每一轮评审结论也都在 Issue 的评论里，随便点开一张看。它跑在 Pi 上，模型用你自己的：任何 OpenAI 兼容的接口，或者 Codex 订阅。它不能拿 Claude Code 当引擎。</p>
 <p>或者干脆把这三个条件搬进你自己的流程里，用什么工具执行都行。</p>
 <h2>相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a>、<a href="/zh/guides/ci-gates/">CI 门禁指南</a>与 <a href="/zh/cloud/">Cloud</a>。</p>

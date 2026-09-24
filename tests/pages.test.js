@@ -250,6 +250,16 @@ describe("comparison fact corrections (Issue #467)", () => {
   });
 });
 
+describe("public link safety (Issue #500)", () => {
+  it("does not ship links to the private orbi-cloud repository", () => {
+    for (const [output, html] of shipped) {
+      if (output.endsWith(".html")) {
+        expect(html, output).not.toContain("github.com/orbi-build/orbi-cloud");
+      }
+    }
+  });
+});
+
 describe("auto-merge AI PR guide (Issue #459)", () => {
   it("renders mutual language mirrors and CI-gates cross-links", () => {
     const en = shipped.get("guides/auto-merge-ai-prs/index.html");

@@ -4,7 +4,7 @@ date: 2026-09-18
 summary: orbi 镜像到第三次发布才到达 GHCR 和 Docker Hub。前两次是构建上下文和 Dockerfile 路径，最后一次则是非法 tag。
 lang: zh
 author: Orbi
-image: /img/og-docker-image-third-try.png
+image: /img/blog-docker-image-card.png
 ---
 
 Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) 要求发布 `3rd/docker/Dockerfile` 构建出的容器，让用户在 Docker 里搜索时能找到并拉取它。现在的 workflow 会在每次 Release 和手动触发时发布：`linux/amd64` 和 `linux/arm64`，打上 Release 版本号和 `latest` 两个 tag，推到 `ghcr.io/orbi-build/orbi` 和 `docker.io/orbibuild/orbi`。

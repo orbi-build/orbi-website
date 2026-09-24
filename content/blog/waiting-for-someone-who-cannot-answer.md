@@ -255,12 +255,9 @@ It stalled in four hours.
 ---
 
 *The tickets, all filed on 2026-09-22:
-[orbi-cloud#878](https://github.com/orbi-build/orbi-cloud/issues/878) (no path
-for a managed tenant to decide),
-[orbi-cloud#869](https://github.com/orbi-build/orbi-cloud/issues/869) (list the
-milestones in the UI),
-[orbi-cloud#870](https://github.com/orbi-build/orbi-cloud/issues/870) (a general
-config push instead of a fifth hand-written sync), and
+orbi-cloud#878 (no path for a managed tenant to decide),
+orbi-cloud#869 (list the milestones in the UI),
+orbi-cloud#870 (a general config push instead of a fifth hand-written sync), and
 [orbi#1283](https://github.com/orbi-build/orbi/issues/1283) (the one whose root
 cause we got wrong first).*
 

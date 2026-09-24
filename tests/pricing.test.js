@@ -140,6 +140,9 @@ describe("Cloud monthly price constant (Issue #102)", () => {
     // matter which one it was typed into.
     for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
       for (const path of await listHtmlFiles(dir)) {
+        // Comparison pages may contain verified competitor prices as literals;
+        // their non-Orbi cells are guarded by tests/compare-pricing.test.js.
+        if (path.includes("/compare/")) continue;
         const raw = await readFile(path, "utf8");
         expect(raw.match(literalPrice(USD)), path).toBeNull();
         expect(raw.match(new RegExp(`"price":\\s*"${USD}"`)), path).toBeNull();
