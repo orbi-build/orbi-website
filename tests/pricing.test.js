@@ -11,6 +11,9 @@ const USD = String(pricing.cloudMonthlyUsd);
 const SOLO_USD = String(pricing.soloMonthlyUsd);
 const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
 const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const SOLO_ANNUAL_MONTHLY_USD = String(pricing.soloAnnualMonthlyUsd);
+const PRO_ANNUAL_MONTHLY_USD = String(pricing.proAnnualMonthlyUsd);
+const ANNUAL_SAVINGS_PERCENT = String(pricing.annualSavingsPercent);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
@@ -472,6 +475,13 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
     }
   });
 
+  it("calculates annual monthly prices and savings from the plan prices", () => {
+    expect(pricing.soloAnnualMonthlyUsd).toBe(Math.round(pricing.soloAnnualUsd / 12));
+    expect(pricing.proAnnualMonthlyUsd).toBe(Math.round(pricing.proAnnualUsd / 12));
+    expect(pricing.annualSavingsPercent).toBe(Math.round((1 - pricing.soloAnnualUsd / (pricing.soloMonthlyUsd * 12)) * 100));
+    expect(pricing.annualSavingsPercent).toBe(Math.round((1 - pricing.proAnnualUsd / (pricing.cloudMonthlyUsd * 12)) * 100));
+  });
+
   it("pins the approved plan prices and allowances", () => {
     expect(pricing).toMatchObject({
       soloMonthlyUsd: 29,
@@ -491,13 +501,22 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       const body = await response.text();
       expect(body, relativePath).toContain(`US$${SOLO_USD}`);
       expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_MONTHLY_USD}`);
       expect(body, relativePath).toContain(`US$${USD}`);
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_MONTHLY_USD}`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `最多省 ${ANNUAL_SAVINGS_PERCENT}%`
+        : `Save up to ${ANNUAL_SAVINGS_PERCENT}%`);
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
-      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
+      expect(body, relativePath).not.toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).not.toContain('href="/api/checkout?plan=pro"');
+      expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
+      expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
+      expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
         : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
@@ -532,6 +551,9 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloMonthlyUsdToken,
         pricing.soloAnnualUsdToken,
         pricing.proAnnualUsdToken,
+        pricing.soloAnnualMonthlyUsdToken,
+        pricing.proAnnualMonthlyUsdToken,
+        pricing.annualSavingsPercentToken,
         pricing.soloIncludedTokensToken,
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
