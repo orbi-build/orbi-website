@@ -4,7 +4,7 @@ date: 2026-09-19
 summary: Claude Code 会写代码、评审 PR，却不会替你合并或发版。从 431 个已合并 PR 的记录看，独立评审、合并门禁和发版流程怎样补上剩余链路。
 lang: zh
 author: Orbi
-image: /img/blog-claude-actions.png
+image: /img/blog-claude-actions-card.png
 ---
 
 把 Claude Code 接进 GitHub Actions，或者写个循环让它自己跑，并不难。难的是它跑完以后：PR 在那里，测试是绿的，代码和评审都来自它，合并按钮该由谁来按。
