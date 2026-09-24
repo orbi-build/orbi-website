@@ -178,6 +178,7 @@ function startServer() {
               .replaceAll(pricing.soloRepositoriesToken, String(pricing.soloRepositories))
               .replaceAll(pricing.proRepositoriesToken, String(pricing.proRepositories))
               .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
+              .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
               .replaceAll(
@@ -185,8 +186,16 @@ function startServer() {
                 String(pricing.measuredSmallRepositoryDeliveryRange),
               )
               .replaceAll(
+                pricing.measuredSoloRepositoryDeliveryRangeToken,
+                String(pricing.measuredSoloRepositoryDeliveryRange),
+              )
+              .replaceAll(
                 pricing.measuredLargeCodebaseDeliveriesToken,
                 String(pricing.measuredLargeCodebaseDeliveries),
+              )
+              .replaceAll(
+                pricing.measuredSoloLargeCodebaseDeliveriesToken,
+                String(pricing.measuredSoloLargeCodebaseDeliveries),
               )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
               .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
@@ -1188,7 +1197,7 @@ const cloudPages = {
       "US$29", "US$290", "US$79", "US$790", "300M tokens", "deliveries pause", "50% off forever",
       // Issue #277: Cloud gives a range rather than a misleading single-point
       // conversion; the detailed measurement remains on /cost/.
-      "Depending on ticket size: about 60–160 merged deliveries for typical tickets in a small repository, about 25 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
+      "Solo's 100M allowance: about 20–53 merged deliveries for typical tickets in a small repository, about 8 in a large codebase like Orbi's own engine; Pro's 300M allowance: about 60–160 merged deliveries for typical tickets in a small repository, about 25 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1221,7 +1230,7 @@ const cloudPages = {
       // the same label, 300M since #145)
       "US$29", "US$290", "US$79", "US$790", "300M token", "交付暂停", "永久 5 折",
       // Issue #277: Cloud gives the owner-approved delivery range.
-      "取决于票的大小：小仓库的常见票大约 60–160 次合并交付，像 Orbi 引擎这样的大代码库大约 25 次（2026 年 9 月实测）", "prompt caching",
+      "Solo 的 100M 额度：小仓库的常见票大约 20–53 次合并交付，像 Orbi 引擎这样的大代码库大约 8 次；Pro 的 300M 额度：小仓库的常见票大约 60–160 次合并交付，像 Orbi 引擎这样的大代码库大约 25 次（2026 年 9 月实测）", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },

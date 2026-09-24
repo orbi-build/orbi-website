@@ -79,7 +79,7 @@ every step below.
 
 3. **Subscribe.** Choose Solo at https://orbi.build/api/checkout?plan=solo or Pro at
    https://orbi.build/api/checkout?plan=pro and complete Stripe checkout.
-   Founding partners get 50% off forever, limited to 6 places. Done: the status page
+   Founding partners get 50% off forever, limited to 6 places; use code __FOUNDING_PROMO_CODE__ at checkout. Done: the status page
    shows an active plan and no longer asks you to subscribe. If not: re-open the checkout link for the plan you chose; when the founding
    places are filled, the regular price applies.
 

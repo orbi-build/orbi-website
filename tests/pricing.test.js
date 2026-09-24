@@ -12,12 +12,17 @@ const SOLO_USD = String(pricing.soloMonthlyUsd);
 const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
 const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSmallRepositoryDeliveryRangeToken;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSoloRepositoryDeliveryRangeToken;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
 const MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN = pricing.measuredLargeCodebaseDeliveriesToken;
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredSoloLargeCodebaseDeliveries);
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN = pricing.measuredSoloLargeCodebaseDeliveriesToken;
 const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
 const MEASURED_SNAPSHOT_DELIVERIES_TOKEN = pricing.measuredSnapshotDeliveriesToken;
 
@@ -344,11 +349,11 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   it("serves both Cloud pages with both source-backed measurements", async () => {
     for (const [cloudPage, wordings] of [
       ["cloud/index.html", [
-        `Depending on ticket size: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
+        `Solo's ${pricing.soloIncludedTokensLabel} allowance: about ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine; Pro's ${pricing.includedTokensLabel} allowance: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
         `${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, or about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
       ]],
       ["zh/cloud/index.html", [
-        `取决于票的大小：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
+        `Solo 的 ${pricing.soloIncludedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} 次；Pro 的 ${pricing.includedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
         `小仓库的常见票合并 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次，像 Orbi 引擎这样的大代码库约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
       ]],
     ]) {
@@ -358,6 +363,9 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
       for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
       expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
       expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN);
+      expect(served).not.toContain(MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).toContain(FOUNDING_PROMO_CODE);
     }
   });
 
@@ -437,9 +445,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body.toLowerCase(), relativePath).not.toContain("priority queue");
       expect(body, relativePath).not.toContain("优先队列");
       expect(body, relativePath).not.toContain("data-founding-availability");
-      for (const line of body.split("\n").filter((line) => line.includes("300M"))) {
-        expect(line, relativePath).toMatch(/Solo|Pro/);
-      }
+      expect(body, relativePath).not.toMatch(/(?:Pro:|Pro：)(?:\s|每月)*300M/);
     }
   });
 
@@ -496,8 +502,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
         : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位`
-        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places`);
+        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
+        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
       expect(body, relativePath).not.toContain("Founding Partner");
       expect(body, relativePath).not.toContain("永久免费");
       expect(body, relativePath).not.toContain("BYOK model key");
@@ -530,6 +536,9 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
         pricing.foundingPartnerLimitToken,
+        pricing.foundingPromoCodeToken,
+        pricing.measuredSoloRepositoryDeliveryRangeToken,
+        pricing.measuredSoloLargeCodebaseDeliveriesToken,
       ]) expect(html, relativePath).toContain(token);
     }
   });
