@@ -502,6 +502,21 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
     }
   });
 
+  it("renders tier-specific repository limits in visible FAQ and JSON-LD", async () => {
+    const faqCopy = {
+      "cloud/index.html": `Free and Solo can each connect up to ${pricing.soloRepositories} repositories at a time. Connecting a different repository deactivates the previous one and provisions the new one. A switch is blocked while a delivery is in flight on the bound repository. Pro can connect up to ${pricing.proRepositories} repositories at a time. Once all are connected, deactivate one before connecting another.`,
+      "zh/cloud/index.html": `Free 和 Solo 同时最多各接 ${pricing.soloRepositories} 个仓库。连接另一个仓库会停用原来的，并为新仓库重新开通；原仓库有进行中的交付时，暂时无法更换。Pro 同时最多接 ${pricing.proRepositories} 个仓库。达到上限后，先停用一个已连接的仓库，再连接新的仓库。`,
+    };
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\\.html$/, "")}`)).text();
+      expect(body, relativePath).toContain(faqCopy[relativePath]);
+      expect(body.split(faqCopy[relativePath]).length - 1, relativePath).toBe(2);
+      expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
+        ? "每个订阅同时只接 1 个 active 仓库"
+        : "Each subscription keeps one active repository");
+    }
+  });
+
   it("keeps every tier value tokenized in the source pages", async () => {
     for (const relativePath of CLOUD_PAGES) {
       const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
