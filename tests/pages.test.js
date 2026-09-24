@@ -196,6 +196,19 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   });
 });
 
+describe("auto-merge AI PR guide (Issue #459)", () => {
+  it("renders mutual language mirrors and CI-gates cross-links", () => {
+    const en = shipped.get("guides/auto-merge-ai-prs/index.html");
+    const zh = shipped.get("zh/guides/auto-merge-ai-prs/index.html");
+    expect(en).toContain('<link rel="alternate" hreflang="en" href="https://orbi.build/guides/auto-merge-ai-prs/">');
+    expect(en).toContain('<link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/auto-merge-ai-prs/">');
+    expect(zh).toContain('<link rel="alternate" hreflang="en" href="https://orbi.build/guides/auto-merge-ai-prs/">');
+    expect(zh).toContain('<link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/auto-merge-ai-prs/">');
+    expect(shipped.get("guides/ci-gates/index.html")).toContain('href="/guides/auto-merge-ai-prs/"');
+    expect(shipped.get("zh/guides/ci-gates/index.html")).toContain('href="/zh/guides/auto-merge-ai-prs/"');
+  });
+});
+
 describe("Issue #438 wording and internal-link contracts", () => {
   it("uses the canonical product definition in homepage metadata and JSON-LD", () => {
     const definitions = {
