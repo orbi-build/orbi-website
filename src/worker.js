@@ -13,6 +13,12 @@ import pricing from "./pricing.json";
 // coverage (orbi-cloud#338) is a quota mention, so it ships as a token too,
 // never as a round literal the quota-literal gate would reject.
 const MONTHLY_USD = String(pricing.cloudMonthlyUsd);
+const SOLO_MONTHLY_USD = String(pricing.soloMonthlyUsd);
+const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
+const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const SOLO_INCLUDED_TOKENS = String(pricing.soloIncludedTokensLabel);
+const SOLO_REPOSITORIES = String(pricing.soloRepositories);
+const PRO_REPOSITORIES = String(pricing.proRepositories);
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
@@ -348,6 +354,12 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   const html = await asset.text();
   let body = html
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
+    .replaceAll(pricing.soloMonthlyUsdToken, SOLO_MONTHLY_USD)
+    .replaceAll(pricing.soloAnnualUsdToken, SOLO_ANNUAL_USD)
+    .replaceAll(pricing.proAnnualUsdToken, PRO_ANNUAL_USD)
+    .replaceAll(pricing.soloIncludedTokensToken, SOLO_INCLUDED_TOKENS)
+    .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
+    .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)

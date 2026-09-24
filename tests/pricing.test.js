@@ -8,6 +8,9 @@ const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const SITE_PAGES_DIR = fileURLToPath(new URL("../site/pages/", import.meta.url));
 const TOKEN = pricing.monthlyUsdToken;
 const USD = String(pricing.cloudMonthlyUsd);
+const SOLO_USD = String(pricing.soloMonthlyUsd);
+const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
+const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
@@ -34,6 +37,7 @@ const PRICE_PAGES = [
 const TOKENS = pricing.includedTokensToken;
 const TOKENS_LABEL = String(pricing.includedTokensLabel);
 const TOKEN_PAGES = PRICE_PAGES;
+const CLOUD_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
 
 // An included-quota literal: a round token count sitting next to the word
 // "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
@@ -150,7 +154,7 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       });
       expect(offers, relativePath).toHaveLength(1);
       expect(offers[0].price, relativePath).toBe(USD);
-      expect(offers[0].description, relativePath).toContain("100% off");
+      expect(offers[0].description, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
       // website#145: the Offer description is what search engines and LLMs
       // scrape — it must carry the rendered quota label, never the token or
       // a stale literal.
@@ -233,18 +237,6 @@ describe("Included tokens constant (Issue #138)", () => {
       const body = await response.text();
       expect(body, relativePath).not.toContain(TOKENS);
       expect(body, relativePath).toContain(TOKENS_LABEL);
-    }
-  });
-
-  // Issue #143: the Founding Partner gift (orbi-cloud#338, 300M/month) rides
-  // the same token seam — only the two cloud pages carry it, and a visitor
-  // must read the rendered label, never the token or a literal.
-  it("serves the Founding Partner gift label through the same seam", async () => {
-    for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
-      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
-      const body = await response.text();
-      expect(body, relativePath).not.toContain(pricing.foundingTokensToken);
-      expect(body, relativePath).toContain(pricing.foundingTokensLabel);
     }
   });
 
@@ -438,6 +430,38 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
     expect(quotas.length, "llms.txt should state the included quota").toBeGreaterThan(0);
     for (const quota of quotas) {
       expect(quota.literal, `llms.txt quota literal at ${quota.index}`).toBe(`${TOKENS_LABEL} tokens`);
+    }
+  });
+});
+
+describe("Three-tier Cloud pricing (Issue #441)", () => {
+  it("renders pricing.json values and checkout links on both Cloud pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body, relativePath).toContain(`US$${SOLO_USD}`);
+      expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(`US$${USD}`);
+      expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain("/api/checkout?plan=solo");
+      expect(body, relativePath).toContain("/api/checkout?plan=pro");
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
+      expect(body, relativePath).not.toContain("Founding Partner");
+      expect(body, relativePath).not.toContain("永久免费");
+    }
+  });
+
+  it("keeps every tier value tokenized in the source pages", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      for (const token of [
+        pricing.soloMonthlyUsdToken,
+        pricing.soloAnnualUsdToken,
+        pricing.proAnnualUsdToken,
+        pricing.soloIncludedTokensToken,
+        pricing.soloRepositoriesToken,
+        pricing.proRepositoriesToken,
+      ]) expect(html, relativePath).toContain(token);
     }
   });
 });

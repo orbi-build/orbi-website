@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off。">
+  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，创始会员永久 5 折，限 6 位。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta name="twitter:description" content="托管 Runner：提个 Issue，收个版本。正价 US$__CLOUD_MONTHLY_USD__/月，Founding 券 100% off。">
+  <meta name="twitter:description" content="托管 Runner：提个 Issue，收个版本。正价 US$__CLOUD_MONTHLY_USD__/月，创始会员永久 5 折，限 6 位。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@
         "name": "Orbi Cloud — 创始试点",
         "price": "__CLOUD_MONTHLY_USD__",
         "priceCurrency": "USD",
-        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Founding 券 100% off，限量发放——券发完即正价。",
+        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Pro 每月含 __INCLUDED_TOKENS__ token。创始会员永久 5 折，限 6 位。",
         "url": "https://orbi.build/zh/cloud/"
       },
       {
@@ -69,7 +69,7 @@
             "name": "券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
+              "text": "Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 6 位。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
             }
           },
           {
@@ -98,10 +98,10 @@
           },
           {
             "@type": "Question",
-            "name": "Founding Partner 每月一个被采纳的 Issue，没做到会怎样？",
+            "name": "创始会员优惠包含什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。"
+              "text": "创始会员永久 5 折，限 6 位；Free、Solo、Pro 三档的额度不变。"
             }
           },
           {
@@ -109,7 +109,7 @@
             "name": "自托管和 Cloud 能同时用吗？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。"
+              "text": "可以。自托管 fair-code 核心不收平台费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。"
             }
           },
           {
@@ -223,21 +223,37 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">价格</p>
-        <h2 class="orbi-compare-section-h2" id="pricing-title">免费：前 __FREE_DELIVERIES__ 次合并交付；之后 US$__CLOUD_MONTHLY_USD__/月，含 __INCLUDED_TOKENS__ token</h2>
-        <p class="section-lede"><strong>前 __FREE_DELIVERIES__ 次合并交付免费。</strong>失败的交付不扣额度。之后正价为<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，包含托管 Runner——协调、恢复和合并门禁都在内——并含 <strong>__INCLUDED_TOKENS__ token 的模型用量</strong>。取决于票的大小：小仓库的常见票大约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付，像 Orbi 引擎这样的大代码库大约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）；额度用完后，新交付暂停。</p>
-        <p class="founding-offer"><strong>Founding Partner</strong> <strong class="founding-price">US$0</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
-        <p>Founding 券 100% off，限量发放。Founding Partner——前 10 位订阅者——凭券支付 US$0；券发完后，订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取——以后收钱不是涨价，是券发完了。自托管 fair-code 核心依旧永久免费。</p>
-        <p>单次交付的实测 token 成本——样本、分位、竞品引证——在<a href="/zh/cost/">成本页</a>。</p>
-        <ul class="event-list">
-          <li class="orbi-event-list-li">
-            <span class="event-era">FOUNDING PARTNER · 限 10 位</span>
-            <div>
-              <strong >前 10 位订阅者是共建者，不是试用用户</strong>
-              <p class="orbi-event-list-p">Founding Partner 的订阅永久免费；每月 __FOUNDING_TOKENS__ token 由 Orbi 承担；被采纳的 Issue 直接影响产品方向。</p>
-              <p class="orbi-event-list-p">条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送按月发放，与这条贡献同步续期——滚动发放，不设总时长上限。「永久」只写在订阅减免上，那一部分不随月度条件变化。</p>
-            </div>
-          </li>
-        </ul>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">每个合并 PR 约 $1–3。失败的交付不收费。</h2>
+        <p class="section-lede">用完额度，交付暂停——没有超额账单。</p>
+        <p class="pricing-capacity">取决于票的大小：小仓库的常见票大约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付，像 Orbi 引擎这样的大代码库大约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）</p>
+        <div class="pricing-cards">
+          <article class="pricing-card">
+            <p class="pricing-card-kicker">CLOUD 免费</p>
+            <h3>免费</h3>
+            <p class="pricing-card-price">US$0 <span>/ 月</span></p>
+            <p>前 __FREE_DELIVERIES__ 次合并交付，不用绑卡。</p>
+            <ul><li>失败的交付不收费</li><li>自带模型 key</li></ul>
+            <a class="button button-outline" href="/zh/cloud/#pricing">免费开始 <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="pricing-card pricing-card-featured">
+            <p class="pricing-card-kicker">SOLO</p>
+            <h3>Solo</h3>
+            <p class="pricing-card-price">US$__SOLO_MONTHLY_USD__ <span>/ 月</span></p>
+            <p>US$__SOLO_ANNUAL_USD__ / 年</p>
+            <ul><li>每月 __SOLO_INCLUDED_TOKENS__ token</li><li>__SOLO_REPOSITORIES__ 个仓库</li></ul>
+            <a class="button button-signal" href="/api/checkout?plan=solo">选择 Solo <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="pricing-card">
+            <p class="pricing-card-kicker">PRO</p>
+            <h3>Pro</h3>
+            <p class="pricing-card-price">US$__CLOUD_MONTHLY_USD__ <span>/ 月</span></p>
+            <p>US$__PRO_ANNUAL_USD__ / 年</p>
+            <ul><li>每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库 · 优先队列</li></ul>
+            <a class="button button-signal" href="/api/checkout?plan=pro">选择 Pro <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+        <p class="founding-offer"><strong>创始会员永久 5 折，限 6 位。</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
+        <p class="self-hosted-note">自托管 fair-code 核心不收平台费；模型 key 自己带。</p>
       </div>
     </section>
 
@@ -285,7 +301,7 @@
           <details class="faq-item" open>
             <summary><span>01</span>券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Founding 券对该笔订阅是终身 100% off。Founding Partner——前 10 位订阅者——凭券支付 US$0。券发完后，新订阅按正价 US$__CLOUD_MONTHLY_USD__ 收取。</p>
+              <p class="orbi-faq-answer-p">Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 6 位。</p>
               <p class="orbi-faq-answer-p">登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
             </div>
           </details>
@@ -319,16 +335,16 @@
           </details>
 
           <details class="faq-item">
-            <summary><span>05</span>Founding Partner 每月一个被采纳的 Issue，没做到会怎样？</summary>
+            <summary><span>05</span>创始会员优惠包含什么？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">条件写在明处：每月提交 1 个被采纳的 Issue。token 赠送——每月 __FOUNDING_TOKENS__ token 由 Orbi 承担——按月发放，与这条贡献同步续期，滚动发放，不设总时长上限。订阅承诺见上方 Founding Partner 段。</p>
+              <p class="orbi-faq-answer-p">创始会员永久 5 折，限 6 位；Free、Solo、Pro 三档的额度不变。</p>
             </div>
           </details>
 
           <details class="faq-item">
             <summary><span>06</span>自托管和 Cloud 能同时用吗？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">可以。自托管 fair-code 核心依旧永久免费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。</p>
+              <p class="orbi-faq-answer-p">可以。自托管 fair-code 核心不收平台费。Cloud 是跑在我们维护的基础设施上的托管 Runner。订阅 Cloud 并不取代自托管，自托管也不需要 Cloud 订阅。</p>
             </div>
           </details>
 
@@ -345,7 +361,7 @@
     <section class="closing shell" aria-labelledby="start-title">
       <p class="section-tag">创始试点</p>
       <h2 class="orbi-closing-h2" id="start-title">从第一个 Issue 开始</h2>
-      <p >用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管依旧永久免费。</p>
+      <p >用 GitHub 登录，安装 App，连接仓库——你的 Runner 随即开通，第一个 Issue 就能开工。想自己运行交付产线，自托管不收平台费。</p>
       <div class="cta-row">
         <a class="button button-signal" data-cta="pricing" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/zh/">Orbi 本身能做什么 →</a>
