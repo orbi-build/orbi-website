@@ -115,7 +115,8 @@ function serve(raw, path) {
 describe("Pricing card action alignment (Issue #472)", () => {
   it("uses one bottom-aligned action wrapper for every Cloud pricing card", async () => {
     const css = await readFile(`${PUBLIC_DIR}../public/styles.css`, "utf8");
-    expect(css).toContain(".pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: auto; }");
+    expect(css).toContain(".pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-height: 110px; margin-top: auto; }");
+    expect(css).toContain(".pricing-card-actions { min-height: 0; }");
     expect(css).toContain(".pricing-card { display: flex; flex-direction: column;");
     expect(css).not.toContain(".pricing-card-featured { border: 2px solid var(--signal); transform: translateY(-8px); }");
 

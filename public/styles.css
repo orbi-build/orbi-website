@@ -1226,7 +1226,9 @@ h2 {
 .pricing-card-price span { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
 .pricing-card > p:not(.pricing-card-kicker):not(.pricing-card-price) { margin: 0; color: var(--ink-soft); }
 .pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
-.pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: auto; }
+/* Reserve the paid cards' second action row so every primary action starts
+   at the same height. The cards stack independently on phones. */
+.pricing-card-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-height: 110px; margin-top: auto; }
 .pricing-card .button { align-self: flex-start; margin-top: 0; }
 .self-hosted-note { color: var(--ink-soft); }
 
@@ -1840,6 +1842,7 @@ h2 {
 
   .run-orbi { padding: 88px 0; }
   .pricing-cards { grid-template-columns: 1fr; }
+  .pricing-card-actions { min-height: 0; }
   .pricing-card-featured { transform: none; }
   .run-options { grid-template-columns: 1fr; margin-top: 55px; }
   .run-option { min-height: auto; padding: 28px 22px; }
