@@ -50,9 +50,10 @@ merge moment, which is how the soak window is honored.
   Conflicts are listed under the tree hash; fix them on beta first.
 
 - **Soak reality check.** The soak gate protects real users, so it may be
-  skipped only when there are none. Count active subscriptions with a
-  read-only query against the control-plane database (record the value in
-  the promotion issue either way — never assume it):
+  skipped only when there are none. Check active subscriptions with a
+  read-only query against the control-plane database, but record only the
+  conclusion in the promotion issue: `有活跃订阅，须满足 soak` or
+  `无活跃订阅，可 skip_soak` — never record a count or other operating data:
 
   ```
   cd <orbi-cloud checkout>
