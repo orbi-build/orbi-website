@@ -1,11 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const workflow = readFileSync(new URL("../.github/workflows/deploy-production.yml", import.meta.url), "utf8");
-const newestLine = workflow.match(/^\s*(newest=.*)$/m)?.[1];
+const script = new URL("../scripts/check-beta-soak.mjs", import.meta.url);
 
 function git(repo, args, date) {
   return execFileSync("git", args, {
@@ -23,59 +22,100 @@ function git(repo, args, date) {
   }).trim();
 }
 
-function gateResult(repo, previous, sha, requiredHours = 4) {
-  const script = `
-    set -euo pipefail
-    previous="$1"
-    GITHUB_SHA="$2"
-    required="$3"
-    ${newestLine}
-    if [[ -z "$newest" ]]; then exit 0; fi
-    age="$(awk -v now="$(date +%s)" -v t="$newest" 'BEGIN {printf "%.1f", (now - t) / 3600}')"
-    awk -v a="$age" -v r="$required" 'BEGIN {exit !(a + 0 >= r + 0)}'
-  `;
+function fixture(repo, runs) {
+  const file = join(repo, "runs.json");
+  writeFileSync(file, JSON.stringify(runs));
+  return file;
+}
+
+function check(repo, snapshot, runs, requiredHours, now, extra = []) {
   try {
-    execFileSync("bash", ["-c", script, "gate", previous, sha, String(requiredHours)], {
-      cwd: repo,
-      encoding: "utf8",
-      timeout: 10_000,
-      stdio: "pipe",
-    });
-    return true;
+    return {
+      status: 0,
+      stdout: execFileSync("node", [
+        script.pathname,
+        "--snapshot-sha", snapshot,
+        "--required-hours", String(requiredHours),
+        "--runs-file", fixture(repo, runs),
+        "--now", String(now),
+        ...extra,
+      ], { cwd: repo, encoding: "utf8", timeout: 10_000, stdio: "pipe" }),
+    };
   } catch (error) {
-    if (error.status === 1) return false;
-    throw error;
+    return { status: error.status, stdout: error.stdout, stderr: error.stderr };
   }
 }
 
-describe("production promotion runbook", () => {
-  it("soaks the dispatched non-merge commits, not later beta-only commits", () => {
-    expect(newestLine).toContain("git log --no-merges");
-    expect(newestLine).toContain('"$GITHUB_SHA" --not "$previous"');
+function setup() {
+  const repo = mkdtempSync(join(tmpdir(), "orbi-soak-"));
+  git(repo, ["init", "-q"]);
+  const now = Math.floor(Date.now() / 1000);
+  git(repo, ["commit", "--allow-empty", "-m", "snapshot"], new Date((now - 10 * 3600) * 1000).toISOString());
+  const snapshot = git(repo, ["rev-parse", "HEAD"]);
+  git(repo, ["commit", "--allow-empty", "-m", "new beta head"], new Date((now - 10 * 60) * 1000).toISOString());
+  const betaHead = git(repo, ["rev-parse", "HEAD"]);
+  return { repo, now, snapshot, betaHead };
+}
 
-    const repo = mkdtempSync(join(tmpdir(), "orbi-soak-"));
+function betaDeployment(headSha, deployedAt, overrides = {}) {
+  return {
+    head_sha: headSha,
+    head_branch: "beta",
+    conclusion: "success",
+    updated_at: deployedAt,
+    ...overrides,
+  };
+}
+
+describe("production promotion soak script", () => {
+  it("passes a five-hour-old beta deployment despite a newer beta head", () => {
+    const { repo, now, snapshot, betaHead } = setup();
     try {
-      git(repo, ["init", "-q"]);
-      const now = Math.floor(Date.now() / 1000);
-      git(repo, ["commit", "--allow-empty", "-m", "previous"], new Date((now - 6 * 3600) * 1000).toISOString());
-      const previous = git(repo, ["rev-parse", "HEAD"]);
-      git(repo, ["commit", "--allow-empty", "-m", "promoted"], new Date((now - 5 * 3600) * 1000).toISOString());
-      const promoted = git(repo, ["rev-parse", "HEAD"]);
+      const deployedAt = new Date((now - 5 * 3600) * 1000).toISOString();
+      const result = check(repo, snapshot, [betaDeployment(betaHead, deployedAt)], 4, now);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain(`First successful beta deployment containing snapshot: ${deployedAt}`);
+      expect(result.stdout).toContain("Snapshot beta soak age: 5.0h");
+    } finally { rmSync(repo, { recursive: true, force: true }); }
+  });
 
-      git(repo, ["checkout", "-q", "-b", "side", previous]);
-      git(repo, ["commit", "--allow-empty", "-m", "side"], new Date((now - 5 * 3600) * 1000).toISOString());
-      const side = git(repo, ["rev-parse", "HEAD"]);
-      git(repo, ["checkout", "-q", "-B", "promotion", promoted]);
-      git(repo, ["merge", "--no-ff", "--no-edit", side], new Date(now * 1000).toISOString());
-      const merge = git(repo, ["rev-parse", "HEAD"]);
-      git(repo, ["commit", "--allow-empty", "-m", "beta-only"], new Date((now - 1 * 3600) * 1000).toISOString());
-      const betaOnly = git(repo, ["rev-parse", "HEAD"]);
+  it("fails a one-hour-old deployment and reports the remaining time", () => {
+    const { repo, now, snapshot, betaHead } = setup();
+    try {
+      const result = check(repo, snapshot, [betaDeployment(betaHead, new Date((now - 3600) * 1000).toISOString())], 4, now);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("Retry in about 3.0h");
+    } finally { rmSync(repo, { recursive: true, force: true }); }
+  });
 
-      expect(gateResult(repo, previous, promoted)).toBe(true);
-      expect(gateResult(repo, previous, merge)).toBe(true);
-      expect(gateResult(repo, previous, betaOnly)).toBe(false);
-    } finally {
-      rmSync(repo, { recursive: true, force: true });
-    }
+  it("uses beta deployment completion time rather than run creation or commit author time", () => {
+    const { repo, now, snapshot, betaHead } = setup();
+    try {
+      const result = check(repo, snapshot, [betaDeployment(
+        betaHead,
+        new Date((now - 20 * 60) * 1000).toISOString(),
+        { created_at: new Date((now - 10 * 3600) * 1000).toISOString() },
+      )], 4, now);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("only 0.3h");
+    } finally { rmSync(repo, { recursive: true, force: true }); }
+  });
+
+  it("fails with the concrete not-deployed message", () => {
+    const { repo, now, snapshot } = setup();
+    try {
+      const result = check(repo, snapshot, [], 4, now);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("this snapshot has not been deployed to beta");
+    } finally { rmSync(repo, { recursive: true, force: true }); }
+  });
+
+  it("preserves skip_soak and zero-hour bypasses", () => {
+    const { repo, now, snapshot } = setup();
+    try {
+      const runs = [];
+      expect(check(repo, snapshot, runs, "invalid but skipped", now, ["--skip-soak"]).status).toBe(0);
+      expect(check(repo, snapshot, runs, 0, now).status).toBe(0);
+    } finally { rmSync(repo, { recursive: true, force: true }); }
   });
 });

@@ -217,20 +217,30 @@ are permanently diverged — every promotion is a true merge, never a fast-forwa
 
 ## Promotion to production (beta → main)
 
-One PR, head `beta`, base `main`, merged with GitHub's **Create a merge commit**
-(the `--no-ff` merge). The PR never auto-merges: a human picks the merge moment,
-which is how the soak window is honored.
+Promote a fixed, already-deployed beta snapshot; never open the production PR
+from the moving `beta` head. Create a branch at the exact beta commit that is to
+ship (for example `promote/<date>`), then open one PR from that snapshot branch
+to `main` and merge it with GitHub's **Create a merge commit** (`--no-ff`). The
+PR never auto-merges: a human picks the merge moment.
 
 ```
-gh pr create --repo orbi-build/orbi-website --base main --head beta \
-  --title "晋升 beta 到 main：<一句话概括>" --body-file <evidence body>
+git switch -c promote/<date> <deployed-beta-sha>
+gh pr create --repo orbi-build/orbi-website --base main --head promote/<date> \
+  --title "晋升 beta 快照到 main：<一句话概括>" --body-file <evidence body>
 ```
+
+The production workflow requires the resulting merge commit to have that beta
+snapshot as its second parent. It finds the first successful Deploy beta run
+whose `headSha` is the snapshot or a descendant, and measures soak from that
+workflow run's deployment time. A newer commit on `beta` does not alter the
+snapshot or reset its soak. If no successful beta deployment contains the
+snapshot, the gate fails with `this snapshot has not been deployed to beta`.
 
 Before opening the PR:
 
 - **Merge preflight**, no working-tree change:
-  `git fetch origin && git merge-tree --write-tree --name-only origin/main origin/beta`.
-  Conflicts are listed under the tree hash; fix them on `beta` first.
+  `git fetch origin && git merge-tree --write-tree --name-only origin/main promote/<date>`.
+  Conflicts are listed under the tree hash; fix them on the snapshot branch first.
 - **Soak reality check.** The soak gate (`PROD_MIN_SOAK_HOURS`, repo variable,
   default 4) protects real users, so it may be skipped only when there are none.
   Check active subscriptions read-only against the control-plane database, but
@@ -238,11 +248,10 @@ Before opening the PR:
   `无活跃订阅，可 skip_soak` — never record a count or other operating data:
   `timeout 90 npx wrangler d1 execute orbi_control_plane_e2e --remote --command "SELECT status, COUNT(*) AS n FROM subscriptions GROUP BY status" --json`
   (run from an orbi-cloud checkout). `subscriptions=0` means the wait protects
-  nobody: merge any time and, if the soak job would still fail on commit age,
-  dispatch the workflow with `skip_soak=true` (the documented hotfix path —
-  it skips the soak, never the approval). Any active subscription means merging
-  only once the newest `beta` commit is at least `PROD_MIN_SOAK_HOURS` old
-  (`git log -1 --format=%cI origin/beta`, compared against now in UTC).
+  nobody: merge any time and, if the soak job would still fail, dispatch with
+  `skip_soak=true` (the documented hotfix path — it skips soak, never approval).
+  Any active subscription still uses the beta deployment time, not the commit
+  author time.
 - **Drill the anti-drift gate.** A gate that has never been seen red is not
   evidence of anything (Issue #151: the pricing gate existed only on `beta` while
   `main` shipped stale copy). On the branch about to be promoted:
