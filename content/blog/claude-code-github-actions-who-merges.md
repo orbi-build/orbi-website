@@ -4,7 +4,7 @@ date: 2026-09-19
 summary: Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.
 lang: en
 author: Orbi
-image: /img/blog-claude-actions.png
+image: /img/blog-claude-actions-card.png
 ---
 
 Once [Claude Code](https://github.com/anthropics/claude-code-action) is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.
@@ -55,7 +55,7 @@ You do not need to replace it. The action is the execution layer; what is missin
 2. **A merge gate that re-checks CI, head and base** at merge time rather than trusting a verdict from ten minutes ago.
 3. **A release path that is deterministic**, so that shipping is not a model deciding it is probably fine.
 
-[Orbi](https://github.com/orbi-build/orbi) is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. Its engine can run Claude Code, Codex or any OpenAI-compatible model underneath, so if you already have the action working, the model side of your setup does not change.
+[Orbi](https://github.com/orbi-build/orbi) is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. It runs on the Pi agent harness with your own model: any OpenAI-compatible API, or a Codex subscription. Claude Code is not one of its engines.
 
 Or take the three conditions and build them into whatever you already run. The conditions matter more than whose code enforces them.
 
