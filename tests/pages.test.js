@@ -291,6 +291,24 @@ describe("merged pull request cost page (Issue #512)", () => {
   });
 });
 
+describe("DeepSeek coding-agent cost post (Issue #513)", () => {
+  const outputs = [
+    "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
+    "zh/blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
+  ];
+  const measurements = ["10.6M", "$0.125", "$0.417", "$0.249", "$0.834", "97.1%", "1/50"];
+
+  it("publishes the measured figures and the current deepseek-flash provider template", () => {
+    for (const output of outputs) {
+      const html = shipped.get(output);
+      for (const measurement of measurements) expect(html, `${output}: ${measurement}`).toContain(measurement);
+      expect(html, `${output}: provider model`).toContain("&quot;id&quot;: &quot;deepseek-flash&quot;");
+      expect(html, `${output}: provider output limit`).toContain("&quot;maxTokens&quot;: 16384");
+      expect(html, `${output}: release outcome`).toMatch(/tagged release|打 tag 发 Release/);
+    }
+  });
+});
+
 describe("comparison fact corrections (Issue #467)", () => {
   it("labels Keelen as open beta in both languages", () => {
     expect(shipped.get("compare/keelen/index.html")).toContain("currently in open beta");
@@ -354,19 +372,24 @@ describe("Issue #438 wording and internal-link contracts", () => {
     }
   });
 
-  it("ends every blog body with two or three contextual compare/cloud links", () => {
+  it("ends every blog body with two or three contextual links", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
       const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
       const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
       const prefix = post.lang === "zh" ? "/zh" : "";
-      const links = [...related.matchAll(/href="([^"]+)"/g)]
-        .map((match) => match[1])
-        .filter((href) => href.startsWith(`${prefix}/compare/`) || href === `${prefix}/cloud/`);
-      expect(links.length, `${post.output}: related links`).toBeGreaterThanOrEqual(2);
-      expect(links.length, `${post.output}: related links`).toBeLessThanOrEqual(3);
-      expect(links.some((href) => href.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
-      expect(links, `${post.output}: Cloud link`).toContain(`${prefix}/cloud/`);
+      const links = [...related.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+      if (post.slug === "deepseek-coding-agent-cost-per-merged-pr") {
+        expect(links, `${post.output}: DeepSeek related links`).toEqual([
+          `${prefix}/cost/`, `${prefix}/cloud/`, `${prefix}/guides/auto-merge-ai-prs/`,
+        ]);
+        continue;
+      }
+      const contextual = links.filter((href) => href.startsWith(`${prefix}/compare/`) || href === `${prefix}/cloud/`);
+      expect(contextual.length, `${post.output}: related links`).toBeGreaterThanOrEqual(2);
+      expect(contextual.length, `${post.output}: related links`).toBeLessThanOrEqual(3);
+      expect(contextual.some((href) => href.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
+      expect(contextual, `${post.output}: Cloud link`).toContain(`${prefix}/cloud/`);
     }
   });
 });
@@ -803,10 +826,16 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
   it("uses fixed-monthly headings and removes the unsupported per-PR claim from every shipped HTML page", () => {
     expect(shipped.get("cloud/index.html")).toContain("A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
     expect(shipped.get("zh/cloud/index.html")).toContain("按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。");
+    const measuredCostOutputs = new Set([
+      "cost/index.html",
+      "zh/cost/index.html",
+      "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
+      "blog/index.html",
+    ]);
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       expect(html, output).not.toContain("$1–3");
-      if (!output.endsWith("cost/index.html") && !output.endsWith("zh/cost/index.html")) {
+      if (!measuredCostOutputs.has(output)) {
         expect(html, output).not.toContain("per merged PR");
         expect(html, output).not.toContain("每个合并 PR 约");
       }
