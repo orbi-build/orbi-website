@@ -558,8 +558,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
       expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
-        : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+        ? "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"
+        : "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
         : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
