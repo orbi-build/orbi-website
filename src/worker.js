@@ -190,23 +190,10 @@ async function loadFoundingAvatars(db) {
   return (tenants?.results || []).map((row) => row.login).filter(Boolean);
 }
 
-async function loadFoundingStats(db) {
-  if (!db) return null;
-  const active = await db.prepare("SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'").first();
-  return {
-    active: Number(active?.count),
-    limit: pricing.foundingPartnerLimit,
-  };
-}
-
-async function loadStats(token, db) {
-  const [groups, founding] = await Promise.all([
-    Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null))),
-    loadFoundingStats(db).catch(() => null),
-  ]);
+async function loadStats(token) {
+  const groups = await Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)));
   return {
     repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])),
-    founding,
   };
 }
 
@@ -969,7 +956,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit

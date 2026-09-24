@@ -561,7 +561,6 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
-  founding: { active: 4, limit: 6 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -1239,7 +1238,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ founding: { active: 4, limit: 6 }, repos: {} }),
+      body: JSON.stringify({ repos: {} }),
     }));
   }
   page.on("console", (message) => {
@@ -1256,14 +1255,6 @@ async function assertCloudPage(browser, path, size, screenshot) {
   // DOM load is the bounded navigation gate. The Cloud walkthrough requests
   // muted autoplay; deployed-browser playback remains the maintainer gate.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-  if (!process.env.BASE_URL) {
-    const availability = page.locator("[data-founding-availability]");
-    if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
-    const expected = path.startsWith("/zh") ? "· 还剩 2 / 6 个名额" : "· 2 of 6 left";
-    if ((await availability.textContent()).trim() !== expected) {
-      throw new Error(`${path}: Founding availability does not match D1 fixture`);
-    }
-  }
   const demo = page.locator(".cloud-demo");
   const video = demo.locator(".proof-loop-video");
   if ((await demo.count()) !== 1 || (await video.count()) !== 1) {

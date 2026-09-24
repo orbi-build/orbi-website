@@ -48,7 +48,7 @@ proposal on that page, not a shipping repository.
 a commercial hosted control plane that keeps the same GitHub-native ledger.
 Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year,
 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M
-tokens, 5 repositories, priority queue). Failed deliveries are free; when
+tokens, 5 repositories). Failed deliveries are free; when
 the allowance runs out, new deliveries pause with no overage bill. Founding
 partners get 50% off forever, limited to 6 places. Fully self-hosting the core costs nothing and
 always will. Details and signup: https://orbi.build/cloud/
@@ -180,7 +180,7 @@ restart reconstructs the same run, branch, worktree, and PR.
 
 **What does it cost?** Self-hosting is free forever. Managed Cloud offers Free (3 merged deliveries), Solo (US$29/month or
 US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year,
-300M tokens, 5 repositories, priority queue). What the
+300M tokens, 5 repositories). What the
 model usage itself costs is measured, not
 estimated: 46 real deliveries aggregated as of 2026-09-12 put the median delivery
 at 2,220,637 totalTokens and the mean at 4,742,066 — roughly $0.06–0.12 per

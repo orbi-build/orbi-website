@@ -311,8 +311,8 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   it("serves the cost-page reconciliation from pricing.json", async () => {
     expect(MEASURED_SNAPSHOT_DELIVERIES_TOKEN).not.toBe(MEASURED_SNAPSHOT_DELIVERIES);
     for (const [costPage, wording] of [
-      ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
-      ["zh/cost/index.html", `折算约为 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
+      ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per Pro's ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
+      ["zh/cost/index.html", `折算约为 Pro 的 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
     ]) {
       const raw = await readFile(`${PUBLIC_DIR}${costPage}`, "utf8");
       expect(raw).toContain(MEASURED_SNAPSHOT_DELIVERIES_TOKEN);
@@ -428,6 +428,19 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
 });
 
 describe("Three-tier Cloud pricing (Issue #441)", () => {
+  it("keeps Cloud copy tier-specific and removes unsupported availability claims", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      expect(body.toLowerCase(), relativePath).not.toContain("priority queue");
+      expect(body, relativePath).not.toContain("优先队列");
+      expect(body, relativePath).not.toContain("data-founding-availability");
+      for (const line of body.split("\n").filter((line) => line.includes("300M"))) {
+        expect(line, relativePath).toMatch(/Solo|Pro/);
+      }
+    }
+  });
+
   it("pins the approved plan prices and allowances", () => {
     expect(pricing).toMatchObject({
       soloMonthlyUsd: 29,

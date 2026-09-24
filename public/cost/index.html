@@ -112,7 +112,7 @@
             <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
           </tbody>
         </table>
-      <p class="src-note">The 2026-09-12 snapshot mean of 4,742,066 tokens works out to about __MEASURED_SNAPSHOT_DELIVERIES__ deliveries per __INCLUDED_TOKENS__ tokens. The Cloud pricing page uses about __MEASURED_LARGE_CODEBASE_DELIVERIES__ deliveries because it was measured later on large-codebase deliveries; the samples contain different task sizes. See <a href="/cloud/#pricing">Cloud pricing</a> for the current plan number.</p>
+      <p class="src-note">The 2026-09-12 snapshot mean of 4,742,066 tokens works out to about __MEASURED_SNAPSHOT_DELIVERIES__ deliveries per Pro's __INCLUDED_TOKENS__ tokens. The Cloud pricing page uses about __MEASURED_LARGE_CODEBASE_DELIVERIES__ deliveries because it was measured later on large-codebase deliveries; the samples contain different task sizes. See <a href="/cloud/#pricing">Cloud pricing</a> for the current plan number.</p>
       <p class="src-note">Source, so anyone can re-derive it: the agent session logs of the orbi-build/orbi repository's git worktrees (<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>), aggregated 2026-09-12. One delivery = one worktree's implement + review sessions; a delivery's totalTokens = the sum of <code>usage.totalTokens</code> over every logged record; n = worktrees whose logs carry at least one usage record (older or newer sessions without usage logging are not countable); percentiles by nearest rank. The sample moves as worktrees are cleaned up. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
     </section>
 
