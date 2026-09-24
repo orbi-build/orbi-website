@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Devin 替代：自托管 AI 编程 agent 对比</title>
-  <meta name="description" content="Orbi vs Devin：对比自托管 GitHub 交付与 Cognition 云端工程师的任务、成本和所有权，并说明关键取舍和事实来源。">
+  <title>Devin 的开源替代：可自托管的 Orbi | Orbi</title>
+  <meta name="description" content="Orbi 是 Devin 的开源（AGPL-3.0）替代方案，可自托管，把 GitHub Issue 交付到审查后的 PR 与发版，并对比两者的价格模式。">
   <link rel="canonical" href="https://orbi.build/zh/compare/devin/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
@@ -57,6 +57,18 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Orbi 是开源的 Devin 替代方案吗？","acceptedAnswer":{"@type":"Answer","text":"是。Orbi 以 AGPL-3.0 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。"}},
+    {"@type":"Question","name":"可以自托管 Orbi 吗？","acceptedAnswer":{"@type":"Answer","text":"可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。Orbi Cloud 是希望由 Orbi 为你运营交付产线时的托管选项。"}},
+    {"@type":"Question","name":"和 Devin 相比，Orbi 怎么收费？","acceptedAnswer":{"@type":"Answer","text":"自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Free、Solo、Pro 三档；Devin 列出订阅套餐和按消息计价的用量。查看价格成本对比和带日期的价格表。"}},
+    {"@type":"Question","name":"Orbi 会合并自己的 PR 吗？","acceptedAnswer":{"@type":"Answer","text":"只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读Orbi 如何安全自动合并 AI pull request。"}}
+  ]
+}
+</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到正文</a>
@@ -89,8 +101,8 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="compare-title">
         <p class="eyebrow">竞品对比 · 事实核实于 2026-09-07</p>
-        <h1 id="compare-title">Orbi vs Devin</h1>
-        <p class="hero-lede"><strong>雇一个工程师，还是运营一条交付产线。</strong>Devin 是 Cognition 的托管自主工程师：你在 Slack 或网页里派活，它在 Cognition 的云里干活，交回 pull request。Orbi 是自托管的交付系统：你自己的机器、你自己的模型 key、你自己的 GitHub 队列。两者最终都产出一个经过审查的 PR——真正的对比在于：机器、模型和计价器握在谁手里。本页每条陈述都标注来源。</p>
+        <h1 id="compare-title">Devin 的开源替代：Orbi 与 Devin 对比</h1>
+        <p class="hero-lede"><strong>雇一个工程师，还是运营一条交付产线。</strong>Devin 是 Cognition 的托管自主工程师：你在 Slack 或网页里派活，它在 Cognition 的云里干活，交回 pull request。Orbi 是开源（AGPL-3.0）的自托管交付系统：你自己的机器、你自己的模型 key、你自己的 GitHub 队列。两者最终都产出一个经过审查的 PR——真正的对比在于：机器、模型和计价器握在谁手里。本页每条陈述都标注来源。</p>
         <div class="cta-row">
           <a class="button button-signal" href="https://docs.orbi.build/zh">自托管 Orbi</a>
           <a class="button button-ghost" href="/zh/compare/">全部对比</a>
@@ -139,6 +151,26 @@
         </ol>
         <p class="thesis-punch">一台读数你无法完全预测的计价器，以 vendor 可以改写的结构计价——它已经被改写过一次。可预测的成本，是单位握在你手里的成本：你的机器，你的模型，你的计价器。</p>
       </div>
+    </section>
+
+    <section class="compare-section shell compare-section-tint" aria-labelledby="pricing-title">
+      <p class="section-tag">价格模式</p>
+      <h2 class="orbi-compare-section-h2" id="pricing-title">Orbi 与 Devin 的价格对比</h2>
+      <p class="section-lede">两者的套餐形状不同：Orbi 可按 AGPL-3.0 免费自托管，也可以选择 Free、Solo、Pro 三档 Cloud。Devin 列出订阅套餐，并按消息计价；下表是带日期的价格快照。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr><th scope="col">套餐</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">免费</th><td>自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。Cloud Free：__FREE_DELIVERIES__ 次合并交付。</td><td>$0，light quota。</td></tr>
+            <tr><th scope="row">个人</th><td>Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，1 个仓库。</td><td>Pro：每月 $20。</td></tr>
+            <tr><th scope="row">团队 / 规模</th><td>Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，5 个仓库。</td><td>Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
+            <tr><th scope="row">计量</th><td>自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td>「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Devin 价格与计费原文：<a class="orbi-src-note-a" href="https://devin.ai/pricing" rel="noopener">Devin 官方定价页</a>，抓取于 2026-09-24；该页也为 Enterprise 列出「Dedicated deployment option」。Orbi Cloud 价格与额度：<a class="orbi-src-note-a" href="/zh/cloud/#pricing">Orbi Cloud 价格</a>。</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="differences-title">
@@ -215,6 +247,17 @@
             <a class="button button-outline" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
           </article>
         </div>
+      </div>
+    </section>
+
+    <section class="compare-section compare-section-tint shell faq" id="faq" aria-labelledby="faq-title">
+      <p class="section-tag">常见问题</p>
+      <h2 class="orbi-compare-section-h2" id="faq-title">开源 Devin 替代方案 FAQ</h2>
+      <div class="faq-list">
+        <details class="faq-item" open><summary><span>01</span>Orbi 是开源的 Devin 替代方案吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">是。Orbi 以 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE" rel="noopener">AGPL-3.0</a> 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。</p></div></details>
+        <details class="faq-item"><summary><span>02</span>可以自托管 Orbi 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。<a href="/zh/cloud/">Orbi Cloud</a> 是希望由 Orbi 为你运营交付产线时的托管选项。</p></div></details>
+        <details class="faq-item"><summary><span>03</span>和 Devin 相比，Orbi 怎么收费？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Free、Solo、Pro 三档；Devin 列出订阅套餐和按消息计价的用量。查看<a href="/zh/cost/">价格成本对比</a>和带日期的<a href="#pricing-title">价格表</a>。</p></div></details>
+        <details class="faq-item"><summary><span>04</span>Orbi 会合并自己的 PR 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读<a href="/zh/guides/auto-merge-ai-prs/">Orbi 如何安全自动合并 AI pull request</a>。</p></div></details>
       </div>
     </section>
 

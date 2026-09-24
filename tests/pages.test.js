@@ -605,9 +605,9 @@ describe("per-page head parameters (title / description / canonical)", () => {
   it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
     const expected = {
       "compare/devin/index.html": {
-        title: "Self-hosted Devin alternative: Orbi vs Devin | Orbi",
+        title: "Open-source Devin alternative, self-hosted | Orbi",
         description:
-          "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
+          "Open-source (AGPL-3.0) Orbi is a self-hosted Devin alternative that takes GitHub Issues to reviewed pull requests and releases, with a price-model comparison.",
       },
       "compare/github-copilot-coding-agent/index.html": {
         title: "Copilot cloud agent alternative: who merges the PR | Orbi",
@@ -884,6 +884,48 @@ describe("cloud buyer FAQ (Issue #166)", () => {
       expect(questions, `${output} reused a homepage question`).not.toEqual(home);
       for (const question of questions) {
         expect(home, `${output}: ${question}`).not.toContain(question);
+      }
+    }
+  });
+});
+
+describe("Devin comparison SEO and pricing (Issue #511)", () => {
+  it("ships the keyword metadata, dated price source, pricing tokens, links, and one H1 in both languages", () => {
+    const expectations = [
+      ["compare/devin/index.html", "open-source", 150, 160, ["/cost/", "/guides/auto-merge-ai-prs/", "/cloud/"]],
+      ["zh/compare/devin/index.html", "开源", 70, 80, ["/zh/cost/", "/zh/guides/auto-merge-ai-prs/", "/zh/cloud/"]],
+    ];
+    for (const [output, keyword, minDescription, maxDescription, links] of expectations) {
+      const html = shipped.get(output).replace(/<!--[\s\S]*?-->/g, "");
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+      expect(title.toLowerCase(), output).toContain(keyword);
+      expect(title.length, output).toBeLessThanOrEqual(60);
+      expect(description.length, output).toBeGreaterThanOrEqual(minDescription);
+      expect(description.length, output).toBeLessThanOrEqual(maxDescription);
+      expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
+      expect(html, output).toContain('href="https://devin.ai/pricing"');
+      expect(html, output).toContain("2026-09-24");
+      expect(html, output).toContain("__SOLO_MONTHLY_USD__");
+      expect(html, output).toContain("__CLOUD_MONTHLY_USD__");
+      expect(html, output).toContain("__SOLO_INCLUDED_TOKENS__");
+      expect(html, output).toContain("__INCLUDED_TOKENS__");
+      for (const link of links) expect(html, `${output}: ${link}`).toContain(`href="${link}`);
+    }
+  });
+
+  it("keeps visible FAQ answers and FAQPage JSON-LD in lockstep", () => {
+    for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
+      const html = shipped.get(output);
+      const faqSection = html.match(/<section class="compare-section compare-section-tint shell faq"[\s\S]*?<\/section>/)?.[0] ?? "";
+      const items = [...faqSection.matchAll(/<details class="faq-item"(?: open)?[^>]*>[\s\S]*?<summary><span>[^<]*<\/span>([\s\S]*?)<\/summary>[\s\S]*?<div class="faq-answer">([\s\S]*?)<\/div>[\s\S]*?<\/details>/g)].map((match) => ({ question: stripTags(match[1]), answer: stripTags(match[2]) }));
+      expect(items, output).toHaveLength(4);
+      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
+      expect(faq, output).toBeTruthy();
+      expect(faq.mainEntity, output).toHaveLength(items.length);
+      for (const [index, entity] of faq.mainEntity.entries()) {
+        expect(entity.name, `${output} Q${index + 1}`).toBe(items[index].question);
+        expect(entity.acceptedAnswer.text, `${output} Q${index + 1}`).toBe(items[index].answer);
       }
     }
   });
