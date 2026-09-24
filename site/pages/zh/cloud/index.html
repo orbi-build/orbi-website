@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
+  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -74,11 +74,17 @@
         "about": { "@id": "https://orbi.build/zh/cloud/#offer" }
       },
       {
-        "@type": "Offer",
+        "@type": "AggregateOffer",
         "@id": "https://orbi.build/zh/cloud/#offer",
-        "name": "Orbi Cloud — 创始试点",
-        "price": "__CLOUD_MONTHLY_USD__",
+        "name": "Orbi Cloud 套餐",
+        "lowPrice": "__SOLO_MONTHLY_USD__",
+        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "offerCount": "2",
         "priceCurrency": "USD",
+        "offers": [
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+        ],
         "description": "Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
         "url": "https://orbi.build/zh/cloud/"
       },

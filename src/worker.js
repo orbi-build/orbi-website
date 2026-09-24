@@ -197,13 +197,13 @@ async function loadStats(token) {
   };
 }
 
-async function statsResponse(request, token, db) {
+async function statsResponse(request, token) {
   const cache = caches.default;
   const cached = await cache.match(STATS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token, db);
+  const stats = await loadStats(token);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -260,13 +260,13 @@ function formatStatusText(stats) {
   return lines.join("\n");
 }
 
-async function statusResponse(request, token, db) {
+async function statusResponse(request, token) {
   const cache = caches.default;
   const cached = await cache.match(STATUS_CACHE_KEY);
   if (cached) {
     return cached;
   }
-  const stats = await loadStats(token, db);
+  const stats = await loadStats(token);
   const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
@@ -556,7 +556,7 @@ async function handleFetch(request, env, ctx) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
+        return await statsResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -576,7 +576,7 @@ async function handleFetch(request, env, ctx) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN, env.CONTROL_PLANE_DB);
+        return await statusResponse(request, env.GITHUB_TOKEN);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {

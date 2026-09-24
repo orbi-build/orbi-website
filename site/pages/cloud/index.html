@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed — with __INCLUDED_TOKENS__ tokens of model usage included. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -75,11 +75,17 @@
         "about": { "@id": "https://orbi.build/cloud/#offer" }
       },
       {
-        "@type": "Offer",
+        "@type": "AggregateOffer",
         "@id": "https://orbi.build/cloud/#offer",
         "name": "Orbi Cloud plans",
-        "price": "__CLOUD_MONTHLY_USD__",
+        "lowPrice": "__SOLO_MONTHLY_USD__",
+        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "offerCount": "2",
         "priceCurrency": "USD",
+        "offers": [
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+        ],
         "description": "Solo includes __SOLO_INCLUDED_TOKENS__ tokens per month; Pro includes __INCLUDED_TOKENS__ tokens per month. About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills. Founding partners get 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.",
         "url": "https://orbi.build/cloud/"
       },

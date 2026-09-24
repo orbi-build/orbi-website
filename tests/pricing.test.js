@@ -64,7 +64,7 @@ function quotaLiterals(html) {
 // The JSON-LD carrier states the price without a currency sign, so its
 // `"price": "…"` form counts too.
 function literalPrice(value) {
-  return new RegExp(`\\$${value}(?![\\d,])|"price":\\s*"${value}"`, "g");
+  return new RegExp(`\\$${value}(?![\\d,])|"(?:price|highPrice)":\\s*"${value}"`, "g");
 }
 
 // A "$79" without the US prefix: the cost tables used to write the monthly
@@ -143,7 +143,7 @@ describe("Cloud monthly price constant (Issue #102)", () => {
     }
   });
 
-  it("keeps the JSON-LD Offer valid and priced at the constant", async () => {
+  it("keeps the JSON-LD offers valid and priced at both plan constants", async () => {
     for (const relativePath of ["cloud/index.html", "zh/cloud/index.html"]) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
@@ -151,12 +151,14 @@ describe("Cloud monthly price constant (Issue #102)", () => {
       expect(scripts.length, relativePath).toBeGreaterThan(0);
       const offers = scripts.flatMap((script) => {
         const data = JSON.parse(script); // throws if the substitution broke the structure
-        return (data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
+        return (data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
       });
       expect(offers, relativePath).toHaveLength(1);
-      expect(offers[0].price, relativePath).toBe(USD);
+      expect(offers[0].lowPrice, relativePath).toBe(SOLO_USD);
+      expect(offers[0].highPrice, relativePath).toBe(USD);
+      expect(offers[0].offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
       expect(offers[0].description, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
-      // website#145: the Offer description is what search engines and LLMs
+      // website#145: the aggregate description is what search engines and LLMs
       // scrape — it must carry the rendered quota label, never the token or
       // a stale literal.
       expect(offers[0].description, relativePath).toContain(TOKENS_LABEL);
@@ -438,6 +440,29 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       for (const line of body.split("\n").filter((line) => line.includes("300M"))) {
         expect(line, relativePath).toMatch(/Solo|Pro/);
       }
+    }
+  });
+
+  it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
+    for (const [relativePath, metadata, card] of [
+      ["cloud/index.html", "Solo includes 100M tokens of model usage per month; Pro includes 300M", "Model usage included: 100M tokens a month on Solo, 300M on Pro"],
+      ["zh/cloud/index.html", "Solo 每月含 100M token 模型用量，Pro 每月含 300M", "模型用量包含在内：Solo 每月 100M token，Pro 每月 300M"],
+    ]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      expect(body, relativePath).toContain(metadata);
+      const homePath = relativePath.startsWith("zh/") ? "zh/index.html" : "index.html";
+      const home = await (await serve(await rawPage(homePath), `/${homePath.replace(/index\.html$/, "")}`)).text();
+      expect(home, homePath).toContain(card);
+    }
+  });
+
+  it("publishes Solo and Pro as two structured offers", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const data = JSON.parse(body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1]);
+      const offer = data["@graph"].find((entry) => entry["@id"]?.endsWith("#offer"));
+      expect(offer["@type"], relativePath).toBe("AggregateOffer");
+      expect(offer.offers.map(({ price }) => price), relativePath).toEqual([SOLO_USD, USD]);
     }
   });
 

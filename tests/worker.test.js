@@ -442,11 +442,13 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     };
     const request = new Request("https://orbi.build/stats");
     const first = await statsResponse(request, "token");
+    const firstPayload = await first.json();
     const callsAfterFirst = calls.length;
     expect(callsAfterFirst).toBeGreaterThan(0);
+    expect(firstPayload).not.toHaveProperty("founding");
     const second = await statsResponse(request, "token");
     expect(calls).toHaveLength(callsAfterFirst);
-    expect(await second.json()).toEqual(await first.json());
+    expect(await second.json()).toEqual(firstPayload);
   });
 
   // Issue #134: /stats/ is the same endpoint with the site's natural trailing

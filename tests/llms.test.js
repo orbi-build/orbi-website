@@ -26,7 +26,9 @@ describe("watch-the-six-steps article (Issue #329)", () => {
   it("ships the current seven-step video and subscription terms in both languages", () => {
     for (const article of [articleEn, articleZh]) {
       expect(article).toContain("youtube.com/watch?v=_OEaBwrLvvs");
+      expect(article).toContain("__SOLO_INCLUDED_TOKENS__");
       expect(article).toContain("__INCLUDED_TOKENS__");
+      expect(article).toContain("__SOLO_MONTHLY_USD__");
       expect(article).toContain("__CLOUD_MONTHLY_USD__");
       expect(article).toContain("seven");
     }

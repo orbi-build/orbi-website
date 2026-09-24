@@ -62,7 +62,7 @@ The seven steps are the current Cloud onboarding path:
 4. **Provision the environment.** About a minute.
 5. **Your first Issue.** Label it `ai-ready`, and Orbi writes the code and opens a pull request.
 6. **Cut a release.** Type the version; Orbi bumps it, tags it and publishes the GitHub Release.
-7. **Subscribe.** The first `__FREE_DELIVERIES__` deliveries are free; then the plan is US$`__CLOUD_MONTHLY_USD__`/month with `__INCLUDED_TOKENS__` tokens included. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.
+7. **Subscribe.** The first `__FREE_DELIVERIES__` deliveries are free; paid plans are Solo at US$`__SOLO_MONTHLY_USD__`/month with `__SOLO_INCLUDED_TOKENS__` tokens, or Pro at US$`__CLOUD_MONTHLY_USD__`/month with `__INCLUDED_TOKENS__` tokens. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.
 
 ## The seventh step is the one that starts paid delivery
 
