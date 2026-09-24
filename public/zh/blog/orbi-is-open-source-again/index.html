@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0 | Orbi</title>
+  <meta name="description" content="Orbi 从 Apache-2.0 换到 SUL，v0.5.44 起又改为 AGPL-3.0，也可选 SUL。这篇讲每次换许可证的原因和对用户的影响。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/orbi-is-open-source-again/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0">
+  <meta property="og:description" content="Orbi 从 Apache-2.0 换到 SUL，v0.5.44 起又改为 AGPL-3.0，也可选 SUL。这篇讲每次换许可证的原因和对用户的影响。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/orbi-is-open-source-again/">
+  <meta property="og:image" content="https://orbi.build/img/blog-agpl.png">
+  <meta property="og:image:alt" content="Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0">
+  <meta property="article:published_time" content="2026-09-24">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0","datePublished":"2026-09-24","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-agpl.png","inLanguage":"zh-CN","description":"Orbi 从 Apache-2.0 换到 SUL，v0.5.44 起又改为 AGPL-3.0，也可选 SUL。这篇讲每次换许可证的原因和对用户的影响。","url":"https://orbi.build/zh/blog/orbi-is-open-source-again/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">中文</span>
+          <a href="/blog/orbi-is-open-source-again/" lang="en">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-24</p>
+        <h1 id="post-title">Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0</h1>
+        <p class="hero-lede">Orbi 从 Apache-2.0 换到 SUL，v0.5.44 起又改为 AGPL-3.0，也可选 SUL。这篇讲每次换许可证的原因和对用户的影响。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>9 月 24 日发布的 <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.44">v0.5.44</a> 起，Orbi 的许可证是 <strong>AGPL-3.0 或 Sustainable Use License（SUL）v1.0，二选一</strong>。两种许可下自托管都免费。GitHub 上仓库的许可证现在显示为 AGPL-3.0。</p>
+<p>一个月里换了两次许可证，下面把经过和每一步的理由都写清楚。</p>
+<h3>时间线</h3>
+<div class="post-table-scroll"><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>许可证</th>
+<th>出处</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8 月 26 日</td>
+<td>Apache-2.0</td>
+<td><a href="https://github.com/orbi-build/orbi/issues/81">#81</a> 加入 LICENSE 文件</td>
+</tr>
+<tr>
+<td>9 月 4 日</td>
+<td>Sustainable Use License v1.0</td>
+<td>提交 <a href="https://github.com/orbi-build/orbi/commit/365c5bc">365c5bc</a></td>
+</tr>
+<tr>
+<td>9 月 24 日</td>
+<td>AGPL-3.0 或 SUL v1.0</td>
+<td><a href="https://github.com/orbi-build/orbi/issues/1332">#1332</a>，随 v0.5.44 发布</td>
+</tr>
+</tbody></table></div>
+<h3>9 月 4 日为什么离开 Apache</h3>
+<p>Apache-2.0 允许任何人拿代码去卖托管服务。Orbi 的 runner 本来就是跑在用户自己机器上的，SUL 的边界正好划在同一个地方：自己用免费，拿去当服务转售要另外签协议。n8n 用的就是这个许可证，我们照搬了原文，限制条款和专利条款一字没改。</p>
+<p>时机也有关系。当时仓库才十天，版权持有人只有一个，换许可证只要一个人点头。那次提交还在 <code>CONTRIBUTING.md</code> 里加了一条重新授权条款：贡献者同意维护者以后可以换许可证发布他们的代码，<strong>前提是新许可证必须继续允许免费自托管</strong>。</p>
+<h3>SUL 的代价</h3>
+<p>SUL 不是 OSI 认可的许可证，所以 Orbi 不能说自己是开源软件。这件事的影响比我们预想的大。</p>
+<p>有几个很对口的列表只收开源项目。<a href="https://github.com/kyrolabs/awesome-agents/blob/main/CONTRIBUTING.md">kyrolabs/awesome-agents</a> 写明投稿必须开源；<a href="https://github.com/Jenqyang/Awesome-AI-Agents/blob/main/CONTRIBUTING.md">Awesome-AI-Agents</a> 写明源码公开类许可证通常会被拒。其他地方也一样，每次介绍 Orbi 都得补一句：源码公开，自托管免费，但不是 OSI 定义的开源。</p>
+<h3>为什么选 AGPL，为什么还留着 SUL</h3>
+<p>AGPL-3.0 是 OSI 认可的开源许可证。它有一条网络条款：如果你改了 Orbi，再把它作为服务提供给别人，就要按同样的许可证公开你的修改。它并不禁止别人拿没改过的 Orbi 去做托管服务。SUL 禁止这件事，这层保护我们放弃了。</p>
+<p>Elastic 在 2024 年走过同一条路，在原有许可证之外<a href="https://www.elastic.co/blog/elasticsearch-is-open-source-again">加上了 AGPL</a>。我们保留 SUL 作为另一个选项，是因为有些公司明文禁止使用 AGPL 代码，他们仍然可以按 SUL 用 Orbi。</p>
+<p>这次能换，靠的就是上面那条重新授权条款，它的前提条件也照样成立：两种许可下自托管都免费。到目前为止唯一的外部贡献者，是在这条条款加入之后才开始贡献的。</p>
+<h3>对你有什么影响</h3>
+<ul>
+<li><strong>自托管</strong>：没有变化。两种许可下都免费，模型和仓库都用你自己的。</li>
+<li><strong>介绍 Orbi</strong>：现在可以说它是开源的，也可以投到只收 OSI 许可证项目的地方。</li>
+<li><strong>把 Orbi 作为服务提供给别人</strong>：按 AGPL-3.0 可以，前提是公开你的修改。SUL 不允许这样做，除非另外签协议。</li>
+<li><strong>Orbi Cloud</strong>：不变，仍然是我们运营的收费托管版。</li>
+</ul>
+<p>包的元数据用一条 SPDX 表达式同时声明两种许可，摘自 <code>pyproject.toml</code>：</p>
+<pre><code class="language-toml">license = &quot;AGPL-3.0-only OR LicenseRef-Sustainable-Use-1.0&quot;
+license-files = [&quot;LICENSE&quot;, &quot;docs/licenses/sustainable-use-license.md&quot;]
+</code></pre>
+<p>许可证文件都在仓库里：<a href="https://github.com/orbi-build/orbi/blob/main/LICENSE"><code>LICENSE</code></a> 是未经改动的 GNU AGPL-3.0 原文，<a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md"><code>docs/licenses/sustainable-use-license.md</code></a> 是 SUL 全文，并附有两种许可怎么选的简短说明。</p>
+<h2>相关</h2>
+<p>继续阅读：<a href="/zh/compare/openhands/">OpenHands 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <input type="hidden" name="return_to" value="/zh/blog/orbi-is-open-source-again/">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/blog/orbi-is-open-source-again/" lang="en">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>

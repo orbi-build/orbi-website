@@ -416,6 +416,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/orbi-is-open-source-again/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-is-open-source-again/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/orbi-is-open-source-again/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-is-open-source-again/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/k8e-rejected-then-merged/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/k8e-rejected-then-merged/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/k8e-rejected-then-merged/"/>
