@@ -2331,8 +2331,14 @@ async function main() {
     await assertProofLoopReducedMotion(browser, "/cloud/");
     await assertProofLoopReducedMotion(browser, "/zh/cloud/");
     // Issue #107: the /cloud/ page's login buttons land at the same contract.
-    await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", 'a.button-signal[href="/cloud/login"]']]);
-    await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", 'a.button-signal[href="/zh/cloud/login"]']]);
+    await assertCtaLandsAtEndpoint(browser, "/cloud/", [
+      ["Start Cloud", 'a.button-signal[href="/cloud/login"]'],
+      ["Start free", 'a.button-outline[href="/cloud/login"]'],
+    ]);
+    await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [
+      ["开始 Cloud", 'a.button-signal[href="/zh/cloud/login"]'],
+      ["免费开始", 'a.button-outline[href="/zh/cloud/login"]'],
+    ]);
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.
     const legalPages = [

@@ -449,6 +449,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(`US$${SOLO_ANNUAL_USD}`);
       expect(body, relativePath).toContain(`US$${USD}`);
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
       expect(body, relativePath).toContain("/api/checkout?plan=solo");
       expect(body, relativePath).toContain("/api/checkout?plan=pro");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
