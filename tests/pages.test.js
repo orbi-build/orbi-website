@@ -539,9 +539,14 @@ describe("per-page head parameters (title / description / canonical)", () => {
           "Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.",
       },
       "compare/github-copilot-coding-agent/index.html": {
-        title: "Copilot coding agent alternative: who merges PR | Orbi",
+        title: "Copilot cloud agent alternative: who merges the PR | Orbi",
         description:
-          "Orbi vs GitHub Copilot coding agent: compare cloud sandbox delivery with local BYOK control, review, merge ownership, cost, and auditability in practice today.",
+          "Orbi vs GitHub Copilot cloud agent (formerly Copilot coding agent): who reviews, who merges, who cuts the release, what it costs, and where it runs today.",
+      },
+      "zh/compare/github-copilot-coding-agent/index.html": {
+        title: "Copilot cloud agent 替代：谁来合并 PR | Orbi",
+        description:
+          "Orbi 对比 GitHub Copilot cloud agent（原 coding agent）：谁评审、谁合并、谁发版、花多少钱、跑在哪里，附官方来源。",
       },
       "cost/index.html": {
         title: "AI coding agent cost: what one delivery costs | Orbi",
@@ -565,6 +570,15 @@ describe("per-page head parameters (title / description / canonical)", () => {
           `${output}: description`,
         ).toBe(slots.description);
       }
+    }
+  });
+
+  it("uses Copilot cloud agent in both comparison page titles", () => {
+    for (const output of [
+      "compare/github-copilot-coding-agent/index.html",
+      "zh/compare/github-copilot-coding-agent/index.html",
+    ]) {
+      expect(shipped.get(output).match(/<title>([^<]+)<\/title>/)?.[1], `${output}: title`).toContain("Copilot cloud agent");
     }
   });
 });

@@ -299,7 +299,7 @@ product,independent_review,blocks_merge_on_findings,merges_the_pr,publishes_the_
 Orbi,yes,yes,yes,yes,yes,yes,https://docs.orbi.build,2026-09-17
 Orca,not documented,not documented,not documented,not documented,yes,yes,https://github.com/stablyai/orca/blob/main/README.md,2026-09-12
 OpenClaw,not documented,not documented,not documented,not documented,yes,yes,https://github.com/openclaw/openclaw,2026-09-07
-GitHub Copilot coding agent,not documented,no (official docs),not documented,not documented,no (official docs),not documented,https://docs.github.com/en/copilot/concepts/agents/coding-agent,2026-09-07
+GitHub Copilot cloud agent,not documented,no (official docs),not documented,not documented,no (official docs),not documented,https://docs.github.com/en/copilot/concepts/agents/cloud-agent,2026-09-07
 Claude Managed Agents,not documented,not documented,not documented,not documented,no (official docs),not documented,https://www.anthropic.com/engineering/managed-agents,2026-09-07
 Claude Code,yes,no (official docs),not documented,not documented,no (official docs),not documented,https://code.claude.com/docs/en/code-review,2026-09-17
 OpenHands,yes,not documented,not documented,not documented,yes,yes,https://github.com/All-Hands-AI/OpenHands,2026-09-07
