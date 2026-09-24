@@ -4,7 +4,7 @@ date: 2026-09-21
 summary: 83 秒视频记录 Orbi Cloud 从 GitHub 登录到带 tag 的 Release 和订阅。最后一步进入 Cloud 的付费交付流程。
 lang: zh
 author: Orbi
-image: /img/blog-watch-six-steps.png
+image: /img/og-watch-the-six-steps.png
 video_name: Orbi Cloud setup from zero to a tagged release in seven steps
 video_description: An 83-second walkthrough of the seven-step Orbi Cloud setup from GitHub sign-in through subscription.
 video_thumbnail: /img/blog-watch-six-steps.png

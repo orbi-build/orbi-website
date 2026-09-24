@@ -210,6 +210,29 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
     expect(missing, `Missing social sharing metadata:\n${missing.join("\n")}`).toEqual([]);
   });
 
+  it("requires every local Open Graph PNG to be 1200×630 (Issue #502)", async () => {
+    const violations = [];
+
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      const imageUrl = html.match(/<meta\s+property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1];
+      const image = imageUrl?.startsWith("http") ? new URL(imageUrl).pathname : imageUrl;
+      if (!image?.startsWith("/img/") || !image.endsWith(".png")) {
+        violations.push(`${output}: og:image is not a local PNG (${imageUrl ?? "missing"})`);
+        continue;
+      }
+      const png = await readFile(join(ROOT, "public", image.slice(1)));
+      const validPng = png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+      const width = validPng ? png.readUInt32BE(16) : 0;
+      const height = validPng ? png.readUInt32BE(20) : 0;
+      if (!validPng || width !== 1200 || height !== 630) {
+        violations.push(`${output}: ${image} is ${width}×${height}, expected 1200×630`);
+      }
+    }
+
+    expect(violations, `Invalid Open Graph images:\n${violations.join("\n")}`).toEqual([]);
+  });
+
   it("keeps every rendered page title above the crawler minimum", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
