@@ -119,7 +119,7 @@
 <li><strong>A merge gate that re-checks CI, head and base</strong> at merge time rather than trusting a verdict from ten minutes ago.</li>
 <li><strong>A release path that is deterministic</strong>, so that shipping is not a model deciding it is probably fine.</li>
 </ol>
-<p><a href="https://github.com/orbi-build/orbi">Orbi</a> is my implementation of exactly that, fair-code and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. Its engine can run Claude Code, Codex or any OpenAI-compatible model underneath, so if you already have the action working, the model side of your setup does not change.</p>
+<p><a href="https://github.com/orbi-build/orbi">Orbi</a> is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. Its engine can run Claude Code, Codex or any OpenAI-compatible model underneath, so if you already have the action working, the model side of your setup does not change.</p>
 <p>Or take the three conditions and build them into whatever you already run. The conditions matter more than whose code enforces them.</p>
 <h2>Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a>, <a href="/guides/ci-gates/">CI gates guide</a>, and <a href="/cloud/">Cloud</a>.</p>
