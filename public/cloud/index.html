@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed — with __INCLUDED_TOKENS__ tokens of model usage included. US$__CLOUD_MONTHLY_USD__/month — Founding coupon 100% off.">
+  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed — with __INCLUDED_TOKENS__ tokens of model usage included. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta name="twitter:description" content="A hosted runner: file an Issue, get a release. US$__CLOUD_MONTHLY_USD__/month — Founding coupon 100% off.">
+  <meta name="twitter:description" content="A hosted runner: file an Issue, get a release. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,10 +55,10 @@
       {
         "@type": "Offer",
         "@id": "https://orbi.build/cloud/#offer",
-        "name": "Orbi Cloud — Founding Pilot",
+        "name": "Orbi Cloud plans",
         "price": "__CLOUD_MONTHLY_USD__",
         "priceCurrency": "USD",
-        "description": "Regular price US$__CLOUD_MONTHLY_USD__ per month with __INCLUDED_TOKENS__ tokens of model usage included; when the monthly allowance runs out, new deliveries pause. Founding coupons: 100% off, limited supply — once they run out, the regular price applies.",
+        "description": "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills. Pro includes __INCLUDED_TOKENS__ tokens per month. Founding partners get 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.",
         "url": "https://orbi.build/cloud/"
       },
       {
@@ -67,10 +67,10 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?",
+            "name": "What are the Cloud plans and how do I cancel?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
+              "text": "Cloud has Free, Solo, and Pro plans. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
             }
           },
           {
@@ -99,10 +99,10 @@
           },
           {
             "@type": "Question",
-            "name": "What if a Founding Partner does not land one accepted Issue a month?",
+            "name": "What does the founding offer include?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. The subscription commitment is the one stated in the Founding Partner section above."
+              "text": "Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places, and the offer does not change the Free, Solo, or Pro plan allowances."
             }
           },
           {
@@ -224,21 +224,36 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">PRICING</p>
-        <h2 class="orbi-compare-section-h2" id="pricing-title">Free: __FREE_DELIVERIES__ merged deliveries. Then US$__CLOUD_MONTHLY_USD__/month — __INCLUDED_TOKENS__ tokens included</h2>
-        <p class="section-lede"><strong>Free: __FREE_DELIVERIES__ merged deliveries.</strong> Failed deliveries do not use up the allowance. Then the regular price is <strong>US$__CLOUD_MONTHLY_USD__ per month</strong> for the managed runner — orchestration, recovery, and the merge gates included — with <strong>__INCLUDED_TOKENS__ tokens of model usage in the plan</strong>. Depending on ticket size: about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). When the allowance runs out, new deliveries pause.</p>
-        <p class="founding-offer"><strong>Founding Partner</strong> <strong class="founding-price">US$0</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
-        <p>Founding coupons: 100% off, limited supply. Founding Partners — the first ten subscribers — pay US$0; once the coupons run out, subscriptions pay the regular US$__CLOUD_MONTHLY_USD__ — charging later is not a price increase, it is the coupon supply running out. Self-hosting the fair-code core remains free forever.</p>
-        <p>Measured token cost per delivery — the sample, the quantiles, the competitor citations — is on the <a href="/cost/">cost page</a>.</p>
-        <ul class="event-list">
-          <li class="orbi-event-list-li">
-            <span class="event-era">FOUNDING PARTNER · LIMITED TO 10</span>
-            <div>
-              <strong >The first ten subscribers are co-builders, not a trial cohort</strong>
-              <p class="orbi-event-list-p">A Founding Partner's subscription is free forever; __FOUNDING_TOKENS__ tokens are covered by Orbi each month; accepted Issues steer the product directly.</p>
-              <p class="orbi-event-list-p">The condition is stated up front: one Issue per month that we accept. The token coverage is granted a month at a time and renews in step with that contribution — a rolling grant with no fixed end date. The word forever is written on the subscription alone — that commitment stands apart from the monthly condition.</p>
-            </div>
-          </li>
-        </ul>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.</h2>
+        <p class="pricing-capacity">Depending on ticket size: about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). See the <a href="/cost/">cost data</a>.</p>
+        <div class="pricing-cards">
+          <article class="pricing-card">
+            <p class="pricing-card-kicker">CLOUD FREE</p>
+            <h3>Free</h3>
+            <p class="pricing-card-price">US$0 <span>/ month</span></p>
+            <p>__FREE_DELIVERIES__ merged deliveries. No card required.</p>
+            <ul><li>Failed deliveries are free</li></ul>
+            <a class="button button-outline" href="/cloud/login">Start free <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="pricing-card pricing-card-featured">
+            <p class="pricing-card-kicker">SOLO</p>
+            <h3>Solo</h3>
+            <p class="pricing-card-price">US$__SOLO_MONTHLY_USD__ <span>/ month</span></p>
+            <p>US$__SOLO_ANNUAL_USD__ / year</p>
+            <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
+            <a class="button button-signal" href="/api/checkout?plan=solo">Choose Solo <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="pricing-card">
+            <p class="pricing-card-kicker">PRO</p>
+            <h3>Pro</h3>
+            <p class="pricing-card-price">US$__CLOUD_MONTHLY_USD__ <span>/ month</span></p>
+            <p>US$__PRO_ANNUAL_USD__ / year</p>
+            <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories · priority queue</li></ul>
+            <a class="button button-signal" href="/api/checkout?plan=pro">Choose Pro <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+        <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.</strong> <span class="founding-availability" data-founding-availability hidden></span></p>
+        <p class="self-hosted-note">Self-hosted: US$0 for the fair-code core; bring your own model key.</p>
       </div>
     </section>
 
@@ -284,9 +299,9 @@
 
         <div class="faq-list">
           <details class="faq-item" open>
-            <summary><span>01</span>Will I be charged US$__CLOUD_MONTHLY_USD__ when the coupon runs out? How do I cancel?</summary>
+            <summary><span>01</span>What are the Cloud plans and how do I cancel?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">A Founding coupon is 100% off for the life of that subscription. Founding Partners — the first ten subscribers — pay US$0. When the limited coupon supply runs out, new subscriptions pay the regular US$__CLOUD_MONTHLY_USD__.</p>
+              <p class="orbi-faq-answer-p">Cloud has Free, Solo, and Pro plans. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places.</p>
               <p class="orbi-faq-answer-p">After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel.</p>
             </div>
           </details>
@@ -320,9 +335,9 @@
           </details>
 
           <details class="faq-item">
-            <summary><span>05</span>What if a Founding Partner does not land one accepted Issue a month?</summary>
+            <summary><span>05</span>What does the founding offer include?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">The condition is stated up front: one Issue per month that we accept. The token coverage — __FOUNDING_TOKENS__ tokens covered by Orbi each month — is granted a month at a time and renews in step with that contribution, a rolling grant with no fixed end date. The subscription commitment is the one stated in the Founding Partner section above.</p>
+              <p class="orbi-faq-answer-p">Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places, and the offer does not change the Free, Solo, or Pro plan allowances.</p>
             </div>
           </details>
 

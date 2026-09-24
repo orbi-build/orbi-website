@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetBehaviorSignals } from "../src/bot-detection.js";
+import pricing from "../src/pricing.json";
 import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
@@ -350,7 +351,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
       },
     };
     const stats = await loadStats("token", db);
-    expect(stats.founding).toEqual({ active: 4, limit: 10 });
+    expect(stats.founding).toEqual({ active: 4, limit: pricing.foundingPartnerLimit });
     expect(stats.founding).not.toHaveProperty("github_logins");
     expect(queries).toEqual([
       "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",

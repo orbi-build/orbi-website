@@ -1217,6 +1217,18 @@ h2 {
   background: var(--paper-2);
 }
 
+.pricing-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 36px 0 24px; }
+.pricing-card { display: flex; flex-direction: column; gap: 14px; padding: 28px 24px; border: 1px solid var(--line); background: var(--paper); }
+.pricing-card-featured { border: 2px solid var(--signal); transform: translateY(-8px); }
+.pricing-card-kicker { margin: 0; color: var(--signal); font: 500 .75rem/1 var(--mono); letter-spacing: .08em; }
+.pricing-card > h3 { margin: 0; font: 700 clamp(1.7rem, 3vw, 2.5rem)/1 var(--display); }
+.pricing-card-price { margin: 0; font: 600 1.45rem/1.2 var(--display); }
+.pricing-card-price span { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
+.pricing-card > p:not(.pricing-card-kicker):not(.pricing-card-price) { margin: 0; color: var(--ink-soft); }
+.pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
+.pricing-card .button { align-self: flex-start; margin-top: auto; }
+.self-hosted-note { color: var(--ink-soft); }
+
 .run-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1826,6 +1838,8 @@ h2 {
   .ownership-map > i { width: 1px; height: 28px; margin: 0 auto; }
 
   .run-orbi { padding: 88px 0; }
+  .pricing-cards { grid-template-columns: 1fr; }
+  .pricing-card-featured { transform: none; }
   .run-options { grid-template-columns: 1fr; margin-top: 55px; }
   .run-option { min-height: auto; padding: 28px 22px; }
   .run-option .button { align-self: stretch; }

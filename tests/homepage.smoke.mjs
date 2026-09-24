@@ -171,6 +171,13 @@ function startServer() {
         ? Buffer.from(
             file.body.toString("utf8")
               .replaceAll(pricing.monthlyUsdToken, String(pricing.cloudMonthlyUsd))
+              .replaceAll(pricing.soloMonthlyUsdToken, String(pricing.soloMonthlyUsd))
+              .replaceAll(pricing.soloAnnualUsdToken, String(pricing.soloAnnualUsd))
+              .replaceAll(pricing.proAnnualUsdToken, String(pricing.proAnnualUsd))
+              .replaceAll(pricing.soloIncludedTokensToken, String(pricing.soloIncludedTokensLabel))
+              .replaceAll(pricing.soloRepositoriesToken, String(pricing.soloRepositories))
+              .replaceAll(pricing.proRepositoriesToken, String(pricing.proRepositories))
+              .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
               .replaceAll(
@@ -554,7 +561,7 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
-  founding: { active: 4, limit: 10 },
+  founding: { active: 4, limit: 6 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -806,7 +813,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const cardText = await page.locator(".run-option-cloud").textContent();
   if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
-  if (!cardText.includes("100% off")) throw new Error(`${path}: the Managed Cloud card hides the Founding coupon terms`);
+  if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
   const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
   if ((await navCompare.getAttribute("href")) !== comparisonPath) {
     throw new Error(`${path}: nav comparisons link has wrong href`);
@@ -1158,7 +1165,7 @@ const cloudPages = {
     loop: "GitHub Issue in, tagged release out",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
-    metaNeedle: ["US$79"],
+    metaNeedle: ["US$29", "US$79"],
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
@@ -1179,7 +1186,7 @@ const cloudPages = {
       // included-token quota (rendered from the pricing.json label; since #145
       // that is 300M, the same quota the Founder plan carries); the
       // over-limit behavior is the pause, not a $0.10 overage price
-      "US$79", "300M tokens", "new deliveries pause", "100% off",
+      "US$29", "US$290", "US$79", "US$790", "300M tokens", "deliveries pause", "50% off forever",
       // Issue #277: Cloud gives a range rather than a misleading single-point
       // conversion; the detailed measurement remains on /cost/.
       "Depending on ticket size: about 60–160 merged deliveries for typical tickets in a small repository, about 25 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
@@ -1193,7 +1200,7 @@ const cloudPages = {
     loop: "GitHub Issue 进，打好 Tag 的 Release 出",
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
-    metaNeedle: ["US$79"],
+    metaNeedle: ["US$29", "US$79"],
     oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
@@ -1213,7 +1220,7 @@ const cloudPages = {
       // Issue #108 + #137 + #138 + #145: the $79 regular price with the
       // included-token quota (rendered from the pricing.json label; zh rides
       // the same label, 300M since #145)
-      "US$79", "300M token", "新交付暂停", "100% off",
+      "US$29", "US$290", "US$79", "US$790", "300M token", "交付暂停", "永久 5 折",
       // Issue #277: Cloud gives the owner-approved delivery range.
       "取决于票的大小：小仓库的常见票大约 60–160 次合并交付，像 Orbi 引擎这样的大代码库大约 25 次（2026 年 9 月实测）", "prompt caching",
     ],
@@ -1232,7 +1239,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ founding: { active: 4, limit: 10 }, repos: {} }),
+      body: JSON.stringify({ founding: { active: 4, limit: 6 }, repos: {} }),
     }));
   }
   page.on("console", (message) => {
@@ -1252,7 +1259,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (!process.env.BASE_URL) {
     const availability = page.locator("[data-founding-availability]");
     if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
-    const expected = path.startsWith("/zh") ? "· 还剩 6 / 10 个名额" : "· 6 of 10 left";
+    const expected = path.startsWith("/zh") ? "· 还剩 2 / 6 个名额" : "· 2 of 6 left";
     if ((await availability.textContent()).trim() !== expected) {
       throw new Error(`${path}: Founding availability does not match D1 fixture`);
     }
@@ -1375,8 +1382,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const offers = (await Promise.all(
     (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s))
   )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
-  if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes("100% off")) {
-    throw new Error(`${path}: JSON-LD Offer must price the regular plan at 79 with the coupon terms, got ${JSON.stringify(offers)}`);
+  if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes(path.startsWith("/zh") ? "永久 5 折" : "50% off forever")) {
+    throw new Error(`${path}: JSON-LD Offer must price Pro at 79 with the founding partner terms, got ${JSON.stringify(offers)}`);
   }
   // Issue #107: the login buttons' contract is the click's landing
   // (assertCtaLandsAtEndpoint); here the buttons must exist and be visible.
@@ -2324,8 +2331,14 @@ async function main() {
     await assertProofLoopReducedMotion(browser, "/cloud/");
     await assertProofLoopReducedMotion(browser, "/zh/cloud/");
     // Issue #107: the /cloud/ page's login buttons land at the same contract.
-    await assertCtaLandsAtEndpoint(browser, "/cloud/", [["Start Cloud", "a.button-signal"]]);
-    await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [["开始 Cloud", "a.button-signal"]]);
+    await assertCtaLandsAtEndpoint(browser, "/cloud/", [
+      ["Start Cloud", 'a.button-signal[href="/cloud/login"]'],
+      ["Start free", 'a.button-outline[href="/cloud/login"]'],
+    ]);
+    await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [
+      ["开始 Cloud", 'a.button-signal[href="/zh/cloud/login"]'],
+      ["免费开始", 'a.button-outline[href="/zh/cloud/login"]'],
+    ]);
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.
     const legalPages = [
