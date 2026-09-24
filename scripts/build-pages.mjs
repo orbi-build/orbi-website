@@ -70,7 +70,7 @@ const SOCIAL_PROOF_VARIANTS = {
 const DEEP_DIVES = [
   ["orca", "Orbi vs Orca"],
   ["openclaw", "Orbi vs OpenClaw"],
-  ["github-copilot-coding-agent", "Orbi vs GitHub Copilot coding agent"],
+  ["github-copilot-coding-agent", "Orbi vs GitHub Copilot cloud agent"],
   ["managed-agents", "Orbi vs Claude Managed Agents"],
   ["claude-code", "Orbi vs Claude Code"],
   ["openhands", "Orbi vs OpenHands"],
