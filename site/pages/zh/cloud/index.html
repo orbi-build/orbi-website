@@ -235,7 +235,7 @@
           <span>付费</span>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">按年</button>
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">按月</button>
-          <span class="pricing-savings">最多省 __ANNUAL_SAVINGS_PERCENT__%</span>
+          <span class="pricing-savings">省 __ANNUAL_SAVINGS_PERCENT__%</span>
         </div>
         <div class="pricing-cards">
           <article class="pricing-card">
@@ -244,23 +244,29 @@
             <p class="pricing-card-price">US$0 <span>/ 月</span></p>
             <p>前 __FREE_DELIVERIES__ 次合并交付，不用绑卡。</p>
             <ul><li>失败的交付不收钱</li></ul>
-            <a class="button button-outline" href="/zh/cloud/login">免费开始 <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-outline" href="/zh/cloud/login">免费开始 <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
             <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span>/ 月</span></p>
-            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_ANNUAL_USD__" data-month-detail="按月付，随时取消">按年付 US$__SOLO_ANNUAL_USD__</p>
+            <p data-pricing-detail="solo" data-year-detail="按年付 US$__SOLO_ANNUAL_USD__，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__SOLO_ANNUAL_USD__，比按月省 __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>每月 __SOLO_INCLUDED_TOKENS__ token</li><li>__SOLO_REPOSITORIES__ 个仓库</li></ul>
-            <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">选择 Solo <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">选择 Solo <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
           <article class="pricing-card">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
             <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span>/ 月</span></p>
-            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_ANNUAL_USD__" data-month-detail="按月付，随时取消">按年付 US$__PRO_ANNUAL_USD__</p>
+            <p data-pricing-detail="pro" data-year-detail="按年付 US$__PRO_ANNUAL_USD__，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="按月付，随时取消">按年付 US$__PRO_ANNUAL_USD__，比按月省 __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库</li></ul>
-            <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">选择 Pro <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">选择 Pro <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
         </div>
         <p class="founding-offer"><strong>创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位；结账时输入 __FOUNDING_PROMO_CODE__。</strong></p>

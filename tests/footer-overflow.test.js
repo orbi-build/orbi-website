@@ -3,6 +3,16 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import pricing from "../src/pricing.json";
+
+const annualPricingReplacements = {
+  [pricing.soloAnnualUsdToken]: pricing.soloAnnualUsd,
+  [pricing.proAnnualUsdToken]: pricing.proAnnualUsd,
+  [pricing.soloAnnualMonthlyUsdToken]: pricing.soloAnnualMonthlyUsd,
+  [pricing.proAnnualMonthlyUsdToken]: pricing.proAnnualMonthlyUsd,
+  [pricing.soloAnnualSavingsPercentToken]: pricing.soloAnnualSavingsPercent,
+  [pricing.proAnnualSavingsPercentToken]: pricing.proAnnualSavingsPercent,
+};
 
 const pages = [
   ["home-en", "/"],
@@ -49,7 +59,12 @@ beforeAll(async () => {
       return;
     }
     response.writeHead(200, { "content-type": contentTypes[extname(file[0])] ?? "application/octet-stream" });
-    response.end(file[1]);
+    let body = file[1];
+    if (extname(file[0]) === ".html") {
+      body = String(body);
+      for (const [token, value] of Object.entries(annualPricingReplacements)) body = body.replaceAll(token, value);
+    }
+    response.end(body);
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   baseUrl = `http://127.0.0.1:${server.address().port}`;

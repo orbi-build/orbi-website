@@ -72,6 +72,8 @@ const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
   "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
   "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
+  "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
+  "pricing-pro-year", "pricing-pro-month",
 ]);
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
@@ -350,6 +352,8 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.proAnnualUsdToken, PRO_ANNUAL_USD)
     .replaceAll(pricing.soloAnnualMonthlyUsdToken, String(pricing.soloAnnualMonthlyUsd))
     .replaceAll(pricing.proAnnualMonthlyUsdToken, String(pricing.proAnnualMonthlyUsd))
+    .replaceAll(pricing.soloAnnualSavingsPercentToken, String(pricing.soloAnnualSavingsPercent))
+    .replaceAll(pricing.proAnnualSavingsPercentToken, String(pricing.proAnnualSavingsPercent))
     .replaceAll(pricing.annualSavingsPercentToken, String(pricing.annualSavingsPercent))
     .replaceAll(pricing.soloIncludedTokensToken, SOLO_INCLUDED_TOKENS)
     .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)

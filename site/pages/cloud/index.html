@@ -236,7 +236,7 @@
           <span>Pay</span>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly</button>
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
-          <span class="pricing-savings">Save up to __ANNUAL_SAVINGS_PERCENT__%</span>
+          <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span>
         </div>
         <div class="pricing-cards">
           <article class="pricing-card">
@@ -245,23 +245,29 @@
             <p class="pricing-card-price">US$0 <span>/ month</span></p>
             <p>__FREE_DELIVERIES__ merged deliveries. No card required.</p>
             <ul><li>Failed deliveries are free</li></ul>
-            <a class="button button-outline" href="/cloud/login">Start free <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-outline" href="/cloud/login">Start free <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
             <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span>/ month</span></p>
-            <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__</p>
+            <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
-            <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">Choose Solo <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">Choose Solo <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
           <article class="pricing-card">
             <p class="pricing-card-kicker">PRO</p>
             <h3>Pro</h3>
             <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span>/ month</span></p>
-            <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__</p>
+            <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
-            <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">Choose Pro <span aria-hidden="true">↗</span></a>
+            <div class="pricing-card-actions">
+              <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">Choose Pro <span aria-hidden="true">↗</span></a>
+            </div>
           </article>
         </div>
         <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout.</strong></p>
