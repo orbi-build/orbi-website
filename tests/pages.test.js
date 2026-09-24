@@ -196,6 +196,13 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   });
 });
 
+describe("comparison fact corrections (Issue #467)", () => {
+  it("labels Keelen as open beta in both languages", () => {
+    expect(shipped.get("compare/keelen/index.html")).toContain("currently in open beta");
+    expect(shipped.get("zh/compare/keelen/index.html")).toContain("目前处于 open beta");
+  });
+});
+
 describe("auto-merge AI PR guide (Issue #459)", () => {
   it("renders mutual language mirrors and CI-gates cross-links", () => {
     const en = shipped.get("guides/auto-merge-ai-prs/index.html");
