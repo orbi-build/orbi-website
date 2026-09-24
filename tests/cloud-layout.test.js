@@ -70,6 +70,48 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
+describe("Cloud pricing actions align (Issue #472)", () => {
+  for (const [name, path] of pages) {
+    it(`${name} aligns all primary actions while keeping annual actions below`, async () => {
+      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) {
+            walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(
+              /__[A-Z_]+__/g,
+              (value) => replacements[value] ?? value,
+            );
+          }
+        }, pricingReplacements);
+        const cards = page.locator(".pricing-card");
+        const primaryTops = await cards.evaluateAll((elements) => elements.map((element) =>
+          element.querySelector(".pricing-card-actions .button").getBoundingClientRect().top,
+        ));
+        expect(Math.max(...primaryTops) - Math.min(...primaryTops), `${path} primary action top delta`).toBeLessThanOrEqual(1);
+
+        for (const card of await cards.all()) {
+          const actions = card.locator(".pricing-card-actions .button");
+          if (await actions.count() === 2) {
+            const tops = await actions.evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().top));
+            expect(tops[1], `${path} annual action must follow its primary action`).toBeGreaterThan(tops[0]);
+          }
+        }
+        await page.locator(".pricing-cards").screenshot({ path: `.orbi/pricing-actions-${name}-1440.png` });
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        const mobileActions = page.locator(".pricing-card-actions");
+        expect(await mobileActions.evaluateAll((elements) => elements.map((element) => getComputedStyle(element).minHeight)))
+          .toEqual(["0px", "0px", "0px"]);
+        await page.locator(".pricing-cards").screenshot({ path: `.orbi/pricing-actions-${name}-390.png` });
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});
+
 describe("Cloud onboarding cards fit every supported width (Issue #354)", () => {
   for (const [name, path] of pages) {
     it(`${name} has no page or footer overflow and keeps readable card rows`, async () => {
