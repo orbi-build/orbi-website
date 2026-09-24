@@ -15,9 +15,9 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 
 <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
-        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-12 · n=46</p>
+        <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-09-24 · n=20</p>
         <h1 id="cost-title">What an AI coding agent costs per merged pull request</h1>
-        <p class="hero-lede"><strong>We don't take a margin on your tokens.</strong> Measured across 46 real deliveries of our own repository: the median delivery runs <strong>2,220,637 tokens</strong>, the mean <strong>4,742,066</strong>; at DeepSeek V4.1 Flash list prices the mean delivery is about <strong>$0.06–0.12</strong>, and <strong>100 issues ≈ $6–12</strong>. Your key, your bill, every cent visible in your provider's dashboard.</p>
+        <p class="hero-lede"><strong>The measured median is $0.125 off-peak or $0.249 at peak.</strong> That comes from 20 PRs merged in our own repository, using DeepSeek-V4.1-Flash and a median <strong>10,612,802 tokens per merged PR</strong>. We publish the dated sample, price inputs, and limits below.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">Self-hosting? The delivery core is free forever — <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">run Orbi yourself ↗</a></p>
@@ -68,7 +68,7 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
       <div class="shell">
         <p class="section-tag">WHAT THAT MEANS IN MONEY</p>
         <h2 class="orbi-compare-section-h2" id="money-title">Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices</h2>
-        <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. Apply those list prices to the measured distribution:</p>
+        <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. The old sample's mean works out to about <strong>$0.06–0.12 per delivery</strong>. Apply those list prices to the measured distribution:</p>
         <div class="compare-table-wrap">
           <table class="compare-table">
             <thead><tr><th scope="col">Scenario</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
