@@ -186,6 +186,30 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
     expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
   });
 
+  it("requires social sharing metadata on every sitemap HTML page", () => {
+    const missing = [];
+    const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
+      .map((match) => match[1])
+      .map((urlPath) => urlPath.endsWith("/")
+        ? `${urlPath.slice(1)}index.html`
+        : (urlPath.endsWith(".html") ? urlPath.slice(1) : null))
+      .filter(Boolean);
+
+    for (const output of sitemapOutputs) {
+      const html = shipped.get(output);
+      const rendered = html?.replace(/<!--[\s\S]*?-->/g, "") ?? "";
+      for (const contract of [
+        /<meta\s+property=["']og:title["'][^>]*>/i,
+        /<meta\s+property=["']og:image["'][^>]*>/i,
+        /<meta\s+name=["']twitter:card["'][^>]*>/i,
+      ]) {
+        if (!contract.test(rendered)) missing.push(`${output}: ${contract.source}`);
+      }
+    }
+
+    expect(missing, `Missing social sharing metadata:\n${missing.join("\n")}`).toEqual([]);
+  });
+
   it("keeps every rendered page title above the crawler minimum", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
