@@ -238,5 +238,6 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Comparison — Orbi vs Google Jules (Chinese): https://orbi.build/zh/compare/jules/
 - CI gates guide (English): https://orbi.build/guides/ci-gates/
 - CI gates guide (Chinese): https://orbi.build/zh/guides/ci-gates/
+- Auto-merge AI pull requests safely guide: https://orbi.build/guides/auto-merge-ai-prs/
 - Bootstrap evidence — Orbi builds Orbi (English): https://orbi.build/evidence/
 - Bootstrap evidence — Orbi builds Orbi (Chinese): https://orbi.build/zh/evidence/
