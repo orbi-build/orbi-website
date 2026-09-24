@@ -1164,8 +1164,8 @@ class CloudLandingPageTests(unittest.TestCase):
         """Issue #441: the rendered Cloud pages carry all approved prices,
         allowances, and founding terms from pricing.json."""
         for page, founding in (
-            (self.en, "Founding partners: 50% off forever, 6 places"),
-            (self.zh, "创始会员永久 5 折，限 6 位"),
+            (self.en, "Founding partners: 50% off forever, 6 places; use code FOUNDING50 at checkout"),
+            (self.zh, "创始会员永久 5 折，限 6 位；结账时输入 FOUNDING50"),
         ):
             for value in ("US$29", "US$290", "US$79", "US$790", "100M", "300M"):
                 self.assertIn(value, page.text)
@@ -1192,7 +1192,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.en,
                 (
-                    f"Depending on ticket size: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
+                    f"Solo's {PRICING['soloIncludedTokensLabel']} allowance: about {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredSoloLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine; Pro's {PRICING['includedTokensLabel']} allowance: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
                     "prompt caching",
                 ),
                 "/cost/",
@@ -1200,7 +1200,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (
                 self.zh,
                 (
-                    f"取决于票的大小：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
+                    f"Solo 的 {PRICING['soloIncludedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredSoloLargeCodebaseDeliveries']} 次；Pro 的 {PRICING['includedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
                     "prompt caching",
                 ),
                 "/zh/cost/",

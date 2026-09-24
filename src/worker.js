@@ -20,11 +20,14 @@ const SOLO_INCLUDED_TOKENS = String(pricing.soloIncludedTokensLabel);
 const SOLO_REPOSITORIES = String(pricing.soloRepositories);
 const PRO_REPOSITORIES = String(pricing.proRepositories);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
+const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
 const MEASURED_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredLargeCodebaseDeliveries);
+const MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES = String(pricing.measuredSoloLargeCodebaseDeliveries);
 const MEASURED_SNAPSHOT_DELIVERIES = String(pricing.measuredSnapshotDeliveries);
 
 const HOST_ALIASES = {
@@ -349,6 +352,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
     .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
     .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
+    .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
     .replaceAll(pricing.freeDeliveriesToken, FREE_DELIVERIES)
@@ -356,7 +360,9 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
       pricing.measuredSmallRepositoryDeliveryRangeToken,
       MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE,
     )
+    .replaceAll(pricing.measuredSoloRepositoryDeliveryRangeToken, MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE)
     .replaceAll(pricing.measuredLargeCodebaseDeliveriesToken, MEASURED_LARGE_CODEBASE_DELIVERIES)
+    .replaceAll(pricing.measuredSoloLargeCodebaseDeliveriesToken, MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES)
     .replaceAll(pricing.measuredSnapshotDeliveriesToken, MEASURED_SNAPSHOT_DELIVERIES)
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
