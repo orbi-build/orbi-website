@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const routes = ["/compare/", "/zh/compare/"];
+const routes = ["/compare/", "/zh/compare/", "/compare/keelen/", "/zh/compare/keelen/"];
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
