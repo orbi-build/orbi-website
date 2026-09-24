@@ -644,11 +644,17 @@ async function handleFetch(request, env, ctx) {
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
 // trailing-slash canonicalisation; anything else is not ours to follow.
-function subscriptionReturnPath(value, request) {
-  if (typeof value === "string" && value.startsWith("/") && !value.startsWith("//")) {
-    return value.slice(0, 500);
+function subscriptionReturnUrl(value, request) {
+  const fallback = new URL(request.url);
+  fallback.search = "";
+  fallback.hash = "";
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
+  try {
+    const target = new URL(value.slice(0, 500), request.url);
+    return target.origin === fallback.origin ? target : fallback;
+  } catch {
+    return fallback;
   }
-  return new URL(request.url).pathname;
 }
 
 function subscriptionResponse(request, status, body) {
@@ -660,9 +666,9 @@ function subscriptionResponse(request, status, body) {
       headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
     });
   }
-  const returnPath = subscriptionReturnPath(body.return_to, request);
-  const query = status >= 200 && status < 300 ? "subscribed=1" : "subscribe_error=invalid";
-  const location = new URL(`${returnPath}${returnPath.includes("?") ? "&" : "?"}${query}`, request.url);
+  const location = subscriptionReturnUrl(body.return_to, request);
+  if (status >= 200 && status < 300) location.searchParams.set("subscribed", "1");
+  else location.searchParams.set("subscribe_error", status === 400 ? "invalid" : "unavailable");
   return Response.redirect(location, 303);
 }
 
@@ -678,7 +684,8 @@ async function subscribeResponse(request, env) {
   }
   const email = typeof fields?.email === "string" ? fields.email.trim() : "";
   const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
-  const return_to = subscriptionReturnPath(fields?.return_to, request);
+  const returnUrl = subscriptionReturnUrl(fields?.return_to, request);
+  const return_to = `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
   if (!email || !lang) return subscriptionResponse(request, 400, { error: "invalid_request", return_to });
   if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {
     console.error("subscribe_unavailable: Cloud subscription configuration is missing");

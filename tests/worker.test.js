@@ -725,10 +725,22 @@ describe("email subscription route (Issue #442)", () => {
     expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/evidence/?subscribed=1");
   });
 
-  it("does not allow an external no-JS redirect", async () => {
+  it("does not mislabel an unavailable upstream as an invalid email", async () => {
     const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "email=ada%40example.com&lang=en&return_to=https%3A%2F%2Fevil.example%2F",
+      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+    }), env(async () => new Response("down", { status: 503 })));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/evidence/?subscribe_error=unavailable");
+  });
+
+  it.each([
+    "https://evil.example/",
+    "/\\evil.example/",
+  ])("does not allow an external no-JS redirect via %s", async (returnTo) => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ email: "ada@example.com", lang: "en", return_to: returnTo }),
     }), env(async () => new Response("ok")));
     expect(response.headers.get("Location")).toBe("https://beta.orbi.build/subscribe?subscribed=1");
   });

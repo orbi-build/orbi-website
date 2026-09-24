@@ -727,6 +727,7 @@ function renderSubscribe(lang, returnPath) {
     SUBSCRIBE_TITLE: zh ? "每周一个真实交付" : "One real delivery, every week",
     SUBSCRIBE_SUCCESS: zh ? "已订阅" : "Subscribed",
     SUBSCRIBE_INVALID: zh ? "邮箱格式不对" : "That email address doesn't look right",
+    SUBSCRIBE_UNAVAILABLE: zh ? "暂时无法订阅，请重试。" : "Subscription is temporarily unavailable. Please try again.",
     SUBSCRIBE_LABEL: zh ? "邮箱地址" : "Email address",
     SUBSCRIBE_PLACEHOLDER: zh ? "你的邮箱" : "you@example.com",
     SUBSCRIBE_LANG: lang,

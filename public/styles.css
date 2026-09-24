@@ -2177,10 +2177,13 @@ h2 {
 
 .subscribe-box { max-width: 52rem; margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
 .subscribe-title { margin: 0 0 16px; font-family: var(--display); font-size: 1.35rem; }
-.subscribe-form { display: flex; gap: 10px; align-items: center; }
+.subscribe-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .subscribe-form input[type="email"] { min-width: 0; flex: 1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; }
 .subscribe-form button:disabled { opacity: .6; cursor: wait; }
 .subscribe-note, .subscribe-status { margin: 10px 0 0; color: var(--muted); font-size: .88rem; }
-.subscribe-status { min-height: 1.2em; color: var(--ink); font-weight: 600; }
+.subscribe-status { min-height: 1.2em; flex: 0 0 100%; color: var(--ink); font-weight: 600; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-@media (max-width: 600px) { .subscribe-form { align-items: stretch; flex-direction: column; } }
+@media (max-width: 600px) {
+  .subscribe-form { align-items: stretch; flex-direction: column; }
+  .subscribe-status { flex-basis: auto; }
+}

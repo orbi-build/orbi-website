@@ -139,6 +139,27 @@ function startServer() {
         response.end();
         return;
       }
+      // Mirror the Worker's successful /subscribe responses so the browser
+      // smoke exercises both progressive enhancement and the no-JS fallback.
+      if (pathname === "/subscribe" && request.method === "POST") {
+        const chunks = [];
+        for await (const chunk of request) chunks.push(chunk);
+        const body = Buffer.concat(chunks).toString("utf8");
+        const fields = new URLSearchParams(body);
+        if ((request.headers.accept || "").includes("application/json")) {
+          const invalid = body.includes("invalid@example.com");
+          response.writeHead(invalid ? 400 : 200, { "content-type": "application/json; charset=utf-8" });
+          response.end(JSON.stringify(invalid ? { error: "invalid_email" } : { ok: true }));
+        } else {
+          const base = new URL(`http://${request.headers.host}/subscribe`);
+          const candidate = new URL(fields.get("return_to") || "/subscribe", base);
+          const destination = candidate.origin === base.origin ? candidate : base;
+          destination.searchParams.set("subscribed", "1");
+          response.writeHead(303, { location: destination.toString() });
+          response.end();
+        }
+        return;
+      }
       const file = await serveFile(pathname);
       if (!file) {
         response.writeHead(404);
@@ -227,6 +248,41 @@ export async function assertEngagementEndpoint(targetURL) {
   });
   if (response.status !== 204) {
     throw new Error(`POST /cloud/e answered ${response.status}, expected 204 like the site Worker`);
+  }
+}
+
+async function assertSubscriptionFlow(browser, path, expectedSuccess, expectedInvalid) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    const email = page.locator("[data-subscribe-form] input[type=email]");
+    const submit = page.locator("[data-subscribe-form] button[type=submit]");
+    const status = page.locator("[data-subscribe-status]");
+    const waitForStatus = (expected) => page.waitForFunction(
+      ([selector, text]) => document.querySelector(selector)?.textContent?.trim() === text,
+      ["[data-subscribe-status]", expected],
+    );
+
+    await email.fill("invalid@example.com");
+    await submit.click();
+    await waitForStatus(expectedInvalid);
+    await email.fill("smoke@example.com");
+    await submit.click();
+    await waitForStatus(expectedSuccess);
+    const text = (await status.textContent())?.trim();
+    if (text !== expectedSuccess) {
+      throw new Error(`${path} subscription displayed ${JSON.stringify(text)}, expected ${JSON.stringify(expectedSuccess)}`);
+    }
+
+    const fallback = await page.request.post(`${targetURL}/subscribe`, {
+      form: { email: "smoke@example.com", lang: path.startsWith("/zh/") ? "zh" : "en", return_to: path },
+      maxRedirects: 0,
+    });
+    if (fallback.status() !== 303 || fallback.headers().location !== `${targetURL}${path}?subscribed=1`) {
+      throw new Error(`${path} no-JS subscription did not return the Worker-compatible 303 redirect`);
+    }
+  } finally {
+    await page.close();
   }
 }
 
@@ -2204,6 +2260,10 @@ async function main() {
     });
     await assertEngagementEndpoint(targetURL);
     await assertCloudLoginRedirect(targetURL);
+    if (!process.env.BASE_URL) {
+      await assertSubscriptionFlow(browser, "/evidence/", "Subscribed", "That email address doesn't look right");
+      await assertSubscriptionFlow(browser, "/zh/evidence/", "已订阅", "邮箱格式不对");
+    }
     await assertPublishedInstallScript(browser);
     await assertInstallCopiesOneLiner(browser, "/");
     await assertHomepage(browser, "/", "/compare/", { width: 1440, height: 900 }, "homepage-en-desktop.png");

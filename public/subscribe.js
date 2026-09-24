@@ -3,6 +3,7 @@
     const status = form.querySelector("[data-subscribe-status]");
     const success = form.dataset.success;
     const invalid = form.dataset.invalid;
+    const unavailable = form.dataset.unavailable;
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       status.textContent = "";
@@ -19,11 +20,13 @@
         status.textContent = success;
         form.querySelector("input[type=email]").value = "";
       } catch (error) {
-        status.textContent = error.message === "invalid" ? invalid : "Please try again.";
+        status.textContent = error.message === "invalid" ? invalid : unavailable;
         button.disabled = false;
       }
     });
-    if (new URLSearchParams(location.search).get("subscribed") === "1") status.textContent = success;
-    if (new URLSearchParams(location.search).get("subscribe_error") === "invalid") status.textContent = invalid;
+    const outcome = new URLSearchParams(location.search);
+    if (outcome.get("subscribed") === "1") status.textContent = success;
+    if (outcome.get("subscribe_error") === "invalid") status.textContent = invalid;
+    if (outcome.get("subscribe_error") === "unavailable") status.textContent = unavailable;
   }
 })();
