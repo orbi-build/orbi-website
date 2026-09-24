@@ -10,13 +10,21 @@ promotion's acceptance items.
 
 ## The promotion
 
-One PR, head `beta`, base `main`, merged with GitHub's **Create a merge
-commit** (that is the `--no-ff` merge):
+Promote a fixed beta snapshot, not the moving `beta` head. Choose the exact
+beta commit that has already been deployed, create a branch at it, and open the
+PR from that branch to `main`. Merge with GitHub's **Create a merge commit**
+(`--no-ff`):
 
 ```
-gh pr create --repo orbi-build/orbi-website --base main --head beta \
-  --title "晋升 beta 到 main：<一句话概括>" --body-file <evidence body>
+git switch -c promote/<date> <deployed-beta-sha>
+gh pr create --repo orbi-build/orbi-website --base main --head promote/<date> \
+  --title "晋升 beta 快照到 main：<一句话概括>" --body-file <evidence body>
 ```
+
+The production workflow takes the second parent of the resulting merge commit
+as the snapshot. It lists successful `deploy-beta.yml` runs, finds the first
+run whose `headSha` is that snapshot or a descendant, and measures soak from
+that run's deployment time. Later commits on `beta` do not change the gate.
 
 Merging it does not deploy anything: production deploys are a manual
 `workflow_dispatch` only (Issue #210 — the push-triggered run was always a
@@ -44,10 +52,10 @@ merge moment, which is how the soak window is honored.
 
   ```
   git fetch origin
-  git merge-tree --write-tree --name-only origin/main origin/beta
+  git merge-tree --write-tree --name-only origin/main promote/<date>
   ```
 
-  Conflicts are listed under the tree hash; fix them on beta first.
+  Conflicts are listed under the tree hash; fix them on the snapshot branch first.
 
 - **Soak reality check.** The soak gate protects real users, so it may be
   skipped only when there are none. Check active subscriptions with a
@@ -62,14 +70,10 @@ merge moment, which is how the soak window is honored.
   ```
 
   `subscriptions=0` → the soak wait protects nobody; merge any time and, if
-  the soak job would still fail on commit age, dispatch the workflow with
-  `skip_soak=true` (the documented hotfix path). Any active subscription →
-  merge only once the newest beta commit is at least `PROD_MIN_SOAK_HOURS`
-  old:
-
-  ```
-  git log -1 --format=%cI origin/beta   # compare against now, in UTC
-  ```
+  the soak job would still fail, dispatch the workflow with `skip_soak=true`
+  (the documented hotfix path). Any active subscription → wait for the
+  snapshot's successful beta deployment to reach `PROD_MIN_SOAK_HOURS`; commit
+  author timestamps are not used.
 
 - **Before-state on production** (the promotion must move these):
 
