@@ -105,7 +105,7 @@
           <thead><tr><th scope="col">维度</th><th scope="col">Orbi</th><th scope="col">Claude Managed Agents</th><th scope="col">Copilot cloud agent</th><th scope="col">OpenAI Codex</th><th scope="col">Devin</th><th scope="col">OpenHands</th><th scope="col">Hermes Agent*</th></tr></thead>
           <tbody>
             <tr><th scope="row">运行位置</th><td>用户自己的机器</td><td>Anthropic 云</td><td>GitHub 云</td><td>OpenAI 云</td><td>Cognition 云</td><td>本地/Docker/VM/云</td><td>操作者机器/VPS</td></tr>
-            <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code></td><td>API 调用</td><td>Issue + <code>@copilot</code></td><td>ChatGPT、CLI 或 GitHub</td><td>Slack 或网页</td><td>Web UI/CLI/webhook/API</td><td>Gateway/CLI 或 cron</td></tr>
+            <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code></td><td>API 调用</td><td>把 Issue 指派给 Copilot</td><td>ChatGPT、CLI 或 GitHub</td><td>Slack 或网页</td><td>Web UI/CLI/webhook/API</td><td>Gateway/CLI 或 cron</td></tr>
             <tr><th scope="row">状态存储</th><td>GitHub Issues、labels、分支、PR</td><td>Anthropic Session 日志</td><td>GitHub</td><td>OpenAI</td><td>Cognition</td><td>对话、workspace、事件</td><td>记忆、Session、技能</td></tr>
             <tr><th scope="row">模型</th><td>BYOK，任意端点</td><td>Claude</td><td>GitHub 提供的模型</td><td>OpenAI</td><td>Cognition 锁定</td><td>BYOK，任意 LLM</td><td>多个 provider</td></tr>
             <tr><th scope="row">隔离</th><td>Git worktree</td><td>云沙箱</td><td>云沙箱</td><td>云沙箱</td><td>云环境</td><td>Docker/VM/云后端</td><td>本地/容器/SSH 后端</td></tr>
@@ -196,7 +196,7 @@
         <li class="orbi-dive-list-li">
           <a class="orbi-dive-list-a" href="/zh/compare/github-copilot-coding-agent/">
             <strong class="orbi-dive-list-strong">Orbi vs GitHub Copilot cloud agent</strong>
-            <p class="orbi-dive-list-p">在 Issue 里 @copilot，云沙箱跑完交回 PR——与 Orbi 任务闭环重合度最高的对手。</p>
+            <p class="orbi-dive-list-p">把 Issue 指派给 Copilot，云沙箱跑完交回 PR——与 Orbi 任务闭环重合度最高的对手。</p>
           </a>
         </li>
         <li class="orbi-dive-list-li">
