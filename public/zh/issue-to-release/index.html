@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI agent：从 GitHub Issue 到合并与发版 | Orbi</title><meta name="description" content="Orbi 把 ai-ready GitHub Issue 交付为经过独立评审、合并门禁和里程碑发版的代码，最终打 tag 并发布 GitHub Release。">
+<link rel="canonical" href="https://orbi.build/zh/issue-to-release/"><link rel="alternate" hreflang="en" href="https://orbi.build/issue-to-release/"><link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/issue-to-release/"><link rel="alternate" hreflang="x-default" href="https://orbi.build/issue-to-release/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#06151b">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Orbi"><meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="en_US"><meta property="og:url" content="https://orbi.build/zh/issue-to-release/"><meta property="og:title" content="AI agent：从 GitHub Issue 到合并与发版 | Orbi"><meta property="og:description" content="Orbi 把 ai-ready GitHub Issue 交付为经过独立评审、合并门禁和里程碑发版的代码，最终打 tag 并发布 GitHub Release。"><meta property="og:image" content="https://orbi.build/img/og-zh.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="AI agent：从 GitHub Issue 到合并与发版 | Orbi"><meta name="twitter:description" content="Orbi 把 ai-ready GitHub Issue 交付为经过独立评审、合并门禁和里程碑发版的代码，最终打 tag 并发布 GitHub Release。"><meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"从 GitHub Issue 到打了 tag 的 Release","description":"Orbi 把 ai-ready GitHub Issue 交付为经过独立评审、合并门禁和里程碑发版的代码，最终打 tag 并发布 GitHub Release。","inLanguage":"zh-CN","url":"https://orbi.build/zh/issue-to-release/"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"它会合并没审过的代码吗？","acceptedAnswer":{"@type":"Answer","text":"不会。Orbi 只合并独立评审通过的那个 head；head 变化后必须重新评审。详见 AI PR 合并指南。"}},{"@type":"Question","name":"使用什么模型？","acceptedAnswer":{"@type":"Answer","text":"Pi 支持 OpenAI 兼容 API 或 Codex 订阅，不支持 Claude Code。"}},{"@type":"Question","name":"花多少钱？","acceptedAnswer":{"@type":"Answer","text":"自托管 Orbi 按 AGPL-3.0 免费使用，模型费用由你的 provider 收取；Cloud 价格见成本页。"}},{"@type":"Question","name":"开源吗？","acceptedAnswer":{"@type":"Answer","text":"是，协议为 AGPL-3.0。"}}]}</script></head><body><a class="skip-link" href="#main-content">跳到正文</a>  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">中文</span>
+          <a href="/issue-to-release/" lang="en">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div><main id="main-content">
+<div class="night"><section class="compare-hero shell" aria-labelledby="issue-release-title"><p class="eyebrow">AI agent · GitHub Issue 到发版</p><h1 id="issue-release-title">从 GitHub Issue 到打了 tag 的 Release</h1><p class="hero-lede"><strong>交付终点是发版，不是 PR。</strong>给一张具体 Issue 打上 <code>ai-ready</code>；Orbi 写代码、开 PR、独立评审，只合并审过的 head，再按 milestone 打 tag 并发布 GitHub Release。</p><div class="cta-row"><a class="button button-signal" href="https://github.com/orbi-build/orbi">自托管 Orbi ↗</a><a class="button button-ghost" href="/zh/cloud/">用 Cloud 运行 →</a></div></section></div>
+<section class="compare-section compare-section-tint" aria-labelledby="steps-title"><div class="shell"><p class="section-tag">交付产线</p><h2 class="orbi-compare-section-h2" id="steps-title">从 Issue 到发版的六步</h2><p class="section-lede">流程来自 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx" rel="noopener">Orbi workflow</a>。</p><ol class="event-list"><li class="orbi-event-list-li"><span class="event-era">01 · 打标签</span><div><strong>给 Issue 打上 <code>ai-ready</code></strong><p class="orbi-event-list-p">这个标签把一张 Issue 放进交付队列。</p></div></li><li class="orbi-event-list-li"><span class="event-era">02 · 实现</span><div><strong>认领 Issue，在隔离 worktree 中实现</strong><p class="orbi-event-list-p">Orbi 领取 Issue，在不干扰共享 checkout 的地方写代码。</p></div></li><li class="orbi-event-list-li"><span class="event-era">03 · 开 PR</span><div><strong>开出 pull request</strong><p class="orbi-event-list-p">实现结果带着证据成为普通 GitHub PR。</p></div></li><li class="orbi-event-list-li"><span class="event-era">04 · 评审</span><div><strong>独立会话对照 Issue 验收项评审</strong><p class="orbi-event-list-p">独立评审可以修复分支并重跑测试。</p></div></li><li class="orbi-event-list-li"><span class="event-era">05 · 合并门禁</span><div><strong>CI 绿、head 未变、base 最新后才合并</strong><p class="orbi-event-list-p">门禁保护刚刚审过的那个 head。</p></div></li><li class="orbi-event-list-li"><span class="event-era">06 · 发版</span><div><strong>按 milestone 打 tag 并发布 Release</strong><p class="orbi-event-list-p">发版流程把完成的 milestone 变成带 tag 的 GitHub Release。</p></div></li></ol></div></section>
+<section class="compare-section shell" aria-labelledby="proof-title"><p class="section-tag">公开证据</p><h2 class="orbi-compare-section-h2" id="proof-title">一张真实 Issue 变成了审查后的改动</h2><p class="section-lede">查看 <a href="https://orbi.build/proof/orbi-build/orbi/1328">Issue #1328 的公开证据页</a>，以及对应的 <a href="https://github.com/orbi-build/orbi/issues/1328">Issue</a> 和 <a href="https://github.com/orbi-build/orbi/pull/1331">PR #1331</a>。</p></section>
+<section class="compare-section compare-section-tint" aria-labelledby="ready-title"><div class="shell"><p class="section-tag">先写清楚契约</p><h2 class="orbi-compare-section-h2" id="ready-title">写好一张 ai-ready Issue</h2><p class="section-lede">写清一个运行结果，以及别人可以检查的验收项。不要写项目计划，也不要把无关愿望堆在一起：Issue 是实现和独立评审使用的契约。<a href="https://aiready.sh/zh/">ai-ready Issue 的 12 个要素</a>可以帮你补齐。</p><p class="thesis-punch">如果结果无法检查，Orbi 就无法安全判断它是否完成。</p></div></section>
+<section class="compare-section shell" id="faq" aria-labelledby="faq-title"><p class="section-tag">FAQ</p><h2 class="orbi-compare-section-h2" id="faq-title">把 Issue 交出去前的几个问题</h2><div class="source-list"><p><strong>会合并没审过的代码吗？</strong><br>不会。只合并独立评审通过的 head；请看<a href="/zh/guides/auto-merge-ai-prs/">合并门禁指南</a>。</p><p><strong>使用什么模型？</strong><br>Pi 支持 OpenAI 兼容 API 或 Codex 订阅，不支持 Claude Code。</p><p><strong>花多少钱？</strong><br>自托管 Orbi 免费，模型费用由你承担；Cloud 价格见<a href="/zh/cost/">成本页</a>。</p><p><strong>开源吗？</strong><br>是，协议为 AGPL-3.0。</p></div></section>
+<section class="closing shell"><p class="section-tag">ISSUE 进，RELEASE 出</p><h2 class="orbi-closing-h2">给 agent 一个清晰的终点</h2><p>让 GitHub 同时承载队列、账本、评审记录和发版记录。</p><div class="cta-row"><a class="button button-dark" href="https://github.com/orbi-build/orbi">自托管 Orbi ↗</a><a class="text-link" href="/zh/cloud/">让 Cloud 来运行 →</a></div></section>
+</main>  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/issue-to-release/" lang="en">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer><script src="/demo.js" defer></script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body></html>
