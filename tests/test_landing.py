@@ -1484,8 +1484,8 @@ ORCA_ZH_PATH = ROOT / "public" / "zh" / "compare" / "orca" / "index.html"
 class HermesComparisonTests(unittest.TestCase):
     def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
         for path, canonical, alternate, date in (
-            (HERMES_EN_PATH, "/compare/hermes-agent/", "/zh/compare/hermes-agent/", "verified 2026-09-07"),
-            (HERMES_ZH_PATH, "/zh/compare/hermes-agent/", "/compare/hermes-agent/", "核实于 2026-09-07"),
+            (HERMES_EN_PATH, "/compare/hermes-agent/", "/zh/compare/hermes-agent/", "verified 2026-09-24"),
+            (HERMES_ZH_PATH, "/zh/compare/hermes-agent/", "/compare/hermes-agent/", "核实于 2026-09-24"),
         ):
             html, page = parse(path)
             self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
@@ -1495,6 +1495,10 @@ class HermesComparisonTests(unittest.TestCase):
             self.assertIn("GitHub", page.text)
             self.assertIn("Issue", page.text)
             self.assertIn("MIT", page.text)
+            self.assertNotIn("https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills/bundled/github", html)
+            self.assertNotIn("https://hermes-agent.nousresearch.com/docs/user-guide/skills", html)
+            self.assertIn("https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/skills/bundled/software-development/software-development-github.md", html)
+            self.assertIn("https://hermes-agent.nousresearch.com/docs/user-guide/features/skills", html)
 
     def test_hermes_is_not_misrepresented_as_orbis_delivery_loop(self) -> None:
         for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
