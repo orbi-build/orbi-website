@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 编程成本实测：跑一个 Issue 到底花多少钱 | Orbi</title>
-  <meta name="description" content="实测 Orbi 交付一次 Issue 的 token 成本、模型牌价与运行 100 个 Issue 的估算，并说明测量方法和限制，具体来源均已列明。">
+  <title>AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi</title>
+  <meta name="description" content="实测 AI 编程 agent 每个合并 PR 的成本：20 个 Orbi PR，中位 $0.125（非高峰），公开样本窗口、DeepSeek 牌价与复算方法。">
   <link rel="canonical" href="https://orbi.build/zh/cost/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cost/">
@@ -17,16 +17,16 @@
   <meta property="og:locale" content="zh_CN">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cost/">
-  <meta property="og:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
-  <meta property="og:description" content="实测 46 次交付:单次均值 474 万 tokens,按 DeepSeek V4.1 Flash 官方牌价约 $0.06–0.12。我们不在你的 token 上赚差价。">
+  <meta property="og:title" content="AI 编程 agent 每个合并 PR 花多少钱（实测）">
+  <meta property="og:description" content="实测 20 个合并 PR：DeepSeek Flash 非高峰中位 $0.125、高峰 $0.249，并公开样本窗口与复算方法。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
-  <meta name="twitter:title" content="跑一个 Issue 到底花多少钱 —— 实测摊开">
-  <meta name="twitter:description" content="实测 46 次:单次均值 474 万 tokens ≈ $0.06–0.12(DeepSeek 官方牌价)。你的 key、你的账单。">
+  <meta name="twitter:title" content="AI 编程 agent 每个合并 PR 花多少钱（实测）">
+  <meta name="twitter:description" content="实测 20 个合并 PR：DeepSeek Flash 非高峰中位 $0.125，高峰 $0.249。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,8 @@
     "@graph": [
       {
         "@type": "WebPage",
-        "name": "跑一个 Issue 到底花多少钱 —— 实测摊开",
+        "name": "AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi",
+        "description": "实测 AI 编程 agent 每个合并 PR 的成本：20 个 Orbi PR，中位 $0.125（非高峰），公开样本窗口、DeepSeek 牌价与复算方法。",
         "url": "https://orbi.build/zh/cost/",
         "inLanguage": "zh-CN",
         "isPartOf": {
@@ -49,6 +50,14 @@
           "url": "https://orbi.build/"
         },
         "about": { "@id": "https://orbi.build/#software" }
+      },
+      {
+        "@type": "Dataset",
+        "name": "Orbi 每个合并 PR 的成本",
+        "description": "orbi-build/orbi 仓库 20 个合并 PR 的实测 token 用量与 DeepSeek Flash 成本估算。",
+        "temporalCoverage": "2026-09-22/2026-09-24",
+        "variableMeasured": ["每个合并 PR 的成本", "每个合并 PR 的 token 用量"],
+        "url": "https://orbi.build/zh/cost/"
       }
     ]
   }
@@ -85,9 +94,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
-        <p class="eyebrow"><span class="live-dot"></span>成本透明 · 截至 2026-09-12 实测 · n=46</p>
-        <h1 id="cost-title">跑一个 Issue 到底花多少钱</h1>
-        <p class="hero-lede"><strong>我们不在你的 token 上赚差价。</strong>对我们自己的仓库实测 46 次真实交付:单次中位 <strong>2,220,637 tokens</strong>、均值 <strong>4,742,066</strong>;按 DeepSeek V4.1 Flash 官方牌价,均值单次约 <strong>$0.06–0.12</strong>,跑 <strong>100 个 issue 约 $6–12</strong>。你的 key、你的账单、你在 Provider 后台看得见每一分钱。</p>
+        <p class="eyebrow"><span class="live-dot"></span>成本透明 · 截至 2026-09-24 实测 · n=20</p>
+        <h1 id="cost-title">AI 编程 agent 每合并一个 PR 花多少钱</h1>
+        <p class="hero-lede"><strong>实测中位成本：非高峰 $0.125，高峰 $0.249。</strong>数据来自我们自己的仓库中 20 个已合并 PR，全部使用 DeepSeek-V4.1-Flash，每个合并 PR 的 token 中位数为 <strong>10,612,802</strong>。样本窗口、价格输入和适用范围都公开在下方。</p>
         <div class="cta-row">
           <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
           <p class="hero-alt">想自己部署?交付核心永久免费 —— <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
@@ -95,9 +104,28 @@
       </section>
     </div>
 
+    <section class="compare-section shell" aria-labelledby="merged-pr-title">
+      <p class="section-tag">每个合并 PR 的成本</p>
+      <h2 class="orbi-compare-section-h2" id="merged-pr-title">20 个合并 PR，在我们自己的仓库上实测</h2>
+      <p class="section-lede">最清楚的统计单位是合并 PR，而不是抽象的 token 配额。我们在 <strong>2026-09-22 09:44 UTC 到 2026-09-24 12:03 UTC</strong> 之间，统计了 orbi-build/orbi 仓库的 <strong>20 个合并 PR</strong>。全部样本都使用 <code>deepseek-flash</code>（DeepSeek-V4.1-Flash）。每个合并 PR 的 token 中位数是 <strong>10,612,802</strong>；运行时长中位数 <strong>60.4 分钟</strong>，模型请求中位数 <strong>156 次</strong>。</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead><tr><th scope="col">统计量</th><th scope="col">非高峰</th><th scope="col">高峰</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">每个合并 PR 成本中位数</th><td>$0.125</td><td>$0.249</td></tr>
+            <tr><th scope="row">每个合并 PR 平均成本</th><td>$0.152</td><td>$0.304</td></tr>
+            <tr><th scope="row">每个合并 PR P90 成本</th><td>$0.298</td><td>$0.597</td></tr>
+            <tr><th scope="row">每个合并 PR 最大成本</th><td>$0.417</td><td>$0.834</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">金额按 DeepSeek 官方 <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash 价格</a>计算，2026-09-24 核对：缓存命中每百万 token $0.003、未命中每百万 $0.15、输出每百万 $0.60。工作日高峰（UTC 01:00–04:00 和 06:00–10:00）价格翻倍。样本 token 构成：缓存读取占 97.1%；输入 1.9%；输出 1.0%。</p>
+      <p class="src-note">为什么和下面的旧数字不同：旧样本按 46 个 worktree 统计，含未合并工作和小改动；这里仅统计已合并 PR。20 个 PR 对应公开可查的 Issue：#1289、#1290、#1231、#1262、#1304、#1306、#1307、#933、#898、#856、#610、#1259、#1294、#1322、#1324、#1088、#1328、#1332、#1337、#1336。另见 <a href="/zh/compare/devin/">Devin 对比</a>、<a href="/zh/cloud/">Cloud</a> 和 <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
+    </section>
+
     <section class="compare-section shell" aria-labelledby="measured-title">
-      <p class="section-tag">实测数据</p>
-      <h2 class="orbi-compare-section-h2" id="measured-title">46 次真实交付,在我们自己的仓库上实测</h2>
+      <p class="section-tag">实测数据 · 每次交付（含未合并）</p>
+      <h2 class="orbi-compare-section-h2" id="measured-title">46 次真实交付，在我们自己的仓库上实测</h2>
       <p class="section-lede">Orbi 的每次交付跑两个 Agent session —— 实现,外加一个能修分支、能重跑测试的独立审查。截至 <strong>2026-09-12</strong>,我们聚合了 orbi 仓库自身 <strong>n=46 次交付</strong>(Python、完整 CI、Issue 写得规范)的 session 日志。样本就是当天磁盘上还在的 worktree —— 会随 worktree 清理而变化 —— 所以 <strong>n 是截至标注日期的快照,不是永久事实</strong>。下面是按次统计的 <code>totalTokens</code> 完整分布 —— 也就是 Provider 实际计费的口径,含缓存读取:</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
@@ -118,8 +146,8 @@
     <section class="compare-section compare-section-tint" aria-labelledby="money-title">
       <div class="shell">
         <p class="section-tag">折算成钱</p>
-        <h2 class="orbi-compare-section-h2" id="money-title">按 DeepSeek V4.1 Flash 官方牌价,一次交付几分钱</h2>
-        <p class="section-lede">DeepSeek 公布价格 —— <code>deepseek-flash</code>(DeepSeek-V4.1-Flash):off-peak 时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。peak 时段(工作日 01:00–04:00 与 06:00–10:00 UTC)恰好翻倍。把官方牌价套到实测分布上:</p>
+        <h2 class="orbi-compare-section-h2" id="money-title">每次交付（含未合并工作）按 DeepSeek V4.1 Flash 官方牌价，几分钱</h2>
+        <p class="section-lede">DeepSeek 公布价格 —— <code>deepseek-flash</code>(DeepSeek-V4.1-Flash):off-peak 时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。peak 时段(工作日 01:00–04:00 与 06:00–10:00 UTC)恰好翻倍。旧样本的均值折算约为<strong>每次交付 $0.06–0.12</strong>。把官方牌价套到实测分布上:</p>
         <div class="compare-table-wrap">
           <table class="compare-table">
             <thead><tr><th scope="col">场景</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>

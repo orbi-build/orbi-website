@@ -409,16 +409,19 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
       for (const costPage of COST_PAGES) {
         const costHtml = await readFile(`${dir}${costPage}`, "utf8");
-        // The cost page publishes the deepseek-flash list prices as
-        // hit/miss/output per 1M and states peak hours are exactly double.
-        const [hit, miss, out] = [...costHtml.matchAll(/<strong>\$([\d.]+)\/1M<\/strong>/g)]
+        const perDeliverySection = costHtml.match(
+          /<section class="compare-section compare-section-tint" aria-labelledby="money-title">([\s\S]*?)<\/section>/,
+        )?.[1] ?? "";
+        // Scope the old per-delivery calculation to its section: Issue #512
+        // adds a newer merged-PR cost range before it on the same page.
+        const [hit, miss, out] = [...perDeliverySection.matchAll(/<strong>\$([\d.]+)\/1M<\/strong>/g)]
           .slice(0, 3).map((m) => Number(m[1]));
         const { mean, mix } = measuredStats(costHtml);
         const [reads, input, output] = mix.map(Number);
         const per1M = (reads / 100) * hit + (input / 100) * miss + (output / 100) * out;
         const offPeak = (Number(mean.replaceAll(",", "")) / 1e6) * per1M;
         const cents = (usd) => Math.round(usd * 100) / 100;
-        const stated = costHtml.match(/\$([\d.]+)[–-]([\d.]+)/)?.slice(1, 3).map(Number);
+        const stated = perDeliverySection.match(/\$([\d.]+)[–-]([\d.]+)/)?.slice(1, 3).map(Number);
         expect(stated, `${costPage} in ${dir}`).toEqual([cents(offPeak), cents(offPeak * 2)]);
       }
     }

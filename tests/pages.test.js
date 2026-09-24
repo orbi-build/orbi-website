@@ -245,6 +245,52 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   });
 });
 
+describe("merged pull request cost page (Issue #512)", () => {
+  const expectations = {
+    "cost/index.html": {
+      titleKeyword: "per pull request",
+      sample: "20 merged PRs",
+      oldLabel: "PER DELIVERY (INCLUDING UNMERGED)",
+      links: ["/compare/devin/", "/cloud/", "/guides/auto-merge-ai-prs/"],
+    },
+    "zh/cost/index.html": {
+      titleKeyword: "每个合并 PR",
+      sample: "20 个合并 PR",
+      oldLabel: "每次交付（含未合并）",
+      links: ["/zh/compare/devin/", "/zh/cloud/", "/zh/guides/auto-merge-ai-prs/"],
+    },
+  };
+  const amounts = ["$0.125", "$0.249", "$0.152", "$0.304", "$0.298", "$0.597", "$0.417", "$0.834"];
+
+  it("publishes the dated 20-PR measurement and all eight table amounts", () => {
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      expect(title, output).toContain(expected.titleKeyword);
+      for (const amount of amounts) expect(html, `${output}: ${amount}`).toContain(amount);
+      expect(html, output).toContain(expected.sample);
+      expect(html, output).toContain("2026-09-22");
+      expect(html, output).toContain("2026-09-24");
+      expect(html, output).toContain("api-docs.deepseek.com/quick_start/pricing");
+      expect(html, output).toContain(expected.oldLabel);
+      for (const link of expected.links) expect(html, `${output}: ${link}`).toContain(`href="${link}"`);
+    }
+  });
+
+  it("has parseable Dataset JSON-LD on both language pages", () => {
+    for (const [output] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+      const graph = JSON.parse(json)["@graph"];
+      const dataset = graph.find((node) => node["@type"] === "Dataset");
+      expect(dataset, output).toMatchObject({
+        temporalCoverage: "2026-09-22/2026-09-24",
+        variableMeasured: expect.any(Array),
+      });
+    }
+  });
+});
+
 describe("comparison fact corrections (Issue #467)", () => {
   it("labels Keelen as open beta in both languages", () => {
     expect(shipped.get("compare/keelen/index.html")).toContain("currently in open beta");
@@ -622,7 +668,7 @@ describe("per-page head parameters (title / description / canonical)", () => {
           "Orbi 对比 GitHub Copilot cloud agent（原 coding agent）：谁评审、谁合并、谁发版、花多少钱、跑在哪里，附官方来源。",
       },
       "cost/index.html": {
-        title: "AI coding agent cost: what one delivery costs | Orbi",
+        title: "AI coding agent cost per pull request, measured | Orbi",
       },
       "cloud/index.html": {
         title: "Self-hosted or cloud coding agent: Orbi Cloud | Orbi",
@@ -631,7 +677,7 @@ describe("per-page head parameters (title / description / canonical)", () => {
         title: "AI 编程 agent 工具对比：Orbi 与各家逐条核实 | Orbi",
       },
       "zh/cost/index.html": {
-        title: "AI 编程成本实测：跑一个 Issue 到底花多少钱 | Orbi",
+        title: "AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi",
       },
     };
     for (const [output, slots] of Object.entries(expected)) {
@@ -760,8 +806,10 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
       expect(html, output).not.toContain("$1–3");
-      expect(html, output).not.toContain("per merged PR");
-      expect(html, output).not.toContain("每个合并 PR 约");
+      if (!output.endsWith("cost/index.html") && !output.endsWith("zh/cost/index.html")) {
+        expect(html, output).not.toContain("per merged PR");
+        expect(html, output).not.toContain("每个合并 PR 约");
+      }
     }
   });
 });

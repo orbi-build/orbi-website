@@ -1445,17 +1445,20 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // money math, all three stated limits, and the competitor non-disclosure
 // sources with their verification date — in both languages, with the numbers
 // identical across the two.
-// Issue #118: the dataset is a snapshot as of a stated date (the sample moves
-// as worktrees are cleaned up), so the page pins "measured 2026-09-12 · n=46"
-// with the re-derivation recipe in the source note; the smoke reads the n
-// each rendered page actually shows and asserts the two languages agree.
+// Issue #118: the older delivery dataset is a snapshot as of a stated date
+// (the sample moves as worktrees are cleaned up), so its section retains the
+// date, n=46, and re-derivation recipe. Issue #512 adds the dated n=20 merged-PR
+// sample; the smoke reads the hero n each rendered page shows and asserts the
+// two languages agree.
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
-    h1: "What one Issue delivery actually costs",
+    h1: "What an AI coding agent costs per merged pull request",
     text: [
-      // measurement date + sample size (a snapshot, not a permanent fact)
-      "measured 2026-09-12", "n=46",
+      // merged-PR measurement date, sample size, and median costs
+      "measured 2026-09-24", "n=20", "$0.125", "$0.249", "10,612,802",
+      // older per-delivery snapshot remains available
+      "2026-09-12", "n=46",
       "n is a snapshot as of the stated date, not a permanent fact",
       // the re-derivation recipe: which files, which grouping, which field
       ".pi-session/*.jsonl", "usage.totalTokens", "nearest rank",
@@ -1479,9 +1482,10 @@ const costPages = {
   },
   "/zh/cost/": {
     zh: "/cost/",
-    h1: "跑一个 Issue 到底花多少钱",
+    h1: "AI 编程 agent 每合并一个 PR 花多少钱",
     text: [
-      "截至 2026-09-12 实测", "n=46",
+      "截至 2026-09-24 实测", "n=20", "$0.125", "$0.249", "10,612,802",
+      "2026-09-12", "n=46",
       "n 是截至标注日期的快照,不是永久事实",
       ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
       "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
