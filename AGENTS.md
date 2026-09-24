@@ -126,6 +126,15 @@ commit the regenerated `public/` output together with the source change.
 `scripts/build-pages.mjs --out <dir>` renders to any directory, which is how you
 inspect output without touching `public/`.
 
+## UI 改动
+
+改页面样式、布局或组件前，先读 [orbi-build/orbi-design-system README](https://raw.githubusercontent.com/orbi-build/orbi-design-system/main/README.md)，再读要改的组件 `components/<Name>/README.md`。
+
+- 颜色、间距、圆角和字体必须取自设计系统的 [`tokens.json`](https://raw.githubusercontent.com/orbi-build/orbi-design-system/main/tokens.json)；官网夜间区块使用 `dark` 主题，纸色区块使用 `paper*` 系列 token。不自创颜色、圆角或组件样式。
+- 设计系统缺少所需内容时，先在 [`orbi-build/orbi-design-system`](https://github.com/orbi-build/orbi-design-system) 补齐，再在本仓使用。
+- 如果设计系统与现有页面不一致，保持现有页面行为，并在 PR 说明中写出差异。
+- 不要把设计系统文件复制进本仓。
+
 ## Build gates
 
 `npm test` (vitest) is the gate; run it before every delivery. What it pins:
