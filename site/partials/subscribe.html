@@ -1,0 +1,12 @@
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">{{SUBSCRIBE_TITLE}}</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="{{SUBSCRIBE_SUCCESS}}" data-invalid="{{SUBSCRIBE_INVALID}}">
+    <label class="sr-only" for="subscribe-email-{{SUBSCRIBE_LANG}}">{{SUBSCRIBE_LABEL}}</label>
+    <input id="subscribe-email-{{SUBSCRIBE_LANG}}" type="email" name="email" autocomplete="email" required placeholder="{{SUBSCRIBE_PLACEHOLDER}}">
+    <input type="hidden" name="lang" value="{{SUBSCRIBE_LANG}}">
+    <input type="hidden" name="return_to" value="{{SUBSCRIBE_RETURN}}">
+    <button class="button button-signal" type="submit">{{SUBSCRIBE_BUTTON}}</button>
+  </form>
+  <p class="subscribe-note">{{SUBSCRIBE_NOTE}}</p>
+  <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+</section>

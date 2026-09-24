@@ -56,6 +56,7 @@ const STATS_TTL_MS = 300000;
 const CLOUD_LOGIN_ROUTE = "/cloud/login";
 const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
+const SUBSCRIBE_ROUTE = "/subscribe";
 const ENGAGEMENT_ROUTE = "/cloud/e";
 const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
@@ -603,6 +604,10 @@ async function handleFetch(request, env, ctx) {
       return goneResponse();
     }
 
+    if (route === SUBSCRIBE_ROUTE) {
+      return subscribeResponse(request, env);
+    }
+
     // Issue #165: /pricing is a permanent alias of the /cloud/ PRICING
     // section. Host comes from the request so beta stays on beta.
     if (route === "/pricing" || route === "/zh/pricing") {
@@ -639,6 +644,75 @@ async function handleFetch(request, env, ctx) {
 
 // A same-origin redirect from <path> to <path>/ is the Assets binding's
 // trailing-slash canonicalisation; anything else is not ours to follow.
+function subscriptionReturnPath(value, request) {
+  if (typeof value === "string" && value.startsWith("/") && !value.startsWith("//")) {
+    return value.slice(0, 500);
+  }
+  return new URL(request.url).pathname;
+}
+
+function subscriptionResponse(request, status, body) {
+  const wantsJson = (request.headers.get("Accept") || "").includes("application/json");
+  if (wantsJson) {
+    const { return_to: _returnTo, ...jsonBody } = body;
+    return new Response(JSON.stringify(jsonBody), {
+      status,
+      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+    });
+  }
+  const returnPath = subscriptionReturnPath(body.return_to, request);
+  const query = status >= 200 && status < 300 ? "subscribed=1" : "subscribe_error=invalid";
+  const location = new URL(`${returnPath}${returnPath.includes("?") ? "&" : "?"}${query}`, request.url);
+  return Response.redirect(location, 303);
+}
+
+async function subscribeResponse(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
+  let fields;
+  try {
+    fields = (request.headers.get("Content-Type") || "").includes("application/json")
+      ? await request.json()
+      : Object.fromEntries(await request.formData());
+  } catch {
+    return subscriptionResponse(request, 400, { error: "invalid_request", return_to: new URL(request.url).pathname });
+  }
+  const email = typeof fields?.email === "string" ? fields.email.trim() : "";
+  const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
+  const return_to = subscriptionReturnPath(fields?.return_to, request);
+  if (!email || !lang) return subscriptionResponse(request, 400, { error: "invalid_request", return_to });
+  if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {
+    console.error("subscribe_unavailable: Cloud subscription configuration is missing");
+    return subscriptionResponse(request, 503, { error: "unavailable", return_to });
+  }
+  const payload = {
+    email,
+    ref: cookieFrom(request, "ref") || "",
+    vid: cookieFrom(request, "vid") || "",
+    lang,
+  };
+  try {
+    const cloudRequest = new Request(env.CLOUD_SUBSCRIBE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.WEBSITE_SECRET}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000),
+    });
+    const response = await (env.CLOUD ? env.CLOUD.fetch(cloudRequest) : fetch(cloudRequest));
+    if (response.status === 400) return subscriptionResponse(request, 400, { error: "invalid_email", return_to });
+    if (!response.ok) {
+      console.error("subscribe_upstream_rejected", response.status);
+      return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+    }
+    return subscriptionResponse(request, 200, { ok: true, return_to });
+  } catch (err) {
+    console.error("subscribe_failed:", err && err.message ? err.message : err);
+    return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+  }
+}
+
 async function engagementResponse(request, env, ctx) {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
   let event;
@@ -874,7 +948,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, loadFoundingStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit

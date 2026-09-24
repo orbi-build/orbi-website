@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetBehaviorSignals } from "../src/bot-detection.js";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, trailingSlashRedirect } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
@@ -684,6 +684,53 @@ describe("plaintext /status (Issue #173)", () => {
     const body = await status.text();
     expect(body.startsWith("{")).toBe(false);
     expect(body).toMatch(/issues closed/);
+  });
+});
+
+describe("email subscription route (Issue #442)", () => {
+  const cloudUrl = "https://cloud.test/api/internal/subscribe";
+  const env = (cloud) => ({ CLOUD_SUBSCRIBE_URL: cloudUrl, WEBSITE_SECRET: "subscribe-secret", CLOUD: { fetch: cloud } });
+
+  it("forwards email, first-touch attribution, language, and secret", async () => {
+    let sent;
+    const cloud = async (request) => { sent = request; return new Response("ok"); };
+    const request = new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", Cookie: "vid=visitor-1; ref=x-2609240130" },
+      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+    });
+    const response = await subscribeResponse(request, env(cloud));
+    expect(response.status).toBe(200);
+    expect(sent.url).toBe(cloudUrl);
+    expect(sent.headers.get("Authorization")).toBe("Bearer subscribe-secret");
+    expect(await sent.json()).toEqual({ email: "ada@example.com", ref: "x-2609240130", vid: "visitor-1", lang: "en" });
+    expect(await response.json()).toEqual({ ok: true });
+  });
+
+  it("returns invalid-email failure when Cloud returns 400", async () => {
+    const request = new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: "not-an-email", lang: "zh", return_to: "/zh/cost/" }),
+    });
+    const response = await subscribeResponse(request, env(async () => new Response("bad", { status: 400 })));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid_email" });
+  });
+
+  it("redirects no-JS form submissions back to the page", async () => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "email=ada%40example.com&lang=zh&return_to=%2Fzh%2Fevidence%2F",
+    }), env(async () => new Response("ok")));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/evidence/?subscribed=1");
+  });
+
+  it("does not allow an external no-JS redirect", async () => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "email=ada%40example.com&lang=en&return_to=https%3A%2F%2Fevil.example%2F",
+    }), env(async () => new Response("ok")));
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/subscribe?subscribed=1");
   });
 });
 

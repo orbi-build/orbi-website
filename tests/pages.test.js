@@ -70,6 +70,23 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+describe("email subscription forms (Issue #442)", () => {
+  it("renders the form on every requested EN/ZH surface", () => {
+    const outputs = [
+      "evidence/index.html", "zh/evidence/index.html", "cost/index.html", "zh/cost/index.html",
+      ...posts.filter((post) => post.paired).map((post) => post.output),
+    ];
+    for (const output of outputs) {
+      const html = shipped.get(output);
+      expect(html, output).toContain('action="/subscribe"');
+      expect(html, output).toContain('name="email"');
+      expect(html, output).toContain('name="lang"');
+      expect(html, output).toContain('name="return_to"');
+      expect(html, output).toContain("subscribe.js");
+    }
+  });
+});
+
 describe("ai-ready methodology pages (Issue #195)", () => {
   it("renders both language pages with metadata and twelve ordered factor headings", () => {
     const expected = [
