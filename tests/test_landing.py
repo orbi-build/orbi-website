@@ -1568,15 +1568,16 @@ class DevinComparisonTests(unittest.TestCase):
             self.assertIn("https://docs.devin.ai", hrefs)
             self.assertIn("https://docs.devin.ai/admin/billing/self-serve", hrefs)
             self.assertIn("https://docs.devin.ai/admin/billing/usage", hrefs)
+            self.assertIn("https://devin.ai/pricing", hrefs)
             for quote in (
                 "the first autonomous software engineer",
                 "from prompt to PR",
             ):
                 self.assertIn(quote, page.text, quote)
-        # devin.ai's pricing page was not directly reachable at verification;
-        # the page must say so instead of pretending it checked the prices
-        self.assertIn("not directly reachable at verification time", self.en.text)
-        self.assertIn("无法直接访问", self.zh.text)
+        # Issue #511 rechecked devin.ai's pricing page on 2026-09-24;
+        # the page must record that dated fetch rather than retain the old access-wall caveat.
+        self.assertIn("fetched 2026-09-24", self.en.text)
+        self.assertIn("抓取于 2026-09-24", self.zh.text)
 
     def test_competitor_facts_match_the_verified_research(self) -> None:
         # The verified research notes (2026-09-07, cognition.com and

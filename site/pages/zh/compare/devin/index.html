@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Devin 的开源替代：可自托管的 Orbi | Orbi</title>
-  <meta name="description" content="Orbi 是 Devin 的开源（AGPL-3.0）替代方案，可自托管，把 GitHub Issue 交付到审查后的 PR 与发版，并对比两者的价格模式。">
+  <meta name="description" content="Orbi：Cognition Devin 的开源（AGPL-3.0）替代方案，可自托管，从 GitHub Issue 交付审查后 PR 与发版，并对比价格模式。">
   <link rel="canonical" href="https://orbi.build/zh/compare/devin/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
@@ -100,7 +100,7 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="compare-title">
-        <p class="eyebrow">竞品对比 · 事实核实于 2026-09-07</p>
+        <p class="eyebrow">竞品对比 · 来源日期见下文</p>
         <h1 id="compare-title">Devin 的开源替代：Orbi 与 Devin 对比</h1>
         <p class="hero-lede"><strong>雇一个工程师，还是运营一条交付产线。</strong>Devin 是 Cognition 的托管自主工程师：你在 Slack 或网页里派活，它在 Cognition 的云里干活，交回 pull request。Orbi 是开源（AGPL-3.0）的自托管交付系统：你自己的机器、你自己的模型 key、你自己的 GitHub 队列。两者最终都产出一个经过审查的 PR——真正的对比在于：机器、模型和计价器握在谁手里。本页每条陈述都标注来源。</p>
         <div class="cta-row">
@@ -164,8 +164,8 @@
           </thead>
           <tbody>
             <tr><th scope="row">免费</th><td>自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。Cloud Free：__FREE_DELIVERIES__ 次合并交付。</td><td>$0，light quota。</td></tr>
-            <tr><th scope="row">个人</th><td>Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，1 个仓库。</td><td>Pro：每月 $20。</td></tr>
-            <tr><th scope="row">团队 / 规模</th><td>Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，5 个仓库。</td><td>Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
+            <tr><th scope="row">个人</th><td>Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，__SOLO_REPOSITORIES__ 个仓库。</td><td>Pro：每月 $20。</td></tr>
+            <tr><th scope="row">团队 / 规模</th><td>Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，__PRO_REPOSITORIES__ 个仓库。</td><td>Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
             <tr><th scope="row">计量</th><td>自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td>「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
           </tbody>
         </table>
@@ -264,8 +264,13 @@
     <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
       <p class="section-tag">事实来源</p>
       <h2 class="orbi-compare-section-h2" id="sources-title">来源与核实日期</h2>
-      <p class="section-lede">本页每一条事实都对应下列来源之一，全部于 2026-09-07 核实；本页是一个快照，做架构决策前请再查一次来源。有一处如实说明：devin.ai 自己的定价页在核实时无法直接访问（被一道访问墙挡住），因此以上计费事实取自 Devin 官方文档。</p>
+      <p class="section-lede">本页每一条事实都对应下列带日期的来源。产品与文档来源核实于 2026-09-07；Devin 定价页抓取于 2026-09-24。本页是一个快照，做架构决策前请再查一次来源。</p>
       <ul class="source-list">
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://devin.ai/pricing" rel="noopener">Devin 官方定价页</a>——Free、Pro、Max、Teams 与 Enterprise 套餐，按消息计价原文，Dedicated deployment option</strong>
+          <span class="source-date">抓取于 2026-09-24</span>
+          <small>devin.ai/pricing</small>
+        </li>
         <li class="orbi-source-list-li">
           <strong ><a class="orbi-source-list-a" href="https://cognition.com" rel="noopener">Cognition 官网</a>——「the first autonomous software engineer」、自研 SWE 模型线、点名客户</strong>
           <span class="source-date">核实于 2026-09-07</span>

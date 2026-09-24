@@ -26,6 +26,7 @@ let shippedLlms; // public/llms.txt
 let generatedLlmsFull; // build-generated llms-full.txt (Issue #438)
 let shippedLlmsFull; // public/llms-full.txt
 let matrixCsv;
+let pricing;
 
 beforeAll(async () => {
   // A real build through the real entry point, never a re-implementation.
@@ -52,6 +53,7 @@ beforeAll(async () => {
   generatedLlmsFull = await readFile(join(builtDir, "llms-full.txt"), "utf8");
   shippedLlmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
   matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
+  pricing = JSON.parse(await readFile(join(ROOT, "src", "pricing.json"), "utf8"));
 });
 
 afterAll(async () => {
@@ -906,10 +908,17 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
       expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
       expect(html, output).toContain('href="https://devin.ai/pricing"');
       expect(html, output).toContain("2026-09-24");
-      expect(html, output).toContain("__SOLO_MONTHLY_USD__");
-      expect(html, output).toContain("__CLOUD_MONTHLY_USD__");
-      expect(html, output).toContain("__SOLO_INCLUDED_TOKENS__");
-      expect(html, output).toContain("__INCLUDED_TOKENS__");
+      for (const token of [
+        pricing.freeDeliveriesToken,
+        pricing.soloMonthlyUsdToken,
+        pricing.soloIncludedTokensToken,
+        pricing.soloRepositoriesToken,
+        pricing.monthlyUsdToken,
+        pricing.includedTokensToken,
+        pricing.proRepositoriesToken,
+      ]) expect(html, `${output}: ${token}`).toContain(token);
+      expect(html, output).not.toContain("pricing page was not directly reachable");
+      expect(html, output).not.toContain("定价页在核实时无法直接访问");
       for (const link of links) expect(html, `${output}: ${link}`).toContain(`href="${link}`);
     }
   });
