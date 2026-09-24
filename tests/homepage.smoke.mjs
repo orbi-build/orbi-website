@@ -19,7 +19,7 @@ const installCommand = "curl -fsSL https://aiready.sh | sh";
 const deepDives = [
   ["Orbi vs Orca", "/compare/orca/"],
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
-  ["Orbi vs GitHub Copilot coding agent", "/compare/github-copilot-coding-agent/"],
+  ["Orbi vs GitHub Copilot cloud agent", "/compare/github-copilot-coding-agent/"],
   ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
   ["Orbi vs Claude Code", "/compare/claude-code/"],
   ["Orbi vs OpenHands", "/compare/openhands/"],
