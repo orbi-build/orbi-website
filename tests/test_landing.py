@@ -120,6 +120,7 @@ def parse(path: Path) -> tuple[str, PageParser]:
         ("soloRepositoriesToken", "soloRepositories"),
         ("proRepositoriesToken", "proRepositories"),
         ("foundingPartnerLimitToken", "foundingPartnerLimit"),
+        ("foundingPromoCodeToken", "foundingPromoCode"),
     ):
         html = html.replace(PRICING[token_key], str(PRICING[value_key]))
     html = html.replace(PRICING["includedTokensToken"], str(PRICING["includedTokensLabel"]))
@@ -129,8 +130,16 @@ def parse(path: Path) -> tuple[str, PageParser]:
         str(PRICING["measuredSmallRepositoryDeliveryRange"]),
     )
     html = html.replace(
+        PRICING["measuredSoloRepositoryDeliveryRangeToken"],
+        str(PRICING["measuredSoloRepositoryDeliveryRange"]),
+    )
+    html = html.replace(
         PRICING["measuredLargeCodebaseDeliveriesToken"],
         str(PRICING["measuredLargeCodebaseDeliveries"]),
+    )
+    html = html.replace(
+        PRICING["measuredSoloLargeCodebaseDeliveriesToken"],
+        str(PRICING["measuredSoloLargeCodebaseDeliveries"]),
     )
     page = PageParser()
     page.feed(html)

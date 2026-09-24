@@ -178,6 +178,7 @@ function startServer() {
               .replaceAll(pricing.soloRepositoriesToken, String(pricing.soloRepositories))
               .replaceAll(pricing.proRepositoriesToken, String(pricing.proRepositories))
               .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
+              .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
               .replaceAll(
@@ -185,8 +186,16 @@ function startServer() {
                 String(pricing.measuredSmallRepositoryDeliveryRange),
               )
               .replaceAll(
+                pricing.measuredSoloRepositoryDeliveryRangeToken,
+                String(pricing.measuredSoloRepositoryDeliveryRange),
+              )
+              .replaceAll(
                 pricing.measuredLargeCodebaseDeliveriesToken,
                 String(pricing.measuredLargeCodebaseDeliveries),
+              )
+              .replaceAll(
+                pricing.measuredSoloLargeCodebaseDeliveriesToken,
+                String(pricing.measuredSoloLargeCodebaseDeliveries),
               )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
               .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
