@@ -57,6 +57,22 @@ merge moment, which is how the soak window is honored.
 
   Conflicts are listed under the tree hash; fix them on the snapshot branch first.
 
+- **Merge preflight immediately before merging (required).** The check above is
+  only a snapshot taken before the PR is opened. `main` may advance while the
+  PR is waiting, including through a direct merge that touches the same files
+  as the beta snapshot. Therefore, immediately before clicking **Merge**,
+  fetch again and rerun the same check against the current `origin/main`:
+
+  ```
+  git fetch origin
+  git merge-tree --write-tree --name-only origin/main promote/<date>
+  ```
+
+  Do not merge until this fresh result is clean. If it reports conflicts or
+  reveals that the current merge would replace main-side changes, stop and
+  resolve the promotion branch (or recreate the promotion PR) before merging.
+  The pre-PR check cannot detect commits that land after it ran.
+
 - **Soak reality check.** The soak gate protects real users, so it may be
   skipped only when there are none. Check active subscriptions with a
   read-only query against the control-plane database, but record only the

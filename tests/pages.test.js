@@ -994,6 +994,19 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   });
 });
 
+describe("Cloud pricing interval controls (Issue #483)", () => {
+  it("keeps the annual/monthly switch in both shipped Cloud pages", () => {
+    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
+      const html = shipped.get(output);
+      expect(html, output).toContain('data-pricing-toggle');
+      expect(html.match(/data-pricing-interval="year"/g), `${output}: year button`).toHaveLength(1);
+      expect(html.match(/data-pricing-interval="month"/g), `${output}: month button`).toHaveLength(1);
+      expect(html, output).toContain('data-pricing-interval="year" aria-pressed="true"');
+      expect(html, output).toContain('data-pricing-interval="month" aria-pressed="false"');
+    }
+  });
+});
+
 // Issue #180: /cloud/ is the pricing page, not a clone of /cost/. Coupon and
 // forever contract wording appear once; Devin/Factory billing docs stay on
 // /cost/. The grep is the site source — the same files the Issue names.
