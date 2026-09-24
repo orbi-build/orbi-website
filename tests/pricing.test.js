@@ -11,6 +11,7 @@ const USD = String(pricing.cloudMonthlyUsd);
 const SOLO_USD = String(pricing.soloMonthlyUsd);
 const SOLO_ANNUAL_USD = String(pricing.soloAnnualUsd);
 const PRO_ANNUAL_USD = String(pricing.proAnnualUsd);
+const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
@@ -408,34 +409,39 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
     expect(denials, "llms.txt must not deny that Cloud ships or sells").toEqual([]);
   });
 
-  it("prices Cloud exactly as pricing.json, never as a drifted literal", async () => {
+  it("prices every Cloud plan exactly as pricing.json, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    // Every US$-prefixed figure in the file is the monthly price (measured
-    // per-delivery costs keep the bare-$ form, so a drifted price cannot
-    // hide among them), always with the site-wide US prefix.
+    const expected = new Set([SOLO_USD, SOLO_ANNUAL_USD, USD, PRO_ANNUAL_USD].map((value) => `US$${value}`));
     const usdLiterals = [...raw.matchAll(/US\$\d+(?:\.\d+)?/g)].map((match) => match[0]);
-    expect(usdLiterals.length, "llms.txt should state the Cloud price").toBeGreaterThan(0);
-    for (const literal of usdLiterals) {
-      expect(literal, "llms.txt US$ literal").toBe(`US$${USD}`);
+    expect(new Set(usdLiterals), "llms.txt should state all Cloud prices").toEqual(expected);
+    for (const value of expected) {
+      expect(raw.match(barePrice(value.slice(3))), `bare ${value.slice(2)} without the US prefix`).toBeNull();
     }
-    expect(raw.match(barePrice(USD)), "bare $79 without the US prefix").toBeNull();
   });
 
-  it("states the included quota exactly as pricing.json, never as a drifted literal", async () => {
+  it("states both included quotas exactly as pricing.json, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    // The same quotaLiterals shape the pages gate uses; the measured
-    // per-delivery figures stay exempt by that regex, so only the round
-    // quota label is allowed to match.
+    const expected = new Set([`${pricing.soloIncludedTokensLabel} tokens`, `${TOKENS_LABEL} tokens`]);
     const quotas = quotaLiterals(raw);
-    expect(quotas.length, "llms.txt should state the included quota").toBeGreaterThan(0);
-    for (const quota of quotas) {
-      expect(quota.literal, `llms.txt quota literal at ${quota.index}`).toBe(`${TOKENS_LABEL} tokens`);
-    }
+    expect(new Set(quotas.map(({ literal }) => literal.replace(/\s+/g, " "))), "llms.txt should state both plan quotas").toEqual(expected);
   });
 });
 
 describe("Three-tier Cloud pricing (Issue #441)", () => {
-  it("renders pricing.json values and checkout links on both Cloud pages", async () => {
+  it("pins the approved plan prices and allowances", () => {
+    expect(pricing).toMatchObject({
+      soloMonthlyUsd: 29,
+      soloAnnualUsd: 290,
+      cloudMonthlyUsd: 79,
+      proAnnualUsd: 790,
+      soloIncludedTokensLabel: "100M",
+      soloRepositories: 1,
+      proRepositories: 5,
+      foundingPartnerLimit: 6,
+    });
+  });
+
+  it("renders pricing.json values, exact outcome copy, and checkout links on both Cloud pages", async () => {
     for (const relativePath of CLOUD_PAGES) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
@@ -445,9 +451,15 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
       expect(body, relativePath).toContain("/api/checkout?plan=solo");
       expect(body, relativePath).toContain("/api/checkout?plan=pro");
-      expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? "永久 5 折" : "50% off forever");
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
+        : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+      expect(body, relativePath).toContain(relativePath.startsWith("zh/")
+        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位`
+        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places`);
       expect(body, relativePath).not.toContain("Founding Partner");
       expect(body, relativePath).not.toContain("永久免费");
+      expect(body, relativePath).not.toContain("BYOK model key");
     }
   });
 
@@ -461,6 +473,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloIncludedTokensToken,
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
+        pricing.foundingPartnerLimitToken,
       ]) expect(html, relativePath).toContain(token);
     }
   });

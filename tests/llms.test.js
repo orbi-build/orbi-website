@@ -60,7 +60,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       "",
       "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
       "",
-      "Key numbers: Cloud is US$79/month with 300M model tokens; about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.",
+      "Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories, priority queue); about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.",
     ]);
   });
 
@@ -134,7 +134,7 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
     expect(section).toContain("/api/connect"); // step 4: connect repo + base branch
     expect(section).toContain("/api/model-config"); // step 5: provider + key
     expect(section).toContain("`ai-ready`"); // step 6: dispatch label
-    expect(section).toContain("100% off"); // Founding coupon
+    expect(section).toContain("50% off forever"); // Founding partner offer
     expect(section).toContain("US$79");
   });
 

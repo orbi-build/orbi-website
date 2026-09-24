@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。正价 US$__CLOUD_MONTHLY_USD__/月，创始会员永久 5 折，限 6 位。">
+  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta name="twitter:description" content="托管 Runner：提个 Issue，收个版本。正价 US$__CLOUD_MONTHLY_USD__/月，创始会员永久 5 折，限 6 位。">
+  <meta name="twitter:description" content="托管 Runner：提个 Issue，收个版本。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@
         "name": "Orbi Cloud — 创始试点",
         "price": "__CLOUD_MONTHLY_USD__",
         "priceCurrency": "USD",
-        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Pro 每月含 __INCLUDED_TOKENS__ token。创始会员永久 5 折，限 6 位。",
+        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Pro 每月含 __INCLUDED_TOKENS__ token。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
         "url": "https://orbi.build/zh/cloud/"
       },
       {
@@ -66,10 +66,10 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？",
+            "name": "Cloud 有哪些档位？怎么取消订阅？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 6 位。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
+              "text": "Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。 登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。"
             }
           },
           {
@@ -101,7 +101,7 @@
             "name": "创始会员优惠包含什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "创始会员永久 5 折，限 6 位；Free、Solo、Pro 三档的额度不变。"
+              "text": "创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位；Free、Solo、Pro 三档的额度不变。"
             }
           },
           {
@@ -223,16 +223,15 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">价格</p>
-        <h2 class="orbi-compare-section-h2" id="pricing-title">每个合并 PR 约 $1–3。失败的交付不收费。</h2>
-        <p class="section-lede">用完额度，交付暂停——没有超额账单。</p>
-        <p class="pricing-capacity">取决于票的大小：小仓库的常见票大约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付，像 Orbi 引擎这样的大代码库大约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）</p>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。</h2>
+        <p class="pricing-capacity">取决于票的大小：小仓库的常见票大约 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次合并交付，像 Orbi 引擎这样的大代码库大约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）。详见<a href="/zh/cost/">成本数据</a>。</p>
         <div class="pricing-cards">
           <article class="pricing-card">
             <p class="pricing-card-kicker">CLOUD 免费</p>
             <h3>免费</h3>
             <p class="pricing-card-price">US$0 <span>/ 月</span></p>
             <p>前 __FREE_DELIVERIES__ 次合并交付，不用绑卡。</p>
-            <ul><li>失败的交付不收费</li><li>自带模型 key</li></ul>
+            <ul><li>失败的交付不收钱</li></ul>
             <a class="button button-outline" href="/zh/cloud/#pricing">免费开始 <span aria-hidden="true">↗</span></a>
           </article>
           <article class="pricing-card pricing-card-featured">
@@ -252,8 +251,8 @@
             <a class="button button-signal" href="/api/checkout?plan=pro">选择 Pro <span aria-hidden="true">↗</span></a>
           </article>
         </div>
-        <p class="founding-offer"><strong>创始会员永久 5 折，限 6 位。</strong> <span class="founding-availability" data-founding-availability data-regular-price="US$__CLOUD_MONTHLY_USD__" hidden></span></p>
-        <p class="self-hosted-note">自托管 fair-code 核心不收平台费；模型 key 自己带。</p>
+        <p class="founding-offer"><strong>创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</strong> <span class="founding-availability" data-founding-availability hidden></span></p>
+        <p class="self-hosted-note">自托管：US$0，使用 fair-code 核心；模型 key 自己带。</p>
       </div>
     </section>
 
@@ -299,9 +298,9 @@
 
         <div class="faq-list">
           <details class="faq-item" open>
-            <summary><span>01</span>券用完后会自动扣 US$__CLOUD_MONTHLY_USD__ 吗？怎么取消订阅？</summary>
+            <summary><span>01</span>Cloud 有哪些档位？怎么取消订阅？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 6 位。</p>
+              <p class="orbi-faq-answer-p">Cloud 提供免费、Solo 和 Pro 三档。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</p>
               <p class="orbi-faq-answer-p">登录后，Cloud 状态页有「管理订阅」，打开 Stripe 客户中心：取消订阅、更新支付方式、查发票都在那里完成；取消后本页订阅状态随之更新。</p>
             </div>
           </details>
@@ -337,7 +336,7 @@
           <details class="faq-item">
             <summary><span>05</span>创始会员优惠包含什么？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">创始会员永久 5 折，限 6 位；Free、Solo、Pro 三档的额度不变。</p>
+              <p class="orbi-faq-answer-p">创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位；Free、Solo、Pro 三档的额度不变。</p>
             </div>
           </details>
 

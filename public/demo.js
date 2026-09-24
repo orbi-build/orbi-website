@@ -314,7 +314,7 @@
             const left = Math.max(0, founding.limit - founding.active);
             element.textContent = left > 0
               ? (lang === "zh" ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
-              : (lang === "zh" ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
+              : (lang === "zh" ? "· 名额已满" : "· All places filled");
             element.hidden = false;
           });
           document.querySelectorAll("[data-avatar-wall]").forEach(function (wall) {
@@ -451,7 +451,7 @@
         const isZh = document.documentElement.lang.startsWith("zh");
         element.textContent = left > 0
           ? (isZh ? "· 还剩 " + left + " / " + founding.limit + " 个名额" : "· " + left + " of " + founding.limit + " left")
-          : (isZh ? "已售罄 · 现价 " : "Sold out · regular price ") + element.getAttribute("data-regular-price");
+          : (isZh ? "· 名额已满" : "· All places filled");
         element.hidden = false;
       });
     }).catch(function () {

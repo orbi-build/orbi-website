@@ -16,6 +16,8 @@
   "soloRepositoriesToken": "__SOLO_REPOSITORIES__",
   "proRepositories": 5,
   "proRepositoriesToken": "__PRO_REPOSITORIES__",
+  "foundingPartnerLimit": 6,
+  "foundingPartnerLimitToken": "__FOUNDING_PARTNER_LIMIT__",
   "foundingTokensLabel": "300M",
   "foundingTokensToken": "__FOUNDING_TOKENS__",
   "freeDeliveries": 3,
