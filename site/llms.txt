@@ -214,7 +214,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones
-- Licence: AGPL-3.0 or Sustainable Use License — https://github.com/orbi-build/orbi/blob/main/LICENSE
+- Licence: AGPL-3.0 — https://github.com/orbi-build/orbi/blob/main/LICENSE; Sustainable Use License — https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md
 - Comparison — Orbi vs Claude Managed Agents (English): https://orbi.build/compare/managed-agents/
 - Comparison — Orbi vs Claude Managed Agents (Chinese): https://orbi.build/zh/compare/managed-agents/
 - Comparison — Orbi vs OpenAI Codex (English): https://orbi.build/compare/codex/
