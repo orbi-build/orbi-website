@@ -242,9 +242,11 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 - Comparison — Orbi vs Hermes Agent (English): https://orbi.build/compare/hermes-agent/
 - Comparison — Orbi vs Hermes Agent (Chinese): https://orbi.build/zh/compare/hermes-agent/
 - Comparison — Orbi vs Devin (English): https://orbi.build/compare/devin/
-- Comparison — Orbi vs GitHub Copilot coding agent (English): https://orbi.build/compare/github-copilot-coding-agent/
+- Comparison — Orbi vs Keelen (English): https://orbi.build/compare/keelen/
+- Comparison — Orbi vs GitHub Copilot cloud agent (English): https://orbi.build/compare/github-copilot-coding-agent/
 - Comparison — Orbi vs Devin (Chinese): https://orbi.build/zh/compare/devin/
-- Comparison — Orbi vs GitHub Copilot coding agent (Chinese): https://orbi.build/zh/compare/github-copilot-coding-agent/
+- Comparison — Orbi vs Keelen (Chinese): https://orbi.build/zh/compare/keelen/
+- Comparison — Orbi vs GitHub Copilot cloud agent (Chinese): https://orbi.build/zh/compare/github-copilot-coding-agent/
 - Documentation: https://docs.orbi.build
 - Source: https://github.com/orbi-build/orbi
 - Roadmap: https://github.com/orbi-build/orbi/milestones

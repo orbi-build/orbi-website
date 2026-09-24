@@ -1881,7 +1881,7 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
     def test_every_deep_dive_links_its_page(self) -> None:
-        """Eleven deep dives, each a link — no internal status badge (Issue #178)."""
+        """Twelve deep dives, each a link — no internal status badge (Issue #178)."""
         for html, href_pattern in (
             (self.en_html, r"^/compare/[a-z-]+/$"),
             (self.zh_html, r"^/zh/compare/[a-z-]+/$"),
@@ -1889,7 +1889,7 @@ class CompareIndexTests(unittest.TestCase):
             dive_list = re.search(r'<ul class="dive-list">(.*?)</ul>', html, re.DOTALL)
             self.assertIsNotNone(dive_list, "deep-dive list not found")
             entries = re.findall(r'<li(?: class="[^"]+")?>(.*?)</li>', dive_list.group(1), re.DOTALL)
-            self.assertEqual(len(entries), 11, entries)
+            self.assertEqual(len(entries), 12, entries)
             for entry in entries:
                 link = re.search(r'<a(?: class="[^"]+")? href="([^"]+)">', entry)
                 self.assertIsNotNone(link, entry)

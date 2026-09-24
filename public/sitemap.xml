@@ -60,7 +60,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/github-copilot-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/github-copilot-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/github-copilot-coding-agent/"/>
-    <lastmod>2026-09-23</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -78,7 +78,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/"/>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -88,6 +88,15 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
     <lastmod>2026-09-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/compare/keelen/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/keelen/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/keelen/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/keelen/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -177,7 +186,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/privacy/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/privacy/"/>
-    <lastmod>2026-09-23</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -258,7 +267,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/github-copilot-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/github-copilot-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/github-copilot-coding-agent/"/>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -276,7 +285,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/"/>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -286,6 +295,15 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/jules/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/jules/"/>
     <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/compare/keelen/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/keelen/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/keelen/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/keelen/"/>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -375,7 +393,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/privacy/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/privacy/"/>
-    <lastmod>2026-09-23</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -525,7 +543,7 @@
   </url>
   <url>
     <loc>https://orbi.build/compare/matrix.csv</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
