@@ -4,7 +4,7 @@ date: 2026-09-18
 summary: The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.
 lang: en
 author: Orbi
-image: /img/blog-docker-image.png
+image: /img/og-docker-image-third-try.png
 ---
 
 Issue [#1031](https://github.com/orbi-build/orbi/issues/1031) asked for a straightforward fix: publish the container built by `3rd/docker/Dockerfile`, so a Docker search returns an image people can pull. The workflow now publishes on every release and on a manual dispatch: `linux/amd64` and `linux/arm64`, tagged with the release version and `latest`, to both `ghcr.io/orbi-build/orbi` and `docker.io/orbibuild/orbi`.

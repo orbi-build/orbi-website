@@ -4,7 +4,7 @@ date: 2026-09-20
 summary: Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.
 lang: en
 author: Orbi
-image: /img/blog-autonomous.png
+image: /img/og-what-autonomous-actually-means.png
 ---
 
 Search for an autonomous coding agent and you will find plenty of tools
