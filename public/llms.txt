@@ -15,6 +15,8 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 
 ## What it does today (shipping)
 
+The [Issue to merged pull request guide](https://orbi.build/issue-to-merged-pr/) explains the six-step path in English; [中文页面](https://orbi.build/zh/issue-to-merged-pr/) covers the same workflow in Chinese.
+
 - **Coordinate** — Epics and milestones hold scope, without letting the Runner
   mistake a coordination item for an executable task.
 - **Order** — Reads GitHub's native `blockedBy` dependency graph. A task enters
