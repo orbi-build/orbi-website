@@ -561,7 +561,6 @@ export const localStatsFixture = {
     "orbi-website": { started: "2025-01-01T00:00:00Z", issues_closed: 1, prs_merged: 1, releases: 0, stars: 0, star_history: [], deploys: 1 },
     "orbi-cloud": null,
   },
-  founding: { active: 4, limit: 6 },
 };
 
 // Issue #126: the stats wait holds the render against the exact payload the
@@ -1239,7 +1238,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     await page.route("**/stats", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ founding: { active: 4, limit: 6 }, repos: {} }),
+      body: JSON.stringify({ repos: {} }),
     }));
   }
   page.on("console", (message) => {
@@ -1256,14 +1255,6 @@ async function assertCloudPage(browser, path, size, screenshot) {
   // DOM load is the bounded navigation gate. The Cloud walkthrough requests
   // muted autoplay; deployed-browser playback remains the maintainer gate.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-  if (!process.env.BASE_URL) {
-    const availability = page.locator("[data-founding-availability]");
-    if (!(await availability.isVisible())) throw new Error(`${path}: Founding availability is not visible`);
-    const expected = path.startsWith("/zh") ? "· 还剩 2 / 6 个名额" : "· 2 of 6 left";
-    if ((await availability.textContent()).trim() !== expected) {
-      throw new Error(`${path}: Founding availability does not match D1 fixture`);
-    }
-  }
   const demo = page.locator(".cloud-demo");
   const video = demo.locator(".proof-loop-video");
   if ((await demo.count()) !== 1 || (await video.count()) !== 1) {
@@ -1377,13 +1368,15 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   await stepList.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-steps.png")}` });
   if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
-  // Issue #108: the JSON-LD Offer prices the regular plan, with the coupon in
-  // its description — never the retired US$15.
+  // Issue #108 + #451: the JSON-LD aggregate publishes both paid plans,
+  // with the coupon in its description — never a single-plan or retired price.
   const offers = (await Promise.all(
     (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s))
-  )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "Offer");
-  if (offers.length !== 1 || offers[0].price !== "79" || !String(offers[0].description).includes(path.startsWith("/zh") ? "永久 5 折" : "50% off forever")) {
-    throw new Error(`${path}: JSON-LD Offer must price Pro at 79 with the founding partner terms, got ${JSON.stringify(offers)}`);
+  )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
+  if (offers.length !== 1
+    || JSON.stringify(offers[0].offers?.map(({ price }) => price)) !== JSON.stringify(["29", "79"])
+    || !String(offers[0].description).includes(path.startsWith("/zh") ? "永久 5 折" : "50% off forever")) {
+    throw new Error(`${path}: JSON-LD AggregateOffer must price Solo and Pro with the founding partner terms, got ${JSON.stringify(offers)}`);
   }
   // Issue #107: the login buttons' contract is the click's landing
   // (assertCtaLandsAtEndpoint); here the buttons must exist and be visible.

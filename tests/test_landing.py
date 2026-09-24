@@ -1139,7 +1139,7 @@ class CloudLandingPageTests(unittest.TestCase):
         for html in (self.en_html, self.zh_html):
             self.assertEqual(len(re.findall(r"<h1[\s>]", html)), 1)
 
-    def test_share_cards_and_jsonld_name_webpage_and_offer(self) -> None:
+    def test_share_cards_and_jsonld_name_webpage_and_aggregate_offer(self) -> None:
         for html in (self.en_html, self.zh_html):
             for meta in (
                 'property="og:title"',
@@ -1158,7 +1158,7 @@ class CloudLandingPageTests(unittest.TestCase):
                 nodes = data.get("@graph", [data])
                 types += [node.get("@type") for node in nodes]
             self.assertIn("WebPage", types, types)
-            self.assertIn("Offer", types, types)
+            self.assertIn("AggregateOffer", types, types)
 
     def test_body_states_all_plans_and_the_founding_offer(self) -> None:
         """Issue #441: the rendered Cloud pages carry all approved prices,
@@ -1213,7 +1213,7 @@ class CloudLandingPageTests(unittest.TestCase):
             for href in competitor_hrefs:
                 self.assertNotIn(href, hrefs, href)
 
-    def test_offer_jsonld_prices_pro_and_states_founding_terms(self) -> None:
+    def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
         for html, founding in (
             (self.en_html, "50% off forever"),
             (self.zh_html, "永久 5 折"),
@@ -1224,9 +1224,11 @@ class CloudLandingPageTests(unittest.TestCase):
             offers = []
             for script in scripts:
                 data = json.loads(script)
-                offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "Offer"]
+                offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "AggregateOffer"]
             self.assertEqual(len(offers), 1, offers)
-            self.assertEqual(offers[0]["price"], "79", offers[0])
+            self.assertEqual(offers[0]["lowPrice"], "29", offers[0])
+            self.assertEqual(offers[0]["highPrice"], "79", offers[0])
+            self.assertEqual([offer["price"] for offer in offers[0]["offers"]], ["29", "79"])
             self.assertIn(founding, offers[0]["description"], offers[0])
             self.assertIn("6", offers[0]["description"], offers[0])
 

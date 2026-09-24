@@ -26,7 +26,9 @@ describe("watch-the-six-steps article (Issue #329)", () => {
   it("ships the current seven-step video and subscription terms in both languages", () => {
     for (const article of [articleEn, articleZh]) {
       expect(article).toContain("youtube.com/watch?v=_OEaBwrLvvs");
+      expect(article).toContain("__SOLO_INCLUDED_TOKENS__");
       expect(article).toContain("__INCLUDED_TOKENS__");
+      expect(article).toContain("__SOLO_MONTHLY_USD__");
       expect(article).toContain("__CLOUD_MONTHLY_USD__");
       expect(article).toContain("seven");
     }
@@ -60,7 +62,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       "",
       "Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
       "",
-      "Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories, priority queue); about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.",
+      "Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories); about 25 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per Pro's 300M.",
     ]);
   });
 

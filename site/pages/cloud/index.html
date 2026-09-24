@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed — with __INCLUDED_TOKENS__ tokens of model usage included. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -75,12 +75,18 @@
         "about": { "@id": "https://orbi.build/cloud/#offer" }
       },
       {
-        "@type": "Offer",
+        "@type": "AggregateOffer",
         "@id": "https://orbi.build/cloud/#offer",
         "name": "Orbi Cloud plans",
-        "price": "__CLOUD_MONTHLY_USD__",
+        "lowPrice": "__SOLO_MONTHLY_USD__",
+        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "offerCount": "2",
         "priceCurrency": "USD",
-        "description": "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills. Pro includes __INCLUDED_TOKENS__ tokens per month. Founding partners get 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.",
+        "offers": [
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+        ],
+        "description": "Solo includes __SOLO_INCLUDED_TOKENS__ tokens per month; Pro includes __INCLUDED_TOKENS__ tokens per month. About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills. Founding partners get 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.",
         "url": "https://orbi.build/cloud/"
       },
       {
@@ -97,10 +103,10 @@
           },
           {
             "@type": "Question",
-            "name": "What happens when the __INCLUDED_TOKENS__ tokens run out?",
+            "name": "What happens when the monthly tokens run out?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The plan includes __INCLUDED_TOKENS__ tokens a month. When the allowance runs out, new deliveries pause — there is no per-token overage billing."
+              "text": "Solo includes __SOLO_INCLUDED_TOKENS__ tokens a month and Pro includes __INCLUDED_TOKENS__ tokens a month. When the applicable allowance runs out, new deliveries pause — there is no per-token overage billing."
             }
           },
           {
@@ -159,7 +165,7 @@
       <section class="compare-hero shell" aria-labelledby="cloud-title">
         <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud</p>
         <h1 id="cloud-title">Orbi Cloud: file an Issue, get a release</h1>
-        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, and runs the independent review-and-repair gate — then merges the exact reviewed head, publishes a tagged GitHub Release, and closes the milestone. Model usage is part of the plan — __INCLUDED_TOKENS__ tokens a month; we operate the delivery line — you trigger each delivery by adding the ai-ready label.</p>
+        <p class="hero-lede"><strong>A hosted runner on the same GitHub ledger.</strong> Orbi Cloud picks up Issues from your repositories, implements them, and runs the independent review-and-repair gate — then merges the exact reviewed head, publishes a tagged GitHub Release, and closes the milestone. Model usage is part of the plan — __SOLO_INCLUDED_TOKENS__ tokens a month on Solo and __INCLUDED_TOKENS__ on Pro; we operate the delivery line — you trigger each delivery by adding the ai-ready label.</p>
         <div class="cta-row hero-ctas">
           <div class="hero-primary">
             <a class="button button-signal" data-cta="cloud-hero" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
@@ -201,7 +207,7 @@
           <span class="event-era">MODELS</span>
           <div>
             <strong >Model usage included, cost in the open</strong>
-            <p class="orbi-event-list-p">The plan includes __INCLUDED_TOKENS__ tokens a month; when the allowance runs out, new deliveries pause — there is no per-token overage billing. The measured cost of a delivery is published below.</p>
+            <p class="orbi-event-list-p">Solo includes __SOLO_INCLUDED_TOKENS__ tokens a month and Pro includes __INCLUDED_TOKENS__; when the applicable allowance runs out, new deliveries pause — there is no per-token overage billing. The measured cost of a delivery is published below.</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
@@ -248,11 +254,11 @@
             <h3>Pro</h3>
             <p class="pricing-card-price">US$__CLOUD_MONTHLY_USD__ <span>/ month</span></p>
             <p>US$__PRO_ANNUAL_USD__ / year</p>
-            <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories · priority queue</li></ul>
+            <ul><li>Pro: __INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
             <a class="button button-signal" href="/api/checkout?plan=pro">Choose Pro <span aria-hidden="true">↗</span></a>
           </article>
         </div>
-        <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.</strong> <span class="founding-availability" data-founding-availability hidden></span></p>
+        <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.</strong></p>
         <p class="self-hosted-note">Self-hosted: US$0 for the fair-code core; bring your own model key.</p>
       </div>
     </section>
@@ -260,7 +266,7 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">COST, MEASURED</p>
       <h2 class="orbi-compare-section-h2" id="cost-title">We don't take a margin on your tokens</h2>
-      <p class="section-lede">__INCLUDED_TOKENS__ tokens cover about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). That cost structure assumes the provider supports prompt caching. Sample, quantiles, limits, and competitor citations are on the <a href="/cost/">cost page</a>.</p>
+      <p class="section-lede">Pro's __INCLUDED_TOKENS__ tokens cover about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). That cost structure assumes the provider supports prompt caching. Sample, quantiles, limits, and competitor citations are on the <a href="/cost/">cost page</a>.</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
@@ -307,9 +313,9 @@
           </details>
 
           <details class="faq-item" open>
-            <summary><span>02</span>What happens when the __INCLUDED_TOKENS__ tokens run out?</summary>
+            <summary><span>02</span>What happens when the monthly tokens run out?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">The plan includes __INCLUDED_TOKENS__ tokens a month. When the allowance runs out, new deliveries pause — there is no per-token overage billing.</p>
+              <p class="orbi-faq-answer-p">Solo includes __SOLO_INCLUDED_TOKENS__ tokens a month and Pro includes __INCLUDED_TOKENS__ tokens a month. When the applicable allowance runs out, new deliveries pause — there is no per-token overage billing.</p>
             </div>
           </details>
 

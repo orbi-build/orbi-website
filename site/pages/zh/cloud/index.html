@@ -40,7 +40,7 @@
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cloud/">
   <meta property="og:title" content="Orbi Cloud — 提个 Issue，收个版本">
-  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone，含 __INCLUDED_TOKENS__ token 模型用量。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
+  <meta property="og:description" content="托管 Runner：提个 Issue，收个版本——独立审查、exact-head merge、关闭 milestone。Solo 每月含 __SOLO_INCLUDED_TOKENS__ token 模型用量，Pro 每月含 __INCLUDED_TOKENS__。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -74,12 +74,18 @@
         "about": { "@id": "https://orbi.build/zh/cloud/#offer" }
       },
       {
-        "@type": "Offer",
+        "@type": "AggregateOffer",
         "@id": "https://orbi.build/zh/cloud/#offer",
-        "name": "Orbi Cloud — 创始试点",
-        "price": "__CLOUD_MONTHLY_USD__",
+        "name": "Orbi Cloud 套餐",
+        "lowPrice": "__SOLO_MONTHLY_USD__",
+        "highPrice": "__CLOUD_MONTHLY_USD__",
+        "offerCount": "2",
         "priceCurrency": "USD",
-        "description": "正价每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token 模型用量；额度用完后，新交付暂停。Pro 每月含 __INCLUDED_TOKENS__ token。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
+        "offers": [
+          { "@type": "Offer", "name": "Orbi Cloud Solo", "price": "__SOLO_MONTHLY_USD__", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Orbi Cloud Pro", "price": "__CLOUD_MONTHLY_USD__", "priceCurrency": "USD" }
+        ],
+        "description": "Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。",
         "url": "https://orbi.build/zh/cloud/"
       },
       {
@@ -96,10 +102,10 @@
           },
           {
             "@type": "Question",
-            "name": "__INCLUDED_TOKENS__ token 用完了会怎样？",
+            "name": "额度用完会怎样？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。"
+              "text": "Solo 每月含 __SOLO_INCLUDED_TOKENS__ token，Pro 每月含 __INCLUDED_TOKENS__ token。对应额度用完后，新交付暂停，没有按 token 计费的超额账单。"
             }
           },
           {
@@ -158,7 +164,7 @@
       <section class="compare-hero shell" aria-labelledby="cloud-title">
         <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud</p>
         <h1 id="cloud-title">Orbi Cloud：<br class="responsive-break">提个 Issue，收个版本</h1>
-        <p class="hero-lede"><strong>同一条 GitHub 账本上的托管 Runner。</strong>Orbi Cloud 从你的仓库领取 Issue，完成实现，跑独立审查与修复门禁，只合并审过的那个 Head，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。模型用量包含在计划内——每月 __INCLUDED_TOKENS__ token；交付产线由我们来运营——每次交付都由你添加 ai-ready 标签触发。</p>
+        <p class="hero-lede"><strong>同一条 GitHub 账本上的托管 Runner。</strong>Orbi Cloud 从你的仓库领取 Issue，完成实现，跑独立审查与修复门禁，只合并审过的那个 Head，然后冻结 SHA、打 Tag、发布 GitHub Release、关闭 milestone。模型用量包含在计划内——Solo 每月 __SOLO_INCLUDED_TOKENS__ token，Pro 每月 __INCLUDED_TOKENS__ token；交付产线由我们来运营——每次交付都由你添加 ai-ready 标签触发。</p>
         <div class="cta-row hero-ctas">
           <div class="hero-primary">
             <a class="button button-signal" data-cta="cloud-hero" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
@@ -200,7 +206,7 @@
           <span class="event-era">模型</span>
           <div>
             <strong >模型用量包含在内，成本摊在明面上</strong>
-            <p class="orbi-event-list-p">计划内含每月 __INCLUDED_TOKENS__ token；额度用完后，新交付暂停，没有按 token 计费的超额账单。单次交付的实测成本就写在下面。</p>
+            <p class="orbi-event-list-p">Solo 每月含 __SOLO_INCLUDED_TOKENS__ token，Pro 每月含 __INCLUDED_TOKENS__ token；对应额度用完后，新交付暂停，没有按 token 计费的超额账单。单次交付的实测成本就写在下面。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
@@ -247,11 +253,11 @@
             <h3>Pro</h3>
             <p class="pricing-card-price">US$__CLOUD_MONTHLY_USD__ <span>/ 月</span></p>
             <p>US$__PRO_ANNUAL_USD__ / 年</p>
-            <ul><li>每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库 · 优先队列</li></ul>
+            <ul><li>Pro：每月 __INCLUDED_TOKENS__ token</li><li>__PRO_REPOSITORIES__ 个仓库</li></ul>
             <a class="button button-signal" href="/api/checkout?plan=pro">选择 Pro <span aria-hidden="true">↗</span></a>
           </article>
         </div>
-        <p class="founding-offer"><strong>创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</strong> <span class="founding-availability" data-founding-availability hidden></span></p>
+        <p class="founding-offer"><strong>创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</strong></p>
         <p class="self-hosted-note">自托管：US$0，使用 fair-code 核心；模型 key 自己带。</p>
       </div>
     </section>
@@ -259,7 +265,7 @@
     <section class="compare-section shell" aria-labelledby="cost-title">
       <p class="section-tag">成本，实测</p>
       <h2 class="orbi-compare-section-h2" id="cost-title">我们不在你的 token 上赚差价</h2>
-      <p class="section-lede">__INCLUDED_TOKENS__ token 大约够小仓库的常见票合并 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次，像 Orbi 引擎这样的大代码库约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）。这套成本结构建立在 provider 支持 prompt caching 上。完整样本、分位、限制和竞品引证见<a href="/zh/cost/">成本页</a>。</p>
+      <p class="section-lede">Pro 的 __INCLUDED_TOKENS__ token 大约够小仓库的常见票合并 __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ 次，像 Orbi 引擎这样的大代码库约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次（2026 年 9 月实测）。这套成本结构建立在 provider 支持 prompt caching 上。完整样本、分位、限制和竞品引证见<a href="/zh/cost/">成本页</a>。</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="steps-title">
@@ -306,9 +312,9 @@
           </details>
 
           <details class="faq-item" open>
-            <summary><span>02</span>__INCLUDED_TOKENS__ token 用完了会怎样？</summary>
+            <summary><span>02</span>额度用完会怎样？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">计划内含每月 __INCLUDED_TOKENS__ token。额度用完后，新交付暂停，没有按 token 计费的超额账单。</p>
+              <p class="orbi-faq-answer-p">Solo 每月含 __SOLO_INCLUDED_TOKENS__ token，Pro 每月含 __INCLUDED_TOKENS__ token。对应额度用完后，新交付暂停，没有按 token 计费的超额账单。</p>
             </div>
           </details>
 

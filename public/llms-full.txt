@@ -2,7 +2,7 @@
 
 Orbi is a self-hosted, fair-code AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
 
-Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories, priority queue); about 25 large-codebase deliveries per allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per 300M.
+Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories); about 25 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per Pro's 300M.
 
 ## /cost/ — What one Issue delivery actually costs
 
@@ -34,7 +34,7 @@ Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/y
             <tr><th scope="row">Mean</th><td>4,742,066</td></tr>
           </tbody>
         </table>
-      <p class="src-note">The 2026-09-12 snapshot mean of 4,742,066 tokens works out to about __MEASURED_SNAPSHOT_DELIVERIES__ deliveries per __INCLUDED_TOKENS__ tokens. The Cloud pricing page uses about __MEASURED_LARGE_CODEBASE_DELIVERIES__ deliveries because it was measured later on large-codebase deliveries; the samples contain different task sizes. See <a href="/cloud/#pricing">Cloud pricing</a> for the current plan number.</p>
+      <p class="src-note">The 2026-09-12 snapshot mean of 4,742,066 tokens works out to about __MEASURED_SNAPSHOT_DELIVERIES__ deliveries per Pro's __INCLUDED_TOKENS__ tokens. The Cloud pricing page uses about __MEASURED_LARGE_CODEBASE_DELIVERIES__ deliveries because it was measured later on large-codebase deliveries; the samples contain different task sizes. See <a href="/cloud/#pricing">Cloud pricing</a> for the current plan number.</p>
       <p class="src-note">Source, so anyone can re-derive it: the agent session logs of the orbi-build/orbi repository's git worktrees (<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>), aggregated 2026-09-12. One delivery = one worktree's implement + review sessions; a delivery's totalTokens = the sum of <code>usage.totalTokens</code> over every logged record; n = worktrees whose logs carry at least one usage record (older or newer sessions without usage logging are not countable); percentiles by nearest rank. The sample moves as worktrees are cleaned up. Where the tokens go: <strong>95.9% cache reads, 3.4% input, 0.7% output.</strong></p>
     </section>
 

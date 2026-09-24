@@ -338,24 +338,11 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  it("loads active founding seats without exposing tenant identities in stats", async () => {
+  it("does not query founding subscriptions or expose founding stats", async () => {
     mockGitHub();
-    const queries = [];
-    const db = {
-      prepare(sql) {
-        queries.push(sql);
-        return {
-          first: async () => ({ count: 4 }),
-          all: async () => ({ results: [{ github_login: "alice" }, { github_login: "bob" }] }),
-        };
-      },
-    };
+    const db = { prepare() { throw new Error("subscriptions query must not run"); } };
     const stats = await loadStats("token", db);
-    expect(stats.founding).toEqual({ active: 4, limit: pricing.foundingPartnerLimit });
-    expect(stats.founding).not.toHaveProperty("github_logins");
-    expect(queries).toEqual([
-      "SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'",
-    ]);
+    expect(stats).not.toHaveProperty("founding");
   });
 
   it("loads tenant logins only for server-rendered avatar markup", async () => {
@@ -455,11 +442,13 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     };
     const request = new Request("https://orbi.build/stats");
     const first = await statsResponse(request, "token");
+    const firstPayload = await first.json();
     const callsAfterFirst = calls.length;
     expect(callsAfterFirst).toBeGreaterThan(0);
+    expect(firstPayload).not.toHaveProperty("founding");
     const second = await statsResponse(request, "token");
     expect(calls).toHaveLength(callsAfterFirst);
-    expect(await second.json()).toEqual(await first.json());
+    expect(await second.json()).toEqual(firstPayload);
   });
 
   // Issue #134: /stats/ is the same endpoint with the site's natural trailing
