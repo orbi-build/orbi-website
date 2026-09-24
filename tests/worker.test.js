@@ -725,14 +725,31 @@ describe("email subscription route (Issue #442)", () => {
   });
 
   it.each([
+    "",
+    "//evil.example/x",
     "https://evil.example/",
     "/\\evil.example/",
-  ])("does not allow an external no-JS redirect via %s", async (returnTo) => {
+  ])("falls back to the English homepage for invalid return_to %s", async (returnTo) => {
     const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ email: "ada@example.com", lang: "en", return_to: returnTo }),
-    }), env(async () => new Response("ok")));
-    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/subscribe?subscribed=1");
+      body: new URLSearchParams({ email: "not-an-email", lang: "en", return_to: returnTo }),
+    }), env(async () => new Response("bad", { status: 400 })));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/?subscribe_error=invalid");
+  });
+
+  it.each([
+    "",
+    "//evil.example/x",
+    "https://evil.example/",
+    "/\\evil.example/",
+  ])("falls back to the Chinese homepage for invalid return_to %s", async (returnTo) => {
+    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ email: "not-an-email", lang: "zh", return_to: returnTo }),
+    }), env(async () => new Response("bad", { status: 400 })));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/?subscribe_error=invalid");
   });
 });
 
