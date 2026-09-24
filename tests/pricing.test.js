@@ -488,8 +488,10 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(`US$${USD}`);
       expect(body, relativePath).toContain(`US$${PRO_ANNUAL_USD}`);
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(body, relativePath).toContain("/api/checkout?plan=solo");
-      expect(body, relativePath).toContain("/api/checkout?plan=pro");
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
+      expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? "每个合并 PR 约 $1–3。失败的交付不收钱。用完暂停，没有超额账单。"
         : "About $1–3 per merged PR. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
