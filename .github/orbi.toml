@@ -2,3 +2,4 @@
 # Whitelist v1 keys only (see orbi repo src/orbi/repo_config.py); host-only
 # keys here fail the claim fast with repo_config_invalid.
 test_command = "npm test"
+clarify_thin_tickets = true
