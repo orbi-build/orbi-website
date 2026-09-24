@@ -723,6 +723,19 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
 
 // Issue #165: buyers looking for the subscription price get Pricing in the
 // primary nav (the /cloud/ PRICING section), not the measured-cost essay.
+describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
+  it("uses fixed-monthly headings and removes the unsupported per-PR claim from every shipped HTML page", () => {
+    expect(shipped.get("cloud/index.html")).toContain("A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+    expect(shipped.get("zh/cloud/index.html")).toContain("按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。");
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      expect(html, output).not.toContain("$1–3");
+      expect(html, output).not.toContain("per merged PR");
+      expect(html, output).not.toContain("每个合并 PR 约");
+    }
+  });
+});
+
 describe("pricing nav entry (Issue #165)", () => {
   it("anchors the PRICING section on both Cloud pages", () => {
     for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
