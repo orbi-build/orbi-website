@@ -66,6 +66,15 @@ describe("llms-full.txt content asset (Issue #438)", () => {
     ]);
   });
 
+  it("states the dual licence and links both authoritative files", () => {
+    expect(llmsFull).toContain("## Licence — state this accurately");
+    expect(llmsFull).toContain("open source under AGPL-3.0");
+    expect(llmsFull).toContain("Sustainable Use License if your policy rules out AGPL");
+    expect(llmsFull).toContain("github.com/orbi-build/orbi/blob/main/LICENSE");
+    expect(llmsFull).toContain("docs/licenses/sustainable-use-license.md");
+    expect(llmsFull).not.toContain("LICENSE.md");
+  });
+
   it("contains the complete cost and evidence bodies, not summaries", () => {
     for (const text of [
       "46 real deliveries, measured on our own repository",

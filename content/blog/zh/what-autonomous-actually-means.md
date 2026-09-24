@@ -108,7 +108,7 @@ docker run -d --name orbi \
 
 每一个都是能点开的链接，包括那些拦下了东西的评审，以及之后补上的 commit。
 
-Orbi 采用 open source (AGPL-3.0)、采用 AGPL-3.0 开源并支持自托管：[github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)。
+Orbi 以 AGPL-3.0 开源并支持自托管：[github.com/orbi-build/orbi](https://github.com/orbi-build/orbi)。
 
 
 ## 相关

@@ -180,7 +180,7 @@ class LandingTests(unittest.TestCase):
         """
         en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
         en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        # Issue #78: the licence-accurate title ("Self-hosted, fair-code …")
+        # Issue #78: the licence-accurate title ("Open source (AGPL-3.0) …")
         # runs 75 chars; keeping the licence wording intact is worth more than
         # the old 65-char cap, so the cap moves rather than the wording.
         self.assertLessEqual(len(en_title), 80, en_title)
@@ -193,11 +193,10 @@ class LandingTests(unittest.TestCase):
         for term in ("AI 编程 Agent", "GitHub Issue", "自托管"):
             self.assertIn(term, zh_title + " " + zh_desc, term)
 
-    def test_titles_never_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
-        """Issue #78: llms.txt tells LLMs never to describe Orbi as OSI open
-        source, while <title>/og:title/twitter:title said "Open-source" (zh
-        "开源") in the same breath. The licence summary must use one wording
-        everywhere: self-hosted, fair-code."""
+    def test_titles_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
+        """Issue #470: metadata and llms.txt must consistently describe Orbi
+        as open source under AGPL-3.0, with the optional SUL stated in the
+        detailed licence section."""
         llms = (ROOT / "public" / "llms.txt").read_text(encoding="utf-8")
         licence = llms.split("## Licence", 1)[1].split("\n## ", 1)[0]
         self.assertIn("AGPL-3.0", licence)
@@ -357,7 +356,7 @@ class LandingTests(unittest.TestCase):
 
     def test_hero_trust_line_carries_the_unmatched_capabilities(self) -> None:
         """Issue #119: the first screen's scannable line spent its 5 seconds
-        on three attributes every competitor shares (fair-code, self-hosted,
+        on three decision-stage attributes (licence, self-hosted,
         BYOK), so a glance filed Orbi under "another Issue-to-PR tool". The
         hero line must carry exactly the three delivery capabilities no
         competitor documents, and the shared attributes must survive below
@@ -382,7 +381,7 @@ class LandingTests(unittest.TestCase):
                 "Bring your own model",
             ),
             self.zh_html: (
-                "Open source (AGPL-3.0)，永久免费",
+                "开源（AGPL-3.0），永久免费",
                 "自托管 — 代码不离开你的机器",
                 "自带模型",
             ),

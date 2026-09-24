@@ -58,7 +58,7 @@ const releaseClaims = {
 
 // Issue #119: the hero trust line is the 5-second scan zone and must carry
 // exactly the three delivery capabilities no competitor documents. The
-// fair-code / self-host / BYOK attributes every competitor shares moved to
+// licence / self-host / BYOK attributes every competitor shares moved to
 // the end of the How-it-works section — decision-stage (licence, data
 // boundary, model lock-in), not first-glance, information.
 const heroTrustLine = {
@@ -75,12 +75,12 @@ const heroTrustLine = {
 };
 const sharedAttributes = {
   "/": [
-    "Fair-code, free forever",
+    "Open source (AGPL-3.0), free forever",
     "Self-hosted — code never leaves your machine",
     "Bring your own model",
   ],
   "/zh/": [
-    "Fair-code，永久免费",
+    "开源（AGPL-3.0），永久免费",
     "自托管 — 代码不离开你的机器",
     "自带模型",
   ],
@@ -1751,7 +1751,7 @@ const orcaPages = {
       "Drop comments on any diff line and ship them back to the agent",
     ],
     unverified: "Not verified",
-    licence: ["MIT", "fair-code", "Sustainable Use"],
+    licence: ["MIT", "AGPL-3.0", "Sustainable Use"],
     counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "measured 2026-09-12"],
   },
   "/zh/compare/orca/": {
@@ -1763,7 +1763,7 @@ const orcaPages = {
       "Drop comments on any diff line and ship them back to the agent",
     ],
     unverified: "未能核实",
-    licence: ["MIT", "fair-code", "Sustainable Use"],
+    licence: ["MIT", "AGPL-3.0", "Sustainable Use"],
     counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "实测于 2026-09-12"],
   },
 };

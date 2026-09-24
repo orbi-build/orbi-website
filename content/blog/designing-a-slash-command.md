@@ -71,7 +71,7 @@ Dependabot and Copilot use `@bot`. They can: there is exactly one Dependabot,
 its name is globally unique, and the mention buys a notification and
 autocomplete for free.
 
-We are the first kind. The engine is open source under AGPL-3.0, open source (AGPL-3.0), and self-hostable. More
+We are the first kind. The engine is open source under AGPL-3.0, and self-hostable. More
 pointedly, the same engine already runs under two identities in our own org. On
 our bootstrap runner the comment author is a human account, and in a managed
 sandbox it is `orbi-build[bot]`. We confirmed both on our own repository the
