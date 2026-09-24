@@ -27,7 +27,7 @@ workers_dev = true
 # mapped to the URL" — so the report never reached the cloud Worker and
 # died on the 5s timeout. CLOUD_VISIT_URL stays as the path the binding
 # requests; only the transport changed.
-vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit" }
+vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://orbi.build/api/internal/subscribe" }
 
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
@@ -82,7 +82,7 @@ head_sampling_rate = 1
 # unchanged when deploying with `wrangler deploy --env beta`.
 [env.beta]
 name = "orbi-website-beta"
-vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit" }
+vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://beta.orbi.build/api/internal/subscribe" }
 
 # Keep a deploy target so routine releases update the Worker used by the
 # existing beta Custom Domain, without managing that domain or its DNS.

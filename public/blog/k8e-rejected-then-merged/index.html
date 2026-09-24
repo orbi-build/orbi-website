@@ -137,6 +137,19 @@ oracle: OK   (should fail)
 <h2>Related</h2>
 <p>Read the <a href="/compare/devin/">Devin comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <input type="hidden" name="return_to" value="/blog/k8e-rejected-then-merged/">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
     </article>
   </main>
 
@@ -192,6 +205,7 @@ oracle: OK   (should fail)
   </footer>
 
   <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->

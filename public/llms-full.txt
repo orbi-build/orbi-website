@@ -138,6 +138,19 @@ Key numbers: Cloud is US$79/month with 300M model tokens; about 25 large-codebas
       </div>
     </section>
 
+    <section class="subscribe-box" aria-labelledby="subscribe-title">
+      <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+      <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+        <label class="sr-only" for="subscribe-email-en">Email address</label>
+        <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+        <input type="hidden" name="lang" value="en">
+        <input type="hidden" name="return_to" value="/cost/">
+        <button class="button button-signal" type="submit">Subscribe</button>
+        <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+      </form>
+      <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+    </section>
+
 ## /evidence/ — Public delivery evidence
 
 <div class="night">
@@ -265,6 +278,19 @@ Key numbers: Cloud is US$79/month with 300M model tokens; about 25 large-codebas
         <a class="button button-dark" href="https://docs.orbi.build">Set up Orbi <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/cloud/">Or let Cloud run the line →</a>
       </div>
+    </section>
+
+    <section class="subscribe-box" aria-labelledby="subscribe-title">
+      <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+      <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+        <label class="sr-only" for="subscribe-email-en">Email address</label>
+        <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+        <input type="hidden" name="lang" value="en">
+        <input type="hidden" name="return_to" value="/evidence/">
+        <button class="button button-signal" type="submit">Subscribe</button>
+        <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+      </form>
+      <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
     </section>
 
 ## /compare/matrix.csv
