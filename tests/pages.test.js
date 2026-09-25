@@ -127,11 +127,11 @@ describe("ai-ready methodology pages (Issue #195)", () => {
 describe("comparison capability matrix (Issue #201)", () => {
   it("keeps the HTML table and downloadable CSV row and column sets identical", () => {
     const html = shipped.get("compare/index.html");
-    const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+    const table = html.match(/<table class="compare-table[^\"]*capability-matrix[^\"]*">([\s\S]*?)<\/table>/)?.[1];
     const headers = [...table.matchAll(/<th scope="col">([^<]+)<\/th>/g)].map((match) => match[1]);
     const rows = [...table.matchAll(/<tr data-product="([^"]+)">([\s\S]*?)<\/tr>/g)].map((match) => [
       match[1],
-      [...match[2].matchAll(/<td><a [^>]+>([^<]+)<\/a><\/td>/g)].map((cell) => cell[1]),
+      [...match[2].matchAll(/<td[^>]*><a [^>]+>([^<]+)<\/a><\/td>/g)].map((cell) => cell[1]),
     ]);
     const csv = matrixCsv.trim().split("\n").map((line) => line.split(","));
     expect(headers).toEqual(csv[0].slice(0, -2));
@@ -140,9 +140,9 @@ describe("comparison capability matrix (Issue #201)", () => {
 
   it("links every capability cell to its dated source", () => {
     for (const html of [shipped.get("compare/index.html"), shipped.get("zh/compare/index.html")]) {
-      const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+      const table = html.match(/<table class="compare-table[^\"]*capability-matrix[^\"]*">([\s\S]*?)<\/table>/)?.[1];
       for (const row of table.matchAll(/<tr data-product="[^"]+">([\s\S]*?)<\/tr>/g)) {
-        for (const cell of row[1].matchAll(/<td>([\s\S]*?)<\/td>/g)) expect(cell[1]).toMatch(/<a href="https?:\/\//);
+        for (const cell of row[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)) expect(cell[1]).toMatch(/<a href="https?:\/\//);
       }
     }
   });
