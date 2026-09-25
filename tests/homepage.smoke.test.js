@@ -55,21 +55,18 @@ const redirect = (location) => (_request, response) => {
 // Issue #528: the beta login chain is /cloud/login (the website's handoff,
 // 302) -> /api/start (the Cloud control plane's one-step entry, 302) -> the
 // GitHub App installation page — measured live 2026-09-26 against
-// beta.orbi.build. A hijacked handoff leads somewhere that answers the site
-// Worker's stamped 404, which the smoke must reject.
-const startChain = (hijackHandoff = false) => (request, response) => {
+// beta.orbi.build.
+const startChain = () => (request, response) => {
   const { pathname } = new URL(request.url, "http://x");
   // Issue #134: the handoff contract covers both spellings of the route, so
   // the stub chain answers the trailing-slash form exactly like the bare one.
   if (pathname === "/cloud/login" || pathname === "/cloud/login/") {
     const base = `http://${request.headers.host}`;
-    response.writeHead(302, {
-      location: hijackHandoff ? `${base}/not-the-handoff` : `${base}/api/start`,
-    });
+    response.writeHead(302, { location: `${base}/api/start` });
     response.end();
     return;
   }
-  if (pathname === "/api/start" && !hijackHandoff) {
+  if (pathname === "/api/start") {
     response.writeHead(302, { location: "https://github.com/apps/orbi-dev-test/installations/new" });
     response.end();
     return;
@@ -174,8 +171,23 @@ describe("cloud login smoke contract (Issue #74)", () => {
   it("github-app-302 rejects a handoff that never reaches the GitHub App installation page", async () => {
     process.env.BASE_URL = "https://smoke.example";
     process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
-    await withLoginServer(startChain(true), (url) =>
-      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/GitHub App installation/));
+    await withLoginServer((request, response) => {
+      const { pathname } = new URL(request.url, "http://x");
+      if (pathname === "/cloud/login" || pathname === "/cloud/login/") {
+        const base = `http://${request.headers.host}`;
+        response.writeHead(302, { location: `${base}/api/start` });
+        response.end();
+        return;
+      }
+      if (pathname === "/api/start") {
+        // The pre-#528 landing: a /api/start that answers the old OAuth
+        // authorize redirect is not the chain the handoff promises.
+        response.writeHead(302, { location: "https://github.com/login/oauth/authorize?client_id=x" });
+        response.end();
+        return;
+      }
+      siteWorker404(request, response);
+    }, (url) => expect(assertCloudLoginRedirect(url)).rejects.toThrow(/GitHub App installation/));
   });
 
   it("github-app-302 rejects a handoff that overwrites the campaign ref cookie (Issue #528)", async () => {
