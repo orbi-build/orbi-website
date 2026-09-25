@@ -267,11 +267,11 @@ class LandingTests(unittest.TestCase):
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Docs", "GitHub", "Start Cloud"),
+                ("How it works", "Docs", "GitHub", "Sign in", "Start Cloud"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "文档", "GitHub", "开始 Cloud"),
+                ("产品怎么运作", "文档", "GitHub", "登录", "开始 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
@@ -459,8 +459,10 @@ class LandingTests(unittest.TestCase):
         # served pages keep their CTAs; unconfigured: 503 with every Cloud CTA
         # rewritten to https://docs.orbi.build — is locked where it runs, in
         # tests/worker.test.js. Only beta's value is pinned: it must stay the
-        # one verified beta Cloud endpoint (docs/cloud-endpoints.md).
-        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
+        # one verified beta Cloud endpoint (docs/cloud-endpoints.md). Issue
+        # #528: that endpoint is /api/start, the one-step GitHub App entry
+        # (measured live 2026-09-26: 302 to the App installation page).
+        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/start")
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn("new URL(cloudBaseUrl)", worker)
         self.assertIn("CLOUD_LOGIN_URL", worker)
@@ -474,10 +476,12 @@ class LandingTests(unittest.TestCase):
         website endpoint under those prefixes never runs there — measured:
         beta answered POST /api/apply with cloud's 404. Both website-owned
         Cloud-entry endpoints live under /cloud/, which none of the cloud
-        prefixes covers."""
+        prefixes covers. The boundary is route definitions: worker.js names
+        /api/login only as page content — the Issue #528 rewrite that sends
+        the nav Sign in link to the docs where Cloud is unconfigured — which
+        is not an endpoint."""
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertNotIn("/api/apply", worker)
-        self.assertNotIn("/api/login", worker)
+        self.assertNotIn('route === "/api/', worker)
         self.assertIn('"/cloud/apply"', worker)
         self.assertIn('"/cloud/login"', worker)
         self.assertIn('"/zh/cloud/login"', worker)
@@ -866,8 +870,9 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
-        # environment; beta's is the GitHub OAuth 302 served by Cloud
-        self.assertIn("CLOUD_LOGIN_EXPECT=oauth-302", workflow)
+        # environment; Issue #528: beta's is the 302 chain from the handoff
+        # through /api/start into GitHub's App installation page
+        self.assertIn("CLOUD_LOGIN_EXPECT=github-app-302", workflow)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
         """Issue #68: production deploys of orbi.build run behind the
