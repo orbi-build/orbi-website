@@ -4,7 +4,6 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const routes = ["/compare/", "/zh/compare/", "/compare/keelen/", "/zh/compare/keelen/"];
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -46,32 +45,79 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
-describe("compare tables remain usable on mobile (Issue #416)", () => {
-  for (const route of routes) {
-    it(`${route} shows the dimension and Orbi columns and keeps the dimension sticky`, async () => {
+// Issue #522: on phones the 8-column comparison table stacks row-by-row (the
+// build labels every cell with its column header), and 3-column tables fit
+// the viewport without horizontal scrolling. Desktop keeps the scrollable
+// wrapper and the sticky first column, unchanged from Issue #416.
+describe("compare tables remain usable on mobile (Issue #522)", () => {
+  for (const route of ["/compare/", "/zh/compare/"]) {
+    it(`${route} stacks the wide matrix into labelled blocks with no horizontal scroll`, async () => {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
       try {
         await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
-        const table = page.locator(".compare-table").first();
-        const wrapper = table.locator("xpath=..");
-        const [firstColumn, secondColumn] = await table.locator("thead th").evaluateAll((headers) =>
-          headers.slice(0, 2).map((header) => header.getBoundingClientRect().width),
-        );
-        const wrapperWidth = await wrapper.evaluate((element) => element.clientWidth);
-        expect(firstColumn + secondColumn, `${route} first two columns`).toBeLessThanOrEqual(wrapperWidth);
-        expect(await wrapper.evaluate((element) => element.scrollWidth)).toBeGreaterThan(wrapperWidth);
-        await wrapper.screenshot({ path: `.orbi/compare-table-${route.includes("zh") ? "zh" : "en"}-390.png` });
+        const result = await page.evaluate(() => {
+          const wrapper = document.querySelector(".compare-table-wrap");
+          const table = wrapper.querySelector(".compare-table");
+          const firstRow = table.querySelector("tbody tr");
+          const cells = [...firstRow.querySelectorAll("td")];
+          return {
+            wrapperOverflow: wrapper.scrollWidth - wrapper.clientWidth,
+            documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            theadDisplay: getComputedStyle(table.querySelector("thead")).display,
+            cellDisplay: getComputedStyle(cells[0]).display,
+            rowDisplay: getComputedStyle(firstRow).display,
+            labels: cells.map((cell) => getComputedStyle(cell, "::before").content),
+            orbiBackground: getComputedStyle(cells[0]).backgroundColor,
+            bodyRowCount: table.querySelectorAll("tbody tr").length,
+          };
+        });
+        expect(result.wrapperOverflow, `${route} wrapper scrolls`).toBeLessThanOrEqual(0);
+        expect(result.documentOverflow, `${route} document overflows`).toBe(0);
+        expect(result.theadDisplay, `${route} header row hides`).toBe("none");
+        expect(result.rowDisplay, `${route} rows become blocks`).toBe("block");
+        expect(result.cellDisplay, `${route} cells become blocks`).toBe("block");
+        expect(result.bodyRowCount, `${route} every body row stacks`).toBeGreaterThan(0);
+        // The Orbi column keeps its mint emphasis after stacking.
+        expect(result.orbiBackground, `${route} Orbi block keeps the mint tint`).toBe("rgba(92, 214, 181, 0.13)");
+        // Every cell names its column: the header text, not a guessed shape.
+        expect(result.labels[0], `${route} Orbi cell names its column`).toContain("Orbi");
+        for (const label of result.labels.slice(1)) {
+          expect(label, `${route} cells name their columns`).not.toBe("none");
+        }
+        await page.screenshot({ path: `.orbi/compare-stack-${route.includes("zh") ? "zh" : "en"}-390.png`, fullPage: false });
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
 
-        await wrapper.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
-        await page.waitForFunction((selector) => {
-          const element = document.querySelector(selector);
-          return element.scrollLeft === element.scrollWidth - element.clientWidth;
-        }, ".compare-table-wrap");
-        const positions = await wrapper.evaluate((element) => ({
-          cellLeft: element.querySelector("tbody th").getBoundingClientRect().left,
-          contentLeft: element.getBoundingClientRect().left + element.clientLeft,
-        }));
-        expect(positions.cellLeft, `${route} sticky first column`).toBeCloseTo(positions.contentLeft, 0);
+  for (const route of ["/compare/keelen/", "/zh/compare/keelen/"]) {
+    it(`${route} fits the 3-column table in the viewport, every column visible`, async () => {
+      const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      try {
+        await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+        const result = await page.evaluate(() => {
+          const wrapper = document.querySelector(".compare-table-wrap");
+          const table = wrapper.querySelector(".compare-table");
+          const firstRow = table.querySelector("tbody tr");
+          const wrapperRect = wrapper.getBoundingClientRect();
+          const lastCell = firstRow.lastElementChild.getBoundingClientRect();
+          return {
+            wrapperOverflow: wrapper.scrollWidth - wrapper.clientWidth,
+            documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            theadDisplay: getComputedStyle(table.querySelector("thead")).display,
+            firstCellDisplay: getComputedStyle(firstRow.firstElementChild).display,
+            columnCount: firstRow.children.length,
+            lastColumnInside: lastCell.right <= wrapperRect.right + 1,
+          };
+        });
+        expect(result.wrapperOverflow, `${route} wrapper scrolls`).toBeLessThanOrEqual(0);
+        expect(result.documentOverflow, `${route} document overflows`).toBe(0);
+        expect(result.theadDisplay, `${route} small tables keep their header row`).not.toBe("none");
+        expect(result.firstCellDisplay, `${route} small tables keep table cells`).toBe("table-cell");
+        expect(result.columnCount, `${route} all three columns render`).toBe(3);
+        expect(result.lastColumnInside, `${route} last column is visible`).toBe(true);
+        await page.screenshot({ path: `.orbi/compare-keelen-${route.includes("zh") ? "zh" : "en"}-390.png`, fullPage: false });
       } finally {
         await page.close();
       }

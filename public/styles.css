@@ -1985,7 +1985,6 @@ h2 {
 
 .compare-table {
   width: 100%;
-  min-width: 620px;
   border-collapse: collapse;
 }
 
@@ -2022,19 +2021,59 @@ h2 {
 
 .compare-table thead th:first-child { z-index: 2; }
 
+/* ≤760px (Issue #522): small tables (3 columns and under) fit the wrapper —
+   no fixed column widths, the browser distributes them, cells tighten and
+   wrap. Tables with 4+ columns carry the build's .table-stack marker and
+   data-labels and stack row-by-row. Desktop is untouched. */
 @media (max-width: 760px) {
-  .compare-table th:first-child,
-  .compare-table td:first-child {
-    width: 120px;
-    max-width: 120px;
+  .compare-table th,
+  .compare-table td {
+    padding: 12px;
     overflow-wrap: anywhere;
-    white-space: normal;
   }
 
-  .compare-table th:nth-child(2),
-  .compare-table td:nth-child(2) {
-    width: 100px;
-    max-width: 100px;
+  .compare-table thead th { font-size: 0.62rem; }
+
+  .compare-table tbody th { white-space: normal; }
+
+  /* Stacked tables: the header row hides, each body row becomes a block
+     titled by its leading cell, and every other cell reads「列名：值」from
+     data-label. Cell rules sit at (0,1,2) so they outrank the post template's
+     inline .post-body th/td, keeping blog Markdown tables on the same layout. */
+  .table-stack tbody { display: block; }
+  .table-stack thead { display: none; }
+  .table-stack tbody tr {
+    display: block;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-stack tbody tr:last-child { border-bottom: 0; }
+  .table-stack tbody th,
+  .table-stack tbody td {
+    display: block;
+    padding: 0;
+    border-bottom: 0;
+  }
+  .table-stack tbody th { margin: 0 0 10px; }
+  .table-stack tbody td { margin: 12px 0 0; }
+  .table-stack tbody td:first-child { margin: 0; font-weight: 600; }
+  .table-stack tbody td:first-child::before { content: none; }
+  .table-stack tbody td::before {
+    content: attr(data-label);
+    display: block;
+    margin: 0 0 3px;
+    color: #4b615d;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .post-body .post-table-scroll th,
+  .post-body .post-table-scroll td {
+    padding: 12px;
+    overflow-wrap: anywhere;
   }
 }
 

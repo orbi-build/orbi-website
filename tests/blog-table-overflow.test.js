@@ -182,15 +182,16 @@ describe("blog titles use the post entry width (Issue #401)", () => {
   }, 30_000);
 });
 
-describe("blog tables stay within the viewport (Issue #393)", () => {
-  it("contains all five wide tables at mobile and desktop widths", async () => {
-    for (const width of widths) {
-      const result = await overflowAt("/blog/table-fixture/", width);
-      expect(result.overflow, `table fixture at ${width}px document overflow`).toBe(0);
-      expect(result.tableCount).toBe(5);
-      expect(result.wrappersAreExactParents).toBe(true);
-      expect(result.scrollableWrappers, `table fixture at ${width}px scrollable wrappers`).toBe(5);
-    }
+describe("blog tables stay within the viewport (Issue #393, #522)", () => {
+  it("fits the fixture tables into their wrappers on mobile, scrolls them on desktop", async () => {
+    const mobile = await overflowAt("/blog/table-fixture/", 390);
+    expect(mobile.overflow, "table fixture at 390px document overflow").toBe(0);
+    expect(mobile.tableCount).toBe(5);
+    expect(mobile.wrappersAreExactParents).toBe(true);
+    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(0);
+    const desktop = await overflowAt("/blog/table-fixture/", 1440);
+    expect(desktop.overflow, "table fixture at 1440px document overflow").toBe(0);
+    expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
   });
 
   it("keeps every existing post free of document overflow", async () => {
