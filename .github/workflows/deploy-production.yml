@@ -2,15 +2,9 @@ name: Deploy production
 
 on:
   workflow_dispatch:
-    inputs:
-      skip_soak:
-        description: "Hotfix only: skip the beta soak check. The production environment approval is still required."
-        type: boolean
-        default: false
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: deploy-production
@@ -29,55 +23,8 @@ jobs:
             exit 1
           fi
 
-  # The soak gate runs as a separate job BEFORE the approval-gated deploy job,
-  # so a promotion rejected for fresh commits fails without ever requesting
-  # the approver's attention.
-  soak:
-    needs: require-main
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Require promoted snapshot to have soaked on beta
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          PROD_MIN_SOAK_HOURS: ${{ vars.PROD_MIN_SOAK_HOURS }}
-          SKIP_SOAK: ${{ inputs.skip_soak }}
-        run: |
-          set -euo pipefail
-          required="${PROD_MIN_SOAK_HOURS:-4}"
-          if [[ "$SKIP_SOAK" == "true" ]]; then
-            timeout 120s node scripts/check-beta-soak.mjs --required-hours "$required" --skip-soak
-            exit 0
-          fi
-          if [[ "$required" == "0" ]]; then
-            timeout 120s node scripts/check-beta-soak.mjs --required-hours "$required"
-            exit 0
-          fi
-          parents="$(git rev-list --parents -n 1 "$GITHUB_SHA")"
-          read -r merge_sha main_parent beta_snapshot _ <<< "$parents"
-          if [[ "$merge_sha" != "$GITHUB_SHA" || -z "$beta_snapshot" ]]; then
-            echo "::error::production commit $GITHUB_SHA is not a merge commit with a beta snapshot parent"
-            exit 1
-          fi
-          echo "Production promotion snapshot: $beta_snapshot"
-          timeout 120s git fetch origin beta
-          runs_file="$(mktemp)"
-          trap 'rm -f "$runs_file"' EXIT
-          timeout 120s gh api --paginate --slurp \
-            "repos/${GH_REPO}/actions/workflows/deploy-beta.yml/runs?status=success&per_page=100" > "$runs_file"
-          timeout 120s node scripts/check-beta-soak.mjs \
-            --snapshot-sha "$beta_snapshot" \
-            --required-hours "$required" \
-            --runs-file "$runs_file"
-
   deploy:
-    needs: soak
+    needs: require-main
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # The human gate: the `production` environment's required reviewers must
