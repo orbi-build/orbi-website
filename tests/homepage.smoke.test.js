@@ -52,24 +52,25 @@ const redirect = (location) => (_request, response) => {
   response.end();
 };
 
-// Issue #76: the full beta login chain is /cloud/login (the website's
-// handoff, 302) -> /api/login (the Cloud control plane, 302) -> GitHub
-// OAuth. A hijacked handoff leads somewhere that answers the site Worker's
-// stamped 404, which the smoke must reject.
-const oauthChain = (hijackHandoff = false) => (request, response) => {
+// Issue #528: the beta login chain is /cloud/login (the website's handoff,
+// 302) -> /api/start (the Cloud control plane's one-step entry, 302) -> the
+// GitHub App installation page — measured live 2026-09-26 against
+// beta.orbi.build. A hijacked handoff leads somewhere that answers the site
+// Worker's stamped 404, which the smoke must reject.
+const startChain = (hijackHandoff = false) => (request, response) => {
   const { pathname } = new URL(request.url, "http://x");
   // Issue #134: the handoff contract covers both spellings of the route, so
   // the stub chain answers the trailing-slash form exactly like the bare one.
   if (pathname === "/cloud/login" || pathname === "/cloud/login/") {
     const base = `http://${request.headers.host}`;
     response.writeHead(302, {
-      location: hijackHandoff ? `${base}/not-the-handoff` : `${base}/api/login`,
+      location: hijackHandoff ? `${base}/not-the-handoff` : `${base}/api/start`,
     });
     response.end();
     return;
   }
-  if (pathname === "/api/login" && !hijackHandoff) {
-    response.writeHead(302, { location: "https://github.com/login/oauth/authorize?client_id=x" });
+  if (pathname === "/api/start" && !hijackHandoff) {
+    response.writeHead(302, { location: "https://github.com/apps/orbi-dev-test/installations/new" });
     response.end();
     return;
   }
@@ -136,25 +137,68 @@ describe("cloud login smoke contract (Issue #74)", () => {
       expect(assertCloudLoginRedirect(url)).rejects.toThrow(/fail-closed 404, got 302/));
   });
 
-  it("oauth-302 accepts the full handoff chain ending in the GitHub OAuth redirect", async () => {
+  it("github-app-302 accepts the handoff 302 to /api/start and the chain into GitHub's App installation", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
-    await withLoginServer(oauthChain(), (url) =>
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
+    await withLoginServer(startChain(), (url) =>
       expect(assertCloudLoginRedirect(url)).resolves.toBeUndefined());
   });
 
-  it("oauth-302 rejects the 404 that caused the 2026-09-08 rollback (run 34190044563)", async () => {
+  it("github-app-302 rejects a handoff that leaves /api/start behind (Issue #528)", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
+    await withLoginServer((request, response) => {
+      const { pathname } = new URL(request.url, "http://x");
+      if (pathname === "/cloud/login") {
+        const base = `http://${request.headers.host}`;
+        response.writeHead(302, { location: `${base}/api/login` });
+        response.end();
+        return;
+      }
+      if (pathname === "/api/login") {
+        response.writeHead(302, { location: "https://github.com/login/oauth/authorize?client_id=x" });
+        response.end();
+        return;
+      }
+      siteWorker404(request, response);
+    }, (url) => expect(assertCloudLoginRedirect(url)).rejects.toThrow(/\/api\/start/));
+  });
+
+  it("github-app-302 rejects the 404 that caused the 2026-09-08 rollback (run 34190044563)", async () => {
+    process.env.BASE_URL = "https://smoke.example";
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
     await withLoginServer(siteWorker404, (url) =>
       expect(assertCloudLoginRedirect(url)).rejects.toThrow(/expected 302, got 404/));
   });
 
-  it("oauth-302 rejects a handoff that never reaches the GitHub OAuth redirect", async () => {
+  it("github-app-302 rejects a handoff that never reaches the GitHub App installation page", async () => {
     process.env.BASE_URL = "https://smoke.example";
-    process.env.CLOUD_LOGIN_EXPECT = "oauth-302";
-    await withLoginServer(oauthChain(true), (url) =>
-      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/did not redirect to GitHub OAuth/));
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
+    await withLoginServer(startChain(true), (url) =>
+      expect(assertCloudLoginRedirect(url)).rejects.toThrow(/GitHub App installation/));
+  });
+
+  it("github-app-302 rejects a handoff that overwrites the campaign ref cookie (Issue #528)", async () => {
+    process.env.BASE_URL = "https://smoke.example";
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
+    await withLoginServer((request, response) => {
+      const { pathname } = new URL(request.url, "http://x");
+      if (pathname === "/cloud/login" || pathname === "/cloud/login/") {
+        const base = `http://${request.headers.host}`;
+        response.writeHead(302, {
+          location: `${base}/api/start`,
+          "set-cookie": "ref=replaced-by-the-handoff; Path=/",
+        });
+        response.end();
+        return;
+      }
+      if (pathname === "/api/start") {
+        response.writeHead(302, { location: "https://github.com/apps/orbi-dev-test/installations/new" });
+        response.end();
+        return;
+      }
+      siteWorker404(request, response);
+    }, (url) => expect(assertCloudLoginRedirect(url)).rejects.toThrow(/campaign ref cookie/));
   });
 
   it("fail-closed-503 accepts the site Worker's stamped 503 (Issue #77 production contract)", async () => {
@@ -184,7 +228,7 @@ describe("cloud login smoke contract (Issue #74)", () => {
   });
 
   it("fails fast on an unknown CLOUD_LOGIN_EXPECT value", () => {
-    expect(resolveCloudLoginExpect("oauth-302")).toBe("oauth-302");
+    expect(resolveCloudLoginExpect("github-app-302")).toBe("github-app-302");
     expect(resolveCloudLoginExpect("fail-closed-503")).toBe("fail-closed-503");
     expect(resolveCloudLoginExpect("fail-closed-404")).toBe("fail-closed-404");
     expect(() => resolveCloudLoginExpect("")).toThrow(/CLOUD_LOGIN_EXPECT/);
@@ -192,6 +236,9 @@ describe("cloud login smoke contract (Issue #74)", () => {
     // Issue #77 removed production's CLOUD_LOGIN_URL, so the handoff 302 is
     // no longer a contract any environment can declare.
     expect(() => resolveCloudLoginExpect("cloud-handoff-302")).toThrow(/CLOUD_LOGIN_EXPECT/);
+    // Issue #528: /api/start replaced /api/login as the handoff target, so
+    // the old OAuth-chain declaration no longer names a real contract.
+    expect(() => resolveCloudLoginExpect("oauth-302")).toThrow(/CLOUD_LOGIN_EXPECT/);
   });
 });
 
@@ -201,22 +248,26 @@ describe("cloud login smoke contract (Issue #74)", () => {
 // that rewrite into the test and broke beta's deploy smoke while the site
 // itself was fine.
 describe("Cloud CTA landing contract (Issue #107)", () => {
-  it("oauth-302 lands the click in GitHub's OAuth authorize flow", () => {
-    const landing = expectedCtaLanding("oauth-302");
-    // A signed-in browser renders the authorize prompt at its own URL.
-    expect(landing.matches(new URL("https://github.com/login/oauth/authorize?client_id=x"))).toBe(true);
+  it("github-app-302 lands the click in GitHub's App installation flow (Issue #528)", () => {
+    const landing = expectedCtaLanding("github-app-302");
+    // A signed-in browser renders the installation prompt at its own URL —
+    // the measured /api/start target on beta (2026-09-26).
+    expect(landing.matches(new URL("https://github.com/apps/orbi-dev-test/installations/new"))).toBe(true);
     // A signed-out browser is bounced once more by GitHub to its sign-in
-    // page, which preserves the authorize request in return_to — the real
-    // landing observed live 2026-09-12 against beta (run 8ba73105).
+    // page, which preserves the installation request in return_to — the real
+    // final landing measured live 2026-09-26 against beta.
     expect(landing.matches(new URL(
-      "https://github.com/login?client_id=Iv23lihVKDs2CXkoaLg2"
-      + "&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DIv23lihVKDs2CXkoaLg2"
-      + "%26redirect_uri%3Dhttps%253A%252F%252Fbeta.orbi.build%252Fapi%252Fauth%252Fcallback"
+      "https://github.com/login?integration=orbi-dev-test"
+      + "&return_to=%2Fapps%2Forbi-dev-test%2Finstallations%2Fnew"
     ))).toBe(true);
     expect(landing.matches(new URL("https://beta.orbi.build/cloud/login"))).toBe(false);
+    expect(landing.matches(new URL("https://beta.orbi.build/api/start"))).toBe(false);
     expect(landing.matches(new URL("https://beta.orbi.build/apply"))).toBe(false);
-    // A bare sign-in page carries no authorize request: not the OAuth flow.
+    // A bare sign-in page carries no installation request: not the flow.
     expect(landing.matches(new URL("https://github.com/login"))).toBe(false);
+    // The old /api/login landing: the OAuth authorize chain is not what
+    // /api/start promises.
+    expect(landing.matches(new URL("https://github.com/login/oauth/authorize?client_id=x"))).toBe(false);
   });
 
   it("fail-closed-503 lands the click on the self-host docs", () => {
@@ -233,8 +284,8 @@ describe("Cloud CTA landing contract (Issue #107)", () => {
   });
 
   it("each landing must answer with the status its contract promises", () => {
-    expect(expectedCtaLanding("oauth-302").statusOk(200)).toBe(true);
-    expect(expectedCtaLanding("oauth-302").statusOk(404)).toBe(false);
+    expect(expectedCtaLanding("github-app-302").statusOk(200)).toBe(true);
+    expect(expectedCtaLanding("github-app-302").statusOk(404)).toBe(false);
     expect(expectedCtaLanding("fail-closed-503").statusOk(200)).toBe(true);
     expect(expectedCtaLanding("fail-closed-503").statusOk(503)).toBe(false);
     // The fail-closed handoff answers 404 — statically locally, stamped by

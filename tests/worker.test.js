@@ -209,8 +209,11 @@ describe("Worker request helpers", () => {
   it("serves pages with the Cloud CTA rewritten to the self-host docs when Cloud is not configured", async () => {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
-    // environment ships dead-end CTAs again (Issue #179).
-    const html = '<a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>'
+    // environment ships dead-end CTAs again (Issue #179). Issue #528: the
+    // nav's Sign in link points straight at the cloud control plane's
+    // /api/login, so it joins the rewrite — nowhere for a visitor to land.
+    const html = '<a href="/api/login">Sign in</a>'
+      + '<a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>'
       + '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>'
       + '<a data-cta="cloud-start-zh" href="/zh/cloud/login">用 GitHub 开始 Cloud</a>';
     const response = await handleFetch(
@@ -225,7 +228,8 @@ describe("Worker request helpers", () => {
     );
     const body = await response.text();
     expect(body).not.toMatch(/href="\/(?:zh\/)?cloud\/login/);
-    expect(body.match(/href="https:\/\/docs\.orbi\.build"/g)).toHaveLength(3);
+    expect(body).not.toContain('href="/api/login"');
+    expect(body.match(/href="https:\/\/docs\.orbi\.build"/g)).toHaveLength(4);
     expect(body).not.toContain('href="/apply"');
     // A rewritten body is a new representation: the asset file's validators
     // must not answer conditional requests for it.
@@ -233,11 +237,12 @@ describe("Worker request helpers", () => {
   });
 
   it("serves pages unchanged when Cloud login is configured", async () => {
-    const html = '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>';
+    const html = '<a href="/api/login">Sign in</a>'
+      + '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>';
     const response = await handleFetch(
       new Request("https://beta.orbi.build/"),
       {
-        CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+        CLOUD_LOGIN_URL: "https://beta.orbi.build/api/start",
         ASSETS: {
           fetch: () => Promise.resolve(new Response(html, {
             headers: { "Content-Type": "text/html; charset=utf-8" },
@@ -245,7 +250,9 @@ describe("Worker request helpers", () => {
         },
       },
     );
-    expect(await response.text()).toContain('href="/cloud/login?ref=home-hero"');
+    const body = await response.text();
+    expect(body).toContain('href="/cloud/login?ref=home-hero"');
+    expect(body).toContain('href="/api/login"');
   });
 
   it("builds authenticated GitHub API headers", () => {

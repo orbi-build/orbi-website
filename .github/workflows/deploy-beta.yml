@@ -158,7 +158,7 @@ jobs:
       - name: Smoke-test beta in a real browser
         # Issue #74: the login contract is declared per environment, never
         # guessed in the test. Issue #76: the website hands off at its own
-        # /cloud/login, which 302s to the Cloud control plane's /api/login
-        # (docs/cloud-endpoints.md); that URL answers with the GitHub OAuth
-        # redirect, and the smoke follows both hops.
-        run: timeout 300s env BASE_URL=https://beta.orbi.build CLOUD_LOGIN_EXPECT=oauth-302 npm run test:browser
+        # /cloud/login. Issue #528: that 302s to the Cloud control plane's
+        # /api/start (docs/cloud-endpoints.md), which answers with the GitHub
+        # App installation redirect, and the smoke follows both hops.
+        run: timeout 300s env BASE_URL=https://beta.orbi.build CLOUD_LOGIN_EXPECT=github-app-302 npm run test:browser

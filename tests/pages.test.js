@@ -967,6 +967,25 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     expect(partial).not.toContain('href="/apply"');
   });
 
+  it("offers returning users a Sign in text link left of the nav CTA (Issue #528)", async () => {
+    // /api/login is the Cloud control plane's own login route: on every
+    // deployed host the cloud Worker owns /api*, so the plain relative href
+    // reaches the right environment without per-env configuration. It is a
+    // plain text link (no class of its own) and sits before the Start Cloud
+    // button in DOM order — its left in the nav row.
+    const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
+    expect(partial, "nav partial carries the Sign in slot").toContain(
+      '<a href="/api/login">{{SIGNIN_LABEL}}</a>',
+    );
+    expect(partial.indexOf('href="/api/login"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
+    for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
+      const nav = navRegion(shipped.get(output));
+      const link = nav.match(/<a href="\/api\/login">([^<]*)<\/a>/);
+      expect(link, `${output}: nav Sign in link missing`).toBeTruthy();
+      expect(link[1], `${output}: nav Sign in label`).toBe(label);
+    }
+  });
+
   it("points the primary-nav CTA at the language Cloud page on every built index.html", async () => {
     const listIndex = async (dir, prefix = "") => {
       const out = [];

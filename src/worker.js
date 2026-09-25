@@ -376,8 +376,12 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
-    // environment ships dead-end CTAs again (Issue #179).
-    body = body.replace(/href="\/(?:zh\/)?cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"');
+    // environment ships dead-end CTAs again (Issue #179). The nav Sign in
+    // link (Issue #528) points straight at the cloud control plane's
+    // /api/login — same dead end where Cloud is absent, so it joins.
+    body = body
+      .replace(/href="\/(?:zh\/)?cloud\/login(\?[^"]*)?"/g, 'href="https://docs.orbi.build"')
+      .replace(/href="\/api\/login"/g, 'href="https://docs.orbi.build"');
   }
   if (body === html) {
     // Nothing changed: the bytes are the asset's own representation, so the
