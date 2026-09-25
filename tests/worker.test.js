@@ -686,7 +686,7 @@ describe("email subscription route (Issue #442)", () => {
     const cloud = async (request) => { sent = request; return new Response("ok"); };
     const request = new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", Cookie: "vid=visitor-1; ref=x-2609240130" },
-      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+      body: "email=ada%40example.com&lang=en",
     });
     const response = await subscribeResponse(request, env(cloud));
     expect(response.status).toBe(200);
@@ -699,57 +699,34 @@ describe("email subscription route (Issue #442)", () => {
   it("returns invalid-email failure when Cloud returns 400", async () => {
     const request = new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ email: "not-an-email", lang: "zh", return_to: "/zh/cost/" }),
+      body: JSON.stringify({ email: "not-an-email", lang: "zh" }),
     });
     const response = await subscribeResponse(request, env(async () => new Response("bad", { status: 400 })));
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "invalid_email" });
   });
 
-  it("redirects no-JS form submissions back to the page", async () => {
+  // Issue #541: the no-JS 303 redirect branch is gone. The form is submitted
+  // by JS only, so the endpoint answers JSON no matter what the request asks
+  // for — even a form-encoded body with no Accept header, the exact shape a
+  // no-JS browser submit sends.
+  it("answers JSON only, never a redirect", async () => {
     const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "email=ada%40example.com&lang=zh&return_to=%2Fzh%2Fevidence%2F",
+      body: "email=ada%40example.com&lang=zh",
     }), env(async () => new Response("ok")));
-    expect(response.status).toBe(303);
-    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/evidence/?subscribed=1");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+    expect(await response.json()).toEqual({ ok: true });
   });
 
   it("does not mislabel an unavailable upstream as an invalid email", async () => {
     const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "email=ada%40example.com&lang=en&return_to=%2Fevidence%2F",
+      body: "email=ada%40example.com&lang=en",
     }), env(async () => new Response("down", { status: 503 })));
-    expect(response.status).toBe(303);
-    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/evidence/?subscribe_error=unavailable");
-  });
-
-  it.each([
-    "",
-    "//evil.example/x",
-    "https://evil.example/",
-    "/\\evil.example/",
-  ])("falls back to the English homepage for invalid return_to %s", async (returnTo) => {
-    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ email: "not-an-email", lang: "en", return_to: returnTo }),
-    }), env(async () => new Response("bad", { status: 400 })));
-    expect(response.status).toBe(303);
-    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/?subscribe_error=invalid");
-  });
-
-  it.each([
-    "",
-    "//evil.example/x",
-    "https://evil.example/",
-    "/\\evil.example/",
-  ])("falls back to the Chinese homepage for invalid return_to %s", async (returnTo) => {
-    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ email: "not-an-email", lang: "zh", return_to: returnTo }),
-    }), env(async () => new Response("bad", { status: 400 })));
-    expect(response.status).toBe(303);
-    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/zh/?subscribe_error=invalid");
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "unavailable" });
   });
 });
 

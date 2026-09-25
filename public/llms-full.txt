@@ -170,7 +170,6 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
         <label class="sr-only" for="subscribe-email-en">Email address</label>
         <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
         <input type="hidden" name="lang" value="en">
-        <input type="hidden" name="return_to" value="/cost/">
         <button class="button button-signal" type="submit">Subscribe</button>
         <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
       </form>
@@ -312,7 +311,6 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
         <label class="sr-only" for="subscribe-email-en">Email address</label>
         <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
         <input type="hidden" name="lang" value="en">
-        <input type="hidden" name="return_to" value="/evidence/">
         <button class="button button-signal" type="submit">Subscribe</button>
         <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
       </form>
