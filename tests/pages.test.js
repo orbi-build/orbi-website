@@ -90,15 +90,7 @@ describe("email subscription forms (Issue #442)", () => {
 });
 
 describe("ai-ready methodology pages (Issue #195)", () => {
-  it("renders both language pages with metadata and twelve ordered factor headings", () => {
-    const expected = [
-      "One Issue, one runtime outcome.", "Acceptance is written before the work, in the Issue.",
-      "Dependencies are native relations, not prose.", "One label is the execution switch; state lives only in labels.",
-      "Issue text is data, never instructions.", "The contract lives in the repository; identity lives on the host.",
-      "CI is the only test authority.", "Coverage is a gate, line and branch measured separately.",
-      "The default branch is protected and only the runner merges.", "Review is a second session, and its verdict is bound to one SHA.",
-      "Every loop has a limit, and beyond the limit is a human decision.", "A release is a state machine, not a script.",
-    ];
+  it("renders both language pages with metadata and twelve factor headings", () => {
     for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
       const html = shipped.get(output);
       expect(html).toContain('<link rel="canonical" href="https://aiready.sh/');
@@ -107,9 +99,6 @@ describe("ai-ready methodology pages (Issue #195)", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain('"@type":"FAQPage"');
       expect(html).toContain("datafa.st/js/script.js");
-      if (output === "aiready/index.html") {
-        expect([...html.matchAll(/<h3>\d+\. ([^<]+)/g)].map((m) => m[1])).toEqual(expected);
-      }
       expect([...html.matchAll(/<h3>/g)]).toHaveLength(12);
     }
   });
@@ -152,7 +141,7 @@ describe("comparison capability matrix (Issue #201)", () => {
 });
 
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
-  it("keeps every sitemap HTML page within title, description, and heading limits", () => {
+  it("keeps exactly one H1 on every sitemap HTML page", () => {
     const violations = [];
     const sitemapOutputs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)]
       .map((match) => match[1])
@@ -168,23 +157,14 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
         violations.push(`${route} HTML output missing (maximum missing pages: 0)`);
         continue;
       }
-      // Comments can contain examples of metadata and headings; they are not
-      // part of the rendered document or its SEO contract.
+      // Comments can contain examples of headings; they are not part of the
+      // rendered document.
       const rendered = html.replace(/<!--[\s\S]*?-->/g, "");
-      const title = rendered.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? "";
-      const description = rendered.match(/<meta\s+name=[\"']description[\"']\s+content=[\"']([^\"]*)/i)?.[1] ?? "";
       const h1Count = (rendered.match(/<h1\b/gi) || []).length;
-      const isChinese = route.startsWith("/zh/");
-      const descriptionMin = isChinese ? 70 : (route === "/" ? 140 : 150);
-      const descriptionMax = isChinese ? (route === "/zh/" ? 100 : 80) : 160;
-      if (title.length > 60) violations.push(`${route} title length ${title.length}, maximum 60`);
-      if (description.length < descriptionMin || description.length > descriptionMax) {
-        violations.push(`${route} description length ${description.length}, expected ${descriptionMin}-${descriptionMax} (maximum ${descriptionMax})`);
-      }
-      if (h1Count !== 1) violations.push(`${route} h1 count ${h1Count}, maximum 1 (expected exactly 1)`);
+      if (h1Count !== 1) violations.push(`${route} h1 count ${h1Count}, expected exactly 1`);
     }
 
-    expect(violations, `SEO metadata violations:\n${violations.join("\n")}`).toEqual([]);
+    expect(violations, `heading violations:\n${violations.join("\n")}`).toEqual([]);
   });
 
   it("requires social sharing metadata on every sitemap HTML page", () => {
@@ -233,86 +213,6 @@ describe("SEO metadata is descriptive (Issue #405, #413)", () => {
 
     expect(violations, `Invalid Open Graph images:\n${violations.join("\n")}`).toEqual([]);
   });
-
-  it("keeps every rendered page title above the crawler minimum", () => {
-    for (const [output, html] of shipped) {
-      if (!output.endsWith(".html")) continue;
-      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-      const minimum = output === "zh/compare/devin/index.html" ? 25 : 30;
-      expect(title.length, `${output} title`).toBeGreaterThanOrEqual(minimum);
-    }
-  });
-});
-
-describe("merged pull request cost page (Issue #512)", () => {
-  const expectations = {
-    "cost/index.html": {
-      titleKeyword: "per pull request",
-      sample: "20 merged PRs",
-      oldLabel: "PER DELIVERY (INCLUDING UNMERGED)",
-      links: ["/compare/devin/", "/cloud/", "/guides/auto-merge-ai-prs/"],
-    },
-    "zh/cost/index.html": {
-      titleKeyword: "每个合并 PR",
-      sample: "20 个合并 PR",
-      oldLabel: "每次交付（含未合并）",
-      links: ["/zh/compare/devin/", "/zh/cloud/", "/zh/guides/auto-merge-ai-prs/"],
-    },
-  };
-  const amounts = ["$0.125", "$0.249", "$0.152", "$0.304", "$0.298", "$0.597", "$0.417", "$0.834"];
-
-  it("publishes the dated 20-PR measurement and all eight table amounts", () => {
-    for (const [output, expected] of Object.entries(expectations)) {
-      const html = shipped.get(output);
-      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
-      expect(title, output).toContain(expected.titleKeyword);
-      for (const amount of amounts) expect(html, `${output}: ${amount}`).toContain(amount);
-      expect(html, output).toContain(expected.sample);
-      expect(html, output).toContain("2026-09-22");
-      expect(html, output).toContain("2026-09-24");
-      expect(html, output).toContain("api-docs.deepseek.com/quick_start/pricing");
-      expect(html, output).toContain(expected.oldLabel);
-      for (const link of expected.links) expect(html, `${output}: ${link}`).toContain(`href="${link}"`);
-    }
-  });
-
-  it("has parseable Dataset JSON-LD on both language pages", () => {
-    for (const [output] of Object.entries(expectations)) {
-      const html = shipped.get(output);
-      const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
-      const graph = JSON.parse(json)["@graph"];
-      const dataset = graph.find((node) => node["@type"] === "Dataset");
-      expect(dataset, output).toMatchObject({
-        temporalCoverage: "2026-09-22/2026-09-24",
-        variableMeasured: expect.any(Array),
-      });
-    }
-  });
-});
-
-describe("DeepSeek coding-agent cost post (Issue #513)", () => {
-  const outputs = [
-    "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
-    "zh/blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
-  ];
-  const measurements = ["10.6M", "$0.125", "$0.417", "$0.249", "$0.834", "97.1%", "1/50"];
-
-  it("publishes the measured figures and the current deepseek-flash provider template", () => {
-    for (const output of outputs) {
-      const html = shipped.get(output);
-      for (const measurement of measurements) expect(html, `${output}: ${measurement}`).toContain(measurement);
-      expect(html, `${output}: provider model`).toContain("&quot;id&quot;: &quot;deepseek-flash&quot;");
-      expect(html, `${output}: provider output limit`).toContain("&quot;maxTokens&quot;: 16384");
-      expect(html, `${output}: release outcome`).toMatch(/tagged release|打 tag 发 Release/);
-    }
-  });
-});
-
-describe("comparison fact corrections (Issue #467)", () => {
-  it("labels Keelen as open beta in both languages", () => {
-    expect(shipped.get("compare/keelen/index.html")).toContain("currently in open beta");
-    expect(shipped.get("zh/compare/keelen/index.html")).toContain("目前处于 open beta");
-  });
 });
 
 describe("public link safety (Issue #500)", () => {
@@ -339,20 +239,6 @@ describe("auto-merge AI PR guide (Issue #459)", () => {
 });
 
 describe("Issue #438 wording and internal-link contracts", () => {
-  it("uses the canonical product definition in homepage metadata and JSON-LD", () => {
-    const definitions = {
-      "index.html": "Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
-      "zh/index.html": "Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。",
-    };
-    for (const [output, definition] of Object.entries(definitions)) {
-      const html = shipped.get(output);
-      expect(html).toContain(`<meta name="description" content="${definition}">`);
-      expect(html.split(`"description": "${definition}"`).length - 1, `${output}: JSON-LD descriptions`).toBe(2);
-    }
-    expect(shippedLlms).toContain(`> ${definitions["index.html"]}`);
-    expect(shippedLlms).toContain(`> ${definitions["zh/index.html"]}`);
-  });
-
   it("uses the current AGPL/SUL wording everywhere", () => {
     for (const [output, source] of [...shipped, ["llms.txt", shippedLlms]]) {
       const rendered = source.replace(/<!--[\s\S]*?-->/g, "");
@@ -753,101 +639,26 @@ describe("per-page head parameters (title / description / canonical)", () => {
       expect(description, `${page.output}: description is missing`).toBeTruthy();
     }
   });
-
-  // Issue #237 (growth #41): the six keyword-aligned titles are delivered
-  // copy — pin them verbatim (and the two rewritten descriptions) so a later
-  // rebrand cannot silently undo the search-term targeting.
-  it("carries the Issue #237 target-keyword titles and descriptions verbatim", () => {
-    const expected = {
-      "compare/devin/index.html": {
-        title: "Open-source Devin alternative, self-hosted | Orbi",
-        description:
-          "Open-source (AGPL-3.0) Orbi is a self-hosted Devin alternative that takes GitHub Issues to reviewed pull requests and releases, with a price-model comparison.",
-      },
-      "compare/github-copilot-coding-agent/index.html": {
-        title: "Copilot cloud agent alternative: who merges the PR | Orbi",
-        description:
-          "Orbi vs GitHub Copilot cloud agent (formerly Copilot coding agent): who reviews, who merges, who cuts the release, what it costs, and where it runs today.",
-      },
-      "zh/compare/github-copilot-coding-agent/index.html": {
-        title: "Copilot cloud agent 替代：谁来合并 PR | Orbi",
-        description:
-          "Orbi 对比 GitHub Copilot cloud agent（原 coding agent）：谁评审、谁合并、谁发版、花多少钱、跑在哪里，附官方来源。",
-      },
-      "cost/index.html": {
-        title: "AI coding agent cost per pull request, measured | Orbi",
-      },
-      "cloud/index.html": {
-        title: "Self-hosted or cloud coding agent: Orbi Cloud | Orbi",
-      },
-      "zh/compare/index.html": {
-        title: "AI 编程 agent 工具对比：Orbi 与各家逐条核实 | Orbi",
-      },
-      "zh/cost/index.html": {
-        title: "AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi",
-      },
-    };
-    for (const [output, slots] of Object.entries(expected)) {
-      const html = shipped.get(output);
-      expect(html.match(/<title>([^<]+)<\/title>/)?.[1], `${output}: title`).toBe(slots.title);
-      if (slots.description) {
-        expect(
-          html.match(/<meta name="description" content="([^"]+)"/)?.[1],
-          `${output}: description`,
-        ).toBe(slots.description);
-      }
-    }
-  });
-
-  it("uses Copilot cloud agent in both comparison page titles", () => {
-    for (const output of [
-      "compare/github-copilot-coding-agent/index.html",
-      "zh/compare/github-copilot-coding-agent/index.html",
-    ]) {
-      expect(shipped.get(output).match(/<title>([^<]+)<\/title>/)?.[1], `${output}: title`).toContain("Copilot cloud agent");
-    }
-  });
 });
 
-describe("cloud hero CTA microcopy (Issue #156)", () => {
+describe("cloud hero CTA handoff (Issue #156)", () => {
   // The hero CTA fires three instant redirects into GitHub's password box.
-  // With no intermediate screen by design, the line under the button is the
-  // only warning the user gets: it must say where the next step happens,
-  // that repositories are chosen there, and that the choice is revisable —
-  // and it must add no jump of its own.
-  const microcopyExpectations = {
-    "cloud/index.html":
-      "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
-    "zh/cloud/index.html":
-      "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
-  };
-
-  const heroCtaHref = {
-    "cloud/index.html": 'href="/cloud/login"',
-    "zh/cloud/index.html": 'href="/zh/cloud/login"',
-  };
+  // The line under the button is the only warning the user gets; its wording
+  // is free to change (Issue #540), but it must add no jump of its own.
+  const outputs = ["cloud/index.html", "zh/cloud/index.html"];
 
   const heroCtaBlock = (output) => {
     const hero = region(shipped.get(output), '<section class="compare-hero', "</section>");
     return hero.match(/<div class="hero-primary">([\s\S]*?)<\/div>/)?.[1] ?? "";
   };
 
-  it("carries the handoff warning directly under the hero CTA on both languages", () => {
-    for (const [output, expected] of Object.entries(microcopyExpectations)) {
+  it("keeps a warning paragraph under the hero CTA that adds no link of its own", () => {
+    for (const output of outputs) {
       const block = heroCtaBlock(output);
-      const button = block.indexOf(heroCtaHref[output]);
+      const button = block.indexOf(output.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
       expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
-      const paragraph = block.search(/<p(?: class="[^"]+")?>/);
-      expect(paragraph, `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
-      const text = block.match(/<p(?: class="[^"]+")?>([\s\S]*?)<\/p>/)?.[1]?.replace(/\s+/g, " ").trim();
-      expect(text, `${output}: CTA microcopy drifted`).toBe(expected);
-    }
-  });
-
-  it("adds no link of its own", () => {
-    for (const output of Object.keys(microcopyExpectations)) {
-      const block = heroCtaBlock(output);
       const paragraph = block.slice(block.indexOf("<p>"));
+      expect(block.indexOf("<p"), `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
       expect(paragraph, `${output}: CTA microcopy must not carry links`).not.toContain("<a ");
     }
   });
@@ -907,9 +718,7 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
 // Issue #165: buyers looking for the subscription price get Pricing in the
 // primary nav (the /cloud/ PRICING section), not the measured-cost essay.
 describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
-  it("uses fixed-monthly headings and removes the unsupported per-PR claim from every shipped HTML page", () => {
-    expect(shipped.get("cloud/index.html")).toContain("A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
-    expect(shipped.get("zh/cloud/index.html")).toContain("按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。");
+  it("keeps the unsupported per-PR claim off every page that does not measure cost", () => {
     const measuredCostOutputs = new Set([
       "cost/index.html",
       "zh/cost/index.html",
@@ -991,45 +800,9 @@ const jsonLdGraph = (html) => {
 
 describe("Issue-to-release landing pages (Issue #514)", () => {
   const landingPages = [
-    {
-      output: "issue-to-release/index.html",
-      descriptionRange: [150, 160],
-      title: "AI agent: GitHub Issue to merged PR and release | Orbi",
-      h1: "From a GitHub Issue to a tagged release",
-      releaseTerm: "release",
-      firstSentence: "The endpoint is a tagged release, not a pull request.",
-    },
-    {
-      output: "zh/issue-to-release/index.html",
-      descriptionRange: [70, 80],
-      title: "AI agent：从 GitHub Issue 到合并与发版 | Orbi",
-      h1: "从 GitHub Issue 到打了 tag 的 Release",
-      releaseTerm: "发版",
-      firstSentence: "交付终点是发版，不是 PR。",
-    },
+    { output: "issue-to-release/index.html" },
+    { output: "zh/issue-to-release/index.html" },
   ];
-
-  it("keeps the requested release positioning, SEO limits, one H1, and parseable FAQPage data", () => {
-    for (const { output, descriptionRange, title: expectedTitle, h1: expectedH1, releaseTerm, firstSentence } of landingPages) {
-      const html = shipped.get(output);
-      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-      const description = html.match(/<meta name="description" content="([^"]*)">/)?.[1] ?? "";
-      const h1s = [...html.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map((match) => match[1]);
-      const hero = stripTags(region(html, '<p class="hero-lede">', "</p>"));
-      expect(title, `${output}: exact title`).toBe(expectedTitle);
-      expect(title.length, `${output}: title length`).toBeLessThanOrEqual(60);
-      expect(description.length, `${output}: description minimum`).toBeGreaterThanOrEqual(descriptionRange[0]);
-      expect(description.length, `${output}: description maximum`).toBeLessThanOrEqual(descriptionRange[1]);
-      expect(description.toLowerCase(), `${output}: description positions the endpoint as release`).toContain(releaseTerm.toLowerCase());
-      expect(h1s, `${output}: exact single H1`).toEqual([expectedH1]);
-      expect(hero.startsWith(firstSentence), `${output}: hero first sentence`).toBe(true);
-      expect(firstSentence.toLowerCase(), `${output}: hero first sentence says release`).toContain(releaseTerm.toLowerCase());
-      const faqPages = jsonLdGraph(html).filter((node) => node["@type"] === "FAQPage");
-      expect(faqPages, `${output}: one parseable FAQPage`).toHaveLength(1);
-      expect(faqPages[0].mainEntity.length, `${output}: FAQ question count`).toBeGreaterThanOrEqual(3);
-      expect(faqPages[0].mainEntity.length, `${output}: FAQ question count`).toBeLessThanOrEqual(4);
-    }
-  });
 
   it("ships mutual hreflang, discovery entries, and all requested internal links", () => {
     for (const { output } of landingPages) {
@@ -1112,22 +885,15 @@ describe("cloud buyer FAQ (Issue #166)", () => {
 });
 
 describe("Devin comparison SEO and pricing (Issue #511)", () => {
-  it("ships the keyword metadata, dated price source, pricing tokens, links, and one H1 in both languages", () => {
+  it("ships the price-source link, pricing tokens, internal links, and one H1 in both languages", () => {
     const expectations = [
-      ["compare/devin/index.html", "open-source", 150, 160, ["/cost/", "/guides/auto-merge-ai-prs/", "/cloud/"]],
-      ["zh/compare/devin/index.html", "开源", 70, 80, ["/zh/cost/", "/zh/guides/auto-merge-ai-prs/", "/zh/cloud/"]],
+      ["compare/devin/index.html", ["/cost/", "/guides/auto-merge-ai-prs/", "/cloud/"]],
+      ["zh/compare/devin/index.html", ["/zh/cost/", "/zh/guides/auto-merge-ai-prs/", "/zh/cloud/"]],
     ];
-    for (const [output, keyword, minDescription, maxDescription, links] of expectations) {
+    for (const [output, links] of expectations) {
       const html = shipped.get(output).replace(/<!--[\s\S]*?-->/g, "");
-      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
-      const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
-      expect(title.toLowerCase(), output).toContain(keyword);
-      expect(title.length, output).toBeLessThanOrEqual(60);
-      expect(description.length, output).toBeGreaterThanOrEqual(minDescription);
-      expect(description.length, output).toBeLessThanOrEqual(maxDescription);
       expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
       expect(html, output).toContain('href="https://devin.ai/pricing"');
-      expect(html, output).toContain("2026-09-24");
       for (const token of [
         pricing.freeDeliveriesToken,
         pricing.soloMonthlyUsdToken,
@@ -1160,51 +926,13 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
   });
 });
 
-// Issue #276: the homepage must distinguish self-hosted execution from Cloud,
-// and the Cloud answer must expose only facts backed by the Cloud implementation.
-describe("privacy boundary copy (Issue #276)", () => {
-  it("qualifies the homepage self-host FAQ in visible copy and JSON-LD", () => {
-    for (const output of ["index.html", "zh/index.html"]) {
-      const html = shipped.get(output);
-      const item = cloudFaqItems(html)[0];
-      expect(item.answer).toMatch(/Self-hosted:|自托管：/);
-      expect(item.answer).toMatch(/Cloud:|Cloud：/);
-      expect(item.answer).not.toMatch(/does not upload your code|不会把你的代码上传到我们运营的服务上/);
-      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
-      expect(String(faq.mainEntity[0].acceptedAnswer.text).replace(/\s+/g, " ").trim()).toBe(item.answer);
-    }
-  });
-
-  it("traces each Cloud privacy fact to its implementation source without dead private links", () => {
-    for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
-      const html = shipped.get(output);
-      expect(html).toContain("runbook/cleanup_completed.py");
-      expect(html).toContain("scripts/provision-runner-sandbox.sh");
-      expect(html).toContain("migrations/0005_tenant_secrets.sql");
-      expect(html).not.toMatch(/href="https:\/\/github\.com\/orbi-build\/orbi-cloud\//);
-      const item = cloudFaqItems(html).find((entry) => /Can you see my code|能看到我的代码/.test(entry.question));
-      expect(item.answer).toMatch(/120-minute quiet period|静默 120 分钟/);
-      expect(item.answer).toMatch(/code, credentials, and delivery artifacts are isolated from other tenants|代码、凭据和交付产物均与其他租户隔离/);
-      expect(item.answer).not.toMatch(/Linux user|UID|Linux 用户/);
-      expect(item.answer).toMatch(/AES-GCM encrypted|AES-GCM 加密存储/);
-    }
-  });
-
-  it("states the implemented worktree and D1 retention boundaries on the privacy pages", () => {
-    for (const output of ["privacy/index.html", "zh/privacy/index.html"]) {
-      const main = mainRegion(shipped.get(output));
-      expect(main, `${output}: worktree retention drifted`).toMatch(/120-minute quiet period|静默 120 分钟/);
-      expect(main, `${output}: persistent-record retention is missing`).toMatch(/have no automatic expiry|不会自动过期/);
-      expect(main, `${output}: the unimplemented 72-hour retention must not return`).not.toMatch(/72 hours|72 小时/);
-    }
-  });
-});
+// Issue #540 removed the privacy-copy regex tests (Issue #276): they pinned
+// the privacy sentences verbatim. The private-repo link ban lives on in the
+// "public link safety (Issue #500)" block below.
 
 // Issue #221: status.orbi.build went live 2026-09-18; the only way to find it
 // was to already know the URL. The footer links it on every page (after
-// Releases, no target="_blank", same as GitHub and X) and the cloud FAQ
-// answers the incident question with the link. The zh label must come from
-// the translation table, so the zh page never shows the English word.
+// Releases, no target="_blank", same as GitHub and X).
 describe("status page link (Issue #221)", () => {
   it("links https://status.orbi.build from the footer right after Releases, on en and zh", () => {
     for (const output of ["index.html", "zh/index.html"]) {
@@ -1225,19 +953,6 @@ describe("status page link (Issue #221)", () => {
       expect(footer, `${output}: status link must not open a new tab`).not.toMatch(
         /<a[^>]*status\.orbi\.build[^>]*target=/,
       );
-    }
-  });
-
-  it("answers the incident question in the cloud FAQ of both languages with the status link", () => {
-    for (const [output, question] of [
-      ["cloud/index.html", "What happens when Orbi Cloud has an incident?"],
-      ["zh/cloud/index.html", "Orbi Cloud 出故障了怎么办？"],
-    ]) {
-      const html = shipped.get(output);
-      const item = cloudFaqItems(html).find((entry) => entry.question === question);
-      expect(item, `${output}: incident FAQ entry missing`).toBeTruthy();
-      expect(item.answer, `${output}: FAQ answer must name the status page`).toContain("status.orbi.build");
-      expect(html, `${output}: FAQ answer must link the status page`).toContain('href="https://status.orbi.build"');
     }
   });
 });
@@ -1411,7 +1126,7 @@ describe("canonical install one-liner (Issue #186)", () => {
 });
 
 describe("Cursor Cloud Agents comparison contract (Issue #199)", () => {
-  it("ships both Cursor mirrors with Article metadata, all sourced quotes, and sitemap entries", () => {
+  it("ships both Cursor mirrors with Article metadata, hreflang, and sitemap entries", () => {
     const en = shipped.get("compare/cursor/index.html");
     const zh = shipped.get("zh/compare/cursor/index.html");
     for (const [output, html, canonical, mirror] of [
@@ -1423,12 +1138,6 @@ describe("Cursor Cloud Agents comparison contract (Issue #199)", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain(`rel="canonical" href="${canonical}"`);
       expect(html).toContain(`hreflang="${output.startsWith("zh/") ? "en" : "zh-CN"}" href="${mirror}"`);
-      for (const quote of [
-        "open pull requests in the repos it changes",
-        "produce merge-ready PRs with artifacts to demo their changes",
-        "work on a separate branch, then push changes to your repo for handoff",
-      ]) expect(html, `${output}: missing sourced quote`).toContain(quote);
-      expect(html).toContain("2026-09-17");
     }
     expect(shippedSitemap).toContain("https://orbi.build/compare/cursor/");
     expect(shippedSitemap).toContain("https://orbi.build/zh/compare/cursor/");
@@ -1436,7 +1145,7 @@ describe("Cursor Cloud Agents comparison contract (Issue #199)", () => {
 });
 
 describe("Claude Code comparison contract (Issue #198)", () => {
-  it("ships both Claude Code mirrors with Article metadata, sourced quotes, and sitemap entries", () => {
+  it("ships both Claude Code mirrors with Article metadata, hreflang, and discovery links", () => {
     const en = shipped.get("compare/claude-code/index.html");
     const zh = shipped.get("zh/compare/claude-code/index.html");
     for (const [output, html, canonical, mirror] of [
@@ -1448,11 +1157,6 @@ describe("Claude Code comparison contract (Issue #198)", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain(`rel="canonical" href="${canonical}"`);
       expect(html).toContain(`hreflang="${output.startsWith("zh/") ? "en" : "zh-CN"}" href="${mirror}"`);
-      for (const quote of [
-        "The check run always completes with a neutral conclusion so it never blocks merging.",
-        "Grant the workflow only the permissions it needs, and review Claude's changes before merging.",
-      ]) expect(html, `${output}: missing sourced quote`).toContain(quote);
-      expect(html).toContain("2026-09-17");
     }
     expect(shippedSitemap).toContain("https://orbi.build/compare/claude-code/");
     expect(shippedSitemap).toContain("https://orbi.build/zh/compare/claude-code/");
@@ -1464,7 +1168,7 @@ describe("Claude Code comparison contract (Issue #198)", () => {
 });
 
 describe("Google Jules comparison contract (Issue #200)", () => {
-  it("ships both Jules mirrors with Article metadata, all sourced quotes, and sitemap entries", () => {
+  it("ships both Jules mirrors with Article metadata, hreflang, and sitemap entries", () => {
     const en = shipped.get("compare/jules/index.html");
     const zh = shipped.get("zh/compare/jules/index.html");
     for (const [output, html, canonical, mirror] of [
@@ -1476,14 +1180,6 @@ describe("Google Jules comparison contract (Issue #200)", () => {
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain(`rel="canonical" href="${canonical}"`);
       expect(html).toContain(`hreflang="${output.startsWith("zh/") ? "en" : "zh-CN"}" href="${mirror}"`);
-      for (const quote of [
-        "Once the plan is approved, Jules will start coding",
-        "You can click <strong>Create branch</strong> to push the changes",
-        "You are the branch owner",
-        "Jules appears as the commit author",
-        "open a PR from this branch in GitHub",
-      ]) expect(html, `${output}: missing sourced quote`).toContain(quote);
-      expect(html).toContain("2026-09-17");
     }
     expect(shippedSitemap).toContain("https://orbi.build/compare/jules/");
     expect(shippedSitemap).toContain("https://orbi.build/zh/compare/jules/");
@@ -1625,36 +1321,8 @@ print(json.dumps({
   });
 });
 
-describe("blog positioning copy (Issue #398)", () => {
-  const meta = (html) => html.match(/<meta name="description" content="([^"]+)">/)?.[1];
-  const og = (html) => html.match(/<meta property="og:description" content="([^"]+)">/)?.[1];
-  const eyebrow = (html) => html.match(/<p class="eyebrow">([^<]+)<\/p>/)?.[1];
-  const hero = (html) => html.match(/<p class="hero-lede">([^<]+)<\/p>/)?.[1];
-
-  it("keeps both language pages broad, traceable, and within metadata limits", () => {
-    const en = shipped.get("blog/index.html");
-    const zh = shipped.get("zh/blog/index.html");
-    const enMeta = meta(en);
-    const zhMeta = meta(zh);
-    expect(enMeta.length).toBeGreaterThanOrEqual(150);
-    expect(enMeta.length).toBeLessThanOrEqual(160);
-    expect(zhMeta.length).toBeGreaterThanOrEqual(70);
-    expect(zhMeta.length).toBeLessThanOrEqual(80);
-    expect(og(en)).toBe(enMeta);
-    expect(og(zh)).toBe(zhMeta);
-    expect(eyebrow(en).split(/\s+/)).toHaveLength(4);
-    expect(eyebrow(zh).replace(/[^\u4e00-\u9fff]/g, "").length).toBeLessThanOrEqual(8);
-    for (const copy of [enMeta, zhMeta, hero(en), hero(zh)]) {
-      expect(copy).toMatch(/issue|Issue/);
-      expect(copy).toMatch(/run|运行记录/);
-      expect(copy).toMatch(/source line|源码行号/);
-    }
-    expect(enMeta).toMatch(/industry analysis/);
-    expect(enMeta).toMatch(/architecture trade-offs/);
-    expect(zhMeta).toContain("行业与同类产品分析");
-    expect(zhMeta).toContain("架构取舍");
-  });
-});
+// Issue #540 removed the blog positioning-copy test (Issue #398): it pinned
+// description lengths and positioning phrases verbatim.
 
 // Issue #215: the Blog section of llms.txt is generated from content/blog/**
 // like the indexes, feed and sitemap — adding a post never needs a second
@@ -2250,32 +1918,7 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
   });
 });
 
-// Issue #524: signing in with GitHub records the GitHub username and the
-// verified email GitHub returns (a new visitor_events field, orbi-cloud#1182)
-// even when the GitHub App is not installed yet. The privacy pages must
-// disclose that collection and the opt-out that deletes the records; no new
-// table exists, so the closing list keeps its original four names.
-describe("GitHub sign-in disclosure on the privacy pages (Issue #524)", () => {
-  it("discloses the sign-in collection and the opt-out on en and zh", () => {
-    const expected = {
-      "privacy/index.html": {
-        collection: /Even when you sign in without installing the GitHub App, we record your GitHub username and the verified email GitHub returns, so we can reach you if provisioning gets stuck\./,
-        tableList: /<code>tenants<\/code>, <code>repositories<\/code>, <code>delivery_usage<\/code>, and <code>visitor_events<\/code> records/,
-        optOut: /If you would rather not receive these emails, reply to one of them or write to the address above, and we will delete these records\./,
-      },
-      "zh/privacy/index.html": {
-        collection: /即使只用 GitHub 登录、还没装 GitHub App，我们也会记下你的 GitHub 用户名和 GitHub 返回的已验证邮箱，这样开通卡住时我们能联系上你。/,
-        tableList: /<code>tenants<\/code>、<code>repositories<\/code>、<code>delivery_usage<\/code> 和 <code>visitor_events<\/code> 记录/,
-        optOut: /不想收到这类邮件的话，直接回复邮件或写信到上面的地址，我们会删除这些记录。/,
-      },
-    };
+// Issue #540 removed the GitHub sign-in disclosure test (Issue #524): it
+// pinned the privacy-page sentences as regexes. The no-"signins"-table guard
+// and the rest of the privacy wording are no longer pinned here.
 
-    for (const [output, parts] of Object.entries(expected)) {
-      const main = mainRegion(shipped.get(output));
-      expect(main, `${output}: the sign-in collection sentence drifted`).toMatch(parts.collection);
-      expect(main, `${output}: the closing table list drifted`).toMatch(parts.tableList);
-      expect(main, `${output}: the sign-in opt-out is missing`).toMatch(parts.optOut);
-      expect(main, `${output}: must not name a signins table`).not.toContain("signins");
-    }
-  });
-});

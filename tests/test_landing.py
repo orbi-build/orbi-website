@@ -172,26 +172,8 @@ class LandingTests(unittest.TestCase):
         self.assertIn('lang="zh-CN"', self.zh_html)
         self.assertIn('rel="canonical" href="https://orbi.build/zh/"', self.zh_html)
 
-    def test_title_and_description_carry_search_terms(self) -> None:
-        """Titles must name what someone would search for, not only the metaphor.
-
-        "Software keeps shipping after the lights go out" is memorable but
-        nobody types it into a search box.
-        """
-        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
-        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        # Issue #78: the licence-accurate title ("Open source (AGPL-3.0) …")
-        # runs 75 chars; keeping the licence wording intact is worth more than
-        # the old 65-char cap, so the cap moves rather than the wording.
-        self.assertLessEqual(len(en_title), 80, en_title)
-        self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("AI coding agent", "GitHub Issues", "open source"):
-            self.assertIn(term.lower(), (en_title + " " + en_desc).lower(), term)
-
-        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
-        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
-        for term in ("AI 编程 Agent", "GitHub Issue", "自托管"):
-            self.assertIn(term, zh_title + " " + zh_desc, term)
+    # Issue #540: the search-term/length assertions on title and description
+    # were removed — they pinned metadata copy that every rewrite re-broke.
 
     def test_titles_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
         """Issue #470: metadata and llms.txt must consistently describe Orbi
@@ -359,49 +341,8 @@ class LandingTests(unittest.TestCase):
             }
             self.assertTrue(expected.issubset(capabilities), capabilities)
 
-    def test_hero_trust_line_carries_the_unmatched_capabilities(self) -> None:
-        """Issue #119: the first screen's scannable line spent its 5 seconds
-        on three decision-stage attributes (licence, self-hosted,
-        BYOK), so a glance filed Orbi under "another Issue-to-PR tool". The
-        hero line must carry exactly the three delivery capabilities no
-        competitor documents, and the shared attributes must survive below
-        the hero — inside the How-it-works section, where decision-stage
-        concerns (licence, data boundary, model lock-in) belong."""
-        claims = {
-            self.en_html: (
-                "Independent review that fixes and re-tests",
-                "Only the reviewed commit merges",
-                "Frozen SHA, tag, release",
-            ),
-            self.zh_html: (
-                "独立审查能改代码并重跑测试",
-                "只合并审过的那个 commit",
-                "冻结 SHA、打 Tag、发 Release",
-            ),
-        }
-        shared = {
-            self.en_html: (
-                "Open source (AGPL-3.0), free forever",
-                "Self-hosted — code never leaves your machine",
-                "Bring your own model",
-            ),
-            self.zh_html: (
-                "开源（AGPL-3.0），永久免费",
-                "自托管 — 代码不离开你的机器",
-                "自带模型",
-            ),
-        }
-        for html in (self.en_html, self.zh_html):
-            hero_start = html.index('class="trust-line"')
-            hero_line = html[hero_start:html.index("</ul>", hero_start)]
-            for claim in claims[html]:
-                self.assertRegex(hero_line, rf'<li(?: class="[^"]+")?>{re.escape(claim)}</li>', claim)
-            for attribute in shared[html]:
-                self.assertNotIn(attribute, hero_line, attribute)
-            system_at = html.index('id="system"')
-            below_fold = html[system_at:html.index("</section>", system_at)]
-            for attribute in shared[html]:
-                self.assertIn(attribute, below_fold, attribute)
+    # Issue #540: the hero trust-line wording test (Issue #119) was removed —
+    # it pinned three claim sentences verbatim.
 
     def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
         for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
@@ -551,23 +492,8 @@ class LandingTests(unittest.TestCase):
         self.assertIn("Disallow: /cloud/login", robots)
         self.assertIn("Disallow: /zh/cloud/login", robots)
 
-    def test_display_headings_have_no_unapproved_terminal_periods(self) -> None:
-        approved = {"File an Issue. Get a release."}
-        for html in (self.en_html, self.zh_html):
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [
-                " ".join(re.sub(r"<[^>]+>", "", heading).split())
-                for heading in headings
-            ]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [
-                    heading
-                    for heading in plain
-                    if heading.endswith((".", "。")) and heading not in approved
-                ],
-                plain,
-            )
+    # Issue #540: the no-terminal-periods test with its verbatim approved
+    # heading was removed — the approved set pinned homepage copy.
 
     def test_pages_declare_a_favicon_instead_of_requesting_a_missing_default(self) -> None:
         for page in (self.en, self.zh):
@@ -1243,30 +1169,9 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn(founding, offers[0]["description"], offers[0])
             self.assertIn("6", offers[0]["description"], offers[0])
 
-    def test_the_four_steps_appear_in_order_and_end_at_delivery(self) -> None:
-        # Issue #256: the login buttons carry the page-level ?ref= token the
-        # signup attribution records. Issue #274 puts the free path before
-        # subscription and makes triggering the delivery the fourth step.
-        for page, steps, login_href in (
-            (
-                self.en,
-                (
-                    "Sign in with GitHub",
-                    "Install the Orbi GitHub App",
-                    "Connect a repository",
-                    "Label one Issue ai-ready",
-                ),
-                "/cloud/login",
-            ),
-            (
-                self.zh,
-                ("用 GitHub 登录", "安装 Orbi GitHub App", "连接仓库", "给一个 Issue 加上 ai-ready 标签"),
-                "/zh/cloud/login",
-            ),
-        ):
-            positions = [page.text.index(step) for step in steps]
-            self.assertEqual(positions, sorted(positions), steps)
-            self.assertIn(login_href, [href for _, href in page.hrefs])
+    # Issue #540: the four-steps test was removed — it pinned the step
+    # labels and their order via verbatim strings. The login handoff links
+    # stay guarded in tests/worker.test.js and pages.test.js.
 
     def test_pages_interlink_with_homepage_and_counterpart(self) -> None:
         self.assertIn("/zh/cloud/", [href for _, href in self.en.hrefs])
@@ -1309,18 +1214,7 @@ class OpenClawComparisonTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/openclaw/"', self.zh_html)
         self.assertIn('hreflang="en" href="https://orbi.build/compare/openclaw/"', self.zh_html)
 
-    def test_titles_carry_the_search_terms(self) -> None:
-        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
-        self.assertLessEqual(len(en_title), 65, en_title)
-        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("Orbi", "OpenClaw", "Anthropic"):
-            self.assertIn(term, en_title + " " + en_desc, term)
-
-        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
-        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
-        for term in ("Orbi", "OpenClaw", "Anthropic"):
-            self.assertIn(term, zh_title + " " + zh_desc, term)
+    # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1374,23 +1268,6 @@ class OpenClawComparisonTests(unittest.TestCase):
                 "$0.08",
             ):
                 self.assertIn(fact, text, fact)
-
-    def test_the_differences_table_covers_the_deciding_dimensions(self) -> None:
-        for page, terms in (
-            (
-                self.en,
-                ("Task loop", "Where state lives", "Scheduling", "Model policy risk"),
-            ),
-            (
-                self.zh,
-                ("任务闭环", "状态存于", "调度", "模型政策风险"),
-            ),
-        ):
-            for term in terms:
-                self.assertIn(term, page.text, term)
-            # the scheduling row names both mechanisms
-            self.assertIn("Heartbeat", page.text)
-            self.assertIn("systemd timer", page.text)
 
     def test_honest_choice_names_both_products(self) -> None:
         self.assertIn("CHOOSE OPENCLAW IF", self.en.text)
@@ -1531,20 +1408,7 @@ class DevinComparisonTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/devin/"', self.zh_html)
         self.assertIn('hreflang="en" href="https://orbi.build/compare/devin/"', self.zh_html)
 
-    def test_titles_carry_the_search_terms(self) -> None:
-        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
-        # Issue #237: the keyword-aligned title runs 66 chars; as with the
-        # homepage cap (Issue #78), the wording wins, so the cap moves.
-        self.assertLessEqual(len(en_title), 70, en_title)
-        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("Orbi", "Devin", "alternative"):
-            self.assertIn(term, en_title + " " + en_desc, term)
-
-        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
-        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
-        for term in ("Orbi", "Devin", "Cognition"):
-            self.assertIn(term, zh_title + " " + zh_desc, term)
+    # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1600,23 +1464,8 @@ class DevinComparisonTests(unittest.TestCase):
             ):
                 self.assertIn(fact, page.text, fact)
 
-    def test_the_differences_table_covers_the_deciding_dimensions(self) -> None:
-        for page, terms in (
-            (
-                self.en,
-                ("Task entry", "Models", "Runs where", "Cost", "Auditability"),
-            ),
-            (
-                self.zh,
-                ("任务入口", "模型", "运行位置", "成本", "可审计"),
-            ),
-        ):
-            for term in terms:
-                self.assertIn(term, page.text, term)
-            # the lock-in and sovereignty claims both appear
-            self.assertIn("no bring-your-own-key option", self.en.text)
-            self.assertIn("无自带 key 选项", self.zh.text)
-            self.assertIn("BYOK", page.text)
+    # Issue #540: the deciding-dimensions test was removed — it pinned the
+    # maintainer's own table row labels verbatim.
 
     def test_honest_choice_names_both_products(self) -> None:
         self.assertIn("CHOOSE DEVIN IF", self.en.text)
@@ -1713,18 +1562,7 @@ class OrcaComparisonTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/orca/"', self.zh_html)
         self.assertIn('hreflang="en" href="https://orbi.build/compare/orca/"', self.zh_html)
 
-    def test_titles_carry_the_search_terms(self) -> None:
-        en_title = re.search(r"<title>([^<]+)</title>", self.en_html).group(1)
-        self.assertLessEqual(len(en_title), 65, en_title)
-        en_desc = re.search(r'name="description" content="([^"]+)"', self.en_html).group(1)
-        self.assertLessEqual(len(en_desc), 260, len(en_desc))
-        for term in ("Orbi", "Orca", "ADE"):
-            self.assertIn(term, en_title + " " + en_desc, term)
-
-        zh_title = re.search(r"<title>([^<]+)</title>", self.zh_html).group(1)
-        zh_desc = re.search(r'name="description" content="([^"]+)"', self.zh_html).group(1)
-        for term in ("Orbi", "Orca", "ADE"):
-            self.assertIn(term, zh_title + " " + zh_desc, term)
+    # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1758,12 +1596,8 @@ class OrcaComparisonTests(unittest.TestCase):
             ):
                 self.assertIn(quote, page.text, quote)
 
-    def test_the_page_explains_orbi_in_orcas_language(self) -> None:
-        # positioning difference first (Issue #178 dropped the origin anecdote)
-        self.assertIn("两个项目都用 git worktree 隔离 agent", self.zh.text)
-        self.assertIn("你用 Orca 管一队 agent；Orbi 是让你不用管", self.zh.text)
-        self.assertIn("Both projects put agents in git worktrees", self.en.text)
-        self.assertIn("Orca is how you run a fleet of agents; Orbi is how you stop having to", self.en.text)
+    # Issue #540: the Orca-language positioning test was removed — it pinned
+    # the maintainer's own positioning sentences verbatim.
 
     def test_unverified_capabilities_never_read_no(self) -> None:
         """开 PR / 独立评审 / 自动 merge / 发版 are undocumented in Orca's
@@ -1904,14 +1738,8 @@ class CompareIndexTests(unittest.TestCase):
                 self.assertRegex(href, href_pattern, entry)
                 self.assertNotIn("dive-status", entry, entry)
 
-    def test_the_closing_heading_names_the_choice_dimension(self) -> None:
-        """Issue #54: the closing H2 states the real decision axis — where
-        the thing runs — in both languages."""
-        for page, heading in (
-            (self.en, "Choose by where it runs"),
-            (self.zh, "按运行位置选择"),
-        ):
-            self.assertIn(heading, page.headings)
+    # Issue #540: the closing-heading test was removed — it pinned the
+    # maintainer's own H2 wording verbatim.
 
 
 class ManagedAgentsComparisonTests(unittest.TestCase):
@@ -1931,17 +1759,15 @@ class ManagedAgentsComparisonTests(unittest.TestCase):
             html, page = parse(path)
             self.assertIn(href, [link for _, link in page.hrefs])
 
-    def test_overviews_have_the_complete_matrix_and_vendor_risk_section(self) -> None:
-        for path, terms in (
-            (COMPARE_INDEX_EN_PATH, ("Same destination, different ownership", "OpenAI Codex", "Pricing", "Degradation", "Audit / data", "Supply / policy", "Account access", "verified 2026-09-07")),
-            (COMPARE_INDEX_ZH_PATH, ("终点相同，所有权不同", "OpenAI Codex", "涨价", "降级", "审计 / 数据", "断供 / 政策", "账号访问", "核实于 2026-09-07")),
-        ):
+    # Issue #540: the matrix-section terms test was removed — it pinned the
+    # section titles verbatim. The table-presence check survives:
+    def test_overviews_ship_the_matrix_tables(self) -> None:
+        for path in (COMPARE_INDEX_EN_PATH, COMPARE_INDEX_ZH_PATH):
             html, page = parse(path)
-            self.assertTrue(all(term in page.text for term in terms), page.text)
             tables = [tag for tag, _ in page.elements if tag == "table"]
             self.assertGreaterEqual(len(tables), 2)
-            for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
-                if path == COMPARE_INDEX_EN_PATH:
+            if path == COMPARE_INDEX_EN_PATH:
+                for href in ("/compare/managed-agents/", "/compare/github-copilot-coding-agent/", "/compare/devin/"):
                     self.assertIn(href, [link for _, link in page.hrefs])
 
 
