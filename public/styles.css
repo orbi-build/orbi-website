@@ -440,7 +440,23 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   text-decoration: none;
   text-underline-offset: 4px;
 }
-.hero-alt .orbi-hero-alt-a:hover { color: #fff; text-decoration: underline; }
+.hero-alt .orbi-hero-alt-a,
+.hero-proof .orbi-hero-alt-a {
+  color: #d4e1dd;
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+.hero-alt .orbi-hero-alt-a:hover,
+.hero-proof .orbi-hero-alt-a:hover { color: #fff; text-decoration: underline; }
+/* Issue #534: the cloud hero's evidence-and-price line. Same quiet voice as
+   .hero-alt and the same text-link treatment — no new button. */
+.hero-proof {
+  margin: 0 0 18px;
+  color: #91aaa4;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
 .hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }
 .hero-footnote .orbi-hero-footnote-a { color: var(--ink-soft); }
 

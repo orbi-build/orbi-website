@@ -172,3 +172,99 @@ describe("Cloud onboarding cards fit every supported width (Issue #354)", () => 
     }, 30_000);
   }
 });
+
+// Issue #534: the /cloud/ first screen was a five-line jargon paragraph that
+// almost nobody scrolled past (16 of 208 visitors reached 25% in 7 days).
+// The Issue prescribes the replacement verbatim: a one-sentence lede, then a
+// .hero-proof line linking a real delivery and naming all three prices —
+// prices carried as the build-time tokens the Worker replaces from
+// src/pricing.json, never hard-coded.
+const heroLedes = {
+  "cloud/index.html":
+    '<p class="hero-lede">Label an Issue <code>ai-ready</code>. Orbi writes the change, a separate agent reviews it, then it merges and cuts the release. You read the diff.</p>',
+  "zh/cloud/index.html":
+    '<p class="hero-lede">给 Issue 打上 <code>ai-ready</code> 标签，Orbi 写代码，另一个 agent 独立评审，通过后合并并发布版本。你只需要看 diff。</p>',
+};
+const heroProofs = {
+  "cloud/index.html":
+    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/orbi-build/orbi/1306">See a real delivery: Issue → PR → release, with the token cost →</a><br>Free for the first 3 merged deliveries · Solo US$__SOLO_MONTHLY_USD__/mo · Pro US$__CLOUD_MONTHLY_USD__/mo</p>',
+  "zh/cloud/index.html":
+    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/orbi-build/orbi/1306">看一次真实交付：Issue → PR → Release，附 token 花费 →</a><br>前 3 次合并交付免费 · Solo 每月 US$__SOLO_MONTHLY_USD__ · Pro 每月 US$__CLOUD_MONTHLY_USD__</p>',
+};
+const retiredJargon = {
+  "cloud/index.html": "same GitHub ledger",
+  "zh/cloud/index.html": "同一条 GitHub 账本",
+};
+
+const applyPricing = (text) => {
+  for (const [token, value] of Object.entries(pricingReplacements)) text = text.replaceAll(token, value);
+  return text;
+};
+
+describe("Cloud hero first screen copy and proof link (Issue #534)", () => {
+  for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
+    it(`${output} carries the prescribed lede and proof line in source and build`, async () => {
+      for (const dir of ["site/pages", "public"]) {
+        const html = await readFile(`${dir}/${output}`, "utf8");
+        expect(html, `${dir}/${output}: hero lede`).toContain(heroLedes[output]);
+        expect(html, `${dir}/${output}: hero proof line`).toContain(heroProofs[output]);
+        expect(html, `${dir}/${output}: retired jargon`).not.toContain(retiredJargon[output]);
+      }
+    });
+
+    it(`${output} prices the proof line from src/pricing.json with no leftover token`, async () => {
+      const html = await readFile(`public/${output}`, "utf8");
+      const proof = html.match(/<p class="hero-proof">[\s\S]*?<\/p>/)?.[0];
+      expect(proof, `${output}: hero proof paragraph missing`).toBeTruthy();
+      expect(proof, `${output}: proof link target`).toContain('href="/proof/orbi-build/orbi/1306"');
+      const rendered = applyPricing(proof);
+      expect(rendered, `${output}: Solo price`).toContain(`US$${pricing.soloMonthlyUsd}`);
+      expect(rendered, `${output}: Pro price`).toContain(`US$${pricing.cloudMonthlyUsd}`);
+      expect(rendered, `${output}: leftover placeholder token`).not.toMatch(/__[A-Z_]+__/);
+    });
+  }
+});
+
+describe("Cloud hero first screen geometry (Issue #534)", () => {
+  for (const [name, path] of pages) {
+    for (const [width, height] of [[1440, 900], [390, 844]]) {
+      it(`${name} keeps the proof link and CTA above the fold at ${width}x${height}`, async () => {
+        const page = await browser.newPage({ viewport: { width, height } });
+        try {
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+          await page.evaluate(() => document.fonts.ready);
+          await page.evaluate((replacements) => {
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+              walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(
+                /__[A-Z_]+__/g,
+                (value) => replacements[value] ?? value,
+              );
+            }
+          }, pricingReplacements);
+          const result = await page.evaluate(() => {
+            const proof = document.querySelector(".hero-proof a");
+            const cta = document.querySelector('a[data-cta="cloud-hero"]');
+            return {
+              proofHref: proof?.getAttribute("href") ?? "",
+              proofText: proof?.parentElement?.textContent ?? "",
+              proofBottom: proof?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY,
+              ctaBottom: cta?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY,
+              innerHeight: window.innerHeight,
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            };
+          });
+          expect(result.proofHref, `${path} proof link target`).toBe("/proof/orbi-build/orbi/1306");
+          expect(result.proofText, `${path} Solo price rendered`).toContain(`US$${pricing.soloMonthlyUsd}`);
+          expect(result.proofText, `${path} Pro price rendered`).toContain(`US$${pricing.cloudMonthlyUsd}`);
+          expect(result.proofBottom, `${path} at ${width}px proof link below the fold`).toBeLessThanOrEqual(result.innerHeight);
+          expect(result.ctaBottom, `${path} at ${width}px CTA below the fold`).toBeLessThanOrEqual(result.innerHeight);
+          expect(result.overflow, `${path} at ${width}px horizontal overflow`).toBe(0);
+          await page.screenshot({ path: `.orbi/hero-proof-${name}-${width}.png` });
+        } finally {
+          await page.close();
+        }
+      });
+    }
+  }
+});
