@@ -585,7 +585,10 @@ export function addTableDataLabels(html) {
         const label = tableCellText(cell[1]);
         for (let i = 0; i < colspanOf(cell[0]); i += 1) labels.push(label);
       }
-      if (labels.length >= 4) {
+      // Issue #526: the threshold is 3, not 4 — at phone widths a table-form
+      // 3-column layout crushes its first column below word width and splits
+      // words mid-word, so every 3+-column table stacks row-by-row.
+      if (labels.length >= 3) {
         const headEnd = head.index + head[0].length;
         rendered = withStackClass(opening[0]) + inner.slice(0, headEnd) + labelBodyRows(inner.slice(headEnd), labels);
       }

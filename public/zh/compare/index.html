@@ -142,12 +142,12 @@
         <h2 class="orbi-compare-section-h2" id="risk-title">便利不该等于交出边界</h2>
         <p class="section-lede">当零运维是第一优先级时，托管 agent 可以是正确选择。但它也把五个关键决定留给 vendor：定价、模型容量、数据接触、供给和账号访问。</p>
         <div class="compare-table-wrap">
-          <table class="compare-table compare-table-orbi-last"><thead><tr><th scope="col">风险</th><th scope="col">已发生的案例</th><th scope="col">Orbi 的取舍</th></tr></thead><tbody>
-            <tr><th scope="row">涨价</th><td>Managed Agents 在 token 价格之外增加 $0.08/session-hour。</td><td>硬件和 provider 自选，无 session-hour 费用。</td></tr>
-            <tr><th scope="row">降级</th><td>Anthropic 解释 OpenClaw 事件时说：“Capacity is a resource we manage thoughtfully。”</td><td>在配置里切换 provider 或模型。</td></tr>
-            <tr><th scope="row">审计 / 数据</th><td>云端 agent 执行时，代码、凭证和任务上下文经过 vendor 基础设施。</td><td>代码、密钥和运行证据留在本地。</td></tr>
-            <tr><th scope="row">断供 / 政策</th><td>2026-04-04 Anthropic 调整了 OpenClaw 的订阅通道；用户可能需要改用 API 计费或 Extra Usage。</td><td>BYOK 跨 provider，避免单一供给切断。</td></tr>
-            <tr><th scope="row">账号访问</th><td>托管服务的访问权和 ToS 解释权由 vendor 控制。</td><td>不需要任何 agent vendor 账号。</td></tr>
+          <table class="compare-table compare-table-orbi-last table-stack"><thead><tr><th scope="col">风险</th><th scope="col">已发生的案例</th><th scope="col">Orbi 的取舍</th></tr></thead><tbody>
+            <tr><th scope="row">涨价</th><td data-label="已发生的案例">Managed Agents 在 token 价格之外增加 $0.08/session-hour。</td><td data-label="Orbi 的取舍">硬件和 provider 自选，无 session-hour 费用。</td></tr>
+            <tr><th scope="row">降级</th><td data-label="已发生的案例">Anthropic 解释 OpenClaw 事件时说：“Capacity is a resource we manage thoughtfully。”</td><td data-label="Orbi 的取舍">在配置里切换 provider 或模型。</td></tr>
+            <tr><th scope="row">审计 / 数据</th><td data-label="已发生的案例">云端 agent 执行时，代码、凭证和任务上下文经过 vendor 基础设施。</td><td data-label="Orbi 的取舍">代码、密钥和运行证据留在本地。</td></tr>
+            <tr><th scope="row">断供 / 政策</th><td data-label="已发生的案例">2026-04-04 Anthropic 调整了 OpenClaw 的订阅通道；用户可能需要改用 API 计费或 Extra Usage。</td><td data-label="Orbi 的取舍">BYOK 跨 provider，避免单一供给切断。</td></tr>
+            <tr><th scope="row">账号访问</th><td data-label="已发生的案例">托管服务的访问权和 ToS 解释权由 vendor 控制。</td><td data-label="Orbi 的取舍">不需要任何 agent vendor 账号。</td></tr>
           </tbody></table>
         </div>
         <p class="thesis-punch">托管 agent 的便利，以 vendor 的单方变更权作抵押。Orbi 把这五项风险留在你手里；代价是维护一台机器，收益是你可以自行改变运行方式，不必等待托管 vendor。</p>

@@ -2021,14 +2021,27 @@ h2 {
 
 .compare-table thead th:first-child { z-index: 2; }
 
-/* ≤760px (Issue #522): small tables (3 columns and under) fit the wrapper —
-   no fixed column widths, the browser distributes them, cells tighten and
-   wrap. Tables with 4+ columns carry the build's .table-stack marker and
-   data-labels and stack row-by-row. Desktop is untouched. */
+/* ≤760px (Issue #522, #526): 2-column tables keep their table form — no fixed
+   column widths, the browser distributes them, cells tighten and wrap with
+   break-word, which leaves min-content alone so words are never split
+   mid-word (#526: `anywhere` drops a table cell's min-content to one
+   character and the auto layout crushes the first column). `code` inside
+   those cells keeps `anywhere`: a long identifier may break rather than push
+   the table past the viewport. Tables with 3+ columns carry the build's
+   .table-stack marker and data-labels and stack row-by-row, where `anywhere`
+   is safe — stacked cells are blocks and feed no column-width calculation.
+   Desktop is untouched. */
 @media (max-width: 760px) {
   .compare-table th,
   .compare-table td {
     padding: 12px;
+    overflow-wrap: break-word;
+  }
+
+  .compare-table th code,
+  .compare-table td code,
+  .post-body .post-table-scroll th code,
+  .post-body .post-table-scroll td code {
     overflow-wrap: anywhere;
   }
 
@@ -2053,6 +2066,7 @@ h2 {
     display: block;
     padding: 0;
     border-bottom: 0;
+    overflow-wrap: anywhere;
   }
   .table-stack tbody th { margin: 0 0 10px; }
   .table-stack tbody td { margin: 12px 0 0; }
@@ -2073,7 +2087,7 @@ h2 {
   .post-body .post-table-scroll th,
   .post-body .post-table-scroll td {
     padding: 12px;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 }
 

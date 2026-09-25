@@ -160,15 +160,15 @@
       <h2 class="orbi-compare-section-h2" id="pricing-title">Orbi vs Devin pricing</h2>
       <p class="section-lede">The plans are shaped differently: Orbi can be self-hosted for free under AGPL-3.0, or run as Cloud with a Free, Solo, or Pro plan. Devin lists subscription plans and usage priced by message; the figures below are a dated snapshot.</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr><th scope="col">Plan</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Free</th><td>Self-hosted: $0 under AGPL-3.0, with optional SUL terms; bring your model key. Cloud Free: __FREE_DELIVERIES__ merged deliveries.</td><td>$0 with light quota.</td></tr>
-            <tr><th scope="row">Individual</th><td>Cloud Solo: US$__SOLO_MONTHLY_USD__/month, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository.</td><td>Pro: $20/month.</td></tr>
-            <tr><th scope="row">Team / scale</th><td>Cloud Pro: US$__CLOUD_MONTHLY_USD__/month, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories.</td><td>Max: $200/month; Teams: $80/month plus $40/month per full seat; Enterprise: contact sales.</td></tr>
-            <tr><th scope="row">Meter</th><td>Self-hosted uses your hardware and model provider. Cloud deliveries pause when the included allowance runs out; there is no per-token overage.</td><td>“Cost per message varies based on the model used, the task size and complexity, and the reasoning required.”</td></tr>
+            <tr><th scope="row">Free</th><td data-label="Orbi">Self-hosted: $0 under AGPL-3.0, with optional SUL terms; bring your model key. Cloud Free: __FREE_DELIVERIES__ merged deliveries.</td><td data-label="Devin">$0 with light quota.</td></tr>
+            <tr><th scope="row">Individual</th><td data-label="Orbi">Cloud Solo: US$__SOLO_MONTHLY_USD__/month, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository.</td><td data-label="Devin">Pro: $20/month.</td></tr>
+            <tr><th scope="row">Team / scale</th><td data-label="Orbi">Cloud Pro: US$__CLOUD_MONTHLY_USD__/month, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories.</td><td data-label="Devin">Max: $200/month; Teams: $80/month plus $40/month per full seat; Enterprise: contact sales.</td></tr>
+            <tr><th scope="row">Meter</th><td data-label="Orbi">Self-hosted uses your hardware and model provider. Cloud deliveries pause when the included allowance runs out; there is no per-token overage.</td><td data-label="Devin">“Cost per message varies based on the model used, the task size and complexity, and the reasoning required.”</td></tr>
           </tbody>
         </table>
       </div>
@@ -180,7 +180,7 @@
       <h2 class="orbi-compare-section-h2" id="differences-title">Where Orbi and Devin differ</h2>
       <p class="section-lede">The overlap is real: both take a delegated task and return a reviewed pull request. The differences are about where the code runs, who owns the model, what the work costs, and what you can verify.</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr>
               <th scope="col">Dimension</th>
@@ -191,28 +191,28 @@
           <tbody>
             <tr>
               <th scope="row">Task entry</th>
-              <td>GitHub Issue + <code>ai-ready</code> label — the repository is the queue</td>
-              <td>Slack or Teams tag, web app, Linear/Jira, CLI handoff, API</td>
+              <td data-label="Orbi">GitHub Issue + <code>ai-ready</code> label — the repository is the queue</td>
+              <td data-label="Devin">Slack or Teams tag, web app, Linear/Jira, CLI handoff, API</td>
             </tr>
             <tr>
               <th scope="row">Models</th>
-              <td>BYOK — any OpenAI-compatible endpoint, provider terms vary; switching is a config change</td>
-              <td>Cognition's in-house SWE models on Cognition's infrastructure; no bring-your-own-key option</td>
+              <td data-label="Orbi">BYOK — any OpenAI-compatible endpoint, provider terms vary; switching is a config change</td>
+              <td data-label="Devin">Cognition's in-house SWE models on Cognition's infrastructure; no bring-your-own-key option</td>
             </tr>
             <tr>
               <th scope="row">Runs where</th>
-              <td>Your machine — code and keys never leave it</td>
-              <td>Cognition's cloud workspace</td>
+              <td data-label="Orbi">Your machine — code and keys never leave it</td>
+              <td data-label="Devin">Cognition's cloud workspace</td>
             </tr>
             <tr>
               <th scope="row">Cost</th>
-              <td>Your hardware + your model; no per-task meter, self-hosting free forever</td>
-              <td>Subscription + quota, then on-demand credits (Pro $20/month, Teams from $80/month at verification)</td>
+              <td data-label="Orbi">Your hardware + your model; no per-task meter, self-hosting free forever</td>
+              <td data-label="Devin">Subscription + quota, then on-demand credits (Pro $20/month, Teams from $80/month at verification)</td>
             </tr>
             <tr>
               <th scope="row">Auditability</th>
-              <td>Open source (AGPL-3.0) — the whole delivery chain is readable</td>
-              <td>Closed source — you audit the vendor's promises, not the code</td>
+              <td data-label="Orbi">Open source (AGPL-3.0) — the whole delivery chain is readable</td>
+              <td data-label="Devin">Closed source — you audit the vendor's promises, not the code</td>
             </tr>
           </tbody>
         </table>

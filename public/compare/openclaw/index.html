@@ -156,7 +156,7 @@
       <h2 class="orbi-compare-section-h2" id="differences-title">Where Orbi and OpenClaw differ</h2>
       <p class="section-lede">The shared DNA is real — both are self-hosted and model-agnostic in principle. The differences are about what the agent is for, where its state lives, and how exposed its economics are to one vendor's policy.</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr>
               <th scope="col">Dimension</th>
@@ -167,28 +167,28 @@
           <tbody>
             <tr>
               <th scope="row">Task loop</th>
-              <td>GitHub Issue → agent → reviewed PR → merge</td>
-              <td>Personal assistant, message-driven; no Issue→PR delivery loop</td>
+              <td data-label="Orbi">GitHub Issue → agent → reviewed PR → merge</td>
+              <td data-label="OpenClaw">Personal assistant, message-driven; no Issue→PR delivery loop</td>
             </tr>
             <tr>
               <th scope="row">Where state lives</th>
-              <td>GitHub Issues + labels — the repository is the ledger</td>
-              <td>The framework's own state store</td>
+              <td data-label="Orbi">GitHub Issues + labels — the repository is the ledger</td>
+              <td data-label="OpenClaw">The framework's own state store</td>
             </tr>
             <tr>
               <th scope="row">Scheduling</th>
-              <td>systemd timer polling</td>
-              <td>Heartbeat</td>
+              <td data-label="Orbi">systemd timer polling</td>
+              <td data-label="OpenClaw">Heartbeat</td>
             </tr>
             <tr>
               <th scope="row">Model policy risk</th>
-              <td>BYOK any OpenAI-compatible endpoint, provider terms vary; switching providers is a config change</td>
-              <td>Multi-model (Claude, GPT, local); heavy community reliance on Claude subscriptions until the 2026-04 cutoff</td>
+              <td data-label="Orbi">BYOK any OpenAI-compatible endpoint, provider terms vary; switching providers is a config change</td>
+              <td data-label="OpenClaw">Multi-model (Claude, GPT, local); heavy community reliance on Claude subscriptions until the 2026-04 cutoff</td>
             </tr>
             <tr>
               <th scope="row">Runs where</th>
-              <td>Your machine — self-hosted, open source (AGPL-3.0)</td>
-              <td>Your machine — self-hosted, open source</td>
+              <td data-label="Orbi">Your machine — self-hosted, open source (AGPL-3.0)</td>
+              <td data-label="OpenClaw">Your machine — self-hosted, open source</td>
             </tr>
           </tbody>
         </table>

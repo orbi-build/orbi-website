@@ -1,8 +1,9 @@
-// Issue #522: on phones, tables with 4+ columns stack row-by-row and every
-// cell must therefore know its column's header. The build injects a
-// data-label per <td> (and a .table-stack marker class) at render time; the
-// mobile CSS turns those into the「列名：值」lines. These tests pin the
-// transform itself and the shipped bytes across every table on the site.
+// Issue #522, boundary moved to 3 by Issue #526: on phones, tables with 3+
+// columns stack row-by-row and every cell must therefore know its column's
+// header. The build injects a data-label per <td> (and a .table-stack marker
+// class) at render time; the mobile CSS turns those into the「列名：值」lines.
+// These tests pin the transform itself and the shipped bytes across every
+// table on the site.
 
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -73,14 +74,17 @@ describe("addTableDataLabels (the build-time transform)", () => {
     </tbody>
   </table>`;
 
-  it("leaves tables with three or fewer columns untouched", () => {
-    const three = '<table class="compare-table"><thead><tr><th>a</th><th>b</th><th>c</th></tr></thead><tbody><tr><th scope="row">r</th><td>1</td><td>2</td></tr></tbody></table>';
+  it("leaves 2-column tables untouched", () => {
     const two = "<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
-    expect(addTableDataLabels(three)).toBe(three);
     expect(addTableDataLabels(two)).toBe(two);
   });
 
-  it("marks 4+-column tables .table-stack and labels every td with its header", () => {
+  it("marks 3+-column tables .table-stack and labels every td with its header", () => {
+    const three = '<table class="compare-table"><thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr></thead><tbody><tr><th scope="row">Price</th><td>US$79/mo</td><td>$200+</td></tr></tbody></table>';
+    const threeOut = addTableDataLabels(three);
+    expect(threeOut).toContain('class="compare-table table-stack"');
+    expect(threeOut).toContain('<td data-label="Orbi">US$79/mo</td>');
+    expect(threeOut).toContain('<td data-label="Devin">$200+</td>');
     const out = addTableDataLabels(fourColumn);
     expect(out).toContain('class="compare-table table-stack"');
     expect(out).toContain('<td data-label="Orbi">US$79/mo</td>');
@@ -116,15 +120,15 @@ describe("addTableDataLabels (the build-time transform)", () => {
   });
 });
 
-describe("shipped tables carry their column labels (Issue #522)", () => {
-  it("labels every td of every 4+-column table in public/ and none of the smaller tables", async () => {
+describe("shipped tables carry their column labels (Issue #522, #526)", () => {
+  it("labels every td of every 3+-column table in public/ and none of the smaller tables", async () => {
     const problems = [];
-    let wideTables = 0;
+    let stackedTables = 0;
     for (const file of await listHtml(join(ROOT, "public"))) {
       const html = await readFile(join(ROOT, "public", file), "utf8");
       for (const [tableIndex, table] of parseTables(html).entries()) {
-        if (table.headers.length < 4) {
-          if (table.classes.includes("table-stack")) problems.push(`${file} #${tableIndex}: 3-column table carries .table-stack`);
+        if (table.headers.length < 3) {
+          if (table.classes.includes("table-stack")) problems.push(`${file} #${tableIndex}: 2-column table carries .table-stack`);
           for (const [rowIndex, row] of table.bodyRows.entries()) {
             for (const cell of row) {
               if (cell.hasLabel) problems.push(`${file} #${tableIndex} row ${rowIndex}: small table carries data-label`);
@@ -132,8 +136,8 @@ describe("shipped tables carry their column labels (Issue #522)", () => {
           }
           continue;
         }
-        wideTables += 1;
-        if (!table.classes.includes("table-stack")) problems.push(`${file} #${tableIndex}: 4+-column table lacks .table-stack`);
+        stackedTables += 1;
+        if (!table.classes.includes("table-stack")) problems.push(`${file} #${tableIndex}: 3+-column table lacks .table-stack`);
         for (const [rowIndex, row] of table.bodyRows.entries()) {
           for (const cell of row) {
             if (cell.tag !== "td") continue;
@@ -145,9 +149,10 @@ describe("shipped tables carry their column labels (Issue #522)", () => {
         }
       }
     }
-    // The 8-column matrix, the 7-column capability matrix and the 5-column
-    // cost quantiles table, each in both languages.
-    expect(wideTables, "expected the six wide tables").toBe(6);
+    // The 8-column matrix, the 7-column capability matrix, the 5-column cost
+    // quantiles table, every 3-column compare/cost/blog table — 46 tables,
+    // each page paired with its ZH mirror.
+    expect(stackedTables, "expected the stacked tables").toBe(46);
     expect(problems, problems.join("\n")).toEqual([]);
   });
 
@@ -165,13 +170,18 @@ describe("shipped tables carry their column labels (Issue #522)", () => {
     ]);
   });
 
-  it("leaves the /compare/keelen/ 3-column table unlabelled", async () => {
+  it("stacks and labels the /compare/keelen/ 3-column table (Issue #526)", async () => {
     const html = await readFile(join(ROOT, "public", "compare", "keelen", "index.html"), "utf8");
     const tables = parseTables(html);
     expect(tables).toHaveLength(1);
     expect(tables[0].headers).toHaveLength(3);
-    expect(tables[0].classes).not.toContain("table-stack");
-    expect(tables[0].bodyRows.flat().some((cell) => cell.hasLabel)).toBe(false);
+    expect(tables[0].classes).toContain("table-stack");
+    const tds = tables[0].bodyRows.flat().filter((cell) => cell.tag === "td");
+    expect(tds.length, "keelen body has labelled cells").toBeGreaterThan(0);
+    for (const cell of tds) {
+      expect(cell.hasLabel, `keelen td under column ${cell.index} carries its header`).toBe(true);
+      expect(cell.label).toBe(tables[0].headers[cell.index]);
+    }
   });
 
   it("drops min-width: 620px from the stylesheet and stacks via attr(data-label)", async () => {
