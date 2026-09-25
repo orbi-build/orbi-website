@@ -2250,3 +2250,33 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
     }
   });
 });
+
+// Issue #524: signing in with GitHub records the GitHub username and the
+// verified email GitHub returns (a new visitor_events field, orbi-cloud#1182)
+// even when the GitHub App is not installed yet. The privacy pages must
+// disclose that collection and the opt-out that deletes the records; no new
+// table exists, so the closing list keeps its original four names.
+describe("GitHub sign-in disclosure on the privacy pages (Issue #524)", () => {
+  it("discloses the sign-in collection and the opt-out on en and zh", () => {
+    const expected = {
+      "privacy/index.html": {
+        collection: /Even when you sign in without installing the GitHub App, we record your GitHub username and the verified email GitHub returns, so we can reach you if provisioning gets stuck\./,
+        tableList: /<code>tenants<\/code>, <code>repositories<\/code>, <code>delivery_usage<\/code>, and <code>visitor_events<\/code> records/,
+        optOut: /If you would rather not receive these emails, reply to one of them or write to the address above, and we will delete these records\./,
+      },
+      "zh/privacy/index.html": {
+        collection: /即使只用 GitHub 登录、还没装 GitHub App，我们也会记下你的 GitHub 用户名和 GitHub 返回的已验证邮箱，这样开通卡住时我们能联系上你。/,
+        tableList: /<code>tenants<\/code>、<code>repositories<\/code>、<code>delivery_usage<\/code> 和 <code>visitor_events<\/code> 记录/,
+        optOut: /不想收到这类邮件的话，直接回复邮件或写信到上面的地址，我们会删除这些记录。/,
+      },
+    };
+
+    for (const [output, parts] of Object.entries(expected)) {
+      const main = mainRegion(shipped.get(output));
+      expect(main, `${output}: the sign-in collection sentence drifted`).toMatch(parts.collection);
+      expect(main, `${output}: the closing table list drifted`).toMatch(parts.tableList);
+      expect(main, `${output}: the sign-in opt-out is missing`).toMatch(parts.optOut);
+      expect(main, `${output}: must not name a signins table`).not.toContain("signins");
+    }
+  });
+});
