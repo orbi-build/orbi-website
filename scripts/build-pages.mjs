@@ -820,7 +820,7 @@ const POST_LANG = {
 
 // A post's page: the rendered CommonMark body inside the post template, with
 // the shared nav and footer rendered exactly as for site/pages/**.
-function renderSubscribe(lang, returnPath) {
+function renderSubscribe(lang) {
   const zh = lang === "zh";
   return fill(SUBSCRIBE_PARTIAL, {
     SUBSCRIBE_TITLE: zh ? "每周一个真实交付" : "One real delivery, every week",
@@ -830,7 +830,6 @@ function renderSubscribe(lang, returnPath) {
     SUBSCRIBE_LABEL: zh ? "邮箱地址" : "Email address",
     SUBSCRIBE_PLACEHOLDER: zh ? "你的邮箱" : "you@example.com",
     SUBSCRIBE_LANG: lang,
-    SUBSCRIBE_RETURN: returnPath,
     SUBSCRIBE_BUTTON: zh ? "订阅" : "Subscribe",
     SUBSCRIBE_NOTE: zh ? "每周一封，讲一次真实交付。随时退订。" : "One email a week about one real delivery. Unsubscribe anytime.",
   });
@@ -864,7 +863,7 @@ function renderPost(post, template) {
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
     BODY: post.html,
-    SUBSCRIBE: renderSubscribe(post.lang, post.href),
+    SUBSCRIBE: renderSubscribe(post.lang),
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
 }

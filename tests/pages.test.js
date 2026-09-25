@@ -83,7 +83,6 @@ describe("email subscription forms (Issue #442)", () => {
       expect(html, output).toContain('action="/subscribe"');
       expect(html, output).toContain('name="email"');
       expect(html, output).toContain('name="lang"');
-      expect(html, output).toContain('name="return_to"');
       expect(html, output).toMatch(/<form class="subscribe-form"[\s\S]*data-subscribe-status[\s\S]*<\/form>/);
       expect(html, output).toContain("subscribe.js");
     }

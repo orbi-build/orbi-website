@@ -656,32 +656,13 @@ async function handleFetch(request, env, ctx) {
     return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins);
 }
 
-// A same-origin redirect from <path> to <path>/ is the Assets binding's
-// trailing-slash canonicalisation; anything else is not ours to follow.
-function subscriptionReturnUrl(value, request, lang) {
-  const fallback = new URL(lang === "zh" ? "/zh/" : "/", request.url);
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
-  try {
-    const target = new URL(value.slice(0, 500), request.url);
-    return target.origin === fallback.origin ? target : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function subscriptionResponse(request, status, body) {
-  const wantsJson = (request.headers.get("Accept") || "").includes("application/json");
-  if (wantsJson) {
-    const { return_to: _returnTo, ...jsonBody } = body;
-    return new Response(JSON.stringify(jsonBody), {
-      status,
-      headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
-    });
-  }
-  const location = subscriptionReturnUrl(body.return_to, request);
-  if (status >= 200 && status < 300) location.searchParams.set("subscribed", "1");
-  else location.searchParams.set("subscribe_error", status === 400 ? "invalid" : "unavailable");
-  return Response.redirect(location, 303);
+// Issue #541: the subscription endpoint answers JSON only — the form is
+// submitted by subscribe.js, so the no-JS 303 redirect branch is gone.
+function subscriptionResponse(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS },
+  });
 }
 
 async function subscribeResponse(request, env) {
@@ -692,16 +673,14 @@ async function subscribeResponse(request, env) {
       ? await request.json()
       : Object.fromEntries(await request.formData());
   } catch {
-    return subscriptionResponse(request, 400, { error: "invalid_request", return_to: new URL(request.url).pathname });
+    return subscriptionResponse(400, { error: "invalid_request" });
   }
   const email = typeof fields?.email === "string" ? fields.email.trim() : "";
   const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
-  const returnUrl = subscriptionReturnUrl(fields?.return_to, request, lang);
-  const return_to = `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
-  if (!email || !lang) return subscriptionResponse(request, 400, { error: "invalid_request", return_to });
+  if (!email || !lang) return subscriptionResponse(400, { error: "invalid_request" });
   if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {
     console.error("subscribe_unavailable: Cloud subscription configuration is missing");
-    return subscriptionResponse(request, 503, { error: "unavailable", return_to });
+    return subscriptionResponse(503, { error: "unavailable" });
   }
   const payload = {
     email,
@@ -720,15 +699,15 @@ async function subscribeResponse(request, env) {
       signal: AbortSignal.timeout(5000),
     });
     const response = await (env.CLOUD ? env.CLOUD.fetch(cloudRequest) : fetch(cloudRequest));
-    if (response.status === 400) return subscriptionResponse(request, 400, { error: "invalid_email", return_to });
+    if (response.status === 400) return subscriptionResponse(400, { error: "invalid_email" });
     if (!response.ok) {
       console.error("subscribe_upstream_rejected", response.status);
-      return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+      return subscriptionResponse(502, { error: "unavailable" });
     }
-    return subscriptionResponse(request, 200, { ok: true, return_to });
+    return subscriptionResponse(200, { ok: true });
   } catch (err) {
     console.error("subscribe_failed:", err && err.message ? err.message : err);
-    return subscriptionResponse(request, 502, { error: "unavailable", return_to });
+    return subscriptionResponse(502, { error: "unavailable" });
   }
 }
 

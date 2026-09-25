@@ -24,9 +24,5 @@
         button.disabled = false;
       }
     });
-    const outcome = new URLSearchParams(location.search);
-    if (outcome.get("subscribed") === "1") status.textContent = success;
-    if (outcome.get("subscribe_error") === "invalid") status.textContent = invalid;
-    if (outcome.get("subscribe_error") === "unavailable") status.textContent = unavailable;
   }
 })();
