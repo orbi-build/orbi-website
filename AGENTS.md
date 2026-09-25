@@ -220,8 +220,8 @@ are permanently diverged — every promotion is a true merge, never a fast-forwa
   (`orbi-applications-test`) and never writes the production database.
 - Production deployment is a manual `workflow_dispatch` of
   `.github/workflows/deploy-production.yml`; merging into `main` does not
-  trigger it (Issue #210). The workflow runs the soak gate,
-  required-reviewer approval on the `production` GitHub Environment, the full test
+  trigger it (Issue #210). The workflow runs required-reviewer approval on the
+  `production` GitHub Environment, the full test
   set, `wrangler deploy`, then an HTTP content smoke (the real-browser smoke was
   removed from this workflow on 2026-09-10). A smoke failure triggers an
   automatic `wrangler rollback` to the previous production version and reds the
@@ -246,29 +246,11 @@ gh pr create --repo orbi-build/orbi-website --base main --head promote/<date> \
   --title "晋升 beta 快照到 main：<一句话概括>" --body-file <evidence body>
 ```
 
-The production workflow requires the resulting merge commit to have that beta
-snapshot as its second parent. It finds the first successful Deploy beta run
-whose `headSha` is the snapshot or a descendant, and measures soak from that
-workflow run's deployment time. A newer commit on `beta` does not alter the
-snapshot or reset its soak. If no successful beta deployment contains the
-snapshot, the gate fails with `this snapshot has not been deployed to beta`.
-
 Before opening the PR:
 
 - **Merge preflight**, no working-tree change:
   `git fetch origin && git merge-tree --write-tree --name-only origin/main promote/<date>`.
   Conflicts are listed under the tree hash; fix them on the snapshot branch first.
-- **Soak reality check.** The soak gate (`PROD_MIN_SOAK_HOURS`, repo variable,
-  default 4) protects real users, so it may be skipped only when there are none.
-  Check active subscriptions read-only against the control-plane database, but
-  record only the conclusion in the promotion issue: `有活跃订阅，须满足 soak` or
-  `无活跃订阅，可 skip_soak` — never record a count or other operating data:
-  `timeout 90 npx wrangler d1 execute orbi_control_plane_e2e --remote --command "SELECT status, COUNT(*) AS n FROM subscriptions GROUP BY status" --json`
-  (run from an orbi-cloud checkout). `subscriptions=0` means the wait protects
-  nobody: merge any time and, if the soak job would still fail, dispatch with
-  `skip_soak=true` (the documented hotfix path — it skips soak, never approval).
-  Any active subscription still uses the beta deployment time, not the commit
-  author time.
 - **Drill the anti-drift gate.** A gate that has never been seen red is not
   evidence of anything (Issue #151: the pricing gate existed only on `beta` while
   `main` shipped stale copy). On the branch about to be promoted:
