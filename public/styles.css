@@ -434,12 +434,6 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   font-size: 0.84rem;
   line-height: 1.5;
 }
-.hero-alt .orbi-hero-alt-a {
-  color: #d4e1dd;
-  font-weight: 600;
-  text-decoration: none;
-  text-underline-offset: 4px;
-}
 .hero-alt .orbi-hero-alt-a,
 .hero-proof .orbi-hero-alt-a {
   color: #d4e1dd;
