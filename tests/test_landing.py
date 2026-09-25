@@ -928,25 +928,21 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
-        # the soak gate: the promoted snapshot must have completed a successful
-        # beta deployment before the approval-gated deploy job starts, so a
-        # rejected promotion never requests the approver's attention; the
-        # hotfix escape skips soak but never the environment approval
-        self.assertIn("actions: read", workflow)
-        soak_at = workflow.index("  soak:")
-        deploy_at = workflow.index("  deploy:")
-        self.assertLess(soak_at, deploy_at)
+        # Issue #539: the beta-stability wait gate added in #450 is gone —
+        # no pre-deploy check job between require-main and deploy, no
+        # workflow_dispatch input, no repository variable, and no
+        # `actions: read` permission that existed only to feed that job's
+        # API calls. The approval gate and the rollback stay.
+        jobs = re.findall(r"^  (\S+):", workflow.split("\njobs:\n", 1)[1], re.M)
+        self.assertEqual(jobs, ["require-main", "deploy"])
+        self.assertIn("needs: require-main", workflow)
         # the first `environment: production` declaration belongs to the
-        # deploy job — the soak job must run without waiting for approval
+        # deploy job — the approval still gates the deploy itself
+        deploy_at = workflow.index("  deploy:")
         self.assertLess(deploy_at, workflow.index("environment: production"))
-        self.assertIn("needs: soak", workflow)
-        self.assertIn("workflow_dispatch:", workflow)
-        self.assertIn("skip_soak", workflow)
-        self.assertLess(workflow.index("workflow_dispatch:"), workflow.index("skip_soak"))
-        self.assertIn("PROD_MIN_SOAK_HOURS", workflow)
-        self.assertIn("scripts/check-beta-soak.mjs", workflow)
-        self.assertIn("actions/workflows/deploy-beta.yml/runs?status=success", workflow)
-        self.assertIn("git fetch origin beta", workflow)
+        self.assertNotIn("inputs:", workflow)
+        self.assertNotIn("PROD_MIN_", workflow)
+        self.assertNotIn("actions: read", workflow)
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
