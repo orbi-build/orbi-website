@@ -100,7 +100,8 @@ const LANG = {
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
-    otherLangLabel: "中文",
+    otherLangLabel: "ZH",
+    otherLangAria: "简体中文",
     langPrefix: "",
     tagline: "Software production that survives the session.",
     footerNavAria: "Footer navigation",
@@ -136,9 +137,10 @@ const LANG = {
     cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
     langGroupAria: "语言",
-    currentLangLabel: "中文",
+    currentLangLabel: "ZH",
     otherLangAttr: "en",
     otherLangLabel: "EN",
+    otherLangAria: "English",
     langPrefix: "/zh",
     tagline: "不会随 Session 消失的软件生产。",
     footerNavAria: "页脚导航",
@@ -184,7 +186,7 @@ export function renderNav(page, partial = NAV_PARTIAL) {
   const costAttrs = n.costCurrent ? ' aria-current="page"' : "";
   const join = n.compareCostSameLine ? "" : "\n        ";
   const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
-  const otherLine = `<a href="${n.langSwitchHref}" lang="${t.otherLangAttr}">${t.otherLangLabel}</a>`;
+  const otherLine = `<a href="${n.langSwitchHref}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
   const [lineA, lineB] = n.langCurrentFirst
     ? [currentLine, otherLine]
     : [otherLine, currentLine];
@@ -263,6 +265,7 @@ export function renderFooter(page) {
     LANG_SWITCH_HREF: `/${page.mirror.replace(/index\.html$/, "")}`.replace("//", "/"),
     OTHER_LANG_ATTR: t.otherLangAttr,
     OTHER_LANG_LABEL: t.otherLangLabel,
+    OTHER_LANG_ARIA: t.otherLangAria,
     DEEP_ARIA: t.deepAria,
     DEEP_SPAN: t.deepSpan,
     DEEP_LINKS: deepLinks,

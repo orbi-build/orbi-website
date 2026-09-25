@@ -31,8 +31,8 @@
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- No Noto Sans SC: the only CJK on this page is the 中文 language link,
-       which the system CJK face covers. The Chinese page still loads it. -->
+  <!-- No Noto Sans SC here: this page is English-only (the ZH/EN switch is
+       pure ASCII, Issue #519); the Chinese page loads it. -->
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 
@@ -81,7 +81,7 @@
         <a class="nav-apply" href="/cloud/">Start Cloud</a>
         <span class="language" role="group" aria-label="Language">
           <span aria-current="page">EN</span>
-          <a href="/zh/compare/openclaw/" lang="zh-CN">中文</a>
+          <a href="/zh/compare/openclaw/" lang="zh-CN" aria-label="简体中文">ZH</a>
         </span>
       </nav>
     </header>
@@ -302,7 +302,7 @@
         <li><a href="/support/">Support</a></li>
         <li><a href="/#direction">Direction</a></li>
         <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
-        <li><a href="/zh/compare/openclaw/" lang="zh-CN">中文</a></li>
+        <li><a href="/zh/compare/openclaw/" lang="zh-CN" aria-label="简体中文">ZH</a></li>
         <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
         <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
       </ul>

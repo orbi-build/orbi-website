@@ -299,9 +299,14 @@ class LandingTests(unittest.TestCase):
                 self.assertIn(f">{label}<", primary_nav)
 
     def test_language_switch_uses_readable_names(self) -> None:
+        # Issue #519: pure ASCII ZH/EN — 「中文」 renders as tofu on systems
+        # with no CJK font; the full target name lives in aria-label.
         for html in (self.en_html, self.zh_html):
             self.assertIn(">EN<", html)
-            self.assertIn(">中文<", html)
+            self.assertIn(">ZH<", html)
+            self.assertNotIn(">中文<", html)
+        self.assertIn('aria-label="简体中文"', self.en_html)
+        self.assertIn('aria-label="English"', self.zh_html)
 
     def test_mobile_navigation_exposes_an_accessible_toggle(self) -> None:
         for page in (self.en, self.zh):
