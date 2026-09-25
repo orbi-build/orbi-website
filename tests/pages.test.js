@@ -637,12 +637,54 @@ describe("one unified footer on every content page", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = pathToHref(page.mirror);
-      const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">/g)]
+      const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
       expect(navSwitch, `${page.output}: nav language switch`).toEqual([expected]);
-      const footerSwitch = [...footerRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">/g)]
+      const footerSwitch = [...footerRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
       expect(footerSwitch, `${page.output}: footer language switch`).toEqual([expected]);
+    }
+  });
+});
+
+// Issue #519: the switch must read on systems with no CJK font installed,
+// where 「中文」 renders as tofu boxes. The visible label is pure ASCII
+// (ZH/EN); the full target-language name lives in aria-label for screen
+// readers. Flags emoji are banned too (Windows shows no flag emoji).
+describe("ASCII language switch with aria-labels (Issue #519)", () => {
+  const switchAnchors = (html) =>
+    [...html.matchAll(/<a href="[^"]*" lang="(?:zh-CN|en)"[^>]*>[^<]*<\/a>/g)];
+
+  it("ships no 中文 switch label and no flag emoji on any built page", () => {
+    for (const [output, html] of shipped) {
+      if (!output.endsWith(".html")) continue;
+      expect(html, `${output}: 中文 switch label`).not.toContain(">中文<");
+      expect(html, `${output}: flag emoji`).not.toMatch(/🇨🇳|🇬🇧/);
+    }
+  });
+
+  it("labels every switch link with visible ZH/EN only", () => {
+    for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
+      const html = shipped.get(page.output);
+      const anchors = switchAnchors(html);
+      expect(anchors.length, `${page.output}: nav + footer switch anchors`).toBe(2);
+      for (const [tag] of anchors) {
+        const label = tag.match(/>([^<]*)<\/a>/)[1];
+        expect(["ZH", "EN"], `${page.output}: visible switch label on ${tag}`).toContain(label);
+      }
+    }
+  });
+
+  it("names the switch target language in full via aria-label", () => {
+    for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
+      const html = shipped.get(page.output);
+      for (const [tag] of switchAnchors(html)) {
+        const lang = tag.match(/lang="([^"]+)"/)[1];
+        const aria = tag.match(/aria-label="([^"]+)"/)?.[1];
+        expect(aria, `${page.output}: aria-label on ${tag}`).toBe(
+          lang === "zh-CN" ? "简体中文" : "English",
+        );
+      }
     }
   });
 });
@@ -2087,7 +2129,7 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
 
   const switchTargets = async (outDir, output) => {
     const html = await readFile(join(outDir, output), "utf8");
-    return [...html.matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)">[^<]*<\/a>/g)].map((m) => m[1]);
+    return [...html.matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>[^<]*<\/a>/g)].map((m) => m[1]);
   };
 
   it("publishes the same-slug pair, the declared pair and both single-language posts", async () => {
