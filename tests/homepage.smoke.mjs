@@ -1182,7 +1182,10 @@ const cloudPages = {
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
-      "tagged GitHub Release",
+      // Issue #534: the hero lede is now the one-sentence delivery claim; the
+      // release boundary it names is pinned here (the old five-line lede was
+      // the only body-text carrier of "tagged GitHub Release").
+      "merges and cuts the release",
       "cuts the tag",
       "closes the milestone",
       // the release boundary: you start it, Orbi runs it
