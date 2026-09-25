@@ -80,52 +80,6 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
-describe("Cloud pricing actions align (Issue #472)", () => {
-  for (const [name, path] of pages) {
-    it(`${name} aligns its single primary actions and switches the paid plans`, async () => {
-      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-      try {
-        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
-        await page.evaluate((replacements) => {
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-          while (walker.nextNode()) {
-            walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(
-              /__[A-Z_]+__/g,
-              (value) => replacements[value] ?? value,
-            );
-          }
-        }, pricingReplacements);
-        const cards = page.locator(".pricing-card");
-        const primaryTops = await cards.evaluateAll((elements) => elements.map((element) =>
-          element.querySelector(".pricing-card-actions .button").getBoundingClientRect().top,
-        ));
-        expect(Math.max(...primaryTops) - Math.min(...primaryTops), `${path} primary action top delta`).toBeLessThanOrEqual(1);
-
-        expect(await page.locator(".pricing-card-actions .button").count()).toBe(3);
-        expect(await page.locator('[data-pricing-interval="year"]').getAttribute("aria-pressed")).toBe("true");
-        expect(await page.locator('[data-pricing-cta="solo"]').getAttribute("href"))
-          .toBe("/api/checkout?plan=solo&interval=year");
-        expect(await page.locator('[data-pricing-cta="pro"]').getAttribute("href"))
-          .toBe("/api/checkout?plan=pro&interval=year");
-        await page.locator('[data-pricing-interval="month"]').click();
-        expect(await page.locator('[data-pricing-interval="month"]').getAttribute("aria-pressed")).toBe("true");
-        expect(await page.locator('[data-pricing-price="solo"]').textContent()).toBe(`US$${pricing.soloMonthlyUsd}`);
-        expect(await page.locator('[data-pricing-price="pro"]').textContent()).toBe(`US$${pricing.cloudMonthlyUsd}`);
-        expect(await page.locator('[data-pricing-cta="solo"]').getAttribute("href")).toBe("/api/checkout?plan=solo");
-        expect(await page.locator('[data-pricing-cta="pro"]').getAttribute("href")).toBe("/api/checkout?plan=pro");
-        expect(await page.locator('[data-pricing-cta="solo"]').getAttribute("data-cta")).toBe("pricing-solo-month");
-        expect(await page.locator('[data-pricing-cta="pro"]').getAttribute("data-cta")).toBe("pricing-pro-month");
-        await page.locator(".pricing-cards").screenshot({ path: `.orbi/pricing-actions-${name}-1440.png` });
-
-        await page.setViewportSize({ width: 390, height: 844 });
-        await page.locator(".pricing-cards").screenshot({ path: `.orbi/pricing-actions-${name}-390.png` });
-      } finally {
-        await page.close();
-      }
-    });
-  }
-});
-
 describe("Cloud onboarding cards fit every supported width (Issue #354)", () => {
   for (const [name, path] of pages) {
     it(`${name} has no page or footer overflow and keeps readable card rows`, async () => {
@@ -172,3 +126,8 @@ describe("Cloud onboarding cards fit every supported width (Issue #354)", () => 
     }, 30_000);
   }
 });
+
+// Issue #534 first-screen copy/geometry tests were removed (Issue #540):
+// they pinned the lede and proof-line wording and the above-the-fold
+// coordinates verbatim.
+

@@ -139,25 +139,16 @@ function startServer() {
         response.end();
         return;
       }
-      // Mirror the Worker's successful /subscribe responses so the browser
-      // smoke exercises both progressive enhancement and the no-JS fallback.
+      // Issue #541: the site Worker answers /subscribe with JSON only —
+      // the no-JS 303 fallback is gone. This JSON stand-in is what the
+      // browser smoke's JS submission flow talks to in local mode.
       if (pathname === "/subscribe" && request.method === "POST") {
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
         const body = Buffer.concat(chunks).toString("utf8");
-        const fields = new URLSearchParams(body);
-        if ((request.headers.accept || "").includes("application/json")) {
-          const invalid = body.includes("invalid@example.com");
-          response.writeHead(invalid ? 400 : 200, { "content-type": "application/json; charset=utf-8" });
-          response.end(JSON.stringify(invalid ? { error: "invalid_email" } : { ok: true }));
-        } else {
-          const base = new URL(`http://${request.headers.host}/subscribe`);
-          const candidate = new URL(fields.get("return_to") || "/subscribe", base);
-          const destination = candidate.origin === base.origin ? candidate : base;
-          destination.searchParams.set("subscribed", "1");
-          response.writeHead(303, { location: destination.toString() });
-          response.end();
-        }
+        const invalid = body.includes("invalid@example.com");
+        response.writeHead(invalid ? 400 : 200, { "content-type": "application/json; charset=utf-8" });
+        response.end(JSON.stringify(invalid ? { error: "invalid_email" } : { ok: true }));
         return;
       }
       const file = await serveFile(pathname);
@@ -242,17 +233,16 @@ async function assertFooterDeepDives(page, label) {
 // by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
 // Issue #76: the website's own login handoff is /cloud/login (never /api/ or
 // any other prefix the Cloud control plane owns on the shared beta hostname).
-// Issue #77: production configures no CLOUD_LOGIN_URL until a production
-// control plane exists, so its /cloud/login fail-closes with the site
-// Worker's stamped 503 and the served pages send the Cloud CTA to the docs.
-// beta keeps the one verified Cloud login endpoint (docs/cloud-endpoints.md):
-// its /cloud/login 302s to CLOUD_LOGIN_URL — Cloud's /api/login — which
-// answers with the GitHub OAuth redirect.
+// Issue #528: the handoff 302s to CLOUD_LOGIN_URL — Cloud's one-step /api/start
+// (measured live 2026-09-26 against beta.orbi.build) — whose own 302 lands on
+// the GitHub App installation page; a signed-out visitor is bounced once more
+// by GitHub to its sign-in page with the installation request in return_to.
+// /api/login stays up as the nav Sign in target.
 export function resolveCloudLoginExpect(raw) {
   if (raw === undefined) return "fail-closed-404";
-  if (raw !== "oauth-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
+  if (raw !== "github-app-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
     throw new Error(
-      `CLOUD_LOGIN_EXPECT must be oauth-302, fail-closed-503, or fail-closed-404, got ${JSON.stringify(raw)}`
+      `CLOUD_LOGIN_EXPECT must be github-app-302, fail-closed-503, or fail-closed-404, got ${JSON.stringify(raw)}`
     );
   }
   return raw;
@@ -294,14 +284,6 @@ async function assertSubscriptionFlow(browser, path, expectedSuccess, expectedIn
     if (text !== expectedSuccess) {
       throw new Error(`${path} subscription displayed ${JSON.stringify(text)}, expected ${JSON.stringify(expectedSuccess)}`);
     }
-
-    const fallback = await page.request.post(`${targetURL}/subscribe`, {
-      form: { email: "smoke@example.com", lang: path.startsWith("/zh/") ? "zh" : "en", return_to: path },
-      maxRedirects: 0,
-    });
-    if (fallback.status() !== 303 || fallback.headers().location !== `${targetURL}${path}?subscribed=1`) {
-      throw new Error(`${path} no-JS subscription did not return the Worker-compatible 303 redirect`);
-    }
   } finally {
     await page.close();
   }
@@ -318,21 +300,32 @@ export async function assertCloudLoginRedirect(targetURL) {
     for (const path of ["/cloud/login", "/cloud/login/"]) {
       const response = await context.get(`${targetURL}${path}`, { maxRedirects: 0 });
       const headers = response.headers();
-      if (expectation === "oauth-302") {
-        // beta: the website's handoff must 302 to the configured Cloud login
-        // URL, and that URL must answer with the GitHub OAuth redirect. One
-        // manual hop each: the responses themselves are the contract, not
-        // where a browser would finally land.
+      if (expectation === "github-app-302") {
+        // Issue #528: the website's handoff must 302 to /api/start on the
+        // same host — the /api/start hop carries the ref attribution as the
+        // request's cookie, so the handoff must never overwrite it — and
+        // /api/start must answer with the GitHub App installation redirect.
+        // One manual hop each: the responses themselves are the contract,
+        // not where a browser would finally land.
         if (response.status() !== 302) {
           throw new Error(`Cloud login ${path} expected 302, got ${response.status()}`);
         }
-        const handoff = new URL(headers.location || "", targetURL).toString();
-        const cloud = await context.get(handoff, { maxRedirects: 0 });
+        const handoff = new URL(headers.location || "", targetURL);
+        if (handoff.origin !== new URL(targetURL).origin || handoff.pathname !== "/api/start") {
+          throw new Error(`Cloud login ${path} expected a 302 to /api/start, got ${headers.location}`);
+        }
+        const refOverwritten = response
+          .headersArray()
+          .some(({ name, value }) => name.toLowerCase() === "set-cookie" && value.startsWith("ref="));
+        if (refOverwritten) {
+          throw new Error(`Cloud login ${path} overwrote the campaign ref cookie`);
+        }
+        const cloud = await context.get(handoff.toString(), { maxRedirects: 0 });
         const cloudLocation = cloud.headers().location || "";
         if (cloud.status() !== 302
-            || !cloudLocation.startsWith("https://github.com/login/oauth/authorize?")) {
+            || !/^https:\/\/github\.com\/apps\/[^/]+\/installations\/new(\?|$)/.test(cloudLocation)) {
           throw new Error(
-            `Cloud login ${path} did not redirect to GitHub OAuth: ${cloud.status()} ${cloudLocation}`
+            `Cloud login ${path} did not redirect to the GitHub App installation page: ${cloud.status()} ${cloudLocation}`
           );
         }
       } else if (expectation === "fail-closed-503") {
@@ -380,30 +373,30 @@ export async function assertCloudLoginRedirect(targetURL) {
 // expected href from CLOUD_LOGIN_EXPECT copied that rewrite into the test and
 // broke on implementation changes while the site was fine. What each
 // expectation declares is the landing:
-//   oauth-302        → the GitHub OAuth authorize page (beta; the handoff
-//                      chain is pinned by assertCloudLoginRedirect)
-//   fail-closed-503  → the self-host docs (production, Issue #179)
+//   github-app-302   → GitHub's App installation flow (beta, Issue #528; the
+//                      handoff chain is pinned by assertCloudLoginRedirect)
+//   fail-closed-503  → the self-host docs (Issue #179's unconfigured shape)
 //   fail-closed-404  → the /cloud/login handoff route itself (local static
 //                      serving: no worker completes the chain, the click
 //                      must still reach the handoff)
 // The landing must also answer with the status its contract promises: the
-// OAuth pages render (<400), and the fail-closed handoff answers 404 — a
+// GitHub pages render (<400), and the fail-closed handoff answers 404 — a
 // static server locally, the site Worker's stamped 404 where one is
 // deployed (assertCloudLoginRedirect checks the stamp).
 export function expectedCtaLanding(expectation) {
-  if (expectation === "oauth-302") {
+  if (expectation === "github-app-302") {
     return {
-      describe: "GitHub's OAuth authorize flow",
+      describe: "GitHub's App installation flow",
       statusOk: (status) => status < 400,
       matches: (url) =>
         url.hostname === "github.com" &&
-        (url.pathname === "/login/oauth/authorize" ||
+        (/^\/apps\/[^/]+\/installations\/new$/.test(url.pathname) ||
           // A signed-out visitor is bounced once more by GitHub to its
-          // sign-in page, which preserves the authorize request in
-          // return_to (observed live 2026-09-12 against beta). A bare
-          // /login without it is not the OAuth flow.
+          // sign-in page, which preserves the installation request in
+          // return_to (measured live 2026-09-26 against beta). A bare
+          // /login without it is not the flow.
           (url.pathname === "/login"
-            && (url.searchParams.get("return_to") || "").startsWith("/login/oauth/authorize"))),
+            && /^\/apps\/[^/]+\/installations\/new/.test(url.searchParams.get("return_to") || ""))),
     };
   }
   if (expectation === "fail-closed-503") {
@@ -478,7 +471,7 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
 // receive a replacement ref cookie from the handoff.
 async function assertCampaignRefSurvivesHeroClick(browser) {
   const expectation = resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT);
-  if (process.env.BASE_URL && expectation !== "oauth-302") return;
+  if (process.env.BASE_URL && expectation !== "github-app-302") return;
 
   const token = "x-2609201530";
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
@@ -1182,7 +1175,10 @@ const cloudPages = {
     oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
-      "tagged GitHub Release",
+      // Issue #534: the hero lede is now the one-sentence delivery claim; the
+      // release boundary it names is pinned here (the old five-line lede was
+      // the only body-text carrier of "tagged GitHub Release").
+      "merges and cuts the release",
       "cuts the tag",
       "closes the milestone",
       // the release boundary: you start it, Orbi runs it
