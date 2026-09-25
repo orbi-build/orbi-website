@@ -25,8 +25,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Self-hosted Devin alternative: Orbi vs Devin | Orbi</title>
-  <meta name="description" content="Orbi vs Devin: compare self-hosted GitHub delivery with Cognition's hosted engineer, including task entry, execution, review, billing, and ownership now.">
+  <title>Open-source Devin alternative, self-hosted | Orbi</title>
+  <meta name="description" content="Open-source (AGPL-3.0) Orbi is a self-hosted Devin alternative that takes GitHub Issues to reviewed pull requests and releases, with a price-model comparison.">
   <link rel="canonical" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
@@ -53,8 +53,8 @@
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- No Noto Sans SC: the only CJK on this page is the 中文 language link,
-       which the system CJK face covers. The Chinese page still loads it. -->
+  <!-- No Noto Sans SC here: this page is English-only (the ZH/EN switch is
+       pure ASCII, Issue #519); the Chinese page loads it. -->
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 
@@ -81,6 +81,18 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Is Orbi an open-source Devin alternative?","acceptedAnswer":{"@type":"Answer","text":"Yes. Orbi is available under AGPL-3.0, and it is designed for self-hosted GitHub delivery from Issue to reviewed pull request and release."}},
+    {"@type":"Question","name":"Can I self-host Orbi?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can self-host Orbi on your own machine with your own model key. Orbi Cloud is the hosted option when you want Orbi to run the delivery line for you."}},
+    {"@type":"Question","name":"How is Orbi priced compared with Devin?","acceptedAnswer":{"@type":"Answer","text":"Self-hosted Orbi is free under AGPL-3.0, with your hardware and model provider as your costs. Orbi Cloud has Free, Solo, and Pro plans; Devin lists subscription plans and message-based usage pricing. See the cost comparison and the dated price table."}},
+    {"@type":"Question","name":"Does Orbi merge its own pull requests?","acceptedAnswer":{"@type":"Answer","text":"Orbi can merge a delivery's pull request only after an independent review, passing CI, and an exact reviewed head check. Read how Orbi auto-merges AI pull requests safely."}}
+  ]
+}
+</script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -90,9 +102,9 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="compare-title">
-        <p class="eyebrow">Comparison · facts verified 2026-09-07</p>
-        <h1 id="compare-title">Orbi vs Devin</h1>
-        <p class="hero-lede"><strong>Hire an engineer, or run a delivery line.</strong> Devin is Cognition's managed autonomous engineer: you delegate from Slack or the web, it works in Cognition's cloud, and it returns pull requests. Orbi is a self-hosted delivery system: your machine, your model keys, your GitHub queue. Both end in a reviewed PR — the real comparison is who owns the machine, the model, and the meter. Every claim below carries a source.</p>
+        <p class="eyebrow">Comparison · sources dated below</p>
+        <h1 id="compare-title">Open-source Devin alternative: Orbi vs Devin</h1>
+        <p class="hero-lede"><strong>Hire an engineer, or run a delivery line.</strong> Devin is Cognition's managed autonomous engineer: you delegate from Slack or the web, it works in Cognition's cloud, and it returns pull requests. Orbi is an open-source (AGPL-3.0), self-hosted delivery system: your machine, your model keys, your GitHub queue. Both end in a reviewed PR — the real comparison is who owns the machine, the model, and the meter. Every claim below carries a source.</p>
         <div class="cta-row">
           <a class="button button-signal" href="https://docs.orbi.build">Self-host Orbi</a>
           <a class="button button-ghost" href="/compare/">All comparisons</a>
@@ -141,6 +153,26 @@
         </ol>
         <p class="thesis-punch">A meter that reads work you cannot fully predict, priced in a structure the vendor can rewrite — it already has been rewritten once. Predictable cost is cost whose unit you control: your machine, your model, your meter.</p>
       </div>
+    </section>
+
+    <section class="compare-section shell compare-section-tint" aria-labelledby="pricing-title">
+      <p class="section-tag">PRICE MODELS</p>
+      <h2 class="orbi-compare-section-h2" id="pricing-title">Orbi vs Devin pricing</h2>
+      <p class="section-lede">The plans are shaped differently: Orbi can be self-hosted for free under AGPL-3.0, or run as Cloud with a Free, Solo, or Pro plan. Devin lists subscription plans and usage priced by message; the figures below are a dated snapshot.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr><th scope="col">Plan</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Free</th><td>Self-hosted: $0 under AGPL-3.0, with optional SUL terms; bring your model key. Cloud Free: __FREE_DELIVERIES__ merged deliveries.</td><td>$0 with light quota.</td></tr>
+            <tr><th scope="row">Individual</th><td>Cloud Solo: US$__SOLO_MONTHLY_USD__/month, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository.</td><td>Pro: $20/month.</td></tr>
+            <tr><th scope="row">Team / scale</th><td>Cloud Pro: US$__CLOUD_MONTHLY_USD__/month, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories.</td><td>Max: $200/month; Teams: $80/month plus $40/month per full seat; Enterprise: contact sales.</td></tr>
+            <tr><th scope="row">Meter</th><td>Self-hosted uses your hardware and model provider. Cloud deliveries pause when the included allowance runs out; there is no per-token overage.</td><td>“Cost per message varies based on the model used, the task size and complexity, and the reasoning required.”</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src-note">Devin prices and billing wording: <a class="orbi-src-note-a" href="https://devin.ai/pricing" rel="noopener">official Devin pricing</a>, fetched 2026-09-24; the page also lists a “Dedicated deployment option” for Enterprise. Orbi Cloud prices and allowances: <a class="orbi-src-note-a" href="/cloud/#pricing">Orbi Cloud pricing</a>.</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="differences-title">
@@ -220,11 +252,27 @@
       </div>
     </section>
 
+    <section class="compare-section compare-section-tint shell faq" id="faq" aria-labelledby="faq-title">
+      <p class="section-tag">COMMON QUESTIONS</p>
+      <h2 class="orbi-compare-section-h2" id="faq-title">Open-source Devin alternative FAQ</h2>
+      <div class="faq-list">
+        <details class="faq-item" open><summary><span>01</span>Is Orbi an open-source Devin alternative?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Yes. Orbi is available under <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE" rel="noopener">AGPL-3.0</a>, and it is designed for self-hosted GitHub delivery from Issue to reviewed pull request and release.</p></div></details>
+        <details class="faq-item"><summary><span>02</span>Can I self-host Orbi?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Yes. You can self-host Orbi on your own machine with your own model key. <a href="/cloud/">Orbi Cloud</a> is the hosted option when you want Orbi to run the delivery line for you.</p></div></details>
+        <details class="faq-item"><summary><span>03</span>How is Orbi priced compared with Devin?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Self-hosted Orbi is free under AGPL-3.0, with your hardware and model provider as your costs. Orbi Cloud has Free, Solo, and Pro plans; Devin lists subscription plans and message-based usage pricing. See the <a href="/cost/">cost comparison</a> and the dated <a href="#pricing-title">price table</a>.</p></div></details>
+        <details class="faq-item"><summary><span>04</span>Does Orbi merge its own pull requests?</summary><div class="faq-answer"><p class="orbi-faq-answer-p">Orbi can merge a delivery's pull request only after an independent review, passing CI, and an exact reviewed head check. Read <a href="/guides/auto-merge-ai-prs/">how Orbi auto-merges AI pull requests safely</a>.</p></div></details>
+      </div>
+    </section>
+
     <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
       <p class="section-tag">PROVENANCE</p>
       <h2 class="orbi-compare-section-h2" id="sources-title">Sources and verification dates</h2>
-      <p class="section-lede">Every factual claim on this page maps to one of these. All were checked on 2026-09-07; this page is a snapshot, so re-check the sources before you bet architecture on them. One caveat we state openly: devin.ai's own pricing page was not directly reachable at verification time (it sat behind an access wall), so the billing facts above come from Devin's official documentation instead.</p>
+      <p class="section-lede">Every factual claim on this page maps to a dated source below. The product and documentation sources were checked on 2026-09-07; Devin's pricing page was fetched on 2026-09-24. This page is a snapshot, so re-check the sources before you bet architecture on them.</p>
       <ul class="source-list">
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://devin.ai/pricing" rel="noopener">Devin official pricing</a> — Free, Pro, Max, Teams, and Enterprise plans; message-based usage wording; dedicated deployment option</strong>
+          <span class="source-date">fetched 2026-09-24</span>
+          <small>devin.ai/pricing</small>
+        </li>
         <li class="orbi-source-list-li">
           <strong ><a class="orbi-source-list-a" href="https://cognition.com" rel="noopener">Cognition official site</a> — "the first autonomous software engineer," in-house SWE model line, named customers</strong>
           <span class="source-date">verified 2026-09-07</span>

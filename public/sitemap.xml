@@ -51,7 +51,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/devin/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -114,7 +114,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/openclaw/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/openclaw/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -132,7 +132,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/orca/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/orca/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -177,9 +177,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/issue-to-release/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/issue-to-release/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/issue-to-release/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/issue-to-release/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://orbi.build/privacy/</loc>
@@ -389,6 +398,15 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://orbi.build/zh/issue-to-release/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/issue-to-release/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/issue-to-release/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/issue-to-release/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/privacy/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/privacy/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/privacy/"/>
@@ -416,10 +434,28 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/orbi-is-open-source-again/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
     <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
