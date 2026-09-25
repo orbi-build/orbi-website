@@ -139,25 +139,16 @@ function startServer() {
         response.end();
         return;
       }
-      // Mirror the Worker's successful /subscribe responses so the browser
-      // smoke exercises both progressive enhancement and the no-JS fallback.
+      // Issue #541: the site Worker answers /subscribe with JSON only —
+      // the no-JS 303 fallback is gone. This JSON stand-in is what the
+      // browser smoke's JS submission flow talks to in local mode.
       if (pathname === "/subscribe" && request.method === "POST") {
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
         const body = Buffer.concat(chunks).toString("utf8");
-        const fields = new URLSearchParams(body);
-        if ((request.headers.accept || "").includes("application/json")) {
-          const invalid = body.includes("invalid@example.com");
-          response.writeHead(invalid ? 400 : 200, { "content-type": "application/json; charset=utf-8" });
-          response.end(JSON.stringify(invalid ? { error: "invalid_email" } : { ok: true }));
-        } else {
-          const base = new URL(`http://${request.headers.host}/subscribe`);
-          const candidate = new URL(fields.get("return_to") || "/subscribe", base);
-          const destination = candidate.origin === base.origin ? candidate : base;
-          destination.searchParams.set("subscribed", "1");
-          response.writeHead(303, { location: destination.toString() });
-          response.end();
-        }
+        const invalid = body.includes("invalid@example.com");
+        response.writeHead(invalid ? 400 : 200, { "content-type": "application/json; charset=utf-8" });
+        response.end(JSON.stringify(invalid ? { error: "invalid_email" } : { ok: true }));
         return;
       }
       const file = await serveFile(pathname);
@@ -293,14 +284,6 @@ async function assertSubscriptionFlow(browser, path, expectedSuccess, expectedIn
     const text = (await status.textContent())?.trim();
     if (text !== expectedSuccess) {
       throw new Error(`${path} subscription displayed ${JSON.stringify(text)}, expected ${JSON.stringify(expectedSuccess)}`);
-    }
-
-    const fallback = await page.request.post(`${targetURL}/subscribe`, {
-      form: { email: "smoke@example.com", lang: path.startsWith("/zh/") ? "zh" : "en", return_to: path },
-      maxRedirects: 0,
-    });
-    if (fallback.status() !== 303 || fallback.headers().location !== `${targetURL}${path}?subscribed=1`) {
-      throw new Error(`${path} no-JS subscription did not return the Worker-compatible 303 redirect`);
     }
   } finally {
     await page.close();
