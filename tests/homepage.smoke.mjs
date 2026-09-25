@@ -2442,7 +2442,8 @@ async function main() {
     await page.waitForLoadState("networkidle");
     if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
     await assertFooterDeepDives(page, "/compare/cursor/");
-    if ((await page.getByRole("link", { name: "中文", exact: true }).getAttribute("href")) !== "/zh/compare/cursor/") throw new Error("detail language switch is wrong");
+    // Issue #519: the switch link's accessible name is its aria-label now.
+    if ((await page.getByRole("link", { name: "简体中文", exact: true }).getAttribute("href")) !== "/zh/compare/cursor/") throw new Error("detail language switch is wrong");
     await page.getByRole("heading", { name: "Orbi vs Cursor Cloud Agents", exact: true }).waitFor();
     await page.screenshot({ path: `${artifacts}/comparison-cursor.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
