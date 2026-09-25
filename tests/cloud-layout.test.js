@@ -187,9 +187,9 @@ const heroLedes = {
 };
 const heroProofs = {
   "cloud/index.html":
-    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/orbi-build/orbi/1306">See a real delivery: Issue → PR → release, with the token cost →</a><br>Free for the first 3 merged deliveries · Solo US$__SOLO_MONTHLY_USD__/mo · Pro US$__CLOUD_MONTHLY_USD__/mo</p>',
+    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/xiaods/k8e/612">See a real delivery on a user\'s repo (k8e): Issue → PR → release, with the token cost →</a><br>Model usage included: Solo US$__SOLO_MONTHLY_USD__/mo (__SOLO_INCLUDED_TOKENS__ tokens) · Pro US$__CLOUD_MONTHLY_USD__/mo (__INCLUDED_TOKENS__ tokens) · first 3 merged deliveries free</p>',
   "zh/cloud/index.html":
-    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/orbi-build/orbi/1306">看一次真实交付：Issue → PR → Release，附 token 花费 →</a><br>前 3 次合并交付免费 · Solo 每月 US$__SOLO_MONTHLY_USD__ · Pro 每月 US$__CLOUD_MONTHLY_USD__</p>',
+    '<p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/xiaods/k8e/612">看一次用户仓库上的真实交付（k8e）：Issue → PR → Release，附 token 花费 →</a><br>含模型用量：Solo 每月 US$__SOLO_MONTHLY_USD__（__SOLO_INCLUDED_TOKENS__ token）· Pro 每月 US$__CLOUD_MONTHLY_USD__（__INCLUDED_TOKENS__ token）· 前 3 次合并交付免费</p>',
 };
 const retiredJargon = {
   "cloud/index.html": "same GitHub ledger",
@@ -216,10 +216,12 @@ describe("Cloud hero first screen copy and proof link (Issue #534)", () => {
       const html = await readFile(`public/${output}`, "utf8");
       const proof = html.match(/<p class="hero-proof">[\s\S]*?<\/p>/)?.[0];
       expect(proof, `${output}: hero proof paragraph missing`).toBeTruthy();
-      expect(proof, `${output}: proof link target`).toContain('href="/proof/orbi-build/orbi/1306"');
+      expect(proof, `${output}: proof link target`).toContain('href="/proof/xiaods/k8e/612"');
       const rendered = applyPricing(proof);
       expect(rendered, `${output}: Solo price`).toContain(`US$${pricing.soloMonthlyUsd}`);
       expect(rendered, `${output}: Pro price`).toContain(`US$${pricing.cloudMonthlyUsd}`);
+      expect(rendered, `${output}: Solo model usage`).toContain(String(pricing.soloIncludedTokensLabel));
+      expect(rendered, `${output}: Pro model usage`).toContain(String(pricing.includedTokensLabel));
       expect(rendered, `${output}: leftover placeholder token`).not.toMatch(/__[A-Z_]+__/);
     });
   }
@@ -254,9 +256,11 @@ describe("Cloud hero first screen geometry (Issue #534)", () => {
               overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
             };
           });
-          expect(result.proofHref, `${path} proof link target`).toBe("/proof/orbi-build/orbi/1306");
+          expect(result.proofHref, `${path} proof link target`).toBe("/proof/xiaods/k8e/612");
           expect(result.proofText, `${path} Solo price rendered`).toContain(`US$${pricing.soloMonthlyUsd}`);
           expect(result.proofText, `${path} Pro price rendered`).toContain(`US$${pricing.cloudMonthlyUsd}`);
+          expect(result.proofText, `${path} Solo model usage rendered`).toContain(String(pricing.soloIncludedTokensLabel));
+          expect(result.proofText, `${path} Pro model usage rendered`).toContain(String(pricing.includedTokensLabel));
           expect(result.proofBottom, `${path} at ${width}px proof link below the fold`).toBeLessThanOrEqual(result.innerHeight);
           expect(result.ctaBottom, `${path} at ${width}px CTA below the fold`).toBeLessThanOrEqual(result.innerHeight);
           expect(result.overflow, `${path} at ${width}px horizontal overflow`).toBe(0);
