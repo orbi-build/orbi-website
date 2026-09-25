@@ -2057,14 +2057,19 @@ h2 {
   .table-stack thead { display: none; }
   .table-stack tbody tr {
     display: block;
-    padding: 14px 0;
+    /* 12px sides = space-3, the same cell inset the non-stacked form uses, so
+       stacked text and the Orbi tint stop hugging the wrapper border (#531). */
+    padding: 14px 12px;
     border-bottom: 1px solid var(--line);
   }
   .table-stack tbody tr:last-child { border-bottom: 0; }
   .table-stack tbody th,
   .table-stack tbody td {
     display: block;
-    padding: 0;
+    /* 8px sides = space-2: the Orbi mint tint wraps its text instead of
+       butting against it (#531); the row title shares it to keep one left
+       rail across the stacked row. */
+    padding: 0 8px;
     border-bottom: 0;
     overflow-wrap: anywhere;
   }

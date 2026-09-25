@@ -45,6 +45,36 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
+// Issue #531: stacked cell text must clear the wrapper's inner border by 8px
+// on both sides. The distance is measured on the rendered text via Range
+// rects — the td's box padding alone proves nothing about where the glyphs sit.
+function stackedInsetProblems() {
+  const problems = [];
+  const tables = [...document.querySelectorAll(".compare-table.table-stack")];
+  tables.forEach((table, index) => {
+    const wrap = table.closest(".compare-table-wrap");
+    if (!wrap) return;
+    const innerLeft = wrap.getBoundingClientRect().left + wrap.clientLeft;
+    const innerRight = innerLeft + wrap.clientWidth;
+    [...table.querySelector("tbody tr").querySelectorAll("td")].forEach((cell) => {
+      if (cell.textContent.trim() === "") return;
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+      const label = cell.getAttribute("data-label") ?? cell.textContent.trim().slice(0, 20);
+      if (rects.length === 0) {
+        problems.push(`table #${index} "${label}": no text rects`);
+        return;
+      }
+      const left = Math.min(...rects.map((rect) => rect.left)) - innerLeft;
+      const right = innerRight - Math.max(...rects.map((rect) => rect.right));
+      if (left < 8) problems.push(`table #${index} "${label}": text ${left.toFixed(1)}px from the left border`);
+      if (right < 8) problems.push(`table #${index} "${label}": text ${right.toFixed(1)}px from the right border`);
+    });
+  });
+  return { tableCount: tables.length, problems };
+}
+
 // Issue #522: on phones the 8-column comparison table stacks row-by-row (the
 // build labels every cell with its column header), and 3-column tables fit
 // the viewport without horizontal scrolling. Desktop keeps the scrollable
@@ -84,6 +114,11 @@ describe("compare tables remain usable on mobile (Issue #522)", () => {
         for (const label of result.labels.slice(1)) {
           expect(label, `${route} cells name their columns`).not.toBe("none");
         }
+        // Issue #531: stacked text keeps ≥ 8px of air from the wrapper's
+        // inner border on both sides — across every stacked table on the page.
+        const inset = await page.evaluate(stackedInsetProblems);
+        expect(inset.tableCount, `${route} stacked tables found`).toBeGreaterThan(0);
+        expect(inset.problems, `${route} stacked text hugs the border`).toEqual([]);
         await page.screenshot({ path: `.orbi/compare-stack-${route.includes("zh") ? "zh" : "en"}-390.png`, fullPage: false });
       } finally {
         await page.close();
@@ -119,6 +154,10 @@ describe("compare tables remain usable on mobile (Issue #522)", () => {
         for (const label of result.labels) {
           expect(label, `${route} cells name their columns`).not.toBe("none");
         }
+        // Issue #531: same border clearance on the 3-column stacked form.
+        const inset = await page.evaluate(stackedInsetProblems);
+        expect(inset.tableCount, `${route} stacked tables found`).toBeGreaterThan(0);
+        expect(inset.problems, `${route} stacked text hugs the border`).toEqual([]);
         await page.screenshot({ path: `.orbi/compare-keelen-${route.includes("zh") ? "zh" : "en"}-390.png`, fullPage: false });
       } finally {
         await page.close();
@@ -254,4 +293,29 @@ describe("no table page splits words on mobile (Issue #526)", () => {
       `forced anywhere on table-form cells must produce mid-word splits, got: ${splits.join("; ") || "none"}`,
     ).toBeGreaterThan(0);
   }, 60_000);
+});
+
+// Issue #531: the fix lives in two rules — the row's `padding: 14px 12px` and
+// the cells' `padding: 0 8px`. The counter-evidence restores both to their
+// pre-#531 values (the row alone would still leave the cells' own 8px, which
+// exactly meets the ≥ 8px bar) and the same detector that the route tests rely
+// on must go red against that restored state.
+describe("stacked table text clears the wrapper border (Issue #531)", () => {
+  it("counter-evidence: restoring the pre-#531 paddings makes the inset detector go red", async () => {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    try {
+      await page.goto(`${origin}/compare/`, { waitUntil: "load", timeout: 25_000 });
+      await page.addStyleTag({
+        content: ".table-stack tbody tr { padding: 14px 0; }"
+          + " .table-stack tbody th, .table-stack tbody td { padding: 0; }",
+      });
+      const inset = await page.evaluate(stackedInsetProblems);
+      expect(
+        inset.problems.length,
+        `pre-#531 paddings must produce border-hugging text, got: ${inset.problems.join("; ") || "none"}`,
+      ).toBeGreaterThan(0);
+    } finally {
+      await page.close();
+    }
+  }, 30_000);
 });
