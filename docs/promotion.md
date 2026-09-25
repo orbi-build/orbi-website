@@ -21,30 +21,22 @@ gh pr create --repo orbi-build/orbi-website --base main --head promote/<date> \
   --title "晋升 beta 快照到 main：<一句话概括>" --body-file <evidence body>
 ```
 
-The production workflow takes the second parent of the resulting merge commit
-as the snapshot. It lists successful `deploy-beta.yml` runs, finds the first
-run whose `headSha` is that snapshot or a descendant, and measures soak from
-that run's deployment time. Later commits on `beta` do not change the gate.
-
-Merging it does not deploy anything: production deploys are a manual
-`workflow_dispatch` only (Issue #210 — the push-triggered run was always a
-redundant twin of the dispatch). After the merge, a human dispatches the
+Merging the PR does not deploy anything: production deploys are a
+manual `workflow_dispatch` only (Issue #210 — the push-triggered run was always
+a redundant twin of the dispatch). After the merge, a human dispatches the
 workflow:
 
 ```
 gh workflow run deploy-production.yml --repo orbi-build/orbi-website --ref main
 ```
 
-1. **Soak gate** — beta commits newer than the last successful production
-   deploy must have spent `PROD_MIN_SOAK_HOURS` (repo variable, default 4) on
-   origin/beta. A failed soak blocks the deploy without paging anyone.
-2. **Deploy** — build, full test set, `wrangler deploy`.
-3. **Smoke** — h1 comparison of the live pages against the deployed commit
+1. **Deploy** — build, full test set, `wrangler deploy`.
+2. **Smoke** — h1 comparison of the live pages against the deployed commit
    (the real-browser check was removed from this workflow on 2026-09-10);
    any failure rolls production back to the previous version automatically.
 
 The PR never merges itself (`allow_auto_merge` is false) — a human picks the
-merge moment, which is how the soak window is honored.
+merge moment.
 
 ## Before opening the PR
 
@@ -56,24 +48,6 @@ merge moment, which is how the soak window is honored.
   ```
 
   Conflicts are listed under the tree hash; fix them on the snapshot branch first.
-
-- **Soak reality check.** The soak gate protects real users, so it may be
-  skipped only when there are none. Check active subscriptions with a
-  read-only query against the control-plane database, but record only the
-  conclusion in the promotion issue: `有活跃订阅，须满足 soak` or
-  `无活跃订阅，可 skip_soak` — never record a count or other operating data:
-
-  ```
-  cd <orbi-cloud checkout>
-  timeout 90 npx wrangler d1 execute orbi_control_plane_e2e --remote \
-    --command "SELECT status, COUNT(*) AS n FROM subscriptions GROUP BY status" --json
-  ```
-
-  `subscriptions=0` → the soak wait protects nobody; merge any time and, if
-  the soak job would still fail, dispatch the workflow with `skip_soak=true`
-  (the documented hotfix path). Any active subscription → wait for the
-  snapshot's successful beta deployment to reach `PROD_MIN_SOAK_HOURS`; commit
-  author timestamps are not used.
 
 - **Before-state on production** (the promotion must move these):
 
