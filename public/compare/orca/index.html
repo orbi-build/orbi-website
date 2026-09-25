@@ -124,18 +124,18 @@
         <h2 class="orbi-compare-section-h2" id="surface-title">A workbench you operate, or a line that delivers</h2>
         <p class="section-lede">The two products agree on one thing — agents isolated in git worktrees — and diverge on who does the operating. Cells we could not verify in Orca's official materials read “Not verified”, never “No”.</p>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col">Dimension</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Positioning</th><td>Unattended delivery line: GitHub Issues in, tagged Releases out</td><td>“The AI Orchestrator for 100x builders” — the ADE for a fleet of parallel agents (official)</td></tr>
-              <tr><th scope="row">The human's place</th><td>Outside the loop: open the Issue, apply <code>ai-ready</code>, read the evidence</td><td>In the middle, operating: annotate diffs, steer agents, “review, edit, and commit without leaving Orca” (official)</td></tr>
-              <tr><th scope="row">Task entry</th><td>GitHub Issue + <code>ai-ready</code> label</td><td>Desktop app, mobile companion, and CLI (<code>orca worktree create</code>); no unattended queue documented</td></tr>
-              <tr><th scope="row">Opens the delivery PR</th><td>Yes</td><td>Not verified — browsing PRs in-app is documented; an agent opening the delivery PR is not</td></tr>
-              <tr><th scope="row">Independent review (can edit code and rerun tests)</th><td>Yes — an independent session repairs the code and reruns the suite</td><td>Not verified — the documented review is a human annotating the diff</td></tr>
-              <tr><th scope="row">Auto-merge</th><td>Yes — merges the exact reviewed head</td><td>Not verified — “merge the winner” refers to comparing parallel agent outputs, not a documented PR auto-merge</td></tr>
-              <tr><th scope="row">Tag / Release</th><td>Yes — freezes the SHA, tags, publishes the Release</td><td>Not verified</td></tr>
-              <tr><th scope="row">Form factor</th><td>Self-hosted CLI + systemd on your machine; hosted Cloud pilot</td><td>Desktop (macOS/Windows/Linux), mobile (iOS/Android), remote runtime; CLI</td></tr>
-              <tr><th scope="row">Licence</th><td>AGPL-3.0 or Sustainable Use License</td><td>MIT</td></tr>
+              <tr><th scope="row">Positioning</th><td data-label="Orbi">Unattended delivery line: GitHub Issues in, tagged Releases out</td><td data-label="Orca">“The AI Orchestrator for 100x builders” — the ADE for a fleet of parallel agents (official)</td></tr>
+              <tr><th scope="row">The human's place</th><td data-label="Orbi">Outside the loop: open the Issue, apply <code>ai-ready</code>, read the evidence</td><td data-label="Orca">In the middle, operating: annotate diffs, steer agents, “review, edit, and commit without leaving Orca” (official)</td></tr>
+              <tr><th scope="row">Task entry</th><td data-label="Orbi">GitHub Issue + <code>ai-ready</code> label</td><td data-label="Orca">Desktop app, mobile companion, and CLI (<code>orca worktree create</code>); no unattended queue documented</td></tr>
+              <tr><th scope="row">Opens the delivery PR</th><td data-label="Orbi">Yes</td><td data-label="Orca">Not verified — browsing PRs in-app is documented; an agent opening the delivery PR is not</td></tr>
+              <tr><th scope="row">Independent review (can edit code and rerun tests)</th><td data-label="Orbi">Yes — an independent session repairs the code and reruns the suite</td><td data-label="Orca">Not verified — the documented review is a human annotating the diff</td></tr>
+              <tr><th scope="row">Auto-merge</th><td data-label="Orbi">Yes — merges the exact reviewed head</td><td data-label="Orca">Not verified — “merge the winner” refers to comparing parallel agent outputs, not a documented PR auto-merge</td></tr>
+              <tr><th scope="row">Tag / Release</th><td data-label="Orbi">Yes — freezes the SHA, tags, publishes the Release</td><td data-label="Orca">Not verified</td></tr>
+              <tr><th scope="row">Form factor</th><td data-label="Orbi">Self-hosted CLI + systemd on your machine; hosted Cloud pilot</td><td data-label="Orca">Desktop (macOS/Windows/Linux), mobile (iOS/Android), remote runtime; CLI</td></tr>
+              <tr><th scope="row">Licence</th><td data-label="Orbi">AGPL-3.0 or Sustainable Use License</td><td data-label="Orca">MIT</td></tr>
             </tbody>
           </table>
         </div>
@@ -148,13 +148,13 @@
       <h2 class="orbi-compare-section-h2" id="density-title">Delivery density, stated with care</h2>
       <p class="section-lede">Two repositories can both be active and still mean different things by it. These are the counts on verification day — they move daily; the shape is the point. No quality judgment is implied in either direction: the numbers describe different design goals.</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead><tr><th scope="col">Count (GitHub API, 2026-09-12)</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Stars / forks</th><td>95 / 10</td><td>66,832 / 4,391</td></tr>
-            <tr><th scope="row">Open issues + PRs (open issues)</th><td>34 (32)</td><td>5,867 (2,815)</td></tr>
-            <tr><th scope="row">Merged PRs in the 19 days to 2026-09-12</th><td>294 merged since its first commit day (2026-08-24)</td><td>Not measured — its issue tracker serves a 66.8k-person community as a product front door, so raw counts are not comparable</td></tr>
-            <tr><th scope="row">Releases</th><td>18 GitHub Releases in the same 19 days</td><td>Ships near-daily (the README says “we ship daily”)</td></tr>
+            <tr><th scope="row">Stars / forks</th><td data-label="Orbi">95 / 10</td><td data-label="Orca">66,832 / 4,391</td></tr>
+            <tr><th scope="row">Open issues + PRs (open issues)</th><td data-label="Orbi">34 (32)</td><td data-label="Orca">5,867 (2,815)</td></tr>
+            <tr><th scope="row">Merged PRs in the 19 days to 2026-09-12</th><td data-label="Orbi">294 merged since its first commit day (2026-08-24)</td><td data-label="Orca">Not measured — its issue tracker serves a 66.8k-person community as a product front door, so raw counts are not comparable</td></tr>
+            <tr><th scope="row">Releases</th><td data-label="Orbi">18 GitHub Releases in the same 19 days</td><td data-label="Orca">Ships near-daily (the README says “we ship daily”)</td></tr>
           </tbody>
         </table>
       </div>

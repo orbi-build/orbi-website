@@ -110,13 +110,13 @@
       <h2 class="orbi-compare-section-h2" id="merged-pr-title">20 merged pull requests, measured on our own repository</h2>
       <p class="section-lede">The clearest unit is a merged PR, not an abstract token quota. From <strong>2026-09-22 09:44 UTC to 2026-09-24 12:03 UTC</strong>, we measured <strong>20 merged PRs</strong> in the orbi-build/orbi repository. Every sample used <code>deepseek-flash</code> (DeepSeek-V4.1-Flash). Per merged PR, the median was <strong>10,612,802 tokens</strong>; the median runtime was <strong>60.4 minutes</strong> across a median <strong>156 model requests</strong>.</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead><tr><th scope="col">Statistic</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Median cost per merged PR</th><td>$0.125</td><td>$0.249</td></tr>
-            <tr><th scope="row">Mean cost per merged PR</th><td>$0.152</td><td>$0.304</td></tr>
-            <tr><th scope="row">P90 cost per merged PR</th><td>$0.298</td><td>$0.597</td></tr>
-            <tr><th scope="row">Maximum cost per merged PR</th><td>$0.417</td><td>$0.834</td></tr>
+            <tr><th scope="row">Median cost per merged PR</th><td data-label="Off-peak">$0.125</td><td data-label="Peak">$0.249</td></tr>
+            <tr><th scope="row">Mean cost per merged PR</th><td data-label="Off-peak">$0.152</td><td data-label="Peak">$0.304</td></tr>
+            <tr><th scope="row">P90 cost per merged PR</th><td data-label="Off-peak">$0.298</td><td data-label="Peak">$0.597</td></tr>
+            <tr><th scope="row">Maximum cost per merged PR</th><td data-label="Off-peak">$0.417</td><td data-label="Peak">$0.834</td></tr>
           </tbody>
         </table>
       </div>
@@ -150,12 +150,12 @@
         <h2 class="orbi-compare-section-h2" id="money-title">Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices</h2>
         <p class="section-lede">DeepSeek publishes its prices — <code>deepseek-flash</code> (DeepSeek-V4.1-Flash): off-peak, a cache hit is <strong>$0.003/1M</strong> tokens, a cache miss <strong>$0.15/1M</strong>, output <strong>$0.60/1M</strong>. Peak hours (01:00–04:00 and 06:00–10:00 UTC, weekdays) are exactly double. The old sample's mean works out to about <strong>$0.06–0.12 per delivery</strong>. Apply those list prices to the measured distribution:</p>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col">Scenario</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
             <tbody>
-              <tr><th scope="row">One delivery (mean, 4.74M tokens)</th><td>$0.058</td><td>$0.115</td></tr>
-              <tr><th scope="row">One delivery (max observed, 37.6M tokens)</th><td>$0.46</td><td>$0.92</td></tr>
-              <tr><th scope="row">100 issues (mean mix)</th><td>~$5.77</td><td>~$11.55</td></tr>
+              <tr><th scope="row">One delivery (mean, 4.74M tokens)</th><td data-label="Off-peak">$0.058</td><td data-label="Peak">$0.115</td></tr>
+              <tr><th scope="row">One delivery (max observed, 37.6M tokens)</th><td data-label="Off-peak">$0.46</td><td data-label="Peak">$0.92</td></tr>
+              <tr><th scope="row">100 issues (mean mix)</th><td data-label="Off-peak">~$5.77</td><td data-label="Peak">~$11.55</td></tr>
             </tbody>
           </table>
         </div>
@@ -221,12 +221,12 @@
           </li>
         </ul>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col"></th><th scope="col">Subscription</th><th scope="col">Model fee</th><th scope="col">Total</th><th scope="col">Tagged Release out</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Orbi + DeepSeek</th><td>$0 self-hosted; Cloud Solo US$__SOLO_MONTHLY_USD__/mo with __SOLO_INCLUDED_TOKENS__ tokens, Pro US$__CLOUD_MONTHLY_USD__/mo with __INCLUDED_TOKENS__ tokens (founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places)</td><td>~$6–12 measured self-hosted; included in Cloud</td><td>$6–12 self-hosted; Cloud from US$__SOLO_MONTHLY_USD__</td><td>Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
-              <tr><th scope="row">Devin Max</th><td>$200</td><td>Quota not published</td><td>$200+</td><td>Docs stop at PR ("from prompt to PR")</td></tr>
-              <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage", no absolute value</td><td>$200+</td><td>No tag/Release step documented</td></tr>
+              <tr><th scope="row">Orbi + DeepSeek</th><td data-label="Subscription">$0 self-hosted; Cloud Solo US$__SOLO_MONTHLY_USD__/mo with __SOLO_INCLUDED_TOKENS__ tokens, Pro US$__CLOUD_MONTHLY_USD__/mo with __INCLUDED_TOKENS__ tokens (founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places)</td><td data-label="Model fee">~$6–12 measured self-hosted; included in Cloud</td><td data-label="Total">$6–12 self-hosted; Cloud from US$__SOLO_MONTHLY_USD__</td><td data-label="Tagged Release out">Yes — reviewed PR, exact-head merge, tagged Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td data-label="Subscription">$200</td><td data-label="Model fee">Quota not published</td><td data-label="Total">$200+</td><td data-label="Tagged Release out">Docs stop at PR ("from prompt to PR")</td></tr>
+              <tr><th scope="row">Factory Max</th><td data-label="Subscription">$200</td><td data-label="Model fee">"~10x Pro usage", no absolute value</td><td data-label="Total">$200+</td><td data-label="Tagged Release out">No tag/Release step documented</td></tr>
             </tbody>
           </table>
         </div>

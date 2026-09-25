@@ -127,11 +127,11 @@ describe("ai-ready methodology pages (Issue #195)", () => {
 describe("comparison capability matrix (Issue #201)", () => {
   it("keeps the HTML table and downloadable CSV row and column sets identical", () => {
     const html = shipped.get("compare/index.html");
-    const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+    const table = html.match(/<table class="compare-table[^\"]*capability-matrix[^\"]*">([\s\S]*?)<\/table>/)?.[1];
     const headers = [...table.matchAll(/<th scope="col">([^<]+)<\/th>/g)].map((match) => match[1]);
     const rows = [...table.matchAll(/<tr data-product="([^"]+)">([\s\S]*?)<\/tr>/g)].map((match) => [
       match[1],
-      [...match[2].matchAll(/<td><a [^>]+>([^<]+)<\/a><\/td>/g)].map((cell) => cell[1]),
+      [...match[2].matchAll(/<td[^>]*><a [^>]+>([^<]+)<\/a><\/td>/g)].map((cell) => cell[1]),
     ]);
     const csv = matrixCsv.trim().split("\n").map((line) => line.split(","));
     expect(headers).toEqual(csv[0].slice(0, -2));
@@ -140,9 +140,9 @@ describe("comparison capability matrix (Issue #201)", () => {
 
   it("links every capability cell to its dated source", () => {
     for (const html of [shipped.get("compare/index.html"), shipped.get("zh/compare/index.html")]) {
-      const table = html.match(/<table class="compare-table[^\"]*capability-matrix">([\s\S]*?)<\/table>/)?.[1];
+      const table = html.match(/<table class="compare-table[^\"]*capability-matrix[^\"]*">([\s\S]*?)<\/table>/)?.[1];
       for (const row of table.matchAll(/<tr data-product="[^"]+">([\s\S]*?)<\/tr>/g)) {
-        for (const cell of row[1].matchAll(/<td>([\s\S]*?)<\/td>/g)) expect(cell[1]).toMatch(/<a href="https?:\/\//);
+        for (const cell of row[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)) expect(cell[1]).toMatch(/<a href="https?:\/\//);
       }
     }
   });
@@ -391,6 +391,49 @@ describe("Issue #438 wording and internal-link contracts", () => {
       expect(contextual.some((href) => href.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
       expect(contextual, `${post.output}: Cloud link`).toContain(`${prefix}/cloud/`);
     }
+  });
+});
+
+// Issue #527: the ZH managed-agents page shipped whole English blocks Orbi
+// itself wrote — the differences table (header, six row labels, both columns),
+// three src-notes, the thesis punch, the source-list descriptions and their
+// verified tags, and the closing paragraph. Everything Orbi wrote must read
+// Chinese; English survives only as <code>, link text, 「」 quotations, product
+// names, prices, and external link titles. On the unfixed beta build this
+// probe hits 15 English runs of 5+ words; after the fix it must hit none.
+describe("zh managed-agents page has no untranslated Orbi copy (Issue #527)", () => {
+  // Element boundaries cut text runs; <code>, <a> text and 「」 quotes are
+  // exempt; then the Issue's 5-consecutive-English-words regex decides.
+  const englishRuns = (html) => {
+    const text = html
+      .slice(html.indexOf('<main id="main-content">'), html.indexOf("</main>"))
+      .replace(/<code[\s\S]*?<\/code>/gi, "\n")
+      .replace(/<a[\s\S]*?<\/a>/gi, "\n")
+      .replace(/「[^」]*」/g, " ")
+      .replace(/<[^>]+>/g, "\n");
+    const runs = [];
+    for (const line of text.split("\n")) {
+      for (const match of line.replace(/\s+/g, " ").trim().matchAll(/(?:[A-Za-z][A-Za-z'’,.;:()/$0-9-]*[ \t]+){5,}/g)) {
+        runs.push(match[0].trim());
+      }
+    }
+    return runs;
+  };
+
+  it("keeps runs of 5+ English words out of the ZH main text", () => {
+    const runs = englishRuns(shipped.get("zh/compare/managed-agents/index.html"));
+    expect(runs, `untranslated English runs: ${JSON.stringify(runs, null, 2)}`).toEqual([]);
+  });
+
+  it("keeps the comparison table shaped like the EN page", () => {
+    const tableOf = (html) => html.match(/<table class="compare-table">([\s\S]*?)<\/table>/)?.[1] ?? "";
+    const en = tableOf(shipped.get("compare/managed-agents/index.html"));
+    const zh = tableOf(shipped.get("zh/compare/managed-agents/index.html"));
+    const shape = (table) =>
+      table.split("<tr>").slice(1).map((row) => (row.match(/<(?:th|td)[^>]*>/g) ?? []).length);
+    const hrefs = (table) => [...table.matchAll(/href="([^"]+)"/g)].map((match) => match[1]).sort();
+    expect(shape(zh), "ZH table rows/columns drifted from EN").toEqual(shape(en));
+    expect(hrefs(zh), "ZH table links drifted from EN").toEqual(hrefs(en));
   });
 });
 
@@ -2204,6 +2247,36 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
     } finally {
       await rm(contentDir, { recursive: true, force: true });
       await rm(outDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// Issue #524: signing in with GitHub records the GitHub username and the
+// verified email GitHub returns (a new visitor_events field, orbi-cloud#1182)
+// even when the GitHub App is not installed yet. The privacy pages must
+// disclose that collection and the opt-out that deletes the records; no new
+// table exists, so the closing list keeps its original four names.
+describe("GitHub sign-in disclosure on the privacy pages (Issue #524)", () => {
+  it("discloses the sign-in collection and the opt-out on en and zh", () => {
+    const expected = {
+      "privacy/index.html": {
+        collection: /Even when you sign in without installing the GitHub App, we record your GitHub username and the verified email GitHub returns, so we can reach you if provisioning gets stuck\./,
+        tableList: /<code>tenants<\/code>, <code>repositories<\/code>, <code>delivery_usage<\/code>, and <code>visitor_events<\/code> records/,
+        optOut: /If you would rather not receive these emails, reply to one of them or write to the address above, and we will delete these records\./,
+      },
+      "zh/privacy/index.html": {
+        collection: /即使只用 GitHub 登录、还没装 GitHub App，我们也会记下你的 GitHub 用户名和 GitHub 返回的已验证邮箱，这样开通卡住时我们能联系上你。/,
+        tableList: /<code>tenants<\/code>、<code>repositories<\/code>、<code>delivery_usage<\/code> 和 <code>visitor_events<\/code> 记录/,
+        optOut: /不想收到这类邮件的话，直接回复邮件或写信到上面的地址，我们会删除这些记录。/,
+      },
+    };
+
+    for (const [output, parts] of Object.entries(expected)) {
+      const main = mainRegion(shipped.get(output));
+      expect(main, `${output}: the sign-in collection sentence drifted`).toMatch(parts.collection);
+      expect(main, `${output}: the closing table list drifted`).toMatch(parts.tableList);
+      expect(main, `${output}: the sign-in opt-out is missing`).toMatch(parts.optOut);
+      expect(main, `${output}: must not name a signins table`).not.toContain("signins");
     }
   });
 });

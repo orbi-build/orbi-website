@@ -109,13 +109,13 @@
       <h2 class="orbi-compare-section-h2" id="merged-pr-title">20 个合并 PR，在我们自己的仓库上实测</h2>
       <p class="section-lede">最清楚的统计单位是合并 PR，而不是抽象的 token 配额。我们在 <strong>2026-09-22 09:44 UTC 到 2026-09-24 12:03 UTC</strong> 之间，统计了 orbi-build/orbi 仓库的 <strong>20 个合并 PR</strong>。全部样本都使用 <code>deepseek-flash</code>（DeepSeek-V4.1-Flash）。每个合并 PR 的 token 中位数是 <strong>10,612,802</strong>；运行时长中位数 <strong>60.4 分钟</strong>，模型请求中位数 <strong>156 次</strong>。</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead><tr><th scope="col">统计量</th><th scope="col">非高峰</th><th scope="col">高峰</th></tr></thead>
           <tbody>
-            <tr><th scope="row">每个合并 PR 成本中位数</th><td>$0.125</td><td>$0.249</td></tr>
-            <tr><th scope="row">每个合并 PR 平均成本</th><td>$0.152</td><td>$0.304</td></tr>
-            <tr><th scope="row">每个合并 PR P90 成本</th><td>$0.298</td><td>$0.597</td></tr>
-            <tr><th scope="row">每个合并 PR 最大成本</th><td>$0.417</td><td>$0.834</td></tr>
+            <tr><th scope="row">每个合并 PR 成本中位数</th><td data-label="非高峰">$0.125</td><td data-label="高峰">$0.249</td></tr>
+            <tr><th scope="row">每个合并 PR 平均成本</th><td data-label="非高峰">$0.152</td><td data-label="高峰">$0.304</td></tr>
+            <tr><th scope="row">每个合并 PR P90 成本</th><td data-label="非高峰">$0.298</td><td data-label="高峰">$0.597</td></tr>
+            <tr><th scope="row">每个合并 PR 最大成本</th><td data-label="非高峰">$0.417</td><td data-label="高峰">$0.834</td></tr>
           </tbody>
         </table>
       </div>
@@ -149,12 +149,12 @@
         <h2 class="orbi-compare-section-h2" id="money-title">每次交付（含未合并工作）按 DeepSeek V4.1 Flash 官方牌价，几分钱</h2>
         <p class="section-lede">DeepSeek 公布价格 —— <code>deepseek-flash</code>(DeepSeek-V4.1-Flash):off-peak 时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。peak 时段(工作日 01:00–04:00 与 06:00–10:00 UTC)恰好翻倍。旧样本的均值折算约为<strong>每次交付 $0.06–0.12</strong>。把官方牌价套到实测分布上:</p>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col">场景</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
             <tbody>
-              <tr><th scope="row">单次交付(均值,474 万 tokens)</th><td>$0.058</td><td>$0.115</td></tr>
-              <tr><th scope="row">单次交付(实测最大,3760 万 tokens)</th><td>$0.46</td><td>$0.92</td></tr>
-              <tr><th scope="row">100 个 issue(按均值结构)</th><td>~$5.77</td><td>~$11.55</td></tr>
+              <tr><th scope="row">单次交付(均值,474 万 tokens)</th><td data-label="Off-peak">$0.058</td><td data-label="Peak">$0.115</td></tr>
+              <tr><th scope="row">单次交付(实测最大,3760 万 tokens)</th><td data-label="Off-peak">$0.46</td><td data-label="Peak">$0.92</td></tr>
+              <tr><th scope="row">100 个 issue(按均值结构)</th><td data-label="Off-peak">~$5.77</td><td data-label="Peak">~$11.55</td></tr>
             </tbody>
           </table>
         </div>
@@ -220,12 +220,12 @@
           </li>
         </ul>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col"></th><th scope="col">订阅</th><th scope="col">模型费</th><th scope="col">总计</th><th scope="col">产出打 Tag 的 Release</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Orbi + DeepSeek</th><td>自托管 $0；Cloud Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token（创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位）</td><td>实测约 $6–12（自托管）;Cloud 已含</td><td>自托管 $6–12；Cloud US$__SOLO_MONTHLY_USD__ 起</td><td>是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
-              <tr><th scope="row">Devin Max</th><td>$200</td><td>额度未公布</td><td>$200+</td><td>文档止于 PR("from prompt to PR")</td></tr>
-              <tr><th scope="row">Factory Max</th><td>$200</td><td>"~10x Pro usage",无绝对值</td><td>$200+</td><td>无打 Tag/Release 流程记载</td></tr>
+              <tr><th scope="row">Orbi + DeepSeek</th><td data-label="订阅">自托管 $0；Cloud Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token（创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位）</td><td data-label="模型费">实测约 $6–12（自托管）;Cloud 已含</td><td data-label="总计">自托管 $6–12；Cloud US$__SOLO_MONTHLY_USD__ 起</td><td data-label="产出打 Tag 的 Release">是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td data-label="订阅">$200</td><td data-label="模型费">额度未公布</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">文档止于 PR("from prompt to PR")</td></tr>
+              <tr><th scope="row">Factory Max</th><td data-label="订阅">$200</td><td data-label="模型费">"~10x Pro usage",无绝对值</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">无打 Tag/Release 流程记载</td></tr>
             </tbody>
           </table>
         </div>

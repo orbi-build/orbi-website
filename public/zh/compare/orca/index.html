@@ -122,18 +122,18 @@
         <h2 class="orbi-compare-section-h2" id="surface-title">你操作的工作台，或自己交付的产线</h2>
         <p class="section-lede">两个产品只在一件事上一致——agent 隔离在各自的 git worktree 里——然后在使用谁来操作上分岔。Orca 官方材料里查不到的能力，这一格写「未能核实」，不写「否」。</p>
         <div class="compare-table-wrap">
-          <table class="compare-table">
+          <table class="compare-table table-stack">
             <thead><tr><th scope="col">维度</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
             <tbody>
-              <tr><th scope="row">定位</th><td>无人值守交付产线：GitHub Issue 进，打 Tag 的 Release 出</td><td>「The AI Orchestrator for 100x builders」——面向一队并行 agent 的 ADE（官方）</td></tr>
-              <tr><th scope="row">人的位置</th><td>在环外：开 Issue、打 <code>ai-ready</code> 标签、看证据</td><td>在中间操作：标注 diff、指挥 agent，「review, edit, and commit without leaving Orca」（官方）</td></tr>
-              <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code> 标签</td><td>桌面应用、移动伴侣、CLI（<code>orca worktree create</code>）；未说明无人值守队列</td></tr>
-              <tr><th scope="row">开交付 PR</th><td>是</td><td>未能核实——官方说明应用内可浏览 PR；agent 打开交付 PR 未说明</td></tr>
-              <tr><th scope="row">独立评审（能改代码重跑测试）</th><td>是——独立 session 修复代码并重跑测试</td><td>未能核实——文档化的评审是人标注 diff</td></tr>
-              <tr><th scope="row">自动 merge</th><td>是——只合并审过的那个 Head</td><td>未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
-              <tr><th scope="row">打 Tag / 发 Release</th><td>是——冻结 SHA、打 Tag、发布 Release</td><td>未能核实</td></tr>
-              <tr><th scope="row">形态</th><td>自托管 CLI + systemd，跑在你自己的机器上；另有托管 Cloud 试点</td><td>桌面（macOS/Windows/Linux）、移动（iOS/Android）、远程运行时；CLI</td></tr>
-              <tr><th scope="row">许可证</th><td>AGPL-3.0 或 Sustainable Use License</td><td>MIT</td></tr>
+              <tr><th scope="row">定位</th><td data-label="Orbi">无人值守交付产线：GitHub Issue 进，打 Tag 的 Release 出</td><td data-label="Orca">「The AI Orchestrator for 100x builders」——面向一队并行 agent 的 ADE（官方）</td></tr>
+              <tr><th scope="row">人的位置</th><td data-label="Orbi">在环外：开 Issue、打 <code>ai-ready</code> 标签、看证据</td><td data-label="Orca">在中间操作：标注 diff、指挥 agent，「review, edit, and commit without leaving Orca」（官方）</td></tr>
+              <tr><th scope="row">任务入口</th><td data-label="Orbi">GitHub Issue + <code>ai-ready</code> 标签</td><td data-label="Orca">桌面应用、移动伴侣、CLI（<code>orca worktree create</code>）；未说明无人值守队列</td></tr>
+              <tr><th scope="row">开交付 PR</th><td data-label="Orbi">是</td><td data-label="Orca">未能核实——官方说明应用内可浏览 PR；agent 打开交付 PR 未说明</td></tr>
+              <tr><th scope="row">独立评审（能改代码重跑测试）</th><td data-label="Orbi">是——独立 session 修复代码并重跑测试</td><td data-label="Orca">未能核实——文档化的评审是人标注 diff</td></tr>
+              <tr><th scope="row">自动 merge</th><td data-label="Orbi">是——只合并审过的那个 Head</td><td data-label="Orca">未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
+              <tr><th scope="row">打 Tag / 发 Release</th><td data-label="Orbi">是——冻结 SHA、打 Tag、发布 Release</td><td data-label="Orca">未能核实</td></tr>
+              <tr><th scope="row">形态</th><td data-label="Orbi">自托管 CLI + systemd，跑在你自己的机器上；另有托管 Cloud 试点</td><td data-label="Orca">桌面（macOS/Windows/Linux）、移动（iOS/Android）、远程运行时；CLI</td></tr>
+              <tr><th scope="row">许可证</th><td data-label="Orbi">AGPL-3.0 或 Sustainable Use License</td><td data-label="Orca">MIT</td></tr>
             </tbody>
           </table>
         </div>
@@ -146,13 +146,13 @@
       <h2 class="orbi-compare-section-h2" id="density-title">交付密度，克制的说法</h2>
       <p class="section-lede">两个仓库都可以很活跃，但「活跃」的含义可以完全不同。以下是核实当天的计数——数字每天都会变，值得看的是形状。双方都不做质量判断：数字描述的是各自的设计目标。</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead><tr><th scope="col">计数（GitHub API，2026-09-12）</th><th scope="col">Orbi</th><th scope="col">Orca</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Star / fork</th><td>95 / 10</td><td>66,832 / 4,391</td></tr>
-            <tr><th scope="row">Open issue + PR（其中 open issue）</th><td>34（32）</td><td>5,867（2,815）</td></tr>
-            <tr><th scope="row">截至 2026-09-12 的 19 天内 merged PR</th><td>自建仓日（2026-08-24）起 294 个</td><td>未测量——它的 issue 区是 6.68 万人社区的产品前门，原始计数不可比</td></tr>
-            <tr><th scope="row">Release</th><td>同样 19 天内 18 个 GitHub Release</td><td>接近每日发版（README 原话「we ship daily」）</td></tr>
+            <tr><th scope="row">Star / fork</th><td data-label="Orbi">95 / 10</td><td data-label="Orca">66,832 / 4,391</td></tr>
+            <tr><th scope="row">Open issue + PR（其中 open issue）</th><td data-label="Orbi">34（32）</td><td data-label="Orca">5,867（2,815）</td></tr>
+            <tr><th scope="row">截至 2026-09-12 的 19 天内 merged PR</th><td data-label="Orbi">自建仓日（2026-08-24）起 294 个</td><td data-label="Orca">未测量——它的 issue 区是 6.68 万人社区的产品前门，原始计数不可比</td></tr>
+            <tr><th scope="row">Release</th><td data-label="Orbi">同样 19 天内 18 个 GitHub Release</td><td data-label="Orca">接近每日发版（README 原话「we ship daily」）</td></tr>
           </tbody>
         </table>
       </div>

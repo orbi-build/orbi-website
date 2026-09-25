@@ -182,15 +182,20 @@ describe("blog titles use the post entry width (Issue #401)", () => {
   }, 30_000);
 });
 
-describe("blog tables stay within the viewport (Issue #393)", () => {
-  it("contains all five wide tables at mobile and desktop widths", async () => {
-    for (const width of widths) {
-      const result = await overflowAt("/blog/table-fixture/", width);
-      expect(result.overflow, `table fixture at ${width}px document overflow`).toBe(0);
-      expect(result.tableCount).toBe(5);
-      expect(result.wrappersAreExactParents).toBe(true);
-      expect(result.scrollableWrappers, `table fixture at ${width}px scrollable wrappers`).toBe(5);
-    }
+describe("blog tables stay within the viewport (Issue #393, #522)", () => {
+  it("contains the fixture tables in their wrappers on mobile, scrolls them on desktop (Issue #526)", async () => {
+    const mobile = await overflowAt("/blog/table-fixture/", 390);
+    expect(mobile.overflow, "table fixture at 390px document overflow").toBe(0);
+    expect(mobile.tableCount).toBe(5);
+    expect(mobile.wrappersAreExactParents).toBe(true);
+    // Issue #526: table-form cells (2-column tables keep that form) now use
+    // break-word, which never splits a word mid-word — so the fixture's
+    // 132-character unbreakable words grow their column past the viewport
+    // and the wrapper scrolls them. The document itself never overflows.
+    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(5);
+    const desktop = await overflowAt("/blog/table-fixture/", 1440);
+    expect(desktop.overflow, "table fixture at 1440px document overflow").toBe(0);
+    expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
   });
 
   it("keeps every existing post free of document overflow", async () => {

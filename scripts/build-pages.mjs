@@ -503,6 +503,102 @@ export function wrapRenderedTables(html) {
   return renderRange(0, html.length);
 }
 
+// Issue #522: phones stack tables with 4+ columns row-by-row, so each cell
+// must carry its column's header. The build marks such tables .table-stack
+// and adds a data-label to every <td> (the matching thead text); tables with
+// 3 or fewer columns stay plain, and page sources are never hand-labelled.
+const TABLE_TAG = /<\/?table\b[^>]*>/gi;
+const TABLE_ROW_TAG = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+const TABLE_CELL_TAG = /<(t[dh])\b[^>]*>([\s\S]*?)<\/\1>/gi;
+const COLSPAN_ATTR = /colspan\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i;
+const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
+
+function decodeEntities(text) {
+  return text.replace(/&(?:amp|lt|gt|quot|apos|nbsp|#39|#\d+);/g, (entity) => {
+    if (entity.startsWith("&#")) return String.fromCodePoint(Number(entity.slice(2, -1)));
+    return NAMED_ENTITIES[entity.slice(1, -1)] ?? entity;
+  });
+}
+
+function tableCellText(markup) {
+  return decodeEntities(markup.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+}
+
+function colspanOf(markup) {
+  const value = markup.match(COLSPAN_ATTR);
+  return Math.max(1, Number(value?.[1] ?? value?.[2] ?? value?.[3] ?? 1) || 1);
+}
+
+function withStackClass(openingTag) {
+  if (/class\s*=\s*"/i.test(openingTag)) {
+    return openingTag.replace(/class\s*=\s*"([^"]*)"/i, (attr, value) => `class="${value} table-stack"`);
+  }
+  if (/class\s*=\s*'/i.test(openingTag)) {
+    return openingTag.replace(/class\s*=\s*'([^']*)'/i, (attr, value) => `class='${value} table-stack'`);
+  }
+  return openingTag.replace(/^<table\b/i, '<table class="table-stack"');
+}
+
+function labelBodyRows(segment, labels) {
+  return segment.replace(TABLE_ROW_TAG, (rowMarkup) => {
+    let column = 0;
+    return rowMarkup.replace(TABLE_CELL_TAG, (cellMarkup, tag) => {
+      const index = column;
+      column += colspanOf(cellMarkup);
+      if (tag.toLowerCase() !== "td") return cellMarkup;
+      const label = labels[index];
+      // An empty header would render a nameless「：值」line; leave the cell
+      // unlabelled rather than ship that.
+      if (!label) return cellMarkup;
+      return cellMarkup.replace(/^<td\b/i, `<td data-label="${escAttr(label)}"`);
+    });
+  });
+}
+
+export function addTableDataLabels(html) {
+  let output = "";
+  let cursor = 0;
+  for (const opening of html.matchAll(/<table\b[^>]*>/gi)) {
+    if (opening.index < cursor) continue; // inside an already-processed table
+    let depth = 1;
+    let scan = opening.index + opening[0].length;
+    let closeStart = -1;
+    while (depth > 0) {
+      TABLE_TAG.lastIndex = scan;
+      const tag = TABLE_TAG.exec(html);
+      if (!tag) throw new Error("addTableDataLabels: table is missing its closing tag");
+      if (tag[0].startsWith("</")) {
+        depth -= 1;
+        if (depth === 0) closeStart = tag.index;
+      } else {
+        depth += 1;
+      }
+      scan = tag.index + tag[0].length;
+    }
+    const inner = html.slice(opening.index + opening[0].length, closeStart);
+    const head = inner.match(/<thead\b[^>]*>([\s\S]*?)<\/thead>/i);
+    const headRow = head?.[1].match(/<tr\b[^>]*>([\s\S]*?)<\/tr>/i);
+    let rendered = opening[0] + inner;
+    if (head && headRow) {
+      const labels = [];
+      for (const cell of headRow[1].matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/gi)) {
+        const label = tableCellText(cell[1]);
+        for (let i = 0; i < colspanOf(cell[0]); i += 1) labels.push(label);
+      }
+      // Issue #526: the threshold is 3, not 4 — at phone widths a table-form
+      // 3-column layout crushes its first column below word width and splits
+      // words mid-word, so every 3+-column table stacks row-by-row.
+      if (labels.length >= 3) {
+        const headEnd = head.index + head[0].length;
+        rendered = withStackClass(opening[0]) + inner.slice(0, headEnd) + labelBodyRows(inner.slice(headEnd), labels);
+      }
+    }
+    output += html.slice(cursor, opening.index) + rendered;
+    cursor = closeStart;
+  }
+  return output + html.slice(cursor);
+}
+
 export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
@@ -549,7 +645,7 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = wrapRenderedTables(marked.parse(body));
+  const html = addTableDataLabels(wrapRenderedTables(marked.parse(body)));
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
@@ -965,6 +1061,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       );
     }
     const out = join(outDir, page.output);
+    html = addTableDataLabels(html);
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, html);
     renderedPages.set(page.output, html);
