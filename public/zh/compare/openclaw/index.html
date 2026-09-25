@@ -154,7 +154,7 @@
       <h2 class="orbi-compare-section-h2" id="differences-title">Orbi 与 OpenClaw 的关键差异</h2>
       <p class="section-lede">共同点是真实存在的——都自托管、原则上都不锁定模型。差异在于 agent 是干什么的、状态放在哪、经济模型暴露在谁的政策之下。</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr>
               <th scope="col">维度</th>
@@ -165,28 +165,28 @@
           <tbody>
             <tr>
               <th scope="row">任务闭环</th>
-              <td>GitHub Issue → agent → 审查后的 PR → 合并</td>
-              <td>个人助理、消息驱动；没有 Issue→PR 交付闭环</td>
+              <td data-label="Orbi">GitHub Issue → agent → 审查后的 PR → 合并</td>
+              <td data-label="OpenClaw">个人助理、消息驱动；没有 Issue→PR 交付闭环</td>
             </tr>
             <tr>
               <th scope="row">状态存于</th>
-              <td>GitHub Issues + labels——仓库即账本</td>
-              <td>框架自有的状态存储</td>
+              <td data-label="Orbi">GitHub Issues + labels——仓库即账本</td>
+              <td data-label="OpenClaw">框架自有的状态存储</td>
             </tr>
             <tr>
               <th scope="row">调度</th>
-              <td>systemd timer 轮询</td>
-              <td>Heartbeat</td>
+              <td data-label="Orbi">systemd timer 轮询</td>
+              <td data-label="OpenClaw">Heartbeat</td>
             </tr>
             <tr>
               <th scope="row">模型政策风险</th>
-              <td>BYOK 任意 OpenAI 兼容端点（provider 条款可能不同），换 provider 只改配置</td>
-              <td>多模型（Claude、GPT、本地）；社区曾重度依赖 Claude 订阅，直到 2026-04 被切断</td>
+              <td data-label="Orbi">BYOK 任意 OpenAI 兼容端点（provider 条款可能不同），换 provider 只改配置</td>
+              <td data-label="OpenClaw">多模型（Claude、GPT、本地）；社区曾重度依赖 Claude 订阅，直到 2026-04 被切断</td>
             </tr>
             <tr>
               <th scope="row">运行位置</th>
-              <td>你自己的机器——自托管、AGPL-3.0 或 Sustainable Use License</td>
-              <td>你自己的机器——自托管、开源</td>
+              <td data-label="Orbi">你自己的机器——自托管、AGPL-3.0 或 Sustainable Use License</td>
+              <td data-label="OpenClaw">你自己的机器——自托管、开源</td>
             </tr>
           </tbody>
         </table>

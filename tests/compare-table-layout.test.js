@@ -1,6 +1,6 @@
 import { chromium } from "@playwright/test";
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -92,7 +92,7 @@ describe("compare tables remain usable on mobile (Issue #522)", () => {
   }
 
   for (const route of ["/compare/keelen/", "/zh/compare/keelen/"]) {
-    it(`${route} fits the 3-column table in the viewport, every column visible`, async () => {
+    it(`${route} stacks the 3-column table into labelled blocks (Issue #526)`, async () => {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
       try {
         await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
@@ -100,23 +100,25 @@ describe("compare tables remain usable on mobile (Issue #522)", () => {
           const wrapper = document.querySelector(".compare-table-wrap");
           const table = wrapper.querySelector(".compare-table");
           const firstRow = table.querySelector("tbody tr");
-          const wrapperRect = wrapper.getBoundingClientRect();
-          const lastCell = firstRow.lastElementChild.getBoundingClientRect();
+          const cells = [...firstRow.querySelectorAll("td")];
           return {
             wrapperOverflow: wrapper.scrollWidth - wrapper.clientWidth,
             documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
             theadDisplay: getComputedStyle(table.querySelector("thead")).display,
-            firstCellDisplay: getComputedStyle(firstRow.firstElementChild).display,
+            cellDisplay: getComputedStyle(cells[0]).display,
             columnCount: firstRow.children.length,
-            lastColumnInside: lastCell.right <= wrapperRect.right + 1,
+            labels: cells.map((cell) => getComputedStyle(cell, "::before").content),
           };
         });
         expect(result.wrapperOverflow, `${route} wrapper scrolls`).toBeLessThanOrEqual(0);
         expect(result.documentOverflow, `${route} document overflows`).toBe(0);
-        expect(result.theadDisplay, `${route} small tables keep their header row`).not.toBe("none");
-        expect(result.firstCellDisplay, `${route} small tables keep table cells`).toBe("table-cell");
+        expect(result.theadDisplay, `${route} 3-column table stacks its header away`).toBe("none");
+        expect(result.cellDisplay, `${route} 3-column table stacks its cells`).toBe("block");
         expect(result.columnCount, `${route} all three columns render`).toBe(3);
-        expect(result.lastColumnInside, `${route} last column is visible`).toBe(true);
+        // Every stacked cell names its column: the header text, not a guess.
+        for (const label of result.labels) {
+          expect(label, `${route} cells name their columns`).not.toBe("none");
+        }
         await page.screenshot({ path: `.orbi/compare-keelen-${route.includes("zh") ? "zh" : "en"}-390.png`, fullPage: false });
       } finally {
         await page.close();
@@ -142,4 +144,114 @@ describe("compare tables remain usable on mobile (Issue #522)", () => {
       await page.close();
     }
   }, 30_000);
+});
+
+// Issue #526: the ≤760px `overflow-wrap: anywhere` on table-form cells let the
+// auto table layout crush the first column of 3-column tables to a few
+// characters, splitting words like "Free" and "Individual" mid-word. The fix
+// stacks every 3+-column table (build threshold) and switches the remaining
+// table-form cells to `break-word`, so no word outside <code> is ever split.
+describe("no table page splits words on mobile (Issue #526)", () => {
+  // Every page under public/ that ships a <table>, EN and ZH alike — scanned,
+  // never listed, so adding a page widens the audit automatically.
+  async function tableRoutes() {
+    async function walk(dir, prefix = "") {
+      const out = [];
+      for (const entry of await readdir(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) out.push(...(await walk(join(dir, entry.name), `${prefix}${entry.name}/`)));
+        else if (entry.name.endsWith(".html")) out.push(`${prefix}${entry.name}`);
+      }
+      return out;
+    }
+    const routes = [];
+    for (const file of (await walk("public")).sort()) {
+      const html = await readFile(join("public", file), "utf8");
+      if (!html.includes("<table")) continue;
+      routes.push(`/${file.replace(/index\.html$/, "")}`);
+    }
+    return routes;
+  }
+
+  async function auditPage(route, { injectAnywhere = false } = {}) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    try {
+      await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+      if (injectAnywhere) {
+        // Reproduces the pre-#526 cell treatment the regression came from.
+        await page.addStyleTag({
+          content: ".compare-table th, .compare-table td,"
+            + " .post-body .post-table-scroll th, .post-body .post-table-scroll td"
+            + " { overflow-wrap: anywhere !important; }",
+        });
+      }
+      return await page.evaluate(() => {
+        const problems = [];
+        const tables = [...document.querySelectorAll("table")];
+        tables.forEach((table, index) => {
+          const where = `table #${index}`;
+          const wrapper = table.closest(".compare-table-wrap, .post-table-scroll") ?? table.parentElement;
+          const overflow = wrapper.scrollWidth - wrapper.clientWidth;
+          // 8px absorbs the trailing full-width punctuation of
+          // zh/compare/orca's second table, confirmed clipped by eye.
+          if (overflow > 8) problems.push(`${where}: wrapper scrolls ${overflow}px past its client width`);
+          const walker = document.createTreeWalker(table, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.parentElement?.closest("code")) continue;
+            const text = node.nodeValue ?? "";
+            for (const match of text.matchAll(/[A-Za-z0-9]{2,}/g)) {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const tops = [];
+              for (const rect of range.getClientRects()) {
+                if (rect.width === 0 || rect.height === 0) continue;
+                if (!tops.some((top) => Math.abs(top - rect.top) <= 2)) tops.push(rect.top);
+              }
+              if (tops.length > 1) {
+                problems.push(`${where}: "${match[0]}" is split across ${tops.length} lines (tops ${tops.map((top) => Math.round(top)).join(", ")}px)`);
+              }
+            }
+          }
+        });
+        return {
+          tableCount: tables.length,
+          documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          problems,
+        };
+      });
+    } finally {
+      await page.close();
+    }
+  }
+
+  it("every public/ page with tables fits at 390×844 and keeps words whole", async () => {
+    const routes = await tableRoutes();
+    const failures = [];
+    let tableCount = 0;
+    for (const route of routes) {
+      const result = await auditPage(route);
+      tableCount += result.tableCount;
+      if (result.documentOverflow !== 0) failures.push(`${route}: document overflows by ${result.documentOverflow}px`);
+      failures.push(...result.problems.map((problem) => `${route}: ${problem}`));
+    }
+    // Loose lower bounds only: the scan must have found the site's table
+    // pages, not an empty tree. Exact counts live in table-labels.test.js.
+    expect(routes.length, "pages with tables found by the scan").toBeGreaterThanOrEqual(30);
+    expect(tableCount, "tables audited").toBeGreaterThanOrEqual(40);
+    expect(failures, failures.join("\n")).toEqual([]);
+  }, 240_000);
+
+  it("counter-evidence: forcing overflow-wrap:anywhere back makes the split detector go red", async () => {
+    // /guides/ci-gates/ ships a 2-column table that keeps its table form on
+    // phones; forcing `anywhere` onto those cells reproduces the #526 bug
+    // condition (min-content collapses, "integration"/"business"/"Playwright"
+    // split mid-word) and must trip the detector the traversal relies on.
+    const result = await auditPage("/guides/ci-gates/", { injectAnywhere: true });
+    const splits = result.problems.filter((problem) => problem.includes("is split across"));
+    expect(
+      splits.length,
+      `forced anywhere on table-form cells must produce mid-word splits, got: ${splits.join("; ") || "none"}`,
+    ).toBeGreaterThan(0);
+  }, 60_000);
 });

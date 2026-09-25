@@ -158,15 +158,15 @@
       <h2 class="orbi-compare-section-h2" id="pricing-title">Orbi 与 Devin 的价格对比</h2>
       <p class="section-lede">两者的套餐形状不同：Orbi 可按 AGPL-3.0 免费自托管，也可以选择 Free、Solo、Pro 三档 Cloud。Devin 列出订阅套餐，并按消息计价；下表是带日期的价格快照。</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr><th scope="col">套餐</th><th scope="col">Orbi</th><th scope="col">Devin</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">免费</th><td>自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。Cloud Free：__FREE_DELIVERIES__ 次合并交付。</td><td>$0，light quota。</td></tr>
-            <tr><th scope="row">个人</th><td>Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，__SOLO_REPOSITORIES__ 个仓库。</td><td>Pro：每月 $20。</td></tr>
-            <tr><th scope="row">团队 / 规模</th><td>Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，__PRO_REPOSITORIES__ 个仓库。</td><td>Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
-            <tr><th scope="row">计量</th><td>自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td>「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
+            <tr><th scope="row">免费</th><td data-label="Orbi">自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。Cloud Free：__FREE_DELIVERIES__ 次合并交付。</td><td data-label="Devin">$0，light quota。</td></tr>
+            <tr><th scope="row">个人</th><td data-label="Orbi">Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，__SOLO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Pro：每月 $20。</td></tr>
+            <tr><th scope="row">团队 / 规模</th><td data-label="Orbi">Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，__PRO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
+            <tr><th scope="row">计量</th><td data-label="Orbi">自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td data-label="Devin">「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
           </tbody>
         </table>
       </div>
@@ -178,7 +178,7 @@
       <h2 class="orbi-compare-section-h2" id="differences-title">Orbi 与 Devin 的关键差异</h2>
       <p class="section-lede">重合是真实的：两者都接收被指派的任务，都交回经过审查的 pull request。差异在于代码在哪里跑、模型归谁、工作花多少钱、以及你能验证什么。</p>
       <div class="compare-table-wrap">
-        <table class="compare-table">
+        <table class="compare-table table-stack">
           <thead>
             <tr>
               <th scope="col">维度</th>
@@ -189,28 +189,28 @@
           <tbody>
             <tr>
               <th scope="row">任务入口</th>
-              <td>GitHub Issue + <code>ai-ready</code> label——仓库就是队列</td>
-              <td>Slack/Teams @、网页应用、Linear/Jira、CLI 交接、API</td>
+              <td data-label="Orbi">GitHub Issue + <code>ai-ready</code> label——仓库就是队列</td>
+              <td data-label="Devin">Slack/Teams @、网页应用、Linear/Jira、CLI 交接、API</td>
             </tr>
             <tr>
               <th scope="row">模型</th>
-              <td>BYOK——任意 OpenAI 兼容端点（provider 条款可能不同），换模型只改配置</td>
-              <td>Cognition 自研 SWE 模型跑在 Cognition 基础设施上；无自带 key 选项</td>
+              <td data-label="Orbi">BYOK——任意 OpenAI 兼容端点（provider 条款可能不同），换模型只改配置</td>
+              <td data-label="Devin">Cognition 自研 SWE 模型跑在 Cognition 基础设施上；无自带 key 选项</td>
             </tr>
             <tr>
               <th scope="row">运行位置</th>
-              <td>你自己的机器——代码和 key 不出本地</td>
-              <td>Cognition 的云端工作区</td>
+              <td data-label="Orbi">你自己的机器——代码和 key 不出本地</td>
+              <td data-label="Devin">Cognition 的云端工作区</td>
             </tr>
             <tr>
               <th scope="row">成本</th>
-              <td>你的硬件 + 你的模型；无按任务计价器，自托管永久免费</td>
-              <td>订阅 + 额度，之后按需积分（核实时 Pro $20/月、Teams 最低 $80/月）</td>
+              <td data-label="Orbi">你的硬件 + 你的模型；无按任务计价器，自托管永久免费</td>
+              <td data-label="Devin">订阅 + 额度，之后按需积分（核实时 Pro $20/月、Teams 最低 $80/月）</td>
             </tr>
             <tr>
               <th scope="row">可审计</th>
-              <td>开源（AGPL-3.0）——整条交付链路可读</td>
-              <td>闭源——你审计的是 vendor 的承诺，不是代码</td>
+              <td data-label="Orbi">开源（AGPL-3.0）——整条交付链路可读</td>
+              <td data-label="Devin">闭源——你审计的是 vendor 的承诺，不是代码</td>
             </tr>
           </tbody>
         </table>
