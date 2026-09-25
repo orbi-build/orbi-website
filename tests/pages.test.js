@@ -394,6 +394,49 @@ describe("Issue #438 wording and internal-link contracts", () => {
   });
 });
 
+// Issue #527: the ZH managed-agents page shipped whole English blocks Orbi
+// itself wrote — the differences table (header, six row labels, both columns),
+// three src-notes, the thesis punch, the source-list descriptions and their
+// verified tags, and the closing paragraph. Everything Orbi wrote must read
+// Chinese; English survives only as <code>, link text, 「」 quotations, product
+// names, prices, and external link titles. On the unfixed beta build this
+// probe hits 15 English runs of 5+ words; after the fix it must hit none.
+describe("zh managed-agents page has no untranslated Orbi copy (Issue #527)", () => {
+  // Element boundaries cut text runs; <code>, <a> text and 「」 quotes are
+  // exempt; then the Issue's 5-consecutive-English-words regex decides.
+  const englishRuns = (html) => {
+    const text = html
+      .slice(html.indexOf('<main id="main-content">'), html.indexOf("</main>"))
+      .replace(/<code[\s\S]*?<\/code>/gi, "\n")
+      .replace(/<a[\s\S]*?<\/a>/gi, "\n")
+      .replace(/「[^」]*」/g, " ")
+      .replace(/<[^>]+>/g, "\n");
+    const runs = [];
+    for (const line of text.split("\n")) {
+      for (const match of line.replace(/\s+/g, " ").trim().matchAll(/(?:[A-Za-z][A-Za-z'’,.;:()/$0-9-]*[ \t]+){5,}/g)) {
+        runs.push(match[0].trim());
+      }
+    }
+    return runs;
+  };
+
+  it("keeps runs of 5+ English words out of the ZH main text", () => {
+    const runs = englishRuns(shipped.get("zh/compare/managed-agents/index.html"));
+    expect(runs, `untranslated English runs: ${JSON.stringify(runs, null, 2)}`).toEqual([]);
+  });
+
+  it("keeps the comparison table shaped like the EN page", () => {
+    const tableOf = (html) => html.match(/<table class="compare-table">([\s\S]*?)<\/table>/)?.[1] ?? "";
+    const en = tableOf(shipped.get("compare/managed-agents/index.html"));
+    const zh = tableOf(shipped.get("zh/compare/managed-agents/index.html"));
+    const shape = (table) =>
+      table.split("<tr>").slice(1).map((row) => (row.match(/<(?:th|td)[^>]*>/g) ?? []).length);
+    const hrefs = (table) => [...table.matchAll(/href="([^"]+)"/g)].map((match) => match[1]).sort();
+    expect(shape(zh), "ZH table rows/columns drifted from EN").toEqual(shape(en));
+    expect(hrefs(zh), "ZH table links drifted from EN").toEqual(hrefs(en));
+  });
+});
+
 describe("build output is committed (npm run build ran)", () => {
   it("produces exactly the files that exist under public/", async () => {
     const listFiles = async (dir, prefix = "") => {
