@@ -1180,6 +1180,12 @@ h2 {
 .cloud-demo { margin-top: 40px; }
 .night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
 .night .cloud-demo figcaption { color: #9aada9; }
+/* Narrated 72-second overview: click-to-play in THE SHIFT, full row under the thesis grid. */
+.overview-video { grid-column: 1 / -1; margin: 12px 0 0; scroll-margin-top: 96px; }
+.overview-video-player { width: 100%; height: auto; display: block; background: var(--night); border: 1px solid var(--line); border-radius: 8px; }
+.overview-video figcaption { margin-top: 10px; font-family: var(--mono); font-size: 0.82rem; color: var(--ink-soft); }
+.trace-watch { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-top: 1px solid rgba(183, 211, 202, 0.24); font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.04em; color: var(--signal); text-decoration: none; }
+.trace-watch:hover { color: #fff; background: rgba(255, 176, 0, 0.08); }
 @media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }
 
 .ownership {

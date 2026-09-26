@@ -1,0 +1,53 @@
+WEBVTT
+
+1
+00:00:00.750 --> 00:00:04.771
+Your coding agent can open a pull request in a few minutes.
+
+2
+00:00:04.771 --> 00:00:10.198
+Then somebody has to review it, merge it and ship it. Usually, that's you.
+
+3
+00:00:10.198 --> 00:00:13.850
+Orbi runs the whole line, from the Issue to the release.
+
+4
+00:00:13.850 --> 00:00:18.557
+You label a GitHub Issue ai-ready. That's the handoff.
+
+5
+00:00:18.557 --> 00:00:24.464
+Orbi writes the code on its own branch, runs the tests and opens the PR.
+
+6
+00:00:24.464 --> 00:00:29.406
+Then a second session reviews it against the Issue's acceptance criteria.
+
+7
+00:00:29.406 --> 00:00:36.334
+On this delivery, it rejected the first attempt. Orbi fixed the finding and tested again.
+
+8
+00:00:36.334 --> 00:00:43.298
+Only the reviewed commit can merge. If something doesn't add up, Orbi stops and tells you why.
+
+9
+00:00:43.298 --> 00:00:49.664
+When the milestone is done, it tags a release, with every Issue and PR in the notes.
+
+10
+00:00:49.664 --> 00:00:55.038
+Every step is a comment on GitHub. The repository is the record.
+
+11
+00:00:55.038 --> 00:01:01.560
+We build Orbi with Orbi: 69 releases in its first month, all of it public.
+
+12
+00:01:01.560 --> 00:01:07.527
+Self-host it for free, or start on Orbi Cloud. Your first three deliveries are free.
+
+13
+00:01:07.527 --> 00:01:10.962
+File an Issue. Get a release.

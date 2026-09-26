@@ -89,6 +89,18 @@
         }
       },
       {
+        "@type": "VideoObject",
+        "@id": "https://orbi.build/#overview-video",
+        "name": "72 秒看懂 Orbi",
+        "description": "编码 agent 在哪一步停下，Orbi 如何把打了标签的 GitHub Issue 走完构建、独立评审、合并闸门和打 tag 发版。",
+        "thumbnailUrl": "https://orbi.build/video/orbi-overview-poster.jpg",
+        "contentUrl": "https://orbi.build/video/orbi-overview.mp4",
+        "uploadDate": "2026-09-26",
+        "duration": "PT1M12S",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      },
+      {
         "@type": "FAQPage",
         "@id": "https://orbi.build/zh/#faq",
         "mainEntity": [
@@ -234,6 +246,7 @@
           <span>可恢复状态</span>
           <strong>GitHub 是账本。打上 Tag 的 Release 才是产品。</strong>
         </figcaption>
+        <a class="trace-watch" data-cta="overview-watch" href="#overview"><span aria-hidden="true">▶</span> 看 72 秒介绍视频</a>
       </figure>
     </section>
 
@@ -343,6 +356,20 @@
         <li class="orbi-shift-list-li"><span>03</span><strong>生成代码</strong><em>→</em><b>交付版本和结果</b></li>
         <li class="orbi-shift-list-li"><span>04</span><strong>人盯过程</strong><em>→</em><b>人只处理决策点</b></li>
       </ol>
+      <figure class="overview-video" id="overview">
+        <video
+          class="overview-video-player"
+          poster="/video/orbi-overview-poster.jpg"
+          width="1920" height="1080"
+          controls playsinline preload="none"
+          aria-label="72 秒 Orbi 介绍视频，英文解说：编码 agent 开出 pull request 就停下；Orbi 接过打了标签的 GitHub Issue，走完构建、独立评审、合并闸门和打 tag 发版，示例是 Issue #1018、PR #1023 和 v0.5.17。">
+          <source src="/video/orbi-overview.webm" type="video/webm">
+          <source src="/video/orbi-overview.mp4" type="video/mp4">
+          <track kind="captions" src="/video/orbi-overview.zh.vtt" srclang="zh" label="中文" default>
+          <track kind="captions" src="/video/orbi-overview.en.vtt" srclang="en" label="English">
+        </video>
+        <figcaption>72 秒看懂 Orbi：编码 agent 在哪一步停下，Orbi 又往下走了哪几步。英文解说，默认中文字幕。</figcaption>
+      </figure>
     </section>
 
     <section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">

@@ -87,6 +87,18 @@
         "publisher": { "@id": "https://orbi.build/#organization" }
       },
       {
+        "@type": "VideoObject",
+        "@id": "https://orbi.build/#overview-video",
+        "name": "Orbi in 72 seconds",
+        "description": "Where coding agents stop, and how Orbi takes a labelled GitHub Issue through build, independent review, merge gate and a tagged release.",
+        "thumbnailUrl": "https://orbi.build/video/orbi-overview-poster.jpg",
+        "contentUrl": "https://orbi.build/video/orbi-overview.mp4",
+        "uploadDate": "2026-09-26",
+        "duration": "PT1M12S",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://orbi.build/#organization" }
+      },
+      {
         "@type": "FAQPage",
         "@id": "https://orbi.build/#faq",
         "mainEntity": [
@@ -232,6 +244,7 @@
             <span>RECOVERABLE STATE</span>
             <strong>GitHub is the ledger. The tagged release is the product.</strong>
           </figcaption>
+          <a class="trace-watch" data-cta="overview-watch" href="#overview"><span aria-hidden="true">▶</span> Watch the 72-second overview</a>
         </figure>
       </section>
 
@@ -341,6 +354,20 @@
           <li class="orbi-shift-list-li"><span>03</span><strong>Code output</strong><em>→</em><b>Versioned outcomes</b></li>
           <li class="orbi-shift-list-li"><span>04</span><strong>Human supervision</strong><em>→</em><b>Human decisions</b></li>
         </ol>
+        <figure class="overview-video" id="overview">
+          <video
+            class="overview-video-player"
+            poster="/video/orbi-overview-poster.jpg"
+            width="1920" height="1080"
+            controls playsinline preload="none"
+            aria-label="72-second narrated overview of Orbi: a coding agent opens a pull request and stops; Orbi takes a labelled GitHub Issue through build, independent review, merge gate and a tagged release, using Issue #1018, PR #1023 and release v0.5.17 as the example.">
+            <source src="/video/orbi-overview.webm" type="video/webm">
+            <source src="/video/orbi-overview.mp4" type="video/mp4">
+            <track kind="captions" src="/video/orbi-overview.en.vtt" srclang="en" label="English" default>
+            <track kind="captions" src="/video/orbi-overview.zh.vtt" srclang="zh" label="中文">
+          </video>
+          <figcaption>Orbi in 72 seconds: where coding agents stop, and the four steps Orbi takes after that. Narrated, with captions.</figcaption>
+        </figure>
       </section>
 
       <section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">
