@@ -29,6 +29,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/codex-github-issues/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/codex-github-issues/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/codex-github-issues/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/codex-github-issues/"/>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/compare/claude-code/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/claude-code/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/claude-code/"/>
@@ -249,6 +258,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/cloud/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/cloud/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/cloud/"/>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/codex-github-issues/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/codex-github-issues/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/codex-github-issues/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/codex-github-issues/"/>
     <lastmod>2026-09-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
