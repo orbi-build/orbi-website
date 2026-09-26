@@ -200,6 +200,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/self-hosted-coding-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/self-hosted-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/self-hosted-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/self-hosted-coding-agent/"/>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/support/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/support/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/support/"/>
@@ -412,6 +421,15 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/privacy/"/>
     <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/self-hosted-coding-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/self-hosted-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/self-hosted-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/self-hosted-coding-agent/"/>
+    <lastmod>2026-09-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
