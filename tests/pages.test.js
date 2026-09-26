@@ -1254,10 +1254,11 @@ describe("blog (Issue #212)", () => {
     for (const post of [enPost(), zhPost()]) {
       const html = shipped.get(post.output);
       expect(html, `${post.output}: title from front matter`).toContain(`<h1 id="post-title">${post.title}</h1>`);
-      // Every post ships fenced shell commands and Markdown links; the
-      // rendered body must carry them as HTML, produced by marked. Assert the
-      // shapes, not one post's URL, so a later post cannot fail on its own links.
-      expect(html, `${post.output}: fenced code block`).toContain("<pre><code");
+      // Every post ships Markdown links; the rendered body must carry them
+      // as HTML, produced by marked. Assert the shapes, not one post's URL,
+      // so a later post cannot fail on its own links. Not every post ships a
+      // fenced code block (the Issue #552 post ships none), so only the
+      // absence of raw fences is pinned here.
       expect(html, `${post.output}: no raw markdown fences survive`).not.toContain("```");
       expect(html, `${post.output}: rendered link`).toMatch(/<a href="https:\/\/[^"]+">/);
       expect(html, `${post.output}: no raw markdown link syntax survives`).not.toMatch(/\]\(https:\/\//);

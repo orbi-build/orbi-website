@@ -434,6 +434,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/gitspawn-unattended-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/gitspawn-unattended-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/gitspawn-unattended-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/gitspawn-unattended-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
