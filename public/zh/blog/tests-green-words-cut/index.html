@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>测试全绿，193 个单词被从中间劈开 | Orbi</title>
+  <meta name="description" content="一次手机端表格修复上了 beta，所有溢出测试都是绿的。一张 390 宽的截图里，「Individual」被拆成了四行，34 个页面里有 25 个是这样。测试量了什么、看不见什么，最后我们留下了什么。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/tests-green-words-cut/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="测试全绿，193 个单词被从中间劈开">
+  <meta property="og:description" content="一次手机端表格修复上了 beta，所有溢出测试都是绿的。一张 390 宽的截图里，「Individual」被拆成了四行，34 个页面里有 25 个是这样。测试量了什么、看不见什么，最后我们留下了什么。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/tests-green-words-cut/">
+  <meta property="og:image" content="https://orbi.build/img/blog-tests-green.png">
+  <meta property="og:image:alt" content="测试全绿，193 个单词被从中间劈开">
+  <meta property="article:published_time" content="2026-09-26">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"测试全绿，193 个单词被从中间劈开","datePublished":"2026-09-26","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-tests-green.png","inLanguage":"zh-CN","description":"一次手机端表格修复上了 beta，所有溢出测试都是绿的。一张 390 宽的截图里，「Individual」被拆成了四行，34 个页面里有 25 个是这样。测试量了什么、看不见什么，最后我们留下了什么。","url":"https://orbi.build/zh/blog/tests-green-words-cut/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">登录</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">ZH</span>
+          <a href="/blog/tests-green-words-cut/" lang="en" aria-label="English">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-26</p>
+        <h1 id="post-title">测试全绿，193 个单词被从中间劈开</h1>
+        <p class="hero-lede">一次手机端表格修复上了 beta，所有溢出测试都是绿的。一张 390 宽的截图里，「Individual」被拆成了四行，34 个页面里有 25 个是这样。测试量了什么、看不见什么，最后我们留下了什么。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>9 月 25 日，orbi.build 上的对比表和价格表在手机上有个毛病：表格被强制撑到 620px 宽，第一列留出一大块空白，数据列被裁出屏幕右边。<a href="https://github.com/orbi-build/orbi-website/issues/522">Issue #522</a> 要求有表格的 34 个页面都能放进 390px 的屏幕。Orbi 交付了 <a href="https://github.com/orbi-build/orbi-website/pull/523">PR #523</a>：去掉 620px 的最小宽度，单元格用 <code>overflow-wrap: anywhere</code> 换行。测试逐页量了横向溢出，结果是 0，全绿，合并，上了 beta。</p>
+<p>然后我们看了一眼截图。</p>
+<p><img src="/img/blog-tests-green-before.png" alt="第一版修复后 390px 宽下的 Orbi 与 Devin 价格表：「Free」被拆成「Fr」和「ee」，「Individual」占了四行"></p>
+<p>「Free」变成了「Fr / ee」，「Individual」占了四行，表头「PLAN」在「PLA」后面断开。我们在 390px 下把 34 个页面走了一遍，数被换行从中间劈开的单词：193 个，分布在 25 个页面上。溢出仍然是 0。测试没有出错，它量的就是溢出，可这次的问题不是溢出。</p>
+<h3>为什么会这样</h3>
+<p><code>overflow-wrap: anywhere</code> 允许浏览器在任意字符处断开单词，同时也把单元格能缩到的最小宽度降到了一个字符。表格用自动布局时，每一列先拿到这个最小宽度，剩下的再分。于是放短标签的第一列被压到只剩几个字符宽，里面的标签全被劈开。</p>
+<pre><code class="language-css">/* PR #523：一列最窄
+   能缩到一个字符 */
+td { overflow-wrap: anywhere; }
+
+/* PR #530：单词本来会溢出
+   才断开 */
+td { overflow-wrap: break-word; }
+</code></pre>
+<p>最顺手的改法是换成 <code>overflow-wrap: break-word</code>，它只在单词本来会溢出时才断开。开票之前我们先量了这个方案：被劈开的单词降到 0，可有 13 个页面重新横向溢出，表格宽 349 到 457 像素，屏幕只有 390。列宽没有地方可去了。</p>
+<p>真正管用的是改布局，不去动换行规则。在手机上，三列及以上的表格按行堆叠，每个单元格前面标上所属的列名；只有两列的表格保持表格形态，用 <code>break-word</code>。像 <code>rewrite_active_milestone_line</code> 这样的代码标识符仍然可以在任意处断开，这种名字从中间断开是正常的。</p>
+<p>这些就是 <a href="https://github.com/orbi-build/orbi-website/issues/526">Issue #526</a> 的内容。票面写的时候就带上了上面这些测量，修法在开工前已经定死。Orbi 用 32 分钟交付了 <a href="https://github.com/orbi-build/orbi-website/pull/530">PR #530</a>。后来又发现堆叠后的文字贴着表格边框，第二张票（<a href="https://github.com/orbi-build/orbi-website/issues/531">#531</a>）补了左右留白。</p>
+<p><img src="/img/blog-tests-green-after.png" alt="修复后同一张表在 390px 宽下：每个套餐是一个堆叠块，「Individual」「Team / scale」都是完整的词"></p>
+<p>两次修复之后再走一遍：被劈开的单词 0 个，溢出的表格 0 张，文字离表格边框至少 16px。beta 上是这样，上了生产又量了一遍，也是这样。</p>
+<h3>加上的测试，后来又删了</h3>
+<p>PR #530 加了一条浏览器测试：在 390px 下打开每个有表格的页面，检查 <code>&lt;code&gt;</code> 以外每一串连续的字母和数字，只要有一串落在两行上就报错。它还带了一条反证：把 <code>overflow-wrap: anywhere</code> 强行加回去，确认检测器会变红。它变红了。</p>
+<p>第二天，我们把它和那几个 PR 里其他的布局断言一起删了（<a href="https://github.com/orbi-build/orbi-website/issues/540">#540</a>）。网站在这段时间里加了 1906 行测试，源码只加了 377 行，其中多数测试把文案、坐标或 CSS 字符串写死了，每改一次文案都要跟着改测试。这一条写死的东西比多数都少，还是跟着那一批一起删了。</p>
+<p>留下来的是最先发现问题的那一步：任何改动从 beta 晋升到生产之前，都有人在 390px 和 1440px 两个宽度、中英文各打开一遍改到的页面，用眼睛看。测试只能检查事先有人写下来的要求，而这次的问题在看到截图之前，谁也没写下来。</p>
+<h3>这件事说明了什么</h3>
+<p>Orbi 合并 PR #523，是因为测试通过、评审也没挑出问题。这两件事都是真的。缺口在「票上的验收项都满足了」和「页面没问题」之间。这个缺口不是 agent 更用力地去满足给定的验收项就能补上的，人也一样。要有人去看结果，再把看到的东西写成下一张票。这一次，它用了一张截图、大约三个小时。</p>
+<p>如果你在用会自己合并代码的 agent，一次全绿的运行，你要先看什么才敢信？</p>
+<h2>相关</h2>
+<p>修法和上面的数字都在 <a href="https://github.com/orbi-build/orbi-website/issues/526">orbi-website#526</a>。继续阅读：截图出自的 <a href="/zh/compare/devin/">Devin 对比</a>，以及 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/blog/tests-green-words-cut/" lang="en" aria-label="English">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>

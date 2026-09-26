@@ -187,6 +187,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Every test passed. 193 words were cut in half. (English):
+  https://orbi.build/blog/tests-green-words-cut/
+- 测试全绿，193 个单词被从中间劈开 (Chinese):
+  https://orbi.build/zh/blog/tests-green-words-cut/
 - DeepSeek coding agent cost per merged PR (English):
   https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/
 - Why Orbi is open source again (English):
