@@ -814,9 +814,14 @@ function attributionCookieString(name, value, secure) {
 
 // Same fallback chain as the cloud signup source (orbi-cloud#716), so the
 // website's first-touch answer and the signup's own normalization agree:
-// validated ?ref= token, then ?source= host, then referer host, then direct.
+// validated ?ref= token, then ?utm_source=, then ?source= host, then referer
+// host, then direct.
 const REF_TOKEN = /^[a-z0-9_-]{1,32}$/;
 const SOURCE_HOST = /^[a-z0-9.-]{1,253}$/;
+
+function isInternalHost(host) {
+  return host === "orbi.build" || host.endsWith(".orbi.build");
+}
 
 function refererHost(request) {
   const value = request.headers.get("Referer");
@@ -826,8 +831,7 @@ function refererHost(request) {
   try {
     const url = new URL(value);
     const host = url.hostname.toLowerCase();
-    const isInternal = host === "orbi.build" || host.endsWith(".orbi.build");
-    return (url.protocol === "http:" || url.protocol === "https:") && SOURCE_HOST.test(host) && !isInternal ? host : null;
+    return (url.protocol === "http:" || url.protocol === "https:") && SOURCE_HOST.test(host) && !isInternalHost(host) ? host : null;
   } catch {
     return null;
   }
@@ -837,6 +841,10 @@ function normalizedSource(url, request) {
   const ref = url.searchParams.get("ref");
   if (ref !== null && REF_TOKEN.test(ref.toLowerCase())) {
     return ref.toLowerCase();
+  }
+  const utmSource = url.searchParams.get("utm_source")?.toLowerCase();
+  if (utmSource !== undefined && (REF_TOKEN.test(utmSource) || SOURCE_HOST.test(utmSource)) && !isInternalHost(utmSource)) {
+    return utmSource;
   }
   const source = url.searchParams.get("source")?.toLowerCase();
   if (source !== undefined && SOURCE_HOST.test(source)) {
@@ -890,10 +898,10 @@ async function reportVisit(env, visitRequest, payload) {
 //   overwrites whatever the slot held and is reported on every visit — a
 //   visitor who browsed direct first and clicked a campaign link later still
 //   lands the referral (Issue #244).
-// - Derived sources (?source=, referer host, direct) are guesses an OAuth
-//   bounce or an in-site hop can fabricate, so they are first touch: they
-//   fill an empty slot and never overwrite — github.com must not replace the
-//   tweet that brought the visitor here.
+// - Derived sources (?utm_source=, ?source=, referer host, direct) are
+//   guesses an OAuth bounce or an in-site hop can fabricate, so they are
+//   first touch: they fill an empty slot and never overwrite — github.com
+//   must not replace the tweet that brought the visitor here.
 // Probes and crawlers keep their vid and their page; their visits are marked
 // is_bot=1 (visitSignals — the request.cf.asn of a cloud provider, crawler UA
 // substrings, or durable/short-window behavior, Issue #280/#305/#386;
