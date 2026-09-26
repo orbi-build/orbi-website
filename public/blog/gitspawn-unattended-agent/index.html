@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitSpawn and the agent that never asks | Orbi</title>
+  <meta name="description" content="A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.">
+  <link rel="canonical" href="https://orbi.build/blog/gitspawn-unattended-agent/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="GitSpawn and the agent that never asks">
+  <meta property="og:description" content="A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.">
+  <meta property="og:url" content="https://orbi.build/blog/gitspawn-unattended-agent/">
+  <meta property="og:image" content="https://orbi.build/img/blog-gitspawn.png">
+  <meta property="og:image:alt" content="GitSpawn and the agent that never asks">
+  <meta property="article:published_time" content="2026-09-26">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"GitSpawn and the agent that never asks","datePublished":"2026-09-26","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-gitspawn.png","inLanguage":"en","description":"A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.","url":"https://orbi.build/blog/gitspawn-unattended-agent/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+  <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">Sign in</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/gitspawn-unattended-agent/" lang="zh-CN" aria-label="简体中文">ZH</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-26</p>
+        <h1 id="post-title">GitSpawn and the agent that never asks</h1>
+        <p class="hero-lede">A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>On September 1, Manifold Security disclosed <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>, eight findings across seven coding agents: Claude Code, Codex, Cursor, Goose, Hermes Agent, Qwen Code and Grok Build. The short version is that a repository&#39;s git configuration could make a program run before the agent&#39;s approval prompt ever appeared. Manifold&#39;s post has the details, and several vendors have already shipped fixes.</p>
+<p>I <a href="https://x.com/xqliu/status/2103343487668154834">posted about it on X</a>. The replies mostly said the same thing: an agent&#39;s workspace has to be trusted before the agent loop starts, and approving shell commands afterwards is too late.</p>
+<p>That raised the question we actually had to answer. Does this affect Orbi? We merged a fix the next morning and reverted it that afternoon.</p>
+<h2>The fix</h2>
+<p>On September 25 I filed <a href="https://github.com/orbi-build/orbi/issues/1366">issue #1366</a>. Orbi delivered it the same day as <a href="https://github.com/orbi-build/orbi/pull/1368">PR #1368</a>. It routed every git call the runner makes through one helper that switches off the git settings named in the disclosure, and it added a check that fails the build if any code calls git directly. The PR touched 26 files and added 1,164 lines.</p>
+<p><img src="/img/gitspawn-fix-pr.png" alt="PR #1368, the hardening fix, merged"></p>
+<h2>The revert</h2>
+<p>Three hours and fifty minutes later I reverted it in <a href="https://github.com/orbi-build/orbi/pull/1376">PR #1376</a>.</p>
+<p><img src="/img/gitspawn-revert-pr.png" alt="PR #1376 reverting the fix"></p>
+<p>I had skipped a question: who runs that git command, and as which user?</p>
+<p>The seven affected tools share a safety model. The model proposes a command, a person approves it, then it runs. GitSpawn mattered because it ran something before that approval.</p>
+<p>Orbi has no approval step. It works unattended by design, and its agent already has a shell. For us the boundary is the operating system account. In Orbi Cloud every connected repository runs as its own Unix user, and the runner and the agent run as that same user. Anything the runner&#39;s own git call could be tricked into running would get the access the agent already had, so the fix protected nothing.</p>
+<p>We checked the one place with more privilege too. A host job reads usage data from every sandbox and runs as root. It already does its git reads as each sandbox&#39;s own user. That came from an earlier outage: on September 12 the job ran git as root, git&#39;s <code>safe.directory</code> check refused to touch a repository another user owned, and usage collection failed silently every five minutes until we switched it to the owning user.</p>
+<p>So we had 1,164 lines guarding a boundary Orbi doesn&#39;t have. The revert says so directly: over-engineered for the current stage. The same PR added a rule to the repository&#39;s AGENTS.md: no preventive tickets for theoretical risks.</p>
+<h2>What we took from it</h2>
+<p>If your agent asks a person before it runs commands, follow Manifold&#39;s advice. The fix for that kind of tool is small and worth making.</p>
+<p>If your agent runs unattended, you have no prompt to protect. The account is your boundary. Give each repository its own user, keep anything more privileged from working inside that user&#39;s files, and before you write a fix, check which user actually runs the code.</p>
+<p>We got that order wrong once, and all of it is public in Orbi&#39;s own repository. Orbi turns a GitHub Issue into a reviewed, merged and tagged release. You can <a href="https://orbi.build/cloud/?ref=blog-gitspawn">run it on your own repository</a>.</p>
+<h2>Related</h2>
+<p>Read the <a href="/compare/managed-agents/">Managed agents comparison</a> and <a href="/cloud/">Cloud</a>.</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="https://docs.orbi.build">Docs</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
+        <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/cost/">Pricing</a></li>
+        <li><a href="/evidence/">Evidence</a></li>
+        <li><a href="/compare/">Compare</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
+        <li><a href="https://status.orbi.build">Status</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+      </ul>
+      <ul>
+        <li><a href="/support/">Support</a></li>
+        <li><a href="/#direction">Direction</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
+        <li><a href="/zh/blog/gitspawn-unattended-agent/" lang="zh-CN" aria-label="简体中文">ZH</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+  <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
+       The account's auto-install does not reach this site because the pages
+       are served by the Worker's asset binding, not proxied HTML. -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body>
+</html>
