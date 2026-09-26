@@ -559,8 +559,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
 
   it("renders tier-specific repository limits in visible FAQ and JSON-LD", async () => {
     const faqCopy = {
-      "cloud/index.html": `Free and Solo each have a simultaneous repository limit of ${pricing.soloRepositories}. Connecting a different repository deactivates the previous one and provisions the new one. A switch is blocked while a delivery is in flight on the bound repository. Pro has a simultaneous repository limit of ${pricing.proRepositories}. Once all are connected, deactivate one before connecting another.`,
-      "zh/cloud/index.html": `Free 和 Solo 同时最多各接 ${pricing.soloRepositories} 个仓库。连接另一个仓库会停用原来的，并为新仓库重新开通；原仓库有进行中的交付时，暂时无法更换。Pro 同时最多接 ${pricing.proRepositories} 个仓库。达到上限后，先停用一个已连接的仓库，再连接新的仓库。`,
+      "cloud/index.html": `Free and Solo connect up to ${pricing.soloRepositories} repository at a time; Pro connects up to ${pricing.proRepositories}. Once you reach the limit, deactivate a repository on the connect page before connecting another.`,
+      "zh/cloud/index.html": `Free 和 Solo 同时最多接 ${pricing.soloRepositories} 个仓库，Pro 最多 ${pricing.proRepositories} 个。连满之后，先在连接页停用一个仓库，再连新的。`,
     };
     for (const relativePath of CLOUD_PAGES) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
@@ -569,6 +569,9 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
         ? "每个订阅同时只接 1 个 active 仓库"
         : "Each subscription keeps one active repository");
+      expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
+        ? "连接另一个仓库会停用原来的"
+        : "Connecting a different repository deactivates the previous one");
     }
   });
 

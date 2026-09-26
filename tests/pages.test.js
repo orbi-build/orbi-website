@@ -821,6 +821,66 @@ describe("Issue-to-release landing pages (Issue #514)", () => {
   });
 });
 
+// Issue #556: the self-hosted keyword page. The endpoint of its story is the
+// release, so the H1 and title must name it in both languages; the card is
+// the page's own, the four requested internal links live in the language
+// tree, and CTAs carry the page's ref tag.
+describe("Self-hosted landing pages (Issue #556)", () => {
+  const landingPages = [
+    { output: "self-hosted-coding-agent/index.html", prefix: "" },
+    { output: "zh/self-hosted-coding-agent/index.html", prefix: "/zh" },
+  ];
+
+  it("ships mutual hreflang, sitemap entries and the page's own OG card", () => {
+    for (const { output } of landingPages) {
+      const html = shipped.get(output);
+      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/self-hosted-coding-agent/"');
+      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/self-hosted-coding-agent/"');
+      expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      expect(title.length, `${output}: title is ${title.length} chars`).toBeLessThanOrEqual(60);
+      expect(title, `${output}: title must name the release`).toMatch(/release|发版/);
+      expect(html, `${output}: og:image`).toContain('content="https://orbi.build/img/og-self-hosted-coding-agent.png"');
+    }
+    expect(shippedSitemap).toContain("https://orbi.build/self-hosted-coding-agent/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/self-hosted-coding-agent/");
+  });
+
+  it("keeps descriptions in the SEO band (EN 150–160 chars, ZH 70–80 字)", () => {
+    for (const { output } of landingPages) {
+      const description = shipped.get(output).match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+      const length = [...description].length;
+      const [min, max] = output.startsWith("zh/") ? [70, 80] : [150, 160];
+      expect(length, `${output}: description is ${length} chars`).toBeGreaterThanOrEqual(min);
+      expect(length, `${output}: description is ${length} chars`).toBeLessThanOrEqual(max);
+    }
+  });
+
+  it("carries the four requested internal links and ref-tagged CTAs", () => {
+    for (const { output, prefix } of landingPages) {
+      const html = shipped.get(output);
+      for (const path of ["/issue-to-release/", "/cost/", "/compare/devin/", "/cloud/"]) {
+        expect(html, `${output}: ${path} link`).toContain(`href="${prefix}${path}`);
+      }
+      const refTagged = (html.match(/href="[^"]*\?ref=seo-self-hosted-coding-agent"/g) ?? []).length;
+      expect(refTagged, `${output}: ref-tagged CTA count`).toBe(4);
+    }
+  });
+
+  it("keeps FAQ JSON-LD in lockstep with 3–5 visible questions", () => {
+    for (const { output } of landingPages) {
+      const html = shipped.get(output);
+      const section = region(html, '<div class="source-list">', "</div>");
+      const visible = (section.match(/<strong>/g) ?? []).length;
+      expect(visible, `${output}: visible FAQ count`).toBeGreaterThanOrEqual(3);
+      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(5);
+      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
+      expect(faq, `${output}: FAQPage JSON-LD`).toBeTruthy();
+      expect(faq.mainEntity, `${output}: JSON-LD lockstep`).toHaveLength(visible);
+    }
+  });
+});
+
 describe("cloud buyer FAQ (Issue #166)", () => {
   it("sits between the three-step section and the closing CTA on both languages", () => {
     for (const { output } of CLOUD_FAQ_PAGES) {
@@ -1254,10 +1314,11 @@ describe("blog (Issue #212)", () => {
     for (const post of [enPost(), zhPost()]) {
       const html = shipped.get(post.output);
       expect(html, `${post.output}: title from front matter`).toContain(`<h1 id="post-title">${post.title}</h1>`);
-      // Every post ships fenced shell commands and Markdown links; the
-      // rendered body must carry them as HTML, produced by marked. Assert the
-      // shapes, not one post's URL, so a later post cannot fail on its own links.
-      expect(html, `${post.output}: fenced code block`).toContain("<pre><code");
+      // Every post ships Markdown links; the rendered body must carry them
+      // as HTML, produced by marked. Assert the shapes, not one post's URL,
+      // so a later post cannot fail on its own links. Not every post ships a
+      // fenced code block (the Issue #552 post ships none), so only the
+      // absence of raw fences is pinned here.
       expect(html, `${post.output}: no raw markdown fences survive`).not.toContain("```");
       expect(html, `${post.output}: rendered link`).toMatch(/<a href="https:\/\/[^"]+">/);
       expect(html, `${post.output}: no raw markdown link syntax survives`).not.toMatch(/\]\(https:\/\//);

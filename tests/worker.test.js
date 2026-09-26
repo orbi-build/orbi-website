@@ -946,8 +946,8 @@ describe("aiready.sh install entry (Issue #174)", () => {
 // (pre-#234 visitors carry a vid but no ref). Issue #240 stopped fabricating
 // "direct" into the empty slot. Issue #247 splits the model by source kind:
 // an explicit ?ref= token is last touch (it overwrites the slot and is
-// reported on every visit); derived sources (referer host, ?source=) are
-// first touch (they fill an empty slot and never overwrite).
+// reported on every visit); derived sources (?utm_source=, ?source=, referer
+// host) are first touch (they fill an empty slot and never overwrite).
 describe("visit attribution (Issue #228)", () => {
   const VISIT_URL = "https://beta.orbi.build/api/internal/visit";
   const SECRET = "e2e-visit-secret";
@@ -1470,6 +1470,112 @@ describe("visit attribution (Issue #228)", () => {
       const calls = visitCalls(fetchMock);
       expect(calls).toHaveLength(1);
       expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "afterdirect1789833086", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
+    });
+  });
+
+  // Issue #564: ?utm_source= joins the fallback chain one step behind ?ref=
+  // (ChatGPT-cited links carry utm_source=chatgpt.com and were counted as
+  // direct), the same position as orbi-cloud's normalizedSource. It is
+  // lowercased first and accepted only when it matches REF_TOKEN or
+  // SOURCE_HOST and is not an orbi.build host; otherwise it falls through to
+  // ?source=. Like ?source= it is a derived source: first touch only — it
+  // fills an empty ref slot and never overwrites.
+  describe("utm_source attribution (Issue #564)", () => {
+    const REF_ATTRS = "Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000";
+
+    it("reports ?utm_source= as the ref and seeds it into an empty slot", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("https://beta.orbi.build/?utm_source=chatgpt.com"), env(), ctx);
+      // Flush before asserting: a failed assertion must not leave this
+      // request's visit pending to land on the next test's fetch mock.
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toEqual([
+        expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+        `ref=chatgpt.com; ${REF_ATTRS}; Secure`,
+      ]);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toMatchObject({ ref: "chatgpt.com" });
+    });
+
+    it("lowercases ?utm_source= before validating it", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("https://beta.orbi.build/?utm_source=ChatGPT.com"), env(), ctx);
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toContain(`ref=chatgpt.com; ${REF_ATTRS}; Secure`);
+      expect(await visitBody(visitCalls(fetchMock)[0])).toMatchObject({ ref: "chatgpt.com" });
+    });
+
+    it("an explicit ?ref= beats ?utm_source=", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("https://beta.orbi.build/?ref=x-1&utm_source=chatgpt.com"), env(), ctx);
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toEqual([
+        expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+        `ref=x-1; ${REF_ATTRS}; Secure`,
+      ]);
+      expect(await visitBody(visitCalls(fetchMock)[0])).toMatchObject({ ref: "x-1" });
+    });
+
+    it("?utm_source= beats ?source=", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request("https://beta.orbi.build/?utm_source=chatgpt.com&source=foo.com"), env(), ctx);
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toContain(`ref=chatgpt.com; ${REF_ATTRS}; Secure`);
+      expect(await visitBody(visitCalls(fetchMock)[0])).toMatchObject({ ref: "chatgpt.com" });
+    });
+
+    it.each([
+      { label: "an orbi.build host", query: "?utm_source=orbi.build" },
+      { label: "an orbi.build subdomain", query: "?utm_source=beta.orbi.build" },
+      { label: "illegal characters", query: "?utm_source=chat gpt!" },
+      { label: "an empty value", query: "?utm_source=" },
+    ])("rejects $label and falls through to the next level", async ({ query }) => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(new Request(`https://beta.orbi.build/${query}&source=foo.com`), env(), ctx);
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toContain(`ref=foo.com; ${REF_ATTRS}; Secure`);
+      expect(await visitBody(visitCalls(fetchMock)[0])).toMatchObject({ ref: "foo.com" });
+    });
+
+    it("an existing ref cookie is never overwritten by ?utm_source=", async () => {
+      const fetchMock = vi.fn(async () => new Response("ok"));
+      globalThis.fetch = fetchMock;
+      const ctx = collectingCtx();
+
+      const response = await worker.fetch(
+        new Request("https://beta.orbi.build/?utm_source=chatgpt.com", {
+          headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa" },
+        }),
+        env(),
+        ctx,
+      );
+      await flush(ctx);
+
+      expect(response.headers.getSetCookie()).toEqual([]);
+      const calls = visitCalls(fetchMock);
+      expect(calls).toHaveLength(1);
+      expect(await visitBody(calls[0])).toEqual({ vid: "ExistingVidValue123456", path: "/", ref: "", is_bot: 1, asn: null, ua_hash: EMPTY_UA_HASH });
     });
   });
 

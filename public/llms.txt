@@ -187,6 +187,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- GitSpawn and the agent that never asks (English):
+  https://orbi.build/blog/gitspawn-unattended-agent/
+- GitSpawn 绕开的是审批，我们的 agent 本来就不审批 (Chinese):
+  https://orbi.build/zh/blog/gitspawn-unattended-agent/
 - DeepSeek coding agent cost per merged PR (English):
   https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/
 - Why Orbi is open source again (English):
