@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开源自主编程 agent，无人值守做到发版 | Orbi</title><meta name="description" content="Orbi 把打了 ai-ready 标签的 Issue 做成评审过的 PR，合并后打 tag 发布 Release；检查不过就停下等人，全程无人值守。">
+<link rel="canonical" href="https://orbi.build/zh/autonomous-coding-agent/"><link rel="alternate" hreflang="en" href="https://orbi.build/autonomous-coding-agent/"><link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/autonomous-coding-agent/"><link rel="alternate" hreflang="x-default" href="https://orbi.build/autonomous-coding-agent/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#06151b">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Orbi"><meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="en_US"><meta property="og:url" content="https://orbi.build/zh/autonomous-coding-agent/"><meta property="og:title" content="开源自主编程 agent，无人值守做到发版 | Orbi"><meta property="og:description" content="Orbi 把打了 ai-ready 标签的 Issue 做成评审过的 PR，合并后打 tag 发布 Release；检查不过就停下等人，全程无人值守。"><meta property="og:image" content="https://orbi.build/img/og-autonomous-coding-agent.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="开源自主编程 agent，无人值守做到发版"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="开源自主编程 agent，无人值守做到发版 | Orbi"><meta name="twitter:description" content="Orbi 把打了 ai-ready 标签的 Issue 做成评审过的 PR，合并后打 tag 发布 Release；检查不过就停下等人，全程无人值守。"><meta name="twitter:image" content="https://orbi.build/img/og-autonomous-coding-agent.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"开源的自主编程 agent，从 Issue 无人值守做到发版","description":"Orbi 把打了 ai-ready 标签的 Issue 做成评审过的 PR，合并后打 tag 发布 Release；检查不过就停下等人，全程无人值守。","inLanguage":"zh-CN","url":"https://orbi.build/zh/autonomous-coding-agent/"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"真的无人值守吗？","acceptedAnswer":{"@type":"Answer","text":"两张票之间，是的：实现、评审、合并、发版自己跑；任何检查不过就停下等你。"}},{"@type":"Question","name":"用什么模型？","acceptedAnswer":{"@type":"Answer","text":"任意 OpenAI 兼容 API（比如 DeepSeek），或 ChatGPT/Codex 订阅登录。"}},{"@type":"Question","name":"花多少钱？","acceptedAnswer":{"@type":"Answer","text":"自托管按 AGPL-3.0 免费，模型费用由你的 provider 收取；Cloud 前 3 次合并交付免费、不用绑卡，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ token），额度用完只暂停新交付、不超额计费。"}},{"@type":"Question","name":"和 Devin 比呢？","acceptedAnswer":{"@type":"Answer","text":"我们做了一份带日期的逐项实测对比，见 Devin 对比页。"}},{"@type":"Question","name":"流程的终点在哪？","acceptedAnswer":{"@type":"Answer","text":"打了 tag 的 GitHub Release。Issue-to-release 页从标签到发版共六步。"}}]}</script></head><body><a class="skip-link" href="#main-content">跳到正文</a>  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">登录</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">ZH</span>
+          <a href="/autonomous-coding-agent/" lang="en" aria-label="English">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div><main id="main-content">
+<div class="night"><section class="compare-hero shell" aria-labelledby="aca-title"><p class="eyebrow">自主编程 agent · 开源</p><h1 id="aca-title">开源的自主编程 agent，从 Issue 无人值守做到发版</h1><p class="hero-lede"><strong>终点是打 tag 的发版，不是合并。</strong>给一张 GitHub Issue 打上 <code>ai-ready</code>；Orbi 写代码、开 PR、独立评审，只合并审过的那个 head，再打 tag 发布 Release——中间不需要任何人在场。</p><div class="cta-row"><a class="button button-signal" href="https://github.com/orbi-build/orbi?ref=seo-autonomous-coding-agent">自托管 Orbi ↗</a><a class="button button-ghost" href="/zh/cloud/?ref=seo-autonomous-coding-agent">用 Cloud 运行 →</a></div></section></div>
+<section class="compare-section compare-section-tint" aria-labelledby="trust-title"><div class="shell"><p class="section-tag">无人值守靠什么</p><h2 class="orbi-compare-section-h2" id="trust-title">无人值守靠的是检查，不是模型自觉</h2><p class="section-lede">机制全部来自博文 <a href="/zh/blog/claude-code-github-actions-who-merges/">《Claude Code in Actions：谁按下的 merge？》</a>，没有外加。</p><ol class="event-list"><li class="orbi-event-list-li"><span class="event-era">01 · 两个会话</span><div><strong>评审者不是作者</strong><p class="orbi-event-list-p">写代码和评审是两个独立的模型会话。评审在 PR 开出之后才启动，读的是冻结的 diff；它可以直接修复分支、推送，然后对着新 head 再给一次结论。循环最多五轮，用完是停下，不是合并。</p></div></li><li class="orbi-event-list-li"><span class="event-era">02 · 合并门禁</span><div><strong>合并那一刻重新检查三件事</strong><p class="orbi-event-list-p">CI 在被评审的那个 head 上是绿的；评审之后 head 没动过；base 是最新。任何一条不满足，交付就停下等人——绝不会因为「看起来没问题」就合并。</p></div></li><li class="orbi-event-list-li"><span class="event-era">03 · 确定性发版</span><div><strong>发版是状态机，不是模型会话</strong><p class="orbi-event-list-p">它冻结 base、等 CI 绿、升版本号、打 tag、发布。任何一步失败就停下等人。</p></div></li></ol></div></section>
+<section class="compare-section shell" aria-labelledby="count-title"><p class="section-tag">公开证据</p><h2 class="orbi-compare-section-h2" id="count-title">Orbi 交付着自己的仓库</h2><p class="section-lede"><strong>546 个 PR 已合并，66 个 release 已打 tag</strong>——全部公开在 <a href="https://github.com/orbi-build/orbi" rel="noopener">github.com/orbi-build/orbi</a>。每一次评审结论都在公开的 Issue 里，两个数字欢迎自己去数。</p></section>
+<section class="compare-section compare-section-tint" aria-labelledby="human-title"><div class="shell"><p class="section-tag">人还要做什么</p><h2 class="orbi-compare-section-h2" id="human-title">写两张票：Issue 和发版票</h2><p class="section-lede">Issue 写清一个运行结果，和能被检查的验收项；发版票写清版本号和发版范围。这两张票就是全部——两张票之间，agent 无人值守地跑。</p><p class="thesis-punch">两张票之间，没有人在房间里。</p></div></section>
+<section class="compare-section shell" aria-labelledby="run-title"><p class="section-tag">两种跑法</p><h2 class="orbi-compare-section-h2" id="run-title">自托管，或者交给 Cloud</h2><div class="source-list"><p><strong>开源。</strong><br>仓库在 <a href="https://github.com/orbi-build/orbi?ref=seo-autonomous-coding-agent" rel="noopener">github.com/orbi-build/orbi</a>，协议 AGPL-3.0。</p><p><strong>自托管。</strong><br>一个 Python runner，可用任意 OpenAI 兼容 API（比如 DeepSeek），也可以用 ChatGPT/Codex 订阅登录。见 <a href="https://docs.orbi.build/providers" rel="noopener">provider 文档</a>。</p><p><strong>Orbi Cloud。</strong><br>用 GitHub 登录。前 3 次合并交付免费，不用绑卡；Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ token）；额度用完只暂停新交付，不超额计费。每个接入的仓库在独立的 Unix 用户下运行。<a href="/zh/cloud/?ref=seo-autonomous-coding-agent">从 Cloud 开始 →</a></p></div></section>
+<section class="compare-section compare-section-tint" aria-labelledby="cost-title"><div class="shell"><p class="section-tag">实测，不是口号</p><h2 class="orbi-compare-section-h2" id="cost-title">一次交付花多少钱</h2><p class="section-lede">非高峰时段交付的 20 个已合并 PR，中位成本是<strong>每个 PR $0.125</strong>。测量方法和逐 PR 的数字在<a href="/zh/cost/">成本页</a>。</p></div></section>
+<section class="compare-section shell" id="faq" aria-labelledby="faq-title"><p class="section-tag">FAQ</p><h2 class="orbi-compare-section-h2" id="faq-title">交出去之前的几个问题</h2><div class="source-list"><p><strong>真的无人值守吗？</strong><br>两张票之间，是的：实现、评审、合并、发版自己跑；任何检查不过就停下等你。</p><p><strong>用什么模型？</strong><br>任意 OpenAI 兼容 API（比如 DeepSeek），或 ChatGPT/Codex 订阅登录。</p><p><strong>花多少钱？</strong><br>自托管按 AGPL-3.0 免费，模型费用由你承担；Cloud 前 3 次合并交付免费、不用绑卡，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ token），额度用完只暂停新交付、不超额计费。实测中位数见<a href="/zh/cost/">成本页</a>。</p><p><strong>和 Devin 比呢？</strong><br>我们做了一份带日期的逐项实测对比，见 <a href="/zh/compare/devin/">Devin 对比页</a>。</p><p><strong>流程的终点在哪？</strong><br>打了 tag 的 GitHub Release。<a href="/zh/issue-to-release/">Issue-to-release 页</a>从标签到发版共六步。</p></div></section>
+<section class="closing shell"><p class="section-tag">ISSUE 进，RELEASE 出</p><h2 class="orbi-closing-h2">交出一张 Issue，收回一个发版</h2><p>提交、评审轮次、合并、打 tag，都是 agent 的事。</p><div class="cta-row"><a class="button button-dark" href="https://github.com/orbi-build/orbi?ref=seo-autonomous-coding-agent">自托管 Orbi ↗</a><a class="text-link" href="/zh/cloud/?ref=seo-autonomous-coding-agent">让 Cloud 来运行 →</a></div></section>
+</main>  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/autonomous-coding-agent/" lang="en" aria-label="English">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+  </footer><script src="/demo.js" defer></script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script></body></html>
