@@ -13,8 +13,8 @@ const pages = [
 
 const load = (file) => readFile(join(ROOT, file), "utf8");
 
-describe("Cloud onboarding demo (Issue #292)", () => {
-  it("puts an accessible proof video directly after the hero CTA in both mirrors", async () => {
+describe("Cloud onboarding demo (Issue #292, #578)", () => {
+  it("puts an accessible, user-initiated proof video directly after the hero CTA in both mirrors", async () => {
     for (const file of pages) {
       const html = await load(file);
       const cta = html.indexOf("hero-ctas");
@@ -28,11 +28,13 @@ describe("Cloud onboarding demo (Issue #292)", () => {
       for (const attribute of ["playsinline", "controls"]) {
         expect(video, `${file}: missing ${attribute}`).toMatch(new RegExp(`\\b${attribute}\\b`));
       }
-      for (const attribute of ["autoplay", "muted"]) {
-        expect(video, `${file}: Cloud video must have ${attribute}`).toMatch(new RegExp(`(?:^|\\s)${attribute}(?:\\s|=|$)`));
+      // Issue #578: the walkthrough carries narration — the visitor presses
+      // play and hears it. The element must not move on its own, so neither
+      // autoplay nor muted may ship, and nothing is preloaded.
+      for (const attribute of ["autoplay", "muted", "loop"]) {
+        expect(video, `${file}: Cloud video must not carry ${attribute}`).not.toMatch(new RegExp(`(?:^|\\s)${attribute}(?:\\s|=|$)`));
       }
-      expect(video, `${file}: Cloud video must not loop`).not.toMatch(/(?:^|\\s)loop(?:\\s|=|$)/);
-      expect(video).toContain('preload="metadata"');
+      expect(video).toContain('preload="none"');
       expect(video).toContain('poster="/video/cloud-onboarding-poster.jpg"');
       expect(video).toContain('src="/video/cloud-onboarding.mp4"');
       expect(video).toContain("aria-label=");
@@ -43,8 +45,13 @@ describe("Cloud onboarding demo (Issue #292)", () => {
     }
   });
 
-  it("keeps the reduced-motion poster fallback on the shared video component", async () => {
+  it("keeps the cloud video visible under reduced motion (Issue #578)", async () => {
     const css = await load("public/styles.css");
-    expect(css).toContain('@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }');
+    // The reduced-motion hide rule must be scoped to the homepage proof-loop
+    // (delivery-loop): the Cloud walkthrough never animates on its own —
+    // playback starts only on the visitor's click — so there is no motion to
+    // reduce and hiding the element would take the controls away with it.
+    expect(css).toContain('@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }');
+    expect(css, "Cloud demo must not carry a poster background stand-in").not.toContain('.cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg")');
   });
 });
