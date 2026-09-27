@@ -5,7 +5,9 @@
  * directory (sha256-verified against Google's, OFL licenses alongside).
  * unicode-range is Google's latin segment; glyphs outside it (CJK, latin-ext)
  * fall through to the system stacks in styles.css. Files are versioned in the
- * filename and never change; src/worker.js caches 200s for a year. */
+ * filename and never change; caching stays at the served default
+ * (max-age=0, must-revalidate) — the font long-cache work was deliberately
+ * left out of this ticket. */
 @font-face {
   font-family: "Familjen Grotesk";
   font-style: normal;

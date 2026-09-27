@@ -149,18 +149,27 @@ def parse(path: Path) -> tuple[str, PageParser]:
 def assert_self_hosted_fonts(test: unittest.TestCase, *htmls: str) -> None:
     """Every audited page loads fonts the way Issue #585 shipped them.
 
-    The page references neither Google font domain, does reference the
-    self-hosted /fonts/fonts.css, and no longer names Noto Sans SC; the
-    shipped fonts.css and styles.css carry no Noto Sans SC either (CJK
-    glyphs fall through to the system stacks).
+    The page loads the self-hosted /fonts/fonts.css stylesheet; every font
+    file that stylesheet declares ships in public/fonts/; and styles.css
+    carries the design system's display and body stacks (the English
+    families plus the CJK system stack from orbi-design-system tokens.json).
     """
     for html in htmls:
-        test.assertNotIn("fonts.googleapis.com", html)
-        test.assertNotIn("fonts.gstatic.com", html)
-        test.assertIn("/fonts/fonts.css", html)
-        test.assertNotIn("Noto Sans SC", html)
-    for css in ("public/fonts/fonts.css", "public/styles.css"):
-        test.assertNotIn("Noto Sans SC", (ROOT / css).read_text(encoding="utf-8"), css)
+        test.assertIn('<link rel="stylesheet" href="/fonts/fonts.css">', html)
+    fonts_css = (ROOT / "public" / "fonts" / "fonts.css").read_text(encoding="utf-8")
+    for src in re.findall(r'url\("(/fonts/[^"]+)"\)', fonts_css):
+        test.assertTrue((ROOT / "public" / src.lstrip("/")).is_file(), src)
+    styles_css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+    test.assertIn(
+        '--display: "Familjen Grotesk", "PingFang SC", "Hiragino Sans GB", '
+        '"Microsoft YaHei", "Noto Sans CJK SC", sans-serif;',
+        styles_css,
+    )
+    test.assertIn(
+        '--body: "Instrument Sans", "PingFang SC", "Hiragino Sans GB", '
+        '"Microsoft YaHei", "Noto Sans CJK SC", sans-serif;',
+        styles_css,
+    )
 
 
 class LandingTests(unittest.TestCase):
