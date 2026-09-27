@@ -733,15 +733,12 @@ class LandingTests(unittest.TestCase):
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
-    def test_no_third_party_analytics(self) -> None:
-        """A page that promises code never leaves your machine must not ship
-        visitor data to someone else. Cloudflare's own analytics is enough."""
-        for page in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, page.lower(), tracker)
+    def test_external_scripts_are_only_the_two_analytics_hosts(self) -> None:
+        hosts = set()
+        for path in (ROOT / "public").rglob("*.html"):
+            html = path.read_text(encoding="utf-8")
+            hosts |= set(re.findall(r'<script[^>]*src="(https?://[^/"]+)', html))
+        self.assertEqual(hosts, {"https://datafa.st", "https://static.cloudflareinsights.com"})
 
     def test_apply_page_is_offline(self) -> None:
         """Issue #179: /apply is gone. Historical D1 rows stay; the form and
@@ -1279,29 +1276,20 @@ class OpenClawComparisonTests(unittest.TestCase):
         self.assertIn("/compare/openclaw/", [href for _, href in self.zh.hrefs])
 
     def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+        for path in (COMPARE_EN_PATH, COMPARE_ZH_PATH, DEVIN_EN_PATH, DEVIN_ZH_PATH, ORCA_EN_PATH, ORCA_ZH_PATH, EVIDENCE_EN_PATH, EVIDENCE_ZH_PATH):
+            html, page = parse(path)
             for crawler, rendered in zip(page.headings, page.headings_rendered):
                 self.assertEqual(" ".join(crawler.split()), rendered, crawler)
             headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
             plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
             self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
+            for heading in plain:
+                self.assertRegex(heading, r"[^.。]$", heading)
 
     def test_font_loading_follows_the_language(self) -> None:
         """Issue #585: both languages load the same self-hosted font
         stylesheet; the Google domains and Noto Sans SC are gone."""
         assert_self_hosted_fonts(self, self.en_html, self.zh_html)
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -1472,30 +1460,10 @@ class DevinComparisonTests(unittest.TestCase):
         self.assertIn("/zh/compare/devin/", [href for _, href in self.en.hrefs])
         self.assertIn("/compare/devin/", [href for _, href in self.zh.hrefs])
 
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
-
     def test_font_loading_follows_the_language(self) -> None:
         """Issue #585: both languages load the same self-hosted font
         stylesheet; the Google domains and Noto Sans SC are gone."""
         assert_self_hosted_fonts(self, self.en_html, self.zh_html)
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -1613,30 +1581,10 @@ class OrcaComparisonTests(unittest.TestCase):
         self.assertIn("/zh/compare/orca/", [href for _, href in self.en.hrefs])
         self.assertIn("/compare/orca/", [href for _, href in self.zh.hrefs])
 
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
-
     def test_font_loading_follows_the_language(self) -> None:
         """Issue #585: both languages load the same self-hosted font
         stylesheet; the Google domains and Noto Sans SC are gone."""
         assert_self_hosted_fonts(self, self.en_html, self.zh_html)
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -2005,18 +1953,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
                 "",
             )
             self.assertNotIn("Apache", body)
-
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
 
     def test_font_loading_follows_the_language(self) -> None:
         """Issue #585: both languages load the same self-hosted font

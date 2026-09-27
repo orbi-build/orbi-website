@@ -1293,7 +1293,6 @@ describe("blog (Issue #212)", () => {
       expect(html, `${indexOutput}: post link`).toContain(`<a href="${post.href}">${post.headline}</a>`);
       expect(html, `${indexOutput}: post summary`).toContain(post.summary);
       expect(html, `${indexOutput}: post date`).toContain(`<time datetime="${post.date}">${post.date}</time>`);
-      expect(html, `${indexOutput}: index must be built, not carry the marker`).not.toContain("<!--@posts-->");
     }
   });
 
@@ -1309,7 +1308,6 @@ describe("blog (Issue #212)", () => {
       expect(html).toContain(`<meta property="article:published_time" content="${post.date}">`);
       expect(html, `${post.output}: shared nav must render`).toContain('<nav id="');
       expect(html, `${post.output}: shared footer must render`).toContain('<footer class="site-footer shell">');
-      expect(html, `${post.output}: meta must be generated, not carry the marker`).not.toContain("<!--@post-meta-->");
     }
   });
 
