@@ -2006,3 +2006,17 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
 // pinned the privacy-page sentences as regexes. The no-"signins"-table guard
 // and the rest of the privacy wording are no longer pinned here.
 
+
+describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
+  it("ships the three proof screenshots deferred on both homes", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const html = shipped.get(output);
+      for (const src of ["/img/issue-48.png", "/img/pr-193.png", "/img/release-v020.png"]) {
+        const img = html.match(new RegExp(`<img[^>]*src="${src}"[^>]*>`))?.[0];
+        expect(img, `${output}: ${src} tag`).toBeTruthy();
+        expect(img, `${output}: ${src} loading`).toContain('loading="lazy"');
+        expect(img, `${output}: ${src} decoding`).toContain('decoding="async"');
+      }
+    }
+  });
+});
