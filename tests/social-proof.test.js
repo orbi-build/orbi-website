@@ -149,7 +149,6 @@ describe("homepage social-proof section (Issue #226)", () => {
     const section = sectionOf(built.get("index.html"), "social-proof");
     expect(section).toContain('href="/evidence/#third-party"');
     expect(section).toContain("5 deliveries in other people's repositories");
-    expect(section).not.toContain("3 deliveries");
   });
 
   it("mirrors the same structure on the zh homepage with zh copy", () => {

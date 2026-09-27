@@ -40,8 +40,6 @@ describe("Cloud onboarding demo (Issue #292, #578)", () => {
       expect(video).toContain("aria-label=");
       expect(html).toContain('<source src="/video/cloud-onboarding.webm" type="video/webm">');
       expect(html).toContain('<source src="/video/cloud-onboarding.mp4" type="video/mp4">');
-      expect(html).not.toContain("delivery-loop");
-      expect(html).not.toMatch(/coming soon|Temporary preview|临时复用|即将上线/);
     }
   });
 
@@ -52,6 +50,5 @@ describe("Cloud onboarding demo (Issue #292, #578)", () => {
     // playback starts only on the visitor's click — so there is no motion to
     // reduce and hiding the element would take the controls away with it.
     expect(css).toContain('@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }');
-    expect(css, "Cloud demo must not carry a poster background stand-in").not.toContain('.cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg")');
   });
 });

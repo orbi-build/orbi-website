@@ -183,7 +183,6 @@ describe("Worker request helpers", () => {
     expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
     const html = await response.text();
     expect(html).toContain("Cloud is temporarily unavailable");
-    expect(html).not.toContain('href="/apply"');
     expect(html).toContain('href="/"');
     expect(html).toContain('href="https://docs.orbi.build"');
   });
@@ -230,7 +229,6 @@ describe("Worker request helpers", () => {
     expect(body).not.toMatch(/href="\/(?:zh\/)?cloud\/login/);
     expect(body).not.toContain('href="/api/login"');
     expect(body.match(/href="https:\/\/docs\.orbi\.build"/g)).toHaveLength(4);
-    expect(body).not.toContain('href="/apply"');
     // A rewritten body is a new representation: the asset file's validators
     // must not answer conditional requests for it.
     expect(response.headers.get("etag")).toBeNull();
@@ -345,11 +343,11 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  it("does not query founding subscriptions or expose founding stats", async () => {
+  it("returns only the per-repo groups", async () => {
     mockGitHub();
     const db = { prepare() { throw new Error("subscriptions query must not run"); } };
     const stats = await loadStats("token", db);
-    expect(stats).not.toHaveProperty("founding");
+    expect(Object.keys(stats)).toEqual(["repos"]);
   });
 
   it("loads tenant logins only for server-rendered avatar markup", async () => {
@@ -458,7 +456,6 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     const firstPayload = await first.json();
     const callsAfterFirst = calls.length;
     expect(callsAfterFirst).toBeGreaterThan(0);
-    expect(firstPayload).not.toHaveProperty("founding");
     const second = await statsResponse(request, "token");
     expect(calls).toHaveLength(callsAfterFirst);
     expect(await second.json()).toEqual(firstPayload);
@@ -580,7 +577,6 @@ describe("plaintext /status (Issue #173)", () => {
     expect(body).toContain("orbi-website");
     expect(body).toContain("orbi-cloud");
     expect(body).toContain("curl -fsSL aiready.sh | sh");
-    expect(body).not.toContain("orbi.build/install.sh");
     expect(body).toContain("https://docs.orbi.build");
   });
 

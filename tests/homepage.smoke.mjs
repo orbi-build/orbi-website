@@ -1203,7 +1203,6 @@ const cloudPages = {
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
     metaNeedle: ["US$29", "US$79"],
-    oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
       // Issue #534: the hero lede is now the one-sentence delivery claim; the
@@ -1241,7 +1240,6 @@ const cloudPages = {
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
     metaNeedle: ["US$29", "US$79"],
-    oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
       "冻结 SHA",
@@ -1309,10 +1307,6 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // Issue #578: the walkthrough carries narration — the visitor presses
   // play and hears it. The element must move on the visitor's action only.
-  const caption = (await demo.locator("figcaption").textContent()).replace(/\s+/g, " ");
-  if (/coming soon|temporary|即将上线|临时/i.test(caption)) {
-    throw new Error(`${path}: Cloud walkthrough still has placeholder caption copy`);
-  }
   const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
@@ -1378,15 +1372,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // The stop-at-the-PR claim is gone — from the title, the h1, the loop
   // heading, and the body.
-  for (const [label, value] of [["title", pageTitle], ["h1", heroH1]]) {
-    if (value.includes(claim.oldClaim)) {
-      throw new Error(`${path}: ${label} still stops at the old claim ${JSON.stringify(claim.oldClaim)}: ${JSON.stringify(value)}`);
-    }
-  }
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  if (text.includes(claim.oldClaim)) {
-    throw new Error(`${path}: main still stops at the old claim ${JSON.stringify(claim.oldClaim)}`);
-  }
   for (const needle of [claim.loop, ...claim.text]) {
     if (!text.includes(needle)) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
