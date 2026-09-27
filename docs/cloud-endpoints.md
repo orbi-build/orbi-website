@@ -26,10 +26,10 @@ Website endpoints therefore live outside those prefixes:
 
 ## Cloud entry configuration
 
-The Cloud login URL is configured per environment in `wrangler.toml` as `CLOUD_LOGIN_URL`; the Worker adds no route of its own beyond the `/cloud/login` handoff. The verified beta values (Issue #528, measured live 2026-09-26):
+The Cloud login URL is configured per environment in `wrangler.toml` as `CLOUD_LOGIN_URL`; the Worker adds no route of its own beyond the `/cloud/login` handoff. The verified beta values (measured live 2026-09-26; `CLOUD_LOGIN_URL` retargeted by Issue #570 and re-checked live 2026-09-27):
 
-- Cloud beta start entry (`CLOUD_LOGIN_URL`, what `/cloud/login` 302s to): `https://beta.orbi.build/api/start` — the one-step entry: signed-out visitors are redirected to the GitHub App installation page (authorization included), signed-in users to the status page.
-- Cloud beta sign-in (the nav Sign in link's `/api/login`): `https://beta.orbi.build/api/login` — the classic OAuth entry, still live.
+- Cloud beta sign-in (`CLOUD_LOGIN_URL` since Issue #570, what `/cloud/login` 302s to): `https://beta.orbi.build/api/login` — the classic OAuth entry, measured 302 to GitHub's `/login/oauth/authorize` (with `client_id` and `redirect_uri`). It replaces Issue #528's one-step `/api/start`, which stranded a user who had installed the App but was not signed in to Orbi on the GitHub App installation page; after this sign-in, Cloud itself sends a user who returns without an installation on to the installation page.
+- Cloud beta one-step start entry (Issue #528; no longer `CLOUD_LOGIN_URL`): `https://beta.orbi.build/api/start` — signed-out visitors went straight to the GitHub App installation page (authorization included), signed-in users to the status page.
 - Cloud beta health check: `https://beta.orbi.build/api/healthz`
 
 Do not infer a Cloud hostname from a repository name, an environment name, or a hostname pattern. Use the endpoints above only when the beta Cloud API is the target. No other Cloud hostname is established by this document.

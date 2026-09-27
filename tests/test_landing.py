@@ -460,9 +460,11 @@ class LandingTests(unittest.TestCase):
         # rewritten to https://docs.orbi.build — is locked where it runs, in
         # tests/worker.test.js. Only beta's value is pinned: it must stay the
         # one verified beta Cloud endpoint (docs/cloud-endpoints.md). Issue
-        # #528: that endpoint is /api/start, the one-step GitHub App entry
-        # (measured live 2026-09-26: 302 to the App installation page).
-        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/start")
+        # #570: that endpoint is /api/login, the classic GitHub sign-in entry
+        # (measured live 2026-09-26: 302 to GitHub's OAuth authorize URL) —
+        # #528's one-step /api/start stranded a user who had installed the App
+        # but was not signed in to Orbi on the installation page.
+        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
         worker = WORKER_PATH.read_text(encoding="utf-8")
         self.assertIn("new URL(cloudBaseUrl)", worker)
         self.assertIn("CLOUD_LOGIN_URL", worker)
@@ -870,8 +872,8 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
-        # environment; Issue #528: beta's is the 302 chain from the handoff
-        # through /api/start into GitHub's App installation page
+        # environment; Issue #570: beta's is the 302 chain from the handoff
+        # through /api/login into GitHub's OAuth sign-in authorization
         self.assertIn("CLOUD_LOGIN_EXPECT=github-app-302", workflow)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
