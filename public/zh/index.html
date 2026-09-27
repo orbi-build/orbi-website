@@ -230,6 +230,9 @@
             </li>
           </ol>
         </div>
+        <figcaption>
+          <button class="trace-film" type="button" data-cta="film-play" aria-haspopup="dialog" aria-controls="film-dialog">▶ 观看短片 · 1:35</button>
+        </figcaption>
       </figure>
     </section>
 
@@ -602,6 +605,25 @@ orbi setup --config orbi.toml</code></pre>
     </section>
   </main>
 
+  <!-- Issue #575: 与英文首页（Issue #571）相同的品牌片弹层。放在 </main> 之外
+       （dialog 不是页面内容），只从 trace figure 的入口打开。视频与字幕沿用
+       同一份英文素材；登录跳转用中文页的语言匹配路径 /zh/cloud/login。 -->
+  <dialog id="film-dialog" aria-label="Orbi 品牌短片">
+    <button class="film-close" type="button" aria-label="关闭">×</button>
+    <video id="film-video" controls playsinline preload="none" poster="/video/orbi-film-poster.jpg">
+      <source src="/video/orbi-film.webm" type="video/webm">
+      <source src="/video/orbi-film.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="English" src="/video/orbi-film.en.vtt">
+    </video>
+    <div class="film-foot">
+      <p class="film-evidence">真实运行：<a class="film-evidence-a" href="https://github.com/orbi-build/orbi/issues/1367">Issue #1367</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/pull/1370">PR #1370</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.47">v0.5.47</a></p>
+      <div class="film-end" hidden>
+        <a class="button button-signal" data-cta="film-end-cloud" href="/zh/cloud/login">用 GitHub 登录 <span aria-hidden="true">↗</span></a>
+        <a class="button button-ghost" data-cta="film-end-selfhost" href="https://github.com/orbi-build/orbi">自己部署 <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="site-footer shell">
     <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
@@ -655,6 +677,50 @@ orbi setup --config orbi.toml</code></pre>
   </footer>
 
   <script src="/demo.js" defer></script>
+  <script>
+    // Issue #575: 与英文首页相同的弹层脚本（Issue #571）。共享 engagement 脚本
+    // 的 send() 保持私有；入口按钮和片尾按钮用各自的 data-cta 上报。
+    (() => {
+      const dialog = document.getElementById("film-dialog");
+      const video = document.getElementById("film-video");
+      const evidence = dialog.querySelector(".film-evidence");
+      const endRow = dialog.querySelector(".film-end");
+      const beacon = (detail) => {
+        navigator.sendBeacon("/cloud/e", new Blob([JSON.stringify({ kind: "cta_click", path: location.pathname, detail })], { type: "application/json" }));
+      };
+      let halfSent = false;
+      let endSent = false;
+      document.getElementById("factory-trace").addEventListener("click", (event) => {
+        if (event.target.closest("a")) return; // an existing link navigates; the rest of the figure opens the film
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        dialog.showModal();
+      });
+      dialog.querySelector(".film-close").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close(); // the backdrop
+      });
+      dialog.addEventListener("close", () => video.pause());
+      video.addEventListener("play", () => {
+        endRow.hidden = true;
+        evidence.hidden = false;
+      });
+      video.addEventListener("ended", () => {
+        evidence.hidden = true;
+        endRow.hidden = false;
+        if (!endSent) {
+          endSent = true;
+          beacon("film-100");
+        }
+      });
+      video.addEventListener("timeupdate", () => {
+        if (!halfSent && video.duration > 0 && video.currentTime / video.duration >= 0.5) {
+          halfSent = true;
+          beacon("film-50");
+        }
+      });
+    })();
+  </script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->
