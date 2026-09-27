@@ -177,46 +177,55 @@ function fill(template, slots) {
   return out;
 }
 
+// Issue #610: a page that also lives on another host (aiready.sh serves the
+// aiready pages) prefixes its chrome links with the site base, so nav and
+// footer links land on orbi.build instead of dead paths on the other host.
+function withSiteBase(nav, href) {
+  return nav?.siteBase && href.startsWith("/") ? `${nav.siteBase}${href}` : href;
+}
+
 export function renderNav(page, partial = NAV_PARTIAL) {
   if (!partial) throw new Error("nav partial not loaded; call buildPages() first or pass the partial");
   const t = LANG[page.lang];
   const n = page.nav;
   if (!n) throw new Error(`${page.output}: page has no nav params`);
+  const base = (href) => withSiteBase(n, href);
   const compareAttrs =
     (n.compareDataCta ? ' data-cta="comparisons"' : "") +
     (n.compareCurrent ? ' aria-current="page"' : "");
   const costAttrs = n.costCurrent ? ' aria-current="page"' : "";
   const join = n.compareCostSameLine ? "" : "\n        ";
   const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
-  const otherLine = `<a href="${n.langSwitchHref}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
+  const otherLine = `<a href="${base(n.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
   const [lineA, lineB] = n.langCurrentFirst
     ? [currentLine, otherLine]
     : [otherLine, currentLine];
   return fill(partial, {
-    HOME_HREF: t.homeHref,
+    HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
     TOGGLE_ARIA: t.toggleAria,
     TOGGLE_OPEN: t.toggleOpen,
     TOGGLE_CLOSE: t.toggleClose,
     NAV_ID: n.navId,
     NAV_ARIA: t.navAria,
-    SYSTEM_HREF: n.systemHref,
+    SYSTEM_HREF: base(n.systemHref),
     SYSTEM_LABEL: t.systemLabel,
-    COMPARE_HREF: n.compareHref,
+    COMPARE_HREF: base(n.compareHref),
     COMPARE_ATTRS: compareAttrs,
     COMPARE_LABEL: n.compareLabel,
     COMPARE_COST_JOIN: join,
-    COST_HREF: n.costHref,
+    COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
     DOCS_ITEM: n.docsDropdown
       ? `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.docsMenuId}" data-docs-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.docsMenuId}" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`
-      : `<a href="${n.docsHref}">${t.docsLabel}</a>`,
-    BLOG_HREF: `${t.langPrefix}/blog/`,
+      : `<a href="${base(n.docsHref)}">${t.docsLabel}</a>`,
+    BLOG_HREF: base(`${t.langPrefix}/blog/`),
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
     SIGNIN_LABEL: t.signInLabel,
-    CLOUD_HREF: `${t.langPrefix}/cloud/`,
+    SIGNIN_HREF: base("/api/login"),
+    CLOUD_HREF: base(`${t.langPrefix}/cloud/`),
     LANG_GROUP_ARIA: t.langGroupAria,
     LANG_LINE_A: lineA,
     LANG_LINE_B: lineB,
@@ -230,42 +239,43 @@ export function renderFooter(page) {
   // absolute path in front — "/#faq" on EN pages, "/zh/#faq" on ZH pages
   // (Issue #106: the anchor-prefix rule).
   const anchorPrefix = isHome ? "" : `${t.langPrefix}/`;
+  const base = (href) => withSiteBase(page.nav, href);
   const deepLinks = DEEP_DIVES.map(
     ([slug, name]) =>
-      `      <a href="${t.langPrefix}/compare/${slug}/">${name}</a>`
+      `      <a href="${base(`${t.langPrefix}/compare/${slug}/`)}">${name}</a>`
   ).join("\n");
   return fill(FOOTER_PARTIAL, {
-    HOME_HREF: t.homeHref,
+    HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
     TAGLINE: t.tagline,
     FOOTER_NAV_ARIA: t.footerNavAria,
-    DOCS_HREF: page.nav?.docsHref ?? t.docsHref,
+    DOCS_HREF: base(page.nav?.docsHref ?? t.docsHref),
     DOCS_LABEL: t.docsLabel,
     CLOUD_DOCS_HREF: t.cloudDocsHref,
     CLOUD_DOCS_LABEL: t.cloudDocsLabel,
-    CLOUD_HREF: `${t.langPrefix}/cloud/`,
+    CLOUD_HREF: base(`${t.langPrefix}/cloud/`),
     CLOUD_LABEL: t.cloudLabel,
-    COST_HREF: `${t.langPrefix}/cost/`,
+    COST_HREF: base(`${t.langPrefix}/cost/`),
     COST_LABEL: t.costLabel,
-    EVIDENCE_HREF: `${t.langPrefix}/evidence/`,
+    EVIDENCE_HREF: base(`${t.langPrefix}/evidence/`),
     EVIDENCE_LABEL: t.evidenceLabel,
-    COMPARE_HREF: `${t.langPrefix}/compare/`,
+    COMPARE_HREF: base(`${t.langPrefix}/compare/`),
     COMPARE_LABEL: t.compareLabel,
-    FAQ_HREF: `${anchorPrefix}#faq`,
+    FAQ_HREF: base(`${anchorPrefix}#faq`),
     FAQ_LABEL: t.faqLabel,
     RELEASES_LABEL: t.releasesLabel,
     STATUS_LABEL: t.statusLabel,
-    PRIVACY_HREF: `${t.langPrefix}/privacy/`,
+    PRIVACY_HREF: base(`${t.langPrefix}/privacy/`),
     PRIVACY_LABEL: t.privacyLabel,
-    TERMS_HREF: `${t.langPrefix}/terms/`,
+    TERMS_HREF: base(`${t.langPrefix}/terms/`),
     TERMS_LABEL: t.termsLabel,
-    SUPPORT_HREF: `${t.langPrefix}/support/`,
+    SUPPORT_HREF: base(`${t.langPrefix}/support/`),
     SUPPORT_LABEL: t.supportLabel,
-    DIRECTION_HREF: `${anchorPrefix}#direction`,
+    DIRECTION_HREF: base(`${anchorPrefix}#direction`),
     DIRECTION_LABEL: t.directionLabel,
     ROADMAP_LABEL: t.roadmapLabel,
     // mirror "zh/cloud/index.html" → "/zh/cloud/"; "index.html" → "/"
-    LANG_SWITCH_HREF: `/${page.mirror.replace(/index\.html$/, "")}`.replace("//", "/"),
+    LANG_SWITCH_HREF: base(`/${page.mirror.replace(/index\.html$/, "")}`.replace("//", "/")),
     OTHER_LANG_ATTR: t.otherLangAttr,
     OTHER_LANG_LABEL: t.otherLangLabel,
     OTHER_LANG_ARIA: t.otherLangAria,

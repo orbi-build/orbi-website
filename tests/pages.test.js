@@ -448,7 +448,11 @@ describe("language mirrors (the forgotten-zh gate)", () => {
     }
     const enPaths = content.filter((p) => p.lang === "en").map((p) => p.output);
     const zhPaths = content.filter((p) => p.lang === "zh").map((p) => p.output);
-    expect(zhPaths).toEqual(enPaths.map((p) => `zh/${p}`));
+    // The ZH tree mirrors the EN paths (zh/<path>); the aiready pages are the
+    // one nested pair (aiready/zh/, the aiready.sh /zh route), so the check
+    // follows each page's own mirror declaration — a missing or extra ZH page
+    // still fails.
+    expect(zhPaths).toEqual(enPaths.map((p) => pages.find((page) => page.output === p).mirror).sort());
   });
 
   it("keeps nav, footer and CTA counts equal across each mirror pair", () => {
@@ -484,25 +488,28 @@ describe("one unified footer on every content page", () => {
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
       const prefix = page.lang === "zh" ? "/zh" : "";
       const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;
+      // Issue #610: pages living on another host (aiready.sh) prefix their
+      // chrome links with the site base, so they land on orbi.build.
+      const base = page.nav?.siteBase ?? "";
       expect(items, `${page.output}: footer nav drifted`).toEqual([
         page.nav.docsHref,
         "https://cloud-docs.orbi.build/?ref=footer",
-        `${prefix}/cloud/`,
-        `${prefix}/cost/`,
-        `${prefix}/evidence/`,
-        `${prefix}/compare/`,
+        `${base}${prefix}/cloud/`,
+        `${base}${prefix}/cost/`,
+        `${base}${prefix}/evidence/`,
+        `${base}${prefix}/compare/`,
         "https://github.com/orbi-build/orbi",
         "https://x.com/xqliu",
         "https://www.youtube.com/@orbibuild",
-        `${anchor}#faq`,
+        `${base}${anchor}#faq`,
         "https://github.com/orbi-build/orbi/releases",
         "https://status.orbi.build",
-        `${prefix}/privacy/`,
-        `${prefix}/terms/`,
-        `${prefix}/support/`,
-        `${anchor}#direction`,
+        `${base}${prefix}/privacy/`,
+        `${base}${prefix}/terms/`,
+        `${base}${prefix}/support/`,
+        `${base}${anchor}#direction`,
         "https://github.com/orbi-build/orbi/milestones",
-        pathToHref(page.mirror),
+        `${base}${pathToHref(page.mirror)}`,
         "https://www.opensourcealternatives.to/",
         "https://ezbdc.dashu.ai/",
       ]);
@@ -547,9 +554,10 @@ describe("one unified footer on every content page", () => {
       const hrefs = [...deep.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
       expect(hrefs, `${page.output}: deep-dive links drifted`).toHaveLength(11);
       const prefix = page.lang === "zh" ? "/zh" : "";
+      const base = (page.nav?.siteBase ?? "").replaceAll(".", "\\.");
       for (const href of hrefs) {
         expect(href, `${page.output}: deep dive ${href} must live under ${prefix}/compare/`).toMatch(
-          new RegExp(`^${prefix}/compare/[a-z-]+/$`),
+          new RegExp(`^${base}${prefix}/compare/[a-z-]+/$`),
         );
       }
       // Issue #91 smoke contract: the ZH footer must never link the EN tree.
@@ -563,7 +571,7 @@ describe("one unified footer on every content page", () => {
   it("switches language to the mirror page from nav and footer", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
-      const expected = pathToHref(page.mirror);
+      const expected = `${page.nav?.siteBase ?? ""}${pathToHref(page.mirror)}`;
       const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
       expect(navSwitch, `${page.output}: nav language switch`).toEqual([expected]);
@@ -738,7 +746,8 @@ describe("pricing nav entry (Issue #165)", () => {
   it("points every page's Cost/Pricing nav item at the Cloud pricing section", () => {
     for (const page of pages.filter((p) => p.nav)) {
       const nav = navRegion(shipped.get(page.output));
-      const href = page.lang === "zh" ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+      const base = page.nav?.siteBase ?? "";
+      const href = `${base}${page.lang === "zh" ? "/zh/cloud/#pricing" : "/cloud/#pricing"}`;
       const label = page.lang === "zh" ? "价格" : "Pricing";
       expect(nav, `${page.output}: nav missing ${href}`).toContain(`href="${href}"`);
       expect(nav, `${page.output}: nav missing label ${label}`).toContain(`>${label}<`);
@@ -1022,7 +1031,7 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     // button in DOM order — its left in the nav row.
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
     expect(partial, "nav partial carries the Sign in slot").toContain(
-      '<a href="/api/login">{{SIGNIN_LABEL}}</a>',
+      '<a href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
     );
     expect(partial.indexOf('href="/api/login"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
     for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
