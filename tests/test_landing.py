@@ -1903,5 +1903,42 @@ class BootstrapEvidenceTests(unittest.TestCase):
         self.assertIn("/evidence/", [href for _, href in self.zh.hrefs])
 
 
+TERMS_EN_PATH = ROOT / "public" / "terms" / "index.html"
+TERMS_ZH_PATH = ROOT / "public" / "zh" / "terms" / "index.html"
+PRIVACY_EN_PATH = ROOT / "public" / "privacy" / "index.html"
+PRIVACY_ZH_PATH = ROOT / "public" / "zh" / "privacy" / "index.html"
+SUPPORT_EN_PATH = ROOT / "public" / "support" / "index.html"
+SUPPORT_ZH_PATH = ROOT / "public" / "zh" / "support" / "index.html"
+AIREADY_EN_PATH = ROOT / "public" / "aiready" / "index.html"
+AIREADY_ZH_PATH = ROOT / "public" / "aiready" / "zh" / "index.html"
+CLAUDE_CODE_EN_PATH = ROOT / "public" / "compare" / "claude-code" / "index.html"
+CLAUDE_CODE_ZH_PATH = ROOT / "public" / "zh" / "compare" / "claude-code" / "index.html"
+
+
+class SelfHostedFontsOnEveryAuditedPageTests(unittest.TestCase):
+    """Issue #604: the ten pages that shipped without the /fonts/fonts.css
+    link fell through the CJK system stack to Microsoft YaHei / PingFang SC,
+    which rendered their English with full-width quotes and broken words."""
+
+    PAGES = (
+        TERMS_EN_PATH,
+        TERMS_ZH_PATH,
+        PRIVACY_EN_PATH,
+        PRIVACY_ZH_PATH,
+        SUPPORT_EN_PATH,
+        SUPPORT_ZH_PATH,
+        AIREADY_EN_PATH,
+        AIREADY_ZH_PATH,
+        CLAUDE_CODE_EN_PATH,
+        CLAUDE_CODE_ZH_PATH,
+    )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        for path in self.PAGES:
+            with self.subTest(page=str(path)):
+                html, _ = parse(path)
+                assert_self_hosted_fonts(self, html)
+
+
 if __name__ == "__main__":
     unittest.main()
