@@ -99,26 +99,29 @@ describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
   });
 });
 
-describe("homepage film note beside the film button (Issue #607)", () => {
-  // The note carries the film's argument — the lights-out belief, what the
-  // line already ships, and the human sign-off before the merge — so the
-  // visitor learns what the button opens before clicking it.
+describe("homepage film button states the film's argument (Issue #607)", () => {
+  // The button is a two-line block: the note above says what the film argues
+  // — the lights-out belief, releases already shipping, the human merge gate
+  // — and the ▶ line below is the original entry. Both spans live inside the
+  // <button>, so the whole card is the click target.
   const cases = [
-    ["public/index.html", "We believe software can be built in lights-out factories. Orbi is our line toward that, already shipping releases and improving as models do. Want the final say? Orbi stops before the merge and waits for your sign-off."],
-    ["public/zh/index.html", "我们相信，软件也能像黑灯工厂那样生产，Orbi 就是我们朝这个方向搭的产线。它现在已经在发版本，换上更强的模型，它就跟着变强。想自己把关？让它停在合并前，等你点头。"],
+    ["public/index.html", "We're building a lights-out factory for software. It already ships releases, and you keep the merge gate.", "▶ Watch the film · 1:35"],
+    ["public/zh/index.html", "我们在造软件的黑灯工厂。它已经在发版本，合并这一步由你把关。", "▶ 观看短片 · 1:35"],
   ];
 
-  for (const [file, note] of cases) {
-    it(`${file} states the film's argument in the trace caption, before its button`, async () => {
+  for (const [file, note, cta] of cases) {
+    it(`${file} carries the note and the ▶ line inside the film button, note first`, async () => {
       const html = await read(file);
       const figure = html.match(/<figure class="factory-trace"[\s\S]*?<\/figure>/)?.[0] ?? "";
-      const caption = figure.match(/<figcaption>[\s\S]*?<\/figcaption>/)?.[0] ?? "";
-      expect(caption, `${file}: film note present in the trace figcaption`).toContain('class="trace-film-note"');
-      expect(caption.match(/<p class="trace-film-note">([\s\S]*?)<\/p>/)?.[1], `${file}: note copy verbatim`).toBe(note);
+      const button = figure.match(/<button[^>]*data-cta="film-play"[\s\S]*?<\/button>/)?.[0] ?? "";
+      expect(button, `${file}: the film button holds a note span`).toContain('class="trace-film-note"');
+      expect(button, `${file}: the film button holds a ▶ span`).toContain('class="trace-film-cta"');
+      expect(button.match(/<span class="trace-film-note">([\s\S]*?)<\/span>/)?.[1], `${file}: note copy verbatim`).toBe(note);
+      expect(button.match(/<span class="trace-film-cta">([\s\S]*?)<\/span>/)?.[1], `${file}: ▶ line verbatim`).toBe(cta);
       expect(
-        caption.indexOf('class="trace-film-note"'),
-        `${file}: note precedes the film button`
-      ).toBeLessThan(caption.indexOf('data-cta="film-play"'));
+        button.indexOf("trace-film-note"),
+        `${file}: note precedes the ▶ line`
+      ).toBeLessThan(button.indexOf("trace-film-cta"));
     });
   }
 });
