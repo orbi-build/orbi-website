@@ -242,7 +242,7 @@ describe("Worker request helpers", () => {
     const response = await handleFetch(
       new Request("https://beta.orbi.build/"),
       {
-        CLOUD_LOGIN_URL: "https://beta.orbi.build/api/start",
+        CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
         ASSETS: {
           fetch: () => Promise.resolve(new Response(html, {
             headers: { "Content-Type": "text/html; charset=utf-8" },
