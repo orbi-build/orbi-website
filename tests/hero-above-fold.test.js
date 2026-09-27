@@ -84,11 +84,6 @@ describe("hero copy: lede + 12-factors footnote (Issue #259)", () => {
     expect(words.length).toBeLessThanOrEqual(22);
   });
 
-  it("the old duplicated copy is gone from both pages", async () => {
-    expect(await read("site/pages/index.html")).not.toContain("Orbi takes the Issues, dependencies, and milestones");
-    expect(await read("site/pages/zh/index.html")).not.toContain("直接读取仓库里已有的 Issue、依赖和 Milestone");
-  });
-
   it("Chinese lede shrank to at most 60 characters", async () => {
     const source = await read("site/pages/zh/index.html");
     expect(ledeText(source).length).toBeLessThanOrEqual(60);

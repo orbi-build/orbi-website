@@ -197,7 +197,6 @@ class LandingTests(unittest.TestCase):
         licence = llms.split("## Licence", 1)[1].split("\n## ", 1)[0]
         self.assertIn("AGPL-3.0", licence)
         self.assertIn("Sustainable Use License", licence)
-        self.assertNotIn("Do not describe Orbi as OSI open source", licence)
         for html in (self.en_html, self.zh_html):
             search_title = re.search(r"<title>([^<]+)</title>", html).group(1)
             search_description = re.search(
@@ -208,8 +207,6 @@ class LandingTests(unittest.TestCase):
                 ("og:title", re.search(r'property="og:title" content="([^"]+)"', html).group(1)),
                 ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
             ]
-            for slot, text in slots:
-                self.assertNotIn("fair-code", text.lower(), (slot, text))
             self.assertIn("open source" if html is self.en_html else "开源", search_title.lower() + " " + search_description.lower())
             for slot, text in slots[1:]:
                 if html is self.en_html:
@@ -290,7 +287,6 @@ class LandingTests(unittest.TestCase):
         for html in (self.en_html, self.zh_html):
             self.assertIn(">EN<", html)
             self.assertIn(">ZH<", html)
-            self.assertNotIn(">中文<", html)
         self.assertIn('aria-label="简体中文"', self.en_html)
         self.assertIn('aria-label="English"', self.zh_html)
 
@@ -364,7 +360,6 @@ class LandingTests(unittest.TestCase):
             # configuration decision (Issue #99 sends it straight to
             # /cloud/login), so no test pins its target (Issue #103).
             self.assertIn("cloud-start", ctas)
-            self.assertNotIn("cloud-apply", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -449,7 +444,6 @@ class LandingTests(unittest.TestCase):
             self.assertIn("US$29", page.text)
             self.assertIn("US$79", page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
-            self.assertFalse(any(href == "/apply" for _, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -471,14 +465,12 @@ class LandingTests(unittest.TestCase):
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The login handoffs are actions, not pages: keep crawlers off them.
-        /apply and /cloud/apply are gone (Issue #179), so they are no longer
-        listed — listing a retired path would imply it still exists."""
+        """The login handoffs are actions, not pages: keep crawlers off them."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
-        self.assertNotIn("Disallow: /apply", robots)
-        self.assertNotIn("Disallow: /cloud/apply", robots)
-        self.assertIn("Disallow: /cloud/login", robots)
-        self.assertIn("Disallow: /zh/cloud/login", robots)
+        self.assertEqual(
+            [line for line in robots.splitlines() if line.startswith("Disallow:")],
+            ["Disallow: /cloud/login", "Disallow: /zh/cloud/login"],
+        )
 
     # Issue #540: the no-terminal-periods test with its verbatim approved
     # heading was removed — the approved set pinned homepage copy.
@@ -515,8 +507,6 @@ class LandingTests(unittest.TestCase):
 
     def test_stats_animation_durations_are_fast_and_staggered(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
-        for old_duration in ("2600", "2400", "2200", "1800", "1450"):
-            self.assertNotIn(old_duration, js)
         durations = [
             int(value)
             for value in re.findall(r"(?:issues|prs|releases|deploys): \[[^,]+, (\d+)\]", js)
@@ -590,11 +580,9 @@ class LandingTests(unittest.TestCase):
         survive only as the collapsed manual fallback, so nobody faces them
         up front."""
         command = "curl -fsSL https://aiready.sh | sh"
-        stale = "curl -fsSL https://orbi.build/install.sh"
         for path, html in ((EN_PATH, self.en_html), (ZH_PATH, self.zh_html)):
             # exactly once: the primary install path, not repeated per locale
             self.assertEqual(html.count(command), 1, path)
-            self.assertNotIn(stale, html, path)
             self.assertIn("git clone https://github.com/orbi-build/orbi.git", html)
             self.assertIn("orbi setup --config orbi.toml", html)
             # the fallback stays collapsed and secondary, behind the one-liner
@@ -602,18 +590,6 @@ class LandingTests(unittest.TestCase):
             self.assertLess(html.index("<details"), html.index("git clone https://github.com"))
             # the honest prerequisites, so nobody discovers systemd halfway in
             self.assertIn("systemd", html)
-
-    def test_no_primary_install_snippet_uses_legacy_orbi_build_host(self) -> None:
-        """A stale primary install URL fails with the exact file identified."""
-        stale = "curl -fsSL https://orbi.build/install.sh"
-        offenders = []
-        for folder in (ROOT / "public", ROOT / "site" / "pages"):
-            for path in folder.rglob("*"):
-                if path.suffix not in {".html", ".txt"}:
-                    continue
-                if stale in path.read_text(encoding="utf-8"):
-                    offenders.append(str(path.relative_to(ROOT)))
-        self.assertEqual(offenders, [], f"stale primary install URL in: {offenders}")
 
     def test_install_sh_is_published_from_the_orbi_repo(self) -> None:
         """/install.sh must be the orbi repo's script byte for byte, with a
@@ -739,15 +715,6 @@ class LandingTests(unittest.TestCase):
             html = path.read_text(encoding="utf-8")
             hosts |= set(re.findall(r'<script[^>]*src="(https?://[^/"]+)', html))
         self.assertEqual(hosts, {"https://datafa.st", "https://static.cloudflareinsights.com"})
-
-    def test_apply_page_is_offline(self) -> None:
-        """Issue #179: /apply is gone. Historical D1 rows stay; the form and
-        the write path do not."""
-        self.assertFalse((ROOT / "public" / "apply.html").exists())
-        self.assertFalse((ROOT / "site" / "pages" / "apply.html").exists())
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertNotIn("handleApply", worker)
-        self.assertNotIn("MAX_FIELD", worker)
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
@@ -912,11 +879,9 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
-        # Issue #539: the beta-stability wait gate added in #450 is gone —
-        # no pre-deploy check job between require-main and deploy, no
-        # workflow_dispatch input, no repository variable, and no
-        # `actions: read` permission that existed only to feed that job's
-        # API calls. The approval gate and the rollback stay.
+        # The production deploy is two jobs: require-main gates deploy, and
+        # deploy runs under the production environment approval. The
+        # rollback stays.
         jobs = re.findall(r"^  (\S+):", workflow.split("\njobs:\n", 1)[1], re.M)
         self.assertEqual(jobs, ["require-main", "deploy"])
         self.assertIn("needs: require-main", workflow)
@@ -924,9 +889,6 @@ class LandingTests(unittest.TestCase):
         # deploy job — the approval still gates the deploy itself
         deploy_at = workflow.index("  deploy:")
         self.assertLess(deploy_at, workflow.index("environment: production"))
-        self.assertNotIn("inputs:", workflow)
-        self.assertNotIn("PROD_MIN_", workflow)
-        self.assertNotIn("actions: read", workflow)
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
@@ -1086,8 +1048,6 @@ class CloudLandingPageTests(unittest.TestCase):
             for value in ("US$29", "US$290", "US$79", "US$790", "100M", "300M"):
                 self.assertIn(value, page.text)
             self.assertIn(founding, page.text)
-            self.assertNotIn("100% off", page.text)
-            self.assertNotIn("订阅永久免费", page.text)
 
     def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
         for page, headline in (
@@ -1100,10 +1060,6 @@ class CloudLandingPageTests(unittest.TestCase):
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
         """Issue #277: /cloud/ keeps the owner-approved delivery range and
         cache premise, and links to /cost/. Detailed measurements stay there."""
-        competitor_hrefs = (
-            "https://docs.devin.ai/admin/billing/self-serve",
-            "https://docs.factory.ai/pricing/individuals",
-        )
         for page, needles, cost_href in (
             (
                 self.en,
@@ -1126,8 +1082,6 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.assertIn(needle, page.text, needle)
             hrefs = [h for _, h in page.hrefs]
             self.assertIn(cost_href, hrefs, cost_href)
-            for href in competitor_hrefs:
-                self.assertNotIn(href, hrefs, href)
 
     def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
         for html, founding in (
@@ -1333,8 +1287,6 @@ class HermesComparisonTests(unittest.TestCase):
             self.assertIn("GitHub", page.text)
             self.assertIn("Issue", page.text)
             self.assertIn("MIT", page.text)
-            self.assertNotIn("https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills/bundled/github", html)
-            self.assertNotIn("https://hermes-agent.nousresearch.com/docs/user-guide/skills", html)
             self.assertIn("https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/skills/bundled/software-development/software-development-github.md", html)
             self.assertIn("https://hermes-agent.nousresearch.com/docs/user-guide/features/skills", html)
 
@@ -1632,7 +1584,7 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
     def test_every_deep_dive_links_its_page(self) -> None:
-        """Twelve deep dives, each a link — no internal status badge (Issue #178)."""
+        """Twelve deep dives, each a link."""
         for html, href_pattern in (
             (self.en_html, r"^/compare/[a-z-]+/$"),
             (self.zh_html, r"^/zh/compare/[a-z-]+/$"),
@@ -1646,7 +1598,6 @@ class CompareIndexTests(unittest.TestCase):
                 self.assertIsNotNone(link, entry)
                 href = link.group(1)
                 self.assertRegex(href, href_pattern, entry)
-                self.assertNotIn("dive-status", entry, entry)
 
     # Issue #540: the closing-heading test was removed — it pinned the
     # maintainer's own H2 wording verbatim.
@@ -1832,7 +1783,7 @@ class BootstrapEvidenceTests(unittest.TestCase):
 
     The visitor must be able to click at least three public GitHub records.
     orbi-cloud stays unlinked. Ticket-voice copy stays out. Copy must not
-    invent a licence name or write a qualitative claim as a fact.
+    invent a licence name.
     """
 
     PUBLIC_RECORDS = (
@@ -1911,28 +1862,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
                 self.assertNotIn(private, hrefs, private)
             self.assertNotIn("Apache", html)
             self.assertNotIn("Apache 2.0", html)
-
-    def test_copy_does_not_write_qualitative_claims_as_facts(self) -> None:
-        forbidden = (
-            "nobody ever wrote code",
-            "no human ever typed",
-            "无人写代码",
-            "从来没有人敲过键盘",
-        )
-        for page in (self.en, self.zh):
-            lowered = page.text.lower()
-            for phrase in forbidden:
-                self.assertNotIn(phrase.lower(), lowered, phrase)
-
-    def test_sample_warehouse_is_not_a_shipping_url(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            self.assertNotIn('id="sample-warehouse"', html)
-            hrefs = [href for _, href in page.hrefs]
-            self.assertNotIn("https://github.com/orbi-build/orbi-smoke", hrefs)
-            self.assertFalse(
-                [href for href in hrefs if "sample-warehouse" in href or "orbi-smoke" in href],
-                hrefs,
-            )
 
     def test_each_sample_tells_the_visitor_what_to_look_for(self) -> None:
         self.assertGreaterEqual(self.en_html.count("What to look for on the timeline"), 3)

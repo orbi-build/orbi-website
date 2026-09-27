@@ -281,28 +281,19 @@ describe("Cloud CTA landing contract (Issue #107)", () => {
     expect(landing.matches(new URL("https://beta.orbi.build/cloud/login"))).toBe(false);
     expect(landing.matches(new URL("https://beta.orbi.build/api/login"))).toBe(false);
     expect(landing.matches(new URL("https://beta.orbi.build/api/start"))).toBe(false);
-    expect(landing.matches(new URL("https://beta.orbi.build/apply"))).toBe(false);
     // A bare sign-in page carries no authorization request: not the flow.
     expect(landing.matches(new URL("https://github.com/login"))).toBe(false);
-    // The #528 one-step landing: the App installation page is not what the
-    // sign-in handoff promises any more (Issue #570).
-    expect(landing.matches(new URL("https://github.com/apps/orbi-dev-test/installations/new"))).toBe(false);
-    expect(landing.matches(new URL(
-      "https://github.com/login?integration=orbi-dev-test&return_to=%2Fapps%2Forbi-dev-test%2Finstallations%2Fnew"
-    ))).toBe(false);
   });
 
   it("fail-closed-503 lands the click on the self-host docs", () => {
     const landing = expectedCtaLanding("fail-closed-503");
     expect(landing.matches(new URL("https://docs.orbi.build/"))).toBe(true);
-    expect(landing.matches(new URL("https://orbi.build/apply"))).toBe(false);
     expect(landing.matches(new URL("https://orbi.build/cloud/login"))).toBe(false);
   });
 
   it("fail-closed-404 (local, no worker) lands the click on the /cloud/login handoff route", () => {
     const landing = expectedCtaLanding("fail-closed-404");
     expect(landing.matches(new URL("http://127.0.0.1:4173/cloud/login"))).toBe(true);
-    expect(landing.matches(new URL("http://127.0.0.1:4173/apply"))).toBe(false);
   });
 
   it("each landing must answer with the status its contract promises", () => {

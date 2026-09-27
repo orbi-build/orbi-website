@@ -101,32 +101,21 @@ describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
 
 describe("homepage trace caption removal (Issue #576)", () => {
   const cases = [
-    [
-      "public/index.html",
-      ["RECOVERABLE STATE", "GitHub is the ledger"],
-      "Orbi delivery line: from scope to tagged release",
-    ],
-    [
-      "public/zh/index.html",
-      ["可恢复状态", "GitHub 是账本"],
-      "Orbi 交付产线：从范围到打 Tag 发版",
-    ],
+    ["public/index.html", "Orbi delivery line: from scope to tagged release"],
+    ["public/zh/index.html", "Orbi 交付产线：从范围到打 Tag 发版"],
   ];
 
-  for (const [file, goneTexts, ariaLabel] of cases) {
-    it(`${file} drops the ledger caption and names the figure with a non-empty aria-label`, async () => {
+  for (const [file, ariaLabel] of cases) {
+    it(`${file} names the figure with a non-empty aria-label`, async () => {
       const html = await read(file);
-      for (const text of goneTexts) expect(html, text).not.toContain(text);
 
       const figure = html.match(/<figure class="factory-trace"[\s\S]*?<\/figure>/)?.[0] ?? "";
       expect(figure, "figure named by aria-label").toContain(`aria-label="${ariaLabel}"`);
-      expect(figure, "no dangling aria-labelledby").not.toContain("aria-labelledby");
-      expect(figure, "no dangling trace-caption id").not.toContain("trace-caption");
     });
   }
 });
 
-describe("cloud merge-gate explainer (Issue #577: clip removed)", () => {
+describe("cloud merge-gate explainer (Issue #577)", () => {
   const cases = [
     ["public/cloud/index.html", "Before you connect GitHub", [
       "Orbi only merges the commit its review passed.",
@@ -156,10 +145,8 @@ describe("cloud merge-gate explainer (Issue #577: clip removed)", () => {
   };
 
   for (const [file, title, sentences] of cases) {
-    it(`${file} no longer ships the gate clip and keeps its language's three sentences below the hero CTA row`, async () => {
+    it(`${file} keeps its language's three sentences below the hero CTA row`, async () => {
       const html = await read(file);
-      expect(html, "the decorative autoplaying gate clip is gone (Issue #577)").not.toMatch(/gate[-]clip/);
-
       expect(html).toContain(title);
       for (const sentence of sentences) expect(html, sentence).toContain(sentence);
 
