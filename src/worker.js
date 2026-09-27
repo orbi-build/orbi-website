@@ -1,4 +1,3 @@
-import { withAICrawlerTracking } from "@datafast/ai-crawl";
 import { visitSignals } from "./bot-detection.js";
 import pricing from "./pricing.json";
 
@@ -40,12 +39,6 @@ const HOST_ALIASES = {
 const PROD_HOSTS = new Set(["orbi.build", "www.orbi.build", "aiready.sh"]);
 const TEST_ROBOTS_TXT = "User-agent: *\nDisallow: /\n";
 const TEST_NOINDEX = "noindex, nofollow, noarchive";
-
-// Server-side DataFast website id: the same id used by the browser tracking
-// script in the HTML head, here feeding AI-crawler traffic to the Bot traffic
-// card. The wrapper only fires for known crawler user agents and never for
-// human browsers or filtered static assets.
-const DATAFAST_WEBSITE_ID = "dfid_Pi7Ns3F360oaZZcmnZgV4";
 
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
@@ -964,16 +957,16 @@ function withAttribution(request, response, env, ctx) {
 export { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
-  // Third arg (ctx) carries waitUntil: both the DataFast POST and the visit
-  // attribution report ride ctx.waitUntil, so neither ever delays the
-  // response. withAttribution runs at the wrapper exit so every handleFetch
-  // return — pages, redirects, worker routes — is covered (Issue #228).
-  fetch: withAICrawlerTracking(async (request, env, ctx) => {
+  // Third arg (ctx) carries waitUntil: the visit attribution report rides
+  // ctx.waitUntil, so it never delays the response. withAttribution runs at
+  // the wrapper exit so every handleFetch return — pages, redirects, worker
+  // routes — is covered (Issue #228).
+  fetch: async (request, env, ctx) => {
     const response = await handleFetch(request, env, ctx);
     const attributed = withAttribution(request, response, env, ctx);
     if (PROD_HOSTS.has(new URL(request.url).hostname)) return attributed;
     const stamped = new Response(attributed.body, attributed);
     stamped.headers.set("X-Robots-Tag", TEST_NOINDEX);
     return stamped;
-  }, { websiteId: DATAFAST_WEBSITE_ID }),
+  },
 };

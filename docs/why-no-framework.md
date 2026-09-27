@@ -29,7 +29,7 @@
 | 页面数 | 38 | `find site/pages -name '*.html' \| wc -l` |
 | HTML 总行数 | 6233 | `find site/pages -name '*.html' -exec cat {} + \| wc -l` |
 | 构建脚本 | `scripts/build-pages.mjs`，607 行 | `wc -l scripts/build-pages.mjs` |
-| 运行时依赖 | 1 个（`@datafast/ai-crawl`） | package.json `dependencies` |
+| 运行时依赖 | 0 个 | package.json `dependencies` |
 
 统计口径：`site/pages/` 下的页面源，不含 `site/partials/` 的三个片段（共 109 行）。
 
