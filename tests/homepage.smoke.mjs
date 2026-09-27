@@ -1129,10 +1129,12 @@ async function assertProofLoop(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262 / #318: homepage autoplay proof is replaced by its static
-// poster under reduced motion; the Cloud walkthrough follows the same
-// static-poster fallback with its onboarding poster. Emulated here because no
-// string check exercises the media query.
+// Issue #262 / #318: the homepage autoplay proof is replaced by its static
+// poster under reduced motion. The Cloud walkthrough keeps its video and
+// controls visible (Issue #578): with autoplay gone it never moves on its
+// own — playback starts only on the visitor's click — so there is no motion
+// to reduce, and the poster background stand-in is gone with the hide rule.
+// Emulated here because no string check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
   const page = await browser.newPage({
     viewport: { width: 1366, height: 768 },
@@ -1144,17 +1146,24 @@ async function assertProofLoopReducedMotion(browser, path) {
     const figure = document.querySelector(".proof-loop");
     return {
       display: getComputedStyle(video).display,
+      visible: video.offsetParent !== null,
       background: getComputedStyle(figure).backgroundImage,
     };
   });
-  if (state.display !== "none") {
-    throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
-  }
-  const expectedPoster = path.includes("/cloud/")
-    ? "cloud-onboarding-poster.jpg"
-    : "delivery-loop-poster.jpg";
-  if (!state.background.includes(expectedPoster)) {
-    throw new Error(`${path}: reduced motion must show ${expectedPoster}, got background=${state.background}`);
+  if (path.includes("/cloud/")) {
+    if (state.display === "none" || !state.visible) {
+      throw new Error(`${path}: reduced motion must keep the Cloud video visible, got display=${state.display} visible=${state.visible}`);
+    }
+    if (state.background !== "none") {
+      throw new Error(`${path}: reduced motion must not give the Cloud demo a poster background stand-in, got background=${state.background}`);
+    }
+  } else {
+    if (state.display !== "none") {
+      throw new Error(`${path}: reduced motion must hide the homepage video, got display=${state.display}`);
+    }
+    if (!state.background.includes("delivery-loop-poster.jpg")) {
+      throw new Error(`${path}: reduced motion must show the delivery-loop poster, got background=${state.background}`);
+    }
   }
   await page.close();
 }
@@ -1267,15 +1276,16 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Chromium abandons the metadata request when it opens the playback
-    // request. Every other media/network failure remains fatal.
+    // Chromium abandons a media request when it reopens it for playback.
+    // Every other media/network failure remains fatal.
     const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
+      && request.url().includes("/video/");
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  // DOM load is the bounded navigation gate. The Cloud walkthrough requests
-  // muted autoplay; deployed-browser playback remains the maintainer gate.
+  // DOM load is the bounded navigation gate. The walkthrough is
+  // user-initiated (Issue #578): the smoke presses play further down and
+  // asserts playback with sound, the strongest local signal the asset loads.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const demo = page.locator(".cloud-demo");
   const video = demo.locator(".proof-loop-video");
@@ -1287,16 +1297,19 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
     }
   }
+  // Issue #578: the walkthrough carries narration — the visitor presses
+  // play and hears it. The element must move on the visitor's action only,
+  // so neither autoplay nor muted may ship, and nothing is preloaded.
   for (const attribute of ["autoplay", "muted"]) {
-    if ((await video.getAttribute(attribute)) === null) {
-      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
+    if ((await video.getAttribute(attribute)) !== null) {
+      throw new Error(`${path}: Cloud walkthrough must not carry ${attribute}`);
     }
   }
   if ((await video.getAttribute("loop")) !== null) {
     throw new Error(`${path}: Cloud walkthrough must not loop`);
   }
-  if ((await video.getAttribute("preload")) !== "metadata") {
-    throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
+  if ((await video.getAttribute("preload")) !== "none") {
+    throw new Error(`${path}: Cloud walkthrough must preload nothing`);
   }
   if ((await video.getAttribute("poster")) !== "/video/cloud-onboarding-poster.jpg") {
     throw new Error(`${path}: Cloud walkthrough poster is missing`);
@@ -1316,10 +1329,40 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
+  // The shot pins the visitor's first sight: poster frame plus native
+  // controls, nothing moving, nothing fetched yet (preload=none).
   await demo.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-video.png")}` });
-  const mediaState = await video.evaluate((element) => ({ muted: element.muted, readyState: element.readyState }));
-  if (!mediaState.muted || mediaState.readyState < 1) {
-    throw new Error(`${path}: Cloud walkthrough must load muted with metadata, got ${JSON.stringify(mediaState)}`);
+  const initialState = await video.evaluate((element) => ({ paused: element.paused, muted: element.muted, readyState: element.readyState }));
+  if (!initialState.paused || initialState.muted) {
+    throw new Error(`${path}: Cloud walkthrough must start paused and unmuted, got ${JSON.stringify(initialState)}`);
+  }
+  // The visitor's real path on the native controls, keyboard edition (probe
+  // 2026-09-27: a position-click on the play button does not register in
+  // headless Chromium, but Space on the focused element — the same native
+  // controls — starts playback as a trusted user gesture). Playback with
+  // sound is the strongest local signal the asset loads and the no-mute
+  // contract holds; a visible browser stays the maintainer gate.
+  await video.focus();
+  await page.keyboard.press("Space");
+  try {
+    await page.waitForFunction(() => {
+      const element = document.querySelector(".cloud-demo .proof-loop-video");
+      return element && !element.paused && element.currentTime > 0;
+    }, null, { timeout: 10000 });
+  } catch {
+    const state = await video.evaluate((element) => ({
+      paused: element.paused,
+      muted: element.muted,
+      readyState: element.readyState,
+      networkState: element.networkState,
+      currentTime: element.currentTime,
+      error: element.error && element.error.code,
+    }));
+    throw new Error(`${path}: Cloud walkthrough does not play after the visitor presses play: ${JSON.stringify(state)}`);
+  }
+  const playState = await video.evaluate((element) => ({ paused: element.paused, muted: element.muted }));
+  if (playState.paused || playState.muted) {
+    throw new Error(`${path}: Cloud walkthrough must play with sound after the visitor presses play, got ${JSON.stringify(playState)}`);
   }
 
   const h1Count = await page.locator("h1").count();
