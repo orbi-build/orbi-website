@@ -21,8 +21,8 @@ const read = (file) => readFile(join(ROOT, file), "utf8");
 describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
   // Issue #575: both mirrors ship the film; only the copy language differs.
   const homes = [
-    ["public/index.html", "▶ Watch the film · 1:35", "Orbi brand film", "Close", "Real run:", "Sign in with GitHub", "Run it yourself", "/cloud/login"],
-    ["public/zh/index.html", "▶ 观看短片 · 1:35", "Orbi 品牌短片", "关闭", "真实运行：", "用 GitHub 登录", "自己部署", "/zh/cloud/login"],
+    ["public/index.html", "▶ Watch a real Issue ship · 1:35", "Orbi brand film", "Close", "Real run:", "Sign in with GitHub", "Run it yourself", "/cloud/login"],
+    ["public/zh/index.html", "▶ 看一个真实 Issue 怎么发版 · 1:35", "Orbi 品牌短片", "关闭", "真实运行：", "用 GitHub 登录", "自己部署", "/zh/cloud/login"],
   ];
 
   it("puts the film entry on each homepage's hero trace figure, and only there", async () => {
