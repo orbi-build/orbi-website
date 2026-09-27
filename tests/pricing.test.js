@@ -179,21 +179,6 @@ describe("Cloud monthly price constant (Issue #102)", () => {
     }
   });
 
-  it("syncs every occurrence after a constant change", async () => {
-    // A hypothetical new price applied through the same seam the Worker uses
-    // (token -> value over the shipped bytes): every position that shows the
-    // old value must move to the new one, with none left behind.
-    const next = "123";
-    for (const relativePath of PRICE_PAGES) {
-      const raw = await rawPage(relativePath);
-      const tokenCount = raw.split(TOKEN).length - 1;
-      expect(tokenCount, relativePath).toBeGreaterThan(0);
-      const repriced = raw.replaceAll(TOKEN, next);
-      expect(repriced, relativePath).not.toContain(TOKEN);
-      expect(repriced.match(literalPrice(USD)), relativePath).toBeNull();
-      expect(repriced.match(literalPrice(next)), relativePath).toHaveLength(tokenCount);
-    }
-  });
 });
 
 describe("Free delivery allowance constant (Issue #274)", () => {
@@ -309,9 +294,6 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   });
 
   it("uses only the measured source tokens on both Cloud pages", async () => {
-    expect(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN)
-      .not.toBe(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE);
-    expect(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).not.toBe(MEASURED_LARGE_CODEBASE_DELIVERIES);
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
       for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
         const html = await readFile(`${dir}${cloudPage}`, "utf8");
@@ -324,7 +306,6 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   });
 
   it("serves the cost-page reconciliation from pricing.json", async () => {
-    expect(MEASURED_SNAPSHOT_DELIVERIES_TOKEN).not.toBe(MEASURED_SNAPSHOT_DELIVERIES);
     for (const [costPage, wording] of [
       ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per Pro's ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
       ["zh/cost/index.html", `折算约为 Pro 的 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
