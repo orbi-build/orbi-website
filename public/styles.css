@@ -315,7 +315,6 @@ img {
 .stats-label,
 .trace-head,
 .trace-index,
-.factory-trace figcaption span,
 .proof-shot > span,
 .future-loop > .orbi-future-loop-li > span,
 .ownership-map span {
@@ -595,17 +594,15 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .trace-node small { color: #829a96; font-size: 0.78rem; }
 
+/* Issue #576: the caption's ledger sentences are gone; the row now only
+   carries the film entry, pinned to its right edge. */
 .factory-trace figcaption {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 22px;
+  display: flex;
+  justify-content: flex-end;
   padding: 19px 24px;
   border-top: 1px solid var(--line-dark);
   background: rgba(92, 214, 181, 0.06);
 }
-
-.factory-trace figcaption span { color: var(--run); }
-.factory-trace figcaption strong { font-size: 0.82rem; font-weight: 500; }
 
 /* Issue #571: the brand-film entry. Ghost control on the night tokens,
    pinned to the caption row's right edge (the figure's bottom right). */
@@ -1910,7 +1907,10 @@ h2 {
   .trace-node { grid-template-columns: 54px 1fr; min-height: 88px; padding-left: 13px; }
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
-  .factory-trace figcaption { grid-template-columns: 1fr; gap: 5px; padding: 15px; }
+  /* Issue #576: at phone width the film entry floats above the frame (below)
+     and the caption row holds nothing in flow — collapse it to zero height so
+     no empty band shows under the trace body. */
+  .factory-trace figcaption { padding: 0; border-top: 0; background: none; }
   .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
