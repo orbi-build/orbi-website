@@ -1112,10 +1112,12 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
 
   it("labels the dropdown Resources/资源 with Method first on every page with the primary nav", () => {
     // Blog posts render the same nav through POST_LANG.nav, so they count as
-    // "every page with primary-navigation" too.
+    // "every page with primary-navigation" too. Pages carrying a siteBase
+    // (the aiready pages, Issue #610) render every local nav href absolute.
     const surfaces = [...pages.filter((p) => p.nav), ...posts];
     for (const page of surfaces) {
       const expected = RESOURCES[page.lang];
+      const siteBase = page.nav?.siteBase ?? "";
       const nav = navRegion(shipped.get(page.output));
       const dropdown = region(nav, '<div class="nav-docs">', "</div></div>");
       expect(dropdown, `${page.output}: nav-docs dropdown missing from the nav element`).not.toBe("");
@@ -1124,7 +1126,11 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
       );
       const items = [...dropdown.matchAll(/<a class="orbi-nav-docs-menu-a" href="([^"]+)" role="menuitem">([^<]+)<\/a>/g)]
         .map((match) => [match[1], match[2]]);
-      expect(items, `${page.output}: dropdown items drifted`).toEqual(expected.items);
+      const expectedItems = expected.items.map(([href, label]) => [
+        href.startsWith("/") ? `${siteBase}${href}` : href,
+        label,
+      ]);
+      expect(items, `${page.output}: dropdown items drifted`).toEqual(expectedItems);
     }
   });
 
