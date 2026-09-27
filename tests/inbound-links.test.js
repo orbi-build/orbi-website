@@ -113,15 +113,24 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
     const drift = [];
     for (const [page, html] of htmlByPage) {
       const footer = html.match(/<footer class="site-footer shell">[\s\S]*?<\/footer>/)?.[0];
-      if (!footer) continue; // standalone pages (aiready) ship no site footer
+      if (!footer) continue; // standalone pages (compare) ship no site footer
       const guides = footer.match(/<nav class="footer-guides"[\s\S]*?<\/nav>/)?.[0];
       if (!guides) {
         drift.push(`${page}: footer-guides nav missing`);
         continue;
       }
       const hrefs = [...guides.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]);
-      const expected = page.startsWith("/zh") ? zhGuides : enGuides;
-      if (JSON.stringify(hrefs) !== JSON.stringify(expected)) {
+      // The page's own html lang, not the path prefix: the aiready ZH page
+      // lives at /aiready/zh (the aiready.sh /zh route), outside the zh/ tree.
+      const isZh = /<html lang="zh-CN"/.test(html);
+      const expected = isZh ? zhGuides : enGuides;
+      // Issue #610: pages living on another host (aiready.sh) prefix their
+      // chrome links with the site base — same targets, absolute orbi.build form.
+      const prefixed = (href) => (href.startsWith("/") ? `https://orbi.build${href}` : href);
+      const driftedHrefs =
+        hrefs.length !== expected.length ||
+        expected.some((href, i) => hrefs[i] !== href && hrefs[i] !== prefixed(href));
+      if (driftedHrefs) {
         drift.push(`${page}: guides hrefs drifted — got ${hrefs.join(" ") || "(none)"}`);
       }
     }
