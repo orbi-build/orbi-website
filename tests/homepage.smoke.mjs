@@ -2012,7 +2012,6 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi/releases",
     ],
     forbiddenHrefs: [
-      "https://github.com/orbi-build/orbi-website",
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/cloud/"],
@@ -2053,7 +2052,6 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi/releases",
     ],
     forbiddenHrefs: [
-      "https://github.com/orbi-build/orbi-website",
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/zh/cloud/"],
