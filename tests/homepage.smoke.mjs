@@ -491,9 +491,8 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     const page = await context.newPage();
     const consoleErrors = [];
     const failedRequests = [];
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
-    await page.route("**datafa.st/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     if (!process.env.BASE_URL) {
       await page.route("**/stats", (route) => route.fulfill({
         status: 200,
@@ -621,7 +620,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const consoleErrors = [];
   const failedRequests = [];
   let statsRequested = false;
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   await page.route("https://avatars.githubusercontent.com/**", (route) => route.fulfill({
     status: 200,
@@ -1271,7 +1270,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   if (!process.env.BASE_URL) {
     await page.route("**/stats", (route) => route.fulfill({
@@ -1530,7 +1529,7 @@ async function assertCostPage(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
@@ -1637,7 +1636,7 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
@@ -1799,7 +1798,7 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
@@ -2023,7 +2022,7 @@ async function assertEvidencePage(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
@@ -2126,7 +2125,7 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
-  const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+  const isTelemetry = (url) => url.includes("cloudflareinsights.com");
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
@@ -2443,7 +2442,7 @@ async function main() {
     const failures = [];
     // Issue #585: pages must not request Google Fonts at all, so it is no
     // longer allowed for here — a request would surface as a failure.
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     if (!process.env.BASE_URL) {
       await page.route("**/stats", (route) => route.fulfill({

@@ -98,8 +98,19 @@ describe("ai-ready methodology pages (Issue #195)", () => {
       expect(html).toContain('hreflang="zh-CN"');
       expect(html).toContain('"@type":"Article"');
       expect(html).toContain('"@type":"FAQPage"');
-      expect(html).toContain("datafa.st/js/script.js");
       expect([...html.matchAll(/<h3>/g)]).toHaveLength(12);
+    }
+  });
+
+  it("keeps the Cloudflare Web Analytics beacon on every page whose source ships one (Issue #608)", async () => {
+    // The beacon is not site-wide: standalone pages (aiready.sh) and pages
+    // like privacy never carried one, so presence is pinned per source, not
+    // globally. The third-party tracking script is gone everywhere; the exact
+    // external script host set is pinned in tests/test_landing.py.
+    for (const page of pages) {
+      const source = await readFile(join(ROOT, "site", "pages", page.source), "utf8");
+      if (!source.includes("static.cloudflareinsights.com/beacon.min.js")) continue;
+      expect(shipped.get(page.output), page.output).toContain("static.cloudflareinsights.com/beacon.min.js");
     }
   });
 

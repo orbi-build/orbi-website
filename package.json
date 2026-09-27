@@ -10,9 +10,6 @@
     "test:browser": "node tests/homepage.smoke.mjs",
     "test:ui": "vitest run --project=browser"
   },
-  "dependencies": {
-    "@datafast/ai-crawl": "^1.0.9"
-  },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "marked": "^18.0.13",
