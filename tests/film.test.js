@@ -21,8 +21,8 @@ const read = (file) => readFile(join(ROOT, file), "utf8");
 describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
   // Issue #575: both mirrors ship the film; only the copy language differs.
   const homes = [
-    ["public/index.html", "▶ Watch a real Issue ship · 1:35", "Orbi brand film", "Close", "Real run:", "Sign in with GitHub", "Run it yourself", "/cloud/login"],
-    ["public/zh/index.html", "▶ 看一个真实 Issue 怎么发版 · 1:35", "Orbi 品牌短片", "关闭", "真实运行：", "用 GitHub 登录", "自己部署", "/zh/cloud/login"],
+    ["public/index.html", "▶ Watch the film · 1:35", "Orbi brand film", "Close", "Real run:", "Sign in with GitHub", "Run it yourself", "/cloud/login"],
+    ["public/zh/index.html", "▶ 观看短片 · 1:35", "Orbi 品牌短片", "关闭", "真实运行：", "用 GitHub 登录", "自己部署", "/zh/cloud/login"],
   ];
 
   it("puts the film entry on each homepage's hero trace figure, and only there", async () => {
@@ -97,6 +97,30 @@ describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
       [...(await read(file)).matchAll(/data-cta="(film-[^"]*)"/g)].map((match) => match[1]).sort();
     expect(await ctas("public/zh/index.html")).toEqual(await ctas("public/index.html"));
   });
+});
+
+describe("homepage film note beside the film button (Issue #607)", () => {
+  // The note carries the film's argument — the lights-out belief, what the
+  // line already ships, and the human sign-off before the merge — so the
+  // visitor learns what the button opens before clicking it.
+  const cases = [
+    ["public/index.html", "We believe software can be built in lights-out factories. Orbi is our line toward that, already shipping releases and improving as models do. Want the final say? Orbi stops before the merge and waits for your sign-off."],
+    ["public/zh/index.html", "我们相信，软件也能像黑灯工厂那样生产，Orbi 就是我们朝这个方向搭的产线。它现在已经在发版本，换上更强的模型，它就跟着变强。想自己把关？让它停在合并前，等你点头。"],
+  ];
+
+  for (const [file, note] of cases) {
+    it(`${file} states the film's argument in the trace caption, before its button`, async () => {
+      const html = await read(file);
+      const figure = html.match(/<figure class="factory-trace"[\s\S]*?<\/figure>/)?.[0] ?? "";
+      const caption = figure.match(/<figcaption>[\s\S]*?<\/figcaption>/)?.[0] ?? "";
+      expect(caption, `${file}: film note present in the trace figcaption`).toContain('class="trace-film-note"');
+      expect(caption.match(/<p class="trace-film-note">([\s\S]*?)<\/p>/)?.[1], `${file}: note copy verbatim`).toBe(note);
+      expect(
+        caption.indexOf('class="trace-film-note"'),
+        `${file}: note precedes the film button`
+      ).toBeLessThan(caption.indexOf('data-cta="film-play"'));
+    });
+  }
 });
 
 describe("homepage trace caption removal (Issue #576)", () => {

@@ -594,14 +594,24 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .trace-node small { color: #829a96; font-size: 0.78rem; }
 
-/* Issue #576: the caption's ledger sentences are gone; the row now only
-   carries the film entry, pinned to its right edge. */
+/* Issue #607: the caption row tells the visitor what the film argues — the
+   note on the left, the film entry pinned to the right edge. */
 .factory-trace figcaption {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   padding: 19px 24px;
   border-top: 1px solid var(--line-dark);
   background: rgba(92, 214, 181, 0.06);
+}
+
+/* Issue #607: secondary text on the night band — the design system's dark
+   ink-muted value, at the trace ledger's 0.78rem. */
+.trace-film-note {
+  margin: 0;
+  color: #a9bbb8;
+  font-size: 0.78rem;
 }
 
 /* Issue #571: the brand-film entry. Ghost control on the night tokens,
@@ -1907,10 +1917,10 @@ h2 {
   .trace-node { grid-template-columns: 54px 1fr; min-height: 88px; padding-left: 13px; }
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
-  /* Issue #576: at phone width the film entry floats above the frame (below)
-     and the caption row holds nothing in flow — collapse it to zero height so
-     no empty band shows under the trace body. */
-  .factory-trace figcaption { padding: 0; border-top: 0; background: none; }
+  /* Issue #607: the film note stays in flow under the trace body while the
+     entry floats above the frame, so the caption keeps side/bottom padding
+     and no longer collapses to zero height. */
+  .factory-trace figcaption { padding: 0 14px 14px; border-top: 0; background: none; }
   .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
