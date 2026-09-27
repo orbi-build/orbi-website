@@ -94,7 +94,7 @@ const sharedAttributes = {
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
 const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
 const localFoundingAvatars = localFoundingLogins
-  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
   .join("");
 
 export function countServerRenderedAvatars(html) {
@@ -774,7 +774,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
   // the aggregate endpoint stays identity-free and every rendered image
-  // finishes loading before the wall becomes visible. Local mode additionally
+  // finishes loading once scrolled to. Local mode additionally
   // pins all 11 injected identities below.
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
@@ -791,6 +791,19 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   for (let index = 0; index < browserAvatarCount; index += 1) {
     const image = images.nth(index);
     await image.waitFor({ state: "visible" });
+    // Issue #586: the avatars are lazy, so visibility no longer implies a
+    // started download. Scroll each one to the viewport, wait out its load
+    // (the error event fails fast instead of hanging), then assert it.
+    await image.scrollIntoViewIfNeeded();
+    await image.evaluate(
+      (element) =>
+        element.complete
+          ? undefined
+          : new Promise((resolve, reject) => {
+            element.addEventListener("load", resolve, { once: true });
+            element.addEventListener("error", () => reject(new Error("image failed to load")), { once: true });
+          }),
+    );
     if (!(await image.evaluate((element) => element.complete && element.naturalWidth > 0))) {
       throw new Error(`${path}: avatar ${index + 1} did not load`);
     }

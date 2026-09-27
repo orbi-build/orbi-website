@@ -325,7 +325,7 @@ function foundingAvatarMarkup(logins) {
       '\"': "&quot;",
       "'": "&#39;",
     })[character]);
-    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
+    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80" loading="lazy" decoding="async">`;
   }).join("");
 }
 

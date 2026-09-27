@@ -399,6 +399,12 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(body).toContain('title="bob&amp;co"');
     expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
     expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(2);
+    // Issue #586: the wall sits thousands of pixels below the fold, so every
+    // avatar defers its download instead of competing with the hero.
+    for (const img of body.match(/<img class="orbi-avatar-wall-list-img"[^>]*>/g) ?? []) {
+      expect(img).toContain('loading="lazy"');
+      expect(img).toContain('decoding="async"');
+    }
     expect(body).not.toContain("__FOUNDING_AVATARS__");
     expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
     expect(body).toContain('<section data-avatar-wall >');
