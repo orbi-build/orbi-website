@@ -1,7 +1,9 @@
-// Issue #571: the brand film enters the EN homepage's first screen and the
-// /cloud/ pages answer "what will Orbi do in my repository" with the merge-gate
-// clip before visitors connect GitHub. Issue #575: the ZH homepage carries the
-// same entry and dialog — same English-narrated assets, Chinese copy.
+// Issue #571: the brand film enters the EN homepage's first screen behind a
+// click. Issue #577 removed the /cloud/ merge-gate clip (it autoplayed in a
+// loop with no pause — a WCAG 2.2.2 failure — and was purely decorative); the
+// explainer keeps its title and three sentences as single-column text.
+// Issue #575: the ZH homepage carries the same entry and dialog — same
+// English-narrated assets, Chinese copy.
 // Assertions run on the built bytes in public/ (the same files the Worker
 // ships); source drift is already covered by the build gate in pages.test.js.
 
@@ -94,7 +96,7 @@ describe("homepage brand-film entry and dialog (Issue #571, #575)", () => {
   });
 });
 
-describe("cloud merge-gate explainer (Issue #571)", () => {
+describe("cloud merge-gate explainer (Issue #577: clip removed)", () => {
   const cases = [
     ["public/cloud/index.html", "Before you connect GitHub", [
       "Orbi only merges the commit its review passed.",
@@ -124,17 +126,9 @@ describe("cloud merge-gate explainer (Issue #571)", () => {
   };
 
   for (const [file, title, sentences] of cases) {
-    it(`${file} carries the gate clip and its language's three sentences below the hero CTA row`, async () => {
+    it(`${file} no longer ships the gate clip and keeps its language's three sentences below the hero CTA row`, async () => {
       const html = await read(file);
-      const video = html.match(/<video[^>]*src="\/video\/gate-clip\.mp4"[^>]*>/)?.[0] ?? "";
-      expect(video, "gate clip video").toBeTruthy();
-      for (const attr of ["autoplay", "muted", "loop", "playsinline"]) {
-        expect(video, `gate clip must have ${attr}`).toMatch(new RegExp(`(?:^|\\s)${attr}(?:\\s|=|$)`));
-      }
-      expect(video).toContain('preload="metadata"');
-      expect(video).toContain('poster="/video/gate-clip-poster.jpg"');
-      expect(video).toContain("aria-label=");
-      expect(html).toContain('<source src="/video/gate-clip.webm" type="video/webm">');
+      expect(html, "the decorative autoplaying gate clip is gone (Issue #577)").not.toMatch(/gate[-]clip/);
 
       expect(html).toContain(title);
       for (const sentence of sentences) expect(html, sentence).toContain(sentence);
