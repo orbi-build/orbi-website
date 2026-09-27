@@ -1073,7 +1073,6 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
       const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
       expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
-      expect(cta[1], `${output}: nav CTA must not be the Cloud login handoff`).not.toContain("/cloud/login");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }

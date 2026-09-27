@@ -134,7 +134,7 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
   const section = flat.slice(flat.indexOf("## Connect a repository to Cloud"));
 
   it("exists", () => {
-    expect(section).not.toBe("");
+    expect(flat.indexOf("## Connect a repository to Cloud")).toBeGreaterThan(-1);
   });
 
   it("walks all six steps with their concrete entry points", () => {
@@ -164,7 +164,7 @@ describe("llms.txt failure diagnosis (Issue #154 acceptance 2)", () => {
   const section = flat.slice(flat.indexOf("### Failure diagnosis"));
 
   it("exists", () => {
-    expect(section).not.toBe("");
+    expect(flat.indexOf("### Failure diagnosis")).toBeGreaterThan(-1);
   });
 
   it("diagnoses the empty repository dropdown as a GitHub App authorization gap", () => {
