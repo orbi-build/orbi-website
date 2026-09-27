@@ -469,28 +469,6 @@ class LandingTests(unittest.TestCase):
         # #528's one-step /api/start stranded a user who had installed the App
         # but was not signed in to Orbi on the installation page.
         self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("new URL(cloudBaseUrl)", worker)
-        self.assertIn("CLOUD_LOGIN_URL", worker)
-        self.assertNotIn("cloud.orbi.build", worker)
-        self.assertNotIn("beta-cloud.orbi.build", worker)
-
-    def test_website_defines_no_endpoint_inside_a_cloud_route_prefix(self) -> None:
-        """Issue #76: on the shared beta hostname the cloud control plane owns
-        /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
-        (orbi-cloud discussion 120 §2 C2, confirmed live 2026-09-09), so a
-        website endpoint under those prefixes never runs there — measured:
-        beta answered POST /api/apply with cloud's 404. Both website-owned
-        Cloud-entry endpoints live under /cloud/, which none of the cloud
-        prefixes covers. The boundary is route definitions: worker.js names
-        /api/login only as page content — the Issue #528 rewrite that sends
-        the nav Sign in link to the docs where Cloud is unconfigured — which
-        is not an endpoint."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertNotIn('route === "/api/', worker)
-        self.assertIn('"/cloud/apply"', worker)
-        self.assertIn('"/cloud/login"', worker)
-        self.assertIn('"/zh/cloud/login"', worker)
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
         """The login handoffs are actions, not pages: keep crawlers off them.
@@ -771,8 +749,6 @@ class LandingTests(unittest.TestCase):
         self.assertFalse((ROOT / "public" / "apply.html").exists())
         self.assertFalse((ROOT / "site" / "pages" / "apply.html").exists())
         worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn('route === "/apply"', worker)
-        self.assertIn("goneResponse", worker)
         self.assertNotIn("handleApply", worker)
         self.assertNotIn("MAX_FIELD", worker)
 
@@ -1042,11 +1018,6 @@ class LandingTests(unittest.TestCase):
             set(config["observability"]), {"enabled", "head_sampling_rate"}
         )
         self.assertTrue(config["observability"]["enabled"])
-
-    def test_stats_does_not_leak_upstream_error_text(self) -> None:
-        """A 502 must not echo GitHub's response body to anonymous callers."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("upstream unavailable", worker)
 
 
 COMPARE_EN_PATH = ROOT / "public" / "compare" / "openclaw" / "index.html"

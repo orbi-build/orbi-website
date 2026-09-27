@@ -688,6 +688,17 @@ describe("plaintext /status (Issue #173)", () => {
     expect(body.startsWith("{")).toBe(false);
     expect(body).toMatch(/issues closed/);
   });
+
+  // Issue #593: the /stats route catches any failure and answers a fixed 502
+  // body — GitHub's own text (rate-limit, token-scope) must not leak to
+  // anonymous callers. loadStats swallows per-repo failures, so a rejecting
+  // cache.match is what reaches the route's catch.
+  it("answers /stats failures with a fixed 502 body, not the upstream text", async () => {
+    globalThis.caches = { default: { match: () => Promise.reject(new Error("API rate limit exceeded for token scope repo")), put: async () => {} } };
+    const response = await handleFetch(new Request("https://orbi.build/stats"), statusEnv());
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "upstream unavailable" });
+  });
 });
 
 describe("email subscription route (Issue #442)", () => {
