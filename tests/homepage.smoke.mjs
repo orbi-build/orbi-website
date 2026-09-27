@@ -233,11 +233,13 @@ async function assertFooterDeepDives(page, label) {
 // by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
 // Issue #76: the website's own login handoff is /cloud/login (never /api/ or
 // any other prefix the Cloud control plane owns on the shared beta hostname).
-// Issue #528: the handoff 302s to CLOUD_LOGIN_URL — Cloud's one-step /api/start
-// (measured live 2026-09-26 against beta.orbi.build) — whose own 302 lands on
-// the GitHub App installation page; a signed-out visitor is bounced once more
-// by GitHub to its sign-in page with the installation request in return_to.
-// /api/login stays up as the nav Sign in target.
+// Issue #570: the handoff 302s to CLOUD_LOGIN_URL — Cloud's sign-in entry
+// /api/login (measured live 2026-09-26 against beta.orbi.build) — whose own
+// 302 opens GitHub's OAuth authorize page. A visitor who authorized Orbi
+// before returns from there at once; one who comes back without an App
+// installation is sent on to the installation page by Cloud itself. #528's
+// one-step /api/start stranded a user who had installed the App but was not
+// signed in to Orbi on the installation page, unable to reach the console.
 export function resolveCloudLoginExpect(raw) {
   if (raw === undefined) return "fail-closed-404";
   if (raw !== "github-app-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
@@ -301,18 +303,18 @@ export async function assertCloudLoginRedirect(targetURL) {
       const response = await context.get(`${targetURL}${path}`, { maxRedirects: 0 });
       const headers = response.headers();
       if (expectation === "github-app-302") {
-        // Issue #528: the website's handoff must 302 to /api/start on the
-        // same host — the /api/start hop carries the ref attribution as the
-        // request's cookie, so the handoff must never overwrite it — and
-        // /api/start must answer with the GitHub App installation redirect.
-        // One manual hop each: the responses themselves are the contract,
-        // not where a browser would finally land.
+        // Issue #570: the website's handoff must 302 to /api/login on the
+        // same host — the hop carries the ref attribution as the request's
+        // cookie, so the handoff must never overwrite it — and /api/login
+        // must answer with GitHub's OAuth authorize redirect carrying
+        // client_id and redirect_uri. One manual hop each: the responses
+        // themselves are the contract, not where a browser would finally land.
         if (response.status() !== 302) {
           throw new Error(`Cloud login ${path} expected 302, got ${response.status()}`);
         }
         const handoff = new URL(headers.location || "", targetURL);
-        if (handoff.origin !== new URL(targetURL).origin || handoff.pathname !== "/api/start") {
-          throw new Error(`Cloud login ${path} expected a 302 to /api/start, got ${headers.location}`);
+        if (handoff.origin !== new URL(targetURL).origin || handoff.pathname !== "/api/login") {
+          throw new Error(`Cloud login ${path} expected a 302 to /api/login, got ${headers.location}`);
         }
         const refOverwritten = response
           .headersArray()
@@ -322,10 +324,21 @@ export async function assertCloudLoginRedirect(targetURL) {
         }
         const cloud = await context.get(handoff.toString(), { maxRedirects: 0 });
         const cloudLocation = cloud.headers().location || "";
-        if (cloud.status() !== 302
-            || !/^https:\/\/github\.com\/apps\/[^/]+\/installations\/new(\?|$)/.test(cloudLocation)) {
+        let authorize = null;
+        if (cloud.status() === 302) {
+          try {
+            authorize = new URL(cloudLocation);
+          } catch {
+            authorize = null;
+          }
+        }
+        if (!authorize
+            || authorize.origin !== "https://github.com"
+            || authorize.pathname !== "/login/oauth/authorize"
+            || !authorize.searchParams.get("client_id")
+            || !authorize.searchParams.get("redirect_uri")) {
           throw new Error(
-            `Cloud login ${path} did not redirect to the GitHub App installation page: ${cloud.status()} ${cloudLocation}`
+            `Cloud login ${path} did not redirect to GitHub's OAuth authorize: ${cloud.status()} ${cloudLocation}`
           );
         }
       } else if (expectation === "fail-closed-503") {
@@ -373,7 +386,7 @@ export async function assertCloudLoginRedirect(targetURL) {
 // expected href from CLOUD_LOGIN_EXPECT copied that rewrite into the test and
 // broke on implementation changes while the site was fine. What each
 // expectation declares is the landing:
-//   github-app-302   → GitHub's App installation flow (beta, Issue #528; the
+//   github-app-302   → GitHub's sign-in authorization (beta, Issue #570; the
 //                      handoff chain is pinned by assertCloudLoginRedirect)
 //   fail-closed-503  → the self-host docs (Issue #179's unconfigured shape)
 //   fail-closed-404  → the /cloud/login handoff route itself (local static
@@ -386,17 +399,16 @@ export async function assertCloudLoginRedirect(targetURL) {
 export function expectedCtaLanding(expectation) {
   if (expectation === "github-app-302") {
     return {
-      describe: "GitHub's App installation flow",
+      describe: "GitHub's sign-in authorization",
       statusOk: (status) => status < 400,
       matches: (url) =>
         url.hostname === "github.com" &&
-        (/^\/apps\/[^/]+\/installations\/new$/.test(url.pathname) ||
-          // A signed-out visitor is bounced once more by GitHub to its
-          // sign-in page, which preserves the installation request in
-          // return_to (measured live 2026-09-26 against beta). A bare
-          // /login without it is not the flow.
+        (url.pathname === "/login/oauth/authorize" ||
+          // A visitor not signed in to GitHub is bounced once more by GitHub
+          // to its sign-in page, which preserves the authorization request in
+          // return_to (Issue #570). A bare /login without it is not the flow.
           (url.pathname === "/login"
-            && /^\/apps\/[^/]+\/installations\/new/.test(url.searchParams.get("return_to") || ""))),
+            && /^\/login\/oauth\/authorize/.test(url.searchParams.get("return_to") || ""))),
     };
   }
   if (expectation === "fail-closed-503") {

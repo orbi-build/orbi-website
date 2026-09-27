@@ -10,9 +10,13 @@ workers_dev = true
 # configures CLOUD_LOGIN_URL and /cloud/login opens: it 302s to the control
 # plane and the pages keep their shipped Cloud CTAs (Issue #96 — the #77
 # fail-closed premise, "no production control plane", no longer holds).
-# Issue #528: the value is Cloud's one-step entry /api/start — new visitors go
-# straight to the GitHub App installation (authorization included), signed-in
-# users to the status page; /api/login stays for the nav Sign in link.
+# Issue #570: the value is Cloud's sign-in entry /api/login — Start Cloud and
+# the nav Sign in now share one GitHub login, and a visitor who authorized
+# Orbi before is back from GitHub at once. #528's one-step /api/start stranded
+# a user who had installed the App but was not signed in to Orbi on the GitHub
+# App installation page with no way back to the console; after this sign-in,
+# Cloud itself sends a user who returns without an installation on to the
+# installation page, so either side can ship first without breaking the flow.
 # [env.beta] names its own verified Cloud endpoint below. The website defines
 # its endpoints outside the cloud control plane's route prefixes —
 # /cloud/login and /cloud/apply (Issue #76; see docs/cloud-endpoints.md).
@@ -29,7 +33,7 @@ workers_dev = true
 # mapped to the URL" — so the report never reached the cloud Worker and
 # died on the 5s timeout. CLOUD_VISIT_URL stays as the path the binding
 # requests; only the transport changed.
-vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/start", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://orbi.build/api/internal/subscribe" }
+vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "https://orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://orbi.build/api/internal/subscribe" }
 
 
 # Static landing files; every request hits the Worker first (www → apex, headers).
@@ -84,7 +88,7 @@ head_sampling_rate = 1
 # unchanged when deploying with `wrangler deploy --env beta`.
 [env.beta]
 name = "orbi-website-beta"
-vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/start", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://beta.orbi.build/api/internal/subscribe" }
+vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL = "https://beta.orbi.build/api/internal/visit", CLOUD_SUBSCRIBE_URL = "https://beta.orbi.build/api/internal/subscribe" }
 
 # Keep a deploy target so routine releases update the Worker used by the
 # existing beta Custom Domain, without managing that domain or its DNS.
