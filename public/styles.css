@@ -594,8 +594,9 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .trace-node small { color: #829a96; font-size: 0.78rem; }
 
-/* Issue #576: the caption's ledger sentences are gone; the row now only
-   carries the film entry, pinned to its right edge. */
+/* Issue #607: the caption row pins the two-line film card to its right
+   edge; the note and the ▶ line live inside the button, so the whole
+   card is one click target. */
 .factory-trace figcaption {
   display: flex;
   justify-content: flex-end;
@@ -604,21 +605,39 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   background: rgba(92, 214, 181, 0.06);
 }
 
-/* Issue #571: the brand-film entry. Ghost control on the night tokens,
-   pinned to the caption row's right edge (the figure's bottom right). */
-.trace-film {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid var(--line-dark);
-  background: var(--night-2);
-  color: #edf5f0;
+/* Issue #607: the note line — secondary text on the night tokens, the design
+   system's dark ink-muted at the trace ledger's 0.78rem, in the body face. */
+.trace-film-note {
+  color: #a9bbb8;
+  font-family: var(--body);
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+/* Issue #607: the ▶ line keeps the mono entry, in signal. */
+.trace-film-cta {
+  color: var(--signal);
   font-family: var(--mono);
   font-size: 0.78rem;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+/* Issue #571: the brand-film entry. Ghost card on the night tokens, pinned
+   to the caption row's right edge (the figure's bottom right); capped at
+   ~360px so the note wraps instead of running as a stripe. */
+.trace-film {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 360px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid var(--line-dark);
+  background: var(--night-2);
+  color: #edf5f0;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -1901,19 +1920,19 @@ h2 {
   .factory-trace { margin-left: 0; box-shadow: 10px 12px 0 rgba(0, 0, 0, 0.18); }
   .trace-head { padding: 13px 14px; }
   .trace-head span:last-child { display: none; }
-  /* Issue #571: at phone width the caption row sits far below the fold — the
-     film entry floats just above the frame's top-right corner instead, in the
-     hero gap, so it stays inside the first screen without covering the
-     LINE 01 / RUNNING head label. */
-  .trace-film { position: absolute; top: -48px; right: 0; min-height: 36px; padding: 0 12px; font-size: 0.74rem; }
+  /* Issue #607: the two-line film card can't float in the 48px hero gap any
+     more — the whole button returns to flow ahead of the figure and fills
+     the content width, still inside the first screen. */
+  .factory-trace { display: flex; flex-direction: column; }
+  .factory-trace figcaption { order: -1; padding: 0 0 0.75rem; border-top: 0; background: none; }
+  .trace-film { width: 100%; max-width: none; }
+  /* the frame's top-left corner tick would land on the film card, which now
+     opens the figure — keep only the bottom-right tick at phone width */
+  .factory-trace::before { display: none; }
   .trace-body { grid-template-columns: 20px 1fr; padding: 14px 12px 8px; }
   .trace-node { grid-template-columns: 54px 1fr; min-height: 88px; padding-left: 13px; }
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
-  /* Issue #576: at phone width the film entry floats above the frame (below)
-     and the caption row holds nothing in flow — collapse it to zero height so
-     no empty band shows under the trace body. */
-  .factory-trace figcaption { padding: 0; border-top: 0; background: none; }
   .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
