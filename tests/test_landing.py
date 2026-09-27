@@ -711,12 +711,12 @@ class LandingTests(unittest.TestCase):
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
-    def test_external_scripts_are_only_the_two_analytics_hosts(self) -> None:
+    def test_external_scripts_are_only_the_analytics_host(self) -> None:
         hosts = set()
         for path in (ROOT / "public").rglob("*.html"):
             html = path.read_text(encoding="utf-8")
             hosts |= set(re.findall(r'<script[^>]*src="(https?://[^/"]+)', html))
-        self.assertEqual(hosts, {"https://datafa.st", "https://static.cloudflareinsights.com"})
+        self.assertEqual(hosts, {"https://static.cloudflareinsights.com"})
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
