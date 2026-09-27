@@ -1,8 +1,9 @@
 // Issue #571: the homepage film dialog flow — open from the trace figure,
 // playback starts against a real film source, ended swaps the evidence row for
-// the two end buttons, and Esc closes and pauses. Runs against the built
-// bytes in public/ through a local static server (the headless gate; the
-// voiced-playback acceptance on the deployed beta is the maintainer's).
+// the two end buttons, and Esc closes and pauses. Issue #575: the same flow on
+// the ZH homepage. Runs against the built bytes in public/ through a local
+// static server (the headless gate; the voiced-playback acceptance on the
+// deployed beta is the maintainer's).
 
 import { chromium } from "@playwright/test";
 import { createServer } from "node:http";
@@ -56,80 +57,84 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
-describe("homepage film dialog (Issue #571)", () => {
-  it("opens from the trace figure, plays the film, and swaps the footer on ended", async () => {
-    const page = await browser.newPage();
-    const beacons = [];
-    await page.route("**/cloud/e", async (route) => {
-      beacons.push(route.request().postData() ?? "");
-      await route.fulfill({ status: 204 });
-    });
-    const errors = [];
-    page.on("pageerror", (error) => errors.push(String(error)));
-    try {
-      await page.goto(`${baseUrl}/`, { waitUntil: "load", timeout: 25_000 });
-
-      // The dialog starts closed on page load.
-      expect(await page.locator("#film-dialog").evaluate((el) => el.open)).toBe(false);
-
-      await page.click('[data-cta="film-play"]');
-      const dialog = page.locator("#film-dialog");
-      await dialog.waitFor({ state: "visible", timeout: 5_000 });
-      expect(await dialog.evaluate((el) => el.open)).toBe(true);
-      // While the film plays the evidence row shows and the end row stays hidden.
-      expect(await page.locator(".film-evidence").isVisible()).toBe(true);
-      expect(await page.locator(".film-end").isVisible()).toBe(false);
-      await page.waitForFunction(() => document.getElementById("film-video").currentSrc !== "", undefined, { timeout: 10_000 });
-      expect(await page.evaluate(() => document.getElementById("film-video").currentSrc)).toContain("orbi-film");
-      // The open click starts playback: the video is not paused.
-      await page.waitForFunction(() => !document.getElementById("film-video").paused, undefined, { timeout: 10_000 });
-
-      // Half-way beacon fires once past 50% — simulate by seeking past the mark.
-      await page.evaluate(() => {
-        const video = document.getElementById("film-video");
-        Object.defineProperty(video, "duration", { value: 95, configurable: true });
-        Object.defineProperty(video, "currentTime", { value: 48, configurable: true });
-        video.dispatchEvent(new Event("timeupdate"));
-        video.dispatchEvent(new Event("timeupdate"));
+describe("homepage film dialog (Issue #571, #575)", () => {
+  // Issue #575: one flow, both mirrors — only the page path (and therefore the
+  // beacon's path field) differs.
+  for (const [pagePath, beaconPath] of [["/", "/"], ["/zh/", "/zh/"]]) {
+    it(`opens from the trace figure on ${pagePath}, plays the film, and swaps the footer on ended`, async () => {
+      const page = await browser.newPage();
+      const beacons = [];
+      await page.route("**/cloud/e", async (route) => {
+        beacons.push(route.request().postData() ?? "");
+        await route.fulfill({ status: 204 });
       });
-      // Full playback: the evidence row hides, both end buttons appear.
-      await page.evaluate(() => {
-        const video = document.getElementById("film-video");
-        Object.defineProperty(video, "currentTime", { value: 95, configurable: true });
-        video.dispatchEvent(new Event("ended"));
-      });
-      await page.waitForTimeout(100);
-      expect(await page.locator(".film-evidence").isVisible()).toBe(false);
-      expect(await page.locator('.film-end [data-cta="film-end-cloud"]').isVisible()).toBe(true);
-      expect(await page.locator('.film-end [data-cta="film-end-selfhost"]').isVisible()).toBe(true);
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(String(error)));
+      try {
+        await page.goto(`${baseUrl}${pagePath}`, { waitUntil: "load", timeout: 25_000 });
 
-      // Replaying restores the evidence row (the play listener's contract).
-      await page.evaluate(() => document.getElementById("film-video").dispatchEvent(new Event("play")));
-      expect(await page.locator(".film-evidence").isVisible()).toBe(true);
-      expect(await page.locator(".film-end").isVisible()).toBe(false);
+        // The dialog starts closed on page load.
+        expect(await page.locator("#film-dialog").evaluate((el) => el.open)).toBe(false);
 
-      // Esc closes the modal and pauses the video.
-      await page.evaluate(() => {
-        const video = document.getElementById("film-video");
-        Object.defineProperty(video, "currentTime", { value: 95, configurable: true });
-        video.dispatchEvent(new Event("ended"));
-      });
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(100);
-      expect(await dialog.evaluate((el) => el.open)).toBe(false);
-      expect(await page.evaluate(() => document.getElementById("film-video").paused)).toBe(true);
+        await page.click('[data-cta="film-play"]');
+        const dialog = page.locator("#film-dialog");
+        await dialog.waitFor({ state: "visible", timeout: 5_000 });
+        expect(await dialog.evaluate((el) => el.open)).toBe(true);
+        // While the film plays the evidence row shows and the end row stays hidden.
+        expect(await page.locator(".film-evidence").isVisible()).toBe(true);
+        expect(await page.locator(".film-end").isVisible()).toBe(false);
+        await page.waitForFunction(() => document.getElementById("film-video").currentSrc !== "", undefined, { timeout: 10_000 });
+        expect(await page.evaluate(() => document.getElementById("film-video").currentSrc)).toContain("orbi-film");
+        // The open click starts playback: the video is not paused.
+        await page.waitForFunction(() => !document.getElementById("film-video").paused, undefined, { timeout: 10_000 });
 
-      // Exactly one film-100 beacon, and a film-50 from the seek: each fires
-      // once per page load no matter how often the marks are crossed.
-      const details = beacons.map((body) => JSON.parse(body));
-      expect(details.filter((body) => body.detail === "film-50")).toHaveLength(1);
-      expect(details.filter((body) => body.detail === "film-100")).toHaveLength(1);
-      expect(details.every((body) => body.kind === "cta_click" && body.path === "/")).toBe(true);
-      expect(errors, "no page errors during the flow").toEqual([]);
-    } finally {
-      await page.close();
-    }
-  }, 45_000);
+        // Half-way beacon fires once past 50% — simulate by seeking past the mark.
+        await page.evaluate(() => {
+          const video = document.getElementById("film-video");
+          Object.defineProperty(video, "duration", { value: 95, configurable: true });
+          Object.defineProperty(video, "currentTime", { value: 48, configurable: true });
+          video.dispatchEvent(new Event("timeupdate"));
+          video.dispatchEvent(new Event("timeupdate"));
+        });
+        // Full playback: the evidence row hides, both end buttons appear.
+        await page.evaluate(() => {
+          const video = document.getElementById("film-video");
+          Object.defineProperty(video, "currentTime", { value: 95, configurable: true });
+          video.dispatchEvent(new Event("ended"));
+        });
+        await page.waitForTimeout(100);
+        expect(await page.locator(".film-evidence").isVisible()).toBe(false);
+        expect(await page.locator('.film-end [data-cta="film-end-cloud"]').isVisible()).toBe(true);
+        expect(await page.locator('.film-end [data-cta="film-end-selfhost"]').isVisible()).toBe(true);
+
+        // Replaying restores the evidence row (the play listener's contract).
+        await page.evaluate(() => document.getElementById("film-video").dispatchEvent(new Event("play")));
+        expect(await page.locator(".film-evidence").isVisible()).toBe(true);
+        expect(await page.locator(".film-end").isVisible()).toBe(false);
+
+        // Esc closes the modal and pauses the video.
+        await page.evaluate(() => {
+          const video = document.getElementById("film-video");
+          Object.defineProperty(video, "currentTime", { value: 95, configurable: true });
+          video.dispatchEvent(new Event("ended"));
+        });
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(100);
+        expect(await dialog.evaluate((el) => el.open)).toBe(false);
+        expect(await page.evaluate(() => document.getElementById("film-video").paused)).toBe(true);
+
+        // Exactly one film-100 beacon, and a film-50 from the seek: each fires
+        // once per page load no matter how often the marks are crossed.
+        const details = beacons.map((body) => JSON.parse(body));
+        expect(details.filter((body) => body.detail === "film-50")).toHaveLength(1);
+        expect(details.filter((body) => body.detail === "film-100")).toHaveLength(1);
+        expect(details.every((body) => body.kind === "cta_click" && body.path === beaconPath)).toBe(true);
+        expect(errors, "no page errors during the flow").toEqual([]);
+      } finally {
+        await page.close();
+      }
+    }, 45_000);
+  }
 
   it("closes on the close button and on a backdrop click", async () => {
     const page = await browser.newPage();

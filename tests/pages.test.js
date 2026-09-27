@@ -468,12 +468,11 @@ describe("language mirrors (the forgotten-zh gate)", () => {
       expect(count(footerRegion(a), /<a /g), `${page.output}: footer <a> count drifted`)
         .toBe(count(footerRegion(b), /<a /g));
       const ctas = (html) =>
-        // Issue #571: the brand-film CTAs (film-play / film-end-*) are
-        // intentionally EN-only — the film is English-narrated with burned-in
-        // English captions and the Issue pins the ZH homepage unchanged. The
-        // film-prefixed details stay out of the count so this gate keeps
-        // guarding every other CTA on both mirrors.
-        count(mainRegion(html), /<a class="button/g) + count(mainRegion(html), /data-cta="(?!film-)/g);
+        // Issue #571 made the film CTAs EN-only and this count excluded them;
+        // Issue #575 gives the ZH homepage the same set, so the general rule
+        // counts every data-cta again (the exact film set parity is pinned in
+        // film.test.js).
+        count(mainRegion(html), /<a class="button/g) + count(mainRegion(html), /data-cta="/g);
       expect(ctas(a), `${page.output}: CTA count drifted`).toBe(ctas(b));
     }
   });
