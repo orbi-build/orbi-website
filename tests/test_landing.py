@@ -146,16 +146,21 @@ def parse(path: Path) -> tuple[str, PageParser]:
     return html, page
 
 
-def font_families(html: str) -> list[str]:
-    """Font families the page requests from the Google Fonts css2 API.
+def assert_self_hosted_fonts(test: unittest.TestCase, *htmls: str) -> None:
+    """Every audited page loads fonts the way Issue #585 shipped them.
 
-    Fonts are loaded through one stylesheet URL whose query names the
-    families, so this is the whole static font surface of a page.
+    The page references neither Google font domain, does reference the
+    self-hosted /fonts/fonts.css, and no longer names Noto Sans SC; the
+    shipped fonts.css and styles.css carry no Noto Sans SC either (CJK
+    glyphs fall through to the system stacks).
     """
-    families: list[str] = []
-    for match in re.finditer(r'fonts\.googleapis\.com/css2\?([^"]+)"', html):
-        families += re.findall(r"family=([A-Za-z0-9+]+)", match.group(1))
-    return families
+    for html in htmls:
+        test.assertNotIn("fonts.googleapis.com", html)
+        test.assertNotIn("fonts.gstatic.com", html)
+        test.assertIn("/fonts/fonts.css", html)
+        test.assertNotIn("Noto Sans SC", html)
+    for css in ("public/fonts/fonts.css", "public/styles.css"):
+        test.assertNotIn("Noto Sans SC", (ROOT / css).read_text(encoding="utf-8"), css)
 
 
 class LandingTests(unittest.TestCase):
@@ -218,19 +223,9 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3).
-
-        Stated without pinning font names (Issue #112): the Chinese page
-        requests strictly more families than the English page, and its extra
-        families exist only to cover CJK glyphs. An English page that loads
-        any of that coverage (e.g. by copying the zh head) evens the counts
-        and fails here; a Chinese page that drops the CJK font does too.
-        """
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_docs_and_github_on_both_languages(self) -> None:
         en_hrefs = [href for _, href in self.en.hrefs]
@@ -1192,14 +1187,9 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 COMPARE_INDEX_EN_PATH = ROOT / "public" / "compare" / "index.html"
 COMPARE_INDEX_ZH_PATH = ROOT / "public" / "zh" / "compare" / "index.html"
 
@@ -1321,14 +1311,9 @@ class OpenClawComparisonTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_no_third_party_analytics(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1520,14 +1505,9 @@ class DevinComparisonTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_no_third_party_analytics(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1666,14 +1646,9 @@ class OrcaComparisonTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_no_third_party_analytics(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -2068,11 +2043,9 @@ class BootstrapEvidenceTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
