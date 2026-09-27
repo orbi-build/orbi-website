@@ -3,7 +3,7 @@ WEBVTT
 00:00:00.920 --> 00:00:05.030
 Three years ago, AI could finish the line you were typing.
 
-00:00:05.480 --> 00:00:08.110
+00:00:05.480 --> 00:00:08.130
 Today, it writes the whole change.
 
 00:00:11.020 --> 00:00:14.250
@@ -12,49 +12,49 @@ The code arrives faster than anyone can review it.
 00:00:16.220 --> 00:00:19.470
 And every change still waits for one person.
 
-00:00:23.220 --> 00:00:25.490
+00:00:22.020 --> 00:00:24.290
 Factories solved this a long time ago.
 
-00:00:26.220 --> 00:00:27.910
-They run with the lights off.
+00:00:25.620 --> 00:00:27.550
+They run with the lights out.
 
 00:00:30.620 --> 00:00:33.390
 Orbi is that line, for software.
 
-00:00:33.840 --> 00:00:35.630
+00:00:33.840 --> 00:00:35.850
 You label a GitHub Issue.
 
-00:00:36.220 --> 00:00:38.010
+00:00:36.300 --> 00:00:38.090
 Orbi writes the change.
 
-00:00:40.620 --> 00:00:46.610
+00:00:40.620 --> 00:00:46.690
 A separate reviewer checks the work against the Issue, and anything wrong gets fixed before it merges.
 
 00:00:50.220 --> 00:00:52.210
 Only the reviewed commit goes in.
 
-00:00:54.620 --> 00:00:56.410
+00:00:54.620 --> 00:00:56.390
 And you decide when it ships.
 
 00:01:00.820 --> 00:01:02.530
 Orbi builds itself this way.
 
-00:01:03.620 --> 00:01:05.930
+00:01:03.620 --> 00:01:05.950
 Seventy releases in five weeks.
 
-00:01:06.820 --> 00:01:10.430
+00:01:06.820 --> 00:01:10.270
 Five hundred of its merged pull requests came off this line.
 
-00:01:13.020 --> 00:01:16.190
+00:01:13.020 --> 00:01:16.170
 Not ready to hand over the merge? Keep a human gate.
 
-00:01:16.640 --> 00:01:21.250
+00:01:16.620 --> 00:01:21.210
 Orbi stops before the merge, shows what it verified, and waits for your sign-off.
 
-00:01:21.700 --> 00:01:25.190
+00:01:21.660 --> 00:01:25.150
 Plug in a better model, and the whole line gets better with it.
 
-00:01:25.640 --> 00:01:29.710
+00:01:25.600 --> 00:01:29.690
 Your job moves up the line, to deciding what gets built.
 
 00:01:30.920 --> 00:01:32.750
