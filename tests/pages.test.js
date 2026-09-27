@@ -1026,14 +1026,16 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("offers returning users a Sign in text link left of the nav CTA (Issue #528)", async () => {
     // /api/login is the Cloud control plane's own login route: on every
     // deployed host the cloud Worker owns /api*, so the plain relative href
-    // reaches the right environment without per-env configuration. It is a
-    // plain text link (no class of its own) and sits before the Start Cloud
-    // button in DOM order — its left in the nav row.
+    // (how the slot fills on pages without a nav.siteBase) reaches the right
+    // environment without per-env configuration; pages living on another host
+    // (aiready.sh, Issue #610) fill the slot with the absolute orbi.build URL.
+    // It is a plain text link (no class of its own) and sits before the Start
+    // Cloud button in DOM order — its left in the nav row.
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
     expect(partial, "nav partial carries the Sign in slot").toContain(
       '<a href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
     );
-    expect(partial.indexOf('href="/api/login"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
+    expect(partial.indexOf('href="{{SIGNIN_HREF}}"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
     for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
       const nav = navRegion(shipped.get(output));
       const link = nav.match(/<a href="\/api\/login">([^<]*)<\/a>/);
