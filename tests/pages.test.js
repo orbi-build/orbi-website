@@ -1100,7 +1100,10 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
   };
 
   it("labels the dropdown Resources/资源 with Method first on every page with the primary nav", () => {
-    for (const page of pages.filter((p) => p.nav)) {
+    // Blog posts render the same nav through POST_LANG.nav, so they count as
+    // "every page with primary-navigation" too.
+    const surfaces = [...pages.filter((p) => p.nav), ...posts];
+    for (const page of surfaces) {
       const expected = RESOURCES[page.lang];
       const nav = navRegion(shipped.get(page.output));
       const dropdown = region(nav, '<div class="nav-docs">', "</div></div>");
