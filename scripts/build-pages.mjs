@@ -784,14 +784,13 @@ function renderPostMeta(post) {
   ].join("\n");
 }
 
-// Per-language bits only the post template needs. The zh page loads Noto Sans
-// SC; the en page must not. Nav params mirror the hand-written content pages'
-// (compare the old post page sources), except langSwitchHref, which the build
-// derives from the post's own mirror.
+// Per-language bits only the post template needs. Nav params mirror the
+// hand-written content pages' (compare the old post page sources), except
+// langSwitchHref, which the build derives from the post's own mirror.
 const POST_LANG = {
   en: {
     htmlLang: "en",
-    fontLink: `  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">`,
+    fontLink: `  <link rel="stylesheet" href="/fonts/fonts.css">`,
     skipLabel: "Skip to content",
     eyebrow: "Blog",
     nav: {
@@ -806,7 +805,7 @@ const POST_LANG = {
   },
   zh: {
     htmlLang: "zh-CN",
-    fontLink: `  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">`,
+    fontLink: `  <link rel="stylesheet" href="/fonts/fonts.css">`,
     skipLabel: "跳到正文",
     eyebrow: "博客",
     nav: {

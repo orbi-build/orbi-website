@@ -2472,7 +2472,9 @@ async function main() {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st") || url.includes("fonts.googleapis.com");
+    // Issue #585: pages must not request Google Fonts at all, so it is no
+    // longer allowed for here — a request would surface as a failure.
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     if (!process.env.BASE_URL) {
       await page.route("**/stats", (route) => route.fulfill({

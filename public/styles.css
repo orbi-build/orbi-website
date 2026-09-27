@@ -13,8 +13,8 @@
   --run: #5cd6b5;
   --run-on-light: #0a6b52;
   --fault: #ef6a62;
-  --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
-  --body: "Instrument Sans", "Noto Sans SC", sans-serif;
+  --display: "Familjen Grotesk", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --body: "Instrument Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --hero-copy-width: 48rem;
 }
