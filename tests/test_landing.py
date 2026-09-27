@@ -265,14 +265,16 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_primary_navigation_names_the_first_visit_actions(self) -> None:
+        # Issue #612: the Docs dropdown is labeled Resources/资源 and also
+        # carries the Method entry (tests/pages.test.js pins the full menu).
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Docs", "GitHub", "Sign in", "Start Cloud"),
+                ("How it works", "Resources", "GitHub", "Sign in", "Start Cloud"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "文档", "GitHub", "登录", "开始 Cloud"),
+                ("产品怎么运作", "资源", "GitHub", "登录", "开始 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
