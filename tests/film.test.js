@@ -2,6 +2,9 @@
 // click. Issue #577 removed the /cloud/ merge-gate clip (it autoplayed in a
 // loop with no pause — a WCAG 2.2.2 failure — and was purely decorative); the
 // explainer keeps its title and three sentences as single-column text.
+// Issue #576 removed the trace caption's two ledger sentences (the hero
+// already says GitHub stays the source of truth) and renamed the figure with
+// an aria-label.
 // Assertions run on the built bytes in public/ (the same files the Worker
 // ships); source drift is already covered by the build gate in pages.test.js.
 
@@ -71,6 +74,33 @@ describe("homepage brand-film entry and dialog (Issue #571)", () => {
     expect(source).toContain('addEventListener("ended"');
     expect(source).toContain('addEventListener("timeupdate"');
   });
+});
+
+describe("homepage trace caption removal (Issue #576)", () => {
+  const cases = [
+    [
+      "public/index.html",
+      ["RECOVERABLE STATE", "GitHub is the ledger"],
+      "Orbi delivery line: from scope to tagged release",
+    ],
+    [
+      "public/zh/index.html",
+      ["可恢复状态", "GitHub 是账本"],
+      "Orbi 交付产线：从范围到打 Tag 发版",
+    ],
+  ];
+
+  for (const [file, goneTexts, ariaLabel] of cases) {
+    it(`${file} drops the ledger caption and names the figure with a non-empty aria-label`, async () => {
+      const html = await read(file);
+      for (const text of goneTexts) expect(html, text).not.toContain(text);
+
+      const figure = html.match(/<figure class="factory-trace"[\s\S]*?<\/figure>/)?.[0] ?? "";
+      expect(figure, "figure named by aria-label").toContain(`aria-label="${ariaLabel}"`);
+      expect(figure, "no dangling aria-labelledby").not.toContain("aria-labelledby");
+      expect(figure, "no dangling trace-caption id").not.toContain("trace-caption");
+    });
+  }
 });
 
 describe("cloud merge-gate explainer (Issue #577: clip removed)", () => {
