@@ -1117,6 +1117,17 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     }
   });
 
+  // demo.js boots the hamburger and the dropdown (demo.js bootNavigation); a
+  // nav page without the script ships controls that can never open.
+  it("loads demo.js on every page carrying the primary nav", () => {
+    const surfaces = [...pages.filter((p) => p.nav), ...posts];
+    for (const page of surfaces) {
+      expect(shipped.get(page.output), `${page.output}: nav page must load /demo.js`).toContain(
+        '<script src="/demo.js" defer></script>',
+      );
+    }
+  });
+
   it("lands the Method entry on a page the build actually ships", () => {
     for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
       expect(shipped.get(output), `${output} must ship for the nav Method link`).toBeTruthy();
