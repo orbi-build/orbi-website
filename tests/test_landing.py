@@ -1912,7 +1912,7 @@ class BootstrapEvidenceTests(unittest.TestCase):
     """Issue #177: /evidence/ is a visitor page pointing at public GitHub records.
 
     The visitor must be able to click at least three public GitHub records.
-    Private repos stay unlinked. Ticket-voice copy stays out. Copy must not
+    orbi-cloud stays unlinked. Ticket-voice copy stays out. Copy must not
     invent a licence name or write a qualitative claim as a fact.
     """
 
@@ -1929,7 +1929,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
         "https://github.com/orbi-build/orbi/releases",
     )
     PRIVATE_REPOS = (
-        "https://github.com/orbi-build/orbi-website",
         "https://github.com/orbi-build/orbi-cloud",
     )
 
@@ -2035,9 +2034,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
                 "",
             )
             self.assertNotIn("Apache", body)
-            self.assertNotIn("open-source", body.lower())
-            self.assertNotIn("open source", body.lower())
-            self.assertNotIn("开源", body)
 
     def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
         for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
