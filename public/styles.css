@@ -1206,25 +1206,13 @@ h2 {
    its video and controls in place, with no poster background stand-in. */
 @media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
 
-/* Issue #571: the merge-gate explainer on /cloud/ — the film's gate clip on
-   the left, the three reassurance sentences on the right. Night tokens. */
+/* Issue #571: the merge-gate explainer on /cloud/ — title and three
+   reassurance sentences, single column since #577 removed the decorative
+   clip. Night tokens. */
 .cloud-gate {
-  display: grid;
-  grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
-  gap: 28px;
-  align-items: center;
   margin-top: 34px;
   padding-top: 26px;
   border-top: 1px solid var(--line-dark);
-}
-
-.cloud-gate-media video {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--line-dark);
-  border-radius: 8px;
-  background: var(--night);
 }
 
 .cloud-gate-title {
@@ -1923,7 +1911,7 @@ h2 {
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
   .factory-trace figcaption { grid-template-columns: 1fr; gap: 5px; padding: 15px; }
-  .cloud-gate { grid-template-columns: 1fr; gap: 16px; margin-top: 26px; padding-top: 20px; }
+  .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
      keep the 2x2 stat grid inside each. */
