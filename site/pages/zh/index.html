@@ -53,9 +53,7 @@
   <meta name="twitter:title" content="Orbi — 自托管、开源（AGPL-3.0）的 AI 编程 Agent，提个 Issue，收个版本">
   <meta name="twitter:description" content="GitHub 原生的软件生产系统：提个 Issue，收个版本。开源（AGPL-3.0），可自托管，永久免费。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
   <script type="application/ld+json">
   {
@@ -201,7 +199,7 @@
          <p><a class="orbi-hero-footnote-a" href="/zh/issue-to-release/">从 Issue 到打了 tag 的 Release →</a></p>
       </div>
 
-      <figure class="factory-trace" id="factory-trace" aria-labelledby="trace-caption">
+      <figure class="factory-trace" id="factory-trace" aria-label="Orbi 交付产线：从范围到打 Tag 发版">
         <div class="trace-head">
           <span><i class="live-dot"></i> 01 号产线 / 运行中</span>
           <span>orbi-build/orbi</span>
@@ -231,9 +229,8 @@
             </li>
           </ol>
         </div>
-        <figcaption id="trace-caption">
-          <span>可恢复状态</span>
-          <strong>GitHub 是账本。打上 Tag 的 Release 才是产品。</strong>
+        <figcaption>
+          <button class="trace-film" type="button" data-cta="film-play" aria-haspopup="dialog" aria-controls="film-dialog">▶ 观看短片 · 1:35</button>
         </figcaption>
       </figure>
     </section>
@@ -365,17 +362,17 @@
       <div class="proof-flow">
         <a class="proof-shot proof-input" href="https://github.com/orbi-build/orbi/issues/48">
           <span>输入 / ISSUE #48</span>
-          <img alt="GitHub Issue #48：Runner 停掉时记录当前 Issue。" class="orbi-proof-shot-img" height="600" src="/img/issue-48.png" width="1200"/>
+          <img alt="GitHub Issue #48：Runner 停掉时记录当前 Issue。" class="orbi-proof-shot-img" height="600" src="/img/issue-48.png" width="1200" loading="lazy" decoding="async"/>
         </a>
         <div class="proof-arrow" aria-hidden="true"><span>已审查</span>→</div>
         <a class="proof-shot proof-output" href="https://github.com/orbi-build/orbi/pull/193">
           <span>已合并 / PR #193</span>
-          <img alt="从 Issue #48 交付并合并的 GitHub PR #193。" class="orbi-proof-shot-img" height="600" src="/img/pr-193.png" width="1200"/>
+          <img alt="从 Issue #48 交付并合并的 GitHub PR #193。" class="orbi-proof-shot-img" height="600" src="/img/pr-193.png" width="1200" loading="lazy" decoding="async"/>
         </a>
         <div class="proof-arrow" aria-hidden="true"><span>已发版</span>→</div>
         <a class="proof-shot proof-release" href="https://github.com/orbi-build/orbi/releases/tag/v0.2.0">
           <span>已出厂 / RELEASE v0.2.0</span>
-          <img alt="GitHub Release v0.2.0：冻结的 Tag、Release Commit，以及逐项核对过的范围清单。" class="orbi-proof-shot-img" height="600" src="/img/release-v020.png" width="1200"/>
+          <img alt="GitHub Release v0.2.0：冻结的 Tag、Release Commit，以及逐项核对过的范围清单。" class="orbi-proof-shot-img" height="600" src="/img/release-v020.png" width="1200" loading="lazy" decoding="async"/>
         </a>
       </div>
       <ul class="proof-ledger">
@@ -568,9 +565,72 @@ orbi setup --config orbi.toml</code></pre>
     </section>
   </main>
 
+  <!-- Issue #575: 与英文首页（Issue #571）相同的品牌片弹层。放在 </main> 之外
+       （dialog 不是页面内容），只从 trace figure 的入口打开。视频与字幕沿用
+       同一份英文素材；登录跳转用中文页的语言匹配路径 /zh/cloud/login。 -->
+  <dialog id="film-dialog" aria-label="Orbi 品牌短片">
+    <button class="film-close" type="button" aria-label="关闭">×</button>
+    <video id="film-video" controls playsinline preload="none" poster="/video/orbi-film-poster.jpg">
+      <source src="/video/orbi-film.webm" type="video/webm">
+      <source src="/video/orbi-film.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="English" src="/video/orbi-film.en.vtt">
+    </video>
+    <div class="film-foot">
+      <p class="film-evidence">真实运行：<a class="film-evidence-a" href="https://github.com/orbi-build/orbi/issues/1367">Issue #1367</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/pull/1370">PR #1370</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.47">v0.5.47</a></p>
+      <div class="film-end" hidden>
+        <a class="button button-signal" data-cta="film-end-cloud" href="/zh/cloud/login">用 GitHub 登录 <span aria-hidden="true">↗</span></a>
+        <a class="button button-ghost" data-cta="film-end-selfhost" href="https://github.com/orbi-build/orbi">自己部署 <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </dialog>
+
 <!--@footer-->
 
   <script src="/demo.js" defer></script>
+  <script>
+    // Issue #575: 与英文首页相同的弹层脚本（Issue #571）。共享 engagement 脚本
+    // 的 send() 保持私有；入口按钮和片尾按钮用各自的 data-cta 上报。
+    (() => {
+      const dialog = document.getElementById("film-dialog");
+      const video = document.getElementById("film-video");
+      const evidence = dialog.querySelector(".film-evidence");
+      const endRow = dialog.querySelector(".film-end");
+      const beacon = (detail) => {
+        navigator.sendBeacon("/cloud/e", new Blob([JSON.stringify({ kind: "cta_click", path: location.pathname, detail })], { type: "application/json" }));
+      };
+      let halfSent = false;
+      let endSent = false;
+      document.getElementById("factory-trace").addEventListener("click", (event) => {
+        if (event.target.closest("a")) return; // an existing link navigates; the rest of the figure opens the film
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        dialog.showModal();
+      });
+      dialog.querySelector(".film-close").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close(); // the backdrop
+      });
+      dialog.addEventListener("close", () => video.pause());
+      video.addEventListener("play", () => {
+        endRow.hidden = true;
+        evidence.hidden = false;
+      });
+      video.addEventListener("ended", () => {
+        evidence.hidden = true;
+        endRow.hidden = false;
+        if (!endSent) {
+          endSent = true;
+          beacon("film-100");
+        }
+      });
+      video.addEventListener("timeupdate", () => {
+        if (!halfSent && video.duration > 0 && video.currentTime / video.duration >= 0.5) {
+          halfSent = true;
+          beacon("film-50");
+        }
+      });
+    })();
+  </script>
   <!-- Cloudflare Web Analytics: privacy-first, no cookies, no consent banner.
        The account's auto-install does not reach this site because the pages
        are served by the Worker's asset binding, not proxied HTML. -->

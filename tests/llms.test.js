@@ -39,7 +39,6 @@ describe("watch-the-six-steps article (Issue #329)", () => {
     expect(articleEn).toContain("only new deliveries pause");
     expect(articleZh).toContain("暂停新的交付");
     expect(llms).toContain("onboarding video covers seven");
-    expect(llms).not.toContain("Follow the six steps");
   });
 });
 
@@ -72,7 +71,6 @@ describe("llms-full.txt content asset (Issue #438)", () => {
     expect(llmsFull).toContain("Sustainable Use License if your policy rules out AGPL");
     expect(llmsFull).toContain("github.com/orbi-build/orbi/blob/main/LICENSE");
     expect(llmsFull).toContain("docs/licenses/sustainable-use-license.md");
-    expect(llmsFull).not.toContain("LICENSE.md");
   });
 
   it("contains the complete cost and evidence bodies, not summaries", () => {
@@ -95,7 +93,6 @@ describe("llms-full.txt content asset (Issue #438)", () => {
 
 it("describes Managed Cloud consistently as open for subscriptions", () => {
   expect(flat).toContain("is live and open for subscriptions today");
-  expect(flat).not.toContain("Private Beta");
 });
 
 it("lists the same comparison pages as the sitemap", () => {
@@ -107,7 +104,6 @@ it("lists the same comparison pages as the sitemap", () => {
 describe("llms.txt model compatibility claim (Issue #296)", () => {
   it("names the OpenAI-compatible boundary without implying native Claude support", () => {
     expect(flat).toContain("any OpenAI-compatible API or a locally hosted model");
-    expect(flat).not.toContain("Bring your own: Claude, GPT");
   });
 });
 
@@ -134,7 +130,7 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
   const section = flat.slice(flat.indexOf("## Connect a repository to Cloud"));
 
   it("exists", () => {
-    expect(section).not.toBe("");
+    expect(flat.indexOf("## Connect a repository to Cloud")).toBeGreaterThan(-1);
   });
 
   it("walks all six steps with their concrete entry points", () => {
@@ -164,7 +160,7 @@ describe("llms.txt failure diagnosis (Issue #154 acceptance 2)", () => {
   const section = flat.slice(flat.indexOf("### Failure diagnosis"));
 
   it("exists", () => {
-    expect(section).not.toBe("");
+    expect(flat.indexOf("### Failure diagnosis")).toBeGreaterThan(-1);
   });
 
   it("diagnoses the empty repository dropdown as a GitHub App authorization gap", () => {

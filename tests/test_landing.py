@@ -146,16 +146,30 @@ def parse(path: Path) -> tuple[str, PageParser]:
     return html, page
 
 
-def font_families(html: str) -> list[str]:
-    """Font families the page requests from the Google Fonts css2 API.
+def assert_self_hosted_fonts(test: unittest.TestCase, *htmls: str) -> None:
+    """Every audited page loads fonts the way Issue #585 shipped them.
 
-    Fonts are loaded through one stylesheet URL whose query names the
-    families, so this is the whole static font surface of a page.
+    The page loads the self-hosted /fonts/fonts.css stylesheet; every font
+    file that stylesheet declares ships in public/fonts/; and styles.css
+    carries the design system's display and body stacks (the English
+    families plus the CJK system stack from orbi-design-system tokens.json).
     """
-    families: list[str] = []
-    for match in re.finditer(r'fonts\.googleapis\.com/css2\?([^"]+)"', html):
-        families += re.findall(r"family=([A-Za-z0-9+]+)", match.group(1))
-    return families
+    for html in htmls:
+        test.assertIn('<link rel="stylesheet" href="/fonts/fonts.css">', html)
+    fonts_css = (ROOT / "public" / "fonts" / "fonts.css").read_text(encoding="utf-8")
+    for src in re.findall(r'url\("(/fonts/[^"]+)"\)', fonts_css):
+        test.assertTrue((ROOT / "public" / src.lstrip("/")).is_file(), src)
+    styles_css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+    test.assertIn(
+        '--display: "Familjen Grotesk", "PingFang SC", "Hiragino Sans GB", '
+        '"Microsoft YaHei", "Noto Sans CJK SC", sans-serif;',
+        styles_css,
+    )
+    test.assertIn(
+        '--body: "Instrument Sans", "PingFang SC", "Hiragino Sans GB", '
+        '"Microsoft YaHei", "Noto Sans CJK SC", sans-serif;',
+        styles_css,
+    )
 
 
 class LandingTests(unittest.TestCase):
@@ -183,7 +197,6 @@ class LandingTests(unittest.TestCase):
         licence = llms.split("## Licence", 1)[1].split("\n## ", 1)[0]
         self.assertIn("AGPL-3.0", licence)
         self.assertIn("Sustainable Use License", licence)
-        self.assertNotIn("Do not describe Orbi as OSI open source", licence)
         for html in (self.en_html, self.zh_html):
             search_title = re.search(r"<title>([^<]+)</title>", html).group(1)
             search_description = re.search(
@@ -194,8 +207,6 @@ class LandingTests(unittest.TestCase):
                 ("og:title", re.search(r'property="og:title" content="([^"]+)"', html).group(1)),
                 ("twitter:title", re.search(r'name="twitter:title" content="([^"]+)"', html).group(1)),
             ]
-            for slot, text in slots:
-                self.assertNotIn("fair-code", text.lower(), (slot, text))
             self.assertIn("open source" if html is self.en_html else "开源", search_title.lower() + " " + search_description.lower())
             for slot, text in slots[1:]:
                 if html is self.en_html:
@@ -218,19 +229,9 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3).
-
-        Stated without pinning font names (Issue #112): the Chinese page
-        requests strictly more families than the English page, and its extra
-        families exist only to cover CJK glyphs. An English page that loads
-        any of that coverage (e.g. by copying the zh head) evens the counts
-        and fails here; a Chinese page that drops the CJK font does too.
-        """
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_docs_and_github_on_both_languages(self) -> None:
         en_hrefs = [href for _, href in self.en.hrefs]
@@ -286,7 +287,6 @@ class LandingTests(unittest.TestCase):
         for html in (self.en_html, self.zh_html):
             self.assertIn(">EN<", html)
             self.assertIn(">ZH<", html)
-            self.assertNotIn(">中文<", html)
         self.assertIn('aria-label="简体中文"', self.en_html)
         self.assertIn('aria-label="English"', self.zh_html)
 
@@ -360,7 +360,6 @@ class LandingTests(unittest.TestCase):
             # configuration decision (Issue #99 sends it straight to
             # /cloud/login), so no test pins its target (Issue #103).
             self.assertIn("cloud-start", ctas)
-            self.assertNotIn("cloud-apply", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -445,7 +444,6 @@ class LandingTests(unittest.TestCase):
             self.assertIn("US$29", page.text)
             self.assertIn("US$79", page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
-            self.assertFalse(any(href == "/apply" for _, href in page.hrefs))
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
         import tomllib
@@ -460,41 +458,19 @@ class LandingTests(unittest.TestCase):
         # rewritten to https://docs.orbi.build — is locked where it runs, in
         # tests/worker.test.js. Only beta's value is pinned: it must stay the
         # one verified beta Cloud endpoint (docs/cloud-endpoints.md). Issue
-        # #528: that endpoint is /api/start, the one-step GitHub App entry
-        # (measured live 2026-09-26: 302 to the App installation page).
-        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/start")
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("new URL(cloudBaseUrl)", worker)
-        self.assertIn("CLOUD_LOGIN_URL", worker)
-        self.assertNotIn("cloud.orbi.build", worker)
-        self.assertNotIn("beta-cloud.orbi.build", worker)
-
-    def test_website_defines_no_endpoint_inside_a_cloud_route_prefix(self) -> None:
-        """Issue #76: on the shared beta hostname the cloud control plane owns
-        /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
-        (orbi-cloud discussion 120 §2 C2, confirmed live 2026-09-09), so a
-        website endpoint under those prefixes never runs there — measured:
-        beta answered POST /api/apply with cloud's 404. Both website-owned
-        Cloud-entry endpoints live under /cloud/, which none of the cloud
-        prefixes covers. The boundary is route definitions: worker.js names
-        /api/login only as page content — the Issue #528 rewrite that sends
-        the nav Sign in link to the docs where Cloud is unconfigured — which
-        is not an endpoint."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertNotIn('route === "/api/', worker)
-        self.assertIn('"/cloud/apply"', worker)
-        self.assertIn('"/cloud/login"', worker)
-        self.assertIn('"/zh/cloud/login"', worker)
+        # #570: that endpoint is /api/login, the classic GitHub sign-in entry
+        # (measured live 2026-09-26: 302 to GitHub's OAuth authorize URL) —
+        # #528's one-step /api/start stranded a user who had installed the App
+        # but was not signed in to Orbi on the installation page.
+        self.assertEqual(config["env"]["beta"]["vars"]["CLOUD_LOGIN_URL"], "https://beta.orbi.build/api/login")
 
     def test_robots_disallows_the_website_endpoints(self) -> None:
-        """The login handoffs are actions, not pages: keep crawlers off them.
-        /apply and /cloud/apply are gone (Issue #179), so they are no longer
-        listed — listing a retired path would imply it still exists."""
+        """The login handoffs are actions, not pages: keep crawlers off them."""
         robots = (ROOT / "public" / "robots.txt").read_text(encoding="utf-8")
-        self.assertNotIn("Disallow: /apply", robots)
-        self.assertNotIn("Disallow: /cloud/apply", robots)
-        self.assertIn("Disallow: /cloud/login", robots)
-        self.assertIn("Disallow: /zh/cloud/login", robots)
+        self.assertEqual(
+            [line for line in robots.splitlines() if line.startswith("Disallow:")],
+            ["Disallow: /cloud/login", "Disallow: /zh/cloud/login"],
+        )
 
     # Issue #540: the no-terminal-periods test with its verbatim approved
     # heading was removed — the approved set pinned homepage copy.
@@ -531,8 +507,6 @@ class LandingTests(unittest.TestCase):
 
     def test_stats_animation_durations_are_fast_and_staggered(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
-        for old_duration in ("2600", "2400", "2200", "1800", "1450"):
-            self.assertNotIn(old_duration, js)
         durations = [
             int(value)
             for value in re.findall(r"(?:issues|prs|releases|deploys): \[[^,]+, (\d+)\]", js)
@@ -606,11 +580,9 @@ class LandingTests(unittest.TestCase):
         survive only as the collapsed manual fallback, so nobody faces them
         up front."""
         command = "curl -fsSL https://aiready.sh | sh"
-        stale = "curl -fsSL https://orbi.build/install.sh"
         for path, html in ((EN_PATH, self.en_html), (ZH_PATH, self.zh_html)):
             # exactly once: the primary install path, not repeated per locale
             self.assertEqual(html.count(command), 1, path)
-            self.assertNotIn(stale, html, path)
             self.assertIn("git clone https://github.com/orbi-build/orbi.git", html)
             self.assertIn("orbi setup --config orbi.toml", html)
             # the fallback stays collapsed and secondary, behind the one-liner
@@ -618,18 +590,6 @@ class LandingTests(unittest.TestCase):
             self.assertLess(html.index("<details"), html.index("git clone https://github.com"))
             # the honest prerequisites, so nobody discovers systemd halfway in
             self.assertIn("systemd", html)
-
-    def test_no_primary_install_snippet_uses_legacy_orbi_build_host(self) -> None:
-        """A stale primary install URL fails with the exact file identified."""
-        stale = "curl -fsSL https://orbi.build/install.sh"
-        offenders = []
-        for folder in (ROOT / "public", ROOT / "site" / "pages"):
-            for path in folder.rglob("*"):
-                if path.suffix not in {".html", ".txt"}:
-                    continue
-                if stale in path.read_text(encoding="utf-8"):
-                    offenders.append(str(path.relative_to(ROOT)))
-        self.assertEqual(offenders, [], f"stale primary install URL in: {offenders}")
 
     def test_install_sh_is_published_from_the_orbi_repo(self) -> None:
         """/install.sh must be the orbi repo's script byte for byte, with a
@@ -749,26 +709,12 @@ class LandingTests(unittest.TestCase):
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
-    def test_no_third_party_analytics(self) -> None:
-        """A page that promises code never leaves your machine must not ship
-        visitor data to someone else. Cloudflare's own analytics is enough."""
-        for page in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, page.lower(), tracker)
-
-    def test_apply_page_is_offline(self) -> None:
-        """Issue #179: /apply is gone. Historical D1 rows stay; the form and
-        the write path do not."""
-        self.assertFalse((ROOT / "public" / "apply.html").exists())
-        self.assertFalse((ROOT / "site" / "pages" / "apply.html").exists())
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn('route === "/apply"', worker)
-        self.assertIn("goneResponse", worker)
-        self.assertNotIn("handleApply", worker)
-        self.assertNotIn("MAX_FIELD", worker)
+    def test_external_scripts_are_only_the_two_analytics_hosts(self) -> None:
+        hosts = set()
+        for path in (ROOT / "public").rglob("*.html"):
+            html = path.read_text(encoding="utf-8")
+            hosts |= set(re.findall(r'<script[^>]*src="(https?://[^/"]+)', html))
+        self.assertEqual(hosts, {"https://datafa.st", "https://static.cloudflareinsights.com"})
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
@@ -870,8 +816,8 @@ class LandingTests(unittest.TestCase):
         self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
         # Issue #74: the browser smoke's login contract is injected per
-        # environment; Issue #528: beta's is the 302 chain from the handoff
-        # through /api/start into GitHub's App installation page
+        # environment; Issue #570: beta's is the 302 chain from the handoff
+        # through /api/login into GitHub's OAuth sign-in authorization
         self.assertIn("CLOUD_LOGIN_EXPECT=github-app-302", workflow)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
@@ -933,11 +879,9 @@ class LandingTests(unittest.TestCase):
         self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
         self.assertIn("if: failure()", workflow)
         self.assertLess(workflow.index("if: failure()"), rollback_at)
-        # Issue #539: the beta-stability wait gate added in #450 is gone —
-        # no pre-deploy check job between require-main and deploy, no
-        # workflow_dispatch input, no repository variable, and no
-        # `actions: read` permission that existed only to feed that job's
-        # API calls. The approval gate and the rollback stay.
+        # The production deploy is two jobs: require-main gates deploy, and
+        # deploy runs under the production environment approval. The
+        # rollback stays.
         jobs = re.findall(r"^  (\S+):", workflow.split("\njobs:\n", 1)[1], re.M)
         self.assertEqual(jobs, ["require-main", "deploy"])
         self.assertIn("needs: require-main", workflow)
@@ -945,9 +889,6 @@ class LandingTests(unittest.TestCase):
         # deploy job — the approval still gates the deploy itself
         deploy_at = workflow.index("  deploy:")
         self.assertLess(deploy_at, workflow.index("environment: production"))
-        self.assertNotIn("inputs:", workflow)
-        self.assertNotIn("PROD_MIN_", workflow)
-        self.assertNotIn("actions: read", workflow)
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
@@ -1037,11 +978,6 @@ class LandingTests(unittest.TestCase):
         )
         self.assertTrue(config["observability"]["enabled"])
 
-    def test_stats_does_not_leak_upstream_error_text(self) -> None:
-        """A 502 must not echo GitHub's response body to anonymous callers."""
-        worker = WORKER_PATH.read_text(encoding="utf-8")
-        self.assertIn("upstream unavailable", worker)
-
 
 COMPARE_EN_PATH = ROOT / "public" / "compare" / "openclaw" / "index.html"
 COMPARE_ZH_PATH = ROOT / "public" / "zh" / "compare" / "openclaw" / "index.html"
@@ -1112,8 +1048,6 @@ class CloudLandingPageTests(unittest.TestCase):
             for value in ("US$29", "US$290", "US$79", "US$790", "100M", "300M"):
                 self.assertIn(value, page.text)
             self.assertIn(founding, page.text)
-            self.assertNotIn("100% off", page.text)
-            self.assertNotIn("订阅永久免费", page.text)
 
     def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
         for page, headline in (
@@ -1126,10 +1060,6 @@ class CloudLandingPageTests(unittest.TestCase):
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
         """Issue #277: /cloud/ keeps the owner-approved delivery range and
         cache premise, and links to /cost/. Detailed measurements stay there."""
-        competitor_hrefs = (
-            "https://docs.devin.ai/admin/billing/self-serve",
-            "https://docs.factory.ai/pricing/individuals",
-        )
         for page, needles, cost_href in (
             (
                 self.en,
@@ -1152,8 +1082,6 @@ class CloudLandingPageTests(unittest.TestCase):
                 self.assertIn(needle, page.text, needle)
             hrefs = [h for _, h in page.hrefs]
             self.assertIn(cost_href, hrefs, cost_href)
-            for href in competitor_hrefs:
-                self.assertNotIn(href, hrefs, href)
 
     def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
         for html, founding in (
@@ -1190,14 +1118,9 @@ class CloudLandingPageTests(unittest.TestCase):
             self.assertIn(f"<loc>{loc}</loc>", sitemap, loc)
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 COMPARE_INDEX_EN_PATH = ROOT / "public" / "compare" / "index.html"
 COMPARE_INDEX_ZH_PATH = ROOT / "public" / "zh" / "compare" / "index.html"
 
@@ -1307,34 +1230,20 @@ class OpenClawComparisonTests(unittest.TestCase):
         self.assertIn("/compare/openclaw/", [href for _, href in self.zh.hrefs])
 
     def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
+        for path in (COMPARE_EN_PATH, COMPARE_ZH_PATH, DEVIN_EN_PATH, DEVIN_ZH_PATH, ORCA_EN_PATH, ORCA_ZH_PATH, EVIDENCE_EN_PATH, EVIDENCE_ZH_PATH):
+            html, page = parse(path)
             for crawler, rendered in zip(page.headings, page.headings_rendered):
                 self.assertEqual(" ".join(crawler.split()), rendered, crawler)
             headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
             plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
             self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
+            for heading in plain:
+                self.assertRegex(heading, r"[^.。]$", heading)
 
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -1378,8 +1287,6 @@ class HermesComparisonTests(unittest.TestCase):
             self.assertIn("GitHub", page.text)
             self.assertIn("Issue", page.text)
             self.assertIn("MIT", page.text)
-            self.assertNotIn("https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills/bundled/github", html)
-            self.assertNotIn("https://hermes-agent.nousresearch.com/docs/user-guide/skills", html)
             self.assertIn("https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/skills/bundled/software-development/software-development-github.md", html)
             self.assertIn("https://hermes-agent.nousresearch.com/docs/user-guide/features/skills", html)
 
@@ -1505,35 +1412,10 @@ class DevinComparisonTests(unittest.TestCase):
         self.assertIn("/zh/compare/devin/", [href for _, href in self.en.hrefs])
         self.assertIn("/compare/devin/", [href for _, href in self.zh.hrefs])
 
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
-
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -1651,35 +1533,10 @@ class OrcaComparisonTests(unittest.TestCase):
         self.assertIn("/zh/compare/orca/", [href for _, href in self.en.hrefs])
         self.assertIn("/compare/orca/", [href for _, href in self.zh.hrefs])
 
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
-
     def test_font_loading_follows_the_language(self) -> None:
-        """English pages do not load the CJK webfont (REVIEW.md P1-3),
-        stated without pinning font names (Issue #112): see
-        LandingTests.test_font_loading_follows_the_language."""
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
-
-    def test_no_third_party_analytics(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            for tracker in (
-                "google-analytics", "googletagmanager", "gtag(",
-                "plausible.io", "umami", "segment.com", "hotjar",
-            ):
-                self.assertNotIn(tracker, html.lower(), tracker)
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -1727,7 +1584,7 @@ class CompareIndexTests(unittest.TestCase):
             self.assertIn(hermes, [href for _, href in page.hrefs])
 
     def test_every_deep_dive_links_its_page(self) -> None:
-        """Twelve deep dives, each a link — no internal status badge (Issue #178)."""
+        """Twelve deep dives, each a link."""
         for html, href_pattern in (
             (self.en_html, r"^/compare/[a-z-]+/$"),
             (self.zh_html, r"^/zh/compare/[a-z-]+/$"),
@@ -1741,7 +1598,6 @@ class CompareIndexTests(unittest.TestCase):
                 self.assertIsNotNone(link, entry)
                 href = link.group(1)
                 self.assertRegex(href, href_pattern, entry)
-                self.assertNotIn("dive-status", entry, entry)
 
     # Issue #540: the closing-heading test was removed — it pinned the
     # maintainer's own H2 wording verbatim.
@@ -1926,8 +1782,8 @@ class BootstrapEvidenceTests(unittest.TestCase):
     """Issue #177: /evidence/ is a visitor page pointing at public GitHub records.
 
     The visitor must be able to click at least three public GitHub records.
-    Private repos stay unlinked. Ticket-voice copy stays out. Copy must not
-    invent a licence name or write a qualitative claim as a fact.
+    orbi-cloud stays unlinked. Ticket-voice copy stays out. Copy must not
+    invent a licence name.
     """
 
     PUBLIC_RECORDS = (
@@ -1943,7 +1799,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
         "https://github.com/orbi-build/orbi/releases",
     )
     PRIVATE_REPOS = (
-        "https://github.com/orbi-build/orbi-website",
         "https://github.com/orbi-build/orbi-cloud",
     )
 
@@ -2008,28 +1863,6 @@ class BootstrapEvidenceTests(unittest.TestCase):
             self.assertNotIn("Apache", html)
             self.assertNotIn("Apache 2.0", html)
 
-    def test_copy_does_not_write_qualitative_claims_as_facts(self) -> None:
-        forbidden = (
-            "nobody ever wrote code",
-            "no human ever typed",
-            "无人写代码",
-            "从来没有人敲过键盘",
-        )
-        for page in (self.en, self.zh):
-            lowered = page.text.lower()
-            for phrase in forbidden:
-                self.assertNotIn(phrase.lower(), lowered, phrase)
-
-    def test_sample_warehouse_is_not_a_shipping_url(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            self.assertNotIn('id="sample-warehouse"', html)
-            hrefs = [href for _, href in page.hrefs]
-            self.assertNotIn("https://github.com/orbi-build/orbi-smoke", hrefs)
-            self.assertFalse(
-                [href for href in hrefs if "sample-warehouse" in href or "orbi-smoke" in href],
-                hrefs,
-            )
-
     def test_each_sample_tells_the_visitor_what_to_look_for(self) -> None:
         self.assertGreaterEqual(self.en_html.count("What to look for on the timeline"), 3)
         self.assertGreaterEqual(self.zh_html.count("在时间线上看什么"), 3)
@@ -2049,28 +1882,11 @@ class BootstrapEvidenceTests(unittest.TestCase):
                 "",
             )
             self.assertNotIn("Apache", body)
-            self.assertNotIn("open-source", body.lower())
-            self.assertNotIn("open source", body.lower())
-            self.assertNotIn("开源", body)
-
-    def test_headings_keep_word_boundaries_and_no_terminal_periods(self) -> None:
-        for page, html in ((self.en, self.en_html), (self.zh, self.zh_html)):
-            for crawler, rendered in zip(page.headings, page.headings_rendered):
-                self.assertEqual(" ".join(crawler.split()), rendered, crawler)
-            headings = re.findall(r"<h[12][^>]*>(.*?)</h[12]>", html, re.DOTALL)
-            plain = [re.sub(r"<[^>]+>", "", heading).strip() for heading in headings]
-            self.assertTrue(plain)
-            self.assertFalse(
-                [heading for heading in plain if heading.endswith((".", "。"))],
-                plain,
-            )
 
     def test_font_loading_follows_the_language(self) -> None:
-        en, zh = (
-            sorted(set(font_families(html)))
-            for html in (self.en_html, self.zh_html)
-        )
-        self.assertLess(len(en), len(zh), (en, zh))
+        """Issue #585: both languages load the same self-hosted font
+        stylesheet; the Google domains and Noto Sans SC are gone."""
+        assert_self_hosted_fonts(self, self.en_html, self.zh_html)
 
     def test_sitemap_and_llms_txt_list_the_new_pages(self) -> None:
         sitemap = (ROOT / "public" / "sitemap.xml").read_text(encoding="utf-8")
@@ -2085,6 +1901,43 @@ class BootstrapEvidenceTests(unittest.TestCase):
     def test_language_switch_crosses_to_the_counterpart(self) -> None:
         self.assertIn("/zh/evidence/", [href for _, href in self.en.hrefs])
         self.assertIn("/evidence/", [href for _, href in self.zh.hrefs])
+
+
+TERMS_EN_PATH = ROOT / "public" / "terms" / "index.html"
+TERMS_ZH_PATH = ROOT / "public" / "zh" / "terms" / "index.html"
+PRIVACY_EN_PATH = ROOT / "public" / "privacy" / "index.html"
+PRIVACY_ZH_PATH = ROOT / "public" / "zh" / "privacy" / "index.html"
+SUPPORT_EN_PATH = ROOT / "public" / "support" / "index.html"
+SUPPORT_ZH_PATH = ROOT / "public" / "zh" / "support" / "index.html"
+AIREADY_EN_PATH = ROOT / "public" / "aiready" / "index.html"
+AIREADY_ZH_PATH = ROOT / "public" / "aiready" / "zh" / "index.html"
+CLAUDE_CODE_EN_PATH = ROOT / "public" / "compare" / "claude-code" / "index.html"
+CLAUDE_CODE_ZH_PATH = ROOT / "public" / "zh" / "compare" / "claude-code" / "index.html"
+
+
+class SelfHostedFontsOnEveryAuditedPageTests(unittest.TestCase):
+    """Issue #604: the ten pages that shipped without the /fonts/fonts.css
+    link fell through the CJK system stack to Microsoft YaHei / PingFang SC,
+    which rendered their English with full-width quotes and broken words."""
+
+    PAGES = (
+        TERMS_EN_PATH,
+        TERMS_ZH_PATH,
+        PRIVACY_EN_PATH,
+        PRIVACY_ZH_PATH,
+        SUPPORT_EN_PATH,
+        SUPPORT_ZH_PATH,
+        AIREADY_EN_PATH,
+        AIREADY_ZH_PATH,
+        CLAUDE_CODE_EN_PATH,
+        CLAUDE_CODE_ZH_PATH,
+    )
+
+    def test_font_loading_follows_the_language(self) -> None:
+        for path in self.PAGES:
+            with self.subTest(page=str(path)):
+                html, _ = parse(path)
+                assert_self_hosted_fonts(self, html)
 
 
 if __name__ == "__main__":

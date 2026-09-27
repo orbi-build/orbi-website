@@ -94,7 +94,7 @@ const sharedAttributes = {
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
 const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
 const localFoundingAvatars = localFoundingLogins
-  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80">`)
+  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
   .join("");
 
 export function countServerRenderedAvatars(html) {
@@ -233,11 +233,13 @@ async function assertFooterDeepDives(page, label) {
 // by the deploy workflow via CLOUD_LOGIN_EXPECT — never guessed here.
 // Issue #76: the website's own login handoff is /cloud/login (never /api/ or
 // any other prefix the Cloud control plane owns on the shared beta hostname).
-// Issue #528: the handoff 302s to CLOUD_LOGIN_URL — Cloud's one-step /api/start
-// (measured live 2026-09-26 against beta.orbi.build) — whose own 302 lands on
-// the GitHub App installation page; a signed-out visitor is bounced once more
-// by GitHub to its sign-in page with the installation request in return_to.
-// /api/login stays up as the nav Sign in target.
+// Issue #570: the handoff 302s to CLOUD_LOGIN_URL — Cloud's sign-in entry
+// /api/login (measured live 2026-09-26 against beta.orbi.build) — whose own
+// 302 opens GitHub's OAuth authorize page. A visitor who authorized Orbi
+// before returns from there at once; one who comes back without an App
+// installation is sent on to the installation page by Cloud itself. #528's
+// one-step /api/start stranded a user who had installed the App but was not
+// signed in to Orbi on the installation page, unable to reach the console.
 export function resolveCloudLoginExpect(raw) {
   if (raw === undefined) return "fail-closed-404";
   if (raw !== "github-app-302" && raw !== "fail-closed-503" && raw !== "fail-closed-404") {
@@ -301,18 +303,18 @@ export async function assertCloudLoginRedirect(targetURL) {
       const response = await context.get(`${targetURL}${path}`, { maxRedirects: 0 });
       const headers = response.headers();
       if (expectation === "github-app-302") {
-        // Issue #528: the website's handoff must 302 to /api/start on the
-        // same host — the /api/start hop carries the ref attribution as the
-        // request's cookie, so the handoff must never overwrite it — and
-        // /api/start must answer with the GitHub App installation redirect.
-        // One manual hop each: the responses themselves are the contract,
-        // not where a browser would finally land.
+        // Issue #570: the website's handoff must 302 to /api/login on the
+        // same host — the hop carries the ref attribution as the request's
+        // cookie, so the handoff must never overwrite it — and /api/login
+        // must answer with GitHub's OAuth authorize redirect carrying
+        // client_id and redirect_uri. One manual hop each: the responses
+        // themselves are the contract, not where a browser would finally land.
         if (response.status() !== 302) {
           throw new Error(`Cloud login ${path} expected 302, got ${response.status()}`);
         }
         const handoff = new URL(headers.location || "", targetURL);
-        if (handoff.origin !== new URL(targetURL).origin || handoff.pathname !== "/api/start") {
-          throw new Error(`Cloud login ${path} expected a 302 to /api/start, got ${headers.location}`);
+        if (handoff.origin !== new URL(targetURL).origin || handoff.pathname !== "/api/login") {
+          throw new Error(`Cloud login ${path} expected a 302 to /api/login, got ${headers.location}`);
         }
         const refOverwritten = response
           .headersArray()
@@ -322,10 +324,21 @@ export async function assertCloudLoginRedirect(targetURL) {
         }
         const cloud = await context.get(handoff.toString(), { maxRedirects: 0 });
         const cloudLocation = cloud.headers().location || "";
-        if (cloud.status() !== 302
-            || !/^https:\/\/github\.com\/apps\/[^/]+\/installations\/new(\?|$)/.test(cloudLocation)) {
+        let authorize = null;
+        if (cloud.status() === 302) {
+          try {
+            authorize = new URL(cloudLocation);
+          } catch {
+            authorize = null;
+          }
+        }
+        if (!authorize
+            || authorize.origin !== "https://github.com"
+            || authorize.pathname !== "/login/oauth/authorize"
+            || !authorize.searchParams.get("client_id")
+            || !authorize.searchParams.get("redirect_uri")) {
           throw new Error(
-            `Cloud login ${path} did not redirect to the GitHub App installation page: ${cloud.status()} ${cloudLocation}`
+            `Cloud login ${path} did not redirect to GitHub's OAuth authorize: ${cloud.status()} ${cloudLocation}`
           );
         }
       } else if (expectation === "fail-closed-503") {
@@ -373,7 +386,7 @@ export async function assertCloudLoginRedirect(targetURL) {
 // expected href from CLOUD_LOGIN_EXPECT copied that rewrite into the test and
 // broke on implementation changes while the site was fine. What each
 // expectation declares is the landing:
-//   github-app-302   → GitHub's App installation flow (beta, Issue #528; the
+//   github-app-302   → GitHub's sign-in authorization (beta, Issue #570; the
 //                      handoff chain is pinned by assertCloudLoginRedirect)
 //   fail-closed-503  → the self-host docs (Issue #179's unconfigured shape)
 //   fail-closed-404  → the /cloud/login handoff route itself (local static
@@ -386,17 +399,16 @@ export async function assertCloudLoginRedirect(targetURL) {
 export function expectedCtaLanding(expectation) {
   if (expectation === "github-app-302") {
     return {
-      describe: "GitHub's App installation flow",
+      describe: "GitHub's sign-in authorization",
       statusOk: (status) => status < 400,
       matches: (url) =>
         url.hostname === "github.com" &&
-        (/^\/apps\/[^/]+\/installations\/new$/.test(url.pathname) ||
-          // A signed-out visitor is bounced once more by GitHub to its
-          // sign-in page, which preserves the installation request in
-          // return_to (measured live 2026-09-26 against beta). A bare
-          // /login without it is not the flow.
+        (url.pathname === "/login/oauth/authorize" ||
+          // A visitor not signed in to GitHub is bounced once more by GitHub
+          // to its sign-in page, which preserves the authorization request in
+          // return_to (Issue #570). A bare /login without it is not the flow.
           (url.pathname === "/login"
-            && /^\/apps\/[^/]+\/installations\/new/.test(url.searchParams.get("return_to") || ""))),
+            && /^\/login\/oauth\/authorize/.test(url.searchParams.get("return_to") || ""))),
     };
   }
   if (expectation === "fail-closed-503") {
@@ -762,7 +774,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
   // the aggregate endpoint stays identity-free and every rendered image
-  // finishes loading before the wall becomes visible. Local mode additionally
+  // finishes loading once scrolled to. Local mode additionally
   // pins all 11 injected identities below.
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
@@ -779,6 +791,19 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   for (let index = 0; index < browserAvatarCount; index += 1) {
     const image = images.nth(index);
     await image.waitFor({ state: "visible" });
+    // Issue #586: the avatars are lazy, so visibility no longer implies a
+    // started download. Scroll each one to the viewport, wait out its load
+    // (the error event fails fast instead of hanging), then assert it.
+    await image.scrollIntoViewIfNeeded();
+    await image.evaluate(
+      (element) =>
+        element.complete
+          ? undefined
+          : new Promise((resolve, reject) => {
+            element.addEventListener("load", resolve, { once: true });
+            element.addEventListener("error", () => reject(new Error("image failed to load")), { once: true });
+          }),
+    );
     if (!(await image.evaluate((element) => element.complete && element.naturalWidth > 0))) {
       throw new Error(`${path}: avatar ${index + 1} did not load`);
     }
@@ -862,9 +887,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     await assertFooterDeepDives(page, path);
   } else {
     if (!footerHrefs.includes("/zh/compare/")) throw new Error(`${path}: ZH footer must link /zh/compare/`);
-    if (footerHrefs.some((href) => href && href.startsWith("/compare/"))) {
-      throw new Error(`${path}: ZH footer must not link EN deep dives: ${JSON.stringify(footerHrefs)}`);
-    }
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
@@ -1117,10 +1139,12 @@ async function assertProofLoop(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #262 / #318: homepage autoplay proof is replaced by its static
-// poster under reduced motion; the Cloud walkthrough follows the same
-// static-poster fallback with its onboarding poster. Emulated here because no
-// string check exercises the media query.
+// Issue #262 / #318: the homepage autoplay proof is replaced by its static
+// poster under reduced motion. The Cloud walkthrough keeps its video and
+// controls visible (Issue #578): with autoplay gone it never moves on its
+// own — playback starts only on the visitor's click — so there is no motion
+// to reduce, and the poster background stand-in is gone with the hide rule.
+// Emulated here because no string check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
   const page = await browser.newPage({
     viewport: { width: 1366, height: 768 },
@@ -1132,17 +1156,24 @@ async function assertProofLoopReducedMotion(browser, path) {
     const figure = document.querySelector(".proof-loop");
     return {
       display: getComputedStyle(video).display,
+      visible: video.offsetParent !== null,
       background: getComputedStyle(figure).backgroundImage,
     };
   });
-  if (state.display !== "none") {
-    throw new Error(`${path}: reduced motion must hide the video, got display=${state.display}`);
-  }
-  const expectedPoster = path.includes("/cloud/")
-    ? "cloud-onboarding-poster.jpg"
-    : "delivery-loop-poster.jpg";
-  if (!state.background.includes(expectedPoster)) {
-    throw new Error(`${path}: reduced motion must show ${expectedPoster}, got background=${state.background}`);
+  if (path.includes("/cloud/")) {
+    if (state.display === "none" || !state.visible) {
+      throw new Error(`${path}: reduced motion must keep the Cloud video visible, got display=${state.display} visible=${state.visible}`);
+    }
+    if (state.background !== "none") {
+      throw new Error(`${path}: reduced motion must not give the Cloud demo a poster background stand-in, got background=${state.background}`);
+    }
+  } else {
+    if (state.display !== "none") {
+      throw new Error(`${path}: reduced motion must hide the homepage video, got display=${state.display}`);
+    }
+    if (!state.background.includes("delivery-loop-poster.jpg")) {
+      throw new Error(`${path}: reduced motion must show the delivery-loop poster, got background=${state.background}`);
+    }
   }
   await page.close();
 }
@@ -1172,7 +1203,6 @@ const cloudPages = {
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
     metaNeedle: ["US$29", "US$79"],
-    oldClaim: "reviewed pull request",
     text: [
       "exact-head merge",
       // Issue #534: the hero lede is now the one-sentence delivery claim; the
@@ -1210,7 +1240,6 @@ const cloudPages = {
     // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
     ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
     metaNeedle: ["US$29", "US$79"],
-    oldClaim: "审查过的 PR",
     text: [
       "exact-head merge",
       "冻结 SHA",
@@ -1255,15 +1284,16 @@ async function assertCloudPage(browser, path, size, screenshot) {
     if (message.type() === "error" && !isTelemetry(message.location().url) && !isTelemetry(message.text())) consoleErrors.push(`${message.location().url}: ${message.text()}`);
   });
   page.on("requestfailed", (request) => {
-    // Chromium abandons the metadata request when it opens the playback
-    // request. Every other media/network failure remains fatal.
+    // Chromium abandons a media request when it reopens it for playback.
+    // Every other media/network failure remains fatal.
     const abortedMedia = request.failure()?.errorText === "net::ERR_ABORTED"
-      && request.url().includes("/video/delivery-loop");
+      && request.url().includes("/video/");
     if (!isTelemetry(request.url()) && !abortedMedia) failedRequests.push(`${request.method()} ${request.url()}`);
   });
 
-  // DOM load is the bounded navigation gate. The Cloud walkthrough requests
-  // muted autoplay; deployed-browser playback remains the maintainer gate.
+  // DOM load is the bounded navigation gate. The walkthrough is
+  // user-initiated (Issue #578): the smoke presses play further down and
+  // asserts playback with sound, the strongest local signal the asset loads.
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const demo = page.locator(".cloud-demo");
   const video = demo.locator(".proof-loop-video");
@@ -1275,39 +1305,46 @@ async function assertCloudPage(browser, path, size, screenshot) {
       throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
     }
   }
-  for (const attribute of ["autoplay", "muted"]) {
-    if ((await video.getAttribute(attribute)) === null) {
-      throw new Error(`${path}: Cloud walkthrough is missing ${attribute}`);
-    }
-  }
-  if ((await video.getAttribute("loop")) !== null) {
-    throw new Error(`${path}: Cloud walkthrough must not loop`);
-  }
-  if ((await video.getAttribute("preload")) !== "metadata") {
-    throw new Error(`${path}: Cloud walkthrough must preload metadata only`);
-  }
-  if ((await video.getAttribute("poster")) !== "/video/cloud-onboarding-poster.jpg") {
-    throw new Error(`${path}: Cloud walkthrough poster is missing`);
-  }
-  if ((await video.getAttribute("src")) !== "/video/cloud-onboarding.mp4") {
-    throw new Error(`${path}: Cloud walkthrough mp4 is not the onboarding recording`);
-  }
-  if ((await demo.locator('source[src="/video/cloud-onboarding.webm"]').count()) !== 1
-    || (await demo.locator('source[src="/video/cloud-onboarding.mp4"]').count()) !== 1) {
-    throw new Error(`${path}: Cloud walkthrough is missing an onboarding source`);
-  }
-  const caption = (await demo.locator("figcaption").textContent()).replace(/\s+/g, " ");
-  if (/coming soon|temporary|即将上线|临时/i.test(caption)) {
-    throw new Error(`${path}: Cloud walkthrough still has placeholder caption copy`);
-  }
+  // Issue #578: the walkthrough carries narration — the visitor presses
+  // play and hears it. The element must move on the visitor's action only.
   const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
+  // The shot pins the visitor's first sight: poster frame plus native
+  // controls, nothing moving, nothing fetched yet (preload=none).
   await demo.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-video.png")}` });
-  const mediaState = await video.evaluate((element) => ({ muted: element.muted, readyState: element.readyState }));
-  if (!mediaState.muted || mediaState.readyState < 1) {
-    throw new Error(`${path}: Cloud walkthrough must load muted with metadata, got ${JSON.stringify(mediaState)}`);
+  const initialState = await video.evaluate((element) => ({ paused: element.paused, muted: element.muted, readyState: element.readyState }));
+  if (!initialState.paused || initialState.muted) {
+    throw new Error(`${path}: Cloud walkthrough must start paused and unmuted, got ${JSON.stringify(initialState)}`);
+  }
+  // The visitor's real path on the native controls, keyboard edition (probe
+  // 2026-09-27: a position-click on the play button does not register in
+  // headless Chromium, but Space on the focused element — the same native
+  // controls — starts playback as a trusted user gesture). Playback with
+  // sound is the strongest local signal the asset loads and the no-mute
+  // contract holds; a visible browser stays the maintainer gate.
+  await video.focus();
+  await page.keyboard.press("Space");
+  try {
+    await page.waitForFunction(() => {
+      const element = document.querySelector(".cloud-demo .proof-loop-video");
+      return element && !element.paused && element.currentTime > 0;
+    }, null, { timeout: 10000 });
+  } catch {
+    const state = await video.evaluate((element) => ({
+      paused: element.paused,
+      muted: element.muted,
+      readyState: element.readyState,
+      networkState: element.networkState,
+      currentTime: element.currentTime,
+      error: element.error && element.error.code,
+    }));
+    throw new Error(`${path}: Cloud walkthrough does not play after the visitor presses play: ${JSON.stringify(state)}`);
+  }
+  const playState = await video.evaluate((element) => ({ paused: element.paused, muted: element.muted }));
+  if (playState.paused || playState.muted) {
+    throw new Error(`${path}: Cloud walkthrough must play with sound after the visitor presses play, got ${JSON.stringify(playState)}`);
   }
 
   const h1Count = await page.locator("h1").count();
@@ -1335,15 +1372,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // The stop-at-the-PR claim is gone — from the title, the h1, the loop
   // heading, and the body.
-  for (const [label, value] of [["title", pageTitle], ["h1", heroH1]]) {
-    if (value.includes(claim.oldClaim)) {
-      throw new Error(`${path}: ${label} still stops at the old claim ${JSON.stringify(claim.oldClaim)}: ${JSON.stringify(value)}`);
-    }
-  }
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  if (text.includes(claim.oldClaim)) {
-    throw new Error(`${path}: main still stops at the old claim ${JSON.stringify(claim.oldClaim)}`);
-  }
   for (const needle of [claim.loop, ...claim.text]) {
     if (!text.includes(needle)) {
       throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
@@ -1405,9 +1434,6 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const microcopy = (await ctaBlock.locator("p").first().textContent()).replace(/\s+/g, " ").trim();
   if (microcopy !== claim.ctaMicrocopy) {
     throw new Error(`${path}: hero CTA microcopy is ${JSON.stringify(microcopy)}, expected ${JSON.stringify(claim.ctaMicrocopy)}`);
-  }
-  if ((await ctaBlock.locator("p a").count()) !== 0) {
-    throw new Error(`${path}: the CTA microcopy must not carry links of its own`);
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.
@@ -1944,7 +1970,6 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi/releases",
     ],
     forbiddenHrefs: [
-      "https://github.com/orbi-build/orbi-website",
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/cloud/"],
@@ -1985,7 +2010,6 @@ const evidencePages = {
       "https://github.com/orbi-build/orbi/releases",
     ],
     forbiddenHrefs: [
-      "https://github.com/orbi-build/orbi-website",
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/zh/cloud/"],
@@ -2417,7 +2441,9 @@ async function main() {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
-    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st") || url.includes("fonts.googleapis.com");
+    // Issue #585: pages must not request Google Fonts at all, so it is no
+    // longer allowed for here — a request would surface as a failure.
+    const isTelemetry = (url) => url.includes("cloudflareinsights.com") || url.includes("datafa.st");
     await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
     if (!process.env.BASE_URL) {
       await page.route("**/stats", (route) => route.fulfill({

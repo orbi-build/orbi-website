@@ -45,6 +45,11 @@ beforeAll(async () => {
   await writeFile(join(contentDir, "table-fixture.md"), `---\ntitle: Table fixture\ndate: 2026-09-22\nsummary: Five deliberately wide tables\nlang: en\nauthor: Orbi\nimage: /img/og.png\n---\n\n${Array(5).fill(table).join("\n\n")}\n`);
   await buildPages(fixtureRoot, { contentDir });
   await cp(join("public", "styles.css"), join(fixtureRoot, "styles.css"));
+  // Issue #585: pages load their webfont from the self-hosted /fonts/fonts.css
+  // instead of the live fonts.googleapis.com stylesheet the fixture used to
+  // reach over the network. Ship the fonts with the fixture so the headings
+  // here measure against the real brand font, the same bytes production uses.
+  await cp(join("public", "fonts"), join(fixtureRoot, "fonts"), { recursive: true });
 
   server = createServer(async (request, response) => {
     const pathname = new URL(request.url, "http://localhost").pathname;

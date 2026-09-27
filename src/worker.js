@@ -74,6 +74,9 @@ const ENGAGEMENT_DETAILS = new Set([
   "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
   "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
   "pricing-pro-year", "pricing-pro-month",
+  // Issue #571: the brand-film entry, the dialog's own 50%/100% beacons, and
+  // the two end-of-film buttons.
+  "film-play", "film-50", "film-100", "film-end-cloud", "film-end-selfhost",
 ]);
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
@@ -322,7 +325,7 @@ function foundingAvatarMarkup(logins) {
       '\"': "&quot;",
       "'": "&#39;",
     })[character]);
-    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80">`;
+    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80" loading="lazy" decoding="async">`;
   }).join("");
 }
 

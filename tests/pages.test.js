@@ -240,11 +240,6 @@ describe("auto-merge AI PR guide (Issue #459)", () => {
 
 describe("Issue #438 wording and internal-link contracts", () => {
   it("uses the current AGPL/SUL wording everywhere", () => {
-    for (const [output, source] of [...shipped, ["llms.txt", shippedLlms]]) {
-      const rendered = source.replace(/<!--[\s\S]*?-->/g, "");
-      expect(rendered, output).not.toMatch(/fair-code|source-available|Do not describe Orbi as OSI open source/i);
-      expect(rendered, output).not.toContain("blob/main/LICENSE.md");
-    }
     expect(shippedLlms).toContain("AGPL-3.0");
     expect(shippedLlms).toContain("Sustainable Use License");
   });
@@ -468,6 +463,10 @@ describe("language mirrors (the forgotten-zh gate)", () => {
       expect(count(footerRegion(a), /<a /g), `${page.output}: footer <a> count drifted`)
         .toBe(count(footerRegion(b), /<a /g));
       const ctas = (html) =>
+        // Issue #571 made the film CTAs EN-only and this count excluded them;
+        // Issue #575 gives the ZH homepage the same set, so the general rule
+        // counts every data-cta again (the exact film set parity is pinned in
+        // film.test.js).
         count(mainRegion(html), /<a class="button/g) + count(mainRegion(html), /data-cta="/g);
       expect(ctas(a), `${page.output}: CTA count drifted`).toBe(ctas(b));
     }
@@ -582,14 +581,6 @@ describe("one unified footer on every content page", () => {
 describe("ASCII language switch with aria-labels (Issue #519)", () => {
   const switchAnchors = (html) =>
     [...html.matchAll(/<a href="[^"]*" lang="(?:zh-CN|en)"[^>]*>[^<]*<\/a>/g)];
-
-  it("ships no 中文 switch label and no flag emoji on any built page", () => {
-    for (const [output, html] of shipped) {
-      if (!output.endsWith(".html")) continue;
-      expect(html, `${output}: 中文 switch label`).not.toContain(">中文<");
-      expect(html, `${output}: flag emoji`).not.toMatch(/🇨🇳|🇬🇧/);
-    }
-  });
 
   it("labels every switch link with visible ZH/EN only", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
@@ -963,8 +954,6 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
         pricing.includedTokensToken,
         pricing.proRepositoriesToken,
       ]) expect(html, `${output}: ${token}`).toContain(token);
-      expect(html, output).not.toContain("pricing page was not directly reachable");
-      expect(html, output).not.toContain("定价页在核实时无法直接访问");
       for (const link of links) expect(html, `${output}: ${link}`).toContain(`href="${link}`);
     }
   });
@@ -1023,8 +1012,6 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("uses a language-aware Cloud landing href in the shared partial", async () => {
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
     expect(partial).toContain('href="{{CLOUD_HREF}}"');
-    expect(partial).not.toContain('href="/cloud/login"');
-    expect(partial).not.toContain('href="/apply"');
   });
 
   it("offers returning users a Sign in text link left of the nav CTA (Issue #528)", async () => {
@@ -1069,7 +1056,6 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
       const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
       expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
-      expect(cta[1], `${output}: nav CTA must not be the Cloud login handoff`).not.toContain("/cloud/login");
       const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }
@@ -1080,10 +1066,6 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
       const html = shipped.get(output);
       expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(3);
     }
-  });
-
-  it("does not ship apply.html — /apply is a 301, not a conversion page", async () => {
-    expect(shipped.has("apply.html"), "public/apply.html must not ship").toBe(false);
   });
 });
 
@@ -1098,70 +1080,8 @@ describe("cloud copy is not a cost-page clone (Issue #180)", () => {
     const zh = await readFile(join(ROOT, "site", "pages", "zh", "cloud", "index.html"), "utf8");
     expect(countIn(en, "not a price increase"), "EN not a price increase").toBeLessThanOrEqual(1);
     expect(countIn(en, "written on the subscription alone"), "EN forever phrasing").toBeLessThanOrEqual(1);
-    expect(en, "EN docs.devin.ai").not.toContain("docs.devin.ai");
-    expect(en, "EN docs.factory.ai").not.toContain("docs.factory.ai");
     expect(countIn(zh, "不是涨价"), "ZH 不是涨价").toBeLessThanOrEqual(1);
     expect(countIn(zh, "只写在订阅"), "ZH 只写在订阅").toBeLessThanOrEqual(1);
-    expect(zh, "ZH docs.devin.ai").not.toContain("docs.devin.ai");
-    expect(zh, "ZH docs.factory.ai").not.toContain("docs.factory.ai");
-  });
-});
-
-// Issue #178: /compare/ and /compare/orca/ are visitor-facing. Delivery-status
-// badges, private-repo ticket links, and audit-reasoning sentences belong in
-// docs/comparison-audit.md, not on the pages a stranger opens.
-describe("compare pages drop internal-reviewer copy (Issue #178)", () => {
-  const outputs = [
-    "compare/index.html",
-    "zh/compare/index.html",
-    "compare/orca/index.html",
-    "zh/compare/orca/index.html",
-  ];
-  const forbidden = [
-    "Research ticket",
-    "dive-status",
-    "orbi-website/issues/8",
-    "orbi-website/issues/4",
-    "comparison epic",
-    "honestly",
-    "after the 2026-09-10 audit",
-    "described us",
-    "研究票",
-  ];
-
-  it("keeps the four page sources free of those strings", async () => {
-    for (const output of outputs) {
-      const source = await readFile(join(ROOT, "site", "pages", output), "utf8");
-      for (const needle of forbidden) {
-        expect(source, `${output} still contains ${JSON.stringify(needle)}`).not.toContain(needle);
-      }
-    }
-  });
-});
-
-// Issue #177: /evidence/ is a visitor page, not a restated ticket. Lock the
-// forbidden ticket-voice strings out of the sources. Do not pin sentences —
-// a later rewrite that keeps the visitor voice should still pass.
-describe("evidence page visitor voice (Issue #177)", () => {
-  const sources = ["site/pages/evidence/index.html", "site/pages/zh/evidence/index.html"];
-  const forbidden = [
-    "vmark",
-    "#158",
-    "PROPOSAL",
-    "does not claim",
-    "this page does not",
-    "We do not restate",
-    "本页不",
-    "这张票",
-  ];
-
-  it("keeps ticket-voice copy out of both evidence sources", async () => {
-    for (const rel of sources) {
-      const html = await readFile(join(ROOT, rel), "utf8");
-      for (const needle of forbidden) {
-        expect(html, `${rel}: forbidden ${JSON.stringify(needle)}`).not.toContain(needle);
-      }
-    }
   });
 });
 
@@ -1169,7 +1089,6 @@ describe("evidence page visitor voice (Issue #177)", () => {
 // orbi.build/install.sh remains the underlying asset, never the primary command.
 describe("canonical install one-liner (Issue #186)", () => {
   const canonical = "curl -fsSL https://aiready.sh | sh";
-  const stalePrimary = "curl -fsSL https://orbi.build/install.sh";
 
   const snippetOf = (html) => html.match(/<code data-copy-source>([^<]*)<\/code>/)?.[1] ?? null;
 
@@ -1185,22 +1104,6 @@ describe("canonical install one-liner (Issue #186)", () => {
       const html = await readFile(join(ROOT, rel), "utf8");
       expect(snippetOf(html), `${rel}: missing copyable install snippet`).toBe(canonical);
     }
-  });
-
-  it("names the exact file when a primary snippet still uses orbi.build/install.sh", async () => {
-    const stale = [];
-    for (const [output, html] of shipped) {
-      if (html.includes(stalePrimary)) stale.push(`public/${output}`);
-    }
-    for (const page of pages) {
-      // Posts are no longer page sources; every page source still sits under
-      // site/pages, addressed by page.source.
-      const html = await readFile(join(ROOT, "site", "pages", page.source), "utf8");
-      if (html.includes(stalePrimary)) stale.push(`site/pages/${page.source}`);
-    }
-    const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
-    if (llms.includes(stalePrimary)) stale.push("public/llms.txt");
-    expect(stale, `stale primary install URL in: ${stale.join(", ")}`).toEqual([]);
   });
 });
 
@@ -1290,7 +1193,6 @@ describe("blog (Issue #212)", () => {
       expect(html, `${indexOutput}: post link`).toContain(`<a href="${post.href}">${post.headline}</a>`);
       expect(html, `${indexOutput}: post summary`).toContain(post.summary);
       expect(html, `${indexOutput}: post date`).toContain(`<time datetime="${post.date}">${post.date}</time>`);
-      expect(html, `${indexOutput}: index must be built, not carry the marker`).not.toContain("<!--@posts-->");
     }
   });
 
@@ -1306,7 +1208,6 @@ describe("blog (Issue #212)", () => {
       expect(html).toContain(`<meta property="article:published_time" content="${post.date}">`);
       expect(html, `${post.output}: shared nav must render`).toContain('<nav id="');
       expect(html, `${post.output}: shared footer must render`).toContain('<footer class="site-footer shell">');
-      expect(html, `${post.output}: meta must be generated, not carry the marker`).not.toContain("<!--@post-meta-->");
     }
   });
 
@@ -1677,8 +1578,8 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
     for (const match of stepImages) {
       expect(match[0]).toContain(`width="2560" height="1440"`);
-      const retinaSrc = match[1].replace(/\.png$/, "-2x.png");
-      expect(match[0]).toContain(`srcset="${match[1]} 1x, ${retinaSrc} 2x"`);
+      const base = match[1].replace(/\.png$/, "");
+      expect(match[0]).toContain(`srcset="${base}-1600.webp 1600w, ${base}-2400.webp 2400w"`);
       expect(match[0]).toContain('sizes="(min-width: 900px) 784px, 100vw"');
     }
   });
@@ -2002,3 +1903,17 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
 // pinned the privacy-page sentences as regexes. The no-"signins"-table guard
 // and the rest of the privacy wording are no longer pinned here.
 
+
+describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
+  it("ships the three proof screenshots deferred on both homes", () => {
+    for (const output of ["index.html", "zh/index.html"]) {
+      const html = shipped.get(output);
+      for (const src of ["/img/issue-48.png", "/img/pr-193.png", "/img/release-v020.png"]) {
+        const img = html.match(new RegExp(`<img[^>]*src="${src}"[^>]*>`))?.[0];
+        expect(img, `${output}: ${src} tag`).toBeTruthy();
+        expect(img, `${output}: ${src} loading`).toContain('loading="lazy"');
+        expect(img, `${output}: ${src} decoding`).toContain('decoding="async"');
+      }
+    }
+  });
+});

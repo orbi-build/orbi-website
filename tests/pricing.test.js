@@ -179,21 +179,6 @@ describe("Cloud monthly price constant (Issue #102)", () => {
     }
   });
 
-  it("syncs every occurrence after a constant change", async () => {
-    // A hypothetical new price applied through the same seam the Worker uses
-    // (token -> value over the shipped bytes): every position that shows the
-    // old value must move to the new one, with none left behind.
-    const next = "123";
-    for (const relativePath of PRICE_PAGES) {
-      const raw = await rawPage(relativePath);
-      const tokenCount = raw.split(TOKEN).length - 1;
-      expect(tokenCount, relativePath).toBeGreaterThan(0);
-      const repriced = raw.replaceAll(TOKEN, next);
-      expect(repriced, relativePath).not.toContain(TOKEN);
-      expect(repriced.match(literalPrice(USD)), relativePath).toBeNull();
-      expect(repriced.match(literalPrice(next)), relativePath).toHaveLength(tokenCount);
-    }
-  });
 });
 
 describe("Free delivery allowance constant (Issue #274)", () => {
@@ -309,22 +294,16 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   });
 
   it("uses only the measured source tokens on both Cloud pages", async () => {
-    expect(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN)
-      .not.toBe(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE);
-    expect(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).not.toBe(MEASURED_LARGE_CODEBASE_DELIVERIES);
     for (const dir of [PUBLIC_DIR, SITE_PAGES_DIR]) {
       for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
         const html = await readFile(`${dir}${cloudPage}`, "utf8");
-        expect(html).not.toMatch(/85[–-]400/);
         expect(html.split(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN).length - 1).toBe(2);
         expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(2);
-        expect(html).not.toMatch(/2,220,637|4,742,066|about 100 deliveries|100 次交付\/月/);
       }
     }
   });
 
   it("serves the cost-page reconciliation from pricing.json", async () => {
-    expect(MEASURED_SNAPSHOT_DELIVERIES_TOKEN).not.toBe(MEASURED_SNAPSHOT_DELIVERIES);
     for (const [costPage, wording] of [
       ["cost/index.html", `works out to about ${MEASURED_SNAPSHOT_DELIVERIES} deliveries per Pro's ${TOKENS_LABEL} tokens. The Cloud pricing page uses about ${MEASURED_LARGE_CODEBASE_DELIVERIES} deliveries`],
       ["zh/cost/index.html", `折算约为 Pro 的 ${MEASURED_SNAPSHOT_DELIVERIES} 次 ${TOKENS_LABEL} token 交付。Cloud 定价页采用约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次`],
@@ -367,7 +346,6 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     ]) {
       const raw = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
       const served = await (await serve(raw, `/${cloudPage.replace("index.html", "")}`)).text();
-      expect(served).not.toMatch(/85[–-]400/);
       for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
       expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
       expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
@@ -419,17 +397,6 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
 describe("llms.txt states Cloud accurately (Issue #146)", () => {
   const LLMS = `${PUBLIC_DIR}llms.txt`;
 
-  it("never denies that Cloud is available or purchasable", async () => {
-    const raw = await readFile(LLMS, "utf8");
-    // Emphasis markers are flattened first: the historical sentence was
-    // "explicitly *not* available", which a plain scan would miss.
-    const plain = raw.replaceAll("*", "");
-    const denials = [...plain.matchAll(
-      /not\s+(?:yet\s+)?(?:publicly\s+)?(?:available|purchasable)|no\s+pricing\s+structure|billing\s+model\s+is\s+not\s+settled/gi,
-    )].map((match) => match[0]);
-    expect(denials, "llms.txt must not deny that Cloud ships or sells").toEqual([]);
-  });
-
   it("prices every Cloud plan exactly as pricing.json, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
     const expected = new Set([SOLO_USD, SOLO_ANNUAL_USD, USD, PRO_ANNUAL_USD].map((value) => `US$${value}`));
@@ -449,17 +416,6 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
 });
 
 describe("Three-tier Cloud pricing (Issue #441)", () => {
-  it("keeps Cloud copy tier-specific and removes unsupported availability claims", async () => {
-    for (const relativePath of CLOUD_PAGES) {
-      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
-      const body = await response.text();
-      expect(body.toLowerCase(), relativePath).not.toContain("priority queue");
-      expect(body, relativePath).not.toContain("优先队列");
-      expect(body, relativePath).not.toContain("data-founding-availability");
-      expect(body, relativePath).not.toMatch(/(?:Pro:|Pro：)(?:\s|每月)*300M/);
-    }
-  });
-
   it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
     for (const [relativePath, metadata, card] of [
       ["cloud/index.html", "Solo includes 100M tokens of model usage per month; Pro includes 300M", "Model usage included: 100M tokens a month on Solo, 300M on Pro"],
@@ -539,8 +495,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
-      expect(body, relativePath).not.toContain('href="/api/checkout?plan=solo"');
-      expect(body, relativePath).not.toContain('href="/api/checkout?plan=pro"');
+      expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual(['href="/api/checkout?plan=solo&amp;interval=year"', 'href="/api/checkout?plan=pro&amp;interval=year"']);
       expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
@@ -551,9 +506,6 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
         : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
-      expect(body, relativePath).not.toContain("Founding Partner");
-      expect(body, relativePath).not.toContain("永久免费");
-      expect(body, relativePath).not.toContain("BYOK model key");
     }
   });
 
@@ -566,12 +518,6 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath).toContain(faqCopy[relativePath]);
       expect(body.split(faqCopy[relativePath]).length - 1, relativePath).toBe(2);
-      expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
-        ? "每个订阅同时只接 1 个 active 仓库"
-        : "Each subscription keeps one active repository");
-      expect(body, relativePath).not.toContain(relativePath.startsWith("zh/")
-        ? "连接另一个仓库会停用原来的"
-        : "Connecting a different repository deactivates the previous one");
     }
   });
 

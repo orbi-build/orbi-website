@@ -51,9 +51,7 @@
   <meta name="twitter:title" content="Orbi Cloud — 提个 Issue，收个版本">
   <meta name="twitter:description" content="托管 Runner：提个 Issue，收个版本。Cloud 提供免费、Solo 每月 US$__SOLO_MONTHLY_USD__、Pro 每月 US$__CLOUD_MONTHLY_USD__ 三档；创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。">
   <meta name="twitter:image" content="https://orbi.build/img/og-cloud-zh.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
 
   <script defer data-website-id="dfid_Pi7Ns3F360oaZZcmnZgV4" data-domain="orbi.build" src="https://datafa.st/js/script.js"></script>
@@ -176,13 +174,21 @@
           <p class="hero-alt">想自己部署？<a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
           <p class="hero-alt"><a class="orbi-hero-alt-a" href="/zh/issue-to-release/">Issue 如何变成打了 tag 的 Release →</a></p>
         </div>
+        <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
+          <div class="cloud-gate-copy">
+            <h2 class="cloud-gate-title" id="cloud-gate-title">连接 GitHub 之前</h2>
+            <p class="cloud-gate-line">Orbi 只合并通过评审的那个提交。</p>
+            <p class="cloud-gate-line">想自己批准合并？在分支保护里要求审批，Orbi 会停下来等你。</p>
+            <p class="cloud-gate-line">只有你开了发版 Issue，才会发版。</p>
+          </div>
+        </aside>
         <figure class="proof-loop cloud-demo">
           <video
             class="proof-loop-video"
             src="/video/cloud-onboarding.mp4"
             poster="/video/cloud-onboarding-poster.jpg"
             width="1280" height="720"
-            autoplay muted playsinline controls preload="metadata"
+            playsinline controls preload="none"
             aria-label="Orbi Cloud 七步上手演示：登录、安装、选定代码仓库、开通 Runner、创建第一个 Issue、发版，然后在三次免费交付后订阅。">
             <source src="/video/cloud-onboarding.webm" type="video/webm">
             <source src="/video/cloud-onboarding.mp4" type="video/mp4">

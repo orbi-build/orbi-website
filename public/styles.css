@@ -13,8 +13,8 @@
   --run: #5cd6b5;
   --run-on-light: #0a6b52;
   --fault: #ef6a62;
-  --display: "Familjen Grotesk", "Noto Sans SC", sans-serif;
-  --body: "Instrument Sans", "Noto Sans SC", sans-serif;
+  --display: "Familjen Grotesk", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --body: "Instrument Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --hero-copy-width: 48rem;
 }
@@ -315,7 +315,6 @@ img {
 .stats-label,
 .trace-head,
 .trace-index,
-.factory-trace figcaption span,
 .proof-shot > span,
 .future-loop > .orbi-future-loop-li > span,
 .ownership-map span {
@@ -595,17 +594,35 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 .trace-node small { color: #829a96; font-size: 0.78rem; }
 
+/* Issue #576: the caption's ledger sentences are gone; the row now only
+   carries the film entry, pinned to its right edge. */
 .factory-trace figcaption {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 22px;
+  display: flex;
+  justify-content: flex-end;
   padding: 19px 24px;
   border-top: 1px solid var(--line-dark);
   background: rgba(92, 214, 181, 0.06);
 }
 
-.factory-trace figcaption span { color: var(--run); }
-.factory-trace figcaption strong { font-size: 0.82rem; font-weight: 500; }
+/* Issue #571: the brand-film entry. Ghost control on the night tokens,
+   pinned to the caption row's right edge (the figure's bottom right). */
+.trace-film {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line-dark);
+  background: var(--night-2);
+  color: #edf5f0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.trace-film:hover { background: rgba(255, 255, 255, 0.06); }
 
 .stats {
   position: relative;
@@ -1180,7 +1197,80 @@ h2 {
 .cloud-demo { margin-top: 40px; }
 .night .cloud-demo .proof-loop-video { border-color: var(--line-dark); }
 .night .cloud-demo figcaption { color: #9aada9; }
-@media (prefers-reduced-motion: reduce) { .proof-loop .proof-loop-video { display: none; } .proof-loop { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } .cloud-demo { background-image: url("/video/cloud-onboarding-poster.jpg"); } }
+/* Issue #578: the hide-and-poster fallback is the homepage delivery-loop's
+   only (autoplay is its contract). The Cloud walkthrough never moves on its
+   own — playback starts on the visitor's click — so reduced motion leaves
+   its video and controls in place, with no poster background stand-in. */
+@media (prefers-reduced-motion: reduce) { .proof-loop:not(.cloud-demo) .proof-loop-video { display: none; } .proof-loop:not(.cloud-demo) { background: url("/video/delivery-loop-poster.jpg") center/contain no-repeat; aspect-ratio: 16/9; } }
+
+/* Issue #571: the merge-gate explainer on /cloud/ — title and three
+   reassurance sentences, single column since #577 removed the decorative
+   clip. Night tokens. */
+.cloud-gate {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line-dark);
+}
+
+.cloud-gate-title {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #edf5f0;
+}
+
+.cloud-gate-line { margin: 0 0 8px; color: #b6c7c3; font-size: 0.95rem; line-height: 1.55; }
+.cloud-gate-line:last-child { margin-bottom: 0; }
+
+/* Issue #571: the homepage film dialog. Scrim, card radius and dialog shadow
+   are the design-system video-modal tokens. */
+#film-dialog {
+  width: min(920px, calc(100vw - 32px));
+  padding: 12px;
+  border: 1px solid var(--line-dark);
+  background: var(--night-2);
+  color: #edf5f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(31, 35, 40, 0.35);
+}
+
+#film-dialog::backdrop { background: rgba(31, 35, 40, 0.72); }
+
+#film-dialog video { display: block; width: 100%; height: auto; background: var(--night); }
+
+.film-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-dark);
+  background: rgba(6, 21, 27, 0.8);
+  color: #edf5f0;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.film-close:hover { background: rgba(255, 255, 255, 0.06); }
+
+.film-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 4px 2px;
+}
+
+.film-evidence { margin: 0; color: #9aada9; font-family: var(--mono); font-size: 0.8rem; }
+.film-evidence .film-evidence-a { color: var(--run); text-underline-offset: 3px; }
+.film-evidence .film-evidence-a:hover { color: #fff; }
+.film-end { display: flex; flex-wrap: wrap; gap: 12px; }
+.film-end[hidden] { display: none; }
 
 .ownership {
   padding: 110px 0;
@@ -1808,11 +1898,20 @@ h2 {
   .factory-trace { margin-left: 0; box-shadow: 10px 12px 0 rgba(0, 0, 0, 0.18); }
   .trace-head { padding: 13px 14px; }
   .trace-head span:last-child { display: none; }
+  /* Issue #571: at phone width the caption row sits far below the fold — the
+     film entry floats just above the frame's top-right corner instead, in the
+     hero gap, so it stays inside the first screen without covering the
+     LINE 01 / RUNNING head label. */
+  .trace-film { position: absolute; top: -48px; right: 0; min-height: 36px; padding: 0 12px; font-size: 0.74rem; }
   .trace-body { grid-template-columns: 20px 1fr; padding: 14px 12px 8px; }
   .trace-node { grid-template-columns: 54px 1fr; min-height: 88px; padding-left: 13px; }
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
-  .factory-trace figcaption { grid-template-columns: 1fr; gap: 5px; padding: 15px; }
+  /* Issue #576: at phone width the film entry floats above the frame (below)
+     and the caption row holds nothing in flow — collapse it to zero height so
+     no empty band shows under the trace body. */
+  .factory-trace figcaption { padding: 0; border-top: 0; background: none; }
+  .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
      keep the 2x2 stat grid inside each. */

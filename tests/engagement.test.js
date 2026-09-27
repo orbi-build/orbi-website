@@ -36,6 +36,11 @@ describe("browser engagement endpoint", () => {
     ["cta_click", "pricing-solo-month"],
     ["cta_click", "pricing-pro-year"],
     ["cta_click", "pricing-pro-month"],
+    ["cta_click", "film-play"],
+    ["cta_click", "film-50"],
+    ["cta_click", "film-100"],
+    ["cta_click", "film-end-cloud"],
+    ["cta_click", "film-end-selfhost"],
     ["scroll_depth", "75"],
   ])("forwards %s/%s with the visitor identity", async (kind, detail) => {
     const reports = [];
