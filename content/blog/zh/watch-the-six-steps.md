@@ -20,37 +20,37 @@ Orbi Cloud 的上手流程拍成了视频：[Orbi Cloud: from zero to a tagged r
 ### 七步流程里的七个关键画面
 
 <figure class="post-media">
-<img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="2560" height="1440" srcset="/img/step-1-sign-in.png 1x, /img/step-1-sign-in-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
+<img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="2560" height="1440" srcset="/img/step-1-sign-in-1600.webp 1600w, /img/step-1-sign-in-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>第 1 步：Orbi Cloud 登录页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="2560" height="1440" srcset="/img/step-2-install-app.png 1x, /img/step-2-install-app-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
+<img src="/img/step-2-install-app.png" alt="GitHub App 安装页面" width="2560" height="1440" srcset="/img/step-2-install-app-1600.webp 1600w, /img/step-2-install-app-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">
 <figcaption>第 2 步：GitHub App 安装页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="2560" height="1440" srcset="/img/step-3-connect-repo.png 1x, /img/step-3-connect-repo-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-3-connect-repo.png" alt="连接仓库表单" width="2560" height="1440" srcset="/img/step-3-connect-repo-1600.webp 1600w, /img/step-3-connect-repo-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="lazy">
 <figcaption>第 3 步：连接仓库表单。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-4-provision.png" alt="开通运行环境状态" width="2560" height="1440" srcset="/img/step-4-provision.png 1x, /img/step-4-provision-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-4-provision.png" alt="开通运行环境状态" width="2560" height="1440" srcset="/img/step-4-provision-1600.webp 1600w, /img/step-4-provision-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="lazy">
 <figcaption>第 4 步：开通运行环境状态。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" width="2560" height="1440" srcset="/img/step-5-first-issue.png 1x, /img/step-5-first-issue-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-5-first-issue.png" alt="第一个 Issue 的状态页面" width="2560" height="1440" srcset="/img/step-5-first-issue-1600.webp 1600w, /img/step-5-first-issue-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="lazy">
 <figcaption>第 5 步：第一个 Issue 的状态页面。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-6-release.png" alt="填写版本号的发版表单" width="2560" height="1440" srcset="/img/step-6-release.png 1x, /img/step-6-release-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-6-release.png" alt="填写版本号的发版表单" width="2560" height="1440" srcset="/img/step-6-release-1600.webp 1600w, /img/step-6-release-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="lazy">
 <figcaption>第 6 步：填写版本号的发版表单。</figcaption>
 </figure>
 
 <figure class="post-media">
-<img src="/img/step-7-subscribe.png" alt="Managed Cloud 订阅页面" width="2560" height="1440" srcset="/img/step-7-subscribe.png 1x, /img/step-7-subscribe-2x.png 2x" sizes="(min-width: 900px) 784px, 100vw">
+<img src="/img/step-7-subscribe.png" alt="Managed Cloud 订阅页面" width="2560" height="1440" srcset="/img/step-7-subscribe-1600.webp 1600w, /img/step-7-subscribe-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="lazy">
 <figcaption>第 7 步：Managed Cloud 订阅页面。</figcaption>
 </figure>
 
