@@ -667,12 +667,15 @@ describe("Cloud documentation links (Issue #315)", () => {
     },
   };
 
-  it("routes Cloud nav and footer Docs to Cloud docs while preserving self-hosting CTA", () => {
+  // Issue #612 made the nav dropdown (which carries the Self-hosted Docs
+  // item) sitewide, superseding this test's old nav-level ban on the engine
+  // docs href; the footer still routes Cloud buyers to the Cloud docs only.
+  it("routes the Cloud footer Docs to Cloud docs while preserving self-hosting CTA", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
-      const chrome = navRegion(html) + footerRegion(html);
-      expect(chrome, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
-      expect(chrome, `${output}: engine docs must not be in Cloud Docs chrome`).not.toContain(
+      const footer = footerRegion(html);
+      expect(footer, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
+      expect(footer, `${output}: engine docs must not be in the Cloud footer`).not.toContain(
         `href="${expected.selfHost}"`,
       );
       expect(html, `${output}: self-hosting CTA`).toContain(
@@ -1065,6 +1068,55 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
       const html = shipped.get(output);
       expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(3);
+    }
+  });
+});
+
+// Issue #612: the primary-nav dropdown is labeled Resources/资源 on EVERY
+// page with the site nav (it used to exist only on the two homes, other pages
+// showed a plain Docs link), and its first item is the ai-ready methodology
+// entry. The mobile hamburger opens this same <nav data-primary-nav> element
+// (styles.css .site-header nav.is-open) — there is no second DOM copy — so
+// extracting the dropdown from the nav region proves the items are in the
+// hamburger menu's DOM too; the browser smoke drives the real interaction.
+describe("Resources dropdown in the primary nav (Issue #612)", () => {
+  const RESOURCES = {
+    en: {
+      label: "Resources",
+      items: [
+        ["/aiready/", "Method"],
+        ["https://docs.orbi.build", "Self-hosted Docs"],
+        ["https://cloud-docs.orbi.build/?ref=nav", "Cloud Docs"],
+      ],
+    },
+    zh: {
+      label: "资源",
+      items: [
+        ["/aiready/zh/", "方法"],
+        ["https://docs.orbi.build/zh", "自托管文档"],
+        ["https://cloud-docs.orbi.build/?ref=nav", "Cloud 文档"],
+      ],
+    },
+  };
+
+  it("labels the dropdown Resources/资源 with Method first on every page with the primary nav", () => {
+    for (const page of pages.filter((p) => p.nav)) {
+      const expected = RESOURCES[page.lang];
+      const nav = navRegion(shipped.get(page.output));
+      const dropdown = region(nav, '<div class="nav-docs">', "</div></div>");
+      expect(dropdown, `${page.output}: nav-docs dropdown missing from the nav element`).not.toBe("");
+      expect(dropdown, `${page.output}: dropdown label`).toContain(
+        `data-docs-toggle>${expected.label}<span aria-hidden="true">⌄</span></button>`,
+      );
+      const items = [...dropdown.matchAll(/<a class="orbi-nav-docs-menu-a" href="([^"]+)" role="menuitem">([^<]+)<\/a>/g)]
+        .map((match) => [match[1], match[2]]);
+      expect(items, `${page.output}: dropdown items drifted`).toEqual(expected.items);
+    }
+  });
+
+  it("lands the Method entry on a page the build actually ships", () => {
+    for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
+      expect(shipped.get(output), `${output} must ship for the nav Method link`).toBeTruthy();
     }
   });
 });

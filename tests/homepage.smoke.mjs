@@ -930,7 +930,8 @@ async function assertHomeDocsDropdown(browser, path, size, screenshot) {
     await page.keyboard.press("Enter");
     if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Enter did not open Docs dropdown`);
     const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-    const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
+    // Issue #612: Method (the ai-ready methodology) is the dropdown's first item.
+    const expectedLinks = [path.startsWith("/zh") ? "/aiready/zh/" : "/aiready/", expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
     const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
     if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
       throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
@@ -948,16 +949,26 @@ async function assertHomeDocsDropdown(browser, path, size, screenshot) {
   }
 }
 
+// Issue #612: /cloud/ carries the same sitewide Resources dropdown as every
+// page (the old single ref=cloud-nav Docs link is gone from the nav); the
+// footer keeps the Cloud-docs entry tagged ref=cloud-nav (Issue #315).
 async function assertCloudDocsNav(browser, path) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const docs = page.locator("[data-primary-nav] a").filter({ hasText: path.startsWith("/zh") ? "文档" : "Docs" });
-    if (await docs.count() !== 1) throw new Error(`${path}: Cloud nav Docs must remain one link`);
-    if (await docs.getAttribute("href") !== "https://cloud-docs.orbi.build/?ref=cloud-nav") {
-      throw new Error(`${path}: Cloud nav Docs href changed`);
+    const trigger = page.locator("[data-docs-toggle]");
+    if ((await trigger.count()) !== 1) throw new Error(`${path}: expected the Resources dropdown trigger`);
+    await trigger.click();
+    const menu = page.locator("[data-docs-menu]");
+    const expectedMethod = path.startsWith("/zh") ? "/aiready/zh/" : "/aiready/";
+    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
+    const expectedLinks = [expectedMethod, expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
+    const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
+      throw new Error(`${path}: Cloud dropdown links are ${JSON.stringify(links)}`);
     }
-    if (await page.locator("[data-docs-toggle]").count() !== 0) throw new Error(`${path}: Cloud page gained home Docs dropdown`);
+    const footerDocs = page.locator("footer a[href='https://cloud-docs.orbi.build/?ref=cloud-nav']");
+    if ((await footerDocs.count()) !== 1) throw new Error(`${path}: footer must keep one cloud-docs ref=cloud-nav link`);
   } finally {
     await page.close();
   }
