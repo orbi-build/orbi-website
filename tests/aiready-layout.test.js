@@ -60,7 +60,9 @@ const FACTORS_ZH = [
 
 // Chrome links must lead back to the site (orbi.build) or to real external
 // pages — never to a path on aiready.sh, where only /, /zh, /install.sh and
-// /badge.svg exist (src/worker.js aireadyResponse).
+// /badge.svg exist (src/worker.js aireadyResponse). The footer guides row
+// (Issue #611) lists the ai-ready page itself, so the one allowed aiready.sh
+// chrome link is the page's own address.
 function expectChromeLinksOnOrbi(html, output) {
   for (const href of chromeLinks(html)) {
     if (href.startsWith("/")) {
@@ -68,6 +70,12 @@ function expectChromeLinksOnOrbi(html, output) {
       continue;
     }
     expect(href, `${output}: chrome link must be absolute`).toMatch(/^https?:\/\//);
+    if (/^https?:\/\/aiready\.sh/.test(href)) {
+      expect(href, `${output}: the only aiready.sh chrome link is the page itself`).toMatch(
+        /^https?:\/\/aiready\.sh(\/zh)?\/$/,
+      );
+      continue;
+    }
     expect(href, `${output}: chrome link must not point at aiready.sh`).not.toMatch(/^https?:\/\/aiready\.sh/);
   }
 }

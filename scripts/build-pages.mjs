@@ -285,7 +285,7 @@ export function renderFooter(page) {
   ).join("\n");
   const guideLinks = GUIDES.map(
     ([en, zh, enLabel, zhLabel]) =>
-      `      <a href="${t.langPrefix ? zh : en}">${t.langPrefix ? zhLabel : enLabel}</a>`
+      `      <a href="${base(t.langPrefix ? zh : en)}">${t.langPrefix ? zhLabel : enLabel}</a>`
   ).join("\n");
   return fill(FOOTER_PARTIAL, {
     HOME_HREF: base(t.homeHref),
