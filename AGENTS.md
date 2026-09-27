@@ -58,6 +58,8 @@ maintainer with no paying users: fix what a user actually hit, the smallest way.
 
 **No ad hoc special cases** (basic maintainability). When one specific case seems to need an exception, pick one: avoid the special case and let the existing general rule handle it; make the behavior extensible, so the decision lives in data or configuration; or do not support it.
 
+**不处理浏览器没有 JavaScript 的情况。** 页面可以默认 JavaScript 可用：不写无 JS 回退，不为它保留备用控件，验收项里也不写「无 JS 时可用」。
+
 The test is **whether this repo is on Orbi**, not how small the change is or
 whether you know how to make it. Being able to make it is not a reason to.
 
