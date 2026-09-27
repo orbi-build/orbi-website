@@ -81,6 +81,41 @@ const DEEP_DIVES = [
   ["cursor", "Orbi vs Cursor Cloud Agents"],
 ];
 
+// Footer guides row (Issue #611): the SEO landing pages lived only in the
+// sitemap — no internal page linked them — so the footer carries a guides row
+// next to the compare row, giving every URL below a sitewide inbound link.
+// [EN href, ZH href, EN label, ZH label]; labels are short forms of each
+// page's own H1, matching the anchors already used inside the site body.
+const GUIDES = [
+  ["/issue-to-release/", "/zh/issue-to-release/", "Issue to release", "Issue 到发版"],
+  ["/guides/ci-gates/", "/zh/guides/ci-gates/", "CI gates", "CI 门禁"],
+  [
+    "/guides/auto-merge-ai-prs/",
+    "/zh/guides/auto-merge-ai-prs/",
+    "Auto-merge AI PRs",
+    "自动合并 AI PR",
+  ],
+  [
+    "/autonomous-coding-agent/",
+    "/zh/autonomous-coding-agent/",
+    "Autonomous coding agent",
+    "自主编程 agent",
+  ],
+  [
+    "/self-hosted-coding-agent/",
+    "/zh/self-hosted-coding-agent/",
+    "Self-hosted coding agent",
+    "自托管编程 agent",
+  ],
+  [
+    "/codex-github-issues/",
+    "/zh/codex-github-issues/",
+    "Codex on GitHub Issues",
+    "Codex 处理 GitHub Issue",
+  ],
+  ["https://aiready.sh/", "https://aiready.sh/zh/", "ai-ready: 12 factors", "ai-ready 十二要素"],
+];
+
 // Everything in the fragments that is a pure function of the page language.
 const LANG = {
   en: {
@@ -122,6 +157,8 @@ const LANG = {
     roadmapLabel: "Roadmap",
     deepAria: "Compare deep dives",
     deepSpan: "Compare",
+    guidesAria: "Guides",
+    guidesSpan: "Guides",
   },
   zh: {
     homeHref: "/zh/",
@@ -162,6 +199,8 @@ const LANG = {
     roadmapLabel: "路线图",
     deepAria: "竞品深度对比",
     deepSpan: "深度对比",
+    guidesAria: "指南",
+    guidesSpan: "指南",
   },
 };
 
@@ -244,6 +283,10 @@ export function renderFooter(page) {
     ([slug, name]) =>
       `      <a href="${base(`${t.langPrefix}/compare/${slug}/`)}">${name}</a>`
   ).join("\n");
+  const guideLinks = GUIDES.map(
+    ([en, zh, enLabel, zhLabel]) =>
+      `      <a href="${t.langPrefix ? zh : en}">${t.langPrefix ? zhLabel : enLabel}</a>`
+  ).join("\n");
   return fill(FOOTER_PARTIAL, {
     HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
@@ -282,6 +325,9 @@ export function renderFooter(page) {
     DEEP_ARIA: t.deepAria,
     DEEP_SPAN: t.deepSpan,
     DEEP_LINKS: deepLinks,
+    GUIDES_ARIA: t.guidesAria,
+    GUIDES_SPAN: t.guidesSpan,
+    GUIDES_LINKS: guideLinks,
   });
 }
 
