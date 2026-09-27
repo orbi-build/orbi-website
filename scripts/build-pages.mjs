@@ -129,6 +129,9 @@ const LANG = {
     costLabel: "Pricing",
     evidenceLabel: "Evidence",
     docsLabel: "Docs",
+    resourcesLabel: "Resources",
+    methodLabel: "Method",
+    methodHref: "/aiready/",
     selfHostedDocsLabel: "Self-hosted Docs",
     cloudDocsNavLabel: "Cloud Docs",
     blogLabel: "Blog",
@@ -171,6 +174,9 @@ const LANG = {
     costLabel: "价格",
     evidenceLabel: "证据",
     docsLabel: "文档",
+    resourcesLabel: "资源",
+    methodLabel: "方法",
+    methodHref: "/aiready/zh/",
     selfHostedDocsLabel: "自托管文档",
     cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
@@ -256,9 +262,11 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    DOCS_ITEM: n.docsDropdown
-      ? `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.docsMenuId}" data-docs-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.docsMenuId}" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`
-      : `<a href="${base(n.docsHref)}">${t.docsLabel}</a>`,
+    // Issue #612: every page with the nav carries the same Resources dropdown
+    // (Method → Self-hosted Docs → Cloud Docs); the menu id derives from the
+    // page's own navId. t.docsLabel stays on the footer (footer.html
+    // {{DOCS_LABEL}}), which this Issue does not touch.
+    DOCS_ITEM: `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-docs-toggle>${t.resourcesLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.navId}-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${base(t.methodHref)}" role="menuitem">${t.methodLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
     BLOG_HREF: base(`${t.langPrefix}/blog/`),
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
