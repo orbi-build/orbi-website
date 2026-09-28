@@ -126,9 +126,11 @@ describe("homepage film dialog (Issue #571, #575)", () => {
         // Exactly one film-100 beacon, and a film-50 from the seek: each fires
         // once per page load no matter how often the marks are crossed.
         const details = beacons.map((body) => JSON.parse(body));
+        expect(details.filter((body) => body.kind === "visit")).toHaveLength(1);
         expect(details.filter((body) => body.detail === "film-50")).toHaveLength(1);
         expect(details.filter((body) => body.detail === "film-100")).toHaveLength(1);
-        expect(details.every((body) => body.kind === "cta_click" && body.path === beaconPath)).toBe(true);
+        expect(details.every((body) => body.path === beaconPath)).toBe(true);
+        expect(details.filter((body) => body.kind !== "visit").every((body) => body.kind === "cta_click")).toBe(true);
         expect(errors, "no page errors during the flow").toEqual([]);
       } finally {
         await page.close();

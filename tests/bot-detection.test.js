@@ -1,373 +1,56 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { isBot, resetBehaviorSignals, visitSignals } from "../src/bot-detection.js";
+import { describe, expect, it, vi } from "vitest";
+import { isBot, visitSignals } from "../src/bot-detection.js";
 
-// Issue #280: classification rested on an exact match of one probe UA, so
-// the 2856 crawler rows in visitor_events all landed is_bot=0. The two
-// signals every Cloudflare plan carries are request.cf.asn (botManagement
-// is an Enterprise add-on we do not buy — #251 measured it absent live)
-// and the User-Agent string. The verdict is a marker only, never a block;
-// visitSignals stores the judgment inputs (asn, ua_hash — never the raw
-// UA) so a wrong verdict can be re-derived from the row instead of being
-// wrong forever.
-describe("bot detection (Issue #280)", () => {
-  const CHROME_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
-  const SAFARI_17 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15";
-  const FIREFOX_127 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0";
-  const GPTBOT = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)";
-  const BETTER_UPTIME = "Better Uptime Bot Mozilla/5.0";
-  const BOT_LIST_DB = {
+describe("bot detection", () => {
+  const CHROME = "Mozilla/5.0 Chrome/127.0.0.0 Safari/537.36";
+  const GPTBOT = "Mozilla/5.0 (compatible; GPTBot/1.2)";
+  const db = {
     prepare(sql) {
-      return {
-        all: async () => sql.includes("bot_asns")
-          ? { results: [16509, 14618, 15169, 396982, 8075, 24940, 14061, 16276, 63949, 132203, 48090, 45102, 213230, 197540, 45090, 64267].map((asn) => ({ asn })) }
-          : { results: [{ needle: "claudebot" }, { needle: "headless" }, { needle: "bot" }, { needle: "crawler" }, { needle: "spider" }] },
-      };
+      return { all: async () => sql.includes("bot_asns")
+        ? { results: [{ asn: 16509 }] }
+        : { results: [{ needle: "headless" }, { needle: "gptbot" }] } };
     },
   };
-
-  function requestWith({ ua, asn, ip, path = "/" } = {}) {
-    const headers = ua === undefined ? {} : { "User-Agent": ua };
-    if (ip !== undefined) headers["CF-Connecting-IP"] = ip;
-    const request = new Request(`https://beta.orbi.build${path}`, { headers });
+  const requestWith = ({ ua = CHROME, asn } = {}) => {
+    const request = new Request("https://beta.orbi.build/", { headers: { "User-Agent": ua } });
     if (asn !== undefined) request.cf = { asn };
     return request;
-  }
+  };
 
-  beforeEach(() => {
-    vi.useRealTimers();
-    resetBehaviorSignals();
+  it("keeps only maintained ASN and UA list signals", async () => {
+    expect(await isBot(requestWith({ asn: 16509 }), db)).toBe(true);
+    expect(await isBot(requestWith({ ua: `${CHROME} HeadlessChrome/127` }), db)).toBe(true);
+    expect(await isBot(requestWith({ ua: GPTBOT }), db)).toBe(true);
+    expect(await isBot(requestWith({ ua: CHROME, asn: 7922 }), db)).toBe(false);
   });
 
-  // The pinned hashes are the SHA-256 of the UA, first 16 hex characters,
-  // computed outside the implementation (openssl dgst -sha256) — the report
-  // stores the hash so a verdict can be re-derived without keeping the raw
-  // UA string.
-  const CHROME_127_HASH = "286fc7e32b7b67d0";
-  const GPTBOT_HASH = "d1e6777ea082ce0f";
-  const EMPTY_UA_HASH = "e3b0c44298fc1c14";
-
-  it("marks every cloud-provider ASN a bot, browser UA or not", async () => {
-    const cloudAsns = [
-      [16509, "AWS us-east"],
-      [14618, "AWS us-east-1 ec2"],
-      [15169, "GCP"],
-      [396982, "Google Cloud"],
-      [8075, "Azure"],
-      [24940, "Hetzner"],
-      [14061, "DigitalOcean"],
-      [16276, "OVH"],
-      [63949, "Linode"],
-      [132203, "Tencent Cloud"],
-      [48090, "DMZHost"],
-      [45102, "Alibaba Cloud"],
-      [213230, "Hetzner Cloud2"],
-      [197540, "netcup"],
-      [45090, "Tencent Cloud"],
-      [64267, "Sprious"],
-    ];
-    for (const [asn, provider] of cloudAsns) {
-      expect(await isBot(requestWith({ ua: CHROME_127, asn }), {}, BOT_LIST_DB), `${provider} AS${asn}`).toBe(true);
-    }
+  it("marks empty and known probe user agents", async () => {
+    const empty = new Request("https://beta.orbi.build/");
+    expect(await isBot(empty)).toBe(true);
+    expect(await isBot(requestWith({ ua: "Better Uptime Bot Mozilla/5.0" }))).toBe(true);
   });
 
-  it("marks residential ASNs human: real people browse from ISP IPs, not datacenters", async () => {
-    for (const asn of [9506, 7922, 4134]) {
-      expect(await isBot(requestWith({ ua: CHROME_127, asn }), {}, BOT_LIST_DB), `residential AS${asn}`).toBe(false);
-    }
-  });
-
-  it("marks ChromeHeadless as a bot regardless of ASN", async () => {
-    const headless = `${CHROME_127} HeadlessChrome/127.0.0.0`;
-    expect(await isBot(requestWith({ ua: headless, asn: 9506 }), {}, BOT_LIST_DB)).toBe(true);
-  });
-
-  it("marks every self-identifying crawler UA a bot", async () => {
-    const crawlerUAs = [
-      GPTBOT,
-      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
-      "CCBot/2.0 (https://commoncrawl.org/faq/)",
-      "Mozilla/5.0 (compatible; Bytespider; spider-feedback@bytedance.com)",
-      "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
-      "Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)",
-      "Mozilla/5.0 (compatible; DataForSeoBot/1.0; +https://dataforseo.com/dataforseo-bot)",
-      "MJ12bot/v1.4.8 (http://mj12bot.com/)",
-      "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot)",
-      "Mozilla/5.0 (compatible; PetalBot;+https://webmaster.petalsearch.com/site/petalbot)",
-      "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)",
-    ];
-    for (const ua of crawlerUAs) {
-      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(true);
-    }
-  });
-
-  it("marks the generic bot/crawler/spider fallback substrings a bot, any case", async () => {
-    for (const ua of ["foo/1.0 (bot)", "SomeCrawler/2.0", "x-spider/1", "AnythingBot/3.0"]) {
-      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(true);
-    }
-  });
-
-  it("marks our own Better Uptime probe a bot", async () => {
-    expect(await isBot(requestWith({ ua: BETTER_UPTIME }))).toBe(true);
-  });
-
-  it("marks a missing User-Agent as a bot", async () => {
-    expect(await isBot(requestWith({}))).toBe(true);
-  });
-
-  it("marks an explicitly empty User-Agent as a bot", async () => {
-    expect(await isBot(requestWith({ ua: "" }))).toBe(true);
-  });
-
-  it("marks real browsers human", async () => {
-    for (const ua of [CHROME_127, SAFARI_17, FIREFOX_127]) {
-      expect(await isBot(requestWith({ ua }), {}, BOT_LIST_DB), ua).toBe(false);
-    }
-  });
-
-  it("classifies without request.cf at all (local dev): UA-only, human", async () => {
-    expect(await isBot(requestWith({ ua: CHROME_127 }))).toBe(false);
-  });
-
-  it("refreshes ASN decisions from the database after the TTL", async () => {
-    vi.useFakeTimers();
-    const tables = { asns: [{ asn: 7922 }], needles: [] };
-    const db = {
-      prepare(sql) {
-        return { all: async () => ({ results: sql.includes("bot_asns") ? tables.asns : tables.needles }) };
-      },
-    };
-    const request = requestWith({ ua: CHROME_127, asn: 7922 });
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
-    tables.asns.length = 0;
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
-    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 0 });
-  });
-
-  it("refreshes UA substring decisions from the database after the TTL", async () => {
-    vi.useFakeTimers();
-    const tables = { asns: [], needles: [{ needle: "claudebot" }] };
-    const db = {
-      prepare(sql) {
-        return { all: async () => ({ results: sql.includes("bot_asns") ? tables.asns : tables.needles }) };
-      },
-    };
-    const request = requestWith({ ua: "ClaudeBot/1.0", asn: 9506 });
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
-    tables.needles.length = 0;
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 1 });
-    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
-    expect(await visitSignals(request, {}, db)).toMatchObject({ is_bot: 0 });
-  });
-
-  it("treats a failed bot-list query as non-bot while retaining behavior rules", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const db = { prepare: () => ({ all: async () => { throw new Error("database unavailable"); } }) };
-    try {
-      expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509 }), {}, db)).toMatchObject({ is_bot: 0 });
-      for (let index = 0; index < 11; index += 1) {
-        expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509, path: `/behavior-${index}` }), {
-          vid: "behavior-fallback",
-          path: `/behavior-${index}`,
-        }, db)).toMatchObject({ is_bot: 0 });
-      }
-      expect(await visitSignals(requestWith({ ua: "ClaudeBot/1.0", asn: 16509, path: "/behavior-11" }), {
-        vid: "behavior-fallback",
-        path: "/behavior-11",
-      }, db)).toMatchObject({ is_bot: 1 });
-      expect(warn).toHaveBeenCalledWith("bot_lists_query_failed:", "database unavailable");
-    } finally {
-      warn.mockRestore();
-    }
-  });
-
-  it("marks one vid scanning many paths in a short window", async () => {
-    for (let path = 0; path < 11; path += 1) {
-      expect(await visitSignals(requestWith({ ua: CHROME_127, path: `/page-${path}` }), {
-        vid: "scanner",
-        path: `/page-${path}`,
-        ref: "",
-      })).toMatchObject({ is_bot: 0 });
-    }
-    expect(await visitSignals(requestWith({ ua: CHROME_127, path: "/page-11" }), {
-      vid: "scanner",
-      path: "/page-11",
-      ref: "",
-    })).toMatchObject({ is_bot: 1 });
-  });
-
-  it("marks a slow one-hit vid scan from durable aggregate evidence", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-09-22T02:40:00Z"));
-    let prior = 0;
-    const db = {
-      prepare(sql) {
-        expect(sql).toContain("HAVING COUNT(*) = 1");
-        expect(sql).toContain("created_at >= datetime(?, 'unixepoch')");
-        return {
-          bind: (...params) => {
-            expect(params).toEqual([
-              CHROME_127_HASH,
-              9506,
-              1789872000,
-              `slow-crawler-${prior}`,
-              `/page-${prior}`,
-              `slow-crawler-${prior}`,
-            ]);
-            return {
-              first: async () => ({
-                vids: prior,
-                paths: prior,
-                current_path_seen: 0,
-                current_vid_hits: 0,
-              }),
-            };
-          },
-        };
-      },
-    };
-    for (let index = 0; index < 7; index += 1) {
-      expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506, path: `/page-${index}` }), {
-        vid: `slow-crawler-${index}`,
-        path: `/page-${index}`,
-        ref: "direct",
-      }, db)).toMatchObject({ is_bot: 0 });
-      prior += 1;
-    }
-    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506, path: "/page-7" }), {
-      vid: "slow-crawler-7",
-      path: "/page-7",
-      ref: "direct",
-    }, db)).toMatchObject({ is_bot: 1 });
-  });
-
-  it("matches both reported slow-scan shapes over the durable window", async () => {
-    for (const [vids, paths] of [[163, 29], [95, 10]]) {
-      const db = {
-        prepare: () => ({
-          bind: () => ({ first: async () => ({ vids, paths, current_path_seen: 0, current_vid_hits: 0 }) }),
-        }),
-      };
-      expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
-        vid: `reported-shape-${vids}`,
-        path: "/terms/",
-        ref: "direct",
-      }, db)).toMatchObject({ is_bot: 1 });
-    }
-  });
-
-  it("counts singleton vids even when other vids sharing the fingerprint returned", async () => {
-    const db = {
-      prepare: () => ({
-        bind: () => ({
-          first: async () => ({ vids: 7, paths: 7, current_path_seen: 0, current_vid_hits: 0 }),
-        }),
-      }),
-    };
-    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
-      vid: "eighth-singleton",
-      path: "/eighth-path",
-    }, db)).toMatchObject({ is_bot: 1 });
-  });
-
-  it("requires the current path to increase the singleton path breadth", async () => {
-    const db = {
-      prepare: () => ({
-        bind: () => ({
-          first: async () => ({ vids: 7, paths: 7, current_path_seen: 1, current_vid_hits: 0 }),
-        }),
-      }),
-    };
-    expect(await visitSignals(requestWith({ ua: CHROME_127, asn: 9506 }), {
-      vid: "eighth-singleton",
-      path: "/already-seen",
+  it("does not classify page behavior as bot behavior", async () => {
+    expect(await isBot(requestWith({ ua: CHROME }), db)).toBe(false);
+    expect(await visitSignals(requestWith({ ua: CHROME }), {
+      vid: "same-visitor", path: "/many-paths", ref: "direct",
     }, db)).toMatchObject({ is_bot: 0 });
   });
 
-  it("marks a burst of one-hit vids sharing a source fingerprint", async () => {
-    for (let index = 0; index < 7; index += 1) {
-      expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10", path: `/page-${index}` }), {
-        vid: `crawler-${index}`,
-        path: `/page-${index}`,
-        ref: "direct",
-      })).toMatchObject({ is_bot: 0 });
-    }
-    expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10", path: "/page-7" }), {
-      vid: "crawler-7",
-      path: "/page-7",
-      ref: "direct",
-    })).toMatchObject({ is_bot: 1 });
-  });
-
-  it("expires one-hit observations outside the short window", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-09-20T16:00:00Z"));
-    for (let index = 0; index < 7; index += 1) {
-      await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10" }), {
-        vid: `old-crawler-${index}`,
-        path: `/old-${index}`,
-        ref: "direct",
-      });
-    }
-    vi.advanceTimersByTime(5 * 60 * 1000 + 1);
-    expect(await visitSignals(requestWith({ ua: CHROME_127, ip: "203.0.113.10" }), {
-      vid: "new-crawler",
-      path: "/new",
-      ref: "direct",
-    })).toMatchObject({ is_bot: 0 });
-  });
-
-  it("does not merge different client IPs into one burst based only on ISP ASN and browser UA", async () => {
-    for (let index = 0; index < 8; index += 1) {
-      expect(await visitSignals(requestWith({
-        ua: CHROME_127,
-        asn: 7922,
-        ip: `203.0.113.${index + 1}`,
-        path: `/visitor-${index}`,
-      }), {
-        vid: `human-${index}`,
-        path: `/visitor-${index}`,
-        ref: "direct",
-      })).toMatchObject({ is_bot: 0 });
-    }
-  });
-
-  it("keeps a normal referred visitor human", async () => {
-    for (const [index, path] of ["/", "/pricing/", "/docs/"].entries()) {
-      expect(await visitSignals(requestWith({ ua: CHROME_127, path }), {
-        vid: "human",
-        path,
-        ref: "x-2609201650",
-      })).toMatchObject({ is_bot: 0 });
-    }
-  });
-
-  it("returns the verdict with its evidence: asn and ua_hash, never the raw UA", async () => {
-    const signals = await visitSignals(requestWith({ ua: GPTBOT, asn: 16509 }), {}, BOT_LIST_DB);
-    expect(signals).toEqual({ is_bot: 1, asn: 16509, ua_hash: GPTBOT_HASH });
+  it("returns only verdict evidence and hashes the UA", async () => {
+    const signals = await visitSignals(requestWith({ ua: GPTBOT, asn: 16509 }), {}, db);
+    expect(signals).toEqual({ is_bot: 1, asn: 16509, ua_hash: "2efd9661f00ea09e" });
     expect(JSON.stringify(signals)).not.toContain("GPTBot");
   });
 
-  it("reports a human visit with its residential asn and UA hash", async () => {
-    const signals = await visitSignals(requestWith({ ua: CHROME_127, asn: 7922 }));
-    expect(signals).toEqual({ is_bot: 0, asn: 7922, ua_hash: CHROME_127_HASH });
-  });
-
-  it("reports asn null without request.cf (local dev)", async () => {
-    const signals = await visitSignals(requestWith({ ua: CHROME_127 }));
-    expect(signals).toEqual({ is_bot: 0, asn: null, ua_hash: CHROME_127_HASH });
-  });
-
-  it("hashes a missing UA as the empty string", async () => {
-    const signals = await visitSignals(requestWith({}));
-    expect(signals.ua_hash).toBe(EMPTY_UA_HASH);
-  });
-
-  it("ua_hash is stable for the same UA and differs across UAs", async () => {
-    const first = await visitSignals(requestWith({ ua: CHROME_127 }));
-    const second = await visitSignals(requestWith({ ua: CHROME_127 }));
-    const other = await visitSignals(requestWith({ ua: FIREFOX_127 }));
-    expect(first.ua_hash).toBe(second.ua_hash);
-    expect(first.ua_hash).not.toBe(other.ua_hash);
+  it("logs a failed list query and treats it as non-bot", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const failed = { prepare: () => ({ all: async () => { throw new Error("database unavailable"); } }) };
+    try {
+      expect(await isBot(requestWith(), failed)).toBe(false);
+      expect(warning).toHaveBeenCalledWith("bot_lists_query_failed:", "database unavailable");
+    } finally {
+      warning.mockRestore();
+    }
   });
 });

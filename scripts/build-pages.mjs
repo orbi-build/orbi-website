@@ -37,7 +37,8 @@ const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 const ENGAGEMENT_SCRIPT = `<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
-  const send=(kind,detail)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
   const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
   const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
   const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
@@ -129,6 +130,9 @@ const LANG = {
     costLabel: "Pricing",
     evidenceLabel: "Evidence",
     docsLabel: "Docs",
+    resourcesLabel: "Resources",
+    methodLabel: "Method",
+    methodHref: "/aiready/",
     selfHostedDocsLabel: "Self-hosted Docs",
     cloudDocsNavLabel: "Cloud Docs",
     blogLabel: "Blog",
@@ -171,6 +175,9 @@ const LANG = {
     costLabel: "价格",
     evidenceLabel: "证据",
     docsLabel: "文档",
+    resourcesLabel: "资源",
+    methodLabel: "方法",
+    methodHref: "/aiready/zh/",
     selfHostedDocsLabel: "自托管文档",
     cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
@@ -256,9 +263,11 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    DOCS_ITEM: n.docsDropdown
-      ? `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.docsMenuId}" data-docs-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.docsMenuId}" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`
-      : `<a href="${base(n.docsHref)}">${t.docsLabel}</a>`,
+    // Issue #612: every page with the nav carries the same Resources dropdown
+    // (Method → Self-hosted Docs → Cloud Docs); the menu id derives from the
+    // page's own navId. t.docsLabel stays on the footer (footer.html
+    // {{DOCS_LABEL}}), which this Issue does not touch.
+    DOCS_ITEM: `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-docs-toggle>${t.resourcesLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.navId}-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${base(t.methodHref)}" role="menuitem">${t.methodLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
     BLOG_HREF: base(`${t.langPrefix}/blog/`),
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
