@@ -20,6 +20,7 @@ describe("Issue #409 engagement build contract", () => {
     for (const file of await htmlFiles("public")) {
       const html = await read(file);
       expect(html, file).toContain('const endpoint="/cloud/e"');
+      expect(html, file).toContain('send("visit"');
       expect(html, file).toContain('send("engaged")');
       expect(html, file).toContain('send("scroll_depth"');
     }
@@ -44,7 +45,7 @@ describe("Issue #409 engagement build contract", () => {
   it("describes all three events on both privacy pages", async () => {
     for (const file of ["public/privacy/index.html", "public/zh/privacy/index.html"]) {
       const html = await read(file);
-      for (const kind of ["engaged", "cta_click", "scroll_depth"]) expect(html, file).toContain(kind);
+      for (const kind of ["visit", "engaged", "cta_click", "scroll_depth"]) expect(html, file).toContain(kind);
     }
   });
 });

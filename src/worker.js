@@ -61,7 +61,7 @@ const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 const SUBSCRIBE_ROUTE = "/subscribe";
 const ENGAGEMENT_ROUTE = "/cloud/e";
-const ENGAGEMENT_KINDS = new Set(["engaged", "cta_click", "scroll_depth"]);
+const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
   "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
   "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
@@ -722,16 +722,21 @@ async function engagementResponse(request, env, ctx) {
   const kind = event?.kind;
   const detail = event?.detail;
   const valid = ENGAGEMENT_KINDS.has(kind)
-    && (kind === "engaged" ? detail === undefined
-      : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
-        : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
+    && (kind === "visit" ? detail === undefined && typeof event.search === "string" && typeof event.referrer === "string"
+      : kind === "engaged" ? detail === undefined
+        : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
+          : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
   if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
 
   const path = typeof event.path === "string" && event.path.startsWith("/")
     ? event.path.slice(0, 200)
     : new URL(request.url).pathname;
   const payload = { kind, path };
-  if (kind !== "engaged") payload.detail = detail;
+  if (kind === "visit") {
+    payload.ref = visitRef(path, event.search, event.referrer, request.url);
+  } else if (kind !== "engaged") {
+    payload.detail = detail;
+  }
   const vid = cookieFrom(request, "vid");
   if (vid) payload.vid = vid;
   if (env.CLOUD_VISIT_URL && env.WEBSITE_SECRET) {
@@ -849,6 +854,24 @@ function normalizedSource(url, request) {
   return refererHost(request) ?? "direct";
 }
 
+function visitRef(path, search, referrer, requestUrl) {
+  const pageUrl = new URL(`${path}${search}`, requestUrl);
+  const validRef = pageUrl.searchParams.get("ref");
+  if (validRef !== null && REF_TOKEN.test(validRef.toLowerCase())) return validRef.toLowerCase();
+
+  let internal = false;
+  if (referrer) {
+    try {
+      internal = isInternalHost(new URL(referrer).hostname.toLowerCase());
+    } catch {
+      // Invalid referrers are treated like absent referrers by normalizedSource.
+    }
+  }
+  if (internal) return "";
+  const referrerRequest = new Request(requestUrl, { headers: { Referer: referrer } });
+  return normalizedSource(pageUrl, referrerRequest);
+}
+
 // The visit report is a bypass path: it never delays the response (rides
 // ctx.waitUntil) and never decides the page's fate — every failure, its own
 // or a timeout or a rejection status, is swallowed with a console.warn.
@@ -862,19 +885,29 @@ function normalizedSource(url, request) {
 // that skips routing entirely. env.CLOUD_VISIT_URL still supplies the path.
 // A missing binding (local dev, a partial config) falls back to fetch so the
 // page path stays identical either way.
-// The visit's own request comes along so the bot signals (visitSignals, an
-// await because of the UA hash) are computed here, inside the waitUntil
-// branch — the response path stays synchronous and static-asset requests
-// never classify at all.
+// The browser event's request comes along so bot signals are computed inside
+// the waitUntil branch — the response path stays synchronous and the browser
+// receives a 204 even when reporting fails.
 async function reportVisit(env, visitRequest, payload) {
   try {
+    const signals = await visitSignals(visitRequest, payload, env.VISITOR_EVENTS_DB);
+    if (signals.is_bot === 1) {
+      console.log(JSON.stringify({
+        evt: "visit_dropped",
+        reason: "bot",
+        kind: payload.kind,
+        asn: signals.asn,
+        ua_hash: signals.ua_hash,
+      }));
+      return;
+    }
     const request = new Request(env.CLOUD_VISIT_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.WEBSITE_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...payload, ...await visitSignals(visitRequest, payload, env.VISITOR_EVENTS_DB) }),
+      body: JSON.stringify({ ...payload, ...signals }),
       signal: AbortSignal.timeout(5000),
     });
     const response = env.CLOUD ? await env.CLOUD.fetch(request) : await fetch(request);
@@ -898,12 +931,10 @@ async function reportVisit(env, visitRequest, payload) {
 //   guesses an OAuth bounce or an in-site hop can fabricate, so they are
 //   first touch: they fill an empty slot and never overwrite — github.com
 //   must not replace the tweet that brought the visitor here.
-// Probes and crawlers keep their vid and their page; their visits are marked
-// is_bot=1 (visitSignals — the request.cf.asn of a cloud provider, crawler UA
-// substrings, or durable/short-window behavior, Issue #280/#305/#386;
-// botManagement is an Enterprise add-on we do not buy) so dashboard queries can exclude them. The response body is
-// never rewritten, so asset validators like ETag survive. Every HTML 200 is
-// reported as one visit.
+// Probes and crawlers keep their vid and their page; browser events from them
+// are dropped after the maintained ASN/UA checks. The response body is never
+// rewritten, so asset validators like ETag survive. Visits are reported by
+// page JavaScript, not by this response wrapper.
 // Known corner (Issue #228, awaiting maintainer sign-off): seeding is
 // unconditional because the issue's acceptance seeds at the handleFetch exit
 // on every no-vid response, so a first landing that redirects — www → apex
@@ -926,20 +957,6 @@ function withAttribution(request, response, env, ctx) {
   const explicitRef = rawRef !== null && REF_TOKEN.test(rawRef.toLowerCase())
     ? rawRef.toLowerCase()
     : null;
-  if (
-    response.status === 200
-    && (response.headers.get("Content-Type") || "").startsWith("text/html")
-    && env.CLOUD_VISIT_URL
-    && env.WEBSITE_SECRET
-  ) {
-    // Signals ride only this reported branch so every static-asset request
-    // skips the classification entirely.
-    ctx.waitUntil(reportVisit(env, request, {
-      vid,
-      path: url.pathname,
-      ref: explicitRef ?? (firstTouch ? source : ""),
-    }));
-  }
   const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
   if (!firstTouch && !seedsRef) {
     return response;
