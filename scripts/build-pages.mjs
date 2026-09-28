@@ -34,6 +34,8 @@ const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 
 // Inline, first-party engagement telemetry. It sends only event metadata and
 // uses Beacon so page exits do not block navigation or rendering.
+const CLOUDFLARE_ANALYTICS_SCRIPT = `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script>`;
+
 const ENGAGEMENT_SCRIPT = `<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
@@ -932,7 +934,7 @@ function renderPost(post, template) {
     BODY: post.html,
     SUBSCRIBE: renderSubscribe(post.lang),
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
+  }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -1109,7 +1111,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
-    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}</body>`);
+    html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
     if (page.source === "blog/index.html" || page.source === "zh/blog/index.html") {
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);

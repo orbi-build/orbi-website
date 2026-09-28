@@ -26,6 +26,22 @@ describe("Issue #409 engagement build contract", () => {
     }
   });
 
+  it("injects exactly one Cloudflare beacon with the configured token into every generated page", async () => {
+    for (const file of await htmlFiles("public")) {
+      const html = await read(file);
+      expect((html.match(/data-cf-beacon/g) ?? []).length, file).toBe(1);
+      expect(html, file).toContain('data-cf-beacon=\'{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}\'');
+    }
+  });
+
+  it("keeps Cloudflare beacon markup out of page and partial sources", async () => {
+    for (const dir of ["site/pages", "site/partials"]) {
+      for (const file of await htmlFiles(dir)) {
+        expect(await read(file), file).not.toContain("cloudflareinsights");
+      }
+    }
+  });
+
   it("tags the Cloud and homepage CTA links with valid details in both languages", async () => {
     for (const file of ["public/index.html", "public/zh/index.html", "public/cloud/index.html", "public/zh/cloud/index.html"]) {
       const html = await read(file);
