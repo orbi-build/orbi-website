@@ -542,6 +542,13 @@ async function handleFetch(request, env, ctx) {
       );
     }
 
+    // The generated aiready.sh pages carry the same engagement script as
+    // orbi.build, so its same-origin beacon must reach the shared endpoint
+    // before the host's catch-all redirect runs.
+    if (url.pathname === ENGAGEMENT_ROUTE || url.pathname === `${ENGAGEMENT_ROUTE}/`) {
+      return engagementResponse(request, env, ctx);
+    }
+
     // Issue #174: aiready.sh is the curl install entry. Accept-negotiate on
     // `/` only — browsers (text/html) go to orbi.build; curl (*/*) and the
     // explicit /install.sh path get public/install.sh via ASSETS.
@@ -600,10 +607,6 @@ async function handleFetch(request, env, ctx) {
           },
         });
       }
-    }
-
-    if (route === ENGAGEMENT_ROUTE) {
-      return engagementResponse(request, env, ctx);
     }
 
     if (route === CLOUD_LOGIN_ROUTE || route === ZH_CLOUD_LOGIN_ROUTE) {

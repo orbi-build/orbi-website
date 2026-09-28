@@ -966,6 +966,81 @@ describe("page attribution", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("keeps direct, derived first-touch, and explicit last-touch ref cookie semantics", async () => {
+    const baseEnv = { ASSETS: assets };
+
+    const direct = await worker.fetch(new Request("https://beta.orbi.build/"), baseEnv, {});
+    expect(direct.headers.getSetCookie()).toEqual([
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+    ]);
+
+    const referred = await worker.fetch(new Request("https://beta.orbi.build/", {
+      headers: { Referer: "https://News.Ycombinator.com/item?id=1" },
+    }), baseEnv, {});
+    expect(referred.headers.getSetCookie()).toEqual([
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+      expect.stringContaining("ref=news.ycombinator.com;"),
+    ]);
+
+    const repeat = await worker.fetch(new Request("https://beta.orbi.build/?ref=BBB", {
+      headers: { Cookie: "vid=ExistingVidValue123456; ref=aaa" },
+    }), baseEnv, {});
+    expect(repeat.headers.getSetCookie()).toEqual([
+      "ref=bbb; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+    ]);
+  });
+
+  it("keeps internal referrals out of the ref cookie", async () => {
+    const response = await worker.fetch(new Request("https://beta.orbi.build/", {
+      headers: { Referer: "https://orbi.build/" },
+    }), { ASSETS: assets }, {});
+    expect(response.headers.getSetCookie()).toEqual([
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; /),
+    ]);
+  });
+
+  it("keeps utm_source first-touch and preserves an existing ref cookie", async () => {
+    const first = await worker.fetch(
+      new Request("https://beta.orbi.build/?utm_source=ChatGPT.com"),
+      { ASSETS: assets },
+      {},
+    );
+    expect(first.headers.getSetCookie()).toContain(
+      "ref=chatgpt.com; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+    );
+
+    const repeat = await worker.fetch(new Request("https://beta.orbi.build/?utm_source=other.com", {
+      headers: { Cookie: "vid=ExistingVidValue123456; ref=chatgpt.com" },
+    }), { ASSETS: assets }, {});
+    expect(repeat.headers.getSetCookie()).toEqual([]);
+  });
+
+  it("keeps attribution cookies non-Secure over http", async () => {
+    const response = await worker.fetch(
+      new Request("http://beta.orbi.build/?ref=xtest"),
+      { ASSETS: assets },
+      {},
+    );
+    expect(response.headers.getSetCookie()).toEqual([
+      expect.stringMatching(/^vid=[A-Za-z0-9_-]{22}; Path=\/; HttpOnly; SameSite=Lax; Max-Age=7776000$/),
+      "ref=xtest; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000",
+    ]);
+  });
+
+  it("keeps planting a campaign ref on the Cloud login handoff", async () => {
+    const response = await worker.fetch(new Request("https://beta.orbi.build/cloud/login?ref=x-2609201530", {
+      headers: { Cookie: "vid=ExistingVidValue123456" },
+    }), {
+      CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+      ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+    }, {});
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe("https://beta.orbi.build/api/login");
+    expect(response.headers.getSetCookie()).toEqual([
+      "ref=x-2609201530; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+    ]);
+  });
+
   it("does not report non-HTML responses either", async () => {
     const fetchMock = vi.fn();
     const response = await worker.fetch(new Request("https://beta.orbi.build/styles.css"), {
@@ -974,5 +1049,53 @@ describe("page attribution", () => {
     }, { waitUntil: vi.fn() });
     expect(response.status).toBe(200);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+// The unrelated request.cf diagnostic contract remains covered while server-side
+// HTML visit reporting is removed.
+describe("/__cf diagnostic (Issue #251)", () => {
+  function requestWithCf(url, cf) {
+    const request = new Request(url);
+    request.cf = cf;
+    return request;
+  }
+
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+  const notFoundAssets = {
+    ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+  };
+
+  it("echoes request.cf fields without caching on beta", async () => {
+    const response = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { botManagement: { score: 7 }, asn: 24940, colo: "FRA" }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(await response.json()).toEqual({ botManagement: { score: 7 }, asn: 24940, colo: "FRA" });
+  });
+
+  it("answers null when botManagement or request.cf is absent", async () => {
+    const partial = await handleFetch(
+      requestWithCf("https://beta.orbi.build/__cf", { asn: 24940, colo: "HKG" }),
+      env,
+    );
+    expect(await partial.json()).toEqual({ botManagement: null, asn: 24940, colo: "HKG" });
+
+    const local = await handleFetch(new Request("https://beta.orbi.build/__cf/"), env);
+    expect(local.status).toBe(200);
+    expect(await local.json()).toEqual({ botManagement: null, asn: undefined, colo: undefined });
+  });
+
+  it("stays unavailable on production hosts", async () => {
+    const apex = await handleFetch(new Request("https://orbi.build/__cf"), notFoundAssets);
+    expect(apex.status).toBe(404);
+    const aiready = await handleFetch(new Request("https://aiready.sh/__cf"), notFoundAssets);
+    expect(aiready.status).toBe(302);
+    expect(aiready.headers.get("Location")).toBe("https://orbi.build/__cf");
   });
 });
