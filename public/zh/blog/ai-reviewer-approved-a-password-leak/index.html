@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我们的 AI 评审放过了一个密码泄漏 | Orbi</title>
+  <meta name="description" content="Orbi 的独立评审给两个开源修复都判了通过，而这两个修复都引入了回归。我们围绕程序生成的输入和独立判据重写了 harness，然后把这几张票重跑了 96 次。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/ai-reviewer-approved-a-password-leak/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="我们的 AI 评审放过了一个密码泄漏">
+  <meta property="og:description" content="Orbi 的独立评审给两个开源修复都判了通过，而这两个修复都引入了回归。我们围绕程序生成的输入和独立判据重写了 harness，然后把这几张票重跑了 96 次。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/ai-reviewer-approved-a-password-leak/">
+  <meta property="og:image" content="https://orbi.build/img/blog-reviewer-leak.png">
+  <meta property="og:image:alt" content="我们的 AI 评审放过了一个密码泄漏">
+  <meta property="article:published_time" content="2026-09-29">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"我们的 AI 评审放过了一个密码泄漏","datePublished":"2026-09-29","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-reviewer-leak.png","inLanguage":"zh-CN","description":"Orbi 的独立评审给两个开源修复都判了通过，而这两个修复都引入了回归。我们围绕程序生成的输入和独立判据重写了 harness，然后把这几张票重跑了 96 次。","url":"https://orbi.build/zh/blog/ai-reviewer-approved-a-password-leak/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/compare/">竞品对比</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-docs-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="primary-navigation-zh-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="/aiready/zh/" role="menuitem">方法</a><a class="orbi-nav-docs-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-docs-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
+        <a href="/zh/blog/">博客</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">登录</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">ZH</span>
+          <a href="/blog/ai-reviewer-approved-a-password-leak/" lang="en" aria-label="English">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-29</p>
+        <h1 id="post-title">我们的 AI 评审放过了一个密码泄漏</h1>
+        <p class="hero-lede">Orbi 的独立评审给两个开源修复都判了通过，而这两个修复都引入了回归。我们围绕程序生成的输入和独立判据重写了 harness，然后把这几张票重跑了 96 次。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>9 月 28 日，Orbi 在三个开源项目的 fork 里各修了一个 issue：<a href="https://github.com/orbi-build/pyinfra/pull/3">pyinfra</a>、<a href="https://github.com/orbi-build/chainloop/pull/3">chainloop</a>、<a href="https://github.com/orbi-build/fedify/pull/3">fedify</a>。三个 PR 都过了测试，也过了 Orbi 自己的独立评审，都在 fork 里合并了。往上游提之前我们手工复查了一遍，结果有两个是错的。</p>
+<p>chainloop 那个是密钥脱敏器。原 issue 说的是：JWT 后面紧跟一个转义引号时，反斜杠会跟着 JWT 一起被脱敏掉。Orbi 的修法是把每条命中结果末尾的反斜杠剥掉。JWT 的问题确实修好了。可换两个输入跑一下合并后的代码，结果是这样（第二例把占位符缩写成了 <code>[REDACTED]</code>）：</p>
+<pre><code>输入：DB_PASSWORD=Zq8mLp2Vx9rT\n next
+输出：DB_PASSWORD=[REDACTED:generic-password]\n next
+
+输入：password: s
+      Host: services.example.com
+输出：pa[REDACTED][REDACTED]word: [REDACTED]
+      Ho[REDACTED]t: [REDACTED]ervice[REDACTED].example.com
+</code></pre>
+<p>第一例里，检测器认定的密码是 <code>Zq8mLp2Vx9rT\n</code>，结尾是字面的反斜杠加 <code>n</code>。修复把这两个字符从命中结果里剥掉了，它们就明文留在了输出里。第二例的密钥只有一个字符，日志里所有的 <code>s</code> 都被替换了。Orbi 在这个 PR 上的评审意见，全文是 <code>review: pass, no findings</code>。</p>
+<p>pyinfra 的问题也是一个路数。原 issue 是中日韩文字把结果表格挤歪了。修复把宽字符按两列算，issue 里的例子对齐了，可 👍🏽 和分解形式的「が」反而比修之前更歪。评审同样是 <code>pass, no findings</code>。</p>
+<p>评审并没有偷懒。两个 PR 它都跑了测试，也核对了 issue 里的例子。例子能过，因为问题从来不在例子上，回归藏在没人想到去试的输入里。</p>
+<h3>我们怎么测 harness</h3>
+<p>光说「我们改进了 prompt」没什么分量，得有数字。所以我们搭了一套会失败的 benchmark。</p>
+<p>三个 issue，每个都在 Orbi 当初起步的那个 commit 上做一份私有快照仓库。真实的 Orbi runner 在上面跑完整个流程：认领、写修复、开 PR、独立评审、合并。然后由一个 Orbi 看不到的隐藏评分器给合并结果打分。</p>
+<p>每个评分器用之前都先校准：原始代码必须判失败，Orbi 当初合并的那个带回归的 fork PR 必须判失败，我们手工核实过的正确修复必须判通过。连坏 PR 都放过的评分器，测不出任何东西。chainloop 评分器判失败的两项，就是上面那两个输出。</p>
+<p>每个变体在前一个的基础上改一两处（prompt、skill、工具链、实现模型或评审模型），一夜之间并行跑，总共 96 次。</p>
+<h3>harness 改了什么</h3>
+<p>每条规则都来自读失败那次运行的会话记录，不是从最佳实践清单里抄的。</p>
+<ol>
+<li><strong>输入要用程序生成。</strong> 第一版只是要求 agent 对比修复前后的行为。pyinfra 从 0/5 变成 2/3，剩下的失败是因为 agent 挑的例子本来就没问题：它测了 U+0301，这个字符从来没坏过，却没测 U+3099。下一版要求用程序按整类字符批量生成输入，并把数量写进 <code>.orbi/regression.md</code>。之后的运行，脱敏器最多生成了 2756 个输入，表格那边最多 119 万个字符单元。</li>
+<li><strong>判据不能是改动本身。</strong> 有一次强模型拿自己刚实现的规则去算「期望输出」，等于拿修复跟自己比，差异当然是零。现在 prompt 要求判据独立于补丁：参考库、修改前的行为，或者某个不变量。</li>
+<li><strong>参考实现要交叉比对。</strong> pyinfra 环境里的 <code>wcwidth</code> 0.2.14 把 👍🏽 算成 4 列。信了它的 agent 会「证明」那个回归是对的。<code>rich</code> 算得对。现在有多个参考实现时，agent 要互相比对，并写明信哪个、为什么。</li>
+<li><strong>要剥掉的字符本身也是数据。</strong> 密码泄漏只在密钥自己以 <code>\</code> 或 <code>\n</code> 结尾时出现。agent 造输入时总把反斜杠放在密钥后面，从不放进密钥里。现在 prompt 点名了这类输入，并要求列出哪些产出方（这里是检测规则）会产出这种值。</li>
+<li><strong>碰撞检查。</strong> 修复如果改动了要搜索或替换的文本，就要测这段文本在别处出现的情况。那个单字符 <code>s</code> 就是这么来的。</li>
+<li><strong>贡献规矩以仓库自己的工具为准。</strong> 我们自己写的 harness 里有个例子：「加 changelog 片段，别改生成的 changelog」。fedify 用 <code>sacho</code> 且开了 materialize，上游每个 commit 两个文件都会改，是我们这个例子把 Orbi 带偏了。现在的规则是跑仓库自带的检查（这里是 <code>sacho check</code>），并把这个工具放进 runner 的 <code>PATH</code>。</li>
+</ol>
+<h3>结果</h3>
+<p>每格是「通过次数 / 运行次数」，只看代码是否正确（隐藏评分器、仓库自带检查、全量测试）。除非该行另有说明，实现模型都是 <code>deepseek-flash</code>。</p>
+<pre><code>pyinfra  chainloop  fedify   变体
+0/5      5/6        1/4      v0 原版 harness
+2/3      2/2        1/2      v1 对比修复前后（手挑样本）
+0/1      1/1        0/1      v2 原版 harness，luna + sol
+0/1      1/1        0/1      v4 v1 做成独立 skill
+2/2      1/1        1/1      v5 生成输入 + 参考实现
+0/1      1/1        0/1      v7 v1 的 prompt，Opus 5.5
+1/1      1/1        0/1      v8 v5 的 prompt，Opus 5.5
+0/1      1/1        –        v9 v5 的 prompt，sol + sol
+0/1      –          1/1      v10 v5 + 贡献 skill（旧措辞）
+2/3      1/3        3/3      v11 独立判据 + 工具进 PATH
+1/2      1/1        1/1      v12 v11 的 prompt，Opus 5.5
+4/4      4/5        3/3      v13 + 剥掉的字符也是数据
+4/4      2/3        2/2      v14 + 参考实现交叉比对
+3/3      4/4        2/2      v15 + 碰撞检查
+1/1      1/1        0/1      v16 v14 的 prompt，GLM 5.3 flash
+–        3/4        –        v17 v15 + 产出方清单
+–        4/4        –        v18 v15，deepseek 实现、sol 评审
+</code></pre>
+<p>同一个便宜模型，原版 harness 15 次过了 6 次，v13 到 v15 30 次过了 28 次：pyinfra 11/11，chainloop 10/12，fedify 7/7。两个仓库在原版 harness 下的失败方式不一样：pyinfra 的回归 5 次全都复现了，chainloop 的泄漏 6 次里只出现 1 次。这种低频回归，评审最容易放过去。</p>
+<h3>这些数字说明不了什么</h3>
+<p>在这批数据里，换更强的模型没能救回原版 prompt。可 pyinfra 上 luna + sol（v2）和 Opus 5.5（v7）各只跑了 1 次，而且 v7 用的是 v1 的 prompt，不是原版。凭这点次数说不了「模型不重要」，chainloop 也说明模型是有用的。v13 到 v15 里 chainloop 的两次失败，都是便宜模型做评审时把 <code>\n</code> 是数据还是转义判错了。换成 <code>gpt-5.6-sol</code> 做评审、代码仍由 <code>deepseek-flash</code> 写，chainloop 4/4；chainloop 上所有强模型评审的运行合计 7/7。安全敏感的代码，我们的做法是便宜模型写、强模型审。</p>
+<p>prompt 也是在这三个 issue 上调出来的，又在同样三个 issue 上测。还没有留出集，所以 28/30 是训练集上的分数。下一步是拿 v15 去跑它没见过的 issue，评分器按同样的方法校准。</p>
+<p>fedify 的情况也跟我们一开始想的不一样。Orbi 当初那份代码其实是合规的，出问题的是流程：首次贡献要先认领 issue，bug 修复要提到维护分支。现在评分器会跑 <code>sacho check</code>，贡献 skill 也要求 agent 动手之前先读 <code>CONTRIBUTING.md</code> 和 AI 政策。</p>
+<p>发现这些回归之后，提到上游的 pyinfra PR 是用 Claude Code 手工重写的，目前还开着；chainloop 和 fedify 的还没提。Orbi 当初的 fork PR 都还公开着，缺陷就是上面写的那些。</p>
+<h3>放在哪</h3>
+<p>prompt 改动、两个独立 skill（<code>orbi-regression-guard</code> 和 <code>orbi-upstream-contribution</code>），以及整套 benchmark（建实例、隐藏评分器、打分脚本）都在 Orbi 的 <a href="https://github.com/orbi-build/orbi/tree/harness/regression-guard"><code>harness/regression-guard</code></a> 分支上，还不是默认配置。它会让每次交付更慢、用更多 token，生成输入和跑参考实现都要花钱。</p>
+<p>这次学到的主要不是「评审要更严」。真正改变数字的，是逼 agent 去测它自己没挑过的输入，拿一个不是它写的答案去比。模型在边缘上有用，但查什么、怎么查，是 harness 定的。</p>
+<p>如果你在无人值守地跑 coding agent，这周可以试一件事：挑一个已经合并的 agent PR，写出你觉得它会处理错的那个输入，看看你的评审能不能拦住。<a href="https://orbi.build/cloud/?ref=blog-harness-zh">Orbi Cloud</a> 可以在你自己的 issue 上跑这套流程。</p>
+<h2>相关</h2>
+<p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <ul>
+        <li><a href="https://docs.orbi.build/zh">文档</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
+        <li><a href="/zh/cloud/">Cloud</a></li>
+        <li><a href="/zh/cost/">价格</a></li>
+        <li><a href="/zh/evidence/">证据</a></li>
+        <li><a href="/zh/compare/">竞品对比</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/zh/#faq">常见问题</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
+        <li><a href="https://status.orbi.build">状态</a></li>
+        <li><a href="/zh/privacy/">隐私政策</a></li>
+        <li><a href="/zh/terms/">服务条款</a></li>
+      </ul>
+      <ul>
+        <li><a href="/zh/support/">支持</a></li>
+        <li><a href="/zh/#direction">方向</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
+        <li><a href="/blog/ai-reviewer-approved-a-password-leak/" lang="en" aria-label="English">EN</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="竞品深度对比">
+      <span>深度对比</span>
+      <a href="/zh/compare/orca/">Orbi vs Orca</a>
+      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/zh/compare/devin/">Orbi vs Devin</a>
+      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+    <nav class="footer-guides" aria-label="指南">
+      <span>指南</span>
+      <a href="/zh/issue-to-release/">Issue 到发版</a>
+      <a href="/zh/guides/ci-gates/">CI 门禁</a>
+      <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a>
+      <a href="/zh/autonomous-coding-agent/">自主编程 agent</a>
+      <a href="/zh/self-hosted-coding-agent/">自托管编程 agent</a>
+      <a href="/zh/codex-github-issues/">Codex 处理 GitHub Issue</a>
+      <a href="https://aiready.sh/zh/">ai-ready 十二要素</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
