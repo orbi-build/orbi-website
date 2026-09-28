@@ -2238,6 +2238,7 @@ async function assertLegalPage(browser, path, expectedHeading, expectedAddress, 
   const page = await browser.newPage({ viewport: size });
   const errors = [];
   const failures = [];
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
