@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Searching for Orbi's harness: 96 runs across prompts and models | Orbi</title>
+  <meta name="description" content="We ran Orbi's full delivery loop 96 times on three open-source issues, crossing harness versions with implementation and review models, and graded every result with a hidden, calibrated grader.">
+  <link rel="canonical" href="https://orbi.build/blog/searching-for-orbis-harness/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Searching for Orbi's harness: 96 runs across prompts and models">
+  <meta property="og:description" content="We ran Orbi's full delivery loop 96 times on three open-source issues, crossing harness versions with implementation and review models, and graded every result with a hidden, calibrated grader.">
+  <meta property="og:url" content="https://orbi.build/blog/searching-for-orbis-harness/">
+  <meta property="og:image" content="https://orbi.build/img/blog-harness-search.png">
+  <meta property="og:image:alt" content="Searching for Orbi's harness: 96 runs across prompts and models">
+  <meta property="article:published_time" content="2026-09-29">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Searching for Orbi's harness: 96 runs across prompts and models","datePublished":"2026-09-29","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-harness-search.png","inLanguage":"en","description":"We ran Orbi's full delivery loop 96 times on three open-source issues, crossing harness versions with implementation and review models, and graded every result with a hidden, calibrated grader.","url":"https://orbi.build/blog/searching-for-orbis-harness/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/compare/">Compare</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-docs-toggle>Resources<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="primary-navigation-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="/aiready/" role="menuitem">Method</a><a class="orbi-nav-docs-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-docs-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">Sign in</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/searching-for-orbis-harness/" lang="zh-CN" aria-label="简体中文">ZH</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-09-29</p>
+        <h1 id="post-title">Searching for Orbi's harness: 96 runs across prompts and models</h1>
+        <p class="hero-lede">We ran Orbi's full delivery loop 96 times on three open-source issues, crossing harness versions with implementation and review models, and graded every result with a hidden, calibrated grader.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>Orbi is two things wrapped around each other. One is the harness: the prompts, skills, tools on the runner&#39;s <code>PATH</code>, and the loop that has one agent write a fix and another review it. The other is the models inside it. When a delivery goes wrong, you can&#39;t tell from one run which half failed. So we crossed harness versions with models and ran the whole loop 96 times on the same three issues, to find the combination Orbi should ship with.</p>
+<h3>Why now</h3>
+<p>On September 28 Orbi fixed three issues in forks of open-source projects: <a href="https://github.com/orbi-build/pyinfra/pull/3">pyinfra</a>, <a href="https://github.com/orbi-build/chainloop/pull/3">chainloop</a> and <a href="https://github.com/orbi-build/fedify/pull/3">fedify</a>. All three passed their tests and Orbi&#39;s own review. Before sending any upstream we checked them by hand, and two were wrong.</p>
+<p>The chainloop fix, in a secret redactor, leaks part of a password:</p>
+<pre><code>input:  DB_PASSWORD=Zq8mLp2Vx9rT\n next
+output: DB_PASSWORD=[REDACTED:generic-password]\n next
+</code></pre>
+<p>The detector reports the password as <code>Zq8mLp2Vx9rT\n</code>, ending in a literal backslash and <code>n</code>. The fix trims those two characters off the finding, so they stay in the log. A one-character secret, <code>s</code>, made it replace every <code>s</code> in the text. The pyinfra fix aligned the issue&#39;s CJK example and made 👍🏽 and a decomposed が worse. On both PRs, Orbi&#39;s review comment reads <code>review: pass, no findings</code>.</p>
+<p>That review ran the tests and checked the issue&#39;s example. The example passed. The regressions were in inputs nobody tried.</p>
+<h3>The benchmark</h3>
+<p>For each issue we took a private snapshot of the repository at the commit Orbi started from. The real Orbi runner ran the full loop on it: claim the issue, write the fix, open a PR, review, merge. A hidden grader that Orbi never saw then scored the merged code, together with the repository&#39;s own checks and full test suite.</p>
+<p>Each grader was calibrated first. It had to fail the original code, fail Orbi&#39;s merged fork PR, and pass a fix we had verified by hand. For chainloop, the grader&#39;s two failing checks on the fork PR are the password tail and the one-character secret.</p>
+<p>Variants changed the prompt, the skills, the tools on <code>PATH</code>, the implementation model, the review model, or a mix. The models were <code>deepseek-flash</code>, <code>gpt-5.6-luna</code> and <code>gpt-5.6-sol</code> through Pi, Opus 5.5 through a Claude Code bridge, and GLM 5.3 flash through a zcode bridge. In the two bridge columns the same model both implements and reviews, and the agent loop is the bridge&#39;s, not Pi&#39;s.</p>
+<h3>The grid</h3>
+<p>Rows are harness versions, each built on the one above unless noted. Columns are model setups, written as implementer / reviewer. Cells are passes / runs across the three repositories.</p>
+<pre><code>                               ds/ds   luna/sol  sol/sol  Opus    GLM     ds/sol
+v0  original harness           6/15    1/3
+v1  compare before/after       5/7                        1/3
+v4  v1 as a separate skill     1/3
+v5  generated inputs + oracle  4/4               1/2      2/3
+v10 v5 + contribution skill    1/2
+v11 independent oracle, tools  6/9                        3/4
+v13 + stripped chars as data   11/12
+v14 + reference cross-check    8/9                                2/3
+v15 + collision checks         9/9                                        4/4*
+v17 v15 + producer table       3/4*
+
+ds = deepseek-flash   * chainloop only
+</code></pre>
+<p>The grid is sparse. We filled the cells that answered the question in front of us at the time, not a full factorial. Most non-deepseek cells have two to four runs.</p>
+<h3>What the harness changes did</h3>
+<p>Holding the model at <code>deepseek-flash</code>, the harness went from 6/15 to 28/30 across v13–v15. Each rule came from reading a failed run&#39;s transcript:</p>
+<ol>
+<li><strong>Generate the inputs.</strong> v1 asked the agent to compare before and after, and it picked examples that were already fine. It tested U+0301, never broken, instead of U+3099. From v5 on, inputs are generated by a program across whole character classes, and runs produced up to 2,756 inputs for the redactor and 1.19 million character units for the table.</li>
+<li><strong>The oracle must not be the change.</strong> A <code>sol</code> run computed its &quot;expected&quot; output from the rule it had just implemented and found zero mismatches. v11 requires an oracle that doesn&#39;t depend on the patch.</li>
+<li><strong>The characters you strip are data.</strong> The password leak needs a secret that itself ends in <code>\</code> or <code>\n</code>. Agents only ever put backslashes after the secret. v13 names that input class.</li>
+<li><strong>Cross-check references.</strong> <code>wcwidth</code> 0.2.14 counts 👍🏽 as four columns; <code>rich</code> counts two. An agent that trusted <code>wcwidth</code> would have &quot;proved&quot; the regression correct. v14 makes the agent compare references and say which it trusts.</li>
+<li><strong>Collision checks.</strong> If a fix changes the text it searches for or replaces, test where else that text appears. That&#39;s the one-character <code>s</code>, in v15.</li>
+<li><strong>Contribution rules come from the repository&#39;s tools.</strong> An example in our own prompt said not to edit the generated changelog. fedify&#39;s <code>sacho</code> setup edits it on every commit, so our example steered Orbi wrong. From v11, the agent runs the repository&#39;s own checker (<code>sacho check</code>), and the tool is on the runner&#39;s <code>PATH</code>.</li>
+</ol>
+<p>The v1 rule packaged as a separate skill (v4) scored 1/3 against 5/7 as prompt text. The transcripts show the skill was read, and three runs are too few to say the packaging matters. Either way the rule still let the agent pick its own samples, which was the real problem.</p>
+<h3>What the models did</h3>
+<p>Model swaps are harder to read, because each one came with a different prompt version and, for Opus and GLM, a different agent loop.</p>
+<ul>
+<li>On the original harness, <code>luna</code> implementing and <code>sol</code> reviewing scored 1/3, and it missed the same pyinfra regression as <code>deepseek-flash</code>.</li>
+<li>Opus 5.5 built the deepest probes of any model, 1.19 million character units in v12, but on v11&#39;s prompt it still passed 3/4 against deepseek&#39;s 6/9 on the same prompt. That&#39;s too few runs to call either better.</li>
+<li>GLM 5.3 flash on v14 passed pyinfra and chainloop. It failed fedify because its bridge ignores skills, so the contribution rules never reached it. That&#39;s an integration gap, not a model result.</li>
+<li>The one clean reviewer swap is v15 with <code>sol</code> reviewing instead of <code>deepseek-flash</code>, on chainloop only: 4/4 against 4/4. In v13 and v14 the two chainloop failures were deepseek reviews that misjudged whether <code>\n</code> was data or an escape, which is why we tried it, but this data doesn&#39;t separate the two reviewers yet.</li>
+</ul>
+<p>The harness moved the numbers far more than any model swap we ran. That&#39;s a statement about these 96 runs, not a claim that models don&#39;t matter.</p>
+<h3>Where we are</h3>
+<p>The leading candidate is v15 with <code>deepseek-flash</code> implementing and reviewing: 9/9 across all three repositories. v13 is close at 11/12, and v5 passed all four of its runs, too few to lean on. <code>sol</code> as reviewer is the next thing to test on all three.</p>
+<p>There are three limits, and they are real. We tuned the harness on the same three issues we scored it on, so there&#39;s no held-out set yet, and 9/9 is a training score. The grid is sparse. And the graders only catch defects we knew to look for. The next round is v15 against issues it has never seen, each with a grader calibrated the same way.</p>
+<p>The upstream pyinfra PR, still open, was rewritten by hand with Claude Code after these regressions were found. The chainloop and fedify ones haven&#39;t been sent yet.</p>
+<h3>Where it lives</h3>
+<p>The prompt changes, two standalone skills (<code>orbi-regression-guard</code> and <code>orbi-upstream-contribution</code>) and the benchmark itself are on the <a href="https://github.com/orbi-build/orbi/tree/harness/regression-guard"><code>harness/regression-guard</code></a> branch of Orbi, under <code>bench/oss-upstream/</code>: instance setup, hidden graders, scoring and aggregation. They aren&#39;t the default yet. Generating inputs and running reference implementations makes each delivery slower and costs more tokens.</p>
+<p>If you run a coding agent, try one thing this week: take a merged agent PR, write the input you think it gets wrong, and see whether your reviewer would have caught it. <a href="https://orbi.build/cloud/?ref=blog-harness">Orbi Cloud</a> runs this loop on your own issues.</p>
+<h2>Related</h2>
+<p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <ul>
+        <li><a href="https://docs.orbi.build">Docs</a></li>
+        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
+        <li><a href="/cloud/">Cloud</a></li>
+        <li><a href="/cost/">Pricing</a></li>
+        <li><a href="/evidence/">Evidence</a></li>
+        <li><a href="/compare/">Compare</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
+        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
+        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
+        <li><a href="https://status.orbi.build">Status</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+      </ul>
+      <ul>
+        <li><a href="/support/">Support</a></li>
+        <li><a href="/#direction">Direction</a></li>
+        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
+        <li><a href="/zh/blog/searching-for-orbis-harness/" lang="zh-CN" aria-label="简体中文">ZH</a></li>
+        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
+        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-compare" aria-label="Compare deep dives">
+      <span>Compare</span>
+      <a href="/compare/orca/">Orbi vs Orca</a>
+      <a href="/compare/openclaw/">Orbi vs OpenClaw</a>
+      <a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
+      <a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
+      <a href="/compare/claude-code/">Orbi vs Claude Code</a>
+      <a href="/compare/openhands/">Orbi vs OpenHands</a>
+      <a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a>
+      <a href="/compare/codex/">Orbi vs OpenAI Codex</a>
+      <a href="/compare/devin/">Orbi vs Devin</a>
+      <a href="/compare/jules/">Orbi vs Google Jules</a>
+      <a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
+    </nav>
+    <nav class="footer-guides" aria-label="Guides">
+      <span>Guides</span>
+      <a href="/issue-to-release/">Issue to release</a>
+      <a href="/guides/ci-gates/">CI gates</a>
+      <a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a>
+      <a href="/autonomous-coding-agent/">Autonomous coding agent</a>
+      <a href="/self-hosted-coding-agent/">Self-hosted coding agent</a>
+      <a href="/codex-github-issues/">Codex on GitHub Issues</a>
+      <a href="https://aiready.sh/">ai-ready: 12 factors</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

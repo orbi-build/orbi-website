@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Our AI reviewer approved a password leak</title>
-      <link>https://orbi.build/blog/ai-reviewer-approved-a-password-leak/</link>
-      <guid isPermaLink="true">https://orbi.build/blog/ai-reviewer-approved-a-password-leak/</guid>
+      <title>Searching for Orbi's harness: 96 runs across prompts and models</title>
+      <link>https://orbi.build/blog/searching-for-orbis-harness/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/searching-for-orbis-harness/</guid>
       <pubDate>Tue, 29 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Orbi's independent review passed two open-source fixes that each broke something. We rebuilt the harness around generated inputs and independent oracles, then reran the tickets 96 times.</description>
+      <description>We ran Orbi's full delivery loop 96 times on three open-source issues, crossing harness versions with implementation and review models, and graded every result with a hidden, calibrated grader.</description>
     </item>
     <item>
       <title>GitSpawn and the agent that never asks</title>
