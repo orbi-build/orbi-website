@@ -168,10 +168,11 @@ img {
 .site-header nav,
 .site-footer nav {
   display: flex;
-  align-items: center;
   gap: 26px;
   font-size: 0.88rem;
 }
+
+.site-header nav { align-items: center; }
 
 .site-header nav > a {
   display: inline-flex;
@@ -1702,7 +1703,7 @@ h2 {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 3fr);
   gap: 34px;
-  align-items: center;
+  align-items: start;
   padding-top: 34px;
   padding-bottom: 48px;
   border-top: 1px solid var(--line);
@@ -1717,6 +1718,7 @@ h2 {
 }
 .site-footer nav {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   min-width: 0;
   gap: 20px;
