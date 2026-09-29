@@ -2178,7 +2178,7 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
   }
   // The fail-open boundary is prominent: carried by the hero itself, not
   // only the boundaries section further down.
-  const heroText = (await page.locator(".compare-hero").textContent()).replace(/\s+/g, " ");
+  const heroText = (await page.locator("section.compare-hero").textContent()).replace(/\s+/g, " ");
   for (const needle of claim.hero) {
     if (!heroText.includes(needle)) {
       throw new Error(`${path}: the hero is missing the prominent claim ${JSON.stringify(needle)}: ${JSON.stringify(heroText)}`);
