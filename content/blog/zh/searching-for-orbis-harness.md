@@ -76,7 +76,7 @@ v1 的规则做成独立 skill（v4）是 1/3，写在 prompt 里是 5/7。会�
 
 - 原版 harness 下，`luna` 实现、`sol` 评审是 1/3，漏掉的 pyinfra 回归和 `deepseek-flash` 一样。
 - Opus 5.5 的探针做得最深，v12 里生成了 119 万个字符单元。可同样是 v11 的 prompt，它 3/4，deepseek 6/9，次数太少，分不出谁强。
-- GLM 5.3 flash 在 v14 上过了 pyinfra 和 chainloop。fedify 没过，是因为它的桥接会忽略 skill，贡献规矩根本没传到它那里。这是集成缺口，不是模型的成绩。
+- GLM 5.3 flash 在 v14 上过了 pyinfra 和 chainloop，fedify 挂在 `sacho check` 上。它的桥接当时会把贡献 skill 静默丢掉（现在已修），但 prompt 里也写了同一条规则，所以这次失败不能算到丢 skill 头上。
 - 唯一一组干净的评审模型对照，是 v15 把评审从 `deepseek-flash` 换成 `sol`，只跑了 chainloop：4/4 对 4/4。v13、v14 里 chainloop 的两次失败，都是 deepseek 评审把 `\n` 是数据还是转义判错了，所以才想试 sol，但眼下的数据还分不出两个评审的高下。
 
 在这 96 次里，harness 改动对数字的影响远大于我们做过的任何一次换模型。这句话只对这批数据成立，不等于说模型不重要。

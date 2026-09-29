@@ -74,7 +74,7 @@ Model swaps are harder to read, because each one came with a different prompt ve
 
 - On the original harness, `luna` implementing and `sol` reviewing scored 1/3, and it missed the same pyinfra regression as `deepseek-flash`.
 - Opus 5.5 built the deepest probes of any model, 1.19 million character units in v12, but on v11's prompt it still passed 3/4 against deepseek's 6/9 on the same prompt. That's too few runs to call either better.
-- GLM 5.3 flash on v14 passed pyinfra and chainloop. It failed fedify because its bridge ignores skills, so the contribution rules never reached it. That's an integration gap, not a model result.
+- GLM 5.3 flash on v14 passed pyinfra and chainloop and failed fedify's `sacho check`. Its bridge was silently dropping the contribution skill, which we have since fixed, but the prompt carries the same rule, so we can't pin that failure on the missing skill.
 - The one clean reviewer swap is v15 with `sol` reviewing instead of `deepseek-flash`, on chainloop only: 4/4 against 4/4. In v13 and v14 the two chainloop failures were deepseek reviews that misjudged whether `\n` was data or an escape, which is why we tried it, but this data doesn't separate the two reviewers yet.
 
 The harness moved the numbers far more than any model swap we ran. That's a statement about these 96 runs, not a claim that models don't matter.
