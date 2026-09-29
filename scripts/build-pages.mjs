@@ -31,6 +31,7 @@ const PAGES_DIR = join(ROOT, "site", "pages");
 const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
+const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
 
 // Inline, first-party engagement telemetry. It sends only event metadata and
 // uses Beacon so page exits do not block navigation or rendering.
@@ -90,7 +91,7 @@ const DEEP_DIVES = [
 // [EN href, ZH href, EN label, ZH label]; labels are short forms of each
 // page's own H1, matching the anchors already used inside the site body.
 const GUIDES = [
-  ["/issue-to-release/", "/zh/issue-to-release/", "Issue to release", "Issue 到发版"],
+  ["/guides/issue-to-release/", "/zh/guides/issue-to-release/", "Issue to release", "Issue 到发版"],
   ["/guides/ci-gates/", "/zh/guides/ci-gates/", "CI gates", "CI 门禁"],
   [
     "/guides/auto-merge-ai-prs/",
@@ -99,20 +100,20 @@ const GUIDES = [
     "自动合并 AI PR",
   ],
   [
-    "/autonomous-coding-agent/",
-    "/zh/autonomous-coding-agent/",
+    "/guides/autonomous-coding-agent/",
+    "/zh/guides/autonomous-coding-agent/",
     "Autonomous coding agent",
     "自主编程 agent",
   ],
   [
-    "/self-hosted-coding-agent/",
-    "/zh/self-hosted-coding-agent/",
+    "/guides/self-hosted-coding-agent/",
+    "/zh/guides/self-hosted-coding-agent/",
     "Self-hosted coding agent",
     "自托管编程 agent",
   ],
   [
-    "/codex-github-issues/",
-    "/zh/codex-github-issues/",
+    "/guides/codex-github-issues/",
+    "/zh/guides/codex-github-issues/",
     "Codex on GitHub Issues",
     "Codex 处理 GitHub Issue",
   ],
@@ -370,6 +371,44 @@ function parsePage(name, source) {
 // "/cloud/", "index.html" → "/".
 export function pathToHref(output) {
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
+}
+
+function contentKey(output) {
+  return output.replace(/^zh\//, "").replace(/\/index\.html$/, "");
+}
+
+function renderBreadcrumb(page) {
+  const href = pathToHref(page.output);
+  const zh = page.lang === "zh";
+  const isGuide = contentKey(page.output).startsWith("guides/");
+  const root = zh ? "/zh/" : "/";
+  const section = isGuide ? (zh ? "指南" : "Guides") : (zh ? "竞品对比" : "Compare");
+  const sectionHref = isGuide ? `${root}guides/` : `${root}compare/`;
+  const current = page.body.match(/<h1\b[^>]*>([^<]+)<\/h1>/)?.[1];
+  if (!current) throw new Error(`${page.source}: breadcrumb page needs a plain-text h1`);
+  const items = [{ name: zh ? "首页" : "Home", item: `https://orbi.build${root}` }, { name: section, item: `https://orbi.build${sectionHref}` }, { name: current, item: `https://orbi.build${href}` }];
+  const json = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((entry, index) => ({ "@type": "ListItem", position: index + 1, name: entry.name, item: entry.item })) });
+  return `<nav class="breadcrumbs shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true">›</span><a href="${sectionHref}">${section}</a><span aria-hidden="true">›</span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
+}
+
+function renderRelated(page, data) {
+  const key = contentKey(page.output);
+  const related = data.related[key] || [];
+  const zh = page.lang === "zh";
+  if (!related.length) return "";
+  const links = related.map((target) => {
+    const slug = target.replace(/^guides\//, "").replace(/^compare\//, "");
+    const guide = data.guides.find((entry) => entry.slug === slug);
+    const label = target.startsWith("guides/") ? guide?.[zh ? "zh" : "en"]?.title : `Orbi vs ${slug.replaceAll("-", " ")}`;
+    return `<li><a href="${zh ? "/zh/" : "/"}${target}/">${escAttr(label)}</a></li>`;
+  }).join("");
+  const heading = key.startsWith("guides/") ? (zh ? "相关对比" : "Related comparisons") : (zh ? "相关指南" : "Related guides");
+  return `<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">${heading}</h2><ul>${links}</ul></section>`;
+}
+
+function renderGuideIndex(page, data) {
+  const zh = page.lang === "zh";
+  return data.guides.map((guide) => { const copy = guide[zh ? "zh" : "en"]; return `<article class="source-list"><h2><a href="${zh ? "/zh/" : "/"}guides/${guide.slug}/">${escAttr(copy.title)}</a></h2><p>${escAttr(copy.summary)}</p></article>`; }).join("\\n");
 }
 
 // The UTC day a source's lastmod carries. %ct is the timezone-independent
@@ -1079,6 +1118,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
+  const guidesData = JSON.parse(await readFile(GUIDES_DATA_PATH, "utf8"));
   // Issue #226: the consent gate runs here, once, before anything renders —
   // a quote without recorded consent fails the build even if no page carried
   // the section marker.
@@ -1109,6 +1149,19 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       html = html.replace("<!--@footer-->", () => footer);
     } else if (html.includes("<!--@footer-->")) {
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
+    }
+    if (page.output === "guides/index.html" || page.output === "zh/guides/index.html") {
+      if (!html.includes("<!--@guide-index-->")) throw new Error(`${page.source}: missing guide index marker`);
+      html = html.replace("<!--@guide-index-->", () => renderGuideIndex(page, guidesData));
+    }
+    const isGuideOrCompare = page.output.includes("guides/") || page.output.includes("compare/");
+    if (isGuideOrCompare && page.output !== "guides/index.html" && page.output !== "zh/guides/index.html") {
+      if (!html.includes("<!--@related-links-->")) throw new Error(`${page.source}: missing related links marker`);
+      html = html.replace("<!--@related-links-->", () => renderRelated(page, guidesData));
+      const breadcrumb = renderBreadcrumb(page);
+      const breadcrumbJson = breadcrumb.match(/<script[\s\S]*<\/script>/)?.[0] ?? "";
+      html = html.replace(/<main\b[^>]*>/, (opening) => `${opening}${breadcrumb.replace(breadcrumbJson, "")}`);
+      html = html.replace("</head>", `${breadcrumbJson}</head>`);
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
     html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);

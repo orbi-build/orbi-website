@@ -93,21 +93,21 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
   // language tree: EN pages never link /zh/, ZH pages never link the EN tree.
   it("carries a footer guides group with only the page's own language tree on every footer page", () => {
     const enGuides = [
-      "/issue-to-release/",
+      "/guides/issue-to-release/",
       "/guides/ci-gates/",
       "/guides/auto-merge-ai-prs/",
-      "/autonomous-coding-agent/",
-      "/self-hosted-coding-agent/",
-      "/codex-github-issues/",
+      "/guides/autonomous-coding-agent/",
+      "/guides/self-hosted-coding-agent/",
+      "/guides/codex-github-issues/",
       "https://aiready.sh/",
     ];
     const zhGuides = [
-      "/zh/issue-to-release/",
+      "/zh/guides/issue-to-release/",
       "/zh/guides/ci-gates/",
       "/zh/guides/auto-merge-ai-prs/",
-      "/zh/autonomous-coding-agent/",
-      "/zh/self-hosted-coding-agent/",
-      "/zh/codex-github-issues/",
+      "/zh/guides/autonomous-coding-agent/",
+      "/zh/guides/self-hosted-coding-agent/",
+      "/zh/guides/codex-github-issues/",
       "https://aiready.sh/zh/",
     ];
     const drift = [];

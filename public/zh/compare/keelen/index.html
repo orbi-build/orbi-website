@@ -10,7 +10,7 @@
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@xqliu"><meta name="twitter:title" content="Orbi 与 Keelen 对比"><meta name="twitter:description" content="Orbi 与 Keelen 无人值守 GitHub 交付的事实对比。"><meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="stylesheet" href="/fonts/fonts.css"><link rel="stylesheet" href="/styles.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi 与 Keelen 对比","description":"Orbi 与 Keelen 无人值守 GitHub 交付的事实对比。","inLanguage":"zh-CN","url":"https://orbi.build/zh/compare/keelen/","isPartOf":{"@type":"WebSite","name":"Orbi","url":"https://orbi.build/"}}</script>
-</head>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://orbi.build/zh/"},{"@type":"ListItem","position":2,"name":"竞品对比","item":"https://orbi.build/zh/compare/"},{"@type":"ListItem","position":3,"name":"Orbi 与 Keelen 对比","item":"https://orbi.build/zh/compare/keelen/"}]}</script></head>
 <body><a class="skip-link" href="#main-content">跳到正文</a>  <div class="night nav-shell">
     <header class="site-header">
       <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
@@ -35,7 +35,7 @@
       </nav>
     </header>
   </div>
-<main id="main-content">
+<main id="main-content"><nav class="breadcrumbs shell" aria-label="面包屑"><a href="/zh/">首页</a><span aria-hidden="true">›</span><a href="/zh/compare/">竞品对比</a><span aria-hidden="true">›</span><span aria-current="page">Orbi 与 Keelen 对比</span></nav>
   <div class="night"><section class="compare-hero shell" aria-labelledby="compare-title"><p class="eyebrow">竞品对比 · 事实核实于 2026-09-24</p><h1 id="compare-title">Orbi 与 Keelen 对比</h1><p class="hero-lede"><strong>两者都能无人值守处理 GitHub backlog。</strong>Keelen 是面向 GitHub 仓库的自主 AI 编程 agent；Orbi 是开源（AGPL-3.0）的自托管交付系统。选择不只是看谁能开 PR，还要看模型如何计费、在哪里执行，以及从 diff 到发版之间发生什么。本页每条事实都有来源。</p><div class="cta-row"><a class="button button-signal" href="https://docs.orbi.build/zh">自托管 Orbi</a><a class="button button-ghost" href="/zh/compare/">全部对比</a><a class="hero-proof-link" href="#sources">来源与日期 →</a></div></section></div>
   <section class="compare-section shell" aria-labelledby="what-title"><p class="section-tag">按对方官方材料描述</p><h2 class="orbi-compare-section-h2" id="what-title">Keelen 是什么</h2><p class="section-lede">Keelen 将自己描述为面向 GitHub 仓库的自主 AI 编程 agent，目前处于 open beta：把请求变成路线图，按验收条件规划任务，再以 pull request 交付。每个 iteration 都在一次性、网络隔离的 VM 中从新 clone 开始，执行一个任务并开一个 PR。它支持 Claude Code、Codex、GLM、Kimi 和 Grok，可连接相应的订阅或 API key。</p><p class="src-note">来源：<a class="orbi-src-note-a" href="https://keelen.ai/" rel="noopener">Keelen 官方首页</a>——核实于 2026-09-24。</p></section>
   <section class="compare-section compare-section-tint" aria-labelledby="differences-title"><div class="shell"><p class="section-tag">决定选择的对比表</p><h2 class="orbi-compare-section-h2" id="differences-title">Orbi 与 Keelen 的差异</h2><p class="section-lede">两者都把 GitHub 工作变成 pull request，也都能在无人持续输入的情况下运行。下面把关键边界摆在一起。</p><div class="compare-table-wrap"><table class="compare-table table-stack"><thead><tr><th scope="col">维度</th><th scope="col">Orbi</th><th scope="col">Keelen</th></tr></thead><tbody>
@@ -50,7 +50,7 @@
   <section class="compare-section shell compare-choice" aria-labelledby="choice-title"><h2 class="orbi-compare-section-h2" id="choice-title">什么时候选 Keelen</h2><p class="section-lede">如果你要使用 Claude Code 订阅、需要每次运行一个 VM 级隔离环境，或者看重其已文档化的安全与合规扫描、网络控制，Keelen 更合适。这些是对方真实的长处。如果你的交付合同包含自托管、源码级可审计、绑定 Issue 的评审闸门，以及打 tag 发版，Orbi 更合适。</p></section>
   <section class="compare-section compare-section-tint shell" id="sources" aria-labelledby="sources-title"><p class="section-tag">事实来源</p><h2 class="orbi-compare-section-h2" id="sources-title">来源与核实日期</h2><p class="section-lede">本页是一个有日期的快照。做架构或采购决策前，请重新查看下列链接。</p><ul class="source-list"><li class="orbi-source-list-li"><strong><a class="orbi-source-list-a" href="https://keelen.ai/" rel="noopener">Keelen 官方首页</a>——产品定义、引擎、VM 执行、闸门、价格、Enterprise runner</strong><span class="source-date">核实于 2026-09-24</span><small>keelen.ai</small></li><li class="orbi-source-list-li"><strong><a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi" rel="noopener">Orbi 仓库</a>与<a class="orbi-source-list-a" href="https://docs.orbi.build/zh" rel="noopener">文档</a>——自托管、Pi、provider 支持、workflow 与 release</strong><span class="source-date">核实于 2026-09-24</span><small>github.com/orbi-build/orbi · docs.orbi.build</small></li><li class="orbi-source-list-li"><strong><a class="orbi-source-list-a" href="https://orbi.build/zh/cloud/" rel="noopener">Orbi Cloud</a>——含 token 套餐与价格</strong><span class="source-date">核实于 2026-09-24</span><small>orbi.build/zh/cloud</small></li></ul></section>
   <section class="closing shell" aria-labelledby="closing-title"><p class="section-tag">开源（AGPL-3.0）核心</p><h2 class="orbi-closing-h2" id="closing-title">选择你的交付边界</h2><p>如果你要订阅驱动、VM 隔离的执行，Keelen 是强候选；如果你要自己运营交付产线、看清模型边界，并把经过评审的 head 一路交付到合并和发版，Orbi 更合适。</p><div class="cta-row"><a class="button button-dark" href="https://docs.orbi.build/zh">安装 Orbi <span aria-hidden="true">↗</span></a><a class="button button-outline" href="/zh/compare/">全部对比</a></div><p><a href="https://aiready.sh/">Is your Issue ai-ready? The 12 factors</a></p></section>
-</main>  <footer class="site-footer shell">
+<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关指南</h2><ul><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li></ul></section></main>  <footer class="site-footer shell">
     <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>
@@ -102,12 +102,12 @@
     </nav>
     <nav class="footer-guides" aria-label="指南">
       <span>指南</span>
-      <a href="/zh/issue-to-release/">Issue 到发版</a>
+      <a href="/zh/guides/issue-to-release/">Issue 到发版</a>
       <a href="/zh/guides/ci-gates/">CI 门禁</a>
       <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a>
-      <a href="/zh/autonomous-coding-agent/">自主编程 agent</a>
-      <a href="/zh/self-hosted-coding-agent/">自托管编程 agent</a>
-      <a href="/zh/codex-github-issues/">Codex 处理 GitHub Issue</a>
+      <a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a>
+      <a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a>
+      <a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a>
       <a href="https://aiready.sh/zh/">ai-ready 十二要素</a>
     </nav>
   </footer><script src="/demo.js" defer></script>

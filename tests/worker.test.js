@@ -3,6 +3,24 @@ import pricing from "../src/pricing.json";
 import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
+  it("301 redirects moved guide URLs while preserving query attribution", async () => {
+    const assets = { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) };
+    for (const [oldPath, newPath] of [
+      ["/issue-to-release/", "/guides/issue-to-release/"],
+      ["/autonomous-coding-agent/", "/guides/autonomous-coding-agent/"],
+      ["/self-hosted-coding-agent/", "/guides/self-hosted-coding-agent/"],
+      ["/codex-github-issues/", "/guides/codex-github-issues/"],
+      ["/zh/issue-to-release/", "/zh/guides/issue-to-release/"],
+      ["/zh/autonomous-coding-agent/", "/zh/guides/autonomous-coding-agent/"],
+      ["/zh/self-hosted-coding-agent/", "/zh/guides/self-hosted-coding-agent/"],
+      ["/zh/codex-github-issues/", "/zh/guides/codex-github-issues/"],
+    ]) {
+      const response = await handleFetch(new Request(`https://beta.orbi.build${oldPath}?ref=x`), { ASSETS: assets });
+      expect(response.status).toBe(301);
+      expect(new URL(response.headers.get("location")).pathname).toBe(newPath);
+      expect(new URL(response.headers.get("location")).search).toBe("?ref=x");
+    }
+  });
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
     const assets = {
       fetch: async (request) => {
