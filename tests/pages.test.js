@@ -72,6 +72,110 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+const GUIDE_SLUGS = [
+  "issue-to-release",
+  "ci-gates",
+  "auto-merge-ai-prs",
+  "autonomous-coding-agent",
+  "self-hosted-coding-agent",
+  "codex-github-issues",
+];
+const MOVED_GUIDE_SLUGS = [
+  "issue-to-release",
+  "autonomous-coding-agent",
+  "self-hosted-coding-agent",
+  "codex-github-issues",
+];
+const COMPARISON_SLUGS = [
+  "claude-code",
+  "codex",
+  "cursor",
+  "devin",
+  "github-copilot-coding-agent",
+  "hermes-agent",
+  "jules",
+  "keelen",
+  "managed-agents",
+  "openclaw",
+  "openhands",
+  "orca",
+];
+
+const jsonLdObjects = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+  .map((match) => JSON.parse(match[1]));
+
+describe("guide collection, breadcrumbs and related content (Issue #625)", () => {
+  it("publishes both guide indexes with all six built guide targets and SEO-length metadata", () => {
+    for (const prefix of ["", "zh/"]) {
+      const output = `${prefix}guides/index.html`;
+      const html = shipped.get(output);
+      for (const slug of GUIDE_SLUGS) {
+        const target = `${prefix}guides/${slug}/index.html`;
+        expect(shipped.has(target), `${output}: built target ${target}`).toBe(true);
+        expect(html, `${output}: link to ${target}`).toContain(`href="/${prefix}guides/${slug}/"`);
+      }
+      expect((html.match(/<article class="source-list">/g) ?? []).length, output).toBe(6);
+      expect(html, output).toContain(`href="/${prefix}compare/"`);
+      expect(html, output).toContain(`href="https://aiready.sh/${prefix === "zh/" ? "zh/" : ""}"`);
+      const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+      const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+      expect([...title].length, `${output}: title length`).toBeLessThanOrEqual(60);
+      const [min, max] = prefix ? [70, 80] : [150, 160];
+      expect([...description].length, `${output}: description length`).toBeGreaterThanOrEqual(min);
+      expect([...description].length, `${output}: description length`).toBeLessThanOrEqual(max);
+    }
+  });
+
+  it("uses only new guide URLs in discovery and page links, with self-consistent metadata", () => {
+    expect(shippedSitemap).toContain("https://orbi.build/guides/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/guides/");
+    for (const prefix of ["", "zh/"]) {
+      for (const slug of MOVED_GUIDE_SLUGS) {
+        const oldUrl = `https://orbi.build/${prefix}${slug}/`;
+        const newUrl = `https://orbi.build/${prefix}guides/${slug}/`;
+        expect(shippedSitemap).not.toContain(`<loc>${oldUrl}</loc>`);
+        const html = shipped.get(`${prefix}guides/${slug}/index.html`);
+        expect(html).toContain(`<link rel="canonical" href="${newUrl}">`);
+        expect(html).toContain(`<meta property="og:url" content="${newUrl}">`);
+        expect(html).toContain('hreflang="en" href="https://orbi.build/guides/');
+        expect(html).toContain('hreflang="zh-CN" href="https://orbi.build/zh/guides/');
+      }
+    }
+    const rendered = [...shipped.values()].map((html) => html.replace(/<!--[\s\S]*?-->/g, "")).join("\n");
+    const oldLink = new RegExp(`(?:href|content)=["'](?:https://orbi\\.build)?/(?:zh/)?(?:${MOVED_GUIDE_SLUGS.join("|")})/`);
+    expect(rendered).not.toMatch(oldLink);
+    expect(shippedSitemap).not.toMatch(new RegExp(`https://orbi\\.build/(?:zh/)?(?:${MOVED_GUIDE_SLUGS.join("|")})/`));
+    expect(shippedLlms).not.toMatch(new RegExp(`https://orbi\\.build/(?:zh/)?(?:${MOVED_GUIDE_SLUGS.join("|")})/`));
+  });
+
+  it("renders one canonical BreadcrumbList and the configured related links on all 36 articles", () => {
+    const articleOutputs = [];
+    for (const prefix of ["", "zh/"]) {
+      articleOutputs.push(...GUIDE_SLUGS.map((slug) => `${prefix}guides/${slug}/index.html`));
+      articleOutputs.push(...COMPARISON_SLUGS.map((slug) => `${prefix}compare/${slug}/index.html`));
+    }
+    expect(articleOutputs).toHaveLength(36);
+    for (const output of articleOutputs) {
+      const html = shipped.get(output);
+      const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      const breadcrumbs = jsonLdObjects(html).filter((entry) => entry["@type"] === "BreadcrumbList");
+      expect(breadcrumbs, `${output}: BreadcrumbList count`).toHaveLength(1);
+      const items = breadcrumbs[0].itemListElement;
+      expect(items.map((item) => item.position), `${output}: breadcrumb positions`).toEqual([1, 2, 3]);
+      expect(items.at(-1).item, `${output}: breadcrumb canonical`).toBe(canonical);
+      const h1 = html.match(/<h1\b[^>]*>([^<]+)<\/h1>/)?.[1];
+      expect(items.at(-1).name, `${output}: current-page breadcrumb name`).toBe(h1);
+      const related = html.match(/<section class="related-links[\s\S]*?<\/section>/)?.[0] ?? "";
+      const linkCount = (related.match(/<li><a href=/g) ?? []).length;
+      expect(linkCount, `${output}: related link count`).toBeGreaterThanOrEqual(output.includes("guides/") ? 2 : 1);
+      expect(linkCount, `${output}: related link count`).toBeLessThanOrEqual(output.includes("guides/") ? 3 : 2);
+    }
+    for (const output of ["compare/index.html", "zh/compare/index.html"]) {
+      expect(jsonLdObjects(shipped.get(output)).some((entry) => entry["@type"] === "BreadcrumbList"), output).toBe(false);
+    }
+  });
+});
+
 describe("email subscription forms (Issue #442)", () => {
   it("renders the form on every requested EN/ZH surface", () => {
     const outputs = [

@@ -8,7 +8,6 @@
     {"slug":"codex-github-issues","en":{"title":"Codex on GitHub Issues","summary":"See how to connect Codex and GitHub Issues into a repeatable delivery workflow."},"zh":{"title":"Codex 处理 GitHub Issue","summary":"了解如何把 Codex 和 GitHub Issue 连接成可重复的交付工作流。"}}
   ],
   "related": {
-    "compare":["guides/issue-to-release"],
     "compare/orca":["guides/self-hosted-coding-agent"],
     "compare/openclaw":["guides/self-hosted-coding-agent","guides/autonomous-coding-agent"],
     "compare/github-copilot-coding-agent":["guides/autonomous-coding-agent","guides/codex-github-issues"],

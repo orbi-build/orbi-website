@@ -377,15 +377,15 @@ function contentKey(output) {
   return output.replace(/^zh\//, "").replace(/\/index\.html$/, "");
 }
 
-function renderBreadcrumb(page, data) {
+function renderBreadcrumb(page) {
   const href = pathToHref(page.output);
   const zh = page.lang === "zh";
   const isGuide = contentKey(page.output).startsWith("guides/");
   const root = zh ? "/zh/" : "/";
   const section = isGuide ? (zh ? "指南" : "Guides") : (zh ? "竞品对比" : "Compare");
   const sectionHref = isGuide ? `${root}guides/` : `${root}compare/`;
-  const key = contentKey(page.output);
-  const current = data.guides.find((guide) => `guides/${guide.slug}` === key)?.[zh ? "zh" : "en"]?.title ?? (key === "compare" ? section : key.split("/").pop().replaceAll("-", " "));
+  const current = page.body.match(/<h1\b[^>]*>([^<]+)<\/h1>/)?.[1];
+  if (!current) throw new Error(`${page.source}: breadcrumb page needs a plain-text h1`);
   const items = [{ name: zh ? "首页" : "Home", item: `https://orbi.build${root}` }, { name: section, item: `https://orbi.build${sectionHref}` }, { name: current, item: `https://orbi.build${href}` }];
   const json = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((entry, index) => ({ "@type": "ListItem", position: index + 1, name: entry.name, item: entry.item })) });
   return `<nav class="breadcrumbs shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true">›</span><a href="${sectionHref}">${section}</a><span aria-hidden="true">›</span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
@@ -1154,11 +1154,11 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       if (!html.includes("<!--@guide-index-->")) throw new Error(`${page.source}: missing guide index marker`);
       html = html.replace("<!--@guide-index-->", () => renderGuideIndex(page, guidesData));
     }
-    const isGuideOrCompare = page.output.includes("guides/") || page.output.includes("compare/");
-    if (isGuideOrCompare && page.output !== "guides/index.html" && page.output !== "zh/guides/index.html") {
+    const isGuideOrCompareArticle = /^(?:zh\/)?(?:guides|compare)\/[^/]+\/index\.html$/.test(page.output);
+    if (isGuideOrCompareArticle) {
       if (!html.includes("<!--@related-links-->")) throw new Error(`${page.source}: missing related links marker`);
       html = html.replace("<!--@related-links-->", () => renderRelated(page, guidesData));
-      const breadcrumb = renderBreadcrumb(page, guidesData);
+      const breadcrumb = renderBreadcrumb(page);
       const breadcrumbJson = breadcrumb.match(/<script[\s\S]*<\/script>/)?.[0] ?? "";
       html = html.replace(/<main\b[^>]*>/, (opening) => `${opening}${breadcrumb.replace(breadcrumbJson, "")}`);
       html = html.replace("</head>", `${breadcrumbJson}</head>`);
