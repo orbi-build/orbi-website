@@ -2053,6 +2053,21 @@ h2 {
   padding: 84px 0 68px;
 }
 
+.breadcrumbs.compare-hero {
+  padding: 22px 0 0;
+  color: #b6c7c3;
+  font-size: 0.9rem;
+}
+
+.breadcrumbs.compare-hero a {
+  text-decoration: none;
+}
+
+.breadcrumbs.compare-hero a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .compare-section {
   padding-top: clamp(84px, 9vw, 140px);
   padding-bottom: clamp(84px, 9vw, 140px);
