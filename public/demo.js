@@ -8,17 +8,25 @@
   function bootNavigation(header) {
     const toggle = header.querySelector("[data-menu-toggle]");
     const nav = header.querySelector("[data-primary-nav]");
-    const docsToggle = header.querySelector("[data-docs-toggle]");
-    const docsMenu = header.querySelector("[data-docs-menu]");
+    const dropdowns = Array.from(header.querySelectorAll("[data-dropdown-toggle]")).map((dropdownToggle) => ({
+      toggle: dropdownToggle,
+      menu: header.querySelector(`#${dropdownToggle.getAttribute("aria-controls")}`),
+    }));
     if (!toggle || !nav) {
       return;
     }
 
-    function setDocsOpen(open, restoreFocus) {
-      if (!docsToggle || !docsMenu) return;
-      docsMenu.classList.toggle("is-open", open);
-      docsToggle.setAttribute("aria-expanded", open ? "true" : "false");
-      if (!open && restoreFocus) docsToggle.focus();
+    function setDropdownOpen(dropdown, open, restoreFocus) {
+      if (!dropdown.menu) return;
+      dropdown.menu.classList.toggle("is-open", open);
+      dropdown.toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      if (!open && restoreFocus) dropdown.toggle.focus();
+    }
+
+    function closeDropdowns(except) {
+      dropdowns.forEach((dropdown) => {
+        if (dropdown !== except) setDropdownOpen(dropdown, false, false);
+      });
     }
 
     function setOpen(open, restoreFocus) {
@@ -37,17 +45,18 @@
       setOpen(toggle.getAttribute("aria-expanded") !== "true", false);
     });
 
-    if (docsToggle && docsMenu) {
-      function toggleDocs() {
-        setDocsOpen(docsToggle.getAttribute("aria-expanded") !== "true", false);
-      }
+    dropdowns.forEach((dropdown) => {
       // A native button already turns Enter and Space into click events. Keep
       // one activation path so keyboard use cannot toggle the menu twice.
-      docsToggle.addEventListener("click", toggleDocs);
-      docsMenu.addEventListener("click", function (event) {
-        if (event.target.closest("a")) setDocsOpen(false, false);
+      dropdown.toggle.addEventListener("click", function () {
+        const open = dropdown.toggle.getAttribute("aria-expanded") !== "true";
+        closeDropdowns(dropdown);
+        setDropdownOpen(dropdown, open, false);
       });
-    }
+      dropdown.menu?.addEventListener("click", function (event) {
+        if (event.target.closest("a")) setDropdownOpen(dropdown, false, false);
+      });
+    });
 
     nav.addEventListener("click", function (event) {
       if (event.target.closest("a")) {
@@ -58,14 +67,15 @@
     document.addEventListener("click", function (event) {
       if (!header.contains(event.target)) {
         setOpen(false, false);
-        setDocsOpen(false, false);
+        closeDropdowns();
       }
     });
 
     document.addEventListener("keydown", function (event) {
       if (event.key !== "Escape") return;
-      if (docsToggle?.getAttribute("aria-expanded") === "true") {
-        setDocsOpen(false, true);
+      const openDropdown = dropdowns.find((dropdown) => dropdown.toggle.getAttribute("aria-expanded") === "true");
+      if (openDropdown) {
+        setDropdownOpen(openDropdown, false, true);
       } else if (toggle.getAttribute("aria-expanded") === "true") {
         setOpen(false, true);
       }

@@ -1,0 +1,31 @@
+{
+  "guides": [
+    {"slug":"issue-to-release","en":{"title":"From GitHub Issue to release","summary":"See the complete path from an ai-ready Issue to a reviewed, merged and tagged release."},"zh":{"title":"从 GitHub Issue 到 Release","summary":"了解一个 ai-ready Issue 如何经过评审、合并，最终变成带 tag 的 Release。"}},
+    {"slug":"ci-gates","en":{"title":"CI gates","summary":"Learn which CI conclusions Orbi trusts and what your workflow actually guarantees."},"zh":{"title":"CI 门禁","summary":"了解 Orbi 信任哪些 CI 结论，以及你的工作流真正保证了什么。"}},
+    {"slug":"auto-merge-ai-prs","en":{"title":"Auto-merge AI pull requests","summary":"Understand how independent review protects the exact AI-generated head before merge."},"zh":{"title":"自动合并 AI PR","summary":"了解独立评审如何在合并前保护 AI 生成的准确提交。"}},
+    {"slug":"autonomous-coding-agent","en":{"title":"Autonomous coding agent","summary":"See what an autonomous coding agent needs to deliver software without a typing human."},"zh":{"title":"自主编程 agent","summary":"了解自主编程 agent 在没有人持续操作时交付软件需要什么。"}},
+    {"slug":"self-hosted-coding-agent","en":{"title":"Self-hosted coding agent","summary":"Compare the control, infrastructure and operating boundary of running an agent yourself."},"zh":{"title":"自托管编程 agent","summary":"了解自己运行编程 agent 时拥有的控制权、基础设施和运维边界。"}},
+    {"slug":"codex-github-issues","en":{"title":"Codex on GitHub Issues","summary":"See how to connect Codex and GitHub Issues into a repeatable delivery workflow."},"zh":{"title":"Codex 处理 GitHub Issue","summary":"了解如何把 Codex 和 GitHub Issue 连接成可重复的交付工作流。"}}
+  ],
+  "related": {
+    "compare":["guides/issue-to-release"],
+    "compare/orca":["guides/self-hosted-coding-agent"],
+    "compare/openclaw":["guides/self-hosted-coding-agent","guides/autonomous-coding-agent"],
+    "compare/github-copilot-coding-agent":["guides/autonomous-coding-agent","guides/codex-github-issues"],
+    "compare/managed-agents":["guides/self-hosted-coding-agent","guides/autonomous-coding-agent"],
+    "compare/claude-code":["guides/autonomous-coding-agent"],
+    "compare/openhands":["guides/self-hosted-coding-agent","guides/autonomous-coding-agent"],
+    "compare/hermes-agent":["guides/self-hosted-coding-agent"],
+    "compare/codex":["guides/codex-github-issues","guides/autonomous-coding-agent"],
+    "compare/devin":["guides/autonomous-coding-agent"],
+    "compare/jules":["guides/autonomous-coding-agent"],
+    "compare/cursor":["guides/autonomous-coding-agent"],
+    "compare/keelen":["guides/autonomous-coding-agent"],
+    "guides/issue-to-release":["compare/managed-agents","compare/codex"],
+    "guides/ci-gates":["compare/github-copilot-coding-agent","compare/openhands"],
+    "guides/auto-merge-ai-prs":["compare/devin","compare/github-copilot-coding-agent"],
+    "guides/autonomous-coding-agent":["compare/openclaw","compare/claude-code"],
+    "guides/self-hosted-coding-agent":["compare/orca","compare/openhands"],
+    "guides/codex-github-issues":["compare/codex","compare/github-copilot-coding-agent"]
+  }
+}

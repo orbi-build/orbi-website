@@ -24,6 +24,7 @@ const deepDives = [
   ["Orbi vs Claude Code", "/compare/claude-code/"],
   ["Orbi vs OpenHands", "/compare/openhands/"],
   ["Orbi vs Hermes Agent", "/compare/hermes-agent/"],
+  ["Orbi vs Keelen", "/compare/keelen/"],
   ["Orbi vs OpenAI Codex", "/compare/codex/"],
   ["Orbi vs Devin", "/compare/devin/"],
   ["Orbi vs Google Jules", "/compare/jules/"],
@@ -844,9 +845,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const cardText = await page.locator(".run-option-cloud").textContent();
   if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
   if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
-  const navCompare = page.locator('[data-primary-nav] [data-cta="comparisons"]');
-  if ((await navCompare.getAttribute("href")) !== comparisonPath) {
-    throw new Error(`${path}: nav comparisons link has wrong href`);
+  const navCompare = page.locator(`[data-primary-nav] .nav-resources a[href="${comparisonPath}"]`);
+  if ((await navCompare.count()) !== 1) {
+    throw new Error(`${path}: Resources dropdown comparisons link has wrong href`);
   }
   // Issue #165: Pricing in the primary nav is the subscription-price entry,
   // not the measured-cost essay. A real click must land on #pricing.
@@ -898,6 +899,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // Below 900px the navigation is collapsed; open it before clicking through.
   const menuToggle = page.locator("[data-menu-toggle]");
   if (await menuToggle.isVisible()) await menuToggle.click();
+  await page.locator(".nav-resources [data-dropdown-toggle]").click();
   await navCompare.click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
@@ -910,64 +912,83 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   await page.close();
 }
 
-async function assertHomeDocsDropdown(browser, path, size, screenshot) {
+async function assertHomeDropdowns(browser, path, size, screenshot) {
   const page = await browser.newPage({ viewport: size });
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const trigger = page.locator("[data-docs-toggle]");
-    if (await trigger.count() !== 1) throw new Error(`${path}: expected one Docs dropdown trigger`);
-    const menu = page.locator("[data-docs-menu]");
-    if (await menu.count() !== 1) throw new Error(`${path}: expected one Docs dropdown menu`);
+    const zh = path.startsWith("/zh");
+    const dropdowns = [
+      {
+        name: "Resources",
+        root: page.locator(".nav-resources"),
+        links: zh
+          ? ["/zh/blog/", "/zh/compare/", "/zh/evidence/", "/zh/cost/", "/aiready/zh/"]
+          : ["/blog/", "/compare/", "/evidence/", "/cost/", "/aiready/"],
+      },
+      {
+        name: "Docs",
+        root: page.locator(".nav-docs"),
+        links: [zh ? "https://docs.orbi.build/zh" : "https://docs.orbi.build", "https://cloud-docs.orbi.build/?ref=nav"],
+      },
+    ];
     const menuToggle = page.locator("[data-menu-toggle]");
     if (size.width <= 900) await menuToggle.click();
-    if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Docs dropdown is open before interaction`);
-    await trigger.click();
-    await page.keyboard.press("Escape");
-    await trigger.evaluate((button) => button.parentElement.previousElementSibling.focus());
-    await page.keyboard.press("Tab");
-    if (!(await trigger.evaluate((button) => button === document.activeElement))) throw new Error(`${path}: Tab did not focus Docs dropdown trigger`);
-    await page.keyboard.press("Enter");
-    if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Enter did not open Docs dropdown`);
-    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-    // Issue #612: Method (the ai-ready methodology) is the dropdown's first item.
-    const expectedLinks = [path.startsWith("/zh") ? "/aiready/zh/" : "/aiready/", expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
-    const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
-      throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
+    for (const dropdown of dropdowns) {
+      const trigger = dropdown.root.locator("[data-dropdown-toggle]");
+      const menu = dropdown.root.locator("[data-dropdown-menu]");
+      if (await trigger.count() !== 1 || await menu.count() !== 1) {
+        throw new Error(`${path}: expected one ${dropdown.name} dropdown`);
+      }
+      if ((await trigger.getAttribute("aria-expanded")) !== "false") {
+        throw new Error(`${path}: ${dropdown.name} aria-expanded is not initially false`);
+      }
+      await trigger.focus();
+      await page.keyboard.press("Enter");
+      if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) {
+        throw new Error(`${path}: Enter did not open ${dropdown.name}`);
+      }
+      const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+      if (links.length !== dropdown.links.length || links.some((link, index) => link !== dropdown.links[index])) {
+        throw new Error(`${path}: ${dropdown.name} links are ${JSON.stringify(links)}`);
+      }
+      await page.keyboard.press("Escape");
+      if (await menu.evaluate((node) => node.classList.contains("is-open"))) {
+        throw new Error(`${path}: Escape did not close ${dropdown.name}`);
+      }
+      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
+        throw new Error(`${path}: Escape did not restore focus to ${dropdown.name}`);
+      }
+      await page.keyboard.press("Space");
+      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+        throw new Error(`${path}: Space did not open ${dropdown.name}`);
+      }
+      await page.keyboard.press("Escape");
     }
-    await page.keyboard.press("Escape");
-    if (await menu.evaluate((node) => node.classList.contains("is-open"))) throw new Error(`${path}: Escape did not close Docs dropdown`);
-    await page.keyboard.press("Space");
-    if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) throw new Error(`${path}: Space did not open Docs dropdown`);
-    if ((await trigger.getAttribute("aria-expanded")) !== "true") throw new Error(`${path}: trigger aria-expanded is not true`);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    if (overflow > 0) throw new Error(`${path}: Docs dropdown causes horizontal overflow of ${overflow}px at ${size.width}px`);
+    if (overflow > 0) throw new Error(`${path}: dropdowns cause horizontal overflow of ${overflow}px at ${size.width}px`);
     await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   } finally {
     await page.close();
   }
 }
 
-// Issue #612: /cloud/ carries the same sitewide Resources dropdown as every
-// page (the old single ref=cloud-nav Docs link is gone from the nav); the
-// footer keeps the Cloud-docs entry tagged ref=cloud-nav (Issue #315).
 async function assertCloudDocsNav(browser, path) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const trigger = page.locator("[data-docs-toggle]");
-    if ((await trigger.count()) !== 1) throw new Error(`${path}: expected the Resources dropdown trigger`);
-    await trigger.click();
-    const menu = page.locator("[data-docs-menu]");
-    const expectedMethod = path.startsWith("/zh") ? "/aiready/zh/" : "/aiready/";
-    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-    const expectedLinks = [expectedMethod, expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
-    const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
-      throw new Error(`${path}: Cloud dropdown links are ${JSON.stringify(links)}`);
+    if ((await page.locator(".nav-resources [data-dropdown-toggle]").count()) !== 1) {
+      throw new Error(`${path}: expected the Resources dropdown trigger`);
     }
-    const footerDocs = page.locator("footer a[href='https://cloud-docs.orbi.build/?ref=cloud-nav']");
-    if ((await footerDocs.count()) !== 1) throw new Error(`${path}: footer must keep one cloud-docs ref=cloud-nav link`);
+    const docs = page.locator(".nav-docs");
+    await docs.locator("[data-dropdown-toggle]").click();
+    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
+    const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
+    const links = await docs.locator("[data-dropdown-menu] a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
+      throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
+    }
+    const footerDocs = page.locator("footer a[href='https://cloud-docs.orbi.build/?ref=footer']");
+    if ((await footerDocs.count()) !== 1) throw new Error(`${path}: footer must keep one cloud-docs ref=footer link`);
   } finally {
     await page.close();
   }
@@ -2320,10 +2341,10 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 360, height: 844 }, "homepage-en-narrow.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertHomeDocsDropdown(browser, "/", { width: 1440, height: 900 }, "docs-dropdown-en-desktop.png");
-    await assertHomeDocsDropdown(browser, "/", { width: 390, height: 844 }, "docs-dropdown-en-mobile.png");
-    await assertHomeDocsDropdown(browser, "/zh/", { width: 1440, height: 900 }, "docs-dropdown-zh-desktop.png");
-    await assertHomeDocsDropdown(browser, "/zh/", { width: 390, height: 844 }, "docs-dropdown-zh-mobile.png");
+    await assertHomeDropdowns(browser, "/", { width: 1440, height: 900 }, "dropdowns-en-desktop.png");
+    await assertHomeDropdowns(browser, "/", { width: 390, height: 844 }, "dropdowns-en-mobile.png");
+    await assertHomeDropdowns(browser, "/zh/", { width: 1440, height: 900 }, "dropdowns-zh-desktop.png");
+    await assertHomeDropdowns(browser, "/zh/", { width: 390, height: 844 }, "dropdowns-zh-mobile.png");
     await assertCloudDocsNav(browser, "/cloud/");
     await assertCloudDocsNav(browser, "/zh/cloud/");
     await assertCampaignRefSurvivesHeroClick(browser);
@@ -2475,8 +2496,11 @@ async function main() {
     await page.waitForLoadState("networkidle");
     if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
     await assertFooterDeepDives(page, "/compare/cursor/");
-    // Issue #519: the switch link's accessible name is its aria-label now.
-    if ((await page.getByRole("link", { name: "简体中文", exact: true }).getAttribute("href")) !== "/zh/compare/cursor/") throw new Error("detail language switch is wrong");
+    // Issue #519: the switch link's accessible name comes from aria-label.
+    const languageSwitch = page.locator('[data-primary-nav] a[aria-label="简体中文"]');
+    if ((await languageSwitch.count()) !== 1 || (await languageSwitch.getAttribute("href")) !== "/zh/compare/cursor/") {
+      throw new Error("detail language switch is wrong");
+    }
     await page.getByRole("heading", { name: "Orbi vs Cursor Cloud Agents", exact: true }).waitFor();
     await page.screenshot({ path: `${artifacts}/comparison-cursor.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);

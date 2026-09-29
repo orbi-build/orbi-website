@@ -27,10 +27,10 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="https://orbi.build/#system">How it works</a>
-        <a href="https://orbi.build/compare/">Compare</a>
+        <a href="https://orbi.build/guides/">Guides</a>
         <a href="https://orbi.build/cloud/#pricing">Pricing</a>
-        <div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-docs-toggle>Resources<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="primary-navigation-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="https://orbi.build/aiready/" role="menuitem">Method</a><a class="orbi-nav-docs-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-docs-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://orbi.build/blog/">Blog</a>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/blog/" role="menuitem">Blog</a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/compare/" role="menuitem">Comparisons</a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/evidence/" role="menuitem">Evidence</a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/cost/" role="menuitem">Cost per PR</a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/aiready/" role="menuitem">Method</a></div></div>
+        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a href="https://orbi.build/api/login">Sign in</a>
         <a class="nav-apply" href="https://orbi.build/cloud/">Start Cloud</a>
@@ -54,58 +54,31 @@
     </a>
     <p class="orbi-site-footer-p">Software production that survives the session.</p>
     <nav aria-label="Footer navigation">
-      <ul>
-        <li><a href="https://docs.orbi.build">Docs</a></li>
-        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li>
-        <li><a href="https://orbi.build/cloud/">Cloud</a></li>
-        <li><a href="https://orbi.build/cost/">Pricing</a></li>
-        <li><a href="https://orbi.build/evidence/">Evidence</a></li>
-        <li><a href="https://orbi.build/compare/">Compare</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
-        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
-        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
-        <li><a href="https://orbi.build/#faq">FAQ</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li>
-        <li><a href="https://status.orbi.build">Status</a></li>
-        <li><a href="https://orbi.build/privacy/">Privacy</a></li>
-        <li><a href="https://orbi.build/terms/">Terms</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://orbi.build/support/">Support</a></li>
-        <li><a href="https://orbi.build/#direction">Direction</a></li>
-        <li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li>
-        <li><a href="https://orbi.build/aiready/zh/" lang="zh-CN" aria-label="简体中文">ZH</a></li>
-        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
-        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
-      </ul>
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="https://orbi.build/cloud/">Cloud</a></li><li><a href="https://orbi.build/cloud/#pricing">Pricing</a></li><li><a href="https://orbi.build/#system">How it works</a></li><li><a href="https://orbi.build/evidence/">Evidence</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="https://orbi.build/blog/">Blog</a></li><li><a href="https://orbi.build/cost/">Cost per PR</a></li><li><a href="https://orbi.build/aiready/">Method</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="https://orbi.build/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="https://orbi.build/guides/issue-to-release/">Issue to release</a></li><li><a href="https://orbi.build/guides/ci-gates/">CI gates</a></li><li><a href="https://orbi.build/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="https://orbi.build/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="https://orbi.build/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="https://orbi.build/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="https://orbi.build/compare/orca/">Orbi vs Orca</a></li><li><a href="https://orbi.build/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="https://orbi.build/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="https://orbi.build/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="https://orbi.build/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="https://orbi.build/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="https://orbi.build/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="https://orbi.build/compare/keelen/">Orbi vs Keelen</a></li><li><a href="https://orbi.build/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="https://orbi.build/compare/devin/">Orbi vs Devin</a></li><li><a href="https://orbi.build/compare/jules/">Orbi vs Google Jules</a></li><li><a href="https://orbi.build/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="https://orbi.build/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="https://orbi.build/support/">Support</a></li><li><a href="https://orbi.build/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="https://orbi.build/privacy/">Privacy</a></li><li><a href="https://orbi.build/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
     </nav>
-    <nav class="footer-compare" aria-label="Compare deep dives">
-      <span>Compare</span>
-      <a href="https://orbi.build/compare/orca/">Orbi vs Orca</a>
-      <a href="https://orbi.build/compare/openclaw/">Orbi vs OpenClaw</a>
-      <a href="https://orbi.build/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
-      <a href="https://orbi.build/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
-      <a href="https://orbi.build/compare/claude-code/">Orbi vs Claude Code</a>
-      <a href="https://orbi.build/compare/openhands/">Orbi vs OpenHands</a>
-      <a href="https://orbi.build/compare/hermes-agent/">Orbi vs Hermes Agent</a>
-      <a href="https://orbi.build/compare/codex/">Orbi vs OpenAI Codex</a>
-      <a href="https://orbi.build/compare/devin/">Orbi vs Devin</a>
-      <a href="https://orbi.build/compare/jules/">Orbi vs Google Jules</a>
-      <a href="https://orbi.build/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
-    </nav>
-    <nav class="footer-guides" aria-label="Guides">
-      <span>Guides</span>
-      <a href="https://orbi.build/issue-to-release/">Issue to release</a>
-      <a href="https://orbi.build/guides/ci-gates/">CI gates</a>
-      <a href="https://orbi.build/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a>
-      <a href="https://orbi.build/autonomous-coding-agent/">Autonomous coding agent</a>
-      <a href="https://orbi.build/self-hosted-coding-agent/">Self-hosted coding agent</a>
-      <a href="https://orbi.build/codex-github-issues/">Codex on GitHub Issues</a>
-      <a href="https://aiready.sh/">ai-ready: 12 factors</a>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
     </nav>
   </footer>
 

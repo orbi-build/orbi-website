@@ -31,6 +31,7 @@ const PAGES_DIR = join(ROOT, "site", "pages");
 const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
+const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
 
 // Inline, first-party engagement telemetry. It sends only event metadata and
 // uses Beacon so page exits do not block navigation or rendering.
@@ -78,6 +79,7 @@ const DEEP_DIVES = [
   ["claude-code", "Orbi vs Claude Code"],
   ["openhands", "Orbi vs OpenHands"],
   ["hermes-agent", "Orbi vs Hermes Agent"],
+  ["keelen", "Orbi vs Keelen"],
   ["codex", "Orbi vs OpenAI Codex"],
   ["devin", "Orbi vs Devin"],
   ["jules", "Orbi vs Google Jules"],
@@ -90,7 +92,7 @@ const DEEP_DIVES = [
 // [EN href, ZH href, EN label, ZH label]; labels are short forms of each
 // page's own H1, matching the anchors already used inside the site body.
 const GUIDES = [
-  ["/issue-to-release/", "/zh/issue-to-release/", "Issue to release", "Issue 到发版"],
+  ["/guides/issue-to-release/", "/zh/guides/issue-to-release/", "Issue to release", "Issue 到发版"],
   ["/guides/ci-gates/", "/zh/guides/ci-gates/", "CI gates", "CI 门禁"],
   [
     "/guides/auto-merge-ai-prs/",
@@ -99,20 +101,20 @@ const GUIDES = [
     "自动合并 AI PR",
   ],
   [
-    "/autonomous-coding-agent/",
-    "/zh/autonomous-coding-agent/",
+    "/guides/autonomous-coding-agent/",
+    "/zh/guides/autonomous-coding-agent/",
     "Autonomous coding agent",
     "自主编程 agent",
   ],
   [
-    "/self-hosted-coding-agent/",
-    "/zh/self-hosted-coding-agent/",
+    "/guides/self-hosted-coding-agent/",
+    "/zh/guides/self-hosted-coding-agent/",
     "Self-hosted coding agent",
     "自托管编程 agent",
   ],
   [
-    "/codex-github-issues/",
-    "/zh/codex-github-issues/",
+    "/guides/codex-github-issues/",
+    "/zh/guides/codex-github-issues/",
     "Codex on GitHub Issues",
     "Codex 处理 GitHub Issue",
   ],
@@ -129,6 +131,9 @@ const LANG = {
     toggleClose: "Close navigation",
     navAria: "Primary navigation",
     systemLabel: "How it works",
+    guidesLabel: "Guides",
+    guidesHref: "/guides/",
+    comparisonsLabel: "Comparisons",
     costLabel: "Pricing",
     evidenceLabel: "Evidence",
     docsLabel: "Docs",
@@ -138,6 +143,14 @@ const LANG = {
     selfHostedDocsLabel: "Self-hosted Docs",
     cloudDocsNavLabel: "Cloud Docs",
     blogLabel: "Blog",
+    costPerPrLabel: "Cost per PR",
+    productHeading: "Product",
+    resourcesHeading: "Resources",
+    guidesHeading: "Guides",
+    compareHeading: "Compare",
+    companyHeading: "Company",
+    friendsLabel: "Friends",
+    friendsAria: "Friends",
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
@@ -174,6 +187,9 @@ const LANG = {
     toggleClose: "关闭导航菜单",
     navAria: "主导航",
     systemLabel: "产品怎么运作",
+    guidesLabel: "指南",
+    guidesHref: "/zh/guides/",
+    comparisonsLabel: "对比",
     costLabel: "价格",
     evidenceLabel: "证据",
     docsLabel: "文档",
@@ -183,6 +199,14 @@ const LANG = {
     selfHostedDocsLabel: "自托管文档",
     cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
+    costPerPrLabel: "每个 PR 的成本",
+    productHeading: "产品",
+    resourcesHeading: "资源",
+    guidesHeading: "指南",
+    compareHeading: "对比",
+    companyHeading: "公司",
+    friendsLabel: "Friends",
+    friendsAria: "Friends",
     langGroupAria: "语言",
     currentLangLabel: "ZH",
     otherLangAttr: "en",
@@ -242,7 +266,6 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     (n.compareDataCta ? ' data-cta="comparisons"' : "") +
     (n.compareCurrent ? ' aria-current="page"' : "");
   const costAttrs = n.costCurrent ? ' aria-current="page"' : "";
-  const join = n.compareCostSameLine ? "" : "\n        ";
   const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
   const otherLine = `<a href="${base(n.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
   const [lineA, lineB] = n.langCurrentFirst
@@ -265,11 +288,10 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    // Issue #612: every page with the nav carries the same Resources dropdown
-    // (Method → Self-hosted Docs → Cloud Docs); the menu id derives from the
-    // page's own navId. t.docsLabel stays on the footer (footer.html
-    // {{DOCS_LABEL}}), which this Issue does not touch.
-    DOCS_ITEM: `<div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-docs-toggle>${t.resourcesLabel}<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="${n.navId}-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="${base(t.methodHref)}" role="menuitem">${t.methodLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-docs-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
+    GUIDES_HREF: base(t.guidesHref),
+    GUIDES_LABEL: t.guidesLabel,
+    RESOURCES_ITEM: `<div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-resources-menu" data-dropdown-toggle>${t.resourcesLabel}<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="${n.navId}-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/blog/`)}" role="menuitem">${t.blogLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${base(n.compareHref)}"${compareAttrs} role="menuitem">${t.comparisonsLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/evidence/`)}" role="menuitem">${t.evidenceLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/cost/`)}" role="menuitem">${t.costPerPrLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${base(t.methodHref)}" role="menuitem">${t.methodLabel}</a></div></div>`,
+    DOCS_ITEM: `<div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-dropdown-toggle>${t.docsLabel}<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="${n.navId}-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
     BLOG_HREF: base(`${t.langPrefix}/blog/`),
     BLOG_LABEL: t.blogLabel,
     APPLY_LABEL: t.applyLabel,
@@ -303,42 +325,18 @@ export function renderFooter(page) {
     HOME_ARIA: t.homeAria,
     TAGLINE: t.tagline,
     FOOTER_NAV_ARIA: t.footerNavAria,
-    DOCS_HREF: base(page.nav?.docsHref ?? t.docsHref),
-    DOCS_LABEL: t.docsLabel,
-    CLOUD_DOCS_HREF: t.cloudDocsHref,
-    CLOUD_DOCS_LABEL: t.cloudDocsLabel,
-    CLOUD_HREF: base(`${t.langPrefix}/cloud/`),
-    CLOUD_LABEL: t.cloudLabel,
-    COST_HREF: base(`${t.langPrefix}/cost/`),
-    COST_LABEL: t.costLabel,
-    EVIDENCE_HREF: base(`${t.langPrefix}/evidence/`),
-    EVIDENCE_LABEL: t.evidenceLabel,
-    COMPARE_HREF: base(`${t.langPrefix}/compare/`),
-    COMPARE_LABEL: t.compareLabel,
-    FAQ_HREF: base(`${anchorPrefix}#faq`),
-    FAQ_LABEL: t.faqLabel,
-    RELEASES_LABEL: t.releasesLabel,
-    STATUS_LABEL: t.statusLabel,
-    PRIVACY_HREF: base(`${t.langPrefix}/privacy/`),
-    PRIVACY_LABEL: t.privacyLabel,
-    TERMS_HREF: base(`${t.langPrefix}/terms/`),
-    TERMS_LABEL: t.termsLabel,
-    SUPPORT_HREF: base(`${t.langPrefix}/support/`),
-    SUPPORT_LABEL: t.supportLabel,
-    DIRECTION_HREF: base(`${anchorPrefix}#direction`),
-    DIRECTION_LABEL: t.directionLabel,
-    ROADMAP_LABEL: t.roadmapLabel,
-    // mirror "zh/cloud/index.html" → "/zh/cloud/"; "index.html" → "/"
-    LANG_SWITCH_HREF: base(`/${page.mirror.replace(/index\.html$/, "")}`.replace("//", "/")),
-    OTHER_LANG_ATTR: t.otherLangAttr,
-    OTHER_LANG_LABEL: t.otherLangLabel,
-    OTHER_LANG_ARIA: t.otherLangAria,
-    DEEP_ARIA: t.deepAria,
-    DEEP_SPAN: t.deepSpan,
-    DEEP_LINKS: deepLinks,
-    GUIDES_ARIA: t.guidesAria,
-    GUIDES_SPAN: t.guidesSpan,
-    GUIDES_LINKS: guideLinks,
+    PRODUCT_HEADING: t.productHeading,
+    PRODUCT_LINKS: [`<li><a href="${base(`${t.langPrefix}/cloud/`)}">${t.cloudLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cloud/#pricing`)}">${t.costLabel}</a></li>`,`<li><a href="${base(page.nav.systemHref)}">${t.systemLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/releases">${t.releasesLabel}</a></li>`,`<li><a href="https://status.orbi.build">${t.statusLabel}</a></li>`].join(""),
+    RESOURCES_HEADING: t.resourcesHeading,
+    RESOURCES_LINKS: [`<li><a href="${base(`${t.langPrefix}/blog/`)}">${t.blogLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cost/`)}">${t.costPerPrLabel}</a></li>`,`<li><a href="${base(t.methodHref)}">${t.methodLabel}</a></li>`,`<li><a href="${t.docsHref}">${t.selfHostedDocsLabel}</a></li>`,`<li><a href="${t.cloudDocsHref}">${t.cloudDocsLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#faq`)}">${t.faqLabel}</a></li>`].join(""),
+    GUIDES_HEADING: t.guidesHeading,
+    GUIDES_LINKS: guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>"),
+    COMPARE_HEADING: t.compareHeading,
+    COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
+    COMPANY_HEADING: t.companyHeading,
+    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
+    FRIENDS_ARIA: t.friendsAria,
+    FRIENDS_LABEL: t.friendsLabel,
   });
 }
 
@@ -370,6 +368,44 @@ function parsePage(name, source) {
 // "/cloud/", "index.html" → "/".
 export function pathToHref(output) {
   return `/${output.replace(/index\.html$/, "")}`.replace("//", "/");
+}
+
+function contentKey(output) {
+  return output.replace(/^zh\//, "").replace(/\/index\.html$/, "");
+}
+
+function renderBreadcrumb(page) {
+  const href = pathToHref(page.output);
+  const zh = page.lang === "zh";
+  const isGuide = contentKey(page.output).startsWith("guides/");
+  const root = zh ? "/zh/" : "/";
+  const section = isGuide ? (zh ? "指南" : "Guides") : (zh ? "竞品对比" : "Compare");
+  const sectionHref = isGuide ? `${root}guides/` : `${root}compare/`;
+  const current = page.body.match(/<h1\b[^>]*>([^<]+)<\/h1>/)?.[1];
+  if (!current) throw new Error(`${page.source}: breadcrumb page needs a plain-text h1`);
+  const items = [{ name: zh ? "首页" : "Home", item: `https://orbi.build${root}` }, { name: section, item: `https://orbi.build${sectionHref}` }, { name: current, item: `https://orbi.build${href}` }];
+  const json = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((entry, index) => ({ "@type": "ListItem", position: index + 1, name: entry.name, item: entry.item })) });
+  return `<nav class="breadcrumbs shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true">›</span><a href="${sectionHref}">${section}</a><span aria-hidden="true">›</span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
+}
+
+function renderRelated(page, data) {
+  const key = contentKey(page.output);
+  const related = data.related[key] || [];
+  const zh = page.lang === "zh";
+  if (!related.length) return "";
+  const links = related.map((target) => {
+    const slug = target.replace(/^guides\//, "").replace(/^compare\//, "");
+    const guide = data.guides.find((entry) => entry.slug === slug);
+    const label = target.startsWith("guides/") ? guide?.[zh ? "zh" : "en"]?.title : `Orbi vs ${slug.replaceAll("-", " ")}`;
+    return `<li><a href="${zh ? "/zh/" : "/"}${target}/">${escAttr(label)}</a></li>`;
+  }).join("");
+  const heading = key.startsWith("guides/") ? (zh ? "相关对比" : "Related comparisons") : (zh ? "相关指南" : "Related guides");
+  return `<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">${heading}</h2><ul>${links}</ul></section>`;
+}
+
+function renderGuideIndex(page, data) {
+  const zh = page.lang === "zh";
+  return data.guides.map((guide) => { const copy = guide[zh ? "zh" : "en"]; return `<article class="guide-index-entry"><a class="guide-index-link" href="${zh ? "/zh/" : "/"}guides/${guide.slug}/"><h2 class="guide-index-title">${escAttr(copy.title)}</h2><p class="guide-index-summary">${escAttr(copy.summary)}</p></a></article>`; }).join("\n");
 }
 
 // The UTC day a source's lastmod carries. %ct is the timezone-independent
@@ -1079,6 +1115,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
+  const guidesData = JSON.parse(await readFile(GUIDES_DATA_PATH, "utf8"));
   // Issue #226: the consent gate runs here, once, before anything renders —
   // a quote without recorded consent fails the build even if no page carried
   // the section marker.
@@ -1109,6 +1146,19 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       html = html.replace("<!--@footer-->", () => footer);
     } else if (html.includes("<!--@footer-->")) {
       throw new Error(`${page.output}: standalone page must not carry an <!--@footer--> marker`);
+    }
+    if (page.output === "guides/index.html" || page.output === "zh/guides/index.html") {
+      if (!html.includes("<!--@guide-index-->")) throw new Error(`${page.source}: missing guide index marker`);
+      html = html.replace("<!--@guide-index-->", () => renderGuideIndex(page, guidesData));
+    }
+    const isGuideOrCompare = page.output.includes("guides/") || page.output.includes("compare/");
+    if (isGuideOrCompare && page.output !== "guides/index.html" && page.output !== "zh/guides/index.html") {
+      if (!html.includes("<!--@related-links-->")) throw new Error(`${page.source}: missing related links marker`);
+      html = html.replace("<!--@related-links-->", () => renderRelated(page, guidesData));
+      const breadcrumb = renderBreadcrumb(page);
+      const breadcrumbJson = breadcrumb.match(/<script[\s\S]*<\/script>/)?.[0] ?? "";
+      html = html.replace(/<main\b[^>]*>/, (opening) => `${opening}${breadcrumb.replace(breadcrumbJson, "")}`);
+      html = html.replace("</head>", `${breadcrumbJson}</head>`);
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
     html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
