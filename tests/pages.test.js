@@ -186,6 +186,23 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       expect(linkCount, `${output}: related link count`).toBeLessThanOrEqual(output.includes("guides/") ? 3 : 2);
     }
   });
+
+  it("keeps every article breadcrumb inside the dark hero and aligned with its hero container", () => {
+    const articleOutputs = [];
+    for (const prefix of ["", "zh/"]) {
+      articleOutputs.push(...GUIDE_SLUGS.map((slug) => `${prefix}guides/${slug}/index.html`));
+      articleOutputs.push(...COMPARISON_SLUGS.map((slug) => `${prefix}compare/${slug}/index.html`));
+    }
+    for (const output of articleOutputs) {
+      const html = shipped.get(output);
+      expect(html, `${output}: breadcrumb in hero`).toMatch(/<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<section class="compare-hero shell"/);
+      expect(html, `${output}: breadcrumb not main child`).not.toMatch(/<main id="main-content"><nav class="breadcrumbs/);
+      expect(html, `${output}: separator spacing`).toContain('> › <');
+    }
+    expect(styles).toMatch(/\.breadcrumbs\.compare-hero\s*\{[\s\S]*?color:\s*#b6c7c3;[\s\S]*?padding:/);
+    expect(styles).toMatch(/\.breadcrumbs\.compare-hero a\s*\{[\s\S]*?text-decoration:\s*none;/);
+    expect(styles).toMatch(/\.breadcrumbs\.compare-hero a:hover\s*\{[\s\S]*?text-decoration:\s*underline;/);
+  });
 });
 
 describe("email subscription forms (Issue #442)", () => {
