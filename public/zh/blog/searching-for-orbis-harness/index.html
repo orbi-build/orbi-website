@@ -99,28 +99,25 @@
 <h3>怎么测</h3>
 <p>每个 issue 都在 Orbi 当初起步的那个 commit 上做一份私有快照仓库。真实的 Orbi runner 在上面跑完整流程：认领、写修复、开 PR、评审、合并。然后由一个 Orbi 看不到的隐藏评分器给合并后的代码打分，同时跑仓库自带的检查和全量测试。</p>
 <p>评分器用之前先校准：原始代码必须判失败，Orbi 当初合并的 fork PR 必须判失败，我们手工核实过的正确修复必须判通过。chainloop 评分器在那个 fork PR 上判失败的两项，就是密码尾巴和单字符密钥。</p>
-<p>各个变体改的是 prompt、skill、<code>PATH</code> 里的工具、实现模型、评审模型，或者其中几样。模型有这几个：经 Pi 跑的 <code>deepseek-flash</code>、<code>gpt-5.6-luna</code>、<code>gpt-5.6-sol</code>，经 Claude Code 桥接跑的 Opus 5.5，经 zcode 桥接跑的 GLM 5.3 flash。两个桥接列里，实现和评审是同一个模型，agent 循环也换成了桥接那一侧的，不是 Pi。</p>
+<figure class="post-media">
+<img src="/img/diagrams/harness-flow-zh.svg" alt="每次运行：私有快照仓库交给真实的 Orbi runner 跑完认领、实现、开 PR、评审、合并，再由隐藏评分器打分。评分器事先校准：原始代码判失败，Orbi 当初合并的 fork PR 判失败，手工核实的正确修复判通过。" width="720" height="300">
+<figcaption>评分器在任何变体开跑之前先校准。连坏 PR 都放过的评分器，测不出任何东西。</figcaption>
+</figure><p>各个变体改的是 prompt、skill、<code>PATH</code> 里的工具、实现模型、评审模型，或者其中几样。模型有这几个：经 Pi 跑的 <code>deepseek-flash</code>、<code>gpt-5.6-luna</code>、<code>gpt-5.6-sol</code>，经 Claude Code 桥接跑的 Opus 5.5，经 zcode 桥接跑的 GLM 5.3 flash。两个桥接列里，实现和评审是同一个模型，agent 循环也换成了桥接那一侧的，不是 Pi。</p>
 <h3>网格</h3>
 <p>行是 harness 版本，除非另有说明，每一行都在上一行的基础上改。列是模型组合，写成「实现 / 评审」。格子里是三个仓库合计的「通过次数 / 运行次数」。</p>
-<pre><code>                               ds/ds   luna/sol  sol/sol  Opus    GLM     ds/sol
-v0  original harness           6/15    1/3
-v1  compare before/after       5/7                        1/3
-v4  v1 as a separate skill     1/3
-v5  generated inputs + oracle  4/4               1/2      2/3
-v10 v5 + contribution skill    1/2
-v11 independent oracle, tools  6/9                        3/4
-v13 + stripped chars as data   11/12
-v14 + reference cross-check    8/9                                2/3
-v15 + collision checks         9/9                                        4/4*
-v17 v15 + producer table       3/4*
-
-ds = deepseek-flash   * 只跑了 chainloop
-</code></pre>
-<p>行名对应：v0 原版；v1 要求对比修复前后；v4 把 v1 做成独立 skill；v5 程序生成输入 + 判据；v10 加开源贡献 skill；v11 独立判据、工具进 PATH；v13 被剥掉的字符也是数据；v14 参考实现交叉比对；v15 碰撞检查；v17 产出方清单。</p>
-<p>这张网格是稀疏的。我们每次只补当时要回答的那几格，没做全因子实验。非 deepseek 的格子大多只有 2 到 4 次。</p>
+<figure class="post-media">
+<img src="/img/diagrams/harness-grid-zh.svg" alt="harness 版本与模型组合的网格。实现和评审都用 deepseek-flash 时，原版 6/15，v15 9/9；原版配 luna 实现、sol 评审 1/3；Opus 5.5 在 v1、v5、v11 上分别是 1/3、2/3、3/4；GLM 5.3 flash 在 v14 上 2/3；v15 配 deepseek 实现、sol 评审 4/4，只跑了 chainloop。" width="720" height="428">
+<figcaption>行是 harness 版本，列是「实现 / 评审」。ds = deepseek-flash。非 deepseek 的格子大多只有 2 到 4 次。</figcaption>
+</figure><p>这张网格是稀疏的。我们每次只补当时要回答的那几格，没做全因子实验。非 deepseek 的格子大多只有 2 到 4 次。</p>
 <h3>harness 的改动起了什么作用</h3>
 <p>模型固定在 <code>deepseek-flash</code>，harness 从 6/15 到了 v13–v15 合计 28/30。每条规则都来自读失败那次运行的会话记录：</p>
-<ol>
+<figure class="post-media">
+<img src="/img/diagrams/harness-trend-zh.svg" alt="实现和评审都用 deepseek-flash 时各 harness 版本的通过率：v0 6/15，v1 5/7，v4 1/3，v5 4/4，v10 1/2，v11 6/9，v13 11/12，v14 8/9，v15 9/9。" width="720" height="470">
+<figcaption>全程同一个模型。浅色柱不到 5 次。</figcaption>
+</figure><figure class="post-media">
+<img src="/img/diagrams/harness-per-repo-zh.svg" alt="分仓库，原版 harness 对比 v13 到 v15：pyinfra 从 0/5 到 11/11，chainloop 从 5/6 到 10/12，fedify 从 1/4 到 7/7。" width="720" height="340">
+<figcaption>pyinfra 和 fedify 变化最大。chainloop 在原版下本来就多数能过，它的回归是低频的。</figcaption>
+</figure><ol>
 <li><strong>输入要用程序生成。</strong> v1 要求 agent 对比修复前后，它挑的例子本来就没问题：测了从来没坏过的 U+0301，没测 U+3099。从 v5 起，输入由程序按整类字符批量生成，脱敏器最多生成了 2756 个输入，表格那边最多 119 万个字符单元。</li>
 <li><strong>判据不能是改动本身。</strong> 有一次 <code>sol</code> 拿自己刚实现的规则去算「期望输出」，差异是零。v11 要求判据独立于补丁。</li>
 <li><strong>被剥掉的字符也是数据。</strong> 密码泄漏只在密钥自己以 <code>\</code> 或 <code>\n</code> 结尾时出现，agent 造输入时只会把反斜杠放在密钥后面。v13 点名了这类输入。</li>
