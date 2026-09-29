@@ -385,7 +385,7 @@ function renderBreadcrumb(page) {
   if (!current) throw new Error(`${page.source}: breadcrumb page needs a plain-text h1`);
   const items = [{ name: zh ? "首页" : "Home", item: `https://orbi.build${root}` }, { name: section, item: `https://orbi.build${sectionHref}` }, { name: current, item: `https://orbi.build${href}` }];
   const json = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((entry, index) => ({ "@type": "ListItem", position: index + 1, name: entry.name, item: entry.item })) });
-  return `<nav class="breadcrumbs shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true">›</span><a href="${sectionHref}">${section}</a><span aria-hidden="true">›</span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
+  return `<nav class="breadcrumbs compare-hero shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true"> › </span><a href="${sectionHref}">${section}</a><span aria-hidden="true"> › </span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
 }
 
 function renderRelated(page, data) {
@@ -1157,7 +1157,11 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       html = html.replace("<!--@related-links-->", () => renderRelated(page, guidesData));
       const breadcrumb = renderBreadcrumb(page);
       const breadcrumbJson = breadcrumb.match(/<script[\s\S]*<\/script>/)?.[0] ?? "";
-      html = html.replace(/<main\b[^>]*>/, (opening) => `${opening}${breadcrumb.replace(breadcrumbJson, "")}`);
+      const breadcrumbNav = breadcrumb.replace(breadcrumbJson, "");
+      if (!html.includes('<div class="night">')) {
+        throw new Error(`${page.source}: detail page is missing the hero night wrapper`);
+      }
+      html = html.replace('<div class="night">', `<div class="night">${breadcrumbNav}`);
       html = html.replace("</head>", `${breadcrumbJson}</head>`);
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
