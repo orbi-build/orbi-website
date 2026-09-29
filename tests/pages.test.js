@@ -123,6 +123,10 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       expect((guideMain.match(/<a class="guide-index-link"[^>]*><h2 class="guide-index-title">/g) ?? []).length, output).toBe(6);
       expect(guideMain, output).toContain('<p class="guide-index-summary">');
       expect(guideMain, output).not.toMatch(/<article[^>]*>\s*<h2>/);
+      expect(html, `${output}: guide hero uses the shared content container`).toContain('class="compare-hero shell guide-index-container"');
+      expect(html, `${output}: guide list uses the shared content container`).toContain('class="compare-section shell guide-index-container"');
+      expect(styles, `${output}: shared guide container width`).toMatch(/\.guide-index-container\s*\{[\s\S]*?max-width:\s*68rem/);
+      expect(styles, `${output}: guide list has no extra top margin`).toMatch(/\.guide-index-list\s*\{[\s\S]*?margin:\s*0\s*;/);
       const guideTitleSize = styles.match(/\.guide-index-title\s*\{[\s\S]*?font-size:\s*([^;]+)/)?.[1];
       const compareTitleSize = styles.match(/\.dive-list \.orbi-dive-list-strong\s*\{[\s\S]*?font-size:\s*([^;]+)/)?.[1];
       expect(guideTitleSize, `${output}: guide title size`).toBe(compareTitleSize);

@@ -2307,8 +2307,10 @@ h2 {
 
 /* Guide index entries use the same compact title scale as comparison entries,
    without inheriting the provenance list's source-specific treatment. */
+.guide-index-container { max-width: 68rem; }
+
 .guide-index-list {
-  margin: 44px 0 0;
+  margin: 0;
   padding: 0;
   border-top: 2px solid var(--ink);
 }
