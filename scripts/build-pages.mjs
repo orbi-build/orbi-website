@@ -1154,8 +1154,8 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       if (!html.includes("<!--@guide-index-->")) throw new Error(`${page.source}: missing guide index marker`);
       html = html.replace("<!--@guide-index-->", () => renderGuideIndex(page, guidesData));
     }
-    const isGuideOrCompareArticle = /^(?:zh\/)?(?:guides|compare)\/[^/]+\/index\.html$/.test(page.output);
-    if (isGuideOrCompareArticle) {
+    const isGuideOrCompare = page.output.includes("guides/") || page.output.includes("compare/");
+    if (isGuideOrCompare && page.output !== "guides/index.html" && page.output !== "zh/guides/index.html") {
       if (!html.includes("<!--@related-links-->")) throw new Error(`${page.source}: missing related links marker`);
       html = html.replace("<!--@related-links-->", () => renderRelated(page, guidesData));
       const breadcrumb = renderBreadcrumb(page);

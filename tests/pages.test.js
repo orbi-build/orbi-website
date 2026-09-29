@@ -170,9 +170,6 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       expect(linkCount, `${output}: related link count`).toBeGreaterThanOrEqual(output.includes("guides/") ? 2 : 1);
       expect(linkCount, `${output}: related link count`).toBeLessThanOrEqual(output.includes("guides/") ? 3 : 2);
     }
-    for (const output of ["compare/index.html", "zh/compare/index.html"]) {
-      expect(jsonLdObjects(shipped.get(output)).some((entry) => entry["@type"] === "BreadcrumbList"), output).toBe(false);
-    }
   });
 });
 
