@@ -2288,6 +2288,38 @@ h2 {
 .compare-choice .run-options { margin-top: 48px; }
 .compare-choice .run-option { min-height: 0; padding: clamp(26px, 3vw, 40px); }
 
+/* Guide index entries use the same compact title scale as comparison entries,
+   without inheriting the provenance list's source-specific treatment. */
+.guide-index-list {
+  margin: 44px 0 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+}
+
+.guide-index-entry { border-bottom: 1px solid var(--line); }
+
+.guide-index-link {
+  display: block;
+  padding: 20px 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.guide-index-link:hover .guide-index-title { color: #0b5f50; }
+
+.guide-index-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.guide-index-summary {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+}
+
 /* Consolidated sources at the end of a deep dive. */
 .source-list {
   margin: 44px 0 0;

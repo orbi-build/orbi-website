@@ -25,6 +25,7 @@ let generatedLlms; // build-generated llms.txt (Issue #215)
 let shippedLlms; // public/llms.txt
 let generatedLlmsFull; // build-generated llms-full.txt (Issue #438)
 let shippedLlmsFull; // public/llms-full.txt
+let styles;
 let matrixCsv;
 let pricing;
 
@@ -52,6 +53,7 @@ beforeAll(async () => {
   shippedLlms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
   generatedLlmsFull = await readFile(join(builtDir, "llms-full.txt"), "utf8");
   shippedLlmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
+  styles = await readFile(join(ROOT, "public", "styles.css"), "utf8");
   matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
   pricing = JSON.parse(await readFile(join(ROOT, "src", "pricing.json"), "utf8"));
 });
@@ -114,7 +116,16 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
         expect(shipped.has(target), `${output}: built target ${target}`).toBe(true);
         expect(html, `${output}: link to ${target}`).toContain(`href="/${prefix}guides/${slug}/"`);
       }
-      expect((html.match(/<article class="source-list">/g) ?? []).length, output).toBe(6);
+      const guideMain = mainRegion(html);
+      expect(guideMain, output).not.toMatch(/\\n/);
+      expect(guideMain, output).not.toContain('class="source-list"');
+      expect((guideMain.match(/<article class="guide-index-entry">/g) ?? []).length, output).toBe(6);
+      expect((guideMain.match(/<a class="guide-index-link"[^>]*><h2 class="guide-index-title">/g) ?? []).length, output).toBe(6);
+      expect(guideMain, output).toContain('<p class="guide-index-summary">');
+      expect(guideMain, output).not.toMatch(/<article[^>]*>\s*<h2>/);
+      const guideTitleSize = styles.match(/\.guide-index-title\s*\{[\s\S]*?font-size:\s*([^;]+)/)?.[1];
+      const compareTitleSize = styles.match(/\.dive-list \.orbi-dive-list-strong\s*\{[\s\S]*?font-size:\s*([^;]+)/)?.[1];
+      expect(guideTitleSize, `${output}: guide title size`).toBe(compareTitleSize);
       expect(html, output).toContain(`href="/${prefix}compare/"`);
       expect(html, output).toContain(`href="https://aiready.sh/${prefix === "zh/" ? "zh/" : ""}"`);
       const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
