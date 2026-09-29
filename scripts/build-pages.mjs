@@ -405,7 +405,7 @@ function renderRelated(page, data) {
 
 function renderGuideIndex(page, data) {
   const zh = page.lang === "zh";
-  return data.guides.map((guide) => { const copy = guide[zh ? "zh" : "en"]; return `<article class="source-list"><h2><a href="${zh ? "/zh/" : "/"}guides/${guide.slug}/">${escAttr(copy.title)}</a></h2><p>${escAttr(copy.summary)}</p></article>`; }).join("\\n");
+  return data.guides.map((guide) => { const copy = guide[zh ? "zh" : "en"]; return `<article class="guide-index-entry"><a class="guide-index-link" href="${zh ? "/zh/" : "/"}guides/${guide.slug}/"><h2 class="guide-index-title">${escAttr(copy.title)}</h2><p class="guide-index-summary">${escAttr(copy.summary)}</p></a></article>`; }).join("\n");
 }
 
 // The UTC day a source's lastmod carries. %ct is the timezone-independent
