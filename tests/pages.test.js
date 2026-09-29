@@ -598,14 +598,16 @@ describe("one unified footer on every content page", () => {
       const footer = footerRegion(shipped.get(page.output));
       const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
         || region(footer, '<nav aria-label="页脚导航">', "</nav>");
-      expect([...nav.matchAll(/<div class="footer-group(?: [^"]+)?">/g)], `${page.output}: footer groups`).toHaveLength(5);
+      const groups = [...nav.matchAll(/<div class="footer-group(?: [^"]+)?">\s*<h2>([^<]+)<\/h2>\s*<ul>([\s\S]*?)<\/ul>\s*<\/div>/g)];
+      expect(groups.map((match) => match[1]), `${page.output}: footer groups`).toEqual(
+        page.lang === "zh"
+          ? ["产品", "资源", "指南", "对比", "公司"]
+          : ["Product", "Resources", "Guides", "Compare", "Company"],
+      );
+      const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 6, 7, 13, 8]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      const prefix = page.lang === "zh" ? "/zh" : "";
-      const anchor = page.output === "index.html" || page.output === "zh/index.html" ? "" : `${prefix}/`;
-      // Issue #610: pages living on another host (aiready.sh) prefix their
-      // chrome links with the site base, so they land on orbi.build.
-      const base = page.nav?.siteBase ?? "";
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(41);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(40);
     }
   });
 
@@ -661,16 +663,15 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("switches language to the mirror page from nav and footer", () => {
+  it("switches language to the mirror page from the nav", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = `${page.nav?.siteBase ?? ""}${pathToHref(page.mirror)}`;
       const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
       expect(navSwitch, `${page.output}: nav language switch`).toEqual([expected]);
-      const footerSwitch = [...footerRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
-        .map((m) => m[1]);
-      expect(footerSwitch, `${page.output}: footer language switch`).toEqual([expected]);
+      expect(footerRegion(html), `${page.output}: language switch belongs only in the top nav`)
+        .not.toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);
     }
   });
 });
@@ -687,7 +688,7 @@ describe("ASCII language switch with aria-labels (Issue #519)", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const anchors = switchAnchors(html);
-      expect(anchors.length, `${page.output}: nav + footer switch anchors`).toBe(2);
+      expect(anchors.length, `${page.output}: nav switch anchor`).toBe(1);
       for (const [tag] of anchors) {
         const label = tag.match(/>([^<]*)<\/a>/)[1];
         expect(["ZH", "EN"], `${page.output}: visible switch label on ${tag}`).toContain(label);
@@ -1221,7 +1222,7 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
       expect(dropdown, `${page.output}: dropdown label`).toContain(
         `data-dropdown-toggle>${expected.label}<span aria-hidden="true">⌄</span></button>`,
       );
-      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)" role="menuitem">([^<]+)<\/a>/g)]
+      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([^<]+)<\/a>/g)]
         .map((match) => [match[1], match[2]]);
       const expectedItems = expected.items.map(([href, label]) => [
         href.startsWith("/") ? `${siteBase}${href}` : href,
@@ -2017,14 +2018,14 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
 
       await buildPages(outDir, { contentDir });
 
-      // The language switcher (nav and footer, two hits per page): the
-      // counterpart page for a pair, the other language's blog index for a
-      // single-language post — never a page that does not exist.
-      expect(await switchTargets(outDir, "blog/pair/index.html")).toEqual(["/zh/blog/pair/", "/zh/blog/pair/"]);
-      expect(await switchTargets(outDir, "blog/alpha/index.html")).toEqual(["/zh/blog/beta/", "/zh/blog/beta/"]);
-      expect(await switchTargets(outDir, "zh/blog/beta/index.html")).toEqual(["/blog/alpha/", "/blog/alpha/"]);
-      expect(await switchTargets(outDir, "blog/solo-en/index.html")).toEqual(["/zh/blog/", "/zh/blog/"]);
-      expect(await switchTargets(outDir, "zh/blog/solo-zh/index.html")).toEqual(["/blog/", "/blog/"]);
+      // The nav language switcher points at the counterpart page for a pair,
+      // or the other language's blog index for a single-language post — never
+      // a page that does not exist.
+      expect(await switchTargets(outDir, "blog/pair/index.html")).toEqual(["/zh/blog/pair/"]);
+      expect(await switchTargets(outDir, "blog/alpha/index.html")).toEqual(["/zh/blog/beta/"]);
+      expect(await switchTargets(outDir, "zh/blog/beta/index.html")).toEqual(["/blog/alpha/"]);
+      expect(await switchTargets(outDir, "blog/solo-en/index.html")).toEqual(["/zh/blog/"]);
+      expect(await switchTargets(outDir, "zh/blog/solo-zh/index.html")).toEqual(["/blog/"]);
 
       // Indexes: every post in its own language, never the other's.
       const enIndex = await readFile(join(outDir, "blog", "index.html"), "utf8");
