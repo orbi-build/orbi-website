@@ -114,9 +114,9 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
     for (const [page, html] of htmlByPage) {
       const footer = html.match(/<footer class="site-footer shell">[\s\S]*?<\/footer>/)?.[0];
       if (!footer) continue; // standalone pages (compare) ship no site footer
-      const guides = footer.match(/<nav class="footer-guides"[\s\S]*?<\/nav>/)?.[0];
+      const guides = footer.match(/<div class="footer-group footer-guides">[\s\S]*?<h2>(?:Guides|指南)<\/h2>[\s\S]*?<\/div>/)?.[0];
       if (!guides) {
-        drift.push(`${page}: footer-guides nav missing`);
+        drift.push(`${page}: footer Guides group missing`);
         continue;
       }
       const hrefs = [...guides.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]);

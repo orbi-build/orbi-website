@@ -252,7 +252,7 @@ class LandingTests(unittest.TestCase):
     def test_homepage_exposes_localized_comparisons_entry(self) -> None:
         for page, label, href in (
             (self.en, "Comparisons", "/compare/"),
-            (self.zh, "竞品对比", "/zh/compare/"),
+            (self.zh, "对比", "/zh/compare/"),
         ):
             matching = [(text, target) for text, target in page.hrefs if text == label]
             self.assertIn((label, href), matching)
@@ -265,16 +265,16 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_primary_navigation_names_the_first_visit_actions(self) -> None:
-        # Issue #612: the Docs dropdown is labeled Resources/资源 and also
-        # carries the Method entry (tests/pages.test.js pins the full menu).
+        # Issue #626: Guides and Pricing are first-level entries; Resources
+        # and Docs are the two dropdown groups (tests/pages.test.js pins their menus).
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Resources", "GitHub", "Sign in", "Start Cloud"),
+                ("How it works", "Guides", "Pricing", "Resources", "Docs", "GitHub", "Sign in", "Start Cloud"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "资源", "GitHub", "登录", "开始 Cloud"),
+                ("产品怎么运作", "指南", "价格", "资源", "文档", "GitHub", "登录", "开始 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')

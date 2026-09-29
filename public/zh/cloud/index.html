@@ -143,9 +143,10 @@
       </button>
       <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
         <a href="/zh/#system">产品怎么运作</a>
-        <a href="/zh/compare/" data-cta="comparisons">竞品对比</a><a href="/zh/cloud/#pricing" aria-current="page">价格</a>
-        <div class="nav-docs"><button class="nav-docs-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-docs-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-docs-menu" id="primary-navigation-zh-docs-menu" role="menu" data-docs-menu><a class="orbi-nav-docs-menu-a" href="/aiready/zh/" role="menuitem">方法</a><a class="orbi-nav-docs-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-docs-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
-        <a href="/zh/blog/">博客</a>
+        <a href="/zh/guides/">指南</a>
+        <a href="/zh/cloud/#pricing" aria-current="page">价格</a>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem">博客</a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" data-cta="comparisons" role="menuitem">对比</a><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem">证据</a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem">每个 PR 的成本</a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem">方法</a></div></div>
+        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-dropdown-toggle>文档<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a href="/api/login">登录</a>
         <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
@@ -401,58 +402,31 @@
     </a>
     <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
     <nav aria-label="页脚导航">
-      <ul>
-        <li><a href="https://cloud-docs.orbi.build/?ref=cloud-nav">文档</a></li>
-        <li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li>
-        <li><a href="/zh/cloud/">Cloud</a></li>
-        <li><a href="/zh/cost/">价格</a></li>
-        <li><a href="/zh/evidence/">证据</a></li>
-        <li><a href="/zh/compare/">竞品对比</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
-        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
-        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
-        <li><a href="/zh/#faq">常见问题</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li>
-        <li><a href="https://status.orbi.build">状态</a></li>
-        <li><a href="/zh/privacy/">隐私政策</a></li>
-        <li><a href="/zh/terms/">服务条款</a></li>
-      </ul>
-      <ul>
-        <li><a href="/zh/support/">支持</a></li>
-        <li><a href="/zh/#direction">方向</a></li>
-        <li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li>
-        <li><a href="/cloud/" lang="en" aria-label="English">EN</a></li>
-        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
-        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
-      </ul>
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">证据</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/cost/">每个 PR 的成本</a></li><li><a href="/aiready/zh/">方法</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="/zh/#direction">方向</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
     </nav>
-    <nav class="footer-compare" aria-label="竞品深度对比">
-      <span>深度对比</span>
-      <a href="/zh/compare/orca/">Orbi vs Orca</a>
-      <a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a>
-      <a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a>
-      <a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a>
-      <a href="/zh/compare/claude-code/">Orbi vs Claude Code</a>
-      <a href="/zh/compare/openhands/">Orbi vs OpenHands</a>
-      <a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a>
-      <a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a>
-      <a href="/zh/compare/devin/">Orbi vs Devin</a>
-      <a href="/zh/compare/jules/">Orbi vs Google Jules</a>
-      <a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a>
-    </nav>
-    <nav class="footer-guides" aria-label="指南">
-      <span>指南</span>
-      <a href="/zh/guides/issue-to-release/">Issue 到发版</a>
-      <a href="/zh/guides/ci-gates/">CI 门禁</a>
-      <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a>
-      <a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a>
-      <a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a>
-      <a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a>
-      <a href="https://aiready.sh/zh/">ai-ready 十二要素</a>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
     </nav>
   </footer>
 

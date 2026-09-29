@@ -85,35 +85,36 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
-          const footer = page.locator("nav.footer-compare");
+          const footer = page.locator("footer.site-footer");
           const result = await footer.evaluate((element) => {
-            const style = getComputedStyle(element);
             const documentElement = document.documentElement;
             const rect = element.getBoundingClientRect();
             const links = [...element.querySelectorAll("a")];
+            const groups = [...element.querySelectorAll(".footer-group")].map((group) => {
+              const groupRect = group.getBoundingClientRect();
+              return { left: Math.round(groupRect.left), top: Math.round(groupRect.top) };
+            });
             return {
-              display: style.display,
-              flexWrap: style.flexWrap,
-              minWidth: style.minWidth,
               footerWidth: Math.round(rect.width),
               overflow: documentElement.scrollWidth - documentElement.clientWidth,
               linkCount: links.length,
-              linkRowCount: new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size,
+              groupCount: groups.length,
+              groupLefts: [...new Set(groups.map((group) => group.left))],
+              groupRows: new Set(groups.map((group) => group.top)).size,
               linksOutsideFooter: links.some((link) => {
                 const linkRect = link.getBoundingClientRect();
                 return linkRect.left < rect.left || linkRect.right > rect.right;
               }),
             };
           });
-          expect(result.display, `${path} at ${width}px display`).toBe("flex");
-          expect(result.flexWrap, `${path} at ${width}px flex-wrap`).toBe("wrap");
-          expect(result.minWidth, `${path} at ${width}px min-width`).toBe("0px");
           expect(result.footerWidth, `${path} at ${width}px footer width`).toBeLessThanOrEqual(width);
           expect(result.overflow, `${path} at ${width}px document overflow`).toBe(0);
           expect(result.linkCount, `${path} at ${width}px links`).toBeGreaterThan(0);
+          expect(result.groupCount, `${path} at ${width}px groups`).toBe(5);
           expect(result.linksOutsideFooter, `${path} at ${width}px clipped links`).toBe(false);
           if (width === 390) {
-            expect(result.linkRowCount, `${path} at ${width}px wrapped link rows`).toBeGreaterThan(1);
+            expect(result.groupLefts, `${path} at ${width}px group alignment`).toHaveLength(1);
+            expect(result.groupRows, `${path} at ${width}px group rows`).toBe(5);
           }
           if (width === 1440 || width === 390) {
             await page.locator("footer.site-footer").screenshot({
