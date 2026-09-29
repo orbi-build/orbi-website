@@ -975,6 +975,18 @@ describe("Self-hosted landing pages (Issue #556)", () => {
     }
   });
 
+  it("keeps the setup commands on separate lines without changing printf's format", () => {
+    for (const { output } of landingPages) {
+      const html = shipped.get(output);
+      expect(html, `${output}: setup commands use a real newline`).toContain(
+        "mkdir -p .orbi\nprintf '%s\\n'",
+      );
+      expect(html, `${output}: setup commands do not contain a literal separator`).not.toContain(
+        "mkdir -p .orbi\\nprintf",
+      );
+    }
+  });
+
   it("keeps FAQ JSON-LD in lockstep with 3–5 visible questions", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
