@@ -61,6 +61,16 @@ const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 const SUBSCRIBE_ROUTE = "/subscribe";
 const ENGAGEMENT_ROUTE = "/cloud/e";
+const GUIDE_REDIRECTS = new Map([
+  ["/issue-to-release", "/guides/issue-to-release/"],
+  ["/autonomous-coding-agent", "/guides/autonomous-coding-agent/"],
+  ["/self-hosted-coding-agent", "/guides/self-hosted-coding-agent/"],
+  ["/codex-github-issues", "/guides/codex-github-issues/"],
+  ["/zh/issue-to-release", "/zh/guides/issue-to-release/"],
+  ["/zh/autonomous-coding-agent", "/zh/guides/autonomous-coding-agent/"],
+  ["/zh/self-hosted-coding-agent", "/zh/guides/self-hosted-coding-agent/"],
+  ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
+]);
 const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth"]);
 const ENGAGEMENT_DETAILS = new Set([
   "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
@@ -547,6 +557,11 @@ async function handleFetch(request, env, ctx) {
     // before the host's catch-all redirect runs.
     if (url.pathname === ENGAGEMENT_ROUTE || url.pathname === `${ENGAGEMENT_ROUTE}/`) {
       return engagementResponse(request, env, ctx);
+    }
+
+    const guideRedirect = GUIDE_REDIRECTS.get(url.pathname.endsWith("/") ? url.pathname.slice(0, -1) : url.pathname);
+    if (guideRedirect) {
+      return Response.redirect(`https://${url.hostname}${guideRedirect}${url.search}`, 301);
     }
 
     // Issue #174: aiready.sh is the curl install entry. Accept-negotiate on

@@ -382,7 +382,8 @@ describe("build output is committed (npm run build ran)", () => {
       cwd: ROOT,
       encoding: "utf8",
     }).trim();
-    const expectedDate = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
+    const dirty = execFileSync("git", ["status", "--porcelain", "--", source], { cwd: ROOT, encoding: "utf8" }).trim();
+    const expectedDate = dirty ? new Date().toISOString().slice(0, 10) : new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
     const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
   });
@@ -814,23 +815,23 @@ const jsonLdGraph = (html) => {
 
 describe("Issue-to-release landing pages (Issue #514)", () => {
   const landingPages = [
-    { output: "issue-to-release/index.html" },
-    { output: "zh/issue-to-release/index.html" },
+    { output: "guides/issue-to-release/index.html" },
+    { output: "zh/guides/issue-to-release/index.html" },
   ];
 
   it("ships mutual hreflang, discovery entries, and all requested internal links", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
-      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/issue-to-release/"');
-      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/issue-to-release/"');
+      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/guides/issue-to-release/"');
+      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/guides/issue-to-release/"');
     }
-    expect(shippedSitemap).toContain("https://orbi.build/issue-to-release/");
-    expect(shippedSitemap).toContain("https://orbi.build/zh/issue-to-release/");
-    expect(shippedLlms).toContain("https://orbi.build/issue-to-release/");
-    expect(shippedLlms).toContain("https://orbi.build/zh/issue-to-release/");
+    expect(shippedSitemap).toContain("https://orbi.build/guides/issue-to-release/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/guides/issue-to-release/");
+    expect(shippedLlms).toContain("https://orbi.build/guides/issue-to-release/");
+    expect(shippedLlms).toContain("https://orbi.build/zh/guides/issue-to-release/");
     for (const output of ["index.html", "cloud/index.html", "guides/auto-merge-ai-prs/index.html"]) {
-      expect(shipped.get(output), output).toContain('href="/issue-to-release/"');
-      expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/issue-to-release/"');
+      expect(shipped.get(output), output).toContain('href="/guides/issue-to-release/"');
+      expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/guides/issue-to-release/"');
     }
   });
 });
@@ -841,23 +842,23 @@ describe("Issue-to-release landing pages (Issue #514)", () => {
 // tree, and CTAs carry the page's ref tag.
 describe("Self-hosted landing pages (Issue #556)", () => {
   const landingPages = [
-    { output: "self-hosted-coding-agent/index.html", prefix: "" },
-    { output: "zh/self-hosted-coding-agent/index.html", prefix: "/zh" },
+    { output: "guides/self-hosted-coding-agent/index.html", prefix: "" },
+    { output: "zh/guides/self-hosted-coding-agent/index.html", prefix: "/zh" },
   ];
 
   it("ships mutual hreflang, sitemap entries and the page's own OG card", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
-      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/self-hosted-coding-agent/"');
-      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/self-hosted-coding-agent/"');
+      expect(html, `${output}: English hreflang`).toContain('hreflang="en" href="https://orbi.build/guides/self-hosted-coding-agent/"');
+      expect(html, `${output}: Chinese hreflang`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/guides/self-hosted-coding-agent/"');
       expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
       const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
       expect(title.length, `${output}: title is ${title.length} chars`).toBeLessThanOrEqual(60);
       expect(title, `${output}: title must name the release`).toMatch(/release|发版/);
       expect(html, `${output}: og:image`).toContain('content="https://orbi.build/img/og-self-hosted-coding-agent.png"');
     }
-    expect(shippedSitemap).toContain("https://orbi.build/self-hosted-coding-agent/");
-    expect(shippedSitemap).toContain("https://orbi.build/zh/self-hosted-coding-agent/");
+    expect(shippedSitemap).toContain("https://orbi.build/guides/self-hosted-coding-agent/");
+    expect(shippedSitemap).toContain("https://orbi.build/zh/guides/self-hosted-coding-agent/");
   });
 
   it("keeps descriptions in the SEO band (EN 150–160 chars, ZH 70–80 字)", () => {
@@ -873,7 +874,7 @@ describe("Self-hosted landing pages (Issue #556)", () => {
   it("carries the four requested internal links and ref-tagged CTAs", () => {
     for (const { output, prefix } of landingPages) {
       const html = shipped.get(output);
-      for (const path of ["/issue-to-release/", "/cost/", "/compare/devin/", "/cloud/"]) {
+      for (const path of ["/guides/issue-to-release/", "/cost/", "/compare/devin/", "/cloud/"]) {
         expect(html, `${output}: ${path} link`).toContain(`href="${prefix}${path}`);
       }
       const refTagged = (html.match(/href="[^"]*\?ref=seo-self-hosted-coding-agent"/g) ?? []).length;
