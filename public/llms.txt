@@ -187,9 +187,9 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- Searching for Orbi's harness: 96 runs across prompts and models (English):
+- Searching for Orbi's harness: what 100+ benchmark runs taught us about coding agents (English):
   https://orbi.build/blog/searching-for-orbis-harness/
-- 给 Orbi 找 harness：prompt 和模型的组合，跑了 96 次 (Chinese):
+- 给 Orbi 找 harness：一百多次 benchmark 教会我们的事 (Chinese):
   https://orbi.build/zh/blog/searching-for-orbis-harness/
 - GitSpawn and the agent that never asks (English):
   https://orbi.build/blog/gitspawn-unattended-agent/

@@ -1,0 +1,207 @@
+<!--orbi:page
+{
+  "output": "benchmark/index.html",
+  "lang": "en",
+  "mirror": "zh/benchmark/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/#system",
+    "compareHref": "/compare/",
+    "compareLabel": "Compare",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build",
+    "langSwitchHref": "/zh/benchmark/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How we test Orbi's harness — benchmark</title>
+  <meta name="description" content="We ran Orbi's full delivery loop on real open-source bugs it had never seen, graded by the maintainers' own tests. The original harness fixed all of them; our stronger harness fixed none more and cost about twice as much.">
+  <link rel="canonical" href="https://orbi.build/benchmark/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:url" content="https://orbi.build/benchmark/">
+  <meta property="og:title" content="How we test Orbi's harness — benchmark">
+  <meta property="og:description" content="Real bugs Orbi had never seen, graded by the maintainers' own tests. Every number, every limit, and the scripts to rerun it.">
+  <meta property="og:image" content="https://orbi.build/img/blog-harness-search.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Searching for Orbi's harness: runs across prompts and models">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="How we test Orbi's harness — benchmark">
+  <meta name="twitter:description" content="Real bugs Orbi had never seen, graded by the maintainers' own tests. Every number, every limit, and the scripts to rerun it.">
+  <meta name="twitter:image" content="https://orbi.build/img/blog-harness-search.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How we test Orbi's harness",
+    "description": "A benchmark of Orbi's delivery loop on real open-source bugs, graded by the maintainers' own tests, with every limit stated.",
+    "inLanguage": "en",
+    "url": "https://orbi.build/benchmark/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Orbi",
+      "url": "https://orbi.build/"
+    },
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "Orbi",
+      "applicationCategory": "DeveloperApplication",
+      "url": "https://orbi.build/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="bench-title">
+        <p class="eyebrow">Benchmark · updated 2026-09-29</p>
+        <h1 id="bench-title">How we test Orbi's harness</h1>
+        <p class="hero-lede"><strong>On nine real bugs Orbi had never seen, graded by the maintainers' own tests, the original harness fixed all nine. Our stronger harness fixed none more and cost about twice as much.</strong> It only earned its keep on the three issues where Orbi had shipped regressions, and those are the issues we tuned it on.</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="/blog/searching-for-orbis-harness/">Read how we got here</a>
+          <a class="text-link" href="#reproduce">Rerun it yourself →</a>
+        </div>
+      </section>
+
+      <section class="stats shell" aria-label="Benchmark results">
+        <div class="stats-label"><span>RESULTS · deepseek-flash implements · passes / runs</span></div>
+        <div class="stats-groups">
+          <div class="stat-group">
+            <p class="stat-repo"><b>Unseen bugs</b><span class="stat-purpose">9 issues, maintainer tests</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>9/9</strong><span>original harness</span></div>
+              <div class="stat"><strong>9/9</strong><span>stronger harness (v15)</span></div>
+            </div>
+          </div>
+          <div class="stat-group">
+            <p class="stat-repo"><b>Cost of v15</b><span class="stat-purpose">median per run, unseen bugs</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>2.0×</strong><span>tokens (5.8M vs 2.8M)</span></div>
+              <div class="stat"><strong>1.45×</strong><span>minutes (16 vs 11)</span></div>
+            </div>
+          </div>
+          <div class="stat-group">
+            <p class="stat-repo"><b>Regression-prone</b><span class="stat-purpose">first upstream fix broke something</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>4/4</strong><span>original harness</span></div>
+              <div class="stat"><strong>3/3</strong><span>stronger harness (v15)</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="compare-section shell" id="unseen" aria-labelledby="unseen-title">
+      <p class="section-tag">UNSEEN BUGS</p>
+      <h2 class="orbi-compare-section-h2" id="unseen-title">Nine bugs Orbi had never seen</h2>
+      <p class="section-lede">Real fixes merged upstream after August 10, 2026, three each in Go, TypeScript and Python. The hidden grader for each is the test the maintainer wrote with the fix. The ticket Orbi saw was rewritten with no links, issue numbers or hints.</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-heldout.svg" alt="Results on nine unseen issues for the original harness, v15, and v15 with a sol reviewer: every run passed." width="720" height="440">
+        <figcaption class="bench-figure-cap">Nine issues, three setups, 27 runs, all passed.</figcaption>
+      </figure>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-cost.svg" alt="Median tokens and minutes per run, original harness against v15. On unseen issues v15 uses 5.8 million tokens against 2.8 million and 16 minutes against 11." width="720" height="360">
+        <figcaption class="bench-figure-cap">What the stronger harness costs. Tokens include cache reads, about 97% of the total.</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="regression-prone" aria-labelledby="hard-title">
+      <p class="section-tag">REGRESSION-PRONE BUGS</p>
+      <h2 class="orbi-compare-section-h2" id="hard-title">Bugs whose first real fix broke something</h2>
+      <p class="section-lede">Three real bugs whose first upstream fix was merged and then found to break something: numpy (the fix broke <code>ndarray</code> subclasses), the OpenTelemetry Collector (it made <code>timeout</code> effectively infinite) and aiohttp (it rejected valid frames after a PONG). The ticket described only the original bug. The grader tests both. Both harnesses passed every run that finished; one numpy run under v15 was stopped for lack of memory and isn't scored. The regressions humans made on their first try weren't the ones this agent makes.</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-hard.svg" alt="Three regression-prone bugs: the original harness passed 4 of 4 runs and v15 passed 3 of 3; one numpy v15 run was stopped for lack of memory." width="720" height="310">
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="tuning" aria-labelledby="tuning-title">
+      <p class="section-tag">TUNING SET</p>
+      <h2 class="orbi-compare-section-h2" id="tuning-title">Where the stronger harness came from</h2>
+      <p class="section-lede">Three issues where Orbi had merged a regression (pyinfra, chainloop, fedify). We changed the harness one rule at a time and reran the loop 96 times. These numbers are a training score: the harness was tuned and scored on the same three issues.</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-trend.svg" alt="Pass rate by harness version with deepseek-flash for both roles on the three tuning issues: v0 6/15 rising to v15 9/9." width="720" height="470">
+        <figcaption class="bench-figure-cap">Same model throughout, three tuning issues. Pale bars have fewer than five runs.</figcaption>
+      </figure>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-grid.svg" alt="Grid of harness versions against model setups on the tuning issues; most non-deepseek cells have two to four runs." width="720" height="428">
+        <figcaption class="bench-figure-cap">Harness versions against implementer / reviewer models on the tuning issues. Read the other columns as leads.</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="method" aria-labelledby="method-title">
+      <p class="section-tag">METHOD</p>
+      <h2 class="orbi-compare-section-h2" id="method-title">How each run is scored</h2>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-flow.svg" alt="Each run: a private snapshot of the repository goes through the real Orbi runner, then a hidden grader scores it. The grader is calibrated first." width="720" height="300">
+      </figure>
+      <ul class="event-list">
+        <li class="orbi-event-list-li"><span class="event-era">1</span><div><strong>Real loop, private snapshot.</strong><p class="orbi-event-list-p">Each run gets its own private copy of the repository at the pre-fix commit. The unmodified Orbi runner claims the issue, implements, opens a PR, reviews, fixes and merges.</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">2</span><div><strong>Hidden, calibrated grader.</strong><p class="orbi-event-list-p">Before any run counts, the grader must fail the pre-fix code and pass the known-good fix. For regression-prone bugs it must also fail the first upstream fix. It runs with the repository's own lint, type checks and test suite.</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">3</span><div><strong>No way to the answer.</strong><p class="orbi-event-list-p">Wrappers around <code>gh</code> and <code>git</code> refuse every repository except the run's own, so an agent can't look up the upstream fix. Snapshots keep ignored-but-tracked files and submodule contents.</p></div></li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="limits" aria-labelledby="limits-title">
+      <p class="section-tag">LIMITS</p>
+      <h2 class="orbi-compare-section-h2" id="limits-title">What these numbers don't show</h2>
+      <ul class="event-list">
+        <li class="orbi-event-list-li"><span class="event-era">n</span><div><strong>Small samples, no confidence intervals.</strong><p class="orbi-event-list-p">Nine unseen issues, three regression-prone ones, three tuning issues. Many cells have one to four runs.</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">model</span><div><strong>One implementation model.</strong><p class="orbi-event-list-p">Every unseen-bug result uses <code>deepseek-flash</code> to write the fix. Other models were tried only on the tuning set.</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">prod</span><div><strong>Production Orbi still runs the original harness.</strong><p class="orbi-event-list-p">The stronger harness is on a branch and isn't Orbi's default. The results above are why.</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">grader</span><div><strong>Graders catch what someone knew to test.</strong><p class="orbi-event-list-p">For unseen bugs that someone is the upstream maintainer. A pass means the maintainer's tests and the repository's suite pass, not that the fix is perfect.</p></div></li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="reproduce" aria-labelledby="reproduce-title">
+      <p class="section-tag">REPRODUCE</p>
+      <h2 class="orbi-compare-section-h2" id="reproduce-title">Rerun it</h2>
+      <p class="section-lede">The tasks, graders, isolation wrappers and scoring scripts are in the Orbi repository at <a href="https://github.com/orbi-build/orbi/tree/7adcba9e5375c0cca9428ae2ef77f1e63672faa1/bench/oss-upstream" rel="noopener"><code>bench/oss-upstream</code> (commit 7adcba9)</a>. Upstream tests aren't copied into our repository; <code>heldout/fetch_hidden.sh</code> fetches them from each fix commit. Run one instance at a time: a single task can take several gigabytes of memory.</p>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">THE LONG VERSION</p>
+      <h2 class="orbi-closing-h2" id="start-title">Every rule, every failure, every bug in our own measuring</h2>
+      <p >The blog post walks through each harness change, the transcripts that motivated it, what the models did, and the mistakes we made building this benchmark.</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="/blog/searching-for-orbis-harness/">Read the blog post</a>
+        <a class="text-link" href="/cloud/">Or run Orbi on your issues →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>

@@ -29,6 +29,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/benchmark/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/"/>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/"/>
@@ -268,6 +277,15 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/autonomous-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/autonomous-coding-agent/"/>
     <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/benchmark/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/"/>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

@@ -2395,3 +2395,8 @@ h2 {
   .subscribe-form { align-items: stretch; flex-direction: column; }
   .subscribe-status { flex-basis: auto; }
 }
+
+/* /benchmark/: charts are SVG files on a light ground; keep them fluid and framed. */
+.bench-figure { margin: 28px 0 0; max-width: 820px; }
+.bench-figure-img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+.bench-figure-cap { margin-top: 8px; color: var(--ink-soft); font-size: 0.85rem; }
