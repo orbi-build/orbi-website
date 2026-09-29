@@ -101,6 +101,8 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
               groupCount: groups.length,
               groupLefts: [...new Set(groups.map((group) => group.left))],
               groupRows: new Set(groups.map((group) => group.top)).size,
+              footerAlignItems: getComputedStyle(element).alignItems,
+              columnsAlignItems: getComputedStyle(element.querySelector("nav:not(.footer-friends)")).alignItems,
               linksOutsideFooter: links.some((link) => {
                 const linkRect = link.getBoundingClientRect();
                 return linkRect.left < rect.left || linkRect.right > rect.right;
@@ -112,6 +114,10 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
           expect(result.linkCount, `${path} at ${width}px links`).toBeGreaterThan(0);
           expect(result.groupCount, `${path} at ${width}px groups`).toBe(5);
           expect(result.linksOutsideFooter, `${path} at ${width}px clipped links`).toBe(false);
+          if (width >= 981) {
+            expect(result.footerAlignItems, `${path} at ${width}px footer alignment`).toBe("start");
+            expect(result.columnsAlignItems, `${path} at ${width}px columns alignment`).toBe("start");
+          }
           if (width === 390) {
             expect(result.groupLefts, `${path} at ${width}px group alignment`).toHaveLength(1);
             expect(result.groupRows, `${path} at ${width}px group rows`).toBe(5);

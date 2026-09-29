@@ -168,10 +168,11 @@ img {
 .site-header nav,
 .site-footer nav {
   display: flex;
-  align-items: center;
   gap: 26px;
   font-size: 0.88rem;
 }
+
+.site-header nav { align-items: center; }
 
 .site-header nav > a {
   display: inline-flex;
@@ -1702,7 +1703,7 @@ h2 {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 3fr);
   gap: 34px;
-  align-items: center;
+  align-items: start;
   padding-top: 34px;
   padding-bottom: 48px;
   border-top: 1px solid var(--line);
@@ -1717,6 +1718,7 @@ h2 {
 }
 .site-footer nav {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   min-width: 0;
   gap: 20px;
@@ -2051,6 +2053,21 @@ h2 {
   padding: 84px 0 68px;
 }
 
+.breadcrumbs.compare-hero {
+  padding: 22px 0 0;
+  color: #b6c7c3;
+  font-size: 0.9rem;
+}
+
+.breadcrumbs.compare-hero a {
+  text-decoration: none;
+}
+
+.breadcrumbs.compare-hero a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .compare-section {
   padding-top: clamp(84px, 9vw, 140px);
   padding-bottom: clamp(84px, 9vw, 140px);
@@ -2290,8 +2307,10 @@ h2 {
 
 /* Guide index entries use the same compact title scale as comparison entries,
    without inheriting the provenance list's source-specific treatment. */
+.guide-index-container { max-width: 68rem; }
+
 .guide-index-list {
-  margin: 44px 0 0;
+  margin: 0;
   padding: 0;
   border-top: 2px solid var(--ink);
 }
