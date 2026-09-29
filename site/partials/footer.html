@@ -5,41 +5,30 @@
     </a>
     <p class="orbi-site-footer-p">{{TAGLINE}}</p>
     <nav aria-label="{{FOOTER_NAV_ARIA}}">
-      <ul>
-        <li><a href="{{DOCS_HREF}}">{{DOCS_LABEL}}</a></li>
-        <li><a href="{{CLOUD_DOCS_HREF}}">{{CLOUD_DOCS_LABEL}}</a></li>
-        <li><a href="{{CLOUD_HREF}}">{{CLOUD_LABEL}}</a></li>
-        <li><a href="{{COST_HREF}}">{{COST_LABEL}}</a></li>
-        <li><a href="{{EVIDENCE_HREF}}">{{EVIDENCE_LABEL}}</a></li>
-        <li><a href="{{COMPARE_HREF}}">{{COMPARE_LABEL}}</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>
-        <li><a href="https://x.com/xqliu" rel="me">X</a></li>
-        <li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>
-        <li><a href="{{FAQ_HREF}}">{{FAQ_LABEL}}</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://github.com/orbi-build/orbi/releases">{{RELEASES_LABEL}}</a></li>
-        <li><a href="https://status.orbi.build">{{STATUS_LABEL}}</a></li>
-        <li><a href="{{PRIVACY_HREF}}">{{PRIVACY_LABEL}}</a></li>
-        <li><a href="{{TERMS_HREF}}">{{TERMS_LABEL}}</a></li>
-      </ul>
-      <ul>
-        <li><a href="{{SUPPORT_HREF}}">{{SUPPORT_LABEL}}</a></li>
-        <li><a href="{{DIRECTION_HREF}}">{{DIRECTION_LABEL}}</a></li>
-        <li><a href="https://github.com/orbi-build/orbi/milestones">{{ROADMAP_LABEL}}</a></li>
-        <li><a href="{{LANG_SWITCH_HREF}}" lang="{{OTHER_LANG_ATTR}}" aria-label="{{OTHER_LANG_ARIA}}">{{OTHER_LANG_LABEL}}</a></li>
-        <li><a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a></li>
-        <li><a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a></li>
-      </ul>
+      <div class="footer-group">
+        <h2>{{PRODUCT_HEADING}}</h2>
+        <ul>{{PRODUCT_LINKS}}</ul>
+      </div>
+      <div class="footer-group">
+        <h2>{{RESOURCES_HEADING}}</h2>
+        <ul>{{RESOURCES_LINKS}}</ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>{{GUIDES_HEADING}}</h2>
+        <ul>{{GUIDES_LINKS}}</ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>{{COMPARE_HEADING}}</h2>
+        <ul>{{COMPARE_LINKS}}</ul>
+      </div>
+      <div class="footer-group">
+        <h2>{{COMPANY_HEADING}}</h2>
+        <ul>{{COMPANY_LINKS}}</ul>
+      </div>
     </nav>
-    <nav class="footer-compare" aria-label="{{DEEP_ARIA}}">
-      <span>{{DEEP_SPAN}}</span>
-{{DEEP_LINKS}}
-    </nav>
-    <nav class="footer-guides" aria-label="{{GUIDES_ARIA}}">
-      <span>{{GUIDES_SPAN}}</span>
-{{GUIDES_LINKS}}
+    <nav class="footer-friends" aria-label="{{FRIENDS_ARIA}}">
+      <span>{{FRIENDS_LABEL}}</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
     </nav>
   </footer>
