@@ -205,6 +205,7 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
     }
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero\s*\{[\s\S]*?color:\s*#b6c7c3;[\s\S]*?padding:/);
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero a\s*\{[\s\S]*?text-decoration:\s*none;/);
+    expect(styles).toMatch(/\.breadcrumbs\.compare-hero\s*>\s*\[aria-hidden="true"\]\s*\{[\s\S]*?margin-inline:\s*0\.(?:[3-9]|[1-9]\d+)em;/);
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero a:hover\s*\{[\s\S]*?text-decoration:\s*underline;/);
     expect(styles).toMatch(/\.night:has\(\.breadcrumbs\.compare-hero\)\s*>\s*\.compare-hero:not\(\.breadcrumbs\)\s*\{[\s\S]*?padding-top:\s*32px;/);
     expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.night:has\(\.breadcrumbs\.compare-hero\)\s*>\s*\.compare-hero:not\(\.breadcrumbs\)[\s\S]*?padding-top:\s*24px;/);
