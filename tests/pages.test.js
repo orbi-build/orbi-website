@@ -1242,28 +1242,28 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     en: {
       label: "Resources",
       items: [
-        ["/blog/", "Blog"],
-        ["/compare/", "Comparisons"],
         ["/evidence/", "Evidence"],
+        ["/benchmark/", "Benchmark"],
         ["/cost/", "Cost per PR"],
         ["/aiready/", "Method"],
-        ["/benchmark/", "Benchmark"],
+        ["/compare/", "Comparisons"],
+        ["/blog/", "Blog"],
       ],
     },
     zh: {
       label: "资源",
       items: [
-        ["/zh/blog/", "博客"],
-        ["/zh/compare/", "对比"],
         ["/zh/evidence/", "证据"],
+        ["/zh/benchmark/", "Benchmark"],
         ["/zh/cost/", "每个 PR 的成本"],
         ["/aiready/zh/", "方法"],
-        ["/zh/benchmark/", "Benchmark"],
+        ["/zh/compare/", "对比"],
+        ["/zh/blog/", "博客"],
       ],
     },
   };
 
-  it("labels the dropdown Resources/资源 with Method first on every page with the primary nav", () => {
+  it("labels the dropdown Resources/资源 with evidence and benchmark first on every page with the primary nav", () => {
     // Blog posts render the same nav through POST_LANG.nav, so they count as
     // "every page with primary-navigation" too. Pages carrying a siteBase
     // (the aiready pages, Issue #610) render every local nav href absolute.
