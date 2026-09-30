@@ -204,6 +204,64 @@ describe("Free delivery allowance constant (Issue #274)", () => {
   });
 });
 
+describe("Cloud trial copy (Issue #679)", () => {
+  const trialPages = [
+    ["cloud/index.html", {
+      kicker: "CLOUD TRIAL",
+      title: "Trial",
+      priceUnit: `${FREE_DELIVERIES_TOKEN} merged deliveries, once per account`,
+      detail: `Run ${FREE_DELIVERIES_TOKEN} real deliveries on your own repository. No card required.`,
+      failed: "Failed deliveries don't use up the trial",
+      button: "Start trial",
+    }],
+    ["zh/cloud/index.html", {
+      kicker: "CLOUD 试用",
+      title: "试用",
+      priceUnit: `${FREE_DELIVERIES_TOKEN} 次合并交付，每个账号一次`,
+      detail: `在你自己的仓库上跑 ${FREE_DELIVERIES_TOKEN} 次真实交付，不用绑卡。`,
+      failed: "失败的交付不占试用额度",
+      button: "开始试用",
+    }],
+  ];
+
+  it("uses trial language in every allowance sentence", async () => {
+    for (const dir of [SITE_PAGES_DIR]) {
+      for (const path of await listHtmlFiles(dir)) {
+        const html = await readFile(path, "utf8");
+        const text = html.replace(/<[^>]*>/g, "\n");
+        for (const sentence of text.split(/(?:。|\.\s+|\n+)/)) {
+          if (sentence.includes(FREE_DELIVERIES_TOKEN)) {
+            const copy = sentence.replaceAll(FREE_DELIVERIES_TOKEN, "");
+            expect(copy.toLowerCase(), path).not.toContain("free");
+            expect(copy, path).not.toContain("免费");
+          }
+        }
+      }
+    }
+  });
+
+  it("matches the English and Chinese trial cards", async () => {
+    for (const [relativePath, expected] of trialPages) {
+      const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
+      const card = html.match(/<article class="pricing-card">[\s\S]*?<\/article>/)?.[0];
+      expect(card, relativePath).toBeDefined();
+      expect(card, relativePath).toContain(`<p class="pricing-card-kicker">${expected.kicker}</p>`);
+      expect(card, relativePath).toContain(`<h3>${expected.title}</h3>`);
+      expect(card, relativePath).toContain(expected.priceUnit);
+      expect(card, relativePath).toContain(expected.detail);
+      expect(card, relativePath).toContain(expected.failed);
+      expect(card, relativePath).toContain(`>${expected.button} <span`);
+      expect(card, relativePath).not.toContain("/ 月");
+      expect(card, relativePath).not.toContain("/ month");
+    }
+  });
+
+  it("keeps the self-hosted free-forever claim", async () => {
+    const homepage = await readFile(`${SITE_PAGES_DIR}index.html`, "utf8");
+    expect(homepage).toContain("Self-hosted, free forever");
+  });
+});
+
 describe("Included tokens constant (Issue #138)", () => {
   // Cloud enforces this quota outside this repository, so the expected value
   // is manually pinned here. The website and Cloud must change it together;
