@@ -36,7 +36,21 @@
 <section class="compare-section compare-section-tint" aria-labelledby="cost-title"><div class="shell"><p class="section-tag">实测，不是口号</p><h2 class="orbi-compare-section-h2" id="cost-title">一次交付花多少钱</h2><p class="section-lede">非高峰时段交付的 20 个已合并 PR，中位成本是<strong>每个 PR $0.125</strong>。测量方法和逐 PR 的数字在<a href="/zh/cost/">成本页</a>。</p></div></section>
 <section class="compare-section shell" id="faq" aria-labelledby="faq-title"><p class="section-tag">FAQ</p><h2 class="orbi-compare-section-h2" id="faq-title">交出去之前的几个问题</h2><div class="source-list"><p><strong>真的无人值守吗？</strong><br>两张票之间，是的：实现、评审、合并、发版自己跑；任何检查不过就停下等你。</p><p><strong>用什么模型？</strong><br>任意 OpenAI 兼容 API（比如 DeepSeek），或 ChatGPT/Codex 订阅登录。</p><p><strong>花多少钱？</strong><br>自托管按 AGPL-3.0 免费，模型费用由你承担；Cloud 前 3 次合并交付免费、不用绑卡，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ token），额度用完只暂停新交付、不超额计费。实测中位数见<a href="/zh/cost/">成本页</a>。</p><p><strong>和 Devin 比呢？</strong><br>我们做了一份带日期的逐项实测对比，见 <a href="/zh/compare/devin/">Devin 对比页</a>。</p><p><strong>流程的终点在哪？</strong><br>打了 tag 的 GitHub Release。<a href="/zh/guides/issue-to-release/">Issue-to-release 页</a>从标签到发版共六步。</p></div></section>
 <section class="closing shell"><p class="section-tag">ISSUE 进，RELEASE 出</p><h2 class="orbi-closing-h2">交出一张 Issue，收回一个发版</h2><p>提交、评审轮次、合并、打 tag，都是 agent 的事。</p><div class="cta-row"><a class="button button-dark" href="https://github.com/orbi-build/orbi?ref=seo-autonomous-coding-agent">自托管 Orbi ↗</a><a class="text-link" href="/zh/cloud/?ref=seo-autonomous-coding-agent">让 Cloud 来运行 →</a></div></section>
-<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关对比</h2><ul><li><a href="/zh/compare/openclaw/">Orbi vs openclaw</a></li><li><a href="/zh/compare/claude-code/">Orbi vs claude code</a></li></ul></section></main>  <footer class="site-footer shell">
+<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关对比</h2><ul><li><a href="/zh/compare/openclaw/">Orbi vs openclaw</a></li><li><a href="/zh/compare/claude-code/">Orbi vs claude code</a></li></ul></section></main><section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
     <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>

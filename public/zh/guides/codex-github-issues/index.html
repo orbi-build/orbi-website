@@ -50,7 +50,21 @@ pi_model = "gpt-5.6-luna"</code></pre></figure></div></section>
 <section class="compare-section compare-section-tint" aria-labelledby="proof-title"><div class="shell"><p class="section-tag">公开证据</p><h2 class="orbi-compare-section-h2" id="proof-title">Orbi 在交付自己的仓库</h2><p class="section-lede"><a href="https://github.com/orbi-build/orbi" rel="noopener">orbi-build/orbi</a> 就是这么交付的：<strong>546 个已合并 PR、66 个 release</strong>，全部由 Orbi 沿同一条产线完成——标签进，打 tag 的发版出，协议 AGPL-3.0。</p></div></section>
 <section class="compare-section shell" id="faq" aria-labelledby="faq-title"><p class="section-tag">常见问题</p><h2 class="orbi-compare-section-h2" id="faq-title">把队列交给 Codex 之前</h2><div class="source-list"><p><strong>需要 OpenAI API key 吗？</strong><br>不需要。<code>openai-codex</code> provider 走 OAuth，花的是订阅额度；见 <a href="https://docs.orbi.build/zh/providers" rel="noopener">provider 指南</a>。</p><p><strong>Cloud 能用我的 Codex 订阅吗？</strong><br>Codex OAuth 登录是自托管文档里的功能。Cloud 是另一条路：GitHub 登录，前 3 次合并交付免费。</p><p><strong>一个标签能走多远？</strong><br>走到打 tag 的 GitHub Release——PR、最多 5 轮独立评审、合并通过的 head、打 tag、发版。完整版在<a href="/zh/guides/issue-to-release/">Issue 到发版</a>。</p><p><strong>和其他自主 agent 比呢？</strong><br>看<a href="/zh/compare/devin/">Orbi 对比 Devin</a>，逐项对比。</p><p><strong>开源吗？</strong><br>是，协议为 AGPL-3.0。</p></div></section>
 <section class="closing shell"><p class="section-tag">ISSUE 进，RELEASE 出</p><h2 class="orbi-closing-h2">让订阅干活</h2><p>一个标签开始，一个发版结束。</p><div class="cta-row"><a class="button button-dark" href="https://github.com/orbi-build/orbi">自托管 Orbi ↗</a><a class="text-link" href="/zh/cloud/?ref=seo-codex-github-issues">让 Cloud 来运行 →</a></div></section>
-<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关对比</h2><ul><li><a href="/zh/compare/codex/">Orbi vs codex</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs github copilot coding agent</a></li></ul></section></main>  <footer class="site-footer shell">
+<section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关对比</h2><ul><li><a href="/zh/compare/codex/">Orbi vs codex</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs github copilot coding agent</a></li></ul></section></main><section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
     <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
       <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
       <span>Orbi</span>

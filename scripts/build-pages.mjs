@@ -334,7 +334,7 @@ export function renderFooter(page) {
     ([en, zh, enLabel, zhLabel]) =>
       `      <a href="${base(t.langPrefix ? zh : en)}">${t.langPrefix ? zhLabel : enLabel}</a>`
   ).join("\n");
-  return fill(FOOTER_PARTIAL, {
+  return `${renderSubscribe(page.lang)}\n  <script src="/subscribe.js" defer></script>\n\n${fill(FOOTER_PARTIAL, {
     HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
     TAGLINE: t.tagline,
@@ -351,7 +351,7 @@ export function renderFooter(page) {
     COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
-  });
+  })}`;
 }
 
 // "minified" pages authored their chrome on one line: join the fragment's
@@ -982,7 +982,6 @@ function renderPost(post, template) {
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
     BODY: post.html,
-    SUBSCRIBE: renderSubscribe(post.lang),
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
