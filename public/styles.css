@@ -1362,7 +1362,7 @@ h2 {
 .pricing-card-kicker { margin: 0; color: var(--signal); font: 500 .75rem/1 var(--mono); letter-spacing: .08em; }
 .pricing-card > h3 { margin: 0; font: 700 clamp(1.7rem, 3vw, 2.5rem)/1 var(--display); }
 .pricing-card-price { margin: 0; font: 600 1.45rem/1.2 var(--display); }
-.pricing-card-price span { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
+.pricing-card-price .pricing-card-price-unit { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
 .pricing-card > p:not(.pricing-card-kicker):not(.pricing-card-price) { margin: 0; color: var(--ink-soft); }
 .pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
 .pricing-card-actions { margin-top: auto; }
