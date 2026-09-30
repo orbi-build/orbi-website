@@ -385,7 +385,7 @@ function renderBreadcrumb(page) {
   if (!current) throw new Error(`${page.source}: breadcrumb page needs a plain-text h1`);
   const items = [{ name: zh ? "首页" : "Home", item: `https://orbi.build${root}` }, { name: section, item: `https://orbi.build${sectionHref}` }, { name: current, item: `https://orbi.build${href}` }];
   const json = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((entry, index) => ({ "@type": "ListItem", position: index + 1, name: entry.name, item: entry.item })) });
-  return `<nav class="breadcrumbs compare-hero shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true"> › </span><a href="${sectionHref}">${section}</a><span aria-hidden="true"> › </span><span aria-current="page">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
+  return `<nav class="breadcrumbs compare-hero shell" aria-label="${zh ? "面包屑" : "Breadcrumb"}"><a href="${root}">${zh ? "首页" : "Home"}</a><span aria-hidden="true"> › </span><a href="${sectionHref}">${section}</a><span aria-hidden="true"> › </span><span aria-current="page" title="${escAttr(current)}">${escAttr(current)}</span></nav><script type="application/ld+json">${json}</script>`;
 }
 
 function renderRelated(page, data) {

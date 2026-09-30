@@ -2054,9 +2054,16 @@ h2 {
 }
 
 .breadcrumbs.compare-hero {
+  display: flex;
+  min-width: 0;
   padding: 22px 0 0;
   color: #b6c7c3;
   font-size: 0.9rem;
+}
+
+/* Article breadcrumbs share the hero band but not the hero's full top lead-in. */
+.night:has(.breadcrumbs.compare-hero) > .compare-hero:not(.breadcrumbs) {
+  padding-top: 32px;
 }
 
 .breadcrumbs.compare-hero a {
@@ -2431,6 +2438,23 @@ h2 {
   .source-list .source-date { padding-top: 0; text-align: left; }
 
   .dive-list .orbi-dive-list-a { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .night:has(.breadcrumbs.compare-hero) > .compare-hero:not(.breadcrumbs) {
+    padding-top: 24px;
+  }
+
+  .breadcrumbs.compare-hero {
+    white-space: nowrap;
+  }
+
+  .breadcrumbs.compare-hero > [aria-current="page"] {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .subscribe-box { max-width: 52rem; margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
