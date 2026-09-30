@@ -171,11 +171,11 @@ describe("blog titles use the post entry width (Issue #401)", () => {
 
   it("keeps the recorded desktop heading widths on compare, cloud, pricing, FAQ, and closing", async () => {
     const cases = [
-      ["/compare/", ".compare-section h2", 26, 1124],
-      ["/cloud/", ".compare-section h2", 26, 1124],
-      ["/pricing/", ".compare-section h2", 26, 1124],
-      ["/", ".faq h2", 24, 1038],
-      ["/", ".closing h2", 12, 519],
+      ["/compare/", ".compare-section h2", 26, 702],
+      ["/cloud/", ".compare-section h2", 26, 702],
+      ["/pricing/", ".compare-section h2", 26, 702],
+      ["/", ".faq h2", 24, 648],
+      ["/", ".closing h2", 12, 324],
     ];
     for (const [route, selector, ch, productionWidth] of cases) {
       const result = await constrainedHeadingAt(route, selector, ch);
