@@ -214,20 +214,27 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
   });
 });
 
-describe("email subscription forms (Issue #442)", () => {
-  it("renders the form on every requested EN/ZH surface", () => {
-    const outputs = [
-      "evidence/index.html", "zh/evidence/index.html", "cost/index.html", "zh/cost/index.html",
-      ...posts.filter((post) => post.paired).map((post) => post.output),
-    ];
-    for (const output of outputs) {
-      const html = shipped.get(output);
-      expect(html, output).toContain('action="/subscribe"');
-      expect(html, output).toContain('name="email"');
-      expect(html, output).toContain('name="lang"');
-      expect(html, output).toMatch(/<form class="subscribe-form"[\s\S]*data-subscribe-status[\s\S]*<\/form>/);
-      expect(html, output).toContain("subscribe.js");
+describe("email subscription forms (Issue #665)", () => {
+  it("renders exactly one form and script on every page with the shared footer", () => {
+    for (const [output, html] of shipped) {
+      if (!html.includes('<footer class="site-footer shell">')) continue;
+      expect(countMatches(html, /data-subscribe-form/g), `${output}: form count`).toBe(1);
+      expect(countMatches(html, /<script src="\/subscribe\.js" defer><\/script>/g), `${output}: script count`).toBe(1);
+      expect(html.indexOf('data-subscribe-form')).toBeLessThan(html.indexOf('<footer class="site-footer shell">'));
+      expect(mainRegion(html)).not.toContain("data-subscribe-form");
+      const htmlLang = html.match(/<html lang="([^"]+)"/)?.[1];
+      const formLang = html.match(/<input type="hidden" name="lang" value="([^"]+)"/)?.[1];
+      expect(formLang, `${output}: subscription language`).toBe(htmlLang === "zh-CN" ? "zh" : "en");
     }
+  });
+
+  it("keeps subscription markup in one source partial", async () => {
+    const sources = await Promise.all([
+      ...pages.map((page) => readFile(join(ROOT, "site", "pages", page.source), "utf8")),
+      readFile(join(ROOT, "site", "partials", "post.html"), "utf8"),
+    ]);
+    expect(sources.join("\n")).not.toMatch(/subscribe-form|subscribe-box/);
+    expect(await readFile(join(ROOT, "site", "partials", "subscribe.html"), "utf8")).toMatch(/subscribe-form|subscribe-box/);
   });
 });
 

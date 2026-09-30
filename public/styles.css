@@ -2481,7 +2481,7 @@ h2 {
   }
 }
 
-.subscribe-box { max-width: 52rem; margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
+.subscribe-box { margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
 .subscribe-title { margin: 0 0 16px; font-family: var(--display); font-size: 1.35rem; }
 .subscribe-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .subscribe-form input[type="email"] { min-width: 0; flex: 1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; }
