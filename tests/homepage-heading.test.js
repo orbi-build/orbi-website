@@ -69,6 +69,33 @@ function headingMetrics(page) {
 }
 
 describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
+  it("matches the hero size for every section heading", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const language of ["", "zh/"]) {
+        await page.goto(`${baseUrl}/${language}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate(() => document.fonts.ready);
+        for (const width of [1440, 390]) {
+          await page.setViewportSize({ width, height: 900 });
+          const result = await page.evaluate(() => {
+            const heroSize = getComputedStyle(document.querySelector("main h1")).fontSize;
+            const headings = [...document.querySelectorAll("main h2")];
+            return {
+              heroSize,
+              headingSizes: headings.map((heading) => getComputedStyle(heading).fontSize),
+            };
+          });
+          expect(result.headingSizes.length, `${language || "en"} headings at ${width}px`).toBeGreaterThan(0);
+          expect(result.headingSizes, `${language || "en"} heading sizes at ${width}px`).toEqual(
+            result.headingSizes.map(() => result.heroSize),
+          );
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 30_000);
+
   it("has no overlapping heading lines at every supported width in English and Chinese", async () => {
     const page = await browser.newPage();
     try {
