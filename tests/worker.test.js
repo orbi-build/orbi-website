@@ -714,28 +714,29 @@ describe("plaintext /status (Issue #173)", () => {
   });
 });
 
-describe("email subscription route (Issue #442)", () => {
-  const cloudUrl = "https://cloud.test/api/internal/subscribe";
-  const env = (cloud) => ({ CLOUD_SUBSCRIBE_URL: cloudUrl, WEBSITE_SECRET: "subscribe-secret", CLOUD: { fetch: cloud } });
+describe("email subscription route (Issue #674)", () => {
+  const env = (newsletter, cloud = vi.fn()) => ({ NEWSLETTER_SUBSCRIBE_SECRET: "subscribe-secret", NEWSLETTER: { fetch: newsletter }, CLOUD: { fetch: cloud } });
 
-  it("forwards email, first-touch attribution, language, and secret", async () => {
+  it("forwards the newsletter request with attribution, page pathname, and secret", async () => {
     let sent;
-    const cloud = async (request) => { sent = request; return new Response("ok"); };
+    const cloud = vi.fn();
+    const newsletter = async (request) => { sent = request; return new Response("ok"); };
     const request = new Request("https://beta.orbi.build/subscribe", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", Cookie: "vid=visitor-1; ref=x-2609240130" },
-      body: "email=ada%40example.com&lang=en",
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", Cookie: "vid=visitor-1; ref=x-2609240130", Referer: "https://orbi.build/zh/cloud/" },
+      body: "email=ada%40example.com&lang=zh",
     });
-    const response = await subscribeResponse(request, env(cloud));
+    const response = await subscribeResponse(request, env(newsletter, cloud));
     expect(response.status).toBe(200);
-    expect(sent.url).toBe(cloudUrl);
+    expect(cloud).not.toHaveBeenCalled();
+    expect(sent.url).toBe("https://newsletter.orbi.build/api/subscribe");
     expect(sent.headers.get("Authorization")).toBe("Bearer subscribe-secret");
-    expect(await sent.json()).toEqual({ email: "ada@example.com", ref: "x-2609240130", vid: "visitor-1", lang: "en" });
+    expect(await sent.json()).toEqual({ email: "ada@example.com", lang: "zh", ref: "x-2609240130", vid: "visitor-1", page: "/zh/cloud/" });
     expect(await response.json()).toEqual({ ok: true });
   });
 
-  it("returns invalid-email failure when Cloud returns 400", async () => {
+  it("returns invalid-email failure when newsletter returns 400", async () => {
     const request = new Request("https://beta.orbi.build/subscribe", {
-      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: "not-an-email", lang: "zh" }),
     });
     const response = await subscribeResponse(request, env(async () => new Response("bad", { status: 400 })));
@@ -743,10 +744,39 @@ describe("email subscription route (Issue #442)", () => {
     expect(await response.json()).toEqual({ error: "invalid_email" });
   });
 
-  // Issue #541: the no-JS 303 redirect branch is gone. The form is submitted
-  // by JS only, so the endpoint answers JSON no matter what the request asks
-  // for — even a form-encoded body with no Accept header, the exact shape a
-  // no-JS browser submit sends.
+  it("maps newsletter failures and exceptions to 502", async () => {
+    const request = new Request("https://beta.orbi.build/subscribe", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "email=ada%40example.com&lang=en",
+    });
+    for (const newsletter of [
+      async () => new Response("created", { status: 201 }),
+      async () => new Response("down", { status: 500 }),
+      async () => { throw new Error("network down"); },
+    ]) {
+      const response = await subscribeResponse(request.clone(), env(newsletter));
+      expect(response.status).toBe(502);
+      expect(await response.json()).toEqual({ error: "unavailable" });
+    }
+  });
+
+  it("returns 503 and logs when newsletter configuration is missing", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const missing of [{ NEWSLETTER_SUBSCRIBE_SECRET: "subscribe-secret" }, { NEWSLETTER: { fetch: vi.fn() } }]) {
+        const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "ada@example.com", lang: "en" }),
+        }), missing);
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ error: "unavailable" });
+      }
+      expect(error).toHaveBeenCalledTimes(2);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
   it("answers JSON only, never a redirect", async () => {
     const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -755,15 +785,6 @@ describe("email subscription route (Issue #442)", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/json; charset=utf-8");
     expect(await response.json()).toEqual({ ok: true });
-  });
-
-  it("does not mislabel an unavailable upstream as an invalid email", async () => {
-    const response = await subscribeResponse(new Request("https://beta.orbi.build/subscribe", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "email=ada%40example.com&lang=en",
-    }), env(async () => new Response("down", { status: 503 })));
-    expect(response.status).toBe(502);
-    expect(await response.json()).toEqual({ error: "unavailable" });
   });
 });
 

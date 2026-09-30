@@ -696,29 +696,36 @@ async function subscribeResponse(request, env) {
   const email = typeof fields?.email === "string" ? fields.email.trim() : "";
   const lang = fields?.lang === "zh" ? "zh" : fields?.lang === "en" ? "en" : null;
   if (!email || !lang) return subscriptionResponse(400, { error: "invalid_request" });
-  if (!env.CLOUD_SUBSCRIBE_URL || !env.WEBSITE_SECRET) {
-    console.error("subscribe_unavailable: Cloud subscription configuration is missing");
+  if (!env.NEWSLETTER || !env.NEWSLETTER_SUBSCRIBE_SECRET) {
+    console.error("subscribe_unavailable: newsletter configuration is missing");
     return subscriptionResponse(503, { error: "unavailable" });
+  }
+  let page = "";
+  try {
+    page = new URL(request.headers.get("Referer") || "").pathname;
+  } catch {
+    // An absent or malformed Referer does not prevent a subscription.
   }
   const payload = {
     email,
+    lang,
     ref: cookieFrom(request, "ref") || "",
     vid: cookieFrom(request, "vid") || "",
-    lang,
+    page,
   };
   try {
-    const cloudRequest = new Request(env.CLOUD_SUBSCRIBE_URL, {
+    const newsletterRequest = new Request("https://newsletter.orbi.build/api/subscribe", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.WEBSITE_SECRET}`,
+        Authorization: `Bearer ${env.NEWSLETTER_SUBSCRIBE_SECRET}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000),
     });
-    const response = await (env.CLOUD ? env.CLOUD.fetch(cloudRequest) : fetch(cloudRequest));
+    const response = await env.NEWSLETTER.fetch(newsletterRequest);
     if (response.status === 400) return subscriptionResponse(400, { error: "invalid_email" });
-    if (!response.ok) {
+    if (response.status !== 200) {
       console.error("subscribe_upstream_rejected", response.status);
       return subscriptionResponse(502, { error: "unavailable" });
     }
