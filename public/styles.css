@@ -368,9 +368,12 @@ h2 {
   letter-spacing: -0.055em;
 }
 
+/* Section headings share the hero headline's size, so no section outshouts it. */
+h1,
+h2 { font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem); }
+
 h1 {
   margin-bottom: 24px;
-  font-size: clamp(2rem, calc(1.5rem + 1.6vw), 4rem);
   max-width: var(--hero-copy-width);
 }
 
@@ -982,8 +985,7 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 
 h2 {
   margin-bottom: 30px;
-  font-size: clamp(3.2rem, 5.3vw, 6.3rem);
-  line-height: 0.98;
+  line-height: 1.05;
 }
 
 .section-lede,
@@ -1319,7 +1321,7 @@ h2 {
 }
 
 .section-tag-dark { color: #9fb7b1; }
-.ownership .orbi-ownership-h2 { margin-bottom: 24px; font-size: clamp(3rem, 4.5vw, 5.4rem); }
+.ownership .orbi-ownership-h2 { margin-bottom: 24px; }
 .ownership .orbi-ownership-p:not(.section-tag) { max-width: 37rem; color: #b8cac5; }
 
 .ownership-map {
@@ -1965,7 +1967,6 @@ h2 {
   .proof,
   .direction,
   .closing { padding-top: 88px; padding-bottom: 88px; }
-  h2 { font-size: clamp(2.8rem, 13vw, 4.2rem); line-height: 1; }
   .thesis { gap: 60px; }
   .shift-list .orbi-shift-list-li { grid-template-columns: 28px 1fr auto 1.2fr; gap: 8px; padding: 19px 0; }
   .shift-list strong,
