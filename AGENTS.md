@@ -244,32 +244,21 @@ are permanently diverged — every promotion is a true merge, never a fast-forwa
 
 ## Promotion to production (beta → main)
 
-Promote a fixed, already-deployed beta snapshot; never open the production PR
-from the moving `beta` head. Create a branch at the exact beta commit that is to
-ship (for example `promote/<date>`), then open one PR from that snapshot branch
-to `main` and merge it with GitHub's **Create a merge commit** (`--no-ff`). The
-PR never auto-merges: a human picks the merge moment.
+Every change lands on `beta` first. Production is promoted by one PR whose head
+is `beta` itself — never a snapshot branch, never a branch cut from `main` — and
+it is merged with **Create a merge commit** only (the `Main` ruleset allows
+nothing else). `main` is always an ancestor of `beta`, so the PR never
+conflicts. CI job `promotion-source` rejects any other head (Issue #675). The PR
+never auto-merges: a human picks the merge moment, and what ships is beta's
+head at that moment.
 
 ```
-git switch -c promote/<date> <deployed-beta-sha>
-gh pr create --repo orbi-build/orbi-website --base main --head promote/<date> \
-  --title "晋升 beta 快照到 main：<一句话概括>" --body-file <evidence body>
+gh pr create --repo orbi-build/orbi-website --base main --head beta \
+  --title "晋升 beta 到 main：<一句话概括>" --body-file <evidence body>
 ```
 
-Before opening the PR:
-
-- **Merge preflight**, no working-tree change:
-  `git fetch origin && git merge-tree --write-tree --name-only origin/main promote/<date>`.
-  Conflicts are listed under the tree hash; fix them on the snapshot branch first.
-- **Drill the anti-drift gate.** A gate that has never been seen red is not
-  evidence of anything (Issue #151: the pricing gate existed only on `beta` while
-  `main` shipped stale copy). On the branch about to be promoted:
-  `sed -i 's/"includedTokens": 300000000/"includedTokens": 2000000000/' src/pricing.json`,
-  then `timeout 300 npx vitest run tests/pricing.test.js` **must fail (exit 1)**,
-  then `git checkout -- src/pricing.json`.
-
-The full runbook, including the post-deploy acceptance greps, is
-[docs/promotion.md](docs/promotion.md).
+The full runbook, including the post-deploy acceptance greps and the
+anti-drift drill, is [docs/promotion.md](docs/promotion.md).
 
 ## Development
 
