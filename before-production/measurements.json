@@ -1,0 +1,273 @@
+[
+  {
+    "base": "https://orbi.build",
+    "phase": "before",
+    "width": 1440,
+    "lang": "en",
+    "measurements": [
+      {
+        "label": "Resources⌄",
+        "button": {
+          "x": 829.4896240234375,
+          "y": 19.666667938232422,
+          "width": 87.66667175292969,
+          "height": 44,
+          "centerY": 41.66666793823242
+        },
+        "text": {
+          "y": 33.0625,
+          "height": 16.666667938232422,
+          "centerY": 41.39583396911621
+        },
+        "icon": {
+          "x": 903.75,
+          "y": 33.66666793823242,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 41.66666793823242
+        },
+        "iconTag": "SPAN",
+        "font": "14.08px / 22.528px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.27083396911621094
+      },
+      {
+        "label": "Docs⌄",
+        "button": {
+          "x": 943.15625,
+          "y": 19.666667938232422,
+          "width": 53.3125,
+          "height": 44,
+          "centerY": 41.66666793823242
+        },
+        "text": {
+          "y": 33.0625,
+          "height": 16.666667938232422,
+          "centerY": 41.39583396911621
+        },
+        "icon": {
+          "x": 983.0625,
+          "y": 33.66666793823242,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 41.66666793823242
+        },
+        "iconTag": "SPAN",
+        "font": "14.08px / 22.528px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.27083396911621094
+      }
+    ],
+    "errors": [],
+    "failed": []
+  },
+  {
+    "base": "https://orbi.build",
+    "phase": "before",
+    "width": 1440,
+    "lang": "zh",
+    "measurements": [
+      {
+        "label": "资源⌄",
+        "button": {
+          "x": 878.9896240234375,
+          "y": 19.666667938232422,
+          "width": 48.552085876464844,
+          "height": 44,
+          "centerY": 41.66666793823242
+        },
+        "text": {
+          "y": 33.0625,
+          "height": 16.666667938232422,
+          "centerY": 41.39583396911621
+        },
+        "icon": {
+          "x": 914.1354370117188,
+          "y": 33.66666793823242,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 41.66666793823242
+        },
+        "iconTag": "SPAN",
+        "font": "14.08px / 22.528px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.27083396911621094
+      },
+      {
+        "label": "文档⌄",
+        "button": {
+          "x": 953.5416870117188,
+          "y": 19.666667938232422,
+          "width": 48.552085876464844,
+          "height": 44,
+          "centerY": 41.66666793823242
+        },
+        "text": {
+          "y": 33.0625,
+          "height": 16.666667938232422,
+          "centerY": 41.39583396911621
+        },
+        "icon": {
+          "x": 988.6875,
+          "y": 33.66666793823242,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 41.66666793823242
+        },
+        "iconTag": "SPAN",
+        "font": "14.08px / 22.528px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.27083396911621094
+      }
+    ],
+    "errors": [],
+    "failed": [
+      {
+        "url": "https://orbi.build/video/delivery-loop.mp4",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "base": "https://orbi.build",
+    "phase": "before",
+    "width": 390,
+    "lang": "en",
+    "measurements": [
+      {
+        "label": "Resources⌄",
+        "button": {
+          "x": 9,
+          "y": 220.33334350585938,
+          "width": 356.66668701171875,
+          "height": 46,
+          "centerY": 243.33334350585938
+        },
+        "text": {
+          "y": 234.2291717529297,
+          "height": 18,
+          "centerY": 243.2291717529297
+        },
+        "icon": {
+          "x": 98.34375,
+          "y": 235.33334350585938,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 243.33334350585938
+        },
+        "iconTag": "SPAN",
+        "font": "14.72px / 23.552px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.1041717529296875
+      },
+      {
+        "label": "Docs⌄",
+        "button": {
+          "x": 9,
+          "y": 266.3333435058594,
+          "width": 356.66668701171875,
+          "height": 46,
+          "centerY": 289.3333435058594
+        },
+        "text": {
+          "y": 280.22918701171875,
+          "height": 18,
+          "centerY": 289.22918701171875
+        },
+        "icon": {
+          "x": 62.41666793823242,
+          "y": 281.3333435058594,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 289.3333435058594
+        },
+        "iconTag": "SPAN",
+        "font": "14.72px / 23.552px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.104156494140625
+      }
+    ],
+    "errors": [],
+    "failed": [
+      {
+        "url": "https://orbi.build/video/delivery-loop.mp4",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "base": "https://orbi.build",
+    "phase": "before",
+    "width": 390,
+    "lang": "zh",
+    "measurements": [
+      {
+        "label": "资源⌄",
+        "button": {
+          "x": 9,
+          "y": 220.33334350585938,
+          "width": 356.66668701171875,
+          "height": 46,
+          "centerY": 243.33334350585938
+        },
+        "text": {
+          "y": 234.2291717529297,
+          "height": 18,
+          "centerY": 243.2291717529297
+        },
+        "icon": {
+          "x": 57.4375,
+          "y": 235.33334350585938,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 243.33334350585938
+        },
+        "iconTag": "SPAN",
+        "font": "14.72px / 23.552px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.1041717529296875
+      },
+      {
+        "label": "文档⌄",
+        "button": {
+          "x": 9,
+          "y": 266.3333435058594,
+          "width": 356.66668701171875,
+          "height": 46,
+          "centerY": 289.3333435058594
+        },
+        "text": {
+          "y": 280.22918701171875,
+          "height": 18,
+          "centerY": 289.22918701171875
+        },
+        "icon": {
+          "x": 57.4375,
+          "y": 281.3333435058594,
+          "width": 13.40625,
+          "height": 16,
+          "centerY": 289.3333435058594
+        },
+        "iconTag": "SPAN",
+        "font": "14.72px / 23.552px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconFont": "16px / 16px \"Instrument Sans\", \"PingFang SC\", \"Hiragino Sans GB\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", sans-serif",
+        "iconText": "⌄",
+        "centerDelta": 0.104156494140625
+      }
+    ],
+    "errors": [],
+    "failed": [
+      {
+        "url": "https://orbi.build/video/delivery-loop.mp4",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  }
+]
