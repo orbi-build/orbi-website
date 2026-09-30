@@ -646,9 +646,9 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 6, 7, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 7, 13, 8]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(40);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
     }
   });
 
@@ -1289,24 +1289,23 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     }
   });
 
-  it("uses the resource labels in the footer without dropdown descriptions", () => {
-    const footerLabels = {
-      en: [["/blog/", "Blog"], ["/cost/", "Cost per merged PR"], ["/aiready/", "ai-ready: 12 factors"]],
-      zh: [["/zh/blog/", "博客"], ["/zh/cost/", "每个 PR 花多少钱"], ["/aiready/zh/", "ai-ready 12 要素"]],
-    };
+  it("uses all six resource labels in the footer without dropdown descriptions", () => {
     const surfaces = [...pages.filter((p) => p.nav), ...posts];
     for (const page of surfaces) {
+      const expected = RESOURCES[page.lang];
       const siteBase = page.nav?.siteBase ?? "";
       const footer = footerRegion(shipped.get(page.output));
       const resources = region(footer, `<h2>${page.lang === "zh" ? "资源" : "Resources"}</h2>`, `</div>`);
       const items = [...resources.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)]
         .map((match) => [match[1], match[2]]);
-      const expected = footerLabels[page.lang].map(([href, label]) => [
+      const expectedItems = expected.items.map(([href, label]) => [
         `${siteBase}${href}`,
         label,
       ]);
-      expect(items.slice(0, 3), `${page.output}: footer resource labels drifted`).toEqual(expected);
-      expect(resources, `${page.output}: footer resources must not contain dropdown descriptions`).not.toContain("nav-dropdown-menu-description");
+      expect(items.slice(0, expectedItems.length), `${page.output}: footer resource labels drifted`).toEqual(expectedItems);
+      for (const [, , description] of expected.items) {
+        if (description) expect(resources, `${page.output}: footer includes ${description}`).not.toContain(description);
+      }
     }
   });
 
