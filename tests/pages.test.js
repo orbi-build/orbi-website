@@ -866,8 +866,9 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
       if (!output.endsWith(".html")) continue;
       expect(html, output).not.toContain("$1–3");
       if (!measuredCostOutputs.has(output)) {
-        expect(html, output).not.toContain("per merged PR");
-        expect(html, output).not.toContain("每个合并 PR 约");
+        const pageBody = html.replace(navRegion(html), "").replace(footerRegion(html), "");
+        expect(pageBody, output).not.toContain("per merged PR");
+        expect(pageBody, output).not.toContain("每个合并 PR 约");
       }
     }
   });
@@ -1242,23 +1243,23 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     en: {
       label: "Resources",
       items: [
-        ["/evidence/", "Evidence"],
-        ["/benchmark/", "Benchmark"],
-        ["/cost/", "Cost per PR"],
-        ["/aiready/", "Method"],
-        ["/compare/", "Comparisons"],
-        ["/blog/", "Blog"],
+        ["/evidence/", "Orbi builds Orbi", "Public issues, PRs and releases on GitHub"],
+        ["/benchmark/", "How we test the harness", "Delivery runs on open-source bugs, graded by maintainers' tests"],
+        ["/cost/", "Cost per merged PR", "Measured on our own repos, with sample size and limits"],
+        ["/aiready/", "ai-ready: 12 factors", "What makes an Issue safe to hand to an AI"],
+        ["/compare/", "Orbi vs alternatives", "Claude Code, Codex, Devin and more, fact-checked"],
+        ["/blog/", "Blog", ""],
       ],
     },
     zh: {
       label: "资源",
       items: [
-        ["/zh/evidence/", "证据"],
-        ["/zh/benchmark/", "Benchmark"],
-        ["/zh/cost/", "每个 PR 的成本"],
-        ["/aiready/zh/", "方法"],
-        ["/zh/compare/", "对比"],
-        ["/zh/blog/", "博客"],
+        ["/zh/evidence/", "Orbi 交付自己的记录", "公开的 Issue、PR 和发版，都在 GitHub 上"],
+        ["/zh/benchmark/", "我们怎么测 harness", "在开源 bug 上跑交付，用维护者的测试打分"],
+        ["/zh/cost/", "每个 PR 花多少钱", "在自家仓库实测，附样本量和限制"],
+        ["/aiready/zh/", "ai-ready 12 要素", "什么样的 Issue 能交给 AI 无人值守交付"],
+        ["/zh/compare/", "与同类工具对比", "Claude Code、Codex、Devin 等，逐条核实"],
+        ["/zh/blog/", "博客", ""],
       ],
     },
   };
@@ -1277,13 +1278,42 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
       expect(dropdown, `${page.output}: dropdown label`).toContain(
         `data-dropdown-toggle>${expected.label}<span aria-hidden="true">⌄</span></button>`,
       );
-      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([^<]+)<\/a>/g)]
+      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([\s\S]*?)<\/a>/g)]
         .map((match) => [match[1], match[2]]);
-      const expectedItems = expected.items.map(([href, label]) => [
+      const expectedItems = expected.items.map(([href, label, description]) => [
         href.startsWith("/") ? `${siteBase}${href}` : href,
-        label,
+        `<span class="orbi-nav-dropdown-menu-label">${label}</span>${description ? `<span class="orbi-nav-dropdown-menu-description">${description}</span>` : ""}`,
       ]);
       expect(items, `${page.output}: dropdown items drifted`).toEqual(expectedItems);
+      expect(dropdown, `${page.output}: dropdown links must contain their complete copy`).not.toMatch(/>[^<]+<\/a>/);
+    }
+  });
+
+  it("uses the resource labels in the footer without dropdown descriptions", () => {
+    const footerLabels = {
+      en: [["/blog/", "Blog"], ["/cost/", "Cost per merged PR"], ["/aiready/", "ai-ready: 12 factors"]],
+      zh: [["/zh/blog/", "博客"], ["/zh/cost/", "每个 PR 花多少钱"], ["/aiready/zh/", "ai-ready 12 要素"]],
+    };
+    const surfaces = [...pages.filter((p) => p.nav), ...posts];
+    for (const page of surfaces) {
+      const siteBase = page.nav?.siteBase ?? "";
+      const footer = footerRegion(shipped.get(page.output));
+      const resources = region(footer, `<h2>${page.lang === "zh" ? "资源" : "Resources"}</h2>`, `</div>`);
+      const items = [...resources.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)]
+        .map((match) => [match[1], match[2]]);
+      const expected = footerLabels[page.lang].map(([href, label]) => [
+        `${siteBase}${href}`,
+        label,
+      ]);
+      expect(items.slice(0, 3), `${page.output}: footer resource labels drifted`).toEqual(expected);
+      expect(resources, `${page.output}: footer resources must not contain dropdown descriptions`).not.toContain("nav-dropdown-menu-description");
+    }
+  });
+
+  it("does not ship the old resource labels as navigation or footer link text", () => {
+    const rendered = [...shipped.values()].map((html) => html.replace(/<!--[\s\S]*?-->/g, "")).join("\n");
+    for (const label of ["证据", "方法", "对比", "Evidence", "Method", "Comparisons"]) {
+      expect(rendered).not.toMatch(new RegExp(`<(?:a|button)[^>]*>\\s*${label}\\s*(?:<|$)`));
     }
   });
 
@@ -1533,8 +1563,8 @@ print(json.dumps({
   });
 
   it("links the blog from the primary nav on both language homes", () => {
-    expect(navRegion(shipped.get("index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem">Blog</a>');
-    expect(navRegion(shipped.get("zh/index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem">博客</a>');
+    expect(navRegion(shipped.get("index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a>');
+    expect(navRegion(shipped.get("zh/index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">博客</span></a>');
   });
 });
 
