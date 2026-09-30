@@ -240,6 +240,21 @@ describe("Cloud trial copy (Issue #679)", () => {
     }
   });
 
+  it("keeps every Cloud trial allowance tokenized and removes the retired free wording", async () => {
+    const retiredCopy = [
+      /first (?:3|three) merged deliveries (?:are )?free/i,
+      /three free deliveries/i,
+      /前 3 次合并交付免费/,
+      /三次免费交付/,
+    ];
+    for (const path of await listHtmlFiles(SITE_PAGES_DIR)) {
+      const html = await readFile(path, "utf8");
+      for (const pattern of retiredCopy) {
+        expect(html.match(pattern), `${path}: ${pattern}`).toBeNull();
+      }
+    }
+  });
+
   it("matches the English and Chinese trial cards", async () => {
     for (const [relativePath, expected] of trialPages) {
       const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
