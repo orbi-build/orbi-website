@@ -143,6 +143,11 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         expect(await toggle.locator('[data-pricing-interval="month"] + [data-pricing-interval="year"]').count()).toBe(1);
         expect(await toggle.locator('[data-pricing-interval="year"] .pricing-savings').count()).toBe(1);
         expect(await toggle.locator('[data-pricing-interval="month"] + .pricing-savings').count()).toBe(0);
+        const selectedYearColors = await toggle.locator('[data-pricing-interval="year"]').evaluate((button) => ({
+          background: getComputedStyle(button).backgroundColor,
+          savings: getComputedStyle(button.querySelector(".pricing-savings")).color,
+        }));
+        expect(selectedYearColors.savings).not.toBe(selectedYearColors.background);
 
         const styles = await page.locator('[data-pricing-price="solo"], [data-pricing-price="pro"]').evaluateAll((prices) => prices.map((price) => {
           const style = getComputedStyle(price);

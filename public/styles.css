@@ -1356,6 +1356,7 @@ h2 {
 .pricing-interval-toggle button { border: 1px solid var(--line); padding: 8px 14px; color: var(--ink); background: var(--paper); font: 500 .82rem/1 var(--mono); cursor: pointer; }
 .pricing-interval-toggle button.is-selected { border-color: var(--signal); color: var(--paper); background: var(--signal); }
 .pricing-savings { margin-left: 8px; color: var(--signal); font: 500 .78rem/1 var(--mono); }
+.pricing-interval-toggle button.is-selected .pricing-savings { color: var(--ink); }
 .pricing-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 36px 0 24px; }
 .pricing-card { display: flex; flex-direction: column; gap: 14px; padding: 28px 24px; border: 2px solid var(--line); background: var(--paper); }
 .pricing-card-featured { border-color: var(--signal); }
