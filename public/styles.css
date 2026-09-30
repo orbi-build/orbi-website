@@ -208,9 +208,11 @@ img {
 .nav-dropdown-toggle:hover,
 .nav-dropdown-toggle[aria-expanded="true"] { color: #fff; }
 
-.nav-dropdown-toggle span {
-  font-size: 1rem;
-  line-height: 1;
+.nav-dropdown-indicator {
+  display: block;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .nav-dropdown-menu {
