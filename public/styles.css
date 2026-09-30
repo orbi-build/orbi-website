@@ -218,7 +218,7 @@ img {
   top: calc(100% + 8px);
   left: 50%;
   display: none;
-  min-width: 190px;
+  min-width: 320px;
   padding: 8px;
   border: 1px solid var(--line-dark);
   background: #07191f;
@@ -231,15 +231,28 @@ img {
 
 .nav-dropdown-menu .orbi-nav-dropdown-menu-a {
   display: flex;
-  align-items: center;
-  min-height: 42px;
-  padding: 0 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 58px;
+  padding: 8px 12px;
   color: #a9bbb8;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .nav-dropdown-menu .orbi-nav-dropdown-menu-a:hover { background: rgba(237, 245, 240, 0.08); color: #fff; }
+
+.orbi-nav-dropdown-menu-label {
+  color: #edf5f0;
+  font-weight: 700;
+}
+
+.orbi-nav-dropdown-menu-description {
+  color: #829a96;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
 
 .site-header nav > a.nav-apply {
   min-width: 76px;
@@ -1864,6 +1877,10 @@ h2 {
   .nav-dropdown-menu .orbi-nav-dropdown-menu-a {
     min-height: 42px;
     white-space: normal;
+  }
+
+  .orbi-nav-dropdown-menu-description {
+    max-width: 100%;
   }
 
   .site-header nav > a.nav-apply {
