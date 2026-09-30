@@ -62,7 +62,7 @@ greppable and belongs in the promotion record:
 
 ```
 curl -s https://orbi.build/ | grep -c "2B tokens"    # must be 0
-curl -s https://orbi.build/ | grep -o "300M tokens"  # must match
+curl -s https://orbi.build/ | grep -o "1.2B tokens"  # must match
 git show origin/main:src/pricing.json                # must carry includedTokens
 ```
 
@@ -74,7 +74,7 @@ evidence of anything (Issue #151: the gate existed only on beta while main
 shipped the stale copy). Drill it on the branch about to be promoted:
 
 ```
-sed -i 's/"includedTokens": 300000000/"includedTokens": 2000000000/' src/pricing.json
+sed -i 's/"includedTokens": 1200000000/"includedTokens": 2000000000/' src/pricing.json
 timeout 300 npx vitest run tests/pricing.test.js     # must FAIL (exit 1)
 git checkout -- src/pricing.json
 ```
