@@ -922,8 +922,8 @@ async function assertHomeDropdowns(browser, path, size, screenshot) {
         name: "Resources",
         root: page.locator(".nav-resources"),
         links: zh
-          ? ["/zh/blog/", "/zh/compare/", "/zh/evidence/", "/zh/cost/", "/aiready/zh/", "/zh/benchmark/"]
-          : ["/blog/", "/compare/", "/evidence/", "/cost/", "/aiready/", "/benchmark/"],
+          ? ["/zh/evidence/", "/zh/benchmark/", "/zh/cost/", "/aiready/zh/", "/zh/compare/", "/zh/blog/"]
+          : ["/evidence/", "/benchmark/", "/cost/", "/aiready/", "/compare/", "/blog/"],
       },
       {
         name: "Docs",
