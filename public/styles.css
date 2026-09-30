@@ -1352,6 +1352,7 @@ h2 {
 .pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
 .pricing-card-actions { margin-top: auto; }
 .pricing-card .button { align-self: flex-start; margin-top: 0; }
+.once-pay-note { margin: 8px 0 0; color: var(--ink-soft); }
 .self-hosted-note { color: var(--ink-soft); }
 
 .run-options {

@@ -495,7 +495,16 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain(relativePath.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=solo&amp;interval=year"');
       expect(body, relativePath).toContain('href="/api/checkout?plan=pro&amp;interval=year"');
-      expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual(['href="/api/checkout?plan=solo&amp;interval=year"', 'href="/api/checkout?plan=pro&amp;interval=year"']);
+      expect(body.match(/href="\/api\/checkout[^"]*"/g), relativePath).toEqual([
+        'href="/api/checkout?plan=solo&amp;interval=year"',
+        'href="/api/checkout?plan=pro&amp;interval=year"',
+        // Chinese buyers pay once with Alipay / WeChat Pay (Stripe offers no
+        // subscriptions for either); orbi-cloud#1611 serves payment=once.
+        'href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once"',
+        'href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once"',
+        'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once"',
+        'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once"',
+      ]);
       expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
       expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
