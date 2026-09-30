@@ -187,6 +187,14 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Searching for Orbi's harness, part 2: is the regression guard worth its tokens? (English):
+  https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/
+- 给 Orbi 找 harness（下）：回归防护值不值它的 token (Chinese):
+  https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/
+- Searching for Orbi's harness, part 1: what our reviewer missed (English):
+  https://orbi.build/blog/searching-for-orbis-harness/
+- 给 Orbi 找 harness（上）：我们的评审漏掉了什么 (Chinese):
+  https://orbi.build/zh/blog/searching-for-orbis-harness/
 - GitSpawn and the agent that never asks (English):
   https://orbi.build/blog/gitspawn-unattended-agent/
 - GitSpawn 绕开的是审批，我们的 agent 本来就不审批 (Chinese):

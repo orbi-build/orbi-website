@@ -20,6 +20,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/benchmark/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/"/>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/"/>
@@ -272,6 +281,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/zh/benchmark/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/"/>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/zh/blog/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/"/>
@@ -520,6 +538,42 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
     <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/searching-for-orbis-harness/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/searching-for-orbis-harness/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/searching-for-orbis-harness/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/searching-for-orbis-harness/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

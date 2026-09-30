@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>给 Orbi 找 harness（下）：回归防护值不值它的 token | Orbi</title>
+  <meta name="description" content="八个 Orbi 没见过、issue 只给一个窄例子的 bug 上，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。哪些管用、哪些不管用，以及为什么最简单的设计胜出。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="给 Orbi 找 harness（下）：回归防护值不值它的 token">
+  <meta property="og:description" content="八个 Orbi 没见过、issue 只给一个窄例子的 bug 上，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。哪些管用、哪些不管用，以及为什么最简单的设计胜出。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/">
+  <meta property="og:image" content="https://orbi.build/img/blog-harness-part2.png">
+  <meta property="og:image:alt" content="给 Orbi 找 harness（下）：回归防护值不值它的 token">
+  <meta property="article:published_time" content="2026-09-30">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"给 Orbi 找 harness（下）：回归防护值不值它的 token","datePublished":"2026-09-30","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-harness-part2.png","inLanguage":"zh-CN","description":"八个 Orbi 没见过、issue 只给一个窄例子的 bug 上，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。哪些管用、哪些不管用，以及为什么最简单的设计胜出。","url":"https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/guides/">指南</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem">博客</a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" role="menuitem">对比</a><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem">证据</a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem">每个 PR 的成本</a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem">方法</a><a class="orbi-nav-dropdown-menu-a" href="/zh/benchmark/" role="menuitem">Benchmark</a></div></div>
+        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-dropdown-toggle>文档<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">登录</a>
+        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
+        <span class="language" role="group" aria-label="语言">
+          <span aria-current="page">ZH</span>
+          <a href="/blog/is-the-regression-guard-worth-its-tokens/" lang="en" aria-label="English">EN</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">博客 · 2026-09-30</p>
+        <h1 id="post-title">给 Orbi 找 harness（下）：回归防护值不值它的 token</h1>
+        <p class="hero-lede">八个 Orbi 没见过、issue 只给一个窄例子的 bug 上，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。哪些管用、哪些不管用，以及为什么最简单的设计胜出。</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p><a href="/zh/blog/searching-for-orbis-harness/">第 1 部分</a>结束时，我们手上有一个 harness：调参时碰到的失败它全修好了，可在其他 bug 上成本中位数多了差不多一倍，而且在那些 bug 上测不出任何收益。这样的防护像一份保险。问题是它保的那种风险，在没见过的 bug 上到底会不会出现；以及这份保险能不能便宜一点。</p>
+<p>这一部分用另外八个 bug 和三种新的 harness 设计回答这两个问题。跑法和第 1 部分一样：私有快照，真实的 Orbi runner 跑完整流程，隐藏评分器事先校准过，修复前判失败、已知正确的修复判通过。实现和评审全程都用 <code>deepseek-flash</code>。所有脚本、任务和结果都在 <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>。</p>
+<h2>六条结论</h2>
+<ol>
+<li><strong>失败在没见过的 bug 上也是真的。</strong> 八个 issue 只给窄例子的 bug 上，原版 harness 12 次挂了 4 次。<code>dateparser</code> 和 <code>picomatch</code> 各是 3 次挂 2 次，挂的正是 issue 没展示的那些情况。</li>
+<li><strong>常开的防护修得好。</strong> 同样八个 bug，10 次过 9 次。唯一没过的那次在 <code>dateparser</code> 上，挂了维护者 2 个测试，原版在这题上没过的几次挂 4 到 5 个；不过这 2 个里有一个是新的：那次修复改动了 Python 的全局 <code>calendar</code> 模块。</li>
+<li><strong>按需触发保住了大部分收益，但不是全部。</strong> 只在改动涉及文本处理时才开防护，三个原始失败全过，八个窄例子 bug 过了 7 个，常开版是 10 次过 9 次；<code>picomatch</code> 上两个门控版本（v19 和 v19b）都挂了，常开版两次都过。</li>
+<li><strong>而且按需触发几乎没省钱。</strong> 九个普通 bug 里有八个触发了门控，所以按需触发每次用 5.2 百万 token，常开版 5.8 百万，只少约 10%，原版是 2.8 百万。一个只省 10%、又多出一种出错方式的分类器，不值得它带来的复杂度。</li>
+<li><strong>两种更省钱的设计不管用，而且评审从没说过「不」。</strong> 只加强评审，三个原始失败只过 1 个：评审 prompt 里写全了回归排查，两个回归它都放过了。全部 183 次运行里，被隐藏评分器判失败的 38 次，每一次都通过了 Orbi 的评审。先把工单写细，过 2 个。</li>
+<li><strong>所以我们放弃门控。</strong> 更简单的设计胜出：常开防护加一个按仓库的开关，默认关，由 bug 像这几类的仓库（解析器、格式化器、脱敏、各种转义）自己打开。没有分类器，也就没有判断出错的风险。另外，我们叫停 71 秒后 Orbi 还是把门控版合了进去，已在发版前 revert。</li>
+</ol>
+<h2>八个形状和 Orbi 失败一样的新 bug</h2>
+<p>第 1 部分结束时，各套 harness 在三个调参 issue 之外看起来都差不多。可那三次失败有个共同点，是普通留出题没有的：issue 只给了一个例子，而正确的修法得顾及它周围的一整类输入。所以我们专门去找这种形状的 bug。</p>
+<p>八个真实修复，都在 2026 年 8 月 10 日之后合并，都是纯 Python、Go 或 JavaScript 的小库：<code>loguru</code>（负时间戳）、<code>dateparser</code>（周数格式）、<code>gocsv</code>（补零的整数）、<code>goja</code>（正则里类转义后跟连字符）、<code>doublestar</code>（<code>{}</code> 里的字符类）、<code>picomatch</code>（取反的方括号）、<code>markdown-it</code>（链接里的 IPv6 主机）、<code>marked</code>（链接地址里的实体）。每道题维护者的测试都比 issue 的例子覆盖得宽，我们也验证过：只照着例子写的修法，例子能过，维护者的测试过不了。Orbi 看到的工单只保留 issue 自己给的例子。</p>
+<figure class="post-media">
+<img src="/img/diagrams/harness-narrow-zh.svg" alt="八个 issue 只给窄例子的 bug。原版 harness 12 次过 8 次，dateparser 和 picomatch 各挂 2 次；常开防护 10 次过 9 次；按需触发 8 次过 7 次。" width="720" height="410">
+<figcaption>各套 harness 拉开差距的地方。dateparser 和 picomatch 在原版上各跑了 3 次。</figcaption>
+</figure><p>原版就是在这里栽的，而且是在没见过的 bug 上。<code>dateparser</code> 的 issue 只给了两种周数格式，维护者的测试还覆盖了第 00 周要落到上一年、以及不完整的格式；原版三次里有两次把两种格式修好了，这两样都漏了。<code>picomatch</code> 的 issue 给的是 <code>[!abc]</code>，测试还覆盖了没闭合的 <code>[!]</code> 和 <code>literalBrackets</code> 选项；三次里两次漏了。</p>
+<p>常开防护 10 次过 9 次，唯一没过的那次 <code>dateparser</code> 挂了 2 个测试，原版没过的几次挂 4 到 5 个；这 2 个里有一个是它自己引入的回归：改动了 Python 的全局 <code>calendar</code> 模块。按需触发 8 次过 7 次，<code>picomatch</code> 挂了一次。数字都小，一次运行就能翻转一格，但方向和那三次原始失败一致：修法要覆盖的比例子多时，按整类生成输入才能找出缺口。</p>
+<h2>五种 harness 对上 Orbi 交付过的失败</h2>
+<p>常开防护修好了这些失败，却让其他修复的成本中位数翻了差不多一倍。所以我们在三个 Orbi 原本做错的 issue 上又试了三种更省的设计，实现和评审都用 <code>deepseek-flash</code>：</p>
+<ul>
+<li><strong>只加强评审（v21）</strong>：实现用原版 prompt（外加贡献 skill 和 <code>PATH</code> 里的仓库工具），回归排查只放在评审里。3 个过 1 个。评审 prompt 里写全了回归排查，它在 <code>chainloop</code> 上判了 <code>pass, no findings</code>，在 <code>pyinfra</code> 上自己修了一个问题后放行，两个回归都原样交付了（密码泄漏和 👍🏽 错位）。</li>
+<li><strong>先充实工单（v20）</strong>：runner 开工之前，先让便宜模型在临时副本里复现 bug，往 issue 里追加一段分析：bug 在哪、修法必须覆盖哪几类输入（带具体例子）、哪些行为不能变、设计要点。然后再跑原版 harness。3 个过 2 个，<code>pyinfra</code> 还是交付了 👍🏽 和「が」的回归。</li>
+<li><strong>按需触发（v19）</strong>：全套回归防护照旧，但只在改动涉及文本或字节的解析、转义、截断、切分、测量、匹配、替换、编码或脱敏时才启用；别的改动只要针对性的测试加现有测试。3 个全过。</li>
+</ul>
+<figure class="post-media">
+<img src="/img/diagrams/harness-variants-zh.svg" alt="五种 harness 在三个 Orbi 做错过的 issue 上：原版 15 次过 6 次，只加强评审 3 次过 1 次，先充实工单 3 次过 2 次，按需触发 3 次全过，常开防护 9 次全过；柱下标注每次运行的 token 中位数。" width="720" height="400">
+<figcaption>浅色柱不到 5 次。柱下是每次运行 token 中位数（百万）。</figcaption>
+</figure><p>门控省下的比我们期望的少。九个普通 bug，按需触发 9 次全过，每次中位数 5.2 百万 token；原版 2.8 百万，常开防护 5.8 百万。这些普通 bug 大多也碰文本处理（正则、参数解析、换行），九个里有八个触发了门控。</p>
+<h2>分题组看成本</h2>
+<p>通过率只是决定的一半。每次运行的 token 大头是缓存读取（约 97%），它随 agent 的对话轮数增长。一个要求多做检查的 harness，在它跑的 bug 上通常会更贵。</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>题组</th>
+<th>原版</th>
+<th>常开防护（v15）</th>
+<th>按需触发（v19）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="题组">3 个 Orbi 做错过的（调参集）</td>
+<td data-label="原版">6/15 · 5.7M</td>
+<td data-label="常开防护（v15）">9/9 · 13.4M</td>
+<td data-label="按需触发（v19）">3/3 · 10.8M</td>
+</tr>
+<tr>
+<td data-label="题组">8 个窄例子 bug（没见过）</td>
+<td data-label="原版">8/12 · 3.6M</td>
+<td data-label="常开防护（v15）">9/10 · 8.3M</td>
+<td data-label="按需触发（v19）">7/8 · 5.2M</td>
+</tr>
+<tr>
+<td data-label="题组">9 个普通 bug（没见过）</td>
+<td data-label="原版">9/9 · 2.8M</td>
+<td data-label="常开防护（v15）">9/9 · 5.8M</td>
+<td data-label="按需触发（v19）">9/9 · 5.2M</td>
+</tr>
+<tr>
+<td data-label="题组">3 个容易改出回归的 bug（没见过）</td>
+<td data-label="原版">4/4 · 7.1M</td>
+<td data-label="常开防护（v15）">3/3 · 13.9M（没有 numpy）</td>
+<td data-label="按需触发（v19）">没跑</td>
+</tr>
+</tbody></table></div>
+<p>通过 / 运行，以及每次运行 token 中位数（百万）。每次运行的耗时中位数也是同样的走势：普通 bug 上 11、16、15 分钟，窄例子 bug 上 12.5、19、17.5 分钟。</p>
+<figure class="post-media">
+<img src="/img/diagrams/harness-tradeoff-zh.svg" alt="原版、常开防护、按需触发三种 harness 在调参 issue、窄例子 bug、普通 bug 上的通过率和每次运行 token 中位数。" width="720" height="450">
+<figcaption>柱高是通过率，标注是每次运行 token 中位数（百万）。</figcaption>
+</figure><p>按行读这张表。在防护有用的题上（前两行），两种带防护的 harness 都把通过率从 15 次过 6 次、12 次过 8 次，提到了 8 次过 7 次到 9 次全过之间。在防护没用的题上（后两行），原版本来就全过，任何防护都是纯成本。按需触发在门控关着的地方比常开便宜，门控打开的地方和常开差不多。</p>
+<h2>独立审查怎么说，以及后来发生了什么</h2>
+<p>在把按需触发设成 Orbi 默认之前，我们开了一张票 <a href="https://github.com/orbi-build/orbi/issues/1501">orbi#1501</a>，Orbi 也开了 PR。随后维护者问我们凭什么确定它是对的，我们就停了下来：给票打上 <code>ai-blocked</code>，拿上面的数据请一个独立的审查方来挑这个决定的毛病。结论是别按默认合进去，理由有四条。</p>
+<ul>
+<li><strong>要上线的版本不是测过的版本。</strong> 门控原本要求实现方把判断写进 PR 正文。可 PR 正文是 Orbi 的 runner 写的，不是 agent 写的，那一行从来没出现过，评审也就无从核对。我们把判断挪进了 <code>.orbi/plan.md</code>，评审本来就会读这个文件。这个修正（v19b）本身是一次改动，当时还没跑过 benchmark。</li>
+<li><strong>成本落在每个人头上。</strong> 大多数 Orbi 用户的 bug 更像普通题组：原版本来就能过，防护只会加成本。</li>
+<li><strong>评审规则太严会适得其反。</strong> 把「该做却写了不需要」算成 Major，可能多出评审轮次，每多一轮就多一份 token 和时间。</li>
+<li><strong>benchmark 不该放进产品。</strong> 我们第一版 PR 把约 3000 行 benchmark 脚本塞进了 Orbi 自己的仓库。它们现在在 <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>。</li>
+</ul>
+<p>接着我们发现，打上 <code>ai-blocked</code> 71 秒后，Orbi 还是把 PR 合了。runner 在合并前会重新检查基线分支、能否合并、评审过的提交和 CI，却不会重新读 issue 的标签，所以评审途中加的暂停被忽略了。我们在任何版本发布之前 revert 了这次合并（<a href="https://github.com/orbi-build/orbi/pull/1503">orbi#1503</a>），并为 runner 的这个 bug 开了票（<a href="https://github.com/orbi-build/orbi/issues/1504">orbi#1504</a>）。这和整篇研究是同一个教训，只是高了一层：只在开头跑一次的检查，到最后就不作数了。</p>
+<h2>门控版差在哪</h2>
+<p>审查之后，我们跑了 v19b，也就是把门控判断写在评审读得到的地方的那一版。三个原始失败和 <code>dateparser</code> 都过了，<code>picomatch</code> 没过。</p>
+<p>读这几次运行，能看出防护差在哪里。门控的判断是合理的：<code>pyinfra</code> 的表格宽度、<code>chainloop</code> 的脱敏、<code>dateparser</code> 的格式、<code>picomatch</code> 的 glob 解析都判「需要」，<code>fedify</code> 的 mock setter 只是改调用关系，判「不需要」。<code>picomatch</code> 上，两次按需触发的运行（v19 和 v19b）都跑了防护，都漏掉了同样两种情况：没闭合的 <code>[!]</code> 和 <code>literalBrackets</code> 选项。v19 那次拿 Python 的 <code>fnmatch</code> 和 bash 当独立参照，它们实现的是 POSIX glob，根本不知道 picomatch 的这些选项。常开防护过了的那两次，是自己把这些选项列了出来：它们的报告里分别提到 4 次和 12 次，按需触发那两次的报告里一次都没有。推动 agent 去找独立参照的那条规则，把它推向了一个表达不了关键输入的参照。</p>
+<h2>我们接下来做什么</h2>
+<p>这次改动已经 revert，工作成果保留在分支和 benchmark 仓库里。计划按顺序是：</p>
+<ol>
+<li>把常开防护（v15）做成按仓库的开关，默认关，不加门控。文本处理是主要风险的仓库（解析器、格式化器、脱敏、各种转义）自己打开。</li>
+<li>在打开开关的仓库上，统计真实交付里它多花了多少 token、时间和评审轮次。</li>
+<li>查清防护为什么会漏掉 <code>picomatch</code> 那类输入：会改变解析方式的选项，以及没闭合的语法。现在的 prompt 没点名这两类，agent 选的参照也得能表达它们。</li>
+<li>在其他实现模型和评审模型上跑留出集。这里所有没见过的 bug 都是 <code>deepseek-flash</code> 写的修复，所以还说不出该推荐哪种组合。</li>
+</ol>
+<p>模型会变，适合它们的 harness 也会跟着变。我们以后做的每一次研究都会放到 <a href="/zh/benchmark/">benchmark 页</a>，数据放进 benchmark 仓库，下一次从这一次的数字出发。</p>
+<h2>局限</h2>
+<p>八个窄例子 bug 是个小样本，多数格子只有 1 到 3 次，一次运行就能让一格变动三分之一甚至更多。留出结果只用了一个实现模型。窄例子 bug 本来就是因为「只照例子修会挂」才被选中的，正是防护针对的那一类，所以它们的失败率不能当作 Orbi 所有 bug 的失败率。隐藏评分器也只能抓到维护者写了测试的缺陷。</p>
+<h2>相关</h2>
+<p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<section class="subscribe-box" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-signal" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+    </article>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">证据</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/cost/">每个 PR 的成本</a></li><li><a href="/aiready/zh/">方法</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="/zh/#direction">方向</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+  <script src="/subscribe.js" defer></script>
+
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
