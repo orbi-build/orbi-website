@@ -942,6 +942,56 @@ async function assertHomeDropdowns(browser, path, size, screenshot) {
       if ((await trigger.getAttribute("aria-expanded")) !== "false") {
         throw new Error(`${path}: ${dropdown.name} aria-expanded is not initially false`);
       }
+      if ((await trigger.getAttribute("aria-controls")) !== await menu.getAttribute("id")) {
+        throw new Error(`${path}: ${dropdown.name} aria-controls does not point to its menu`);
+      }
+      if ((await menu.getAttribute("role")) !== "menu" || await menu.locator('[role="menuitem"]').count() !== dropdown.links.length) {
+        throw new Error(`${path}: ${dropdown.name} menu accessibility contract changed`);
+      }
+      await trigger.click();
+      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+        throw new Error(`${path}: click did not open ${dropdown.name}`);
+      }
+      await page.keyboard.press("Tab");
+      if (!(await menu.locator('[role="menuitem"]').first().evaluate((link) => link === document.activeElement))) {
+        throw new Error(`${path}: Tab did not enter the ${dropdown.name} menu`);
+      }
+      await page.keyboard.press("Escape");
+      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
+        throw new Error(`${path}: Escape did not restore focus after Tab in ${dropdown.name}`);
+      }
+      const indicatorGeometry = await trigger.evaluate((button) => {
+        const svg = button.querySelector(".nav-dropdown-indicator");
+        const path = svg?.querySelector("path");
+        const textNode = [...button.childNodes].find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+        if (!svg || !path || !textNode) throw new Error("dropdown indicator or label text is missing");
+        const svgRect = svg.getBoundingClientRect();
+        const textRange = document.createRange();
+        textRange.selectNodeContents(textNode);
+        const textRect = textRange.getBoundingClientRect();
+        const pathBox = path.getBBox();
+        const viewBox = svg.viewBox.baseVal;
+        const stroke = Number.parseFloat(getComputedStyle(path).strokeWidth) || 0;
+        const visibleCenter = svgRect.top + ((pathBox.y + pathBox.height / 2) / viewBox.height) * svgRect.height;
+        return {
+          visibleCenter,
+          textCenter: textRect.top + textRect.height / 2,
+          svgWidth: svgRect.width,
+          svgHeight: svgRect.height,
+          stroke,
+          pathCenter: pathBox.y + pathBox.height / 2,
+          viewBoxCenter: viewBox.y + viewBox.height / 2,
+        };
+      });
+      if (indicatorGeometry.svgWidth !== 16 || indicatorGeometry.svgHeight !== 16) {
+        throw new Error(`${path}: ${dropdown.name} indicator box changed: ${JSON.stringify(indicatorGeometry)}`);
+      }
+      if (Math.abs(indicatorGeometry.pathCenter - indicatorGeometry.viewBoxCenter) > 0.01) {
+        throw new Error(`${path}: ${dropdown.name} visible stroke is not centered in its SVG box: ${JSON.stringify(indicatorGeometry)}`);
+      }
+      if (Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter) > 1) {
+        throw new Error(`${path}: ${dropdown.name} indicator is ${Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter).toFixed(2)}px from label center: ${JSON.stringify(indicatorGeometry)}`);
+      }
       await trigger.focus();
       await page.keyboard.press("Enter");
       if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) {

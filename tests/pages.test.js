@@ -1283,7 +1283,7 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
       const dropdown = region(nav, '<div class="nav-dropdown nav-resources">', "</div></div>");
       expect(dropdown, `${page.output}: nav-docs dropdown missing from the nav element`).not.toBe("");
       expect(dropdown, `${page.output}: dropdown label`).toContain(
-        `data-dropdown-toggle>${expected.label}<span aria-hidden="true">⌄</span></button>`,
+        `data-dropdown-toggle>${expected.label}<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>`,
       );
       const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([\s\S]*?)<\/a>/g)]
         .map((match) => [match[1], match[2]]);
@@ -1293,6 +1293,16 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
       ]);
       expect(items, `${page.output}: dropdown items drifted`).toEqual(expectedItems);
       expect(dropdown, `${page.output}: dropdown links must contain their complete copy`).not.toMatch(/>[^<]+<\/a>/);
+    }
+  });
+
+  it("uses the same decorative SVG indicator for Resources and Docs", () => {
+    for (const page of [...pages.filter((p) => p.nav), ...posts]) {
+      const nav = navRegion(shipped.get(page.output));
+      const indicators = [...nav.matchAll(/<svg class="nav-dropdown-indicator"[\s\S]*?<path d="([^"]+)"[\s\S]*?><\/path><\/svg>/g)];
+      expect(indicators, `${page.output}: both dropdowns need the shared indicator`).toHaveLength(2);
+      expect(indicators.map(([, path]) => path), `${page.output}: indicator geometry drifted`).toEqual(["M3 5.5 8 10.5 13 5.5", "M3 5.5 8 10.5 13 5.5"]);
+      expect(nav, `${page.output}: indicator must not expose text`).not.toContain("⌄");
     }
   });
 
