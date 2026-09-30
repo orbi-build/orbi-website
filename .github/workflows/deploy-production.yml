@@ -141,7 +141,7 @@ jobs:
               live="$(curl --fail --silent --show-error --location \
                 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
                 "https://orbi.build${path}?cachebust=${EXPECTED_SHA}-${attempt}" || true)"
-              printf '%s' "$live" | grep -qF "$expected" || stale="${stale} ${path}"
+              grep -qF -- "$expected" <<<"$live" || stale="${stale} ${path}"
             done
             if [ -z "$stale" ]; then
               echo "edge is serving the deployed build on every checked path (attempt ${attempt})"
