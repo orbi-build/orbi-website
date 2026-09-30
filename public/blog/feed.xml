@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</title>
+      <link>https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</guid>
+      <pubDate>Wed, 30 Sep 2026 00:00:00 GMT</pubDate>
+      <description>On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. What worked, what didn't, and why the simplest design won.</description>
+    </item>
+    <item>
+      <title>Searching for Orbi's harness, part 1: what our reviewer missed</title>
+      <link>https://orbi.build/blog/searching-for-orbis-harness/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/searching-for-orbis-harness/</guid>
+      <pubDate>Tue, 29 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.</description>
+    </item>
+    <item>
       <title>GitSpawn and the agent that never asks</title>
       <link>https://orbi.build/blog/gitspawn-unattended-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/gitspawn-unattended-agent/</guid>

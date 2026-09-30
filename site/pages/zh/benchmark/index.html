@@ -1,0 +1,241 @@
+<!--orbi:page
+{
+  "output": "zh/benchmark/index.html",
+  "lang": "zh",
+  "mirror": "benchmark/index.html",
+  "layout": "pretty",
+  "nav": {
+    "navId": "primary-navigation",
+    "systemHref": "/zh/#system",
+    "compareHref": "/zh/compare/",
+    "compareLabel": "竞品对比",
+    "compareDataCta": false,
+    "compareCurrent": false,
+    "costHref": "/zh/cloud/#pricing",
+    "costCurrent": false,
+    "compareCostSameLine": false,
+    "docsHref": "https://docs.orbi.build/zh",
+    "langSwitchHref": "/benchmark/",
+    "langCurrentFirst": true
+  }
+}
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我们怎么测 Orbi 的 harness：benchmark</title>
+  <meta name="description" content="我们在 Orbi 从没见过的真实开源 bug 上跑完整交付流程，用上游维护者自己的测试打分。在 issue 只给窄例子的 bug 上，原版 harness 12 次挂了 4 次，常开的回归防护 10 次过 9 次，但在普通 bug 上要约两倍的 token。所以它做成按仓库的开关，默认关。">
+  <link rel="canonical" href="https://orbi.build/zh/benchmark/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/benchmark/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="https://orbi.build/zh/benchmark/">
+  <meta property="og:title" content="我们怎么测 Orbi 的 harness：benchmark">
+  <meta property="og:description" content="Orbi 没见过的真实 bug，用维护者自己的测试打分。每个数字、每条局限、复跑用的脚本都在这里。">
+  <meta property="og:image" content="https://orbi.build/img/blog-harness-search.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="给 Orbi 找 harness：prompt 与模型的组合实验">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="我们怎么测 Orbi 的 harness：benchmark">
+  <meta name="twitter:description" content="Orbi 没见过的真实 bug，用维护者自己的测试打分。每个数字、每条局限、复跑用的脚本都在这里。">
+  <meta name="twitter:image" content="https://orbi.build/img/blog-harness-search.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "我们怎么测 Orbi 的 harness",
+    "description": "在真实开源 bug 上测 Orbi 交付流程的 benchmark，用上游维护者自己的测试打分，局限全部写明。",
+    "inLanguage": "zh-CN",
+    "url": "https://orbi.build/zh/benchmark/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Orbi",
+      "url": "https://orbi.build/"
+    },
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "Orbi",
+      "applicationCategory": "DeveloperApplication",
+      "url": "https://orbi.build/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+<!--@nav-->
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="bench-title">
+        <p class="eyebrow">Benchmark · 更新于 2026-09-30</p>
+        <h1 id="bench-title">我们怎么测 Orbi 的 harness</h1>
+        <p class="hero-lede"><strong>八个 Orbi 没见过、issue 只给了一个窄例子的真实 bug 上，原版 harness 12 次挂了 4 次，常开的回归防护 10 次过 9 次。普通 bug 上防护换不来任何东西，token 却要多一倍左右，所以它应该做成按仓库的开关，默认关。</strong>只在文本处理类改动上启用的分类器省了约 10%，效果还更差；只加强评审、或者先把工单写细，都补不上这个缺口。</p>
+        <div class="cta-row">
+          <a class="button button-ghost" href="#studies">看研究</a>
+          <a class="text-link" href="#reproduce">自己复跑 →</a>
+        </div>
+      </section>
+
+      <section class="stats shell" aria-label="Benchmark 结果">
+        <div class="stats-label"><span>结果 · 实现都用 deepseek-flash · 通过 / 运行</span></div>
+        <div class="stats-groups">
+          <div class="stat-group">
+            <p class="stat-repo"><b>窄例子 bug</b><span class="stat-purpose">8 个没见过的，维护者的测试</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>8/12</strong><span>原版 harness</span></div>
+              <div class="stat"><strong>9/10</strong><span>常开防护（v15）</span></div>
+            </div>
+          </div>
+          <div class="stat-group">
+            <p class="stat-repo"><b>Orbi 做错过的 bug</b><span class="stat-purpose">3 个调参 issue</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>6/15</strong><span>原版 harness</span></div>
+              <div class="stat"><strong>9/9</strong><span>常开防护（v15）</span></div>
+            </div>
+          </div>
+          <div class="stat-group">
+            <p class="stat-repo"><b>普通 bug</b><span class="stat-purpose">9 个没见过的，每次中位数</span></p>
+            <div class="stat-grid">
+              <div class="stat"><strong>9/9</strong><span>常开防护（v15）</span></div>
+              <div class="stat"><strong>5.8M</strong><span>token（原版 2.8M）</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+
+
+    <section class="compare-section shell" id="studies" aria-labelledby="studies-title">
+      <p class="section-tag">研究</p>
+      <h2 class="orbi-compare-section-h2" id="studies-title">harness 研究，边做边公开</h2>
+      <p class="section-lede">模型在变，harness 也得跟着变。这里的每一次研究都重跑 Orbi 真实的交付流程，公开每个数字和脚本，并从上一次的结果出发。</p>
+      <ul class="event-list">
+        <li class="orbi-event-list-li"><span class="event-era">2026-09</span><div><strong><a href="/zh/blog/searching-for-orbis-harness/">上篇：我们的评审漏掉了什么</a></strong><p class="orbi-event-list-p">两个过了评审却改坏了别的东西的修复。一套带校准隐藏评分器的 benchmark，一条规则一条规则重写 harness，对比五个模型，以及十二个没见过的 bug 上，更强的 harness 只增加了成本。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">2026-09</span><div><strong><a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">下篇：回归防护值不值它的 token</a></strong><p class="orbi-event-list-p">八个形状和 Orbi 失败一样的新 bug、五种 harness 设计、各自换来了什么花了多少，以及为什么最简单的设计胜出。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">数据</span><div><strong><a href="https://github.com/orbi-build/orbi-bench" rel="noopener">orbi-build/orbi-bench</a></strong><p class="orbi-event-list-p">任务、评分器、每一版 harness、跑和打分的脚本，以及每次运行的结果。</p></div></li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="narrow" aria-labelledby="narrow-title">
+      <p class="section-tag">窄例子 bug</p>
+      <h2 class="orbi-compare-section-h2" id="narrow-title">原版在哪里栽跟头</h2>
+      <p class="section-lede">八个 2026 年 8 月 10 日之后合并的真实修复，都是 Python、Go、JavaScript 的小库。每个 issue 只给一两个例子，维护者的测试覆盖更宽的一类输入；只照着例子写的修法，例子能过，这些测试过不了。Orbi 只看得到 issue 自己的例子。</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-narrow-zh.svg" alt="八个 issue 只给窄例子的 bug。原版 harness 12 次过 8 次，dateparser 和 picomatch 各挂 2 次；常开防护 10 次过 9 次；按需触发 8 次过 7 次。" width="720" height="410">
+        <figcaption class="bench-figure-cap">dateparser 和 picomatch 在原版上各跑了 3 次，都挂了 2 次。</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="variants" aria-labelledby="variants-title">
+      <p class="section-tag">五种 harness</p>
+      <h2 class="orbi-compare-section-h2" id="variants-title">试过的更省钱的设计</h2>
+      <p class="section-lede">在三个 Orbi 原本做错的 issue 上。只加强评审 3 个过 1 个：评审 prompt 里写全了回归排查，两个回归它还是都放过了。全部 183 次运行里，被隐藏评分器判失败的每一次，都通过了 Orbi 的评审。先让便宜模型复现 bug、把工单写细，3 个过 2 个。只在文本处理类改动上启用回归防护，3 个全过，但在普通 bug 上只比常开防护省了约 10% 的 token，<code>picomatch</code> 上还挂了，常开版却过了。我们放弃它，改用按仓库的开关。</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-variants-zh.svg" alt="五种 harness 在三个 Orbi 做错过的 issue 上：原版 15 次过 6 次，只加强评审 3 次过 1 次，先充实工单 3 次过 2 次，按需触发 3 次全过，常开防护 9 次全过。" width="720" height="400">
+        <figcaption class="bench-figure-cap">柱下是每次运行 token 中位数（百万）。浅色柱不到 5 次。</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="unseen" aria-labelledby="unseen-title">
+      <p class="section-tag">没见过的 bug</p>
+      <h2 class="orbi-compare-section-h2" id="unseen-title">九个 Orbi 从没见过的 bug</h2>
+      <p class="section-lede">都是 2026 年 8 月 10 日之后在上游合并的真实修复，Go、TypeScript、Python 各三个。每个的隐藏评分器就是维护者随修复一起写的测试。Orbi 看到的工单是改写过的，没有链接、编号，也没有修法提示。</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-heldout-zh.svg" alt="九个没见过的 issue 上，原版 harness、v15、v15 加 sol 评审三组的结果，全部通过。" width="720" height="440">
+        <figcaption class="bench-figure-cap">九个 issue、三种组合、27 次，全部通过。</figcaption>
+      </figure>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-cost-zh.svg" alt="原版与 v15 每次运行的 token 和耗时中位数。没见过的 issue 上 v15 用了 580 万 token，原版 280 万；耗时 16 分钟对 11 分钟。" width="720" height="360">
+        <figcaption class="bench-figure-cap">更强的 harness 要付出多少。token 含缓存读取，约占 97%。</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="regression-prone" aria-labelledby="hard-title">
+      <p class="section-tag">容易改出回归的 bug</p>
+      <h2 class="orbi-compare-section-h2" id="hard-title">第一次真实修复就改坏过东西的 bug</h2>
+      <p class="section-lede">三个真实 bug，上游第一次修复合并之后才发现改坏了别的东西：numpy（改坏了 <code>ndarray</code> 子类）、OpenTelemetry Collector（让 <code>timeout</code> 基本失效）、aiohttp（PONG 之后拒收合法的压缩帧）。工单只描述原始 bug，评分器两样都测。两套 harness 跑完的每一次都通过了；v15 一次也没跑完 numpy（三次都因内存被杀）。人第一次修时犯的回归，不是这个 agent 会犯的那种。</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-hard-zh.svg" alt="三个容易改出回归的 bug：原版 harness 4 次全过，v15 3 次全过；v15 一次也没跑完 numpy。" width="720" height="310">
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="tuning" aria-labelledby="tuning-title">
+      <p class="section-tag">调参集</p>
+      <h2 class="orbi-compare-section-h2" id="tuning-title">更强的 harness 是怎么来的</h2>
+      <p class="section-lede">三个 Orbi 合并过回归的 issue（pyinfra、chainloop、fedify）。我们一次改一条规则，在所有 harness 版本上一共把流程跑了 108 次。这组数字是训练集成绩：harness 在这三个 issue 上调、又在同样三个 issue 上打分。</p>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-trend-zh.svg" alt="三个调参 issue 上，实现和评审都用 deepseek-flash 时各 harness 版本的通过率：v0 6/15，到 v15 9/9。" width="720" height="470">
+        <figcaption class="bench-figure-cap">全程同一个模型，三个调参 issue。浅色柱不到 5 次。</figcaption>
+      </figure>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-grid-zh.svg" alt="调参 issue 上 harness 版本与模型组合的网格，非 deepseek 的格子大多只有 2 到 4 次。" width="720" height="428">
+        <figcaption class="bench-figure-cap">调参 issue 上的 harness 版本 × 实现 / 评审模型。其他列当线索看。</figcaption>
+      </figure>
+    </section>
+
+    <section class="compare-section shell" id="method" aria-labelledby="method-title">
+      <p class="section-tag">方法</p>
+      <h2 class="orbi-compare-section-h2" id="method-title">每次运行怎么打分</h2>
+      <figure class="bench-figure">
+        <img class="bench-figure-img" src="/img/diagrams/harness-flow-zh.svg" alt="每次运行：私有快照仓库交给真实的 Orbi runner，再由隐藏评分器打分。评分器事先校准。" width="720" height="300">
+      </figure>
+      <ul class="event-list">
+        <li class="orbi-event-list-li"><span class="event-era">1</span><div><strong>真实流程，私有快照。</strong><p class="orbi-event-list-p">每次运行都有一份自己的私有仓库，停在修复之前的那个 commit。没改过的 Orbi runner 认领 issue、实现、开 PR、评审、修改、合并。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">2</span><div><strong>隐藏的、校准过的评分器。</strong><p class="orbi-event-list-p">任何一次运行计分之前，评分器必须在修复前的代码上判失败、在已知正确的修复上判通过。容易改出回归的题，还必须在上游第一次修复上判失败。评分时同时跑仓库自带的 lint、类型检查和全量测试。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">3</span><div><strong>碰不到答案。</strong><p class="orbi-event-list-p">留出集的运行里，<code>gh</code> 和 <code>git</code> 外面套了一层，只放行这次运行自己的仓库，agent 查不到上游的修复。快照保留了被忽略却被跟踪的文件，以及 submodule 的内容。</p></div></li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="limits" aria-labelledby="limits-title">
+      <p class="section-tag">局限</p>
+      <h2 class="orbi-compare-section-h2" id="limits-title">这些数字说明不了什么</h2>
+      <ul class="event-list">
+        <li class="orbi-event-list-li"><span class="event-era">n</span><div><strong>样本小，没有置信区间。</strong><p class="orbi-event-list-p">窄例子 bug 八个，普通 bug 九个，容易改出回归的三个，调参 issue 三个。多数格子只有 1 到 3 次。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">模型</span><div><strong>只测了一个实现模型。</strong><p class="orbi-event-list-p">没见过的 bug 上，写修复的都是 <code>deepseek-flash</code>。其他模型只在调参集上试过。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">生产</span><div><strong>生产上的 Orbi 仍是原版 harness。</strong><p class="orbi-event-list-p">计划是把常开防护做成按仓库的开关，默认关。之前的按需触发版在我们叫停后被 Orbi 误合进主干，已在发版前 revert。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">评分</span><div><strong>评分器只能抓到有人事先知道要测的问题。</strong><p class="orbi-event-list-p">没见过的 bug 上，这个人是上游维护者。通过只说明维护者的测试和仓库测试都过了，不说明修复完美无缺。</p></div></li>
+      </ul>
+    </section>
+
+    <section class="compare-section shell" id="reproduce" aria-labelledby="reproduce-title">
+      <p class="section-tag">复跑</p>
+      <h2 class="orbi-compare-section-h2" id="reproduce-title">自己跑一遍</h2>
+      <p class="section-lede">全部在 <a href="https://github.com/orbi-build/orbi-bench" rel="noopener">orbi-build/orbi-bench</a>：任务、评分器、每一版 harness、隔离包装、打分脚本和每次运行的结果。上游的测试没有拷进去，<code>tasks/heldout/fetch_hidden.sh</code> 会从各自的修复 commit 取回来。一次只跑一两个实例：单个任务就可能吃掉好几 G 内存。</p>
+    </section>
+
+    <section class="closing shell" aria-labelledby="start-title">
+      <p class="section-tag">完整版</p>
+      <h2 class="orbi-closing-h2" id="start-title">每条规则、每次失败，还有我们自己测量里的每个 bug</h2>
+      <p >博客逐条讲了每次 harness 改动、促成它的那次失败记录、各个模型的表现，以及我们搭这套 benchmark 时犯的错。</p>
+      <div class="cta-row">
+        <a class="button button-dark" href="/zh/blog/searching-for-orbis-harness/">看上篇</a>
+        <a class="button button-ghost" href="/zh/blog/is-the-regression-guard-worth-its-tokens/">看下篇</a>
+        <a class="text-link" href="/zh/cloud/">或者让 Orbi 跑你的 issue →</a>
+      </div>
+    </section>
+  </main>
+
+<!--@footer-->
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>

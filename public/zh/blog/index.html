@@ -59,7 +59,7 @@
         <a href="/zh/#system">产品怎么运作</a>
         <a href="/zh/guides/">指南</a>
         <a href="/zh/cloud/#pricing">价格</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem">博客</a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" role="menuitem">对比</a><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem">证据</a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem">每个 PR 的成本</a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem">方法</a></div></div>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem">博客</a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" role="menuitem">对比</a><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem">证据</a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem">每个 PR 的成本</a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem">方法</a><a class="orbi-nav-dropdown-menu-a" href="/zh/benchmark/" role="menuitem">Benchmark</a></div></div>
         <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-dropdown-toggle>文档<span aria-hidden="true">⌄</span></button><div class="nav-dropdown-menu" id="primary-navigation-zh-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a href="/api/login">登录</a>
@@ -83,6 +83,16 @@
 
     <section class="compare-section shell" aria-label="文章列表">
       <div class="post-list">
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">给 Orbi 找 harness（下）：回归防护值不值它的 token</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-09-30">2026-09-30</time></p>
+      <p class="post-entry-summary">八个 Orbi 没见过、issue 只给一个窄例子的 bug 上，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。哪些管用、哪些不管用，以及为什么最简单的设计胜出。</p>
+    </article>
+    <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/searching-for-orbis-harness/">给 Orbi 找 harness（上）：我们的评审漏掉了什么</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-09-29">2026-09-29</time></p>
+      <p class="post-entry-summary">Orbi 的评审放过了两个各自改坏了别的东西的修复。我们一条规则一条规则地重写 harness，在 Orbi 翻过车的 issue 和十二个它没见过的 issue 上重跑完整交付流程。这里是十条结论和背后的数据。</p>
+    </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/gitspawn-unattended-agent/">GitSpawn 绕开的是审批，我们的 agent 本来就不审批</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-26">2026-09-26</time></p>
