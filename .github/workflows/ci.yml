@@ -13,6 +13,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  promotion-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROMOTION_BASE_REF: ${{ github.base_ref }}
+      PROMOTION_HEAD_REF: ${{ github.head_ref }}
+      PROMOTION_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      PROMOTION_REPOSITORY: ${{ github.repository }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Check promotion source
+        run: node scripts/check-promotion-source.mjs
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
