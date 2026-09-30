@@ -42,3 +42,20 @@ PR #681 promotes beta directly to main, including the dropdown fix, promotion
 source guard and newsletter routing. The merged production source is
 5cd116b02b2c56c0a6b26c9ad7ae6d3f80c2f72d. Production workflow 36751539012
 was dispatched and its production environment approval was submitted normally.
+
+## Production deployment completed and verified
+
+Production workflow 36751539012 completed successfully for main commit
+5cd116b02b2c56c0a6b26c9ad7ae6d3f80c2f72d. The edge-propagation and HTTP
+smoke gates passed; no automatic rollback ran.
+
+`after-production/` contains headed Chrome screenshots of the real
+https://orbi.build/ and /zh/ after that deployment, EN/ZH at 1440px and 390px.
+Both SVG dropdown indicators and all click / Enter / Space / Tab / Escape
+checks passed in all four production views. Measured alignment is the same
+0.27px desktop / 0.10px mobile; production browser error logs were empty.
+
+The newsletter route was additionally checked with an invalid, non-address
+input: both beta and production returned HTTP 400 with invalid_email through
+the newsletter binding. This did not create a subscriber or send email, and
+is not a claim that a real production subscription was submitted.
