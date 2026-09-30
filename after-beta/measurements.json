@@ -1,0 +1,206 @@
+[
+  {
+    "env": "beta",
+    "lang": "en",
+    "width": 1440,
+    "measurements": [
+      {
+        "ariaHidden": "true",
+        "delta": 0.27083396911621094,
+        "height": 16,
+        "iconCenter": 41.66666793823242,
+        "iconTag": "svg",
+        "label": "Resources",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 41.39583396911621,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      },
+      {
+        "ariaHidden": "true",
+        "delta": 0.27083396911621094,
+        "height": 16,
+        "iconCenter": 41.66666793823242,
+        "iconTag": "svg",
+        "label": "Docs",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 41.39583396911621,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      }
+    ],
+    "keyboard": [
+      {
+        "root": ".nav-resources",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      },
+      {
+        "root": ".nav-docs",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      }
+    ]
+  },
+  {
+    "env": "beta",
+    "lang": "zh",
+    "width": 1440,
+    "measurements": [
+      {
+        "ariaHidden": "true",
+        "delta": 0.27083396911621094,
+        "height": 16,
+        "iconCenter": 41.66666793823242,
+        "iconTag": "svg",
+        "label": "资源",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 41.39583396911621,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      },
+      {
+        "ariaHidden": "true",
+        "delta": 0.27083396911621094,
+        "height": 16,
+        "iconCenter": 41.66666793823242,
+        "iconTag": "svg",
+        "label": "文档",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 41.39583396911621,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      }
+    ],
+    "keyboard": [
+      {
+        "root": ".nav-resources",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      },
+      {
+        "root": ".nav-docs",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      }
+    ]
+  },
+  {
+    "env": "beta",
+    "lang": "zh",
+    "width": 390,
+    "measurements": [
+      {
+        "ariaHidden": "true",
+        "delta": 0.1041717529296875,
+        "height": 16,
+        "iconCenter": 243.33334350585935,
+        "iconTag": "svg",
+        "label": "资源",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 243.2291717529297,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      },
+      {
+        "ariaHidden": "true",
+        "delta": 0.104156494140625,
+        "height": 16,
+        "iconCenter": 289.3333435058594,
+        "iconTag": "svg",
+        "label": "文档",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 289.22918701171875,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      }
+    ],
+    "keyboard": [
+      {
+        "root": ".nav-resources",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      },
+      {
+        "root": ".nav-docs",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      }
+    ]
+  },
+  {
+    "env": "beta",
+    "lang": "en",
+    "width": 390,
+    "measurements": [
+      {
+        "ariaHidden": "true",
+        "delta": 0.1041717529296875,
+        "height": 16,
+        "iconCenter": 243.33334350585935,
+        "iconTag": "svg",
+        "label": "Resources",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 243.2291717529297,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      },
+      {
+        "ariaHidden": "true",
+        "delta": 0.104156494140625,
+        "height": 16,
+        "iconCenter": 289.3333435058594,
+        "iconTag": "svg",
+        "label": "Docs",
+        "path": "M3 5.5 8 10.5 13 5.5",
+        "textCenter": 289.22918701171875,
+        "viewBox": "0 0 16 16",
+        "width": 16
+      }
+    ],
+    "keyboard": [
+      {
+        "root": ".nav-resources",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      },
+      {
+        "root": ".nav-docs",
+        "enter": true,
+        "tabFirst": true,
+        "escape": true,
+        "space": true,
+        "click": true,
+        "closed": true
+      }
+    ]
+  }
+]
