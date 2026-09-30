@@ -5,20 +5,37 @@ import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pricing from "../src/pricing.json";
 
-const annualPricingReplacements = {
+const pricingReplacements = {
+  [pricing.freeDeliveriesToken]: pricing.freeDeliveries,
+  [pricing.monthlyUsdToken]: pricing.cloudMonthlyUsd,
+  [pricing.soloMonthlyUsdToken]: pricing.soloMonthlyUsd,
   [pricing.soloAnnualUsdToken]: pricing.soloAnnualUsd,
   [pricing.proAnnualUsdToken]: pricing.proAnnualUsd,
   [pricing.soloAnnualMonthlyUsdToken]: pricing.soloAnnualMonthlyUsd,
   [pricing.proAnnualMonthlyUsdToken]: pricing.proAnnualMonthlyUsd,
   [pricing.soloAnnualSavingsPercentToken]: pricing.soloAnnualSavingsPercent,
   [pricing.proAnnualSavingsPercentToken]: pricing.proAnnualSavingsPercent,
+  [pricing.annualSavingsPercentToken]: pricing.annualSavingsPercent,
+  [pricing.soloIncludedTokensToken]: pricing.soloIncludedTokensLabel,
+  [pricing.soloRepositoriesToken]: pricing.soloRepositories,
+  [pricing.proRepositoriesToken]: pricing.proRepositories,
+  [pricing.foundingPartnerLimitToken]: pricing.foundingPartnerLimit,
+  [pricing.foundingPromoCodeToken]: pricing.foundingPromoCode,
+  [pricing.includedTokensToken]: pricing.includedTokensLabel,
+  [pricing.foundingTokensToken]: pricing.foundingTokensLabel,
+  [pricing.measuredSmallRepositoryDeliveryRangeToken]: pricing.measuredSmallRepositoryDeliveryRange,
+  [pricing.measuredSoloRepositoryDeliveryRangeToken]: pricing.measuredSoloRepositoryDeliveryRange,
+  [pricing.measuredLargeCodebaseDeliveriesToken]: pricing.measuredLargeCodebaseDeliveries,
+  [pricing.measuredSoloLargeCodebaseDeliveriesToken]: pricing.measuredSoloLargeCodebaseDeliveries,
 };
 
 const pages = [
-  ["home-en", "/"],
-  ["blog-en", "/blog/claude-code-github-actions-who-merges/"],
-  ["home-zh", "/zh/"],
-  ["blog-zh", "/zh/blog/claude-code-github-actions-who-merges/"],
+  ["home-en", "/", "Subscribed"],
+  ["cloud-en", "/cloud/", "Subscribed"],
+  ["blog-en", "/blog/claude-code-github-actions-who-merges/", "Subscribed"],
+  ["home-zh", "/zh/", "已订阅"],
+  ["cloud-zh", "/zh/cloud/", "已订阅"],
+  ["blog-zh", "/zh/blog/claude-code-github-actions-who-merges/", "已订阅"],
 ];
 const widths = [1440, 1100, 1026, 900, 390];
 const contentTypes = {
@@ -52,6 +69,12 @@ async function serve(pathname) {
 beforeAll(async () => {
   server = createServer(async (request, response) => {
     const { pathname } = new URL(request.url, "http://localhost");
+    if (pathname === "/subscribe" && request.method === "POST") {
+      request.resume();
+      response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+      response.end(JSON.stringify({ ok: true }));
+      return;
+    }
     const file = await serve(pathname);
     if (!file) {
       response.writeHead(404);
@@ -62,7 +85,7 @@ beforeAll(async () => {
     let body = file[1];
     if (extname(file[0]) === ".html") {
       body = String(body);
-      for (const [token, value] of Object.entries(annualPricingReplacements)) body = body.replaceAll(token, value);
+      for (const [token, value] of Object.entries(pricingReplacements)) body = body.replaceAll(token, value);
     }
     response.end(body);
   });
@@ -76,9 +99,9 @@ afterAll(async () => {
   await new Promise((resolve) => server?.close(resolve));
 });
 
-describe("footer layout stays within the viewport (Issue #337)", () => {
-  for (const [name, path] of pages) {
-    it(`${name} has no horizontal overflow at every supported width`, async () => {
+describe("footer and subscription layout stay within the viewport (Issues #337, #665)", () => {
+  for (const [name, path, successText] of pages) {
+    it(`${name} keeps the subscription aligned and has no horizontal overflow`, async () => {
       const page = await browser.newPage();
       try {
         await page.setViewportSize({ width: widths[0], height: 900 });
@@ -86,9 +109,12 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
           const footer = page.locator("footer.site-footer");
+          const subscription = page.locator(".subscribe-box");
           const result = await footer.evaluate((element) => {
             const documentElement = document.documentElement;
             const rect = element.getBoundingClientRect();
+            const subscriptionRect = document.querySelector(".subscribe-box").getBoundingClientRect();
+            const inputRect = document.querySelector("[data-subscribe-form] input[type=email]").getBoundingClientRect();
             const links = [...element.querySelectorAll("a")];
             const groups = [...element.querySelectorAll(".footer-group")].map((group) => {
               const groupRect = group.getBoundingClientRect();
@@ -96,6 +122,9 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
             });
             return {
               footerWidth: Math.round(rect.width),
+              subscriptionLeft: Math.round(subscriptionRect.left),
+              subscriptionRight: Math.round(subscriptionRect.right),
+              inputVisible: inputRect.width > 0 && inputRect.height > 0,
               overflow: documentElement.scrollWidth - documentElement.clientWidth,
               linkCount: links.length,
               groupCount: groups.length,
@@ -109,7 +138,11 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
               }),
             };
           });
+          const footerRect = await footer.boundingBox();
           expect(result.footerWidth, `${path} at ${width}px footer width`).toBeLessThanOrEqual(width);
+          expect(result.subscriptionLeft, `${path} at ${width}px subscription left edge`).toBe(Math.round(footerRect.x));
+          expect(result.subscriptionRight, `${path} at ${width}px subscription right edge`).toBe(Math.round(footerRect.x + footerRect.width));
+          expect(result.inputVisible, `${path} at ${width}px subscription input visible`).toBe(true);
           expect(result.overflow, `${path} at ${width}px document overflow`).toBe(0);
           expect(result.linkCount, `${path} at ${width}px links`).toBeGreaterThan(0);
           expect(result.groupCount, `${path} at ${width}px groups`).toBe(5);
@@ -123,11 +156,14 @@ describe("footer layout stays within the viewport (Issue #337)", () => {
             expect(result.groupRows, `${path} at ${width}px group rows`).toBe(5);
           }
           if (width === 1440 || width === 390) {
-            await page.locator("footer.site-footer").screenshot({
-              path: `.orbi/footer-overflow-${name}-${width}.png`,
+            await subscription.screenshot({
+              path: `.orbi/subscription-${name}-${width}.png`,
             });
           }
         }
+        await page.locator("[data-subscribe-form] input[type=email]").fill(`${name}@example.com`);
+        await page.locator("[data-subscribe-form] button[type=submit]").click();
+        await expect.poll(async () => (await page.locator("[data-subscribe-status]").textContent())?.trim()).toBe(successText);
       } finally {
         await page.close();
       }
