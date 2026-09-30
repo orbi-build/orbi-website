@@ -2061,6 +2061,10 @@ h2 {
   font-size: 0.9rem;
 }
 
+.breadcrumbs.compare-hero > [aria-hidden="true"] {
+  margin-inline: 0.4em;
+}
+
 /* Article breadcrumbs share the hero band but not the hero's full top lead-in. */
 .night:has(.breadcrumbs.compare-hero) > .compare-hero:not(.breadcrumbs) {
   padding-top: 32px;
