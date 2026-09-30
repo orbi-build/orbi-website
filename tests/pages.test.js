@@ -1247,6 +1247,7 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
         ["/evidence/", "Evidence"],
         ["/cost/", "Cost per PR"],
         ["/aiready/", "Method"],
+        ["/benchmark/", "Benchmark"],
       ],
     },
     zh: {
@@ -1257,6 +1258,7 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
         ["/zh/evidence/", "证据"],
         ["/zh/cost/", "每个 PR 的成本"],
         ["/aiready/zh/", "方法"],
+        ["/zh/benchmark/", "Benchmark"],
       ],
     },
   };
