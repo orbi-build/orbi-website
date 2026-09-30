@@ -127,7 +127,47 @@ describe("Cloud onboarding cards fit every supported width (Issue #354)", () => 
   }
 });
 
+// Issue #667: the savings label belongs to Yearly, and paid prices must not
+// inherit the weak unit styling intended only for "/ month".
+describe("Cloud pricing hierarchy (Issue #667)", () => {
+  for (const [name, path] of pages) {
+    it(`${name} attaches savings to Yearly and keeps paid prices prominent`, async () => {
+      const page = await browser.newPage();
+      try {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate((replacements) => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/__[A-Z_]+__/g, (value) => replacements[value] ?? value);
+        }, pricingReplacements);
+        const toggle = page.locator("[data-pricing-toggle]");
+        expect(await toggle.locator('[data-pricing-interval="month"] + [data-pricing-interval="year"]').count()).toBe(1);
+        expect(await toggle.locator('[data-pricing-interval="year"] .pricing-savings').count()).toBe(1);
+        expect(await toggle.locator('[data-pricing-interval="month"] + .pricing-savings').count()).toBe(0);
+        const selectedYearColors = await toggle.locator('[data-pricing-interval="year"]').evaluate((button) => ({
+          background: getComputedStyle(button).backgroundColor,
+          savings: getComputedStyle(button.querySelector(".pricing-savings")).color,
+        }));
+        expect(selectedYearColors.savings).not.toBe(selectedYearColors.background);
+
+        const styles = await page.locator('[data-pricing-price="solo"], [data-pricing-price="pro"]').evaluateAll((prices) => prices.map((price) => {
+          const style = getComputedStyle(price);
+          return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color };
+        }));
+        const free = await page.locator(".pricing-card-price").first().evaluate((node) => {
+          const style = getComputedStyle(node);
+          return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color };
+        });
+        expect(styles).toEqual([free, free]);
+        await page.locator('[data-pricing-interval="month"]').click();
+        expect(await page.locator('[data-pricing-price="solo"]').textContent()).toBe(`US$${pricing.soloMonthlyUsd}`);
+        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(free.fontSize);
+      } finally {
+        await page.close();
+      }
+    });
+  }
+});
+
 // Issue #534 first-screen copy/geometry tests were removed (Issue #540):
 // they pinned the lede and proof-line wording and the above-the-fold
 // coordinates verbatim.
-

@@ -2,7 +2,7 @@
 
 Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.
 
-Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 100M tokens, 1 repository), and Pro (US$79/month or US$790/year, 300M tokens, 5 repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, limited to 6 places; about 25 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 63 deliveries per Pro's 300M.
+Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 400M tokens, 1 repository), and Pro (US$79/month or US$790/year, 1.2B tokens, 5 repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, limited to 6 places; about 96 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 253 deliveries per Pro's 1.2B.
 
 ## Licence — state this accurately
 
@@ -164,18 +164,6 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
       </div>
     </section>
 
-    <section class="subscribe-box" aria-labelledby="subscribe-title">
-      <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
-      <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
-        <label class="sr-only" for="subscribe-email-en">Email address</label>
-        <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
-        <input type="hidden" name="lang" value="en">
-        <button class="button button-signal" type="submit">Subscribe</button>
-        <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
-      </form>
-      <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
-    </section>
-
 ## /evidence/ — Public delivery evidence
 
 <div class="night">
@@ -303,18 +291,6 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
         <a class="button button-dark" href="https://docs.orbi.build">Set up Orbi <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/cloud/">Or let Cloud run the line →</a>
       </div>
-    </section>
-
-    <section class="subscribe-box" aria-labelledby="subscribe-title">
-      <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
-      <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
-        <label class="sr-only" for="subscribe-email-en">Email address</label>
-        <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
-        <input type="hidden" name="lang" value="en">
-        <button class="button button-signal" type="submit">Subscribe</button>
-        <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
-      </form>
-      <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
     </section>
 
 ## /compare/matrix.csv

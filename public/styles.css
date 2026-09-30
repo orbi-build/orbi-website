@@ -1356,13 +1356,14 @@ h2 {
 .pricing-interval-toggle button { border: 1px solid var(--line); padding: 8px 14px; color: var(--ink); background: var(--paper); font: 500 .82rem/1 var(--mono); cursor: pointer; }
 .pricing-interval-toggle button.is-selected { border-color: var(--signal); color: var(--paper); background: var(--signal); }
 .pricing-savings { margin-left: 8px; color: var(--signal); font: 500 .78rem/1 var(--mono); }
+.pricing-interval-toggle button.is-selected .pricing-savings { color: var(--ink); }
 .pricing-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 36px 0 24px; }
 .pricing-card { display: flex; flex-direction: column; gap: 14px; padding: 28px 24px; border: 2px solid var(--line); background: var(--paper); }
 .pricing-card-featured { border-color: var(--signal); }
 .pricing-card-kicker { margin: 0; color: var(--signal); font: 500 .75rem/1 var(--mono); letter-spacing: .08em; }
 .pricing-card > h3 { margin: 0; font: 700 clamp(1.7rem, 3vw, 2.5rem)/1 var(--display); }
 .pricing-card-price { margin: 0; font: 600 1.45rem/1.2 var(--display); }
-.pricing-card-price span { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
+.pricing-card-price .pricing-card-price-unit { color: var(--ink-soft); font: 400 .9rem/1 var(--body); }
 .pricing-card > p:not(.pricing-card-kicker):not(.pricing-card-price) { margin: 0; color: var(--ink-soft); }
 .pricing-card > ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
 .pricing-card-actions { margin-top: auto; }
@@ -2480,7 +2481,7 @@ h2 {
   }
 }
 
-.subscribe-box { max-width: 52rem; margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
+.subscribe-box { margin: 0 auto 88px; padding: 30px 24px; border: 1px solid var(--line); background: var(--paper-2); }
 .subscribe-title { margin: 0 0 16px; font-family: var(--display); font-size: 1.35rem; }
 .subscribe-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .subscribe-form input[type="email"] { min-width: 0; flex: 1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; }
