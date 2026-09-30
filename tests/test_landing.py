@@ -1047,7 +1047,7 @@ class CloudLandingPageTests(unittest.TestCase):
             (self.en, "Founding partners: 50% off forever, 6 places; use code FOUNDING50 at checkout"),
             (self.zh, "创始会员永久 5 折，限 6 位；结账时输入 FOUNDING50"),
         ):
-            for value in ("US$29", "US$290", "US$79", "US$790", "100M", "300M"):
+            for value in ("US$29", "US$290", "US$79", "US$790", "400M", "1.2B"):
                 self.assertIn(value, page.text)
             self.assertIn(founding, page.text)
 

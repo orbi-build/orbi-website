@@ -51,7 +51,7 @@ const TOKEN_PAGES = PRICE_PAGES;
 const CLOUD_PAGES = ["cloud/index.html", "zh/cloud/index.html"];
 
 // An included-quota literal: a round token count sitting next to the word
-// "token" ("2B tokens", "2 billion tokens", "300M tokens", "20 亿 token" —
+// "token" ("2B tokens", "2 billion tokens", "1.2B tokens", "20 亿 token" —
 // the exact forms the 2B-vs-3 亿 drift of website#137 shipped). Two kinds of
 // number+token text stay allowed:
 //   - measured usage figures, written as decimal M ("mean 4.74M tokens per
@@ -210,14 +210,13 @@ describe("Included tokens constant (Issue #138)", () => {
   // if the enforced default changes, this assertion goes red and pricing.json
   // must move in the same change. The drift that shipped "2 billion" here
   // against the enforced 3 亿 value (website#137) is what this pin exists to
-  // stop. The pin has moved twice: the enforced default briefly rose from
-  // 300000000 to 2000000000 for the US$79 / 2B pilot promise, and the
-  // maintainer's quota ruling in website#145 (2026-09-13) set both tiers
-  // back to 300000000 — the tiers differ in price, not quota. The pin may
-  // lead the live enforced value until the corresponding external change
-  // lands.
+  // stop. The enforced default briefly rose from 300000000 to 2000000000 for
+  // the US$79 / 2B pilot promise, then website#145 (2026-09-13) set Pro back
+  // to 300000000. Issue #663 raises Pro to 1200000000 and Solo to 400000000;
+  // the pin may lead the live enforced value until the corresponding external
+  // change lands.
   it("matches the enforced monthly token quota", () => {
-    expect(pricing.includedTokens).toBe(300000000);
+    expect(pricing.includedTokens).toBe(1200000000);
   });
 
   it("ships every quota occurrence as the token, never as a literal", async () => {
@@ -242,7 +241,7 @@ describe("Included tokens constant (Issue #138)", () => {
   });
 
   it("catches the exact literals this gate exists for", () => {
-    for (const sample of ["2B tokens", "2 billion tokens", "300M tokens", "20 亿 token", "3 亿 tokens"]) {
+    for (const sample of ["2B tokens", "2 billion tokens", "1.2B tokens", "20 亿 token", "12 亿 tokens"]) {
       expect(quotaLiterals(sample).length, sample).toBeGreaterThan(0);
     }
     // The measured stats are legitimate numbers, not quota carriers: the gate
@@ -418,8 +417,8 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
 describe("Three-tier Cloud pricing (Issue #441)", () => {
   it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
     for (const [relativePath, metadata, card] of [
-      ["cloud/index.html", "Solo includes 100M tokens of model usage per month; Pro includes 300M", "Model usage included: 100M tokens a month on Solo, 300M on Pro"],
-      ["zh/cloud/index.html", "Solo 每月含 100M token 模型用量，Pro 每月含 300M", "模型用量包含在内：Solo 每月 100M token，Pro 每月 300M"],
+      ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "Model usage included: 400M tokens a month on Solo, 1.2B on Pro"],
+      ["zh/cloud/index.html", "Solo 每月含 400M token 模型用量，Pro 每月含 1.2B", "模型用量包含在内：Solo 每月 400M token，Pro 每月 1.2B"],
     ]) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath).toContain(metadata);
@@ -466,7 +465,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       soloAnnualUsd: 290,
       cloudMonthlyUsd: 79,
       proAnnualUsd: 790,
-      soloIncludedTokensLabel: "100M",
+      soloIncludedTokensLabel: "400M",
       soloRepositories: 1,
       proRepositories: 5,
       foundingPartnerLimit: 6,
