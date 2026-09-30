@@ -15,6 +15,7 @@ concurrency:
 jobs:
   promotion-source:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       PROMOTION_BASE_REF: ${{ github.base_ref }}
       PROMOTION_HEAD_REF: ${{ github.head_ref }}
