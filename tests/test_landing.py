@@ -251,8 +251,8 @@ class LandingTests(unittest.TestCase):
 
     def test_homepage_exposes_localized_comparisons_entry(self) -> None:
         for page, label, href in (
-            (self.en, "Comparisons", "/compare/"),
-            (self.zh, "对比", "/zh/compare/"),
+            (self.en, "Orbi vs alternatives", "/compare/"),
+            (self.zh, "与同类工具对比", "/zh/compare/"),
         ):
             matching = [(text, target) for text, target in page.hrefs if text == label]
             self.assertIn((label, href), matching)
