@@ -180,6 +180,10 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       expect(items.at(-1).item, `${output}: breadcrumb canonical`).toBe(canonical);
       const h1 = html.match(/<h1\b[^>]*>([^<]+)<\/h1>/)?.[1];
       expect(items.at(-1).name, `${output}: current-page breadcrumb name`).toBe(h1);
+      const currentBreadcrumb = html.match(/<span aria-current="page" title="([^"]+)">([^<]+)<\/span>/);
+      expect(currentBreadcrumb, `${output}: current breadcrumb title`).not.toBeNull();
+      expect(currentBreadcrumb[1], `${output}: current breadcrumb title value`).toBe(h1);
+      expect(currentBreadcrumb[2], `${output}: current breadcrumb text`).toBe(h1);
       const related = html.match(/<section class="related-links[\s\S]*?<\/section>/)?.[0] ?? "";
       const linkCount = (related.match(/<li><a href=/g) ?? []).length;
       expect(linkCount, `${output}: related link count`).toBeGreaterThanOrEqual(output.includes("guides/") ? 2 : 1);
@@ -201,7 +205,12 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
     }
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero\s*\{[\s\S]*?color:\s*#b6c7c3;[\s\S]*?padding:/);
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero a\s*\{[\s\S]*?text-decoration:\s*none;/);
+    expect(styles).toMatch(/\.breadcrumbs\.compare-hero\s*>\s*\[aria-hidden="true"\]\s*\{[\s\S]*?margin-inline:\s*0\.(?:[3-9]|[1-9]\d+)em;/);
     expect(styles).toMatch(/\.breadcrumbs\.compare-hero a:hover\s*\{[\s\S]*?text-decoration:\s*underline;/);
+    expect(styles).toMatch(/\.night:has\(\.breadcrumbs\.compare-hero\)\s*>\s*\.compare-hero:not\(\.breadcrumbs\)\s*\{[\s\S]*?padding-top:\s*32px;/);
+    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.night:has\(\.breadcrumbs\.compare-hero\)\s*>\s*\.compare-hero:not\(\.breadcrumbs\)[\s\S]*?padding-top:\s*24px;/);
+    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.breadcrumbs\.compare-hero\s*\{[\s\S]*?white-space:\s*nowrap;/);
+    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.breadcrumbs\.compare-hero[^{}]*\[aria-current="page"\][\s\S]*?text-overflow:\s*ellipsis;/);
   });
 });
 
