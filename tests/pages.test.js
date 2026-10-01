@@ -428,7 +428,7 @@ image: /img/blog-t.png
       /@media\s*\(min-width:\s*1200px\)\s*\{[\s\S]*?\.post-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0, 52rem\) 200px;[^}]*column-gap:\s*56px;[^}]*max-width:\s*calc\(52rem \+ 256px\);[^}]*padding:\s*0;/,
     );
     expect(template).toMatch(
-      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*1;[^}]*padding-left:\s*0;[^}]*padding-right:\s*0;/,
+      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*1;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/,
     );
     expect(template).toMatch(/@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-toc\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;/);
   });
