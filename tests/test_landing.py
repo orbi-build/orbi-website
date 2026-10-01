@@ -549,10 +549,13 @@ class LandingTests(unittest.TestCase):
         em-dashes that read as a broken page."""
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("data-floor", js)
-        for page in (self.en, self.zh):
+        for html in (self.en_html, self.zh_html):
+            stats_html = html.split('<section class="stats shell"', 1)[1].split("</section>", 1)[0]
+            stats_parser = PageParser()
+            stats_parser.feed(stats_html)
             stats = [
-                attrs for tag, attrs in page.elements
-                if tag == "strong" and "data-stat" in attrs
+                attrs for tag, attrs in stats_parser.elements
+                if tag == "strong" and "data-stat" in attrs and "data-floor" in attrs
             ]
             # Issue #101: three repositories, four counters each.
             self.assertEqual(len(stats), 12, stats)
