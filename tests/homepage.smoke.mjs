@@ -2261,11 +2261,10 @@ async function main() {
     await assertProofLoopReducedMotion(browser, "/zh/");
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
-      ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issues #704/#745 send the hero and midway CTAs directly to login;
-    // the Cloud card still introduces its language-matching product page.
+    // Issues #704/#712/#745 send the remaining hero and evidence CTAs
+    // directly to the language-matching login handoff.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
