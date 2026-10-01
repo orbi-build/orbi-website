@@ -363,7 +363,7 @@ async function relatedPostsMarkup(request, env, slug, language) {
   if (!Array.isArray(posts) || posts.some((post) => !post?.slug || !post?.title || !post?.summary)) {
     throw new Error("posts.json has an invalid shape");
   }
-  const current = posts.find((post) => post.slug === slug);
+  const current = posts.find((post) => language === "zh" ? post.zhSlug === slug : post.slug === slug);
   if (!current) throw new Error(`unknown blog slug: ${slug}`);
   const hash = await sha256Hex(postsText);
   const cacheKey = new Request(`https://orbi.build/__related/${hash}`);
@@ -378,7 +378,10 @@ async function relatedPostsMarkup(request, env, slug, language) {
       text: posts.map((post) => `${post.title}\n${post.summary}`),
     });
     const vectors = result?.data;
-    if (!Array.isArray(vectors) || vectors.length !== posts.length || vectors.some((vector) => !Array.isArray(vector))) {
+    const dimensions = Array.isArray(vectors?.[0]) ? vectors[0].length : 0;
+    if (!Array.isArray(vectors) || vectors.length !== posts.length || dimensions === 0
+      || vectors.some((vector) => !Array.isArray(vector) || vector.length !== dimensions
+        || vector.some((value) => typeof value !== "number" || !Number.isFinite(value)))) {
       throw new Error("Workers AI returned invalid embeddings");
     }
     table = Object.fromEntries(posts.map((post, index) => {
@@ -441,10 +444,10 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], r
   if (blogMatch && body.includes("<!--orbi:related-posts-->")) {
     try {
       const related = await relatedPostsMarkup(request, env, blogMatch[2], blogMatch[1] ? "zh" : "en");
-      body = body.replace("<!--orbi:related-posts-->", related);
+      body = body.replaceAll("<!--orbi:related-posts-->", related);
     } catch (error) {
       console.error("related_posts_failed:", error && error.message ? error.message : error);
-      body = body.replace("<!--orbi:related-posts-->", "");
+      body = body.replaceAll("<!--orbi:related-posts-->", "");
     }
   }
   body = body
