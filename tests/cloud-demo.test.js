@@ -17,7 +17,7 @@ describe("Cloud onboarding demo (Issue #292, #578)", () => {
   it("puts an accessible, user-initiated proof video directly after the hero CTA in both mirrors", async () => {
     for (const file of pages) {
       const html = await load(file);
-      const cta = html.indexOf("hero-ctas");
+      const cta = html.indexOf("hero-cta");
       const demo = html.indexOf('<figure class="proof-loop cloud-demo">');
       expect(cta, `${file}: hero CTA missing`).toBeGreaterThan(-1);
       expect(demo, `${file}: Cloud demo missing`).toBeGreaterThan(cta);
