@@ -725,6 +725,10 @@ async function handleFetch(request, env, ctx) {
       return Response.redirect(`https://${url.hostname}/cloud/`, 301);
     }
 
+    if (route === "/x") {
+      return Response.redirect(`https://${url.hostname}/?ref=x-bio`, 302);
+    }
+
     if (route === APPLY_ROUTE) {
       return goneResponse();
     }
