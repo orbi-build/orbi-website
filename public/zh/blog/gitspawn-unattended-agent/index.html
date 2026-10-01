@@ -45,6 +45,19 @@
     .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
     .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
     .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card, 12px);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -88,6 +101,8 @@
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
       .post-cta { padding: 24px 18px; }
       .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
     }
   </style>
 
@@ -131,7 +146,7 @@
       <article class="post-body">
 
 <p>9 月 1 日，Manifold Security 披露了 <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>，涉及七个编程 agent 的八个问题：Claude Code、Codex、Cursor、Goose、Hermes Agent、Qwen Code 和 Grok Build。简单说，仓库里的 git 配置能让一个程序在 agent 弹出审批之前就跑起来。细节看 Manifold 的原文，好几家已经发了修复。</p>
-<p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p>
+<p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <p>对我们来说，真正要回答的是：Orbi 受不受影响？我们第二天上午合了一个修复，当天下午又撤了。</p>
 <h2 id="修复">修复</h2>
 <p>9 月 25 日我开了 <a href="https://github.com/orbi-build/orbi/issues/1366">#1366</a>，Orbi 当天就交付了 <a href="https://github.com/orbi-build/orbi/pull/1368">PR #1368</a>。它让 runner 调用的所有 git 命令都经过同一个函数，把披露里点名的那几项 git 设置关掉，再加一条检查：哪段代码绕开这个函数直接调 git，构建就失败。改了 26 个文件，加了 1164 行。</p>
