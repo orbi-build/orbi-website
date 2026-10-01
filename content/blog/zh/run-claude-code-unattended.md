@@ -37,7 +37,7 @@ headless 模式给你的是一个没人看着也能跑完的会话。放进 cron
 - 有效期一年。
 - `ANTHROPIC_API_KEY`、`ANTHROPIC_AUTH_TOKEN` 或 `apiKeyHelper` 优先于它，不管是设在机器上还是仓库的配置里，所以要核对一次运行到底用的哪个凭据。
 
-细节见[认证文档](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token)。不加 `--bare` 时，headless 运行会读仓库的配置、hooks 和 `.mcp.json`，哪怕这个仓库你从没信任过。`--setting-sources user` 可以不读项目配置和 `.mcp.json`，`--settings '{"disableAllHooks":true}'` 可以在这一次运行里关掉 hooks。官方还说 `--bare` 将来会成为 `-p` 的默认值，到时候靠 token 登录的配置可能要改。
+细节见[认证文档](https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token)。不能加 `--bare` 的时候，可以用 `--setting-sources user` 不读仓库自己的配置和 `.mcp.json`，`--settings '{"disableAllHooks":true}'` 可以在这一次运行里关掉 hooks。官方还说 `--bare` 将来会成为 `-p` 的默认值，到时候靠 token 登录的配置可能要改。
 
 ### 最小的 cron 定时任务
 
@@ -58,7 +58,7 @@ export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && /usr/local/bin/claude -p "跑一遍测试，修掉失败的" --permission-mode auto --permission-prompts none --output-format json >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；`cd` 失败这类 Claude 启动前的错误不会进这个日志。`auto` 模式要求模型支持、组织也没关掉它，否则 Claude Code 会退回 Manual，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 `--permission-mode dontAsk`，再用 `--allowedTools` 列出放行的工具。
+日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；`cd` 失败这类 Claude 启动前的错误不会进这个日志。`auto` 模式不一定可用：模型可能不支持，也可能被组织、某个配置文件或 Anthropic 关掉了。不可用时 Claude Code 会退回 Manual（手动）模式，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 `--permission-mode dontAsk`，再用 `--allowedTools` 列出放行的工具。
 
 如果你只需要这样一个定时任务，到这里就够了。下面的内容是给想让 GitHub Issue 一路自动走到合并、发版的人。
 
