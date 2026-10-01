@@ -332,8 +332,6 @@ img {
   padding: 92px 0 80px;
 }
 
-.eyebrow,
-.section-tag,
 .runtime-proof {
   padding: 18px 0 8px;
   text-align: center;
@@ -378,6 +376,8 @@ img {
 .founding-offer { margin: 28px 0 0; padding: 14px 18px; border: 2px solid var(--signal); border-radius: var(--radius-card); background: var(--paper-2); font-size: 1.05rem; font-weight: 600; }
 .founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
 .founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
+.eyebrow,
+.section-tag,
 .stats-label,
 .proof-shot > span,
 .future-loop > .orbi-future-loop-li > span,
@@ -1675,7 +1675,8 @@ h2 {
 }
 
 .pricing-summary .orbi-pricing-summary-h2 {
-  max-width: 24rem;
+  max-width: 22ch;
+  text-wrap: balance;
   margin-bottom: 18px;
 }
 
@@ -1793,7 +1794,10 @@ h2 {
   border-top: 1px solid var(--line);
 }
 
-.closing .orbi-closing-h2 { max-width: 12ch; }
+.closing .orbi-closing-h2 {
+  max-width: 22ch;
+  text-wrap: balance;
+}
 .closing > p:not(.section-tag) { max-width: 48rem; margin-bottom: 34px; color: var(--ink-soft); font-size: 1.1rem; }
 .closing .cta-row { flex-direction: column; align-items: flex-start; }
 .closing .text-link { margin-left: 0; }
