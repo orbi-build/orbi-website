@@ -399,9 +399,13 @@ image: /img/blog-t.png
     expect(template).toMatch(/\.post-body h2, \.post-body \.related-links h2 \{[^}]*font-size: 1\.5rem;[^}]*line-height: 1\.25;[^}]*margin: 42px 0 10px;[^}]*scroll-margin-top: 24px;/);
     expect(template).toMatch(/\.post-body \.related-links \{[^}]*margin: 0;/);
     expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
+    expect(template).toMatch(/\.post-toc \{[^}]*padding-top:\s*26px;/);
+    expect(template).toMatch(/\.post-toc h2 \{[^}]*letter-spacing:\s*0\.1em;[^}]*text-transform:\s*uppercase;/);
+    expect(template).toMatch(/\.post-toc ol \{[^}]*counter-reset:\s*toc;/);
+    expect(template).toMatch(/\.post-toc \.post-toc-link::before \{[^}]*content:\s*counter\(toc\);/);
     expect(template).toContain("{{POST_TOC}}");
     expect(template).toContain("{{INLINE_TOC}}");
-    expect(template).toMatch(/\.post-toc ol, \.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
+    expect(template).toMatch(/\.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
   });
 
   it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
