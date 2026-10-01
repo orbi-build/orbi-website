@@ -1082,29 +1082,30 @@ class CloudLandingPageTests(unittest.TestCase):
 
     def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
         for page, headline in (
-            (self.en, "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills."),
-            (self.zh, "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"),
+            (self.en, "Fixed monthly price. No overage bills."),
+            (self.zh, "固定月费，不会超额扣费。"),
         ):
             self.assertIn(headline, page.text)
             self.assertIn("US$0", page.text)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
-        """Issue #277: /cloud/ keeps the owner-approved delivery range and
-        cache premise, and links to /cost/. Detailed measurements stay there."""
+        """Issue #744: measured delivery ranges live in the paid cards."""
         for page, needles, cost_href in (
             (
                 self.en,
                 (
-                    f"Solo's {PRICING['soloIncludedTokensLabel']} allowance: about {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredSoloLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine; Pro's {PRICING['includedTokensLabel']} allowance: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
-                    "prompt caching",
+                    f"≈ {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries / month",
+                    f"≈ {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries / month",
+                    "How we measured →",
                 ),
                 "/cost/",
             ),
             (
                 self.zh,
                 (
-                    f"Solo 的 {PRICING['soloIncludedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredSoloLargeCodebaseDeliveries']} 次；Pro 的 {PRICING['includedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
-                    "prompt caching",
+                    f"每月约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付",
+                    f"每月约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付",
+                    "怎么测的 →",
                 ),
                 "/zh/cost/",
             ),
