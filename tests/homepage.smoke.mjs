@@ -368,17 +368,6 @@ export async function assertCloudLoginRedirect(targetURL) {
 // GitHub pages render (<400), and the fail-closed handoff answers 404 — a
 // static server locally, the site Worker's stamped 404 where one is
 // deployed (assertCloudLoginRedirect checks the stamp).
-export function assertCloudStartLanding(path, href, loginPath, responseURL, responseStatus, landing) {
-  if (href !== loginPath) {
-    throw new Error(`${path}: [data-cta="cloud-start"] href is ${JSON.stringify(href)}, expected ${loginPath}`);
-  }
-  if (!landing.matches(new URL(responseURL)) || !landing.statusOk(responseStatus)) {
-    throw new Error(
-      `${path}: [data-cta="cloud-start"] landed at ${responseURL} with ${responseStatus}, expected ${landing.describe}`
-    );
-  }
-}
-
 export function expectedCtaLanding(expectation) {
   if (expectation === "github-app-302") {
     return {
@@ -1723,11 +1712,18 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
 // Issues #308/#322: exercise an actual homepage journey at each acceptance
 // viewport, then verify the Cloud page's language-specific login handoff
 // without following the interactive GitHub OAuth page.
-async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "[data-primary-nav] .nav-apply") {
+export async function assertHomeCloudFlow(
+  browser,
+  path,
+  size,
+  screenshot,
+  selector = "[data-primary-nav] .nav-apply",
+  { flowTargetURL = targetURL, requestGet } = {},
+) {
   const context = await browser.newContext({ viewport: size });
   try {
     const page = await context.newPage();
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    await page.goto(`${flowTargetURL}${path}`, { waitUntil: "load" });
     const entry = page.locator(selector);
     if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
       await page.locator("[data-menu-toggle]").click();
@@ -1740,8 +1736,13 @@ async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "
         throw new Error(`${path}: [data-cta="cloud-start"] href is ${JSON.stringify(href)}, expected ${loginPath}`);
       }
       const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
-      const response = await context.request.get(new URL(href, `${targetURL}${path}`).toString());
-      assertCloudStartLanding(path, href, loginPath, response.url(), response.status(), landing);
+      const target = new URL(href, `${flowTargetURL}${path}`).toString();
+      const response = await (requestGet ? requestGet(target) : context.request.get(target));
+      if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+        throw new Error(
+          `${path}: [data-cta="cloud-start"] landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`
+        );
+      }
       await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
       return;
     }

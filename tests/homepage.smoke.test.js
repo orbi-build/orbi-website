@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
+import { chromium } from "@playwright/test";
 import {
   assertCloudLoginRedirect,
-  assertCloudStartLanding,
+  assertHomeCloudFlow,
   expectedCtaLanding,
   localStatsFixture,
   resolveCloudLoginExpect,
@@ -268,35 +269,44 @@ describe("cloud login smoke contract (Issue #74)", () => {
 // that rewrite into the test and broke beta's deploy smoke while the site
 // itself was fine.
 describe("homepage cloud-start landing contract (Issue #720)", () => {
-  it("accepts the login href and a local 302 chain ending at GitHub authorization", async () => {
-    const server = await loginServer(loginChain());
+  it("runs the homepage flow through its login href and local 302 chain to GitHub authorization", async () => {
+    const server = await loginServer((request, response) => {
+      if (request.url === "/") {
+        response.writeHead(200, { "content-type": "text/html" });
+        response.end('<a data-cta="cloud-start" href="/cloud/login">Start Cloud</a>');
+        return;
+      }
+      loginChain()(request, response);
+    });
+    const browser = await chromium.launch({ headless: true });
+    const base = `http://127.0.0.1:${server.address().port}`;
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
     try {
-      const base = `http://127.0.0.1:${server.address().port}`;
-      const handoff = await fetch(`${base}/cloud/login`, { redirect: "manual" });
-      expect(handoff.status).toBe(302);
-      const landing = expectedCtaLanding("github-app-302");
-      expect(() => assertCloudStartLanding(
+      await expect(assertHomeCloudFlow(
+        browser,
         "/",
-        "/cloud/login",
-        "/cloud/login",
-        "https://github.com/login/oauth/authorize?client_id=Iv23test",
-        200,
-        landing,
-      )).not.toThrow();
+        { width: 1440, height: 900 },
+        "cloud-start-local.png",
+        '[data-cta="cloud-start"]',
+        {
+          flowTargetURL: base,
+          requestGet: async (url) => {
+            let next = url;
+            for (const expectedPath of ["/cloud/login", "/api/login"]) {
+              const response = await fetch(next, { redirect: "manual" });
+              expect(new URL(next).pathname).toBe(expectedPath);
+              expect(response.status).toBe(302);
+              next = new URL(response.headers.get("location"), next).toString();
+            }
+            return { url: () => next, status: () => 200 };
+          },
+        },
+      )).resolves.toBeUndefined();
     } finally {
+      delete process.env.CLOUD_LOGIN_EXPECT;
+      await browser.close();
       await stopLoginServer(server);
     }
-  });
-
-  it("rejects the obsolete or wrong homepage href before following it", () => {
-    expect(() => assertCloudStartLanding(
-      "/",
-      "/cloud/",
-      "/cloud/login",
-      "https://github.com/login/oauth/authorize?client_id=Iv23test",
-      200,
-      expectedCtaLanding("github-app-302"),
-    )).toThrow(/href.*\/cloud\/login/);
   });
 });
 
