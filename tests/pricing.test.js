@@ -254,7 +254,7 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
 
   it("keeps the self-hosted free-forever claim", async () => {
     const homepage = await readFile(`${SITE_PAGES_DIR}index.html`, "utf8");
-    expect(homepage).toContain("Self-hosted, free forever");
+    expect(homepage).toContain("Self-hosted — code never leaves your machine");
   });
 });
 
@@ -477,16 +477,16 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
 });
 
 describe("Cloud paid-tier pricing (Issue #441)", () => {
-  it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
-    for (const [relativePath, metadata, card] of [
-      ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "Model usage included: 400M tokens a month on Solo, 1.2B on Pro"],
-      ["zh/cloud/index.html", "Solo 每月含 400M token 模型用量，Pro 每月含 1.2B", "模型用量包含在内：Solo 每月 400M token，Pro 每月 1.2B"],
+  it("states both monthly quotas in Cloud metadata and the homepage pricing summary", async () => {
+    for (const [relativePath, metadata, summary] of [
+      ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "400M tokens included"],
+      ["zh/cloud/index.html", "Solo 每月含 400M token 模型用量，Pro 每月含 1.2B", "含 400M token"],
     ]) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath).toContain(metadata);
       const homePath = relativePath.startsWith("zh/") ? "zh/index.html" : "index.html";
       const home = await (await serve(await rawPage(homePath), `/${homePath.replace(/index\.html$/, "")}`)).text();
-      expect(home, homePath).toContain(card);
+      expect(home, homePath).toContain(summary);
     }
   });
 

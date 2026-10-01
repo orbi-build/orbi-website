@@ -342,7 +342,7 @@
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {
             fillGroup(group, repos[group.getAttribute("data-repo-group")]);
           });
-          root.parentElement.querySelectorAll(".hero-proof-bar [data-repo][data-stat]").forEach(function (element) {
+          root.ownerDocument.querySelectorAll(".hero-proof-bar [data-repo][data-stat]").forEach(function (element) {
             fillStat(element, repos[element.getAttribute("data-repo")]);
           });
           drawStarChart(root, repos.orbi);
@@ -356,11 +356,11 @@
           // read as a broken page, so fall back to the conservative floor
           // values in the HTML, which under-state the real record and need
           // no network.
-          fallBackToFloors(root.parentElement);
+          fallBackToFloors(root.ownerDocument);
         });
     }
 
-    if (root.parentElement.querySelector(".hero-proof-bar") || !("IntersectionObserver" in window)) {
+    if (root.ownerDocument.querySelector(".hero-proof-bar") || !("IntersectionObserver" in window)) {
       startStats();
       return;
     }

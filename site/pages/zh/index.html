@@ -117,7 +117,7 @@
             "name": "跑 Orbi 需要什么前提？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。 自托管：仓库、密钥和测试套件留在你的机器上，不会上传给我们。Cloud：Runner 会在一次交付期间，把你授权的仓库 clone 到我们运维的机器上——详见 「能看到我的代码吗？」。"
+              "text": "自托管 Orbi 需要 Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。仓库、密钥和测试套件留在你的机器上，不会上传给我们。Cloud：Runner 会在一次交付期间，把你授权的仓库 clone 到我们运维的机器上——详见 「能看到我的代码吗？」。"
             }
           },
           {
@@ -125,7 +125,7 @@
             "name": "Orbi 可以用哪些 AI 模型？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "自带即可。Orbi 通过你的凭证驱动 Agent，使用任何兼容 OpenAI 的 API 或本地部署的模型。模型费用按你的价格付给你的 Provider，自托管核心不收平台费。"
+              "text": "自托管 Orbi 自带模型即可：Orbi 通过你的凭证驱动 Agent，使用任何兼容 OpenAI 的 API 或本地部署的模型。模型费用按你的价格付给你的 Provider，自托管核心不收平台费。Cloud 包含模型用量。"
             }
           },
           {
@@ -157,7 +157,7 @@
             "name": "Orbi 真的免费吗？托管 Cloud 是什么？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Orbi 以 AGPL-3.0 开源；若你的政策不允许 AGPL，也可选 Sustainable Use License。两种许可下自托管都免费。托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。"
+              "text": "Orbi 以 AGPL-3.0 开源；若你的政策不允许 AGPL，也可选 Sustainable Use License。两种许可下自托管都免费。托管 Cloud 用 GitHub 登录即可开始：授权、安装 App，免费试 __FREE_DELIVERIES__ 次——不用绑卡或订阅。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。"
             }
           }
         ]
@@ -174,7 +174,7 @@
 
   <main id="main-content">
   <div class="night">
-    <section class="hero homepage-hero shell" data-status="shipping">
+<section class="hero homepage-hero shell" data-status="shipping">
       <div class="hero-copy">
         <h1>提个 Issue，<br><span>收个版本</span></h1>
         <p class="hero-lede">AI 把你的 Issue 一路做到发版。</p>
@@ -194,82 +194,14 @@
       </figure>
     </section>
 
-    <div class="hero-proof-bar shell">
+<div class="hero-proof-bar shell">
       <div class="hero-proof-item"><strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span></div>
       <div class="hero-proof-item"><strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span></div>
       <div class="hero-proof-item"><strong>开源</strong><span>AGPL-3.0，自托管免费</span></div>
     </div>
-
-    <section class="runtime-proof shell" data-runtime-proof hidden aria-label="Orbi 实时交付数据">
-      <p class="runtime-proof-line"><a class="orbi-runtime-proof-line-a" href="https://github.com/orbi-build/orbi/pulls?q=is%3Apr+is%3Amerged" rel="noopener"><strong data-proof-prs></strong> 个 PR 由机器合并</a> · <a class="orbi-runtime-proof-line-a" href="https://github.com/orbi-build/orbi/releases" rel="noopener"><strong data-proof-releases></strong> 个版本已发布</a> · 自 <a class="orbi-runtime-proof-line-a" data-proof-since="" href="https://github.com/orbi-build/orbi" rel="noopener"></a> 起无人值守</p>
-    </section>
-
-    <section class="stats shell" id="orbi-stats" data-lang="zh" data-status="shipping" aria-label="GitHub 实时生产记录">
-      <div class="stats-label">
-        <span>ORBI 正在造 ORBI · 实时</span>
-        <a class="stats-evidence" href="/zh/evidence/">查看公开记录 →</a>
-        <div data-star-chart hidden>
-          <span class="star-plot"><svg class="star-chart" viewBox="0 0 120 46" preserveAspectRatio="none" role="img" aria-labelledby="star-chart-title-zh"><title id="star-chart-title-zh">GitHub Star 增长曲线</title></svg></span>
-          <p class="star-caption"><b data-star-total>0</b> <span>GitHub Star</span></p>
-        </div>
-      </div>
-      <div class="stats-error" data-stats-error hidden role="status">GitHub 实时数据暂时不可用。</div>
-      <div class="stats-groups">
-        <div class="stat-group" data-repo-group="orbi">
-          <p class="stat-repo"><a class="orbi-stat-repo-a" href="https://github.com/orbi-build/orbi" rel="noopener">orbi-build/orbi</a><span class="stat-purpose">Orbi 本身</span></p>
-          <div class="stat-grid">
-            <div class="stat"><strong data-repo="orbi" data-stat="days" data-floor="12">0</strong><span>运行天数</span><small data-started></small></div>
-            <div class="stat"><strong data-repo="orbi" data-stat="issues" data-floor="150">0</strong><span>已关闭 Issue</span></div>
-            <div class="stat"><strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>已合并 PR</span></div>
-            <div class="stat"><strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>已发布版本</span></div>
-          </div>
-        </div>
-        <div class="stat-group" data-repo-group="orbi-website">
-          <p class="stat-repo"><a class="orbi-stat-repo-a" href="https://github.com/orbi-build/orbi-website" rel="noopener">orbi-build/orbi-website</a><span class="stat-purpose">这个网站</span></p>
-          <div class="stat-grid">
-            <div class="stat"><strong data-repo="orbi-website" data-stat="days" data-floor="7">0</strong><span>运行天数</span><small data-started></small></div>
-            <div class="stat"><strong data-repo="orbi-website" data-stat="issues" data-floor="30">0</strong><span>已关闭 Issue</span></div>
-            <div class="stat"><strong data-repo="orbi-website" data-stat="prs" data-floor="28">0</strong><span>已合并 PR</span></div>
-            <div class="stat"><strong data-repo="orbi-website" data-stat="deploys" data-floor="20">0</strong><span>已执行部署</span></div>
-          </div>
-        </div>
-        <div class="stat-group" data-repo-group="orbi-cloud">
-          <p class="stat-repo"><b>orbi-build/orbi-cloud</b><span class="stat-private">私有仓库</span><span class="stat-purpose">Cloud 控制面</span></p>
-          <div class="stat-grid">
-            <div class="stat"><strong data-repo="orbi-cloud" data-stat="days" data-floor="7">0</strong><span>运行天数</span><small data-started></small></div>
-            <div class="stat"><strong data-repo="orbi-cloud" data-stat="issues" data-floor="60">0</strong><span>已关闭 Issue</span></div>
-            <div class="stat"><strong data-repo="orbi-cloud" data-stat="prs" data-floor="60">0</strong><span>已合并 PR</span></div>
-            <div class="stat"><strong data-repo="orbi-cloud" data-stat="releases" data-floor="2">0</strong><span>已发布版本</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-<!--@social-proof-->
-
-      <section class="avatar-wall shell" data-avatar-wall __FOUNDING_AVATARS_HIDDEN__ aria-label="正在运行 Orbi 的团队">
-        <p class="avatar-wall-label">正在运行 Orbi 的团队</p>
-        <div class="avatar-wall-list" data-avatar-list>__FOUNDING_AVATARS__</div>
-      </section>
   </div>
 
-    <section class="thesis shell" aria-labelledby="thesis-title">
-      <div>
-        <p class="section-tag">行业正在换挡</p>
-        <h2 id="thesis-title">AI Agent 会写代码，
-          <br class="responsive-break">但交付仍然需要系统</h2>
-        <p class="section-lede">当 Agent 能连续工作数小时、并行处理多个任务，瓶颈就从写代码转向：决定改什么、协调依赖、证明结果正确、控制权限，以及把一个精确版本安全送进生产。</p>
-        <p class="thesis-punch">Agent 越强，生产系统越重要。</p>
-      </div>
-      <ol class="shift-list">
-        <li class="orbi-shift-list-li"><span>01</span><strong>一次提示</strong><em>→</em><b>长时间委派</b></li>
-        <li class="orbi-shift-list-li"><span>02</span><strong>单个 Agent</strong><em>→</em><b>按任务选择协作方式</b></li>
-        <li class="orbi-shift-list-li"><span>03</span><strong>生成代码</strong><em>→</em><b>交付版本和结果</b></li>
-        <li class="orbi-shift-list-li"><span>04</span><strong>人盯过程</strong><em>→</em><b>人只处理决策点</b></li>
-      </ol>
-    </section>
-
-    <section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">
+<section class="system-section" id="system" data-status="shipping" aria-labelledby="system-title">
       <div class="shell">
         <p class="section-tag">今天已经在运行</p>
         <div class="section-heading">
@@ -306,7 +238,8 @@
       </div>
     </section>
 
-    <section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
+  <div class="night">
+<section class="proof shell" data-status="shipping" aria-labelledby="proof-title">
       <div class="section-heading proof-heading">
         <div>
           <p class="section-tag">真实生产证据</p>
@@ -369,85 +302,54 @@ orbi setup --config orbi.toml</code></pre>
       </div>
     </section>
 
-    <section class="ownership" data-status="shipping" aria-labelledby="ownership-title">
-      <div class="shell ownership-grid">
-        <div>
-          <p class="section-tag section-tag-dark orbi-ownership-p">你的工厂现场</p>
-          <h2 class="orbi-ownership-h2" id="ownership-title">可自托管，代码
-            <br class="responsive-break">不离开你的机器</h2>
-          <p class="orbi-ownership-p">Orbi 在仓库和模型访问本来就存在的地方运行。GitHub 保存长期协调和交付证据；你的机器执行真正的生产。</p>
-        </div>
-        <div class="ownership-map" role="group" aria-label="Orbi 执行边界">
-          <div><span>控制面</span><strong>GitHub</strong><small>Issue · PR · 依赖 · Release</small></div>
-          <i aria-hidden="true"></i>
-          <div class="ownership-core"><span>Runner</span><strong>Orbi</strong><small>策略 · 恢复 · 合并门禁</small></div>
-          <i aria-hidden="true"></i>
-          <div><span>执行面</span><strong>你的机器</strong><small>仓库 · 模型 · 密钥 · 测试</small></div>
+<section class="stats shell" id="orbi-stats" data-lang="zh" data-status="shipping" aria-label="GitHub 实时生产记录">
+      <div class="stats-label">
+        <span>ORBI 正在造 ORBI · 实时</span>
+        <a class="stats-evidence" href="/zh/evidence/">查看公开记录 →</a>
+        <div data-star-chart hidden>
+          <span class="star-plot"><svg class="star-chart" viewBox="0 0 120 46" preserveAspectRatio="none" role="img" aria-labelledby="star-chart-title-zh"><title id="star-chart-title-zh">GitHub Star 增长曲线</title></svg></span>
+          <p class="star-caption"><b data-star-total>0</b> <span>GitHub Star</span></p>
         </div>
       </div>
-    </section>
-
-    <section class="run-orbi" id="run-orbi" data-status="direction" aria-labelledby="run-orbi-title">
-      <div class="shell">
-        <div class="section-heading">
-          <div>
-            <p class="section-tag">按你的方式运行</p>
-            <h2 class="orbi-section-heading-h2" id="run-orbi-title">自带模型即可
-              <br class="responsive-break">任何兼容 OpenAI 的 API，或本地模型</h2>
+      <div class="stats-error" data-stats-error hidden role="status">GitHub 实时数据暂时不可用。</div>
+      <div class="stats-groups">
+        <div class="stat-group" data-repo-group="orbi">
+          <p class="stat-repo"><a class="orbi-stat-repo-a" href="https://github.com/orbi-build/orbi" rel="noopener">orbi-build/orbi</a><span class="stat-purpose">Orbi 本身</span></p>
+          <div class="stat-grid">
+            <div class="stat"><strong data-repo="orbi" data-stat="days" data-floor="12">0</strong><span>运行天数</span><small data-started></small></div>
+            <div class="stat"><strong data-repo="orbi" data-stat="issues" data-floor="150">0</strong><span>已关闭 Issue</span></div>
+            <div class="stat"><strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>已合并 PR</span></div>
+            <div class="stat"><strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>已发布版本</span></div>
           </div>
-          <p >开源（AGPL-3.0）核心今天已经可用。托管 Cloud 是 Orbi 在同一 GitHub 账本上的商业托管服务——另有创始会员优惠。</p>
         </div>
-        <div class="run-options">
-          <article class="run-option run-option-live">
-            <p class="option-state">今天已经可用</p>
-            <h3 class="orbi-run-option-h3">自托管，永久免费</h3>
-            <p >在自己的机器、GPU 和模型凭证上运行 Orbi。自托管交付核心不收平台费。</p>
-            <ul class="orbi-run-option-ul">
-              <li class="orbi-run-option-li">仓库和密钥留在自己的机器上</li>
-              <li class="orbi-run-option-li">使用本地模型或任意受支持的 Provider</li>
-              <li class="orbi-run-option-li">GitHub 保存长期生产记录</li>
-            </ul>
-            <a class="button button-dark" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
-          </article>
-          <article class="run-option run-option-cloud">
-            <p class="option-state">创始会员</p>
-            <h3 class="orbi-run-option-h3">托管 Cloud</h3>
-            <p ><strong>先在你自己的仓库上试 __FREE_DELIVERIES__ 次合并交付——不用绑卡，不用订阅。</strong>连接 GitHub，使用 Orbi 闭源托管的控制面：Issue 进，审查过的软件出——不必自己维护交付产线。<strong>按年付：Solo 每月 US$__SOLO_ANNUAL_MONTHLY_USD__（年付 US$__SOLO_ANNUAL_USD__，省 __SOLO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__SOLO_MONTHLY_USD__），含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__PRO_ANNUAL_MONTHLY_USD__（年付 US$__PRO_ANNUAL_USD__，省 __PRO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__CLOUD_MONTHLY_USD__），含 __INCLUDED_TOKENS__ token</strong>，额度用完后新交付暂停。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。交付可靠性继续留在 开源（AGPL-3.0）核心。</p>
-            <ul class="orbi-run-option-ul">
-              <li class="orbi-run-option-li">平台订阅支付协调、恢复和交付证据</li>
-              <li class="orbi-run-option-li">模型用量包含在内：Solo 每月 __SOLO_INCLUDED_TOKENS__ token，Pro 每月 __INCLUDED_TOKENS__，额度用完后新交付暂停</li>
-            </ul>
-            <a class="button button-signal" data-cta="cloud-start-card" href="/zh/cloud/">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
-          </article>
+        <div class="stat-group" data-repo-group="orbi-website">
+          <p class="stat-repo"><a class="orbi-stat-repo-a" href="https://github.com/orbi-build/orbi-website" rel="noopener">orbi-build/orbi-website</a><span class="stat-purpose">这个网站</span></p>
+          <div class="stat-grid">
+            <div class="stat"><strong data-repo="orbi-website" data-stat="days" data-floor="7">0</strong><span>运行天数</span><small data-started></small></div>
+            <div class="stat"><strong data-repo="orbi-website" data-stat="issues" data-floor="30">0</strong><span>已关闭 Issue</span></div>
+            <div class="stat"><strong data-repo="orbi-website" data-stat="prs" data-floor="28">0</strong><span>已合并 PR</span></div>
+            <div class="stat"><strong data-repo="orbi-website" data-stat="deploys" data-floor="20">0</strong><span>已执行部署</span></div>
+          </div>
+        </div>
+        <div class="stat-group" data-repo-group="orbi-cloud">
+          <p class="stat-repo"><b>orbi-build/orbi-cloud</b><span class="stat-private">私有仓库</span><span class="stat-purpose">Cloud 控制面</span></p>
+          <div class="stat-grid">
+            <div class="stat"><strong data-repo="orbi-cloud" data-stat="days" data-floor="7">0</strong><span>运行天数</span><small data-started></small></div>
+            <div class="stat"><strong data-repo="orbi-cloud" data-stat="issues" data-floor="60">0</strong><span>已关闭 Issue</span></div>
+            <div class="stat"><strong data-repo="orbi-cloud" data-stat="prs" data-floor="60">0</strong><span>已合并 PR</span></div>
+            <div class="stat"><strong data-repo="orbi-cloud" data-stat="releases" data-floor="2">0</strong><span>已发布版本</span></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="direction shell" id="direction" data-status="direction" aria-labelledby="direction-title">
-      <div class="direction-head">
-        <div>
-          <p class="section-tag">正在建设的方向 · 不是已上线清单</p>
-          <h2 class="orbi-direction-head-h2" id="direction-title">自主软件开发
-            <br class="responsive-break">的下一步是什么</h2>
-        </div>
-        <p >今天，明确的 GitHub 任务和 Release Issue 进入产线。下一个阶段是闭环生产：软件从自身运行中提供证据，Orbi 把证据变成边界清楚的工作，Agent 执行，发布以后再用真实结果检验。</p>
-      </div>
+<!--@social-proof-->
 
-      <ol class="future-loop">
-        <li class="orbi-future-loop-li"><span >01 / 感知</span><strong>读取软件现场</strong><p class="orbi-future-loop-p">故障、遥测、用户反馈、安全发现、依赖漂移。</p></li>
-        <li class="orbi-future-loop-li"><span >02 / 决策</span><strong>提出下一项改动</strong><p class="orbi-future-loop-p">让工作有证据，再按目标、依赖、风险和成本排序。</p></li>
-        <li class="orbi-future-loop-li"><span >03 / 生产</span><strong>选择合适的智能</strong><p class="orbi-future-loop-p">顺序任务用一个 Agent；真正可拆的任务才组织专业 Agent 协作。</p></li>
-        <li class="orbi-future-loop-li"><span >04 / 证明</span><strong>把信心写成可执行门禁</strong><p class="orbi-future-loop-p">测试、Eval、模拟、安全策略和明确的人工审批边界。</p></li>
-        <li class="orbi-future-loop-li"><span >05 / 发布</span><strong>控制影响范围</strong><p class="orbi-future-loop-p">不可变 Release、渐进交付、自动回滚和完整来源记录。</p></li>
-        <li class="orbi-future-loop-li"><span >06 / 学习</span><strong>让结果回到下一轮</strong><p class="orbi-future-loop-p">有效做法成为证据；失败成为可复现任务，而不是口耳相传。</p></li>
-      </ol>
-
-      <div class="direction-thesis">
-        <p class="orbi-direction-thesis-p">模型会更换，Agent 会进化。长期产品是让<strong>目标、状态、权限、验证、成本和生产证据</strong>始终保持连续的那一层。</p>
-        <p class="orbi-direction-thesis-p"><a class="text-link" href="/zh/compare/">阅读有来源的竞品对比 →</a></p>
-        <p class="orbi-direction-thesis-p">Orbi 不应该变成另一个聊天窗口或另一个看板。它应该成为 Agent 之上的生产控制系统。</p>
-      </div>
-    </section>
+<section class="avatar-wall shell" data-avatar-wall __FOUNDING_AVATARS_HIDDEN__ aria-label="正在运行 Orbi 的团队">
+        <p class="avatar-wall-label">正在运行 Orbi 的团队</p>
+        <div class="avatar-wall-list" data-avatar-list>__FOUNDING_AVATARS__</div>
+      </section>
+  </div>
 
     <section class="pricing-summary" id="pricing-summary" data-status="shipping" aria-labelledby="pricing-summary-title">
       <div class="shell">
@@ -489,7 +391,7 @@ orbi setup --config orbi.toml</code></pre>
           <details class="faq-item" open>
             <summary><span>01</span>跑 Orbi 需要什么前提？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。</p>
+              <p class="orbi-faq-answer-p">自托管 Orbi 需要 Git、一个 POSIX shell，以及你已经在付费的模型 API。Orbi 跑在 Linux 和 macOS 上，可以是自己的机器，也可以是自己的服务器。不需要 GPU——思考交给模型，模型可以是托管 API。</p>
               <p class="orbi-faq-answer-p">自托管：仓库、密钥和测试套件留在你的机器上，不会上传给我们。Cloud：Runner 会在一次交付期间，把你授权的仓库 clone 到我们运维的机器上——详见 <a href="/zh/cloud/#faq">「能看到我的代码吗？」</a>。</p>
             </div>
           </details>
@@ -497,8 +399,8 @@ orbi setup --config orbi.toml</code></pre>
           <details class="faq-item" open>
             <summary><span>02</span>可以用哪些 AI 模型？</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">自带即可。Orbi 通过你的凭证驱动 Agent，使用任何兼容 OpenAI 的 API 或本地部署的模型，以后想换也不必改工作流。</p>
-              <p class="orbi-faq-answer-p">模型费用按你的价格付给你的 Provider，Orbi 不额外抽成：自托管核心不收平台费。</p>
+              <p class="orbi-faq-answer-p">自托管 Orbi 自带模型即可。Orbi 通过你的凭证驱动 Agent，使用任何兼容 OpenAI 的 API 或本地部署的模型，以后想换也不必改工作流。</p>
+              <p class="orbi-faq-answer-p">模型费用按你的价格付给你的 Provider，Orbi 不额外抽成：自托管核心不收平台费。Cloud 包含模型用量。</p>
             </div>
           </details>
 
@@ -530,14 +432,14 @@ orbi setup --config orbi.toml</code></pre>
             <summary><span>06</span>真的免费吗？托管 Cloud 是什么？</summary>
             <div class="faq-answer">
               <p class="orbi-faq-answer-p">Orbi 以 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE">AGPL-3.0</a> 开源；若你的政策不允许 AGPL，也可选 <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md">Sustainable Use License</a>。两种许可下自托管都免费。</p>
-              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App、订阅。按年付时，Solo 每月 US$__SOLO_ANNUAL_MONTHLY_USD__（年付 US$__SOLO_ANNUAL_USD__，省 __SOLO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__PRO_ANNUAL_MONTHLY_USD__（年付 US$__PRO_ANNUAL_USD__，省 __PRO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token）。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</p>
+              <p class="orbi-faq-answer-p">托管 Cloud 用 GitHub 登录即可开始：授权、安装 App，免费试 __FREE_DELIVERIES__ 次——不用绑卡或订阅。按年付时，Solo 每月 US$__SOLO_ANNUAL_MONTHLY_USD__（年付 US$__SOLO_ANNUAL_USD__，省 __SOLO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token），Pro 每月 US$__PRO_ANNUAL_MONTHLY_USD__（年付 US$__PRO_ANNUAL_USD__，省 __PRO_ANNUAL_SAVINGS_PERCENT__%；按月付 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token）。创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位。</p>
             </div>
           </details>
         </div>
       </div>
     </section>
 
-    <section class="closing shell" aria-labelledby="closing-title">
+<section class="closing shell" aria-labelledby="closing-title">
       <p class="section-tag">托管 Cloud</p>
       <h2 class="orbi-closing-h2" id="closing-title">在你自己的仓库上试一试</h2>
       <p>在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。</p>
@@ -546,7 +448,7 @@ orbi setup --config orbi.toml</code></pre>
         <a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>
       </div>
     </section>
-  </main>
+</main>
 
 
 <!--@footer-->

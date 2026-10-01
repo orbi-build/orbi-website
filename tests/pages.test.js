@@ -76,6 +76,30 @@ const countMatches = (html, re) => [...html.matchAll(re)].length;
 
 const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
 
+describe("homepage section order (Issue #712)", () => {
+  for (const output of ["index.html", "zh/index.html"]) {
+    it(`${output} keeps the buyer journey sections adjacent and ordered`, () => {
+      const html = mainRegion(shipped.get(output));
+      const sectionClasses = [...html.matchAll(/<section class="([^"]+)"/g)]
+        .map((match) => match[1].split(" ")[0]);
+      expect(sectionClasses).toEqual([
+        "hero",
+        "system-section",
+        "proof",
+        "stats",
+        "social-proof",
+        "avatar-wall",
+        "pricing-summary",
+        "faq",
+        "closing",
+      ]);
+      for (const removed of ["runtime-proof", "thesis", "ownership", "run-orbi", "direction"]) {
+        expect(html, `${output}: ${removed} remains`).not.toContain(`class="${removed}`);
+      }
+    });
+  }
+});
+
 describe("homepage hero proof bar (Issue #710)", () => {
   const expected = {
     "index.html": [

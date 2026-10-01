@@ -732,18 +732,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (JSON.stringify(heroProofValues) !== JSON.stringify(expectedHeroProofValues)) {
     throw new Error(`${path}: hero proof rendered ${JSON.stringify(heroProofValues)}, expected live values ${JSON.stringify(expectedHeroProofValues)}`);
   }
-  const proof = page.locator("[data-runtime-proof]");
-  if (!flagship || !(await proof.isVisible())) throw new Error(`${path}: runtime proof is not visible`);
-  const proofText = await proof.textContent();
-  for (const value of [flagship.prs_merged, flagship.releases]) {
-    if (!proofText.includes(String(value))) throw new Error(`${path}: runtime proof is missing ${value}`);
+  if (!flagship) throw new Error(`${path}: stats payload has no flagship repository`);
+  if ((await page.locator("[data-runtime-proof]").count()) !== 0) {
+    throw new Error(`${path}: removed runtime proof section remains`);
   }
-  const since = new Intl.DateTimeFormat(path.startsWith("/zh") ? "zh-CN" : "en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(flagship.started));
-  if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
   // the aggregate endpoint stays identity-free and every rendered image
@@ -789,8 +781,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #711: the homepage carries exactly one primary hero CTA, visible,
-  // plus the card CTA and the nav "Start free" keeping the same promise.
-  // The hero and nav go straight to login; the card still introduces Cloud.
+  // plus the proof CTA and the nav "Start free" keeping the same promise.
+  // The hero and proof handoff go straight to login.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
   await cloudCta.scrollIntoViewIfNeeded();
@@ -800,15 +792,12 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (await hero.locator('[data-cta="comparisons"]').count() !== 0) {
     throw new Error(`${path}: compare CTA must not live in the hero`);
   }
-  if ((await page.locator('[data-cta="cloud-start-card"]').count()) !== 1) {
-    throw new Error(`${path}: expected exactly one cloud-start-card CTA`);
+  if ((await page.locator('[data-cta="midway-cloud"]').count()) !== 1) {
+    throw new Error(`${path}: expected exactly one midway-cloud CTA`);
   }
   if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
     throw new Error(`${path}: expected exactly one nav Start free`);
   }
-  const cardText = await page.locator(".run-option-cloud").textContent();
-  if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
-  if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
   const summary = page.locator(".pricing-summary");
   if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
   const summaryText = await summary.textContent();
@@ -2306,11 +2295,10 @@ async function main() {
     await assertProofLoopReducedMotion(browser, "/zh/");
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
-      ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issues #704/#745 send the hero and midway CTAs directly to login;
-    // the Cloud card still introduces its language-matching product page.
+    // Issues #704/#712/#745 send the remaining hero and evidence CTAs
+    // directly to the language-matching login handoff.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
