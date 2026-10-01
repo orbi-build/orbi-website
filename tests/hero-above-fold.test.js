@@ -1,96 +1,45 @@
-// Issue #259: the homepage hero said the same thing twice — the lede
-// repeated the trust line's three sentences, pushing the primary CTA to
-// 630px (below every competitor's first screen) and, on a 390×844 phone,
-// the trust line to 874px, out of the fold. The fix is the copy the Issue
-// prescribes verbatim: the lede shrinks to one sentence pair and the
-// `12 factors` link moves below the trust line as a `.hero-footnote`.
-// These tests pin acceptance 1 (byte-exact file content) and acceptance 6
-// (the English lede at ≤ 22 words); the first-screen geometry itself is
-// measured by the browser smoke (assertHeroAboveFold in
-// tests/homepage.smoke.mjs, run in CI by ci.yml).
-
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-
 const read = (path) => readFile(`${ROOT}${path}`, "utf8");
 
-const enLede =
-  '        <p class="hero-lede"><strong>No new workspace.</strong> Orbi runs the delivery line on the Issues already in your repository. GitHub stays the source of truth.</p>';
-const zhLede =
-  '        <p class="hero-lede"><strong>不用迁移工作流。</strong>Orbi 在仓库里已有的 Issue 上跑完整条交付线。GitHub 始终是唯一事实源。</p>';
-const enFootnote =
-  '</ul>\n        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>';
-const zhFootnote =
-  '</ul>\n        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/zh/">如何写一张 ai-ready Issue（12 个要素）↗</a></p>';
-const footnoteCss = [
-  ".hero-footnote { margin: 14px 0 0; font-size: 0.9rem; }",
-  ".hero-footnote .orbi-hero-footnote-a { color: var(--ink-soft); }",
-].join("\n");
+const cases = [
+  ["site/pages/index.html", "public/index.html", "/cloud/login", "Orbi writes the code, has a second session review it, merges only the reviewed commit, and tags the release. You file Issues; releases come out.", "Try __FREE_DELIVERIES__ merged deliveries free →", "No card. Install the GitHub App on one repository. Runs that don't merge don't count.", "Founding partners: 50% off for life, __FOUNDING_PARTNER_LIMIT__ places total."],
+  ["site/pages/zh/index.html", "public/zh/index.html", "/zh/cloud/login", "Orbi 写代码，由另一个会话独立审查，只合并审过的那个 commit，然后打 tag 发版。你只管提 Issue。", "免费试 __FREE_DELIVERIES__ 次合并交付 →", "不用绑卡。在一个仓库装上 GitHub App 就能开始。没合并的不算次数。", "创始合作伙伴：终身五折，一共 __FOUNDING_PARTNER_LIMIT__ 个名额。"],
+];
 
-const ledeElement = (page) => /<p class="hero-lede">[\s\S]*?<\/p>/.exec(page)[0];
-const ledeText = (page) => ledeElement(page).replace(/<[^>]+>/g, "").trim();
-
-describe("hero copy: lede + 12-factors footnote (Issue #259)", () => {
-  it("replaces the English hero lede line verbatim", async () => {
-    const source = await read("site/pages/index.html");
-    expect(source).toContain(enLede);
-    expect(source.match(/class="hero-lede"/g)).toHaveLength(1);
-  });
-
-  it("replaces the Chinese hero lede line verbatim", async () => {
-    const source = await read("site/pages/zh/index.html");
-    expect(source).toContain(zhLede);
-    expect(source.match(/class="hero-lede"/g)).toHaveLength(1);
-  });
-
-  it("moves the 12-factors link below the trust line in English", async () => {
-    const source = await read("site/pages/index.html");
-    // Contiguous: the footnote line directly follows the trust line's </ul>.
-    expect(source).toContain(enFootnote);
-    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
-  });
-
-  it("moves the 12-factors link below the trust line in Chinese, to aiready.sh/zh/", async () => {
-    const source = await read("site/pages/zh/index.html");
-    expect(source).toContain(zhFootnote);
-    expect(source.match(/class="hero-footnote"/g)).toHaveLength(1);
-  });
-
-  it("first screen order: lede, CTA, trust line, footnote", async () => {
-    for (const path of ["site/pages/index.html", "site/pages/zh/index.html"]) {
-      const source = await read(path);
-      const lede = source.indexOf('class="hero-lede"');
-      const cta = source.indexOf('data-cta="cloud-start"');
-      const trust = source.indexOf('class="trust-line"');
-      const footnote = source.indexOf('class="hero-footnote"');
-      expect(lede).toBeLessThan(cta);
-      expect(cta).toBeLessThan(trust);
-      expect(trust).toBeLessThan(footnote);
+describe("homepage hero CTA (Issue #704)", () => {
+  it("keeps only the requested copy and one CTA link in each hero", async () => {
+    for (const [sourcePath, builtPath, href, lede, button, note, foundingNote] of cases) {
+      const source = await read(sourcePath);
+      const hero = source.match(/<section class="hero[\s\S]*?<\/section>/)?.[0] ?? "";
+      const copy = hero.match(/<div class="hero-copy">[\s\S]*?<\/div>/)?.[0] ?? "";
+      expect(copy).toContain(lede);
+      expect(copy).toContain(button);
+      expect(copy).toContain(note);
+      expect(copy).toContain(foundingNote);
+      expect(hero).toContain(`data-cta="cloud-start" href="${href}"`);
+      expect(copy.match(/<a\b/g)).toHaveLength(1);
+      for (const removed of ["hero-alt", "hero-proof-link", "trust-line", "hero-footnote", "orbi-hero-primary-p", "film-play"]) {
+        expect(hero).not.toContain(removed);
+      }
+      expect(await read(builtPath)).toContain(button);
     }
   });
 
-  it("adds .hero-footnote after the .hero-alt rules", async () => {
+  it("makes the CTA large and the nav CTA outlined", async () => {
     const css = await read("public/styles.css");
-    expect(css).toContain(footnoteCss);
-    expect(css.indexOf(".hero-footnote {")).toBeGreaterThan(css.indexOf(".hero-alt .orbi-hero-alt-a:hover"));
-  });
-
-  it("English lede is at most 22 words", async () => {
-    const source = await read("site/pages/index.html");
-    const words = ledeText(source).split(/\s+/).filter(Boolean);
-    expect(words.length).toBeLessThanOrEqual(22);
-  });
-
-  it("Chinese lede shrank to at most 60 characters", async () => {
-    const source = await read("site/pages/zh/index.html");
-    expect(ledeText(source).length).toBeLessThanOrEqual(60);
-  });
-
-  it("the built pages ship the new lede", async () => {
-    expect(await read("public/index.html")).toContain(enLede.trim());
-    expect(await read("public/zh/index.html")).toContain(zhLede.trim());
+    expect(css).toContain(".hero-cta {\n  min-height: 64px;");
+    expect(css).toContain(".hero-cta { width: 100%; }");
+    expect(css).toContain(".site-header nav > a.nav-apply {\n  min-width: 76px;");
+    expect(css).toContain("background: transparent;");
+    for (const path of ["public/index.html", "public/zh/index.html"]) {
+      const html = await read(path);
+      const nav = html.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
+      expect(nav).toContain('class="nav-apply"');
+      expect(nav).not.toContain('class="button-signal nav-apply"');
+    }
   });
 });

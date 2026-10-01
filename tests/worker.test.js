@@ -402,6 +402,20 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(stats.repos["orbi-website"].prs_merged).toBe(296);
   });
 
+  it("replaces homepage pricing tokens with configured values", async () => {
+    const response = await assetResponse(
+      new Response('<a href="/cloud/login">Try __FREE_DELIVERIES__ merged deliveries free →</a><p>__FOUNDING_PARTNER_LIMIT__ places total.</p>', {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      }),
+      true,
+    );
+    const body = await response.text();
+    expect(body).toContain(`Try ${pricing.freeDeliveries} merged deliveries free →`);
+    expect(body).toContain(`${pricing.foundingPartnerLimit} places total.`);
+    expect(body).not.toContain(pricing.freeDeliveriesToken);
+    expect(body).not.toContain(pricing.foundingPartnerLimitToken);
+  });
+
   it("injects server-rendered avatars and makes the wall visible when data exists", async () => {
     const html = '<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>';
     const response = await assetResponse(

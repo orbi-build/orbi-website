@@ -174,24 +174,15 @@
   <div class="night">
       <section class="hero shell" data-status="shipping">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="live-dot"></span>GitHub-native software production</p>
           <h1>File an Issue. <span>Get a release.</span></h1>
-        <p class="hero-lede"><strong>No new workspace.</strong> Orbi runs the delivery line on the Issues already in your repository. GitHub stays the source of truth.</p>
-          <div class="cta-row hero-ctas">
-            <div class="hero-primary">
-              <a class="button button-signal" data-cta="cloud-start" href="/cloud/">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
-              <p class="orbi-hero-primary-p">Register with GitHub and continue onboarding in Cloud.</p>
+          <p class="hero-lede">Orbi writes the code, has a second session review it, merges only the reviewed commit, and tags the release. You file Issues; releases come out.</p>
+          <div class="hero-ctas">
+            <a class="button button-signal hero-cta" data-cta="cloud-start" href="/cloud/login">Try __FREE_DELIVERIES__ merged deliveries free →</a>
+            <div class="hero-cta-notes">
+              <p class="hero-cta-note">No card. Install the GitHub App on one repository. Runs that don't merge don't count.</p>
+              <p class="hero-cta-note">Founding partners: 50% off for life, __FOUNDING_PARTNER_LIMIT__ places total.</p>
             </div>
-            <p class="hero-alt">Prefer to self-host? <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
-            <a class="hero-proof-link" data-cta="proof" href="/evidence/">Inspect how Orbi builds Orbi →</a>
           </div>
-          <ul class="trust-line" aria-label="What only Orbi does">
-            <li class="orbi-trust-line-li">Independent review that fixes and re-tests</li>
-            <li class="orbi-trust-line-li">Only the reviewed commit merges</li>
-            <li class="orbi-trust-line-li">Frozen SHA, tag, release</li>
-          </ul>
-        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/">How to write an ai-ready Issue (12 factors) ↗</a></p>
-        <p><a class="orbi-hero-footnote-a" href="/guides/issue-to-release/">From Issue to tagged release →</a></p>
         </div>
 
         <figure class="factory-trace" id="factory-trace" aria-label="Orbi delivery line: from scope to tagged release">
@@ -224,13 +215,7 @@
               </li>
             </ol>
           </div>
-          <figcaption>
-            <button class="trace-film" type="button" data-cta="film-play" aria-haspopup="dialog" aria-controls="film-dialog">
-              <span class="trace-film-note">We're building a lights-out factory for software. It already ships releases, and you keep the merge gate.</span>
-              <span class="trace-film-cta">▶ Watch the film · 1:35</span>
-            </button>
-          </figcaption>
-        </figure>
+          </figure>
       </section>
 
       <section class="runtime-proof shell" data-runtime-proof hidden aria-label="Live Orbi delivery numbers">
@@ -602,23 +587,6 @@ orbi setup --config orbi.toml</code></pre>
       </section>
     </main>
 
-  <!-- Issue #571: the brand film dialog. Sits outside <main> (a dialog is not
-       page content) and opens only from the trace figure's button. -->
-  <dialog id="film-dialog" aria-label="Orbi brand film">
-    <button class="film-close" type="button" aria-label="Close">×</button>
-    <video id="film-video" controls playsinline preload="none" poster="/video/orbi-film-poster.jpg">
-      <source src="/video/orbi-film.webm" type="video/webm">
-      <source src="/video/orbi-film.mp4" type="video/mp4">
-      <track kind="captions" srclang="en" label="English" src="/video/orbi-film.en.vtt">
-    </video>
-    <div class="film-foot">
-      <p class="film-evidence">Real run: <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/issues/1367">Issue #1367</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/pull/1370">PR #1370</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.47">v0.5.47</a></p>
-      <div class="film-end" hidden>
-        <a class="button button-signal" data-cta="film-end-cloud" href="/cloud/login">Sign in with GitHub <span aria-hidden="true">↗</span></a>
-        <a class="button button-ghost" data-cta="film-end-selfhost" href="https://github.com/orbi-build/orbi">Run it yourself <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </dialog>
 
   <section class="subscribe-box shell" aria-labelledby="subscribe-title">
   <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
@@ -670,51 +638,6 @@ orbi setup --config orbi.toml</code></pre>
   </footer>
 
   <script src="/demo.js" defer></script>
-  <script>
-    // Issue #571: the film dialog owns its own playback + beacon script. The
-    // shared engagement script's send() stays private; the data-cta attributes
-    // on the entry and end buttons report through it on their own.
-    (() => {
-      const dialog = document.getElementById("film-dialog");
-      const video = document.getElementById("film-video");
-      const evidence = dialog.querySelector(".film-evidence");
-      const endRow = dialog.querySelector(".film-end");
-      const beacon = (detail) => {
-        navigator.sendBeacon("/cloud/e", new Blob([JSON.stringify({ kind: "cta_click", path: location.pathname, detail })], { type: "application/json" }));
-      };
-      let halfSent = false;
-      let endSent = false;
-      document.getElementById("factory-trace").addEventListener("click", (event) => {
-        if (event.target.closest("a")) return; // an existing link navigates; the rest of the figure opens the film
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        dialog.showModal();
-      });
-      dialog.querySelector(".film-close").addEventListener("click", () => dialog.close());
-      dialog.addEventListener("click", (event) => {
-        if (event.target === dialog) dialog.close(); // the backdrop
-      });
-      dialog.addEventListener("close", () => video.pause());
-      video.addEventListener("play", () => {
-        endRow.hidden = true;
-        evidence.hidden = false;
-      });
-      video.addEventListener("ended", () => {
-        evidence.hidden = true;
-        endRow.hidden = false;
-        if (!endSent) {
-          endSent = true;
-          beacon("film-100");
-        }
-      });
-      video.addEventListener("timeupdate", () => {
-        if (!halfSent && video.duration > 0 && video.currentTime / video.duration >= 0.5) {
-          halfSent = true;
-          beacon("film-50");
-        }
-      });
-    })();
-  </script>
 
 <script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
