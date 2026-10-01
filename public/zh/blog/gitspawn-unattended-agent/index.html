@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,14 +117,16 @@
     </div>
 
     <div class="post-grid">
+
       <article class="post-body">
+
 <p>9 月 1 日，Manifold Security 披露了 <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>，涉及七个编程 agent 的八个问题：Claude Code、Codex、Cursor、Goose、Hermes Agent、Qwen Code 和 Grok Build。简单说，仓库里的 git 配置能让一个程序在 agent 弹出审批之前就跑起来。细节看 Manifold 的原文，好几家已经发了修复。</p>
 <p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p>
 <p>对我们来说，真正要回答的是：Orbi 受不受影响？我们第二天上午合了一个修复，当天下午又撤了。</p>
-<h2>修复</h2>
+<h2 id="修复">修复</h2>
 <p>9 月 25 日我开了 <a href="https://github.com/orbi-build/orbi/issues/1366">#1366</a>，Orbi 当天就交付了 <a href="https://github.com/orbi-build/orbi/pull/1368">PR #1368</a>。它让 runner 调用的所有 git 命令都经过同一个函数，把披露里点名的那几项 git 设置关掉，再加一条检查：哪段代码绕开这个函数直接调 git，构建就失败。改了 26 个文件，加了 1164 行。</p>
 <p><img src="/img/gitspawn-fix-pr.png" alt="PR #1368：加固修复，已合并"></p>
-<h2>回滚</h2>
+<h2 id="回滚">回滚</h2>
 <p>3 小时 50 分钟后，我用 <a href="https://github.com/orbi-build/orbi/pull/1376">PR #1376</a> 把它回滚了。</p>
 <p><img src="/img/gitspawn-revert-pr.png" alt="PR #1376：回滚这个修复"></p>
 <p>我漏问了一个问题：跑这条 git 命令的是谁，用的是哪个用户？</p>
@@ -117,11 +134,11 @@
 <p>Orbi 没有审批这一步。它本来就是无人值守的，agent 手里本来就有 shell。我们的边界是操作系统账号：在 Orbi Cloud 里，每个接入的仓库都跑在自己独立的 Unix 用户下，runner 和 agent 用的是同一个用户。就算 runner 自己的 git 调用被骗去执行了什么，拿到的权限也和 agent 本来就有的一样，所以这个修复什么也没挡住。</p>
 <p>权限更高的地方我们也查了。宿主机上有个读取各沙箱用量的任务，以 root 运行。但它读 git 时本来就切换成了各沙箱自己的用户。这是一次故障留下的：9 月 12 日它以 root 身份跑 git，git 的 <code class="post-code--single">safe.directory</code> 检查拒绝操作别的用户的仓库，用量统计每 5 分钟静默失败一次，后来才改成以仓库主人的身份运行。</p>
 <p>所以这 1164 行，守的是一条 Orbi 根本没有的边界。回滚 PR 里写得很直接：以现阶段来说，设计过度了。同一个 PR 还在仓库的 AGENTS.md 里加了一条规矩：不为理论上的风险开预防性的票。</p>
-<h2>我们的结论</h2>
+<h2 id="我们的结论">我们的结论</h2>
 <p>如果你的 agent 在执行命令前会先问人，照 Manifold 的建议修。这类工具的修法很小，值得做。</p>
 <p>如果你的 agent 是无人值守的，就没有审批可以保护，账号就是边界。每个仓库一个用户，别让权限更高的程序进到这个用户的文件里干活。动手写修复之前，先查清楚代码到底是以哪个用户在跑。</p>
 <p>这个顺序我们搞反过一次，整个过程都公开在 Orbi 自己的仓库里。Orbi 把一张 GitHub Issue 做成经过评审、已合并、打好 tag 的 Release，可以<a href="https://orbi.build/cloud/?ref=blog-gitspawn">在你自己的仓库上试试</a>。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/managed-agents/">托管 agent 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
       </article>

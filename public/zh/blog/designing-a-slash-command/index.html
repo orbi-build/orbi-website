@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,14 +117,46 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#为什么不用动词">为什么不用动词</a></li>
+          <li><a class="post-toc-link" href="#为什么不带">为什么不带 @</a></li>
+          <li><a class="post-toc-link" href="#一个正则-三个决定">一个正则，三个决定</a></li>
+          <li><a class="post-toc-link" href="#prow-至今还在的那个-bug">Prow 至今还在的那个 bug</a></li>
+          <li><a class="post-toc-link" href="#bors-的那条提权路径">bors 的那条提权路径</a></li>
+          <li><a class="post-toc-link" href="#两边各抄一条">两边各抄一条</a></li>
+          <li><a class="post-toc-link" href="#注册表的形状早就有了">注册表的形状早就有了</a></li>
+          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a></li>
+          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a></li>
+          <li><a class="post-toc-link" href="#结果">结果</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 11 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#为什么不用动词">为什么不用动词</a></li>
+          <li><a class="post-toc-link" href="#为什么不带">为什么不带 @</a></li>
+          <li><a class="post-toc-link" href="#一个正则-三个决定">一个正则，三个决定</a></li>
+          <li><a class="post-toc-link" href="#prow-至今还在的那个-bug">Prow 至今还在的那个 bug</a></li>
+          <li><a class="post-toc-link" href="#bors-的那条提权路径">bors 的那条提权路径</a></li>
+          <li><a class="post-toc-link" href="#两边各抄一条">两边各抄一条</a></li>
+          <li><a class="post-toc-link" href="#注册表的形状早就有了">注册表的形状早就有了</a></li>
+          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a></li>
+          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a></li>
+          <li><a class="post-toc-link" href="#结果">结果</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
 <p>里程碑跑完后，引擎会开一张票，列出候选版本，然后停下来等选择。</p>
 <p>版本自动推进仍然锁着。「下一版发什么」不该由发版引擎替人决定。</p>
 <p>问题出在回答方式。票里写着：请运行 <code class="post-code--spaced">orbi milestone set v0.5.40</code>。这是要在宿主机上执行的 CLI 命令。托管租户没有宿主机，沙箱跑在我们的机器上。</p>
 <p>引擎等于问了一个托管租户无法回答的问题。</p>
 <p>补这个缺口要做一条票内命令：在票里评论 <code class="post-code--spaced">/milestone v0.5.40</code>，剩下的引擎自己做。
 这是个很小的功能。设计花了一天，因为它里面几乎每一个选择前人都做过，并且为此付出过代价。</p>
-<h2>为什么不用动词</h2>
+<h2 id="为什么不用动词">为什么不用动词</h2>
 <p>第一个争论是命名。<code class="post-code--single">/advance</code> 是最直觉的候选，而它是错的。</p>
 <p><strong>票内命令用状态名，不用祈使动词。</strong> Prow 有 <code class="post-code--single">/lgtm</code>、<code class="post-code--single">/hold</code>、<code class="post-code--single">/approve</code>，bors 有
 <code class="post-code--spaced">bors r+</code>，没有一个是动词。这不是文风偏好，而是由命令的语义决定的：CLI 说「做什么」，
@@ -126,7 +173,7 @@
 <p><code class="post-code--spaced">/milestone v0.5.40</code> 只做一个承诺，milestone 现在是 v0.5.40，
 而它做的三件事全都服务于让这句话成真。建 milestone、开 release 票、落地配置值，
 读完名字之后，没有一件是意外。</p>
-<h2>为什么不带 @</h2>
+<h2 id="为什么不带">为什么不带 @</h2>
 <p>第二个争论：<code class="post-code--single">/milestone</code> 还是 <code class="post-code--spaced">@orbi milestone</code>？</p>
 <p>业界分成两派，分界线非常干净，<strong>谁控制机器人的账号名</strong>。</p>
 <p>Prow 和 bors 用纯斜杠。它们必须这样：机器人账号名因部署而异，Kubernetes 用
@@ -140,7 +187,7 @@
 这条也排除了，理由不是审美。<strong>两套语法意味着两份文档、两份测试，以及两个会在有人加第三条命令时
 各自漂移的东西。</strong> mention 换来一次通知，确实有用，但代价要由之后的每一条命令、
 每一个维护者永远付下去。一次通知不值得在语法里留一个永久的分叉。</p>
-<h2>一个正则，三个决定</h2>
+<h2 id="一个正则-三个决定">一个正则，三个决定</h2>
 <p>行首锚定，带多行标志：</p>
 <pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
 </code></pre>
@@ -156,7 +203,7 @@
 <figure class="post-media">
 <img src="/img/diagrams/command-pipeline.svg" alt="票内命令的解析管道：评论依次经过剥离围栏代码块、剥离引用行、排除机器人自身评论、权限检查、最后一条生效，最终产生回执。剥离围栏与权限两格被高亮，分别是 Prow 与 bors 各自漏掉的地方。" width="880" height="120">
 <figcaption>六格，一个归属。Prow 给每个插件自己的正则，所以围栏修复到不了它们，它漏在 “strip fences”。bors 的权限声明是对的，却给处理函数留了第二道门，它漏在 “permission”。</figcaption>
-</figure><h2>Prow 至今还在的那个 bug</h2>
+</figure><h2 id="prow-至今还在的那个-bug">Prow 至今还在的那个 bug</h2>
 <p>正则不解析 Markdown。如果你写一条评论解释 <code class="post-code--single">/hold</code> 怎么用，并把示例放进三个反引号里，
 正则看到的就是一行以 <code class="post-code--single">/hold</code> 开头的文本，于是真的触发。</p>
 <p>Prow 知道这件事。它有一个专门的函数 <code class="post-code--single">DropCodeBlock</code>，在 <code class="post-code--single">pkg/markdown/code_block.go</code>，
@@ -172,7 +219,7 @@ pkg/markdown/code_block.go:25   （定义本身）
 修复存在，只是送不到。</p>
 <p>所以我们的共享层自己编译正则，从声明的动词生成。命令作者提供 <code class="post-code--single">verbs=(&quot;milestone&quot;,)</code>，
 从头到尾看不到正则。他不可能漏掉锚点，也不可能跳过围栏剥离，因为我们压根没给他写这两样的机会。</p>
-<h2>bors 的那条提权路径</h2>
+<h2 id="bors-的那条提权路径">bors 的那条提权路径</h2>
 <p>同样的问题放到权限上，比较结果反过来了：bors 的设计更好，bug 更严重。</p>
 <p>Prow 把权限交给每个插件自己管。有一个共享的 <code class="post-code--single">TrustedUser(...)</code>，在
 <code class="post-code--single">pkg/plugins/trigger/trigger.go:253</code>，但插件得记得调用它，而且各插件口径不一致，
@@ -193,7 +240,7 @@ end
 reviewer 的命令。</p>
 <p>教训不是「bors 不安全」。是那道闸门本身是对的，被第二个入口废掉了。
 <strong>要么只有一条执行路径，要么闸门只是装饰。</strong></p>
-<h2>两边各抄一条</h2>
+<h2 id="两边各抄一条">两边各抄一条</h2>
 <p>还有两个发现值得记，一正一反。</p>
 <p>Prow 真正的好主意：<code class="post-code--single">pkg/plugins/config.go:1381</code> 的 <code class="post-code--single">ValidatePluginsUnknown</code>
 会在帮助表里查找配置了但未注册的插件并拒绝它。这让「发布时没写文档」成为一个硬错误，
@@ -202,7 +249,7 @@ reviewer 的命令。</p>
 <p>Prow 的缺口：<code class="post-code--single">pkg/plugins/plugins.go:176</code> 的 <code class="post-code--single">RegisterGenericCommentHandler</code>
 是一次裸的 map 赋值。同名注册两次，后者静默覆盖前者；两个都匹配 <code class="post-code--single">^/hold</code> 的插件会都跑，
 而且 goroutine 顺序不确定。我们在导入期就对重名和动词重叠抛错。</p>
-<h2>注册表的形状早就有了</h2>
+<h2 id="注册表的形状早就有了">注册表的形状早就有了</h2>
 <p>我们落地的形状不是为这件事发明的。journal 模块几个月前就是这样，
 <code class="post-code--single">src/orbi/journal.py:167</code> 的 <code class="post-code--single">JOURNAL_EVENTS</code> 是一个显式的 dict，就写在模块里。
 没有装饰器去发现什么，没有 entry point，没有动态导入。<strong>注册即校验</strong>：<code class="post-code--single">event()</code>
@@ -257,7 +304,7 @@ TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 </g>
 </svg>
 <figcaption>这个注册表不是为本功能设计的。它早就在仓里放着 journal 事件名，并且带着那个真正重要的性质：注册这个动作本身就是校验。</figcaption>
-</figure><h2>一条命令，三个幂等步骤</h2>
+</figure><h2 id="一条命令-三个幂等步骤">一条命令，三个幂等步骤</h2>
 <p>原来的票里写着这条命令改一个配置值。那是错的，查清楚为什么错花了一次 grep。</p>
 <p>一次完整的推进需要发生三件事，我们只有其中一件：</p>
 <div class="post-table-scroll"><table>
@@ -309,7 +356,7 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 是不是在输入进来的时候就已经被确定了。</strong></p>
 <p>每一步都是确定性的，<strong>不调用任何模型</strong>，输入是命令参数，变换是字符串替换，输出是写文件。
 在这条路径上塞一个 LLM，等于给一个全部价值就在于可预测的操作加上不确定性。</p>
-<h2>我们刻意没有决定的事</h2>
+<h2 id="我们刻意没有决定的事">我们刻意没有决定的事</h2>
 <p>这一切底下有一个真正的开放问题，我们把它写下来，而不是顺手替它做了决定。</p>
 <p>命令现在只从一个地方读：引擎自己开的那张确认票，在空闲 tick 上，且仅当自动推进关闭时。
 三个条件叠加。这个交集之外，<code class="post-code--single">/命令</code> 永远不会被看见。</p>
@@ -336,7 +383,7 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 <p><strong>Option B 的代价只有被一条真正需要它的命令证明才值得。</strong> 在 <code class="post-code--single">/approve</code>、<code class="post-code--single">/retry</code>、
 <code class="post-code--single">/cancel</code>、<code class="post-code--single">/model</code> 中的某一条被具体定义之前，没有任何信息能让这个选择比抛硬币更好。
 把问题连同两个选项的代价一起写下来，是为了防止它被下一个打开这个文件的人顺手答掉。</p>
-<h2>结果</h2>
+<h2 id="结果">结果</h2>
 <p>命令当天就上线了。实现是 18 个文件 +2073/-81，把共享层抽出来的后续票已经写好并排进队列。</p>
 <p>值得留下的不是这个功能。是两个成熟系统，它们都在我们之前解决过这个问题，
 各自在源码里留下一处可见的缺陷：Prow 的修复到不了调用方，bors 的闸门有第二道门。
@@ -348,7 +395,7 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 <a href="https://github.com/orbi-build/orbi/issues/1294">#1294</a>（抽共享层）、
 <a href="https://github.com/orbi-build/orbi/discussions/1295">#1295</a>（命令该从哪读）。
 上文所有 Prow 与 bors 的行号均为 2026-09-22 在 HEAD 上 grep 所得，不是凭记忆。</em></p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/cursor/">Cursor 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
       </article>
@@ -408,7 +455,7 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const headings=links.map(link=>document.getElementById(link.hash.slice(1))).filter(Boolean);const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',link.hash.slice(1)===heading.id));};if('IntersectionObserver' in window){const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((entry)=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)setCurrent(visible.target);},{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

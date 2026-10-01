@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,13 +117,37 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#the-delivery">The delivery</a></li>
+          <li><a class="post-toc-link" href="#the-refusal">The refusal</a></li>
+          <li><a class="post-toc-link" href="#the-part-the-screenshots-cannot-show">The part the screenshots cannot show</a></li>
+          <li><a class="post-toc-link" href="#what-changes-when-the-gate-can-fail">What changes when the gate can fail</a></li>
+          <li><a class="post-toc-link" href="#trying-it">Trying it</a></li>
+          <li><a class="post-toc-link" href="#the-ledger">The ledger</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 7 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#the-delivery">The delivery</a></li>
+          <li><a class="post-toc-link" href="#the-refusal">The refusal</a></li>
+          <li><a class="post-toc-link" href="#the-part-the-screenshots-cannot-show">The part the screenshots cannot show</a></li>
+          <li><a class="post-toc-link" href="#what-changes-when-the-gate-can-fail">What changes when the gate can fail</a></li>
+          <li><a class="post-toc-link" href="#trying-it">Trying it</a></li>
+          <li><a class="post-toc-link" href="#the-ledger">The ledger</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>Search for an autonomous coding agent and you will find plenty of tools
 that open pull requests. The missing part is what happens when another system
 reads the diff and refuses to ship it.</p>
 <p>Here is one delivery where that happened. Writing the code is easy to demo;
 watching a reviewer refuse it is harder.</p>
-<h2>The delivery</h2>
+<h2 id="the-delivery">The delivery</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> described a real
 defect in our own release code. A change had moved the docs sync before the tag
 push, which opened three windows where a tagged release could exist without its
@@ -119,7 +158,7 @@ docs page.</p>
 commit. So far this is what every agent does.</p>
 <p>Then a second session, with a fresh context and no memory of writing the code,
 read that diff.</p>
-<h2>The refusal</h2>
+<h2 id="the-refusal">The refusal</h2>
 <p>Round one came back with one Major finding. Not a style note:</p>
 <blockquote>
 <p><strong>Location:</strong> <code class="post-code--single">src/orbi/release.py:2377</code></p>
@@ -136,7 +175,7 @@ back too, this time on coverage: new branches with no tests. Three more commits.
 the merge. Then <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a>,
 with the Issue and the PR listed in the generated notes.</p>
 <p>No human decided anything in that window.</p>
-<h2>The part the screenshots cannot show</h2>
+<h2 id="the-part-the-screenshots-cannot-show">The part the screenshots cannot show</h2>
 <p>Here is something I had to label on <a href="https://youtu.be/Et6gBSaXqqA">the video we cut from this
 run</a>, because the frames are misleading on their
 own.</p>
@@ -152,7 +191,7 @@ that is not one.</p>
 <p>I cannot make GitHub show it differently. What I can do is say it out loud: that
 was a second model, running in a separate session, and it had no memory of
 writing the code it refused.</p>
-<h2>What changes when the gate can fail</h2>
+<h2 id="what-changes-when-the-gate-can-fail">What changes when the gate can fail</h2>
 <p>An agent that writes code and opens a PR has moved the work to a human. Someone
 still has to read it, decide, and merge. The agent did the typing.</p>
 <p>Making the gate real turned out to be mostly plumbing. The verdict has to be
@@ -168,7 +207,7 @@ blocking check slows down rapid iteration.</p>
 Blocking a human&#39;s PR costs that human time right now, and they feel it.
 Blocking an agent&#39;s PR costs nobody anything, because the agent reads the
 finding and goes again at 3am while everyone is asleep.</p>
-<h2>Trying it</h2>
+<h2 id="trying-it">Trying it</h2>
 <p>The whole loop is one container. systemd runs as PID 1 inside it, which is what
 the cgroup bind is for:</p>
 <pre><code class="language-bash">docker run -d --name orbi \
@@ -189,14 +228,14 @@ the cgroup bind is for:</p>
 <code class="post-code--single">ai-ready</code> and the next tick picks it up. The review runs as a separate session
 against the frozen head, and nothing merges unless that session passes it.
 Full walkthrough: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>.</p>
-<h2>The ledger</h2>
+<h2 id="the-ledger">The ledger</h2>
 <p>This is running on its own repository. As of today, 27 days in: 334 merged pull
 requests from <code class="post-code--single">orbi/</code> branches, 51 tagged releases.</p>
 <p>Every one of those is a link you can open, including the reviews that blocked
 something and the commits that came after.</p>
 <p>Orbi is open source under AGPL-3.0, and self-hostable:
 <a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/orca/">Orca comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -256,7 +295,7 @@ something and the commits that came after.</p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const headings=links.map(link=>document.getElementById(link.hash.slice(1))).filter(Boolean);const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',link.hash.slice(1)===heading.id));};if('IntersectionObserver' in window){const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((entry)=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)setCurrent(visible.target);},{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

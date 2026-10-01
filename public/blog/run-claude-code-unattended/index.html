@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,14 +117,34 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a></li>
+          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a></li>
+          <li><a class="post-toc-link" href="#the-step-i-still-do-by-hand">The step I still do by hand</a></li>
+          <li><a class="post-toc-link" href="#if-you-d-rather-not-build-it">If you'd rather not build it</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 5 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a></li>
+          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a></li>
+          <li><a class="post-toc-link" href="#the-step-i-still-do-by-hand">The step I still do by hand</a></li>
+          <li><a class="post-toc-link" href="#if-you-d-rather-not-build-it">If you'd rather not build it</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>To run Claude Code unattended you use headless mode: <code class="post-code--spaced">claude -p</code> runs one prompt without the interactive UI, prints the result and exits, with a non-zero code if the run fails. Anthropic&#39;s page for it is now titled &quot;Run Claude Code programmatically&quot;, but the address still ends in <a href="https://code.claude.com/docs/en/headless">/headless</a>. With no one to answer prompts, a headless run denies anything that needs approval, so give it a permission mode that lets the work through:</p>
 <pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre>
 <p><code class="post-code--spaced">--permission-prompts none</code> is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.</p>
 <p>I&#39;m Lawrence Liu, and I maintain Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn&#39;t run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.</p>
-<h2>What Claude Code headless mode gives you</h2>
+<h2 id="what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</h2>
 <p>One session that runs to the end without a person. A few flags matter once it runs from cron or CI:</p>
 <ul>
 <li><code class="post-code--single">--allowedTools</code> pre-approves specific tools, and <code class="post-code--single">--permission-mode</code> sets a baseline for everything else.</li>
@@ -138,7 +173,7 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 </code></pre>
 <p>The log keeps Claude&#39;s output and errors, and a run that completes writes a JSON result there; a failure before Claude starts, such as a bad <code class="post-code--single">cd</code>, won&#39;t show up in it. <code class="post-code--single">auto</code> isn&#39;t always available: the model may not support it, or your organization, a settings file or Anthropic may have turned it off. When it&#39;s unavailable, Claude Code falls back to Manual, and a headless run then denies whatever needs approval. In that case use <code class="post-code--spaced">--permission-mode dontAsk</code> with an explicit <code class="post-code--single">--allowedTools</code> list.</p>
 <p>If one scheduled job like that is all you need, you&#39;re done. The rest of this post is for when you want GitHub Issues to come out the other end as merged, released changes.</p>
-<h2>Six things a headless loop doesn&#39;t answer</h2>
+<h2 id="six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn&#39;t answer</h2>
 <p>Orbi has been delivering its own Issues unattended since late August. As of today, 599 Issues in <a href="https://github.com/orbi-build/orbi">its repository</a> carry the <code class="post-code--single">ai-merged</code> label, and v0.5.58 went out on September 30. Some of the answers below I only found after getting them wrong. A bare loop around <code class="post-code--spaced">claude -p</code> leaves every one of them to you.</p>
 <h3>Which task, and only once</h3>
 <p>In Orbi a person adds the <code class="post-code--single">ai-ready</code> label to an Issue. A runner picks it inside a claim lock, so two runners can&#39;t take the same Issue at the same moment, and adds <code class="post-code--single">ai-in-progress</code>, which later scans skip. It then creates a worktree from a pinned base commit. Urgent Issues go first, then bugs. Each step is posted back to the Issue as a comment, which means the queue is the Issue list and the log is the Issue&#39;s timeline.</p>
@@ -167,16 +202,16 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <h3>Who ships it</h3>
 <p>A merged fix reaches nobody until it&#39;s released. In Orbi a release is an Issue too, labelled <code class="post-code--single">ai-release</code>, naming the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. This is the one for v0.5.58, which shipped the #1504 fix:</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508, Release v0.5.58: the scope is milestone v0.5.58, the Release block names version, base branch and version file, and Orbi claimed it with ai-in-progress"></p>
-<h2>The step I still do by hand</h2>
+<h2 id="the-step-i-still-do-by-hand">The step I still do by hand</h2>
 <p>If your runs change a user interface, automated tests won&#39;t be enough. On September 25, Orbi merged <a href="https://github.com/orbi-build/orbi-website/pull/523">a mobile table fix</a> for this website. Its overflow tests all passed. Then a 390px screenshot showed words split mid-word, so I measured all 34 table pages at 390px: no horizontal overflow anywhere, but 193 split words or numbers on 25 of them. Here is the effect, reproduced on today&#39;s page by putting PR #523&#39;s CSS back:</p>
 <p><img src="/img/headless-table-before.webp" alt="The Orbi vs Devin capability table at 390px with PR #523&#39;s CSS put back: &quot;Task entry&quot; breaks into &quot;Tas&quot;, &quot;k&quot;, &quot;ent&quot;, &quot;ry&quot;"></p>
 <p>I filed the measurements as <a href="https://github.com/orbi-build/orbi-website/issues/526">#526</a>, and Orbi merged the fix 53 minutes after picking it up. The same table on orbi.build today:</p>
 <p><img src="/img/headless-table-after.webp" alt="The same table on orbi.build today at 390px: the row is a stacked block and every word reads whole"></p>
 <p>PR #523&#39;s tests did what its Issue asked, and that Issue never mentioned words. So before anything is promoted from beta to production, I open the changed pages on a phone and a desktop and look.</p>
-<h2>If you&#39;d rather not build it</h2>
+<h2 id="if-you-d-rather-not-build-it">If you&#39;d rather not build it</h2>
 <p>All of this can be built around <code class="post-code--spaced">claude -p</code>: a claim lock on labelled Issues, a dedicated system user, a second session for review, a merge check, a resume path, a release job. Orbi&#39;s <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow doc</a>, which describes how its version works, runs to about 800 lines.</p>
 <p>Or use Orbi. Orbi Cloud runs <a href="https://github.com/earendil-works/pi">Pi</a> on DeepSeek by default, and Orbi&#39;s own deliveries have run on DeepSeek since September 22. You can bring your own key instead, and Anthropic&#39;s API is on the provider list, so Claude models stay available. What you give up is Claude Code itself, and using your Claude Pro or Max quota for it. <a href="/compare/claude-code/">Orbi vs Claude Code</a> compares where each one stops. If what you want is an Issue coming out the other end as a reviewed release, <a href="https://orbi.build/cloud/?ref=blog-headless">connect a repository to Orbi Cloud</a> or self-host the <a href="https://github.com/orbi-build/orbi">open-source runner</a>.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read <a href="/compare/claude-code/">Orbi vs Claude Code</a>, <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -236,7 +271,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const headings=links.map(link=>document.getElementById(link.hash.slice(1))).filter(Boolean);const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',link.hash.slice(1)===heading.id));};if('IntersectionObserver' in window){const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((entry)=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)setCurrent(visible.target);},{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

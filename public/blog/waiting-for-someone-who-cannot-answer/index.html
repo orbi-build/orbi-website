@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,13 +117,41 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#the-waiting-is-correct">The waiting is correct</a></li>
+          <li><a class="post-toc-link" href="#the-day-we-noticed">The day we noticed</a></li>
+          <li><a class="post-toc-link" href="#the-same-shape-in-the-ui">The same shape, in the UI</a></li>
+          <li><a class="post-toc-link" href="#the-same-shape-in-the-config">The same shape, in the config</a></li>
+          <li><a class="post-toc-link" href="#what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</a></li>
+          <li><a class="post-toc-link" href="#the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</a></li>
+          <li><a class="post-toc-link" href="#a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</a></li>
+          <li><a class="post-toc-link" href="#what-connects-them">What connects them</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 9 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#the-waiting-is-correct">The waiting is correct</a></li>
+          <li><a class="post-toc-link" href="#the-day-we-noticed">The day we noticed</a></li>
+          <li><a class="post-toc-link" href="#the-same-shape-in-the-ui">The same shape, in the UI</a></li>
+          <li><a class="post-toc-link" href="#the-same-shape-in-the-config">The same shape, in the config</a></li>
+          <li><a class="post-toc-link" href="#what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</a></li>
+          <li><a class="post-toc-link" href="#the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</a></li>
+          <li><a class="post-toc-link" href="#a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</a></li>
+          <li><a class="post-toc-link" href="#what-connects-them">What connects them</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>Some failures look like a quiet system. Nothing crashes or logs an error. The
 engine is waiting as designed, but the person it is waiting for does not know
 what to do and has no way to answer.</p>
 <p>We shipped three versions of this mistake. We found them in one afternoon,
 when we tried the product as our own customer.</p>
-<h2>The waiting is correct</h2>
+<h2 id="the-waiting-is-correct">The waiting is correct</h2>
 <p>Our engine will not advance a version on its own. When a milestone closes, an
 idle tick opens a ticket: this version is complete, here are the candidates,
 which one is next. Then it stops.</p>
@@ -127,7 +170,7 @@ and accepted only an answer they could not produce.</p>
 <p>Worse, managed sandboxes never rendered <code class="post-code--spaced">auto_next_milestone = false</code> at all. So
 they did not get the ticket either. The engine paused silently and waited for a
 decision that nobody had been asked to make.</p>
-<h2>The day we noticed</h2>
+<h2 id="the-day-we-noticed">The day we noticed</h2>
 <p>On 2026-09-22 we migrated <code class="post-code--single">orbi-build/orbi</code>, the engine&#39;s own repository, onto
 our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.</p>
 <p>Then the milestone closed, and everything stopped. No notification. No error.
@@ -135,7 +178,7 @@ Delivery simply ceased, until a human noticed, created the v0.5.40 milestone by
 hand with <code class="post-code--spaced">gh api</code>, and edited the policy file directly.</p>
 <p>We had been running this gap in production for our customers. It took putting
 our own release line behind it to feel it.</p>
-<h2>The same shape, in the UI</h2>
+<h2 id="the-same-shape-in-the-ui">The same shape, in the UI</h2>
 <p>Later the same day, a full walkthrough of the product (register, install the
 App, connect a repo, provision a sandbox, file an issue, deliver, merge, release)
 surfaced the second instance.</p>
@@ -153,7 +196,7 @@ Orbi will start on it.</p>
 just never extended that courtesy to milestones. So you type a version you half
 remember, and if you get it wrong nothing tells you. The rejection happens
 later, asynchronously, on a ticket you have to go find.</p>
-<h2>The same shape, in the config</h2>
+<h2 id="the-same-shape-in-the-config">The same shape, in the config</h2>
 <figure class="post-media">
 <img src="/img/diagrams/three-truths.svg" alt="Three systems holding three different answers about the active milestone. The control plane knows the tenant asked for v0.2.0. No path carries that to the sandbox orbi.toml, which knows nothing. The GitHub repo variable mirrors the empty value, so the engine logs active_milestone_variable_absent once per tick." width="880" height="150">
 <figcaption>The control plane can open a release ticket while the sandbox still believes nothing is in flight. The engine faithfully reports what it was told, once per tick, and nothing in the loop is broken.</figcaption>
@@ -179,7 +222,7 @@ swapping it atomically. The comments record the accretion:</p>
 <p>Adding one field means editing four files. Which is why nobody added
 <code class="post-code--single">active_milestone</code>: <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
 returns nothing. The control plane does not know the field exists.</p>
-<h2>What the tenant can and cannot touch</h2>
+<h2 id="what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</h2>
 <p>One design question resolved itself once we looked at the filesystem.</p>
 <p>We were about to specify merge semantics for &quot;what if the tenant edited a managed
 field by hand&quot;. Then we checked:</p>
@@ -212,7 +255,7 @@ the sandbox first, and a way to change it had to be retrofitted afterwards.</p>
 <p>We are not fixing that in one step. But knowing which invariant we want makes
 the next field&#39;s default obvious: the control plane holds it, the sandbox
 derives it.</p>
-<h2>The pull-versus-push question answered itself too</h2>
+<h2 id="the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</h2>
 <p>For pushing config down to sandboxes, the obvious tradeoff is pull (the sandbox
 asks on a schedule) versus push (the control plane triggers a refresh).</p>
 <p>Push means opening an inbound channel to sandbox hosts. Pull means a delay of up
@@ -228,7 +271,7 @@ most sixty seconds, on an action that already waits for the engine&#39;s next cl
 There is no tradeoff to weigh. Push would open an inbound path to buy less than
 a minute.</p>
 <p>Measuring the thing before arguing about it took two commands.</p>
-<h2>A wrong diagnosis, corrected by the database</h2>
+<h2 id="a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</h2>
 <p>While reading production logs we found 288 identical errors in six hours:</p>
 <pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
@@ -266,7 +309,7 @@ perfectly.</p>
 <p>The generalisable version: when an error reproduces, you have confirmed the
 mechanism, not the diagnosis. The next question is always whether some policy
 intends this outcome. Policy lives in data, not in logs.</p>
-<h2>What connects them</h2>
+<h2 id="what-connects-them">What connects them</h2>
 <p>Three defects, one shape: <strong>the system knew something the user needed, and did
 not say it.</strong></p>
 <p>It knew which milestones existed, and made you type one from memory. It knew a
@@ -287,7 +330,7 @@ orbi-cloud#869 (list the milestones in the UI),
 orbi-cloud#870 (a general config push instead of a fifth hand-written sync), and
 <a href="https://github.com/orbi-build/orbi/issues/1283">orbi#1283</a> (the one whose root
 cause we got wrong first).</em></p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/managed-agents/">Managed agents comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -347,7 +390,7 @@ cause we got wrong first).</em></p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const headings=links.map(link=>document.getElementById(link.hash.slice(1))).filter(Boolean);const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',link.hash.slice(1)===heading.id));};if('IntersectionObserver' in window){const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((entry)=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)setCurrent(visible.target);},{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
