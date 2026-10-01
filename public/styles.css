@@ -2014,7 +2014,7 @@ h2 {
   }
   .eyebrow { margin-bottom: 12px; }
   h1 { margin-bottom: 12px; }
-  .hero-lede { font-size: 1rem; }
+  .hero-lede { margin-bottom: 22px; font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }
   .hero-cta { width: 100%; }
