@@ -5,6 +5,7 @@ summary: claude -p gets a coding agent running with nobody watching. Picking the
 lang: en
 author: Orbi
 image: /img/blog-headless-card.png
+mirror: run-claude-code-unattended
 ---
 
 Running Claude Code with nobody watching takes one flag. `claude -p` runs a prompt non-interactively and exits non-zero if the run fails. Give it a permission mode and it stops asking you things:
