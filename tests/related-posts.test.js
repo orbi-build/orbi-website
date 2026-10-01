@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/worker.js";
 import { collectPosts } from "../scripts/build-pages.mjs";
 
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
 function cacheDouble() {
   const entries = new Map();
   return {
@@ -37,9 +39,8 @@ function aiVectors() {
 
 describe("blog related posts", () => {
   it("builds one complete manifest entry per English post with its paired Chinese slug", async () => {
-    const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-    const built = JSON.parse(await readFile(join(root, "public/blog/posts.json"), "utf8"));
-    const source = await collectPosts(join(root, "content/blog"));
+    const built = JSON.parse(await readFile(join(ROOT, "public/blog/posts.json"), "utf8"));
+    const source = await collectPosts(join(ROOT, "content/blog"));
     const english = source.filter((post) => post.lang === "en");
 
     expect(built).toHaveLength(english.length);
@@ -69,17 +70,20 @@ describe("blog related posts", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it("inserts the related section inside the article column", async () => {
+  it("inserts the related section inside the article column of a built post", async () => {
     const cache = cacheDouble();
     vi.stubGlobal("caches", cache);
+    const postsText = await readFile(join(ROOT, "public/blog/posts.json"), "utf8");
+    const builtPosts = JSON.parse(postsText);
+    const postHtml = await readFile(join(ROOT, "public/blog/searching-for-orbis-harness/index.html"), "utf8");
     const env = {
-      AI: { run: async () => aiVectors() },
-      ASSETS: assetsFor(JSON.stringify(posts), '<html><body><div class="post-grid"><article class="post-body"><p>Body</p><!--orbi:related-posts--></article></div></body></html>'),
+      AI: { run: async () => ({ data: builtPosts.map((_post, index) => [index + 1, 1]) }) },
+      ASSETS: assetsFor(postsText, postHtml),
     };
 
-    const response = await worker.fetch(new Request("https://beta.orbi.build/blog/one/"), env);
+    const response = await worker.fetch(new Request("https://beta.orbi.build/blog/searching-for-orbis-harness/"), env);
     const html = await response.text();
-    expect(html).toMatch(/<article class="post-body"><p>Body<\/p><section class="related-links"[\s\S]*<\/section><\/article>/);
+    expect(html).toMatch(/<article class="post-body">[\s\S]*<section class="related-links"[\s\S]*<\/section>\s*<\/article>/);
     expect(html).not.toContain('<section class="related-links shell"');
   });
 
