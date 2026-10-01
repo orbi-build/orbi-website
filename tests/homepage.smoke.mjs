@@ -1018,8 +1018,15 @@ async function assertProofLoop(browser, path, size, screenshot) {
   if (JSON.stringify(captionLinks) !== JSON.stringify(expectedCaption)) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
-  const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+  const midwayCta = page.locator('[data-cta="midway-cloud"]');
+  const heroCta = page.locator('[data-cta="cloud-start"]');
+  const midwayText = (await midwayCta.textContent()).trim();
+  const heroText = (await heroCta.textContent()).trim();
+  if (midwayText !== heroText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected hero text ${JSON.stringify(heroText)}`);
+  }
+  const midwayHref = await midwayCta.getAttribute("href");
+  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -2264,8 +2271,7 @@ async function main() {
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issues #704/#711 send the hero and nav CTAs directly to login; the two
-    // lower-page CTAs still introduce the language-matching Cloud page.
+    // Issues #704/#711/#745 send homepage Cloud CTAs directly to login.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
