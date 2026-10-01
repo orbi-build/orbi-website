@@ -1335,13 +1335,16 @@ async function assertCloudPage(browser, path, size, screenshot) {
       note: "不用绑卡 · 只授权你选的仓库",
       href: "/zh/cloud/login",
     };
-  const heroSequence = await hero.locator(":scope > :is(h1, p, a)").evaluateAll((elements) =>
-    elements.map((element) => element.textContent.trim()));
-  if (heroSequence.length < 4
-    || heroSequence[1] !== expectedHero.lede
-    || heroSequence[2] !== expectedHero.button
-    || heroSequence[3] !== expectedHero.note) {
-    throw new Error(`${path}: hero must contain h1, lede, one CTA, and reassurance in order; got ${JSON.stringify(heroSequence)}`);
+  const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>
+    elements.map((element) => ({ tag: element.tagName, text: element.textContent.trim() })));
+  const expectedSequence = [
+    { tag: "H1", text: claim.h1 },
+    { tag: "P", text: expectedHero.lede },
+    { tag: "A", text: expectedHero.button },
+    { tag: "P", text: expectedHero.note },
+  ];
+  if (JSON.stringify(heroSequence) !== JSON.stringify(expectedSequence)) {
+    throw new Error(`${path}: hero must contain only h1, lede, one CTA, and reassurance in order; got ${JSON.stringify(heroSequence)}`);
   }
   const heroButton = hero.locator("a.hero-cta");
   if (await heroButton.count() !== 1

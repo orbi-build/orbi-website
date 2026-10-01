@@ -949,7 +949,7 @@ describe("Cloud hero single CTA (Issue #741)", () => {
   it("keeps only the ordered h1, lede, CTA, and CTA note in the Cloud hero", () => {
     for (const [output, expected] of Object.entries(expectations)) {
       const html = shipped.get(output);
-      const hero = region(html, '<section class="compare-hero', '<aside class="cloud-gate"');
+      const hero = region(html, '<section class="compare-hero', '</section>');
       const h1 = hero.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "").trim();
       const elements = [...hero.matchAll(/<(h1|p|a)\b[^>]*>([\s\S]*?)<\/\1>/g)]
         .map(([, tag, body]) => ({ tag, body: body.replace(/<[^>]+>/g, "").trim() }));
