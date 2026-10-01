@@ -13,7 +13,7 @@ const cases = [
     lede: "An AI agent that takes your Issues all the way to a release.",
     href: "/cloud/login",
     button: "Try __FREE_DELIVERIES__ deliveries free →",
-    note: "No card · Only the repos you pick",
+    note: '<span class="hero-cta-note-first">No credit card required ·</span> <span>Orbi only sees the repos you pick</span>',
   },
   {
     source: "site/pages/zh/index.html",

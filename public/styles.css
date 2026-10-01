@@ -510,6 +510,13 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   font-size: 0.82rem;
   line-height: 1.45;
 }
+@media (max-width: 760px) {
+  .hero-cta-note {
+    margin-top: 0;
+    line-height: 1.2;
+  }
+  .hero-cta-note span { display: block; }
+}
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
   max-width: 22rem;
