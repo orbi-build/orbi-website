@@ -404,6 +404,18 @@ h1 {
   max-width: var(--hero-copy-width);
 }
 
+.hero.homepage-hero h1 {
+  font-size: 68px;
+  line-height: 1.02;
+  letter-spacing: -2px;
+}
+
+@media (max-width: 699px) {
+  .hero.homepage-hero h1 {
+    font-size: 42px;
+  }
+}
+
 /* Short viewports (1366x768 laptops land at ~698px of usable height) pushed
    the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
    headline and the hero padding so the buttons stay in the first screen. */
