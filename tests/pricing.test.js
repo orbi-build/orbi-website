@@ -208,7 +208,7 @@ describe("Free delivery allowance constant (Issue #274)", () => {
 describe("Cloud pricing trial integration (Issue #742)", () => {
   const pricingPages = [
     ["cloud/index.html", {
-      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No card`,
+      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No credit card required`,
       failed: "· Failed deliveries don't count",
       login: "/cloud/login",
       soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,

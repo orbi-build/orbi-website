@@ -1000,7 +1000,7 @@ describe("Cloud hero single CTA (Issue #741)", () => {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
       href: "/cloud/login",
       button: "Try __FREE_DELIVERIES__ deliveries free →",
-      note: "No card · Only the repos you pick",
+      note: "No credit card required · Orbi only sees the repos you pick",
     },
     "zh/cloud/index.html": {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
@@ -1361,8 +1361,8 @@ describe("cloud buyer FAQ (Issue #166)", () => {
   it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
     const expectations = {
       "cloud/index.html": {
-        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no card required, and failed deliveries don't count\./,
-        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no card required, and failed deliveries don't count\./g,
+        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count\./,
+        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count\./g,
       },
       "zh/cloud/index.html": {
         faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/,
@@ -1818,7 +1818,7 @@ describe("blog (Issue #212)", () => {
         : {
             title: "Orbi takes your Issues all the way to a release.",
             button: "Try __FREE_DELIVERIES__ deliveries free →",
-            note: "No card · Only the repos you pick",
+            note: "No credit card required · Orbi only sees the repos you pick",
             href: "/cloud/login",
             selfHost: "Prefer to self-host? It's open source (AGPL) →",
           };

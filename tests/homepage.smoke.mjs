@@ -1331,7 +1331,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     ? {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
       button: `Try ${pricing.freeDeliveries} deliveries free →`,
-      note: "No card · Only the repos you pick",
+      note: "No credit card required · Orbi only sees the repos you pick",
       href: "/cloud/login",
     }
     : {
