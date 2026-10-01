@@ -335,7 +335,7 @@ class LandingTests(unittest.TestCase):
             self.assertIn("direction", sections)
 
     def test_factory_map_covers_the_current_delivery_graph(self) -> None:
-        expected = {"epic", "dependency", "delivery", "release"}
+        expected = {"delivery", "review", "release"}
         for page in (self.en, self.zh):
             capabilities = {
                 attrs["data-capability"]
@@ -487,13 +487,44 @@ class LandingTests(unittest.TestCase):
             self.assertIn("/img/pr-193.png", html)
             self.assertIn('id="orbi-stats"', html)
 
-    def test_hero_plays_a_factory_trace(self) -> None:
-        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
-        self.assertIn("data-trace-node", js)
-        self.assertIn("prefers-reduced-motion", js)
-        for html in (self.en_html, self.zh_html):
-            self.assertIn('id="factory-trace"', html)
-            self.assertIn("/demo.js", html)
+    def test_hero_shows_a_real_delivery_receipt(self) -> None:
+        expected = [
+            (
+                "orbi-build/orbi · real delivery",
+                "Issue #1306 → Release v0.5.42",
+                "Issue opened",
+                "start",
+                "PR #1309 reviewed &amp; merged",
+                "+1h 27m",
+                "Released v0.5.42",
+                "+6h 42m",
+                "Same day · every commit written by Orbi",
+            ),
+            (
+                "orbi-build/orbi · 真实交付",
+                "Issue #1306 → Release v0.5.42",
+                "提交 Issue",
+                "起点",
+                "PR #1309 审查并合并",
+                "+1 小时 27 分",
+                "发布 v0.5.42",
+                "+6 小时 42 分",
+                "同一天完成 · 每个提交都由 Orbi 写",
+            ),
+        ]
+        for html, copy in zip((self.en_html, self.zh_html), expected):
+            self.assertIn('<figure class="hero-receipt"', html)
+            for text in copy:
+                self.assertIn(text, html)
+            self.assertEqual(html.count('class="hero-receipt-timeline"'), 1)
+            self.assertEqual(html.count("hero-receipt-release"), 1)
+
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(
+            ".hero-receipt-timeline .hero-receipt-release strong,\n"
+            ".hero-receipt-timeline .hero-receipt-release small { color: var(--run-on-light); }",
+            css,
+        )
 
     def test_stats_count_up_when_the_record_enters_the_viewport(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")

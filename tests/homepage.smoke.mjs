@@ -895,8 +895,8 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
 }
 
 // Issue #267: at the ≤980px breakpoint the hero collapses to one column and
-// came apart on the Z Fold 8's unfolded viewport: the factory-trace figure
-// right-shifted ~372px off the copy's left edge (the 980px rule's
+// came apart on the Z Fold 8's unfolded viewport: the hero receipt
+// right-shifted off the copy's left edge (the 980px rule's
 // margin-left:auto right-aligns the shrink-to-fit figure), the "Prefer to
 // self-host?" CTA sagged 15px below its row-mates (the base .hero-alt
 // margin-top inside a flex-start row), and the trust-line checklist spread
@@ -919,7 +919,7 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
     return {
       columns: getComputedStyle(document.querySelector(".hero")).gridTemplateColumns.split(" ").length,
       copy: rect(".hero-copy"),
-      figure: rect(".hero figure.factory-trace"),
+      figure: rect(".hero figure.hero-receipt"),
       ctas: [rect('.hero [data-cta="cloud-start"]')],
       h1: rect(".hero h1"),
       checklist: [...document.querySelectorAll(".hero .trust-line li")].map(rect),

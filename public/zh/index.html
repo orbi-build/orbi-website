@@ -178,36 +178,15 @@
         <p class="hero-cta-note">不用绑卡 · 只授权你选的仓库</p>
       </div>
 
-      <figure class="factory-trace" id="factory-trace" aria-label="Orbi 交付产线：从范围到打 Tag 发版">
-        <div class="trace-head">
-          <span><i class="live-dot"></i> 01 号产线 / 运行中</span>
-          <span>orbi-build/orbi</span>
-        </div>
-        <div class="trace-body">
-          <div class="trace-axis" aria-hidden="true"><span></span></div>
-          <ol class="trace-nodes">
-            <li class="trace-node" data-trace-node data-capability="epic">
-              <span class="trace-index">范围</span>
-              <strong>Epic + Milestone</strong>
-              <small>确定版本边界</small>
-            </li>
-            <li class="trace-node" data-trace-node data-capability="dependency">
-              <span class="trace-index">顺序</span>
-              <strong>GitHub blockedBy</strong>
-              <small>证据表明就绪才开工</small>
-            </li>
-            <li class="trace-node" data-trace-node data-capability="delivery">
-              <span class="trace-index">生产</span>
-              <strong>Issue #48 → PR #193</strong>
-              <small>实现 · 测试 · 审查 · 修复 · 合并</small>
-            </li>
-            <li class="trace-node" data-trace-node data-capability="release">
-              <span class="trace-index">出厂</span>
-              <strong>Release v0.2.0</strong>
-              <small>冻结 SHA · 完整门禁 · 不可变 Tag</small>
-            </li>
-          </ol>
-        </div>
+      <figure class="hero-receipt" aria-label="Orbi 一次真实交付：从 Issue 到发版">
+        <p class="hero-receipt-kicker">orbi-build/orbi · 真实交付</p>
+        <p class="hero-receipt-title">Issue #1306 → Release v0.5.42</p>
+        <ol class="hero-receipt-timeline">
+          <li class="hero-receipt-step"><strong>提交 Issue</strong><small>起点</small></li>
+          <li class="hero-receipt-step"><strong>PR #1309 审查并合并</strong><small>+1 小时 27 分</small></li>
+          <li class="hero-receipt-step hero-receipt-release"><strong>发布 v0.5.42</strong><small>+6 小时 42 分</small></li>
+        </ol>
+        <figcaption>同一天完成 · 每个提交都由 Orbi 写</figcaption>
       </figure>
     </section>
 
