@@ -332,8 +332,6 @@ img {
   padding: 92px 0 80px;
 }
 
-.eyebrow,
-.section-tag,
 .runtime-proof {
   padding: 18px 0 8px;
   text-align: center;
@@ -378,6 +376,8 @@ img {
 .founding-offer { margin: 28px 0 0; padding: 14px 18px; border: 2px solid var(--signal); border-radius: var(--radius-card); background: var(--paper-2); font-size: 1.05rem; font-weight: 600; }
 .founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
 .founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
+.eyebrow,
+.section-tag,
 .stats-label,
 .proof-shot > span,
 .future-loop > .orbi-future-loop-li > span,
