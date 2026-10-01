@@ -1971,7 +1971,6 @@ h2 {
   .site-header nav > a.nav-apply {
     justify-content: center;
     margin-top: 8px;
-    border-top: 0;
   }
 
   .site-header nav > a + a { border-top: 1px solid var(--line-dark); }
