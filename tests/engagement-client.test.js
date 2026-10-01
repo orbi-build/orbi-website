@@ -13,13 +13,30 @@ async function browserHarness() {
   const timers = [];
   const handlers = new Map();
   const beacons = [];
+  const topLevelParent = { closest: () => null };
+  const sections = [
+    { id: "hero", classList: ["hero-section"], parentElement: topLevelParent, getBoundingClientRect: () => ({ height: 100 }) },
+    { id: "", classList: ["pricing-section", "extra"], parentElement: topLevelParent, getBoundingClientRect: () => ({ height: 400 }) },
+    { id: "", classList: ["pricing-section"], parentElement: topLevelParent, getBoundingClientRect: () => ({ height: 100 }) },
+    { id: "nested", classList: [], parentElement: { closest: () => sections[0] }, getBoundingClientRect: () => ({ height: 20 }) },
+  ];
+  let observeSections;
+  let observerOptions;
+  const observedSections = [];
+  class IntersectionObserver {
+    constructor(callback, options) { observeSections = callback; observerOptions = options; }
+    observe(section) { observedSections.push(section); }
+    unobserve() {}
+  }
   const document = {
     visibilityState: "visible",
     documentElement: { scrollHeight: 400 },
+    querySelectorAll: selector => selector === "main section" ? sections : [],
   };
   const context = {
     Blob,
     Date: { now: () => now },
+    IntersectionObserver,
     console: { warn() {} },
     document,
     innerHeight: 100,
@@ -54,7 +71,7 @@ async function browserHarness() {
     for (const handler of handlers.get(type) ?? []) handler(event);
   };
   const events = async () => Promise.all(beacons.map(async body => JSON.parse(await body.text())));
-  return { advance, context, dispatch, document, events };
+  return { advance, context, dispatch, document, events, observedSections, observerOptions, observeSections: entries => observeSections(entries) };
 }
 
 describe("engagement browser reporter", () => {
@@ -84,6 +101,41 @@ describe("engagement browser reporter", () => {
     page.dispatch("pointerdown");
     page.advance(20_000);
     expect((await page.events()).filter(event => event.kind === "engaged")).toHaveLength(1);
+  });
+
+  it("reports each section once when it reaches the visibility threshold", async () => {
+    const page = await browserHarness();
+    page.observeSections([
+      { target: page.document.querySelectorAll("main section")[0], intersectionRatio: 0.3, intersectionRect: { height: 20 } },
+      { target: page.document.querySelectorAll("main section")[1], intersectionRatio: 0.1, intersectionRect: { height: 50 } },
+      { target: page.document.querySelectorAll("main section")[0], intersectionRatio: 1, intersectionRect: { height: 100 } },
+    ]);
+
+    expect((await page.events()).filter(event => event.kind === "section_view")).toEqual([
+      { kind: "section_view", path: "/", detail: "hero" },
+      { kind: "section_view", path: "/", detail: "pricing-section" },
+    ]);
+  });
+
+  it("observes the half-viewport threshold for sections taller than the viewport", async () => {
+    const page = await browserHarness();
+    expect(page.observedSections).toEqual(page.document.querySelectorAll("main section").slice(0, 3));
+    expect(page.observerOptions.threshold).toContain(0.125);
+    page.observeSections([{ target: page.document.querySelectorAll("main section")[1], intersectionRatio: 0.125, intersectionRect: { height: 50 } }]);
+    expect((await page.events()).filter(event => event.kind === "section_view")).toHaveLength(1);
+  });
+
+  it("reports separate sections even when their first class names match", async () => {
+    const page = await browserHarness();
+    const sections = page.document.querySelectorAll("main section");
+    page.observeSections([
+      { target: sections[1], intersectionRatio: 0.3, intersectionRect: { height: 50 } },
+      { target: sections[2], intersectionRatio: 0.3, intersectionRect: { height: 30 } },
+    ]);
+    expect((await page.events()).filter(event => event.kind === "section_view")).toEqual([
+      { kind: "section_view", path: "/", detail: "pricing-section" },
+      { kind: "section_view", path: "/", detail: "pricing-section" },
+    ]);
   });
 
   it("reports the reached scroll band only once across hide and pagehide", async () => {

@@ -30,6 +30,13 @@ function declaration(selector) {
 }
 
 describe("light-surface accent contrast", () => {
+  it("keeps the Pro trial button readable on the pricing card", () => {
+    const rule = declaration("#pricing .button-ghost");
+    expect(rule).toMatch(/color:\s*var\(--ink\)/);
+    expect(rule).toMatch(/border:\s*1px solid var\(--ink\)/);
+    expect(contrast(variable("ink"), variable("paper"))).toBeGreaterThanOrEqual(4.5);
+  });
+
   it.each([
     ["run-on-light", "paper"],
     ["run-on-light", "paper-2"],

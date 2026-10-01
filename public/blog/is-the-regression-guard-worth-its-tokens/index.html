@@ -6,6 +6,9 @@
   <title>Searching for Orbi's harness, part 2: is the regression guard worth its tokens? | Orbi</title>
   <meta name="description" content="On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.">
   <link rel="canonical" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Searching for Orbi's harness, part 2: is the regression guard worth its tokens?">
   <meta property="og:description" content="On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.">
@@ -23,17 +26,57 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
     .post-body code.post-code--spaced { white-space: normal; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
@@ -42,10 +85,25 @@
     .post-body strong { font-weight: 600; }
     .post-media { margin: 24px 0; }
     .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
   </style>
 
 </head>
@@ -63,34 +121,59 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/guides/">Guides</a>
         <a href="/cloud/#pricing">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="/api/login">Sign in</a>
-        <a class="nav-apply" href="/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="/zh/blog/is-the-regression-guard-worth-its-tokens/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-30</p>
-        <h1 id="post-title">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</h1>
-        <p class="hero-lede">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-30</p>
+          <h1 id="post-title">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</h1>
+          <p class="hero-lede">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#six-takeaways">Six takeaways</a></li>
+          <li><a class="post-toc-link" href="#eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</a></li>
+          <li><a class="post-toc-link" href="#five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</a></li>
+          <li><a class="post-toc-link" href="#what-it-costs-set-by-set">What it costs, set by set</a></li>
+          <li><a class="post-toc-link" href="#what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</a></li>
+          <li><a class="post-toc-link" href="#where-the-gated-guard-fell-short">Where the gated guard fell short</a></li>
+          <li><a class="post-toc-link" href="#what-we-re-doing">What we're doing</a></li>
+          <li><a class="post-toc-link" href="#limits">Limits</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 9 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#six-takeaways">Six takeaways</a></li>
+          <li><a class="post-toc-link" href="#eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</a></li>
+          <li><a class="post-toc-link" href="#five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</a></li>
+          <li><a class="post-toc-link" href="#what-it-costs-set-by-set">What it costs, set by set</a></li>
+          <li><a class="post-toc-link" href="#what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</a></li>
+          <li><a class="post-toc-link" href="#where-the-gated-guard-fell-short">Where the gated guard fell short</a></li>
+          <li><a class="post-toc-link" href="#what-we-re-doing">What we're doing</a></li>
+          <li><a class="post-toc-link" href="#limits">Limits</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p><a href="/blog/searching-for-orbis-harness/">Part 1</a> ended with a harness that fixed every failure it was tuned on but cost a median of about twice as much on other bugs, with no gain we could measure there. A guard like that is insurance. Two questions follow: does the risk it covers show up on bugs it has never seen, and can the premium come down?</p>
-<p>This part answers both with eight more bugs and three more harness designs. The setup is the same as in part 1: a private snapshot, the real Orbi runner doing the full loop, and a hidden grader calibrated to fail the code before the fix and pass a known-good fix. The implementation and review model is <code class="post-code--single">deepseek-flash</code> throughout. All scripts, tasks and results are in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>.</p>
-<h2>Six takeaways</h2>
+<p>This part answers both with eight more bugs and three more harness designs. The setup is the same as in part 1: a private snapshot, the real Orbi runner doing the full loop, and a hidden grader calibrated to fail the code before the fix and pass a known-good fix. The implementation and review model is <code class="post-code--single">deepseek-flash</code> throughout. All scripts, tasks and results are in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<h2 id="six-takeaways">Six takeaways</h2>
 <ol>
 <li><strong>The failure shows up on unseen bugs too.</strong> On eight bugs whose Issue shows one narrow example of a wider problem, the original harness failed 4 of 12 runs. <code class="post-code--single">dateparser</code> and <code class="post-code--single">picomatch</code> each failed twice in three tries, both times on cases the Issue didn&#39;t show.</li>
 <li><strong>The always-on guard fixes it.</strong> It passed 9 of 10 on the same eight bugs. Its one miss, on <code class="post-code--single">dateparser</code>, failed 2 of the maintainer&#39;s tests; the original harness&#39;s misses there failed 4 or 5. One of those 2 failures was new, though: that fix modified Python&#39;s global <code class="post-code--single">calendar</code> module.</li>
@@ -99,7 +182,7 @@
 <li><strong>Two cheaper designs didn&#39;t work, and the reviewer never said no.</strong> Strengthening only the reviewer passed 1 of 3 original failures: even with the full regression hunt in its prompt, it approved both regressions. Enriching the ticket first passed 2 of 3. Across all 183 runs, every one of the 38 that failed the hidden grader had passed Orbi&#39;s review.</li>
 <li><strong>So we&#39;re dropping the gate.</strong> We&#39;re going with the simpler design: the always-on guard behind a per-repository switch, off by default. Repositories whose bugs look like these (parsers, formatters, redactors, anything with escaping) turn it on. With no classifier, there&#39;s nothing to misclassify. Separately, Orbi merged our gated version 71 seconds after we paused it; we reverted it before any release.</li>
 </ol>
-<h2>Eight unseen bugs like the ones Orbi got wrong</h2>
+<h2 id="eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</h2>
 <p>At the end of part 1, the harnesses looked identical everywhere except the three issues they were tuned on. But those three failures shared something the ordinary held-out bugs lacked: the Issue showed one example, and the correct fix had to handle a whole class of inputs around it. So we went looking for bugs like that.</p>
 <p>Eight real bug fixes, all merged after August 10, 2026, all in small pure-Python, Go or JavaScript libraries: <code class="post-code--single">loguru</code> (negative timestamps), <code class="post-code--single">dateparser</code> (week-number formats), <code class="post-code--single">gocsv</code> (zero-padded integers), <code class="post-code--single">goja</code> (a dash after a class escape in a regex), <code class="post-code--single">doublestar</code> (character classes inside <code class="post-code--single">{}</code>), <code class="post-code--single">picomatch</code> (negated brackets), <code class="post-code--single">markdown-it</code> (IPv6 hosts in links) and <code class="post-code--single">marked</code> (entities in link targets). In each, the maintainer&#39;s tests cover more than the Issue&#39;s example. We checked that a fix written only for the example passes the example and fails those tests. The ticket Orbi saw kept only the Issue&#39;s own example.</p>
 <figure class="post-media">
@@ -107,7 +190,7 @@
 <figcaption>Where the harnesses differ. dateparser and picomatch were run three times on the original harness.</figcaption>
 </figure><p>This is where the original harness slips, and on bugs it has never seen. On <code class="post-code--single">dateparser</code>, the Issue showed two week-number formats; the maintainer&#39;s tests also cover week 00 rolling into the previous year and incomplete formats. Two of three original-harness runs fixed the two formats and missed both of those. On <code class="post-code--single">picomatch</code>, the Issue showed <code class="post-code--single">[!abc]</code>; the tests also cover an unclosed <code class="post-code--single">[!]</code> and the <code class="post-code--single">literalBrackets</code> option. Two of three runs missed them.</p>
 <p>The always-on guard passed 9 of 10. Its one miss, on <code class="post-code--single">dateparser</code>, failed 2 tests (the original harness&#39;s misses failed 4 to 5), and one of those two was a regression of its own: a change to Python&#39;s global <code class="post-code--single">calendar</code> module. The gated guard passed 7 of 8, missing <code class="post-code--single">picomatch</code> once. The numbers are small and a single run can flip a cell, but they point the same way as the three original failures. When the fix has to cover more than the example, generating inputs across the whole class is what finds the gap.</p>
-<h2>Five harnesses on the failures Orbi shipped</h2>
+<h2 id="five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</h2>
 <p>The always-on guard fixes the failures but roughly doubles the median cost of the other fixes. So we tried three cheaper designs on the three issues Orbi originally got wrong, with <code class="post-code--single">deepseek-flash</code> in both roles:</p>
 <ul>
 <li><strong>Reviewer only (v21)</strong>: the original implementer prompt (plus the contribution skill and repository tools on <code class="post-code--single">PATH</code>), with the guard only in the review. 1 of 3. Even with the full regression hunt in its prompt, the reviewer passed <code class="post-code--single">chainloop</code> with no findings and passed <code class="post-code--single">pyinfra</code> after fixing one finding itself. Both shipped the same regressions as before (the password leak and the 👍🏽 misalignment).</li>
@@ -118,7 +201,7 @@
 <img src="/img/diagrams/harness-variants.svg" alt="Five harnesses on the three issues Orbi got wrong: original 6 of 15, reviewer only 1 of 3, enrich ticket 2 of 3, gated guard 3 of 3, always-on guard 9 of 9, with median tokens per run under each bar." width="720" height="400">
 <figcaption>Pale bars have fewer than five runs. Median million tokens per run under each bar.</figcaption>
 </figure><p>The gate saved less than we hoped. On all nine ordinary bugs, the gated guard passed 9 of 9 at a median 5.2 million tokens per run, against 2.8 million for the original harness and 5.8 million for the always-on guard. Most of those bugs touch text handling too (a regex, an argument parser, a line wrapper), so the gate opened on eight of the nine.</p>
-<h2>What it costs, set by set</h2>
+<h2 id="what-it-costs-set-by-set">What it costs, set by set</h2>
 <p>Pass rate is only half the decision. Cache reads make up about 97% of each run&#39;s tokens, and they grow with the number of turns an agent takes. A harness that asks for more checking usually costs more.</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
@@ -159,7 +242,7 @@
 <img src="/img/diagrams/harness-tradeoff.svg" alt="Pass rate and median tokens per run for the original harness, the always-on guard and the gated guard, on the tuning issues, the narrow-example bugs and the ordinary bugs." width="720" height="450">
 <figcaption>Bars show pass rate; labels show median million tokens per run.</figcaption>
 </figure><p>Read the table by row. On the bugs where the guard matters (the first two rows), both guarded harnesses move the pass rate from 6 in 15 and 8 in 12 to between 7 in 8 and 9 in 9. On the bugs where it doesn&#39;t (the last two rows), the original harness already passes everything, and any guard is pure cost. The gated version beats always-on on cost only where the gate stays shut; where it opens, the two cost about the same.</p>
-<h2>What an independent review said, and what happened next</h2>
+<h2 id="what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</h2>
 <p>We planned to make the gated guard Orbi&#39;s default, opened a ticket for it, <a href="https://github.com/orbi-build/orbi/issues/1501">orbi#1501</a>, and Orbi opened the PR. Then the maintainer asked how we knew it was right, and we stopped. We labelled the ticket <code class="post-code--single">ai-blocked</code> and asked an independent reviewer to find what was wrong with the decision, using the data above. Its conclusion was not to merge this as the default, for four reasons.</p>
 <ul>
 <li><strong>The shipped version wasn&#39;t the tested version.</strong> The gate asked the implementer to write its decision into the PR body. But Orbi&#39;s runner writes the PR body, not the agent, so the line never appeared and the reviewer had nothing to check. We moved the decision into <code class="post-code--single">.orbi/plan.md</code>, which the reviewer already reads. That fix (v19b) was itself a change, and it hadn&#39;t been benchmarked yet.</li>
@@ -168,10 +251,10 @@
 <li><strong>The benchmark doesn&#39;t belong in the product.</strong> Our first PR carried about 3,000 lines of benchmark scripts into Orbi&#39;s own repository. They&#39;re now in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>.</li>
 </ul>
 <p>Then we found that Orbi had merged the PR anyway, 71 seconds after the <code class="post-code--single">ai-blocked</code> label went on. The runner re-checks the base branch, mergeability, the reviewed head and CI before it merges, but not the issue&#39;s labels, so a pause added mid-review is ignored. We reverted the merge (<a href="https://github.com/orbi-build/orbi/pull/1503">orbi#1503</a>) before any release included it and filed the runner bug (<a href="https://github.com/orbi-build/orbi/issues/1504">orbi#1504</a>). It&#39;s the same lesson as the rest of this study, one level up: a check that only runs at the start doesn&#39;t hold at the end.</p>
-<h2>Where the gated guard fell short</h2>
+<h2 id="where-the-gated-guard-fell-short">Where the gated guard fell short</h2>
 <p>After the review we benchmarked v19b, the version that records the gate decision where the reviewer can read it. It passed all three original failures and <code class="post-code--single">dateparser</code>, and failed <code class="post-code--single">picomatch</code>.</p>
 <p>The transcripts show the problem was in the guard itself. The gate decided sensibly: &quot;applies&quot; for the <code class="post-code--single">pyinfra</code> table widths, <code class="post-code--single">chainloop</code> redaction, <code class="post-code--single">dateparser</code> formats and <code class="post-code--single">picomatch</code> glob parsing, &quot;not needed&quot; for the <code class="post-code--single">fedify</code> mock setters, which only rewire calls. On <code class="post-code--single">picomatch</code> both gated runs, v19 and v19b, ran the guard and still missed the same two cases: an unclosed <code class="post-code--single">[!]</code> and the <code class="post-code--single">literalBrackets</code> option. The v19 run used Python&#39;s <code class="post-code--single">fnmatch</code> and bash as its independent references, which implement POSIX globbing and know nothing of picomatch&#39;s options. The two always-on runs that passed enumerated those options on their own; their reports name them 4 and 12 times, the gated runs&#39; reports not once. The rule that sends an agent looking for an independent reference sent it to one that couldn&#39;t express the input that mattered.</p>
-<h2>What we&#39;re doing</h2>
+<h2 id="what-we-re-doing">What we&#39;re doing</h2>
 <p>The change is reverted; the work lives on its branch and in the benchmark repository. Next, in order:</p>
 <ol>
 <li>Ship the always-on guard (v15) behind a per-repository switch, off by default, with no gate. Repositories where text handling is the risk (parsers, formatters, redactors, anything with escaping) turn it on.</li>
@@ -180,12 +263,19 @@
 <li>Run the held-out sets on other implementer and reviewer models. Every unseen-bug result here uses <code class="post-code--single">deepseek-flash</code>, so we can&#39;t yet say which combination to recommend.</li>
 </ol>
 <p>Models will change, and the right harness will change with them. Every study we run goes on the <a href="/benchmark/">benchmark page</a>, with its data in the benchmark repository, so the next one picks up from this one&#39;s numbers.</p>
-<h2>Limits</h2>
+<h2 id="limits">Limits</h2>
 <p>Eight narrow-example bugs is a small set. Most cells have one to three runs, so a single run can move a cell by a third or more. The held-out results use one implementation model. We chose the narrow-example bugs because a narrow fix fails them. That&#39;s the class the guard targets, so their failure rate says little about Orbi&#39;s bugs in general. And a hidden grader only catches the defects the maintainer wrote tests for.</p>
-<h2>Related</h2>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+<!--orbi:related-posts-->
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -194,7 +284,7 @@
     <label class="sr-only" for="subscribe-email-en">Email address</label>
     <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
     <input type="hidden" name="lang" value="en">
-    <button class="button button-signal" type="submit">Subscribe</button>
+    <button class="button button-ghost" type="submit">Subscribe</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
@@ -219,7 +309,7 @@
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -230,6 +320,7 @@
         <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/is-the-regression-guard-worth-its-tokens/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -239,7 +330,7 @@
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
@@ -257,5 +348,18 @@
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

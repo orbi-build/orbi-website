@@ -1,8 +1,44 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFile } from "node:fs/promises";
 import pricing from "../src/pricing.json";
 import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
+  it("renders the homepage pricing summary from pricing.json in both languages", async () => {
+    const pages = new Map([
+      ["/", await readFile(new URL("../public/index.html", import.meta.url), "utf8")],
+      ["/zh/", await readFile(new URL("../public/zh/index.html", import.meta.url), "utf8")],
+    ]);
+    for (const [path, html] of pages) {
+      const response = await handleFetch(
+        new Request(`https://orbi.build${path}`),
+        {
+          ASSETS: { fetch: () => Promise.resolve(new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } })) },
+          CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+        },
+      );
+      const body = await response.text();
+      const summary = body.match(/<section class="pricing-summary"[\s\S]*?<\/section>/)?.[0];
+      expect(summary).toBeDefined();
+      expect(body.indexOf(summary)).toBeLessThan(body.indexOf('id="faq"'));
+      for (const value of [
+        pricing.soloMonthlyUsd,
+        pricing.cloudMonthlyUsd,
+        pricing.soloIncludedTokensLabel,
+        pricing.includedTokensLabel,
+        pricing.soloRepositories,
+        pricing.proRepositories,
+        pricing.freeDeliveries,
+        pricing.foundingPartnerLimit,
+      ]) {
+        expect(summary).toContain(String(value));
+      }
+      expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
+      expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
+      expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
+    }
+  });
+
   it("301 redirects moved guide URLs while preserving query attribution", async () => {
     const assets = { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) };
     for (const [oldPath, newPath] of [
@@ -400,6 +436,18 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(stats.repos["orbi-cloud"]).toBeNull();
     expect(stats.repos.orbi.issues_closed).toBe(372);
     expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+  });
+
+  it("replaces the homepage offer token with the configured free-delivery count", async () => {
+    const response = await assetResponse(
+      new Response('<a href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>', {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      }),
+      true,
+    );
+    const body = await response.text();
+    expect(body).toContain(`Try ${pricing.freeDeliveries} deliveries free →`);
+    expect(body).not.toContain(pricing.freeDeliveriesToken);
   });
 
   it("injects server-rendered avatars and makes the wall visible when data exists", async () => {
@@ -980,6 +1028,103 @@ describe("aiready.sh install entry (Issue #174)", () => {
       { waitUntil() {} },
     );
     expect(response.headers.get("X-Robots-Tag")).toBeNull();
+  });
+});
+
+describe("engagement beacon", () => {
+  it("accepts new-format CTA details and forwards each event to Cloud", async () => {
+    const forwarded = [];
+    const reports = [];
+    const env = {
+      CLOUD_VISIT_URL: "https://cloud.test/visit",
+      WEBSITE_SECRET: "secret",
+      CLOUD: { fetch: async request => { forwarded.push(await request.json()); return new Response(null, { status: 204 }); } },
+    };
+    for (const detail of ["nav-start", "closing-start", "pricing-summary"]) {
+      const response = await handleFetch(
+        new Request("https://beta.orbi.build/cloud/e", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "User-Agent": "Mozilla/5.0" },
+          body: JSON.stringify({ kind: "cta_click", path: "/", detail }),
+        }),
+        env,
+        { waitUntil: promise => reports.push(promise) },
+      );
+      expect(response.status).toBe(204);
+    }
+    await Promise.all(reports);
+    expect(forwarded.map(event => event.detail).sort()).toEqual(["closing-start", "nav-start", "pricing-summary"]);
+  });
+
+  it("rejects CTA details outside the Cloud format", async () => {
+    const fetchMock = vi.fn();
+    const response = await handleFetch(
+      new Request("https://beta.orbi.build/cloud/e", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": "Mozilla/5.0" },
+        body: JSON.stringify({ kind: "cta_click", detail: "Nav Start" }),
+      }),
+      { CLOUD_VISIT_URL: "https://cloud.test/visit", WEBSITE_SECRET: "secret", CLOUD: { fetch: fetchMock } },
+      { waitUntil: vi.fn() },
+    );
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("internal maintainer tracking (Issue #718)", () => {
+  const assets = {
+    fetch: async () => new Response("<html>page</html>", {
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    }),
+  };
+
+  it("sets and clears the internal cookie from page query parameters", async () => {
+    const enabled = await worker.fetch(new Request("https://beta.orbi.build/?internal=1", {
+      headers: { Cookie: "vid=ExistingVidValue123456" },
+    }), { ASSETS: assets }, {});
+    expect(enabled.headers.getSetCookie()).toEqual([
+      "orbi_internal=1; Path=/; Max-Age=31536000; SameSite=Lax; Secure",
+    ]);
+
+    const disabled = await worker.fetch(new Request("https://beta.orbi.build/?internal=0", {
+      headers: { Cookie: "vid=ExistingVidValue123456; orbi_internal=1" },
+    }), { ASSETS: assets }, {});
+    expect(disabled.headers.getSetCookie()).toEqual([
+      "orbi_internal=; Path=/; Max-Age=0; SameSite=Lax; Secure",
+    ]);
+  });
+
+  it("returns 204 without forwarding maintainer visit and CTA events", async () => {
+    const fetchMock = vi.fn();
+    const ctx = { waitUntil: vi.fn() };
+    for (const event of [
+      { kind: "visit", search: "", referrer: "" },
+      { kind: "cta_click", detail: "home-hero" },
+    ]) {
+      const response = await worker.fetch(new Request("https://beta.orbi.build/cloud/e", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "orbi_internal=1; vid=internal-visitor" },
+        body: JSON.stringify(event),
+      }), { CLOUD_VISIT_URL: "https://cloud.test/visit", WEBSITE_SECRET: "secret", CLOUD: { fetch: fetchMock } }, ctx);
+      expect(response.status).toBe(204);
+    }
+    expect(ctx.waitUntil).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("forwards non-internal events as before", async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+    const pending = [];
+    const ctx = { waitUntil: (promise) => pending.push(promise) };
+    const response = await worker.fetch(new Request("https://beta.orbi.build/cloud/e", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: "vid=visitor-1", "User-Agent": "Mozilla/5.0" },
+      body: JSON.stringify({ kind: "cta_click", detail: "home-hero" }),
+    }), { CLOUD_VISIT_URL: "https://cloud.test/visit", WEBSITE_SECRET: "secret", CLOUD: { fetch: fetchMock } }, ctx);
+    expect(response.status).toBe(204);
+    await Promise.all(pending);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

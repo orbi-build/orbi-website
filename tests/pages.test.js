@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, insertInlinePostCta, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -73,6 +73,57 @@ const navRegion = (html) => region(html, "<nav id=", "</nav>");
 const footerRegion = (html) => region(html, '<footer class="site-footer shell">', "</footer>");
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
+
+const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
+
+describe("homepage section order (Issue #712)", () => {
+  for (const output of ["index.html", "zh/index.html"]) {
+    it(`${output} keeps the buyer journey sections adjacent and ordered`, () => {
+      const html = mainRegion(shipped.get(output));
+      const sectionClasses = [...html.matchAll(/<section class="([^"]+)"/g)]
+        .map((match) => match[1].split(" ")[0]);
+      expect(sectionClasses).toEqual([
+        "hero",
+        "system-section",
+        "proof",
+        "stats",
+        "social-proof",
+        "avatar-wall",
+        "pricing-summary",
+        "faq",
+        "closing",
+      ]);
+      for (const removed of ["runtime-proof", "thesis", "ownership", "run-orbi", "direction"]) {
+        expect(html, `${output}: ${removed} remains`).not.toContain(`class="${removed}`);
+      }
+    });
+  }
+});
+
+describe("homepage hero proof bar (Issue #710)", () => {
+  const expected = {
+    "index.html": [
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>PRs merged by Orbi on its own repo</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>releases shipped</span>',
+      '<strong>Open source</strong><span>AGPL-3.0, self-host free</span>',
+    ],
+    "zh/index.html": [
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span>',
+      '<strong>开源</strong><span>AGPL-3.0，自托管免费</span>',
+    ],
+  };
+
+  for (const [output, items] of Object.entries(expected)) {
+    it(`${output} keeps live counters and copy in the requested order`, () => {
+      const html = shipped.get(output);
+      expect(html, `${output}: proof bar follows hero`).toMatch(/<section class="hero [^"]*shell"[\s\S]*?<\/section>\s*<div class="hero-proof-bar shell">/);
+      const bar = proofBar(html);
+      expect(bar, `${output}: proof bar`).not.toBe("");
+      expect(bar.match(/<div class="hero-proof-item">[\s\S]*?<\/div>/g), output).toEqual(items.map((item) => `<div class="hero-proof-item">${item}</div>`));
+    });
+  }
+});
 
 const GUIDE_SLUGS = [
   "issue-to-release",
@@ -235,6 +286,104 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
   });
 });
 
+describe("blog title and body alignment (Issue #695)", () => {
+  it("renders every post hero and body in the same blog-only layout class", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      expect(html, `${post.output}: hero layout`).toMatch(
+        /<div class="night">\s*<div class="post-grid">\s*<section class="post-hero"/,
+      );
+      expect(html, `${post.output}: body layout`).toMatch(
+        /<div class="post-grid">\s*(?:<nav class="post-toc"[\s\S]*?<\/nav>\s*)?<article class="post-body">/,
+      );
+      expect(countMatches(html, /class="post-grid"/g), `${post.output}: shared layout count`).toBe(2);
+      expect(html, `${post.output}: shared compare styles stay unused`).not.toContain('class="compare-hero shell" aria-labelledby="post-title"');
+    }
+  });
+
+  it("renders Unicode-safe unique H2 anchors and the shared TOC at the five-section threshold", async () => {
+    const tocPosts = [];
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const body = (html.match(/<article class="post-body">([\s\S]*?)<\/article>/)?.[1] ?? "").replace(/<aside class="post-cta">[\s\S]*?<\/aside>/, "");
+      const headings = [...body.matchAll(/<h2 id="([^"]+)">([^<]*)<\/h2>/g)];
+      const ids = headings.map((match) => match[1]);
+      expect(ids, `${post.output}: every H2 has an id`).toHaveLength((body.match(/<h2\b/g) ?? []).length);
+      expect(new Set(ids).size, `${post.output}: H2 ids are unique`).toBe(ids.length);
+      if (post.lang === "zh" && headings.some((match) => /[\u4e00-\u9fff]/u.test(match[2]))) {
+        expect(headings.some((match) => /[\u4e00-\u9fff]/u.test(match[1])), `${post.output}: Chinese H2 id`).toBe(true);
+      }
+      const desktop = html.match(/<nav class="post-toc"[\s\S]*?<\/nav>/)?.[0] ?? "";
+      const inline = html.match(/<details class="post-toc-inline">[\s\S]*?<\/details>/)?.[0] ?? "";
+      const tocCount = (desktop.match(/class="post-toc-link"/g) ?? []).length;
+      const inlineCount = (inline.match(/class="post-toc-link"/g) ?? []).length;
+      if (ids.length >= 5) {
+        tocPosts.push(post.output);
+        const title = post.lang === "zh" ? "本页目录" : "On this page";
+        expect(desktop, `${post.output}: desktop TOC`).not.toBe("");
+        expect(desktop, `${post.output}: localized TOC label`).toContain(`aria-label="${title}"`);
+        expect(desktop, `${post.output}: localized TOC title`).toContain(`<h2>${title}</h2>`);
+        expect(inline, `${post.output}: inline TOC`).not.toBe("");
+        expect(inline, `${post.output}: localized inline summary`).toContain(`<summary>${title} · ${ids.length} ${post.lang === "zh" ? "节" : "sections"}</summary>`);
+        expect(tocCount, `${post.output}: desktop TOC count`).toBe(ids.length);
+        expect(inlineCount, `${post.output}: inline TOC count`).toBe(ids.length);
+        for (const id of ids) {
+          expect(desktop, `${post.output}: desktop href ${id}`).toContain(`href="#${id}"`);
+          expect(inline, `${post.output}: inline href ${id}`).toContain(`href="#${id}"`);
+        }
+      } else {
+        expect(desktop, `${post.output}: no desktop TOC`).toBe("");
+        expect(inline, `${post.output}: no inline TOC`).toBe("");
+      }
+    }
+    expect(tocPosts.length).toBeGreaterThan(0);
+  });
+
+  it("keeps normalized H2 ids unique when a heading already uses a duplicate suffix", () => {
+    const source = `---
+title: T
+date: 2026-09-18
+summary: s
+lang: en
+author: Orbi
+image: /img/blog-t.png
+---
+
+## A
+
+## A
+
+## A-2
+`;
+    const post = postFromSource("t.md", source);
+    expect(post.headings.map(({ id }) => id)).toEqual(["a", "a-2", "a-2-2"]);
+  });
+
+  it("keeps the blog TOC layout scoped to the established two-column grid", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-body h2, .post-body .related-links h2 { font-family:");
+    expect(template).toMatch(/\.post-body h2, \.post-body \.related-links h2 \{[^}]*font-size: 1\.5rem;[^}]*line-height: 1\.25;[^}]*margin: 42px 0 10px;[^}]*scroll-margin-top: 24px;/);
+    expect(template).toMatch(/\.post-body \.related-links \{[^}]*margin: 0;/);
+    expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
+    expect(template).toContain("{{POST_TOC}}");
+    expect(template).toContain("{{INLINE_TOC}}");
+    expect(template).toMatch(/\.post-toc ol, \.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
+  });
+
+  it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toMatch(
+      /\.post-grid\s*\{[^}]*max-width:\s*52rem;[^}]*margin:\s*0 auto;[^}]*padding:\s*0 24px;/,
+    );
+    expect(template).toMatch(
+      /@media\s*\(min-width:\s*1200px\)\s*\{[\s\S]*?\.post-grid\s*\{[^}]*grid-template-columns:\s*232px minmax\(0, 52rem\);[^}]*column-gap:\s*24px;[^}]*max-width:\s*68rem;[^}]*padding:\s*0;/,
+    );
+    expect(template).toMatch(
+      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*2;[^}]*padding-left:\s*24px;[^}]*padding-right:\s*24px;/,
+    );
+  });
+});
+
 describe("email subscription forms (Issue #665)", () => {
   it("renders exactly one form and script on every page with the shared footer", () => {
     for (const [output, html] of shipped) {
@@ -246,7 +395,9 @@ describe("email subscription forms (Issue #665)", () => {
       const htmlLang = html.match(/<html lang="([^"]+)"/)?.[1];
       const formLang = html.match(/<input type="hidden" name="lang" value="([^"]+)"/)?.[1];
       expect(formLang, `${output}: subscription language`).toBe(htmlLang === "zh-CN" ? "zh" : "en");
+      expect(html, `${output}: subscription submit button`).toContain('<button class="button button-ghost" type="submit">');
     }
+    expect(styles, "subscription ghost button style").toMatch(/\.subscribe-form \.button-ghost\s*\{[^}]*background:\s*transparent;[^}]*border:\s*1px solid var\(--line\);[^}]*color:\s*var\(--ink\);[^}]*border-radius:\s*var\(--radius-control\);/);
   });
 
   it("keeps subscription markup in one source partial", async () => {
@@ -436,7 +587,7 @@ describe("Issue #438 wording and internal-link contracts", () => {
   it("ends every blog body with two or three contextual links", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
-      const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
+      const relatedStart = Math.max(html.lastIndexOf("<h2 id=\"related\">Related</h2>"), html.lastIndexOf("<h2 id=\"相关\">相关</h2>"));
       const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
       const prefix = post.lang === "zh" ? "/zh" : "";
       const links = [...related.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
@@ -674,9 +825,9 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 7, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 8]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
     }
   });
 
@@ -732,14 +883,14 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("switches language to the mirror page from the nav", () => {
+  it("switches language to the mirror page from the footer", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = `${page.nav?.siteBase ?? ""}${pathToHref(page.mirror)}`;
-      const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
+      const footerSwitch = [...footerRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
-      expect(navSwitch, `${page.output}: nav language switch`).toEqual([expected]);
-      expect(footerRegion(html), `${page.output}: language switch belongs only in the top nav`)
+      expect(footerSwitch, `${page.output}: footer language switch`).toEqual([expected]);
+      expect(navRegion(html), `${page.output}: language switch belongs in the footer`)
         .not.toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);
     }
   });
@@ -803,25 +954,41 @@ describe("per-page head parameters (title / description / canonical)", () => {
   });
 });
 
-describe("cloud hero CTA handoff (Issue #156)", () => {
-  // The hero CTA fires three instant redirects into GitHub's password box.
-  // The line under the button is the only warning the user gets; its wording
-  // is free to change (Issue #540), but it must add no jump of its own.
-  const outputs = ["cloud/index.html", "zh/cloud/index.html"];
-
-  const heroCtaBlock = (output) => {
-    const hero = region(shipped.get(output), '<section class="compare-hero', "</section>");
-    return hero.match(/<div class="hero-primary">([\s\S]*?)<\/div>/)?.[1] ?? "";
+describe("Cloud hero single CTA (Issue #741)", () => {
+  const expectations = {
+    "cloud/index.html": {
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      href: "/cloud/login",
+      button: "Try __FREE_DELIVERIES__ deliveries free →",
+      note: "No card · Only the repos you pick",
+    },
+    "zh/cloud/index.html": {
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      href: "/zh/cloud/login",
+      button: "免费试 __FREE_DELIVERIES__ 次 →",
+      note: "不用绑卡 · 只授权你选的仓库",
+    },
   };
 
-  it("keeps a warning paragraph under the hero CTA that adds no link of its own", () => {
-    for (const output of outputs) {
-      const block = heroCtaBlock(output);
-      const button = block.indexOf(output.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
-      const paragraph = block.slice(block.indexOf("<p>"));
-      expect(block.indexOf("<p"), `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
-      expect(paragraph, `${output}: CTA microcopy must not carry links`).not.toContain("<a ");
+  it("keeps only the ordered h1, lede, CTA, and CTA note in the Cloud hero", () => {
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      const hero = region(html, '<section class="compare-hero', '</section>');
+      const h1 = hero.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "").trim();
+      const elements = [...hero.matchAll(/<(h1|p|a)\b[^>]*>([\s\S]*?)<\/\1>/g)]
+        .map(([, tag, body]) => ({ tag, body: body.replace(/<[^>]+>/g, "").trim() }));
+      expect(h1, `${output}: h1 remains`).toBeTruthy();
+      expect(elements, `${output}: hero content order`).toEqual([
+        { tag: "h1", body: h1 },
+        { tag: "p", body: expected.lede },
+        { tag: "a", body: expected.button },
+        { tag: "p", body: expected.note },
+      ]);
+      expect(hero).toContain(`class="button button-signal hero-cta" data-cta="cloud-hero" href="${expected.href}"`);
+      expect(hero).not.toContain("k8e");
+      expect(hero).not.toContain("cloud-docs");
+      expect(hero).not.toContain("Run Orbi yourself");
+      expect(hero).not.toContain("How an Issue becomes a tagged release");
     }
   });
 });
@@ -838,22 +1005,14 @@ describe("Cloud documentation links (Issue #315)", () => {
     },
   };
 
-  // Issue #612 made the nav dropdown (which carries the Self-hosted Docs
-  // item) sitewide, superseding this test's old nav-level ban on the engine
-  // docs href; the footer still routes Cloud buyers to the Cloud docs only.
-  it("routes the Cloud footer Docs to Cloud docs while preserving self-hosting CTA", () => {
+  // Issue #741 removes the Cloud docs and self-hosting links from the hero;
+  // the footer remains the durable place for both resources.
+  it("keeps Cloud and self-hosting links in the footer", () => {
     for (const [output, expected] of Object.entries(expectations)) {
-      const html = shipped.get(output);
-      const footer = footerRegion(html);
+      const footer = footerRegion(shipped.get(output));
       expect(footer, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
       expect(footer, `${output}: engine docs are in the Resources group`).toContain(
         `href="${expected.selfHost}"`,
-      );
-      expect(html, `${output}: self-hosting CTA`).toContain(
-        `data-cta="install" href="${expected.selfHost}">`,
-      );
-      expect(html, `${output}: visible Cloud docs CTA`).toContain(
-        'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
       );
     }
   });
@@ -1060,6 +1219,43 @@ describe("Self-hosted landing pages (Issue #556)", () => {
   });
 });
 
+describe("homepage closing Cloud CTA (Issue #714)", () => {
+  const expected = {
+    "index.html": {
+      tag: "MANAGED CLOUD",
+      title: "Try it on your own repository",
+      description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
+      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
+    },
+    "zh/index.html": {
+      tag: "托管 Cloud",
+      title: "在你自己的仓库上试一试",
+      description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
+      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
+    },
+  };
+
+  const cta = (html, name) => {
+    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)</a>`));
+    return match ? { className: match[1], href: match[2], text: match[3] } : null;
+  };
+
+  for (const [output, contract] of Object.entries(expected)) {
+    it(`${output} keeps the closing CTA in the Cloud trial context`, () => {
+      const html = shipped.get(output);
+      const closing = region(html, '<section class="closing shell"', "</section>");
+      expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
+      expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
+      expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
+      expect(cta(closing, "closing-start"), `${output}: closing CTA matches the hero`).toEqual(
+        cta(html, "cloud-start"),
+      );
+      expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
+      expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
+    });
+  }
+});
+
 describe("cloud buyer FAQ (Issue #166)", () => {
   it("sits between the three-step section and the closing CTA on both languages", () => {
     for (const { output } of CLOUD_FAQ_PAGES) {
@@ -1212,14 +1408,20 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     // Cloud button in DOM order — its left in the nav row.
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
     expect(partial, "nav partial carries the Sign in slot").toContain(
-      '<a href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
+      '<a data-cta="nav-signin" href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
+    );
+    expect(partial, "nav partial carries the GitHub tracking slot").toContain(
+      '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
     );
     expect(partial.indexOf('href="{{SIGNIN_HREF}}"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
     for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
       const nav = navRegion(shipped.get(output));
-      const link = nav.match(/<a href="\/api\/login">([^<]*)<\/a>/);
-      expect(link, `${output}: nav Sign in link missing`).toBeTruthy();
+      const link = nav.match(/<a data-cta="nav-signin" href="\/api\/login">([^<]*)<\/a>/);
+      expect(link, `${output}: nav Sign in link or tracking attribute missing`).toBeTruthy();
       expect(link[1], `${output}: nav Sign in label`).toBe(label);
+      expect(nav, `${output}: nav GitHub tracking attribute missing`).toContain(
+        '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
+      );
     }
   });
 
@@ -1242,11 +1444,11 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     for (const output of outputs) {
       const html = await readFile(join(builtDir, output), "utf8");
       const nav = navRegion(html);
-      const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
+      const cta = nav.match(/<a class="nav-apply" data-cta="nav-start" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
-      expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
-      const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
+      const loginPath = output.startsWith("zh/") ? "/zh/cloud/login" : "/cloud/login";
+      expect(cta[1], `${output}: nav CTA must use the language login handoff`).toBe(loginPath);
+      const label = output.startsWith("zh/") ? "免费开始" : "Start free";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }
   });
@@ -1254,19 +1456,15 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("keeps Cloud page CTAs on the matching language login handoff", () => {
     for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
       const html = shipped.get(output);
-      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(3);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(5);
     }
   });
 });
 
-// Issue #612: the primary-nav dropdown is labeled Resources/资源 on EVERY
-// page with the site nav (it used to exist only on the two homes, other pages
-// showed a plain Docs link), and its first item is the ai-ready methodology
-// entry. The mobile hamburger opens this same <nav data-primary-nav> element
-// (styles.css .site-header nav.is-open) — there is no second DOM copy — so
-// extracting the dropdown from the nav region proves the items are in the
-// hamburger menu's DOM too; the browser smoke drives the real interaction.
-describe("Resources dropdown in the primary nav (Issue #612)", () => {
+// Issue #711: every page has the same six-link primary nav. The former Guides
+// entry, every Resources destination and the language switch live in the
+// footer; the mobile hamburger opens the same six-link nav DOM.
+describe("six-link primary nav and relocated links (Issue #711)", () => {
   const RESOURCES = {
     en: {
       label: "Resources",
@@ -1292,38 +1490,37 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     },
   };
 
-  it("labels the dropdown Resources/资源 with evidence and benchmark first on every page with the primary nav", () => {
-    // Blog posts render the same nav through POST_LANG.nav, so they count as
-    // "every page with primary-navigation" too. Pages carrying a siteBase
-    // (the aiready pages, Issue #610) render every local nav href absolute.
-    const surfaces = [...pages.filter((p) => p.nav), ...posts];
-    for (const page of surfaces) {
-      const expected = RESOURCES[page.lang];
-      const siteBase = page.nav?.siteBase ?? "";
-      const nav = navRegion(shipped.get(page.output));
-      const dropdown = region(nav, '<div class="nav-dropdown nav-resources">', "</div></div>");
-      expect(dropdown, `${page.output}: nav-docs dropdown missing from the nav element`).not.toBe("");
-      expect(dropdown, `${page.output}: dropdown label`).toContain(
-        `data-dropdown-toggle>${expected.label}<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>`,
+  it("keeps the primary navigation to six links", () => {
+    for (const page of [...pages.filter((p) => p.nav), ...posts]) {
+      const links = [...navRegion(shipped.get(page.output)).matchAll(/<a\b[^>]*>([^<]*)<\/a>/g)]
+        .map(([, label]) => label.trim());
+      expect(links, `${page.output}: primary navigation`).toEqual(
+        page.lang === "zh"
+          ? ["产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"]
+          : ["How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"],
       );
-      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([\s\S]*?)<\/a>/g)]
-        .map((match) => [match[1], match[2]]);
-      const expectedItems = expected.items.map(([href, label, description]) => [
-        href.startsWith("/") ? `${siteBase}${href}` : href,
-        `<span class="orbi-nav-dropdown-menu-label">${label}</span>${description ? `<span class="orbi-nav-dropdown-menu-description">${description}</span>` : ""}`,
-      ]);
-      expect(items, `${page.output}: dropdown items drifted`).toEqual(expectedItems);
-      expect(dropdown, `${page.output}: dropdown links must contain their complete copy`).not.toMatch(/>[^<]+<\/a>/);
+      const nav = navRegion(shipped.get(page.output));
+      expect(nav, `${page.output}: GitHub CTA tracking`).toContain(
+        '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
+      );
+      const signInLabel = page.lang === "zh" ? "登录" : "Sign in";
+      expect(nav, `${page.output}: Sign in CTA tracking`).toMatch(
+        new RegExp(`<a data-cta="nav-signin" href="(?:/api/login|https://orbi\\.build/api/login)">${signInLabel}</a>`),
+      );
     }
   });
 
-  it("uses the same decorative SVG indicator for Resources and Docs", () => {
+  it("keeps Guides and Resources links in the footer", () => {
     for (const page of [...pages.filter((p) => p.nav), ...posts]) {
-      const nav = navRegion(shipped.get(page.output));
-      const indicators = [...nav.matchAll(/<svg class="nav-dropdown-indicator"[\s\S]*?<path d="([^"]+)"[\s\S]*?><\/path><\/svg>/g)];
-      expect(indicators, `${page.output}: both dropdowns need the shared indicator`).toHaveLength(2);
-      expect(indicators.map(([, path]) => path), `${page.output}: indicator geometry drifted`).toEqual(["M3 5.5 8 10.5 13 5.5", "M3 5.5 8 10.5 13 5.5"]);
-      expect(nav, `${page.output}: indicator must not expose text`).not.toContain("⌄");
+      const footer = footerRegion(shipped.get(page.output));
+      const siteBase = page.nav?.siteBase ?? "";
+      const guidesHref = `${siteBase}${page.lang === "zh" ? "/zh/guides/" : "/guides/"}`;
+      expect(footer, `${page.output}: footer lost the Guides index`).toContain(
+        `<a href="${guidesHref}">${page.lang === "zh" ? "指南" : "Guides"}</a>`,
+      );
+      expect(footer, `${page.output}: footer lost Guides`).toContain(page.lang === "zh" ? "Issue 到发版" : "Issue to release");
+      expect(footer, `${page.output}: footer lost Resources`).toContain(page.lang === "zh" ? "博客" : "Blog");
+      expect(footer, `${page.output}: footer lost language switch`).toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);
     }
   });
 
@@ -1514,6 +1711,69 @@ describe("blog (Issue #212)", () => {
     }
   });
 
+  it("renders one compact localized CTA after the second paragraph on posts with three paragraphs", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const body = html.match(/<article class="post-body">([\s\S]*?)<aside class="post-cta">/)?.[1] ?? "";
+      const paragraphs = [...body.matchAll(/<p\b[\s\S]*?<\/p>/g)];
+      const inline = body.match(/<aside class="post-cta-inline">[\s\S]*?<\/aside>/g) ?? [];
+      expect(paragraphs.length, `${post.output}: rendered paragraphs`).toBeGreaterThanOrEqual(3);
+      expect(inline, `${post.output}: inline CTA count`).toHaveLength(1);
+      const secondParagraphEnd = paragraphs[1].index + paragraphs[1][0].length;
+      const inlineStart = body.indexOf(inline[0]);
+      expect(inlineStart, `${post.output}: inline CTA follows paragraph two`).toBe(secondParagraphEnd);
+      const expected = post.lang === "zh"
+        ? {
+            title: "Orbi 把你的 Issue 一路做到发版。",
+            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            href: "/zh/cloud/login",
+          }
+        : {
+            title: "Orbi takes your Issues all the way to a release.",
+            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            href: "/cloud/login",
+          };
+      expect(inline[0]).toContain(`<span>${expected.title}</span>`);
+      expect(inline[0]).toContain(`<a class="button button-signal" data-cta="post-inline-start" href="${expected.href}">${expected.button}</a>`);
+    }
+  });
+
+  it("does not add the inline CTA when fewer than three paragraphs are rendered", () => {
+    const cta = `<aside class="post-cta-inline">inline</aside>`;
+    expect(insertInlinePostCta("<p>one</p><p>two</p>", cta)).toBe("<p>one</p><p>two</p>");
+    expect(insertInlinePostCta("<p>one</p><p>two</p><p>three</p>", cta)).toBe(`<p>one</p><p>two</p>${cta}<p>three</p>`);
+  });
+
+  it("renders one localized registration CTA after every post body and before related posts", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const cta = html.match(/<aside class="post-cta">[\s\S]*?<\/aside>/g) ?? [];
+      const expected = post.lang === "zh"
+        ? {
+            title: "Orbi 把你的 Issue 一路做到发版。",
+            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            note: "不用绑卡 · 只授权你选的仓库",
+            href: "/zh/cloud/login",
+            selfHost: "想自己部署？开源免费（AGPL）→",
+          }
+        : {
+            title: "Orbi takes your Issues all the way to a release.",
+            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            note: "No card · Only the repos you pick",
+            href: "/cloud/login",
+            selfHost: "Prefer to self-host? It's open source (AGPL) →",
+          };
+      expect(cta, `${post.output}: CTA count`).toHaveLength(1);
+      const [block] = cta;
+      const relatedHeading = post.lang === "zh" ? '<h2 id="相关">' : '<h2 id="related">';
+      expect(html.indexOf(block), `${post.output}: CTA precedes related posts`).toBeLessThan(html.indexOf(relatedHeading));
+      expect(block).toContain(`<h2>${expected.title}</h2>`);
+      expect(block).toContain(`<a class="button button-signal" data-cta="post-start" href="${expected.href}">${expected.button}</a>`);
+      expect(block).toContain(`<p class="post-cta-note">${expected.note}</p>`);
+      expect(block).toContain(`<a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">${expected.selfHost}</a>`);
+    }
+  });
+
   it("renders each post's Markdown body as HTML under the front-matter title", () => {
     for (const post of [enPost(), zhPost()]) {
       const html = shipped.get(post.output);
@@ -1600,8 +1860,8 @@ print(json.dumps({
   });
 
   it("links the blog from the primary nav on both language homes", () => {
-    expect(navRegion(shipped.get("index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a>');
-    expect(navRegion(shipped.get("zh/index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">博客</span></a>');
+    expect(footerRegion(shipped.get("index.html"))).toContain('<a href="/blog/">Blog</a>');
+    expect(footerRegion(shipped.get("zh/index.html"))).toContain('<a href="/zh/blog/">博客</a>');
   });
 });
 
@@ -1987,6 +2247,31 @@ describe("blog mirror pairing (Issue #214)", () => {
     }));
 });
 
+describe("blog hreflang metadata (Issue #696)", () => {
+  it("emits exactly three mutual alternates for every paired post", () => {
+    const paired = posts.filter((post) => post.paired);
+    expect(paired.length).toBeGreaterThan(0);
+    for (const post of paired) {
+      const html = shipped.get(post.output);
+      const enHref = `https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}`;
+      const zhHref = `https://orbi.build${post.lang === "zh" ? post.href : pathToHref(post.mirrorOutput)}`;
+      const links = [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map((match) => [match[1], match[2]]);
+      expect(links, `${post.output}: exactly three hreflang links`).toEqual([
+        ["en", enHref],
+        ["zh-CN", zhHref],
+        ["x-default", enHref],
+      ]);
+      const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      expect(links.find(([lang]) => lang === (post.lang === "en" ? "en" : "zh-CN"))[1], `${post.output}: self canonical`)
+        .toBe(canonical);
+    }
+    for (const post of posts.filter((candidate) => !candidate.paired)) {
+      expect(shipped.get(post.output), `${post.output}: single-language post`).not.toMatch(/hreflang=/);
+    }
+  });
+});
+
 // Issue #212 acceptance 7: a brand-new post fixture goes through the real
 // build — post page with title and rendered body HTML, index entry newest
 // first, feed item, sitemap URL — never a re-implementation of the pipeline.
@@ -2139,6 +2424,35 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
       await writeFile(join(contentDir, "zh", "solo-zh.md"), md("Solo ZH", "2026-09-04", "Chinese only.", "zh"));
 
       await buildPages(outDir, { contentDir });
+
+      // Paired posts emit the same three absolute alternates in both heads;
+      // each page's own alternate must match its canonical URL.
+      const hreflangTags = (html) => [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map((match) => [match[1], match[2]]);
+      const expectedAlternates = [
+        ["en", "https://orbi.build/blog/pair/"],
+        ["zh-CN", "https://orbi.build/zh/blog/pair/"],
+        ["x-default", "https://orbi.build/blog/pair/"],
+      ];
+      for (const output of ["blog/pair/index.html", "zh/blog/pair/index.html"]) {
+        const html = await readFile(join(outDir, output), "utf8");
+        expect(hreflangTags(html), `${output}: hreflang`).toEqual(expectedAlternates);
+        const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+        expect(expectedAlternates.find(([lang]) => lang === (output.startsWith("zh/") ? "zh-CN" : "en"))[1])
+          .toBe(canonical);
+      }
+      const alphaHtml = await readFile(join(outDir, "blog/alpha/index.html"), "utf8");
+      const betaHtml = await readFile(join(outDir, "zh/blog/beta/index.html"), "utf8");
+      const declaredAlternates = [
+        ["en", "https://orbi.build/blog/alpha/"],
+        ["zh-CN", "https://orbi.build/zh/blog/beta/"],
+        ["x-default", "https://orbi.build/blog/alpha/"],
+      ];
+      expect(hreflangTags(alphaHtml), "declared EN pair: hreflang").toEqual(declaredAlternates);
+      expect(hreflangTags(betaHtml), "declared ZH pair: hreflang").toEqual(declaredAlternates);
+      for (const output of ["blog/solo-en/index.html", "zh/blog/solo-zh/index.html"]) {
+        expect(hreflangTags(await readFile(join(outDir, output), "utf8")), `${output}: no hreflang`).toEqual([]);
+      }
 
       // The nav language switcher points at the counterpart page for a pair,
       // or the other language's blog index for a single-language post — never

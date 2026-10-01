@@ -6,6 +6,9 @@
   <title>How one slash command got its shape | Orbi</title>
   <meta name="description" content="A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.">
   <link rel="canonical" href="https://orbi.build/blog/designing-a-slash-command/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/designing-a-slash-command/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/designing-a-slash-command/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/designing-a-slash-command/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="How one slash command got its shape">
   <meta property="og:description" content="A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.">
@@ -23,17 +26,57 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
     .post-body code.post-code--spaced { white-space: normal; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
@@ -42,10 +85,25 @@
     .post-body strong { font-weight: 600; }
     .post-media { margin: 24px 0; }
     .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
   </style>
 
 </head>
@@ -63,33 +121,62 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/guides/">Guides</a>
         <a href="/cloud/#pricing">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="/api/login">Sign in</a>
-        <a class="nav-apply" href="/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="/zh/blog/designing-a-slash-command/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-22</p>
-        <h1 id="post-title">How one slash command got its shape</h1>
-        <p class="hero-lede">A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-22</p>
+          <h1 id="post-title">How one slash command got its shape</h1>
+          <p class="hero-lede">A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#why-not-a-verb">Why not a verb</a></li>
+          <li><a class="post-toc-link" href="#why-no">Why no @</a></li>
+          <li><a class="post-toc-link" href="#the-regex-is-three-decisions-in-one">The regex is three decisions in one</a></li>
+          <li><a class="post-toc-link" href="#the-bug-prow-still-has">The bug Prow still has</a></li>
+          <li><a class="post-toc-link" href="#the-escalation-bors-has">The escalation bors has</a></li>
+          <li><a class="post-toc-link" href="#what-we-took-from-each">What we took from each</a></li>
+          <li><a class="post-toc-link" href="#the-registry-already-existed">The registry already existed</a></li>
+          <li><a class="post-toc-link" href="#one-command-three-idempotent-steps">One command, three idempotent steps</a></li>
+          <li><a class="post-toc-link" href="#what-we-deliberately-did-not-decide">What we deliberately did not decide</a></li>
+          <li><a class="post-toc-link" href="#the-result">The result</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 11 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#why-not-a-verb">Why not a verb</a></li>
+          <li><a class="post-toc-link" href="#why-no">Why no @</a></li>
+          <li><a class="post-toc-link" href="#the-regex-is-three-decisions-in-one">The regex is three decisions in one</a></li>
+          <li><a class="post-toc-link" href="#the-bug-prow-still-has">The bug Prow still has</a></li>
+          <li><a class="post-toc-link" href="#the-escalation-bors-has">The escalation bors has</a></li>
+          <li><a class="post-toc-link" href="#what-we-took-from-each">What we took from each</a></li>
+          <li><a class="post-toc-link" href="#the-registry-already-existed">The registry already existed</a></li>
+          <li><a class="post-toc-link" href="#one-command-three-idempotent-steps">One command, three idempotent steps</a></li>
+          <li><a class="post-toc-link" href="#what-we-deliberately-did-not-decide">What we deliberately did not decide</a></li>
+          <li><a class="post-toc-link" href="#the-result">The result</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>When our engine finishes a milestone, it opens a ticket with the candidates for the next version and waits for a choice. That pause is intentional.</p>
-<p>Automatic version advancement stays off. The release engine should not choose what ships next.</p>
+<p>Automatic version advancement stays off. The release engine should not choose what ships next.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <p>The problem was the answer. The ticket asked people to run
 <code class="post-code--spaced">orbi milestone set v0.5.40</code>, a CLI command on the host machine. Managed
 tenants have neither a host shell nor that CLI. Their sandbox runs on our
@@ -98,7 +185,7 @@ hardware, so the engine was asking them for something they could not do.</p>
 and the engine does the rest. It is one small feature. It took a day of design
 because almost every choice in it has been made before, by people who then had
 to live with it.</p>
-<h2>Why not a verb</h2>
+<h2 id="why-not-a-verb">Why not a verb</h2>
 <p>The first argument was about the name. <code class="post-code--single">/advance</code> was the obvious candidate, and
 it is wrong.</p>
 <p>In-ticket commands are named after states, not actions. Prow has <code class="post-code--single">/lgtm</code>,
@@ -125,7 +212,7 @@ implementation will not honour.</strong></p>
 and the three things it does are all in service of making that true. Creating
 the milestone, opening the release ticket, landing the config value: none of
 them is a surprise once you have read the name.</p>
-<h2>Why no @</h2>
+<h2 id="why-no">Why no @</h2>
 <p>The second argument: <code class="post-code--single">/milestone</code> or <code class="post-code--spaced">@orbi milestone</code>?</p>
 <p>The industry splits cleanly, and the dividing line is <strong>who controls the bot&#39;s
 account name</strong>.</p>
@@ -147,7 +234,7 @@ things to test, and two things that can drift apart when someone adds the third
 command. The notification is genuinely useful, but the cost is
 paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.</p>
-<h2>The regex is three decisions in one</h2>
+<h2 id="the-regex-is-three-decisions-in-one">The regex is three decisions in one</h2>
 <p>Anchoring at the start of a line, with the multiline flag:</p>
 <pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
 </code></pre>
@@ -167,7 +254,7 @@ to be the most interesting thing we read all day.</p>
 <figure class="post-media">
 <img src="/img/diagrams/command-pipeline.svg" alt="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. The fence-stripping and permission stages are highlighted as the two places where Prow and bors respectively leak." width="880" height="120">
 <figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them. It leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler. It leaks at “permission”.</figcaption>
-</figure><h2>The bug Prow still has</h2>
+</figure><h2 id="the-bug-prow-still-has">The bug Prow still has</h2>
 <p>A regex does not parse Markdown. If you write a comment explaining how to use
 <code class="post-code--single">/hold</code>, and you put the example inside triple backticks, the regex sees a line
 starting with <code class="post-code--single">/hold</code> and fires.</p>
@@ -190,7 +277,7 @@ exists. It just cannot arrive.</p>
 author supplies <code class="post-code--single">verbs=(&quot;milestone&quot;,)</code> and never sees a regex. They cannot omit
 the anchor, and they cannot skip the fenced-block stripping, because they were
 never given the opportunity to write either one.</p>
-<h2>The escalation bors has</h2>
+<h2 id="the-escalation-bors-has">The escalation bors has</h2>
 <p>The same question applies to permissions, and here the comparison inverts:
 bors has the better design and the worse bug.</p>
 <p>Prow makes permission each plugin&#39;s job. There is a shared helper,
@@ -217,7 +304,7 @@ command <strong>under the original commenter&#39;s identity</strong>, and it ent
 command.</p>
 <p>The lesson is not &quot;bors is insecure&quot;. It is that the gate was correct and the
 second entrance defeated it. One execution path, or the gate is decorative.</p>
-<h2>What we took from each</h2>
+<h2 id="what-we-took-from-each">What we took from each</h2>
 <p>Two more findings worth copying, one in each direction.</p>
 <p>Prow&#39;s genuinely good idea: <code class="post-code--single">ValidatePluginsUnknown</code> at
 <code class="post-code--single">pkg/plugins/config.go:1381</code> rejects a configured-but-unregistered plugin by
@@ -230,7 +317,7 @@ bare map assignment. Register the same name twice and the second silently
 overwrites the first; two plugins both matching <code class="post-code--single">^/hold</code> both run, in
 nondeterministic goroutine order. We raise on a duplicate name and on
 overlapping verbs, at import time.</p>
-<h2>The registry already existed</h2>
+<h2 id="the-registry-already-existed">The registry already existed</h2>
 <p>The shape we landed on was not invented for this. Our journal module has had it
 for months. <code class="post-code--single">JOURNAL_EVENTS</code> at <code class="post-code--single">src/orbi/journal.py:167</code> is an explicit dict,
 written out in the module. No decorators discovering things, no entry points, no
@@ -290,7 +377,7 @@ you forgot&quot;.</p>
 </g>
 </svg>
 <figcaption>The registry was not designed for this feature. It was already in the repository, holding journal event names, with the property that mattered: registering a thing is what validates it.</figcaption>
-</figure><h2>One command, three idempotent steps</h2>
+</figure><h2 id="one-command-three-idempotent-steps">One command, three idempotent steps</h2>
 <p>The original ticket said this command changes a config value. That was wrong,
 and finding out why took a grep.</p>
 <p>A complete advance needs three things to happen. We had one of them:</p>
@@ -355,7 +442,7 @@ supplied the input.</p>
 the input, string substitution is the transformation, and a file write is the
 output. An LLM in that path would add nondeterminism to an operation whose
 entire value is being predictable.</p>
-<h2>What we deliberately did not decide</h2>
+<h2 id="what-we-deliberately-did-not-decide">What we deliberately did not decide</h2>
 <p>There is a real open question underneath all of this, and we wrote it down
 rather than answering it by accident.</p>
 <p>Commands are currently read from exactly one place: the confirmation ticket the
@@ -397,7 +484,7 @@ of <code class="post-code--single">/approve</code>, <code class="post-code--sing
 information that would make the choice better than a coin flip. Writing the
 question down, with both option&#39;s costs enumerated, is what keeps it from being
 answered by whoever next opens that file.</p>
-<h2>The result</h2>
+<h2 id="the-result">The result</h2>
 <p>The command shipped the same day. The implementation was +2073/-81 across 18
 files, and the follow-up that lifts the shared layer out of the milestone module
 is specified and queued.</p>
@@ -416,10 +503,17 @@ shared layer), and
 <a href="https://github.com/orbi-build/orbi/discussions/1295">#1295</a> (where commands
 should be read from). Every Prow and bors line number above was grepped at HEAD
 on 2026-09-22, not recalled.</em></p>
-<h2>Related</h2>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
 <p>Read the <a href="/compare/cursor/">Cursor comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+<!--orbi:related-posts-->
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -428,7 +522,7 @@ on 2026-09-22, not recalled.</em></p>
     <label class="sr-only" for="subscribe-email-en">Email address</label>
     <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
     <input type="hidden" name="lang" value="en">
-    <button class="button button-signal" type="submit">Subscribe</button>
+    <button class="button button-ghost" type="submit">Subscribe</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
@@ -453,7 +547,7 @@ on 2026-09-22, not recalled.</em></p>
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -464,6 +558,7 @@ on 2026-09-22, not recalled.</em></p>
         <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/designing-a-slash-command/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -473,7 +568,7 @@ on 2026-09-22, not recalled.</em></p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
@@ -491,5 +586,18 @@ on 2026-09-22, not recalled.</em></p>
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

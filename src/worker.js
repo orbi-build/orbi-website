@@ -19,6 +19,7 @@ const SOLO_INCLUDED_TOKENS = String(pricing.soloIncludedTokensLabel);
 const SOLO_REPOSITORIES = String(pricing.soloRepositories);
 const PRO_REPOSITORIES = String(pricing.proRepositories);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
@@ -71,16 +72,8 @@ const GUIDE_REDIRECTS = new Map([
   ["/zh/self-hosted-coding-agent", "/zh/guides/self-hosted-coding-agent/"],
   ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
 ]);
-const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth"]);
-const ENGAGEMENT_DETAILS = new Set([
-  "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
-  "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
-  "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
-  "pricing-pro-year", "pricing-pro-month",
-  // Issue #571: the brand-film entry, the dialog's own 50%/100% beacons, and
-  // the two end-of-film buttons.
-  "film-play", "film-50", "film-100", "film-end-cloud", "film-end-selfhost",
-]);
+const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth", "section_view"]);
+const ENGAGEMENT_DETAIL = /^[a-z0-9-]{1,40}$/;
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
 function githubHeaders(token) {
@@ -332,7 +325,95 @@ function foundingAvatarMarkup(logins) {
   }).join("");
 }
 
-async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
+function escapeHtml(value) {
+  return String(value).replace(/[&<>\"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[character]);
+}
+
+function cosineSimilarity(left, right) {
+  let dot = 0;
+  let leftNorm = 0;
+  let rightNorm = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    dot += left[index] * right[index];
+    leftNorm += left[index] ** 2;
+    rightNorm += right[index] ** 2;
+  }
+  return leftNorm && rightNorm ? dot / Math.sqrt(leftNorm * rightNorm) : 0;
+}
+
+async function sha256Hex(value) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function relatedPostsMarkup(request, env, slug, language) {
+  const postsResponse = await env.ASSETS.fetch(new Request(new URL("/blog/posts.json", request.url)));
+  if (!postsResponse.ok) throw new Error(`posts.json returned ${postsResponse.status}`);
+  const postsText = await postsResponse.text();
+  const posts = JSON.parse(postsText);
+  if (!Array.isArray(posts) || posts.some((post) => !post?.slug || !post?.title || !post?.summary)) {
+    throw new Error("posts.json has an invalid shape");
+  }
+  const current = posts.find((post) => language === "zh" ? post.zhSlug === slug : post.slug === slug);
+  if (!current) throw new Error(`unknown blog slug: ${slug}`);
+  const hash = await sha256Hex(postsText);
+  const cacheKey = new Request(`https://orbi.build/__related/${hash}`);
+  const cache = caches.default;
+  let table;
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    table = await cached.json();
+  } else {
+    if (!env.AI || typeof env.AI.run !== "function") throw new Error("Workers AI binding is unavailable");
+    const result = await env.AI.run("@cf/baai/bge-m3", {
+      text: posts.map((post) => `${post.title}\n${post.summary}`),
+    });
+    const vectors = result?.data;
+    const dimensions = Array.isArray(vectors?.[0]) ? vectors[0].length : 0;
+    if (!Array.isArray(vectors) || vectors.length !== posts.length || dimensions === 0
+      || vectors.some((vector) => !Array.isArray(vector) || vector.length !== dimensions
+        || vector.some((value) => typeof value !== "number" || !Number.isFinite(value)))) {
+      throw new Error("Workers AI returned invalid embeddings");
+    }
+    table = Object.fromEntries(posts.map((post, index) => {
+      const ranked = posts
+        .map((candidate, candidateIndex) => ({
+          slug: candidate.slug,
+          score: candidateIndex === index ? -Infinity : cosineSimilarity(vectors[index], vectors[candidateIndex]),
+          index: candidateIndex,
+        }))
+        .sort((left, right) => right.score - left.score || left.index - right.index)
+        .slice(0, 3)
+        .map((candidate) => candidate.slug);
+      return [post.slug, ranked];
+    }));
+    await cache.put(cacheKey, new Response(JSON.stringify(table), {
+      headers: { "Content-Type": "application/json" },
+    }));
+  }
+  const selected = [];
+  for (const candidate of [...(current.related || []), ...(table[current.slug] || [])]) {
+    if (candidate !== current.slug && !selected.includes(candidate) && posts.some((post) => post.slug === candidate)) {
+      selected.push(candidate);
+    }
+    if (selected.length === 3) break;
+  }
+  if (selected.length !== 3) throw new Error(`fewer than three related posts for ${slug}`);
+  const zh = language === "zh";
+  const links = selected.map((candidateSlug) => {
+    const post = posts.find((entry) => entry.slug === candidateSlug);
+    const href = zh ? `/zh/blog/${post.zhSlug}/` : `/blog/${post.slug}/`;
+    const title = zh ? post.zhTitle : post.title;
+    if (!title || (zh && !post.zhSlug)) throw new Error(`missing Chinese mirror for ${candidateSlug}`);
+    return `<li><a href="${href}">${escapeHtml(title)}</a></li>`;
+  }).join("");
+  const heading = zh ? "相关文章" : "Related posts";
+  return `<section class="related-links" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
+}
+
+async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], request, env) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -351,7 +432,18 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
-  let body = html
+  let body = html;
+  const blogMatch = request?.url && new URL(request.url).pathname.match(/^(\/zh)?\/blog\/([^/]+)\/?$/);
+  if (blogMatch && body.includes("<!--orbi:related-posts-->")) {
+    try {
+      const related = await relatedPostsMarkup(request, env, blogMatch[2], blogMatch[1] ? "zh" : "en");
+      body = body.replaceAll("<!--orbi:related-posts-->", related);
+    } catch (error) {
+      console.error("related_posts_failed:", error && error.message ? error.message : error);
+      body = body.replaceAll("<!--orbi:related-posts-->", "");
+    }
+  }
+  body = body
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
     .replaceAll(pricing.soloMonthlyUsdToken, SOLO_MONTHLY_USD)
     .replaceAll(pricing.soloAnnualUsdToken, SOLO_ANNUAL_USD)
@@ -365,6 +457,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
     .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
     .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
+    .replaceAll(pricing.foundingPartnerRemainingToken, FOUNDING_PARTNER_REMAINING)
     .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)
@@ -671,7 +764,7 @@ async function handleFetch(request, env, ctx) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins);
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins, request, env);
 }
 
 // Issue #541: the subscription endpoint answers JSON only — the form is
@@ -738,6 +831,9 @@ async function subscribeResponse(request, env) {
 
 async function engagementResponse(request, env, ctx) {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
+  if (cookieFrom(request, "orbi_internal") === "1") {
+    return new Response(null, { status: 204, headers: SECURITY_HEADERS });
+  }
   let event;
   try {
     event = await request.json();
@@ -749,7 +845,7 @@ async function engagementResponse(request, env, ctx) {
   const valid = ENGAGEMENT_KINDS.has(kind)
     && (kind === "visit" ? detail === undefined && typeof event.search === "string" && typeof event.referrer === "string"
       : kind === "engaged" ? detail === undefined
-        : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
+        : kind === "cta_click" || kind === "section_view" ? typeof detail === "string" && ENGAGEMENT_DETAIL.test(detail)
           : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
   if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
 
@@ -836,6 +932,11 @@ function randomVid() {
 
 function attributionCookieString(name, value, secure) {
   return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ATTRIBUTION_MAX_AGE_SECONDS}${secure ? "; Secure" : ""}`;
+}
+
+function internalCookieString(value) {
+  const enabled = value === "1";
+  return `orbi_internal=${enabled ? "1" : ""}; Path=/; Max-Age=${enabled ? 31536000 : 0}; SameSite=Lax; Secure`;
 }
 
 // Same fallback chain as the cloud signup source (orbi-cloud#716), so the
@@ -970,6 +1071,8 @@ async function reportVisit(env, visitRequest, payload) {
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const secure = url.protocol === "https:";
+  const internal = url.searchParams.get("internal");
+  const internalCookie = internal === "1" || internal === "0" ? internal : null;
   const existingVid = cookieFrom(request, "vid");
   const vid = existingVid ?? randomVid();
   const firstTouch = existingVid === null;
@@ -983,10 +1086,13 @@ function withAttribution(request, response, env, ctx) {
     ? rawRef.toLowerCase()
     : null;
   const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
-  if (!firstTouch && !seedsRef) {
+  if (!firstTouch && !seedsRef && internalCookie === null) {
     return response;
   }
   const stamped = new Response(response.body, response);
+  if (internalCookie !== null) {
+    stamped.headers.append("Set-Cookie", internalCookieString(internalCookie));
+  }
   if (firstTouch) {
     stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
   }

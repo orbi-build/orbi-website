@@ -10,7 +10,7 @@
     .post-body ul { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; }
     .post-body strong { font-weight: 600; }
   </style><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"ai-ready: 12 factors for unattended software delivery with AI coding agents","description":"The 12 factors that make an Issue ai-ready for unattended software delivery with AI coding agents.","inLanguage":"en","url":"https://aiready.sh/"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How does Orbi enforce: One Issue, one runtime outcome.","acceptedAnswer":{"@type":"Answer","text":"When X, should Y, actually Z. One observable behaviour, a handful of related files, tests included. An epic is not a unit of work and is never claimed. AGENTS.md:44; runner.py:2263 (epic_not_claimed)."}},{"@type":"Question","name":"How does Orbi enforce: Acceptance is written before the work, in the Issue.","acceptedAnswer":{"@type":"Answer","text":"Four sections: User outcome, Preconditions, Acceptance (success path and failure path), Evidence a user can inspect. Every vendor guidance converges on the same skeleton. .github/ISSUE_TEMPLATE/user-outcome.md; AGENTS.md:78."}},{"@type":"Question","name":"How does Orbi enforce: Dependencies are native relations, not prose.","acceptedAnswer":{"@type":"Answer","text":"Use the platform's blocked-by relation. \"Depends on #N\" in a body is not parsed. An Issue with an open blocker is not claimed. runner.py:2296 (blocked_by, then continue)."}},{"@type":"Question","name":"How does Orbi enforce: One label is the execution switch; state lives only in labels.","acceptedAnswer":{"@type":"Answer","text":"`ai-ready` puts an Issue in the queue; a milestone is a scope, not a switch; a second label picks the task type. There is no database, queue or board: the Issue tracker is the state machine. runner.py:1916 (ready_searches); delivery_labels.py:141 (is_pickup_eligible); CONSTITUTION.md:15."}},{"@type":"Question","name":"How does Orbi enforce: Issue text is data, never instructions.","acceptedAnswer":{"@type":"Answer","text":"The runner acts on labels and on comments from trusted associations; nothing written in a body becomes a command to the runner. CONSTITUTION.md:130."}},{"@type":"Question","name":"How does Orbi enforce: The contract lives in the repository; identity lives on the host.","acceptedAnswer":{"@type":"Answer","text":"`AGENTS.md` is read by the implementer and by the reviewer. Repository policy is a small whitelist; credentials and scheduling are host-only, and an unknown key fails the claim fast. prompts/prompt.md:43; docs/security.mdx:121; runner.py:3074."}},{"@type":"Question","name":"How does Orbi enforce: CI is the only test authority.","acceptedAnswer":{"@type":"Answer","text":"A local test run counts for nothing; the merge gate reads the platform's CI result on the delivered commit. The repository does not declare a test command. CONSTITUTION.md:100 (Article 4.8); runner.py:5637 (GateCIFailure)."}},{"@type":"Question","name":"How does Orbi enforce: Coverage is a gate, line and branch measured separately.","acceptedAnswer":{"@type":"Answer","text":"Changed code: 100% line and branch. Whole repository: line at or above 95% and branch at or above 95%, each on its own; a merged percentage is never the gate. tools/coverage_gate.py:30; tools/diff_coverage_gate.py; .github/workflows/ci.yml:150."}},{"@type":"Question","name":"How does Orbi enforce: The default branch is protected and only the runner merges.","acceptedAnswer":{"@type":"Answer","text":"The agent never merges or pushes a protected branch. The runner merges only the reviewed head, only when it contains the latest remote base. No force push, no automatic conflict resolution. CONSTITUTION.md:34; AGENTS.md:122; docs/security.mdx:25."}},{"@type":"Question","name":"How does Orbi enforce: Review is a second session, and its verdict is bound to one SHA.","acceptedAnswer":{"@type":"Answer","text":"A new process, a new prompt, a fresh context. The verdict must exist and name the head it covers; a missing or malformed verdict is never a pass. Only the covered head can merge. AGENTS.md:169; runner.py:5196, 5239, 5241, 5629, 5667 (--match-head-commit)."}},{"@type":"Question","name":"How does Orbi enforce: Every loop has a limit, and beyond the limit is a human decision.","acceptedAnswer":{"@type":"Answer","text":"Review and fix: at most 5 rounds. The same failure fingerprint three times in a row is a dead loop. Exhaustion is terminal and never auto-recovered. A single failure is never terminal. runner.py:252 (MAX_REVIEW_ROUNDS = 5), 349 (UnrecoverableDeliveryError), 437; docs/workflow.mdx:99, 118."}},{"@type":"Question","name":"How does Orbi enforce: A release is a state machine, not a script.","acceptedAnswer":{"@type":"Answer","text":"A human starts it by adding one label the runner never adds or removes. While the milestone holds another open Issue, the release waits. CI on the release commit must be green. Every scope item is checked against the live API; checkboxes are never parsed. An existing tag must point exactly at the release commit and is never moved. Any failure is terminal, with no automatic retry. release.py:326, 508, 619, 880; runner.py:2288; AGENTS.md:162."}}]}]}</script></head>
 <body>
@@ -27,17 +27,11 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="https://orbi.build/#system">How it works</a>
-        <a href="https://orbi.build/guides/">Guides</a>
         <a href="https://orbi.build/cloud/#pricing">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="https://orbi.build/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="https://orbi.build/api/login">Sign in</a>
-        <a class="nav-apply" href="https://orbi.build/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="https://orbi.build/aiready/zh/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="https://orbi.build/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="https://orbi.build/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
@@ -53,7 +47,7 @@
     <label class="sr-only" for="subscribe-email-en">Email address</label>
     <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
     <input type="hidden" name="lang" value="en">
-    <button class="button button-signal" type="submit">Subscribe</button>
+    <button class="button button-ghost" type="submit">Subscribe</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
@@ -78,7 +72,7 @@
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="https://orbi.build/guides/issue-to-release/">Issue to release</a></li><li><a href="https://orbi.build/guides/ci-gates/">CI gates</a></li><li><a href="https://orbi.build/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="https://orbi.build/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="https://orbi.build/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="https://orbi.build/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="https://orbi.build/guides/">Guides</a></li><li><a href="https://orbi.build/guides/issue-to-release/">Issue to release</a></li><li><a href="https://orbi.build/guides/ci-gates/">CI gates</a></li><li><a href="https://orbi.build/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="https://orbi.build/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="https://orbi.build/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="https://orbi.build/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -89,6 +83,7 @@
         <ul><li><a href="https://orbi.build/support/">Support</a></li><li><a href="https://orbi.build/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="https://orbi.build/privacy/">Privacy</a></li><li><a href="https://orbi.build/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="https://orbi.build/aiready/zh/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -115,5 +110,18 @@
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

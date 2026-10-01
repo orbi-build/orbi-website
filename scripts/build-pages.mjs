@@ -55,6 +55,19 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script>`;
 
 // The four pages that carry the data-driven social-proof section (Issue #226):
@@ -134,23 +147,16 @@ const LANG = {
     guidesLabel: "Guides",
     guidesHref: "/guides/",
     comparisonsLabel: "Orbi vs alternatives",
-    comparisonsDescription: "Claude Code, Codex, Devin and more, fact-checked",
     costLabel: "Pricing",
     evidenceLabel: "Orbi builds Orbi",
-    evidenceDescription: "Public issues, PRs and releases on GitHub",
     docsLabel: "Docs",
-    resourcesLabel: "Resources",
     methodLabel: "ai-ready: 12 factors",
-    methodDescription: "What makes an Issue safe to hand to an AI",
     methodHref: "/aiready/",
     benchmarkLabel: "How we test the harness",
-    benchmarkDescription: "Delivery runs on open-source bugs, graded by maintainers' tests",
     benchmarkHref: "/benchmark/",
     selfHostedDocsLabel: "Self-hosted Docs",
-    cloudDocsNavLabel: "Cloud Docs",
     blogLabel: "Blog",
     costPerPrLabel: "Cost per merged PR",
-    costPerPrDescription: "Measured on our own repos, with sample size and limits",
     productHeading: "Product",
     resourcesHeading: "Resources",
     guidesHeading: "Guides",
@@ -169,7 +175,7 @@ const LANG = {
     docsHref: "https://docs.orbi.build",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud Docs",
-    applyLabel: "Start Cloud",
+    applyLabel: "Start free",
     signInLabel: "Sign in",
     cloudLabel: "Cloud",
     compareLabel: "Compare",
@@ -197,23 +203,16 @@ const LANG = {
     guidesLabel: "指南",
     guidesHref: "/zh/guides/",
     comparisonsLabel: "与同类工具对比",
-    comparisonsDescription: "Claude Code、Codex、Devin 等，逐条核实",
     costLabel: "价格",
     evidenceLabel: "Orbi 交付自己的记录",
-    evidenceDescription: "公开的 Issue、PR 和发版，都在 GitHub 上",
     docsLabel: "文档",
-    resourcesLabel: "资源",
     methodLabel: "ai-ready 12 要素",
-    methodDescription: "什么样的 Issue 能交给 AI 无人值守交付",
     methodHref: "/aiready/zh/",
     benchmarkLabel: "我们怎么测 harness",
-    benchmarkDescription: "在开源 bug 上跑交付，用维护者的测试打分",
     benchmarkHref: "/zh/benchmark/",
     selfHostedDocsLabel: "自托管文档",
-    cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
     costPerPrLabel: "每个 PR 花多少钱",
-    costPerPrDescription: "在自家仓库实测，附样本量和限制",
     productHeading: "产品",
     resourcesHeading: "资源",
     guidesHeading: "指南",
@@ -232,7 +231,7 @@ const LANG = {
     docsHref: "https://docs.orbi.build/zh",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud 文档",
-    applyLabel: "开始 Cloud",
+    applyLabel: "免费开始",
     signInLabel: "登录",
     cloudLabel: "Cloud",
     compareLabel: "竞品对比",
@@ -270,23 +269,13 @@ function withSiteBase(nav, href) {
   return nav?.siteBase && href.startsWith("/") ? `${nav.siteBase}${href}` : href;
 }
 
-const NAV_DROPDOWN_INDICATOR = '<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
-
 export function renderNav(page, partial = NAV_PARTIAL) {
   if (!partial) throw new Error("nav partial not loaded; call buildPages() first or pass the partial");
   const t = LANG[page.lang];
   const n = page.nav;
   if (!n) throw new Error(`${page.output}: page has no nav params`);
   const base = (href) => withSiteBase(n, href);
-  const compareAttrs =
-    (n.compareDataCta ? ' data-cta="comparisons"' : "") +
-    (n.compareCurrent ? ' aria-current="page"' : "");
   const costAttrs = n.costCurrent ? ' aria-current="page"' : "";
-  const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
-  const otherLine = `<a href="${base(n.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
-  const [lineA, lineB] = n.langCurrentFirst
-    ? [currentLine, otherLine]
-    : [otherLine, currentLine];
   return fill(partial, {
     HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
@@ -297,26 +286,15 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     NAV_ARIA: t.navAria,
     SYSTEM_HREF: base(n.systemHref),
     SYSTEM_LABEL: t.systemLabel,
-    COMPARE_HREF: base(n.compareHref),
-    COMPARE_ATTRS: compareAttrs,
-    COMPARE_LABEL: n.compareLabel,
-    COMPARE_COST_JOIN: join,
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    GUIDES_HREF: base(t.guidesHref),
-    GUIDES_LABEL: t.guidesLabel,
-    RESOURCES_ITEM: `<div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-resources-menu" data-dropdown-toggle>${t.resourcesLabel}${NAV_DROPDOWN_INDICATOR}</button><div class="nav-dropdown-menu" id="${n.navId}-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/evidence/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.evidenceLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.evidenceDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(t.benchmarkHref)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.benchmarkLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.benchmarkDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/cost/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.costPerPrLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.costPerPrDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(t.methodHref)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.methodLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.methodDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(n.compareHref)}"${compareAttrs} role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.comparisonsLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.comparisonsDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/blog/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.blogLabel}</span></a></div></div>`,
-    DOCS_ITEM: `<div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-dropdown-toggle>${t.docsLabel}${NAV_DROPDOWN_INDICATOR}</button><div class="nav-dropdown-menu" id="${n.navId}-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
-    BLOG_HREF: base(`${t.langPrefix}/blog/`),
-    BLOG_LABEL: t.blogLabel,
-    APPLY_LABEL: t.applyLabel,
+    DOCS_HREF: t.docsHref,
+    DOCS_LABEL: t.docsLabel,
     SIGNIN_LABEL: t.signInLabel,
     SIGNIN_HREF: base("/api/login"),
-    CLOUD_HREF: base(`${t.langPrefix}/cloud/`),
-    LANG_GROUP_ARIA: t.langGroupAria,
-    LANG_LINE_A: lineA,
-    LANG_LINE_B: lineB,
+    APPLY_LABEL: t.applyLabel,
+    CLOUD_HREF: base(`${t.langPrefix}/cloud/login`),
   });
 }
 
@@ -328,6 +306,11 @@ export function renderFooter(page) {
   // (Issue #106: the anchor-prefix rule).
   const anchorPrefix = isHome ? "" : `${t.langPrefix}/`;
   const base = (href) => withSiteBase(page.nav, href);
+  const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
+  const otherLine = `<a href="${base(page.nav.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
+  const [lineA, lineB] = page.nav.langCurrentFirst
+    ? [currentLine, otherLine]
+    : [otherLine, currentLine];
   const deepLinks = DEEP_DIVES.map(
     ([slug, name]) =>
       `      <a href="${base(`${t.langPrefix}/compare/${slug}/`)}">${name}</a>`
@@ -346,11 +329,12 @@ export function renderFooter(page) {
     RESOURCES_HEADING: t.resourcesHeading,
     RESOURCES_LINKS: [`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="${base(t.benchmarkHref)}">${t.benchmarkLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cost/`)}">${t.costPerPrLabel}</a></li>`,`<li><a href="${base(t.methodHref)}">${t.methodLabel}</a></li>`,`<li><a href="${base(page.nav.compareHref)}">${t.comparisonsLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/blog/`)}">${t.blogLabel}</a></li>`,`<li><a href="${t.docsHref}">${t.selfHostedDocsLabel}</a></li>`,`<li><a href="${t.cloudDocsHref}">${t.cloudDocsLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#faq`)}">${t.faqLabel}</a></li>`].join(""),
     GUIDES_HEADING: t.guidesHeading,
-    GUIDES_LINKS: guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>"),
+    GUIDES_LINKS: `<li><a href="${base(t.guidesHref)}">${t.guidesLabel}</a></li>${guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}`,
     COMPARE_HEADING: t.compareHeading,
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
     COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
+    LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
   })}`;
@@ -748,6 +732,24 @@ function requiredField(label, fields, name) {
   return fields[name];
 }
 
+function parseRelated(label, fields) {
+  if (fields.related === undefined) return [];
+  let related;
+  try {
+    related = JSON.parse(fields.related);
+  } catch {
+    const value = fields.related.trim();
+    if (!value.startsWith("[") || !value.endsWith("]")) {
+      throw new Error(`${label}: front matter "related" must be an array of English slugs`);
+    }
+    related = value.slice(1, -1).split(",").map((slug) => slug.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
+  }
+  if (!Array.isArray(related) || related.some((slug) => typeof slug !== "string" || !slug)) {
+    throw new Error(`${label}: front matter "related" must be a JSON array of English slugs`);
+  }
+  return related;
+}
+
 function parseVideo(label, fields) {
   const names = ["video_name", "video_description", "video_thumbnail", "video_upload_date", "video_duration", "video_embed_url"];
   const present = names.filter((name) => fields[name] !== undefined);
@@ -760,6 +762,36 @@ function parseVideo(label, fields) {
     uploadDate: requiredField(label, fields, "video_upload_date"),
     duration: requiredField(label, fields, "video_duration"),
     embedUrl: requiredField(label, fields, "video_embed_url"),
+  };
+}
+
+function headingText(html) {
+  return decodeEntities(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+}
+
+function renderPostHeadings(html, label) {
+  const used = new Set();
+  const headings = [];
+  const rendered = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (full, inner) => {
+    const text = headingText(inner);
+    const base = text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "section";
+    let id = base;
+    for (let suffix = 2; used.has(id); suffix += 1) id = `${base}-${suffix}`;
+    used.add(id);
+    headings.push({ id, text });
+    return `<h2 id="${escAttr(id)}">${inner}</h2>`;
+  });
+  validateRenderedPostBody(label, rendered);
+  return { html: rendered, headings };
+}
+
+function renderPostToc(post) {
+  if (post.headings.length < 5) return { desktop: "", inline: "" };
+  const title = post.lang === "zh" ? "本页目录" : "On this page";
+  const entries = post.headings.map(({ id, text }) => `          <li><a class="post-toc-link" href="#${escAttr(id)}">${escAttr(text)}</a></li>`).join("\n");
+  return {
+    desktop: `        <nav class="post-toc" aria-label="${title}">\n          <h2>${title}</h2>\n          <ol>\n${entries}\n          </ol>\n        </nav>`,
+    inline: `        <details class="post-toc-inline">\n          <summary>${title} · ${post.headings.length} ${post.lang === "zh" ? "节" : "sections"}</summary>\n          <ol>\n${entries}\n          </ol>\n        </details>`,
   };
 }
 
@@ -778,9 +810,10 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
-  validateRenderedPostBody(label, html);
+  const parsedHtml = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
+  const { html, headings } = renderPostHeadings(parsedHtml, label);
   const video = parseVideo(label, fields);
+  const related = lang === "en" ? parseRelated(label, fields) : [];
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
   return {
@@ -797,7 +830,9 @@ export function postFromSource(displayName, source) {
     author: fields.author,
     image: fields.image,
     video,
+    related,
     html,
+    headings,
   };
 }
 
@@ -833,6 +868,13 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
   const label = (post) => `content/blog/${post.source}`;
   const otherLang = (post) => (post.lang === "en" ? "zh" : "en");
   const byKey = new Map(posts.map((post) => [`${post.lang}/${post.slug}`, post]));
+  const englishSlugs = new Set(posts.filter((post) => post.lang === "en").map((post) => post.slug));
+  for (const post of posts.filter((post) => post.lang === "en")) {
+    for (const related of post.related) {
+      if (related === post.slug) throw new Error(`${label(post)}: related: cannot name itself: ${related}`);
+      if (!englishSlugs.has(related)) throw new Error(`${label(post)}: related: English slug does not exist: ${related}`);
+    }
+  }
   for (const post of posts) {
     if (post.mirror === undefined) continue;
     if (!byKey.has(`${otherLang(post)}/${post.mirror}`)) {
@@ -890,6 +932,11 @@ function renderPostMeta(post) {
     url,
   };
   const blocks = [article];
+  const alternates = post.paired ? [
+    `  <link rel="alternate" hreflang="en" href="https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}">`,
+    `  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build${post.lang === "zh" ? post.href : pathToHref(post.mirrorOutput)}">`,
+    `  <link rel="alternate" hreflang="x-default" href="https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}">`,
+  ] : [];
   if (post.video) blocks.push({
     "@context": "https://schema.org",
     "@type": "VideoObject",
@@ -903,6 +950,7 @@ function renderPostMeta(post) {
   const json = (value) => JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e").replaceAll("&", "\\u0026");
   return [
     `  <link rel="canonical" href="${url}">`,
+    ...alternates,
     `  <meta property="og:type" content="article">`,
     `  <meta property="og:title" content="${escAttr(post.headline)}">`,
     `  <meta property="og:description" content="${escAttr(post.summary)}">`,
@@ -967,8 +1015,18 @@ function renderSubscribe(lang) {
   });
 }
 
+export function insertInlinePostCta(html, cta) {
+  const paragraphs = [...html.matchAll(/<p\b[\s\S]*?<\/p>/g)];
+  if (paragraphs.length < 3) return html;
+  const second = paragraphs[1];
+  const end = second.index + second[0].length;
+  return `${html.slice(0, end)}${cta}${html.slice(end)}`;
+}
+
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
+  const toc = renderPostToc(post);
+  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
   const page = {
     lang: post.lang,
     output: post.output,
@@ -982,7 +1040,25 @@ function renderPost(post, template) {
       langSwitchHref: pathToHref(post.mirrorOutput),
     },
   };
+  const cta = post.lang === "zh"
+    ? `<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside>`
+    : `<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside>`;
+  const inlineCta = post.lang === "zh"
+    ? `<aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>`
+    : `<aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>`;
+  const body = insertInlinePostCta(post.html, inlineCta).replace(/<h2 id="(?:related|相关)">/, `${cta}$&`);
   return fill(template, {
+    BODY: body,
     LANG_ATTR: t.htmlLang,
     TITLE: escAttr(`${post.title} | Orbi`),
     DESCRIPTION: escAttr(post.summary),
@@ -994,9 +1070,11 @@ function renderPost(post, template) {
     DATE: post.date,
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
-    BODY: post.html,
+    POST_TOC: toc.desktop,
+    INLINE_TOC: toc.inline,
+    RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
@@ -1224,7 +1302,19 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
     renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, contentDir),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
-  await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
+  const englishPosts = posts.filter((post) => post.lang === "en");
+  await writeFile(join(outDir, "blog", "posts.json"), JSON.stringify(englishPosts.map((post) => {
+    const zh = post.paired ? posts.find((candidate) => candidate.lang === "zh" && candidate.slug === post.counterpartSlug) : null;
+    return {
+      slug: post.slug,
+      title: post.title,
+      summary: post.summary,
+      zhSlug: zh?.slug ?? null,
+      zhTitle: zh?.title ?? null,
+      related: post.related,
+    };
+  }), null, 2) + "\n");
+  await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(englishPosts));
   await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
   await writeFile(
     join(outDir, "llms-full.txt"),

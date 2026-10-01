@@ -31,48 +31,19 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #91: the hero claims delivery to a tagged release. Issue #259 moved
-// the three-segment breakdown to the trust line (heroTrustLine below) and
-// shortened the lede to one sentence pair so the primary CTA stays inside
-// the first screen; the lede keeps the workspace claim and the
-// source-of-truth boundary.
+// Issue #704: the hero uses the approved short lede and keeps one pricing
+// CTA as its only link.
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: [
-      "No new workspace.",
-      "Orbi runs the delivery line on the Issues already in your repository",
-      "GitHub stays the source of truth",
-    ],
+    lede: ["An AI agent that takes your Issues all the way to a release."],
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: [
-      "不用迁移工作流。",
-      "在仓库里已有的 Issue 上跑完整条交付线",
-      "GitHub 始终是唯一事实源",
-    ],
+    lede: ["AI 把你的 Issue 一路做到发版。"],
     title: "提个 Issue，收个版本",
   },
-};
-
-// Issue #119: the hero trust line is the 5-second scan zone and must carry
-// exactly the three delivery capabilities no competitor documents. The
-// licence / self-host / BYOK attributes every competitor shares moved to
-// the end of the How-it-works section — decision-stage (licence, data
-// boundary, model lock-in), not first-glance, information.
-const heroTrustLine = {
-  "/": [
-    "Independent review that fixes and re-tests",
-    "Only the reviewed commit merges",
-    "Frozen SHA, tag, release",
-  ],
-  "/zh/": [
-    "独立审查能改代码并重跑测试",
-    "只合并审过的那个 commit",
-    "冻结 SHA、打 Tag、发 Release",
-  ],
 };
 const sharedAttributes = {
   "/": [
@@ -529,17 +500,12 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     }
     await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
 
-    await page.locator('[data-cta="cloud-start"]').click();
-    if (new URL(page.url()).pathname !== "/cloud/") {
-      throw new Error(`homepage hero CTA landed at ${page.url()}, expected /cloud/`);
-    }
-
     const handoffResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const target = new URL(targetURL);
       return url.origin === target.origin && url.pathname === "/cloud/login";
     });
-    await page.locator('a.button-signal[href="/cloud/login"]').first().click(
+    await page.locator('[data-cta="cloud-start"]').click(
       process.env.BASE_URL ? { noWaitAfter: true } : {},
     );
     const response = await handoffResponse;
@@ -702,6 +668,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   const hero = page.locator(".hero");
+  const heroProofBox = await page.locator(".hero-proof-bar").boundingBox();
+  if (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height) {
+    throw new Error(`${path}: hero proof bar is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroProofBox)}`);
+  }
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
   if (heroH1 !== claim.h1) {
@@ -714,8 +684,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       overflows: h1.scrollWidth > h1.clientWidth,
     };
   });
-  if (heroLayout.lines !== 1) {
-    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 1`);
+  if (heroLayout.lines !== 2) {
+    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 2`);
   }
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
@@ -729,14 +699,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  // Issue #119: the rendered hero trust line is exactly the three unmatched
-  // capabilities, and the shared attributes still render in How-it-works.
-  const trustTexts = (await hero.locator(".trust-line li").allTextContents())
-    .map((item) => item.replace(/\s+/g, " ").trim());
-  const expectedTrust = heroTrustLine[path];
-  if (trustTexts.length !== expectedTrust.length
-      || expectedTrust.some((item, i) => trustTexts[i] !== item)) {
-    throw new Error(`${path}: hero trust line is ${JSON.stringify(trustTexts)}, expected exactly ${JSON.stringify(expectedTrust)}`);
+  if (await hero.locator("a").count() !== 1 || await hero.locator('[data-cta="cloud-start"]').count() !== 1) {
+    throw new Error(`${path}: hero must contain exactly one cloud-start link`);
+  }
+  if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
+    throw new Error(`${path}: removed film control remains in the hero`);
   }
   const systemText = await page.locator("#system").textContent();
   for (const attribute of sharedAttributes[path]) {
@@ -744,9 +711,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       throw new Error(`${path}: the How-it-works section lost the shared attribute ${JSON.stringify(attribute)}`);
     }
   }
-  const stats = page.locator("[data-stat]");
-  await stats.last().scrollIntoViewIfNeeded();
-  if (!(await statsResponse) || !statsRequested) throw new Error(`${path}: /stats was not requested`);
+  const receivedStatsResponse = await statsResponse;
+  if (!receivedStatsResponse || !statsRequested) {
+    throw new Error(`${path}: /stats before scroll response=${Boolean(receivedStatsResponse)} request=${statsRequested}`);
+  }
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
   // received (the real Worker response on beta, the fixture locally), so the
@@ -759,18 +727,15 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: stats render did not match the served /stats payload: ${dump}`);
   });
   const flagship = servedStats?.repos?.orbi;
-  const proof = page.locator("[data-runtime-proof]");
-  if (!flagship || !(await proof.isVisible())) throw new Error(`${path}: runtime proof is not visible`);
-  const proofText = await proof.textContent();
-  for (const value of [flagship.prs_merged, flagship.releases]) {
-    if (!proofText.includes(String(value))) throw new Error(`${path}: runtime proof is missing ${value}`);
+  const heroProofValues = await page.locator(".hero-proof-bar [data-stat]").allTextContents();
+  const expectedHeroProofValues = [flagship?.prs_merged, flagship?.releases].map(String);
+  if (JSON.stringify(heroProofValues) !== JSON.stringify(expectedHeroProofValues)) {
+    throw new Error(`${path}: hero proof rendered ${JSON.stringify(heroProofValues)}, expected live values ${JSON.stringify(expectedHeroProofValues)}`);
   }
-  const since = new Intl.DateTimeFormat(path.startsWith("/zh") ? "zh-CN" : "en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(flagship.started));
-  if (!proofText.includes(since)) throw new Error(`${path}: runtime proof is missing dynamic start date ${since}`);
+  if (!flagship) throw new Error(`${path}: stats payload has no flagship repository`);
+  if ((await page.locator("[data-runtime-proof]").count()) !== 0) {
+    throw new Error(`${path}: removed runtime proof section remains`);
+  }
   // Avatar identities are server-rendered into the HTML, deliberately not
   // carried by the public /stats payload. Exercise the complete browser path:
   // the aggregate endpoint stays identity-free and every rendered image
@@ -815,9 +780,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
-  // Issue #99: the homepage carries exactly one primary hero CTA, visible,
-  // plus the card CTA and the nav "Start Cloud" keeping the same promise.
-  // The nav introduces the Cloud page; that page's CTA remains the login handoff.
+  // Issue #711: the homepage carries exactly one primary hero CTA, visible,
+  // plus the proof CTA and the nav "Start free" keeping the same promise.
+  // The hero and proof handoff go straight to login.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
   await cloudCta.scrollIntoViewIfNeeded();
@@ -827,27 +792,30 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (await hero.locator('[data-cta="comparisons"]').count() !== 0) {
     throw new Error(`${path}: compare CTA must not live in the hero`);
   }
-  // The install alt-CTA's target is a real page contract of its own: a
-  // visitor on any environment is sent to the canonical docs host.
-  const installCta = hero.locator('[data-cta="install"]');
-  await installCta.scrollIntoViewIfNeeded();
-  if (!(await installCta.isVisible())) throw new Error(`${path}: install CTA is not visible`);
-  const installHref = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-  if ((await installCta.getAttribute("href")) !== installHref) {
-    throw new Error(`${path}: install CTA has wrong href`);
-  }
-  if ((await page.locator('[data-cta="cloud-start-card"]').count()) !== 1) {
-    throw new Error(`${path}: expected exactly one cloud-start-card CTA`);
+  if ((await page.locator('[data-cta="midway-cloud"]').count()) !== 1) {
+    throw new Error(`${path}: expected exactly one midway-cloud CTA`);
   }
   if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
-    throw new Error(`${path}: expected exactly one nav Start Cloud`);
+    throw new Error(`${path}: expected exactly one nav Start free`);
   }
-  const cardText = await page.locator(".run-option-cloud").textContent();
-  if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
-  if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
-  const navCompare = page.locator(`[data-primary-nav] .nav-resources a[href="${comparisonPath}"]`);
-  if ((await navCompare.count()) !== 1) {
-    throw new Error(`${path}: Resources dropdown comparisons link has wrong href`);
+  const summary = page.locator(".pricing-summary");
+  if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
+  const summaryText = await summary.textContent();
+  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit]) {
+    if (!summaryText.includes(String(value))) throw new Error(`${path}: pricing summary is missing ${value}`);
+  }
+  const summaryHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+  const summaryLink = summary.locator(`[data-cta="pricing-summary"][href="${summaryHref}"]`);
+  if (await summaryLink.count() !== 1) throw new Error(`${path}: pricing summary link has wrong target`);
+  await summary.scrollIntoViewIfNeeded();
+  await summary.screenshot({ path: `${artifacts}/pricing-summary-${screenshot}` });
+  const resourcesHeading = path.startsWith("/zh") ? "资源" : "Resources";
+  const resourcesGroup = page.locator(".footer-group", {
+    has: page.locator("h2", { hasText: resourcesHeading }),
+  });
+  const footerCompare = resourcesGroup.locator(`a[href="${comparisonPath}"]`);
+  if ((await footerCompare.count()) !== 1) {
+    throw new Error(`${path}: Resources footer comparison link has wrong href`);
   }
   // Issue #165: Pricing in the primary nav is the subscription-price entry,
   // not the measured-cost essay. A real click must land on #pricing.
@@ -896,11 +864,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.locator(".site-footer").screenshot({ path: `${artifacts}/footer-${screenshot}` });
-  // Below 900px the navigation is collapsed; open it before clicking through.
-  const menuToggle = page.locator("[data-menu-toggle]");
-  if (await menuToggle.isVisible()) await menuToggle.click();
-  await page.locator(".nav-resources [data-dropdown-toggle]").click();
-  await navCompare.click();
+  await footerCompare.click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
     throw new Error(`${path}: expected ${comparisonPath}, got ${page.url()}`);
@@ -910,138 +874,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.close();
-}
-
-async function assertHomeDropdowns(browser, path, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
-  try {
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const zh = path.startsWith("/zh");
-    const dropdowns = [
-      {
-        name: "Resources",
-        root: page.locator(".nav-resources"),
-        links: zh
-          ? ["/zh/evidence/", "/zh/benchmark/", "/zh/cost/", "/aiready/zh/", "/zh/compare/", "/zh/blog/"]
-          : ["/evidence/", "/benchmark/", "/cost/", "/aiready/", "/compare/", "/blog/"],
-      },
-      {
-        name: "Docs",
-        root: page.locator(".nav-docs"),
-        links: [zh ? "https://docs.orbi.build/zh" : "https://docs.orbi.build", "https://cloud-docs.orbi.build/?ref=nav"],
-      },
-    ];
-    const menuToggle = page.locator("[data-menu-toggle]");
-    if (size.width <= 900) await menuToggle.click();
-    for (const dropdown of dropdowns) {
-      const trigger = dropdown.root.locator("[data-dropdown-toggle]");
-      const menu = dropdown.root.locator("[data-dropdown-menu]");
-      if (await trigger.count() !== 1 || await menu.count() !== 1) {
-        throw new Error(`${path}: expected one ${dropdown.name} dropdown`);
-      }
-      if ((await trigger.getAttribute("aria-expanded")) !== "false") {
-        throw new Error(`${path}: ${dropdown.name} aria-expanded is not initially false`);
-      }
-      if ((await trigger.getAttribute("aria-controls")) !== await menu.getAttribute("id")) {
-        throw new Error(`${path}: ${dropdown.name} aria-controls does not point to its menu`);
-      }
-      if ((await menu.getAttribute("role")) !== "menu" || await menu.locator('[role="menuitem"]').count() !== dropdown.links.length) {
-        throw new Error(`${path}: ${dropdown.name} menu accessibility contract changed`);
-      }
-      await trigger.click();
-      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-        throw new Error(`${path}: click did not open ${dropdown.name}`);
-      }
-      await page.keyboard.press("Tab");
-      if (!(await menu.locator('[role="menuitem"]').first().evaluate((link) => link === document.activeElement))) {
-        throw new Error(`${path}: Tab did not enter the ${dropdown.name} menu`);
-      }
-      await page.keyboard.press("Escape");
-      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
-        throw new Error(`${path}: Escape did not restore focus after Tab in ${dropdown.name}`);
-      }
-      const indicatorGeometry = await trigger.evaluate((button) => {
-        const svg = button.querySelector(".nav-dropdown-indicator");
-        const path = svg?.querySelector("path");
-        const textNode = [...button.childNodes].find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
-        if (!svg || !path || !textNode) throw new Error("dropdown indicator or label text is missing");
-        const svgRect = svg.getBoundingClientRect();
-        const textRange = document.createRange();
-        textRange.selectNodeContents(textNode);
-        const textRect = textRange.getBoundingClientRect();
-        const pathBox = path.getBBox();
-        const viewBox = svg.viewBox.baseVal;
-        const stroke = Number.parseFloat(getComputedStyle(path).strokeWidth) || 0;
-        const visibleCenter = svgRect.top + ((pathBox.y + pathBox.height / 2) / viewBox.height) * svgRect.height;
-        return {
-          visibleCenter,
-          textCenter: textRect.top + textRect.height / 2,
-          svgWidth: svgRect.width,
-          svgHeight: svgRect.height,
-          stroke,
-          pathCenter: pathBox.y + pathBox.height / 2,
-          viewBoxCenter: viewBox.y + viewBox.height / 2,
-        };
-      });
-      if (indicatorGeometry.svgWidth !== 16 || indicatorGeometry.svgHeight !== 16) {
-        throw new Error(`${path}: ${dropdown.name} indicator box changed: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      if (Math.abs(indicatorGeometry.pathCenter - indicatorGeometry.viewBoxCenter) > 0.01) {
-        throw new Error(`${path}: ${dropdown.name} visible stroke is not centered in its SVG box: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      if (Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter) > 1) {
-        throw new Error(`${path}: ${dropdown.name} indicator is ${Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter).toFixed(2)}px from label center: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      await trigger.focus();
-      await page.keyboard.press("Enter");
-      if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) {
-        throw new Error(`${path}: Enter did not open ${dropdown.name}`);
-      }
-      const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-      if (links.length !== dropdown.links.length || links.some((link, index) => link !== dropdown.links[index])) {
-        throw new Error(`${path}: ${dropdown.name} links are ${JSON.stringify(links)}`);
-      }
-      await page.keyboard.press("Escape");
-      if (await menu.evaluate((node) => node.classList.contains("is-open"))) {
-        throw new Error(`${path}: Escape did not close ${dropdown.name}`);
-      }
-      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
-        throw new Error(`${path}: Escape did not restore focus to ${dropdown.name}`);
-      }
-      await page.keyboard.press("Space");
-      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-        throw new Error(`${path}: Space did not open ${dropdown.name}`);
-      }
-      await page.keyboard.press("Escape");
-    }
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    if (overflow > 0) throw new Error(`${path}: dropdowns cause horizontal overflow of ${overflow}px at ${size.width}px`);
-    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
-  } finally {
-    await page.close();
-  }
-}
-
-async function assertCloudDocsNav(browser, path) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  try {
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    if ((await page.locator(".nav-resources [data-dropdown-toggle]").count()) !== 1) {
-      throw new Error(`${path}: expected the Resources dropdown trigger`);
-    }
-    const docs = page.locator(".nav-docs");
-    await docs.locator("[data-dropdown-toggle]").click();
-    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-    const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
-    const links = await docs.locator("[data-dropdown-menu] a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
-      throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
-    }
-    const footerDocs = page.locator("footer a[href='https://cloud-docs.orbi.build/?ref=footer']");
-    if ((await footerDocs.count()) !== 1) throw new Error(`${path}: footer must keep one cloud-docs ref=footer link`);
-  } finally {
-    await page.close();
-  }
 }
 
 // Issue #259: the hero used to push the primary CTA to 630px — under every
@@ -1054,38 +886,17 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
     .evaluate((el) => el.getBoundingClientRect().top);
-  // Scoped to the hero: a second .trust-line.trust-line-paper sits further
-  // down the page (Product attributes).
-  const trust = await page.locator(".hero .trust-line").evaluate((el) => {
-    const rect = el.getBoundingClientRect();
-    return { top: rect.top, bottom: rect.bottom };
-  });
-  const footnoteTop = await page.locator(".hero .hero-footnote a")
-    .evaluate((el) => el.getBoundingClientRect().top);
   const view = `${path} ${size.width}x${size.height}`;
-  // Acceptance 2: on a 1366×768 laptop the primary CTA stays above 450px.
   if (size.width >= 1000 && ctaTop >= 450) {
     throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
-  }
-  // Acceptance 3: on the same laptop the trust line ends inside the fold.
-  if (size.width >= 1000 && trust.bottom >= 768) {
-    throw new Error(`${view}: trust-line bottom is ${trust.bottom}, must stay < 768`);
-  }
-  // Acceptance 4: on a phone the trust line top stays inside the fold.
-  if (trust.top >= size.height) {
-    throw new Error(`${view}: trust-line top is ${trust.top}, must stay < ${size.height}`);
-  }
-  // Acceptance 5: the 12-factors footnote never precedes the primary CTA.
-  if (footnoteTop <= ctaTop) {
-    throw new Error(`${view}: footnote top ${footnoteTop} must come after the primary CTA top ${ctaTop}`);
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.close();
 }
 
 // Issue #267: at the ≤980px breakpoint the hero collapses to one column and
-// came apart on the Z Fold 8's unfolded viewport: the factory-trace figure
-// right-shifted ~372px off the copy's left edge (the 980px rule's
+// came apart on the Z Fold 8's unfolded viewport: the hero receipt
+// right-shifted off the copy's left edge (the 980px rule's
 // margin-left:auto right-aligns the shrink-to-fit figure), the "Prefer to
 // self-host?" CTA sagged 15px below its row-mates (the base .hero-alt
 // margin-top inside a flex-start row), and the trust-line checklist spread
@@ -1108,12 +919,8 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
     return {
       columns: getComputedStyle(document.querySelector(".hero")).gridTemplateColumns.split(" ").length,
       copy: rect(".hero-copy"),
-      figure: rect(".hero figure.factory-trace"),
-      ctas: [
-        rect('.hero [data-cta="cloud-start"]'),
-        rect(".hero .hero-alt"),
-        rect(".hero .hero-proof-link"),
-      ],
+      figure: rect(".hero figure.hero-receipt"),
+      ctas: [rect('.hero [data-cta="cloud-start"]')],
       h1: rect(".hero h1"),
       checklist: [...document.querySelectorAll(".hero .trust-line li")].map(rect),
     };
@@ -1211,8 +1018,15 @@ async function assertProofLoop(browser, path, size, screenshot) {
   if (JSON.stringify(captionLinks) !== JSON.stringify(expectedCaption)) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
-  const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+  const midwayCta = page.locator('[data-cta="midway-cloud"]');
+  const heroCta = page.locator('[data-cta="cloud-start"]');
+  const midwayText = (await midwayCta.textContent()).trim();
+  const heroText = (await heroCta.textContent()).trim();
+  if (midwayText !== heroText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected hero text ${JSON.stringify(heroText)}`);
+  }
+  const midwayHref = await midwayCta.getAttribute("href");
+  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -1286,10 +1100,6 @@ const cloudPages = {
     metaNeedle: ["US$29", "US$79"],
     text: [
       "exact-head merge",
-      // Issue #534: the hero lede is now the one-sentence delivery claim; the
-      // release boundary it names is pinned here (the old five-line lede was
-      // the only body-text carrier of "tagged GitHub Release").
-      "merges and cuts the release",
       "cuts the tag",
       "closes the milestone",
       // the release boundary: you start it, Orbi runs it
@@ -1307,9 +1117,11 @@ const cloudPages = {
       // that is 1.2B, the same quota the Founder plan carries); the
       // over-limit behavior is the pause, not a $0.10 overage price
       "US$29", "US$290", "US$79", "US$790", "1.2B tokens", "deliveries pause", "50% off forever",
-      // Issue #277: Cloud gives a range rather than a misleading single-point
-      // conversion; the detailed measurement remains on /cost/.
-      "Solo's 400M allowance: about 80–210 merged deliveries for typical tickets in a small repository, about 32 in a large codebase like Orbi's own engine; Pro's 1.2B allowance: about 240–630 merged deliveries for typical tickets in a small repository, about 96 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
+      // Issue #744: the short measured ranges sit in their paid cards; the
+      // detailed measurement remains on /cost/.
+      "Fixed monthly price. No overage bills.",
+      "≈ 80–210 merged deliveries / month", "≈ 240–630 merged deliveries / month",
+      "How we measured →", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1340,8 +1152,10 @@ const cloudPages = {
       // included-token quota (rendered from the pricing.json label; zh rides
       // the same label, 1.2B since #663)
       "US$29", "US$290", "US$79", "US$790", "1.2B token", "交付暂停", "永久 5 折",
-      // Issue #277: Cloud gives the owner-approved delivery range.
-      "Solo 的 400M 额度：小仓库的常见票大约 80–210 次合并交付，像 Orbi 引擎这样的大代码库大约 32 次；Pro 的 1.2B 额度：小仓库的常见票大约 240–630 次合并交付，像 Orbi 引擎这样的大代码库大约 96 次（2026 年 9 月实测）", "prompt caching",
+      // Issue #744: the short measured ranges sit in their paid cards.
+      "固定月费，不会超额扣费。",
+      "每月约 80–210 次合并交付", "每月约 240–630 次合并交付",
+      "怎么测的 →", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
@@ -1388,7 +1202,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // Issue #578: the walkthrough carries narration — the visitor presses
   // play and hears it. The element must move on the visitor's action only.
-  const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
+  const ctaBottom = await page.locator(".hero-cta").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
@@ -1505,16 +1319,43 @@ async function assertCloudPage(browser, path, size, screenshot) {
   for (let i = 0; i < (await loginButtons.count()); i += 1) {
     if (!(await loginButtons.nth(i).isVisible())) throw new Error(`${path}: Cloud CTA is not visible`);
   }
-  // Issue #156: the handoff is three redirects into GitHub's password box,
-  // and the microcopy under the hero CTA is the only warning the user gets
-  // (no intermediate screen by design). It must render below the button and
-  // carry the three layers — where the next step happens, that repositories
-  // are chosen, that the choice is revisable — without adding a jump.
-  const ctaBlock = page.locator(".compare-hero .hero-primary");
-  if ((await ctaBlock.count()) !== 1) throw new Error(`${path}: expected one hero-primary CTA block in the hero`);
-  const microcopy = (await ctaBlock.locator("p").first().textContent()).replace(/\s+/g, " ").trim();
-  if (microcopy !== claim.ctaMicrocopy) {
-    throw new Error(`${path}: hero CTA microcopy is ${JSON.stringify(microcopy)}, expected ${JSON.stringify(claim.ctaMicrocopy)}`);
+  // Issue #741: the Cloud hero has one action and one concise reassurance,
+  // matching the homepage's first-screen conversion path.
+  const hero = page.locator(".compare-hero");
+  const expectedHero = path === "/cloud/"
+    ? {
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      button: `Try ${pricing.freeDeliveries} deliveries free →`,
+      note: "No card · Only the repos you pick",
+      href: "/cloud/login",
+    }
+    : {
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      button: `免费试 ${pricing.freeDeliveries} 次 →`,
+      note: "不用绑卡 · 只授权你选的仓库",
+      href: "/zh/cloud/login",
+    };
+  const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>
+    elements.map((element) => ({ tag: element.tagName, text: element.textContent.trim() })));
+  const expectedSequence = [
+    { tag: "H1", text: claim.h1 },
+    { tag: "P", text: expectedHero.lede },
+    { tag: "A", text: expectedHero.button },
+    { tag: "P", text: expectedHero.note },
+  ];
+  if (JSON.stringify(heroSequence) !== JSON.stringify(expectedSequence)) {
+    throw new Error(`${path}: hero must contain only h1, lede, one CTA, and reassurance in order; got ${JSON.stringify(heroSequence)}`);
+  }
+  const heroButton = hero.locator("a.hero-cta");
+  if (await heroButton.count() !== 1
+    || await heroButton.getAttribute("href") !== expectedHero.href
+    || await heroButton.getAttribute("data-cta") !== "cloud-hero") {
+    throw new Error(`${path}: Cloud hero CTA contract is incorrect`);
+  }
+  for (const forbidden of ["k8e", "cloud-docs", "Run Orbi yourself", "自己运行 Orbi", "How an Issue becomes a tagged release", "Issue 如何变成打了 tag 的 Release"]) {
+    if (await hero.getByText(forbidden, { exact: false }).count()) {
+      throw new Error(`${path}: forbidden first-screen copy remains: ${forbidden}`);
+    }
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.
@@ -1646,8 +1487,8 @@ async function assertCostPage(browser, path, size, screenshot) {
   // just anywhere on the page.
   if (!text.includes(claim.verified)) throw new Error(`${path}: sources carry no ${JSON.stringify(claim.verified)} date`);
   // Issue #165: the primary-nav price item now points at /cloud/#pricing, so
-  // /cost/ is no longer a current nav entry. Language switch still leads to
-  // the counterpart cost page.
+  // /cost/ is no longer a current nav entry. The footer language switch leads
+  // to the counterpart cost page (Issue #711).
   const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
   if ((await navPricing.count()) !== 1) {
@@ -1656,8 +1497,8 @@ async function assertCostPage(browser, path, size, screenshot) {
   if ((await navPricing.getAttribute("aria-current")) === "page") {
     throw new Error(`${path}: Pricing must not be aria-current on the cost page`);
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -1762,13 +1603,12 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   for (const date of claim.dates) {
     if (!text.includes(date)) throw new Error(`${path}: missing the verification date ${date}`);
   }
-  // Navigation consistency, same contract as the cost pages.
-  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
-  if ((await navSelf.getAttribute("aria-current")) !== "page") {
-    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  // Issue #711 moved the comparison entry and language switch to the footer.
+  if ((await page.locator(`.site-footer a[href="${path}"]`).count()) < 1) {
+    throw new Error(`${path}: footer lost its comparison entry`);
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -1780,33 +1620,72 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issues #308/#322: exercise an actual homepage journey at each acceptance
-// viewport, then verify the Cloud page's language-specific login handoff
+// Issues #308/#322/#745: exercise an actual homepage journey at each
+// acceptance viewport, then verify its language-specific login handoff
 // without following the interactive GitHub OAuth page.
-async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "[data-primary-nav] .nav-apply") {
+export async function assertHomeCloudFlow(
+  browser,
+  path,
+  size,
+  screenshot,
+  selector = "[data-primary-nav] .nav-apply",
+  { flowTargetURL = targetURL, requestGet } = {},
+) {
   const context = await browser.newContext({ viewport: size });
   try {
     const page = await context.newPage();
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
+    await page.goto(`${flowTargetURL}${path}`, { waitUntil: "load" });
     const entry = page.locator(selector);
     if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
       await page.locator("[data-menu-toggle]").click();
     }
-    await entry.click();
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
-    if (new URL(page.url()).pathname !== cloudPath) {
-      throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
-    }
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
-    const cta = page.locator("a.button-signal").first();
-    const href = await cta.getAttribute("href");
+    if (selector === '[data-cta="cloud-start"]' || selector === '[data-cta="midway-cloud"]') {
+      const href = await entry.getAttribute("href");
+      if (href !== loginPath) {
+        throw new Error(`${path}: ${selector} href is ${JSON.stringify(href)}, expected ${loginPath}`);
+      }
+      const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+      const target = new URL(href, `${flowTargetURL}${path}`).toString();
+      const response = await (requestGet ? requestGet(target) : context.request.get(target));
+      if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+        throw new Error(
+          `${path}: ${selector} landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`
+        );
+      }
+      await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+      return;
+    }
+    if (selector !== "[data-primary-nav] .nav-apply") {
+      await entry.click();
+      const landedPath = new URL(page.url()).pathname;
+      if (landedPath !== cloudPath) {
+        throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${cloudPath}`);
+      }
+      const cta = page.locator("a.button-signal").first();
+      const href = await cta.getAttribute("href");
+      if (href !== loginPath) {
+        throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+      }
+      const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+      const target = new URL(href, page.url()).toString();
+      const response = await (requestGet ? requestGet(target) : context.request.get(target));
+      if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+        throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+      }
+      await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+      return;
+    }
+    const href = await entry.getAttribute("href");
     if (href !== loginPath) {
-      throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+      throw new Error(`${path}: navigation CTA href is ${JSON.stringify(href)}, expected ${loginPath}`);
     }
     const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
-    const response = await context.request.get(new URL(href, page.url()).toString());
+    const target = new URL(href, `${flowTargetURL}${path}`).toString();
+    const response = await (requestGet ? requestGet(target) : context.request.get(target));
     if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
-      throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+      throw new Error(`${path}: navigation CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
     }
     await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   } finally {
@@ -1814,9 +1693,7 @@ async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "
   }
 }
 
-// Issue #308: /compare/ is on the buyer-decision path. The nav CTA a visitor
-// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the language
-// Cloud introduction page before its login handoff.
+// Issue #711: /compare/ uses the same six-link nav and direct login handoff.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -1832,7 +1709,7 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     if (href !== expectedHref) {
       throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected ${JSON.stringify(expectedHref)}`);
     }
@@ -1912,9 +1789,9 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   for (const count of claim.counts) {
     if (!text.includes(count)) throw new Error(`${path}: missing the measured count ${JSON.stringify(count)}`);
   }
-  // Navigation consistency, same contract as the cost pages.
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  // Issue #711 moved the language switch to the footer.
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2163,8 +2040,8 @@ async function assertEvidencePage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the cross link ${href}`);
     }
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2250,9 +2127,9 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the cross link ${href}`);
     }
   }
-  // Navigation consistency: the language switch leads to the counterpart page.
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  // Issue #711: the footer language switch leads to the counterpart page.
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2391,12 +2268,8 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 360, height: 844 }, "homepage-en-narrow.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertHomeDropdowns(browser, "/", { width: 1440, height: 900 }, "dropdowns-en-desktop.png");
-    await assertHomeDropdowns(browser, "/", { width: 390, height: 844 }, "dropdowns-en-mobile.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 1440, height: 900 }, "dropdowns-zh-desktop.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 390, height: 844 }, "dropdowns-zh-mobile.png");
-    await assertCloudDocsNav(browser, "/cloud/");
-    await assertCloudDocsNav(browser, "/zh/cloud/");
+    // Issue #711 removes the old nav dropdowns; the shared footer retains
+    // their destinations and the language switch.
     await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
@@ -2422,12 +2295,10 @@ async function main() {
     await assertProofLoopReducedMotion(browser, "/zh/");
     const homepageCloudCtas = [
       ["cloud-start", '[data-cta="cloud-start"]'],
-      ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issue #322: all three body CTAs introduce the language-matching Cloud
-    // page. Exercise every click; the dedicated Cloud checks below own the
-    // subsequent login handoff contract.
+    // Issues #704/#712/#745 send the remaining hero and evidence CTAs
+    // directly to the language-matching login handoff.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
@@ -2443,14 +2314,15 @@ async function main() {
     await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
     await assertProofLoopReducedMotion(browser, "/cloud/");
     await assertProofLoopReducedMotion(browser, "/zh/cloud/");
-    // Issue #107: the /cloud/ page's login buttons land at the same contract.
+    // Issues #107/#742: both pricing cards' trial buttons land at the same
+    // language-matching login contract.
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [
-      ["Start Cloud", 'a.button-signal[href="/cloud/login"]'],
-      ["Start free", 'a.button-outline[href="/cloud/login"]'],
+      ["Solo trial", 'a[data-cta="pricing-solo-trial"][href="/cloud/login"]'],
+      ["Pro trial", 'a[data-cta="pricing-pro-trial"][href="/cloud/login"]'],
     ]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [
-      ["开始 Cloud", 'a.button-signal[href="/zh/cloud/login"]'],
-      ["免费开始", 'a.button-outline[href="/zh/cloud/login"]'],
+      ["Solo trial", 'a[data-cta="pricing-solo-trial"][href="/zh/cloud/login"]'],
+      ["Pro trial", 'a[data-cta="pricing-pro-trial"][href="/zh/cloud/login"]'],
     ]);
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.
@@ -2484,11 +2356,10 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Start Cloud");
-    await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
-    // The compare nav CTA now introduces Cloud; assertCompareNavCta checks its
-    // language-specific landing href above, while the Cloud page flow above
-    // verifies the login handoff.
+    await assertCompareNavCta(browser, "/compare/", "Start free");
+    await assertCompareNavCta(browser, "/zh/compare/", "免费开始");
+    // assertCompareNavCta checks the language-specific direct-login href;
+    // assertHomeCloudFlow above verifies the same nav handoff lands correctly.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
     await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
@@ -2499,9 +2370,7 @@ async function main() {
     await assertCiGatesPage(browser, "/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-en-mobile.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 1440, height: 900 }, "ci-gates-zh-desktop.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-zh-mobile.png");
-    // Issue #169: bootstrap evidence page, both languages, phone and desktop.
-    await assertHomeEvidenceEntry(browser, "/", "/evidence/");
-    await assertHomeEvidenceEntry(browser, "/zh/", "/zh/evidence/");
+    // Issue #169: evidence page, both languages, phone and desktop.
     await assertEvidencePage(browser, "/evidence/", { width: 1440, height: 900 }, "evidence-en-desktop.png");
     await assertEvidencePage(browser, "/evidence/", { width: 390, height: 844 }, "evidence-en-mobile.png");
     await assertEvidencePage(browser, "/zh/evidence/", { width: 1440, height: 900 }, "evidence-zh-desktop.png");
@@ -2547,7 +2416,7 @@ async function main() {
     if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
     await assertFooterDeepDives(page, "/compare/cursor/");
     // Issue #519: the switch link's accessible name comes from aria-label.
-    const languageSwitch = page.locator('[data-primary-nav] a[aria-label="简体中文"]');
+    const languageSwitch = page.locator('.site-footer a[aria-label="简体中文"]');
     if ((await languageSwitch.count()) !== 1 || (await languageSwitch.getAttribute("href")) !== "/zh/compare/cursor/") {
       throw new Error("detail language switch is wrong");
     }

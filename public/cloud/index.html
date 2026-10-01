@@ -143,17 +143,11 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/guides/">Guides</a>
         <a href="/cloud/#pricing" aria-current="page">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" data-cta="comparisons" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="/api/login">Sign in</a>
-        <a class="nav-apply" href="/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="/zh/cloud/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
@@ -161,20 +155,12 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cloud-title">
-        <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud</p>
         <h1 id="cloud-title">Orbi Cloud: file an Issue, get a release</h1>
-        <p class="hero-lede">Label an Issue <code>ai-ready</code>. Orbi writes the change, a separate agent reviews it, then it merges and cuts the release. You read the diff.</p>
-        <p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/xiaods/k8e/612">See a real delivery on a user's repo (k8e): Issue → PR → release, with the token cost →</a><br>Model usage included: Solo US$__SOLO_MONTHLY_USD__/mo (__SOLO_INCLUDED_TOKENS__ tokens) · Pro US$__CLOUD_MONTHLY_USD__/mo (__INCLUDED_TOKENS__ tokens) · __FREE_DELIVERIES__-delivery trial, once per account</p>
-        <div class="cta-row hero-ctas">
-          <div class="hero-primary">
-            <a class="button button-signal" data-cta="cloud-hero" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
-            <p class="orbi-hero-primary-p">Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.</p>
-            <p class="orbi-hero-primary-p"><strong>Try __FREE_DELIVERIES__ merged deliveries on your own repository — no card, no subscription.</strong></p>
-          </div>
-          <p class="hero-alt">Need help getting started? <a class="orbi-hero-alt-a" data-cta="cloud-docs" href="https://cloud-docs.orbi.build/?ref=cloud-page">Read the Cloud docs ↗</a></p>
-          <p class="hero-alt">Prefer to self-host? <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
-          <p class="hero-alt"><a class="orbi-hero-alt-a" href="/guides/issue-to-release/">How an Issue becomes a tagged release →</a></p>
-        </div>
+        <p class="hero-lede">Orbi runs your Issues all the way to a release, on infrastructure we operate.</p>
+        <a class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+        <p class="hero-cta-note">No card · Only the repos you pick</p>
+      </section>
+      <div class="shell">
         <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
           <div class="cloud-gate-copy">
             <h2 class="cloud-gate-title" id="cloud-gate-title">Before you connect GitHub</h2>
@@ -196,7 +182,7 @@
           </video>
           <figcaption>Watch the seven-step Cloud onboarding: sign in, install, connect a repository, provision the runner, open your first Issue, release, and subscribe after the __FREE_DELIVERIES__-delivery trial.</figcaption>
         </figure>
-      </section>
+      </div>
     </div>
 
     <section class="compare-section shell" aria-labelledby="what-title">
@@ -238,32 +224,26 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">PRICING</p>
-        <h2 class="orbi-compare-section-h2" id="pricing-title">A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.</h2>
-        <p class="pricing-capacity">Solo's __SOLO_INCLUDED_TOKENS__ allowance: about __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine; Pro's __INCLUDED_TOKENS__ allowance: about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). See the <a href="/cost/">cost data</a>.</p>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">Fixed monthly price. No overage bills.</h2>
         <div class="pricing-interval-toggle" data-pricing-toggle>
           <span>Pay</span>
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
+        <p class="pricing-trial-note">Every plan starts with __FREE_DELIVERIES__ free merged deliveries · No card <span>· Failed deliveries don't count</span></p>
+        <p class="founding-offer">Founding partners: 50% off for life. Only __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left. Code __FOUNDING_PROMO_CODE__ at checkout.</p>
         <div class="pricing-cards">
-          <article class="pricing-card">
-            <p class="pricing-card-kicker">CLOUD TRIAL</p>
-            <h3>Trial</h3>
-            <p class="pricing-card-price">US$0 <span class="pricing-card-price-unit">__FREE_DELIVERIES__ merged deliveries, once per account</span></p>
-            <p>Run __FREE_DELIVERIES__ real deliveries on your own repository. No card required.</p>
-            <ul><li>Failed deliveries don't use up the trial</li></ul>
-            <div class="pricing-card-actions">
-              <a class="button button-outline" href="/cloud/login">Start trial <span aria-hidden="true">↗</span></a>
-            </div>
-          </article>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
             <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
             <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-capacity">≈ __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ merged deliveries / month</p>
+            <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">Choose Solo <span aria-hidden="true">↗</span></a>
+              <a class="button button-signal" data-cta="pricing-solo-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
           <article class="pricing-card">
@@ -271,13 +251,15 @@
             <h3>Pro</h3>
             <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
             <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-capacity">≈ __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries / month</p>
+            <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">Choose Pro <span aria-hidden="true">↗</span></a>
+              <a class="button button-ghost" data-cta="pricing-pro-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
         </div>
-        <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout.</strong></p>
         <p class="once-pay-note">Alipay / WeChat Pay, paid once (no auto-renewal): <a data-cta="pricing-once-solo-month" href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once">Solo monthly</a> · <a data-cta="pricing-once-solo-year" href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once">Solo yearly</a> · <a data-cta="pricing-once-pro-month" href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once">Pro monthly</a> · <a data-cta="pricing-once-pro-year" href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once">Pro yearly</a></p>
         <p class="self-hosted-note">Self-hosted: US$0 under AGPL-3.0 or the Sustainable Use License; bring your own model key.</p>
       </div>
@@ -401,7 +383,7 @@
     <label class="sr-only" for="subscribe-email-en">Email address</label>
     <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
     <input type="hidden" name="lang" value="en">
-    <button class="button button-signal" type="submit">Subscribe</button>
+    <button class="button button-ghost" type="submit">Subscribe</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
@@ -426,7 +408,7 @@
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -437,6 +419,7 @@
         <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/cloud/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -464,5 +447,18 @@
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

@@ -265,25 +265,29 @@
       });
     }
 
+    function fillStat(element, repo) {
+      const stat = element.getAttribute("data-stat");
+      let value;
+      let duration = 900;
+      if (repo) {
+        if (stat === "days") {
+          value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
+        } else {
+          const [field, statDuration] = statFields[stat];
+          value = repo[field];
+          duration = statDuration;
+        }
+      }
+      if (Number.isFinite(value)) {
+        countUp(element, value, duration);
+      } else {
+        fallBackToFloors(element.parentElement);
+      }
+    }
+
     function fillGroup(group, repo) {
       group.querySelectorAll("[data-stat]").forEach(function (element) {
-        const stat = element.getAttribute("data-stat");
-        let value;
-        let duration = 900;
-        if (repo) {
-          if (stat === "days") {
-            value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
-          } else {
-            const [field, statDuration] = statFields[stat];
-            value = repo[field];
-            duration = statDuration;
-          }
-        }
-        if (Number.isFinite(value)) {
-          countUp(element, value, duration);
-        } else {
-          fallBackToFloors(element.parentElement);
-        }
+        fillStat(element, repo);
       });
       const started = group.querySelector("[data-started]");
       if (started) {
@@ -338,6 +342,9 @@
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {
             fillGroup(group, repos[group.getAttribute("data-repo-group")]);
           });
+          root.ownerDocument.querySelectorAll(".hero-proof-bar [data-repo][data-stat]").forEach(function (element) {
+            fillStat(element, repos[element.getAttribute("data-repo")]);
+          });
           drawStarChart(root, repos.orbi);
         })
         .catch(function () {
@@ -349,11 +356,11 @@
           // read as a broken page, so fall back to the conservative floor
           // values in the HTML, which under-state the real record and need
           // no network.
-          fallBackToFloors(root);
+          fallBackToFloors(root.ownerDocument);
         });
     }
 
-    if (!("IntersectionObserver" in window)) {
+    if (root.ownerDocument.querySelector(".hero-proof-bar") || !("IntersectionObserver" in window)) {
       startStats();
       return;
     }
@@ -372,6 +379,7 @@
     const prices = Array.from(document.querySelectorAll("[data-pricing-price]"));
     const details = Array.from(document.querySelectorAll("[data-pricing-detail]"));
     const ctas = Array.from(document.querySelectorAll("[data-pricing-cta]"));
+    const subscriptions = Array.from(document.querySelectorAll("[data-pricing-subscribe]"));
     const checkout = {
       solo: { year: "/api/checkout?plan=solo&interval=year", month: "/api/checkout?plan=solo" },
       pro: { year: "/api/checkout?plan=pro&interval=year", month: "/api/checkout?plan=pro" },
@@ -392,6 +400,11 @@
         const plan = cta.getAttribute("data-pricing-cta");
         cta.href = checkout[plan][interval];
         cta.dataset.cta = `pricing-${plan}-${interval}`;
+      });
+      subscriptions.forEach(function (link) {
+        const plan = link.getAttribute("data-pricing-subscribe");
+        link.href = checkout[plan][interval];
+        link.dataset.cta = `pricing-${plan}-${interval}`;
       });
     }
     intervalButtons.forEach(function (button) {

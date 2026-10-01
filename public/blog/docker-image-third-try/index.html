@@ -6,6 +6,9 @@
   <title>The Docker image made it out on try three | Orbi</title>
   <meta name="description" content="The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.">
   <link rel="canonical" href="https://orbi.build/blog/docker-image-third-try/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/docker-image-third-try/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="The Docker image made it out on try three">
   <meta property="og:description" content="The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.">
@@ -23,17 +26,57 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
     .post-body code.post-code--spaced { white-space: normal; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
@@ -42,10 +85,25 @@
     .post-body strong { font-weight: 600; }
     .post-media { margin: 24px 0; }
     .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
   </style>
 
 </head>
@@ -63,38 +121,55 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/guides/">Guides</a>
         <a href="/cloud/#pricing">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="/api/login">Sign in</a>
-        <a class="nav-apply" href="/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="/zh/blog/docker-image-third-try/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a href="https://docs.orbi.build">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-18</p>
-        <h1 id="post-title">The Docker image made it out on try three</h1>
-        <p class="hero-lede">The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-18</p>
+          <h1 id="post-title">The Docker image made it out on try three</h1>
+          <p class="hero-lede">The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
+          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
+          <li><a class="post-toc-link" href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
+          <li><a class="post-toc-link" href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 5 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
+          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
+          <li><a class="post-toc-link" href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
+          <li><a class="post-toc-link" href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> asked for a straightforward fix: publish the container built by <code class="post-code--single">3rd/docker/Dockerfile</code>, so a Docker search returns an image people can pull. The workflow now publishes on every release and on a manual dispatch: <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>, tagged with the release version and <code class="post-code--single">latest</code>, to both <code class="post-code--single">ghcr.io/orbi-build/orbi</code> and <code class="post-code--single">docker.io/orbibuild/orbi</code>.</p>
-<p>Pull the published image:</p>
+<p>Pull the published image:</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
 docker pull docker.io/orbibuild/orbi:latest
 </code></pre>
 <p>The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
-<h2>Three failures, three different causes</h2>
+<h2 id="three-failures-three-different-causes">Three failures, three different causes</h2>
 <p>All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>
 <h3>Try 1 (release v0.5.17): two jobs, two build contexts</h3>
 <p>The build-only verify job built the image fine; the publish job failed. Buildx could not find <code class="post-code--single">/orbi-container-setup.sh</code> and <code class="post-code--single">/orbi-container-setup.service</code>, the files the Dockerfile copies. The verify job pointed at the right directory; the publish job pointed at another context, so its build started from a view of the repository that was missing exactly those files.</p>
@@ -102,7 +177,7 @@ docker pull docker.io/orbibuild/orbi:latest
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> failed all three build steps with <code class="post-code--spaced">failed to read dockerfile: open Dockerfile: no such file or directory</code>. <a href="https://github.com/orbi-build/orbi/pull/1044">#1044</a> names the cause: buildx resolves <code class="post-code--spaced">file: Dockerfile</code> against the workspace root, so the fix wrote <code class="post-code--single">3rd/docker/Dockerfile</code> in all three places. The fix&#39;s own pull-request checks then failed from the other side: the workflow derived the image tag from the git ref, and a pull request&#39;s ref is <code class="post-code--single">1044/merge</code>, which buildx rejects as <code class="post-code--spaced">invalid reference format</code>.</p>
 <h3>Try 3 (manual dispatch): the images landed; the overview step kept the job red</h3>
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> pushed <code class="post-code--single">0.5.17</code> and <code class="post-code--single">latest</code> to both registries, for <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>. The job still ended red: the only failing step was the Docker Hub overview update, answered 403 because the token lacked a permission. <a href="https://github.com/orbi-build/orbi/pull/1046">#1046</a> made that step <code class="post-code--spaced">continue-on-error: true</code>, so an overview hiccup can never fail a release again.</p>
-<h2>Three rules the failures bought</h2>
+<h2 id="three-rules-the-failures-bought">Three rules the failures bought</h2>
 <h3>Rule 1: every build spells out its paths</h3>
 <p>Each build step now carries <code class="post-code--spaced">context: 3rd/docker</code> and <code class="post-code--spaced">file: 3rd/docker/Dockerfile</code>. Nothing depends on the working directory buildx happens to start from.</p>
 <h3>Rule 2: publish never runs on a PR ref</h3>
@@ -110,15 +185,22 @@ docker pull docker.io/orbibuild/orbi:latest
 <h3>Rule 3: an overview cannot fail a release</h3>
 <p>The Docker Hub overview step runs with <code class="post-code--spaced">continue-on-error: true</code>. The release contract lives in the images; a description update answered 403 cannot turn a finished publish into a failed run.</p>
 <p>Checked against <code class="post-code--single">.github/workflows/docker-image.yml</code> on orbi-build/orbi main, 2026-09-18.</p>
-<h2>From pull to first delivery</h2>
+<h2 id="from-pull-to-first-delivery">From pull to first delivery</h2>
 <p>A pulled image still needs a model provider before it can deliver. <a href="https://github.com/orbi-build/orbi/issues/1048">#1048</a> added the <code class="post-code--single">ORBI_PI_*</code> environment variables: with <code class="post-code--single">ORBI_PI_PROVIDER</code>, <code class="post-code--single">ORBI_PI_MODEL</code>, <code class="post-code--single">ORBI_PI_BASE_URL</code> and <code class="post-code--single">ORBI_PI_API_KEY</code> set, the entrypoint generates <code class="post-code--single">pi-providers.json</code> on first start, and it never touches an existing configuration. <a href="https://github.com/orbi-build/orbi/issues/1049">#1049</a> rewrote the Quick start around that: <code class="post-code--spaced">docker pull</code>, then one copy-pasted <code class="post-code--spaced">docker run</code> that reaches a real delivery, with build-from-source moved to its own section.</p>
 <p>The first release after the fixes, v0.5.18, published green end to end. That is the state the next release inherits.</p>
-<h2>Pull the image, create an Issue, get a PR</h2>
+<h2 id="pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</h2>
 <p>The Quick start on <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> takes you from <code class="post-code--spaced">docker pull</code> to a first delivery. The image overview lives on <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
-<h2>Related</h2>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
 <p>Read the <a href="/compare/openhands/">OpenHands comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+<!--orbi:related-posts-->
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -127,7 +209,7 @@ docker pull docker.io/orbibuild/orbi:latest
     <label class="sr-only" for="subscribe-email-en">Email address</label>
     <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
     <input type="hidden" name="lang" value="en">
-    <button class="button button-signal" type="submit">Subscribe</button>
+    <button class="button button-ghost" type="submit">Subscribe</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
@@ -152,7 +234,7 @@ docker pull docker.io/orbibuild/orbi:latest
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -163,6 +245,7 @@ docker pull docker.io/orbibuild/orbi:latest
         <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/docker-image-third-try/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -172,7 +255,7 @@ docker pull docker.io/orbibuild/orbi:latest
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
@@ -190,5 +273,18 @@ docker pull docker.io/orbibuild/orbi:latest
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

@@ -149,18 +149,41 @@ describe("Cloud pricing hierarchy (Issue #667)", () => {
         }));
         expect(selectedYearColors.savings).not.toBe(selectedYearColors.background);
 
+        const pricingOrder = await page.locator("#pricing .shell").evaluate((shell) => {
+          const marker = (element) => {
+            if (element.matches("[data-pricing-toggle]")) return "toggle";
+            if (element.matches(".pricing-trial-note")) return "trial";
+            if (element.matches(".pricing-cards")) return "cards";
+            return null;
+          };
+          return [...shell.children].map(marker).filter(Boolean);
+        });
+        expect(pricingOrder).toEqual(["toggle", "trial", "cards"]);
+        expect(await page.locator("#pricing .pricing-card h3").allTextContents()).toEqual(["Solo", "Pro"]);
+
         const styles = await page.locator('[data-pricing-price="solo"], [data-pricing-price="pro"]').evaluateAll((prices) => prices.map((price) => {
           const style = getComputedStyle(price);
           return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color };
         }));
-        const free = await page.locator(".pricing-card-price").first().evaluate((node) => {
+        const paid = await page.locator(".pricing-card-price").first().evaluate((node) => {
           const style = getComputedStyle(node);
           return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color };
         });
-        expect(styles).toEqual([free, free]);
+        expect(styles).toEqual([paid, paid]);
+
+        for (const plan of ["solo", "pro"]) {
+          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}&interval=year`);
+          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-year`);
+        }
         await page.locator('[data-pricing-interval="month"]').click();
         expect(await page.locator('[data-pricing-price="solo"]').textContent()).toBe(`US$${pricing.soloMonthlyUsd}`);
-        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(free.fontSize);
+        expect(await page.locator('[data-pricing-price="solo"]').evaluate((price) => getComputedStyle(price).fontSize)).toBe(paid.fontSize);
+        for (const plan of ["solo", "pro"]) {
+          const subscribe = page.locator(`[data-pricing-subscribe="${plan}"]`);
+          expect(await subscribe.getAttribute("href")).toBe(`/api/checkout?plan=${plan}`);
+          expect(await subscribe.getAttribute("data-cta")).toBe(`pricing-${plan}-month`);
+        }
       } finally {
         await page.close();
       }

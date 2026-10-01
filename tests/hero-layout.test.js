@@ -91,7 +91,7 @@ function heroMetrics(page) {
 
     const headingRect = heading.getBoundingClientRect();
     const ledeRect = document.querySelector(".hero-lede").getBoundingClientRect();
-    const activeBreaks = [...heading.querySelectorAll("br.responsive-break")]
+    const activeBreaks = [...heading.querySelectorAll("br")]
       .filter((element) => getComputedStyle(element).display !== "none").length;
     return {
       activeBreaks,
@@ -120,8 +120,14 @@ describe("shared hero layout (Issue #355)", () => {
           const rightEdgeTolerance = path === "/" || path === "/zh/" ? 0 : 2;
           expect(metrics.rightDifference, `${context} heading/lede right edges`).toBeLessThanOrEqual(rightEdgeTolerance);
           expect(metrics.heightRatio, `${context} heading height`).toBeLessThanOrEqual(0.18);
-          if (width >= 1440) expect(metrics.fontSize, `${context} font size`).toBeLessThanOrEqual(64);
-          if (width >= 768) expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
+          if (path === "/" || path === "/zh/") {
+            if (width >= 900) expect(metrics.fontSize, `${context} font size`).toBe(68);
+            if (width < 700) expect(metrics.fontSize, `${context} font size`).toBe(42);
+            expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(1);
+            expect(metrics.lineCount, `${context} line count`).toBe(2);
+          } else if (width >= 768) {
+            expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
+          }
           if (lineCountPages.has(path) && width >= 1024) {
             expect(metrics.lineCount, `${context} line count`).toBeLessThanOrEqual(2);
           }
@@ -136,7 +142,7 @@ describe("shared hero layout (Issue #355)", () => {
           expect(
             adjacentRatio,
             `${path} font-size jump from ${viewports[index - 1]}px to ${viewports[index]}px`,
-          ).toBeLessThanOrEqual(1.2);
+          ).toBeLessThanOrEqual(path === "/" || path === "/zh/" ? 68 / 42 : 1.2);
         }
       }
     } finally {
@@ -144,12 +150,50 @@ describe("shared hero layout (Issue #355)", () => {
     }
   }, 60_000);
 
-  it("uses one CSS width source and enables authored breaks only on narrow screens", async () => {
+  it("stacks the secondary self-host link below the closing CTA", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const path of ["/", "/zh/"]) {
+        for (const width of [390, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+          const positions = await page.locator(".closing .cta-row").evaluate((row) => {
+            const button = row.querySelector('[data-cta="closing-start"]').getBoundingClientRect();
+            const selfHost = row.querySelector('[data-cta="closing-selfhost"]').getBoundingClientRect();
+            return { buttonBottom: button.bottom, selfHostTop: selfHost.top };
+          });
+          expect(positions.selfHostTop, `${path} at ${width}px: self-host link below CTA`).toBeGreaterThanOrEqual(
+            positions.buttonBottom,
+          );
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
+  it("keeps conservative proof values when live stats are unavailable", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const path of ["/", "/zh/"]) {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await expect.poll(
+          () => page.locator(".hero-proof-bar [data-stat]").allTextContents(),
+          { message: `${path}: proof bar fallback values` },
+        ).toEqual(["150", "8"]);
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
+  it("uses one CSS width source and scopes the homepage headline treatment", async () => {
     const css = await readFile("public/styles.css", "utf8");
 
     expect(css).toContain("--hero-copy-width: 48rem;");
     expect(css.match(/max-width: var\(--hero-copy-width\);/g)).toHaveLength(2);
     expect(css).toContain(".responsive-break { display: none; }");
-    expect(css).toContain("@media (max-width: 767px) {\n  .responsive-break { display: inline; }\n}");
+    expect(css).toContain(".hero.homepage-hero h1 {\n  font-size: 68px;\n  line-height: 1.02;\n  letter-spacing: -2px;\n}");
+    expect(css).toContain("@media (max-width: 699px) {\n  .hero.homepage-hero h1 {\n    font-size: 42px;\n  }\n}");
   });
 });

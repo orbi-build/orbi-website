@@ -42,26 +42,37 @@ describe("Issue #409 engagement build contract", () => {
     }
   });
 
-  it("tags the Cloud and homepage CTA links with valid details in both languages", async () => {
+  it("keeps every built CTA detail within the Cloud format", async () => {
+    const files = await htmlFiles("public");
+    expect(files.length).toBeGreaterThan(0);
+    let ctaCount = 0;
+    for (const file of files) {
+      const html = await read(file);
+      const ctas = [...html.matchAll(/data-cta="([^"]+)"/g)].map(match => match[1]);
+      ctaCount += ctas.length;
+      for (const cta of ctas) expect(cta, `${file}: ${cta}`).toMatch(/^[a-z0-9-]{1,40}$/);
+    }
+    expect(ctaCount).toBeGreaterThan(0);
     for (const file of ["public/index.html", "public/zh/index.html", "public/cloud/index.html", "public/zh/cloud/index.html"]) {
       const html = await read(file);
       const ctas = [...html.matchAll(/data-cta="([^"]+)"/g)].map(match => match[1]);
       expect(ctas.length, file).toBeGreaterThan(0);
-      for (const cta of ctas) expect(cta).toMatch(/^[a-z0-9-]{1,40}$/);
     }
-    for (const file of ["public/cloud/index.html", "public/zh/cloud/index.html"]) {
+    const cloudCtas = {
+      "public/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →',
+      "public/zh/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →',
+    };
+    for (const [file, cta] of Object.entries(cloudCtas)) {
       const html = await read(file);
-      expect(html).toMatch(/data-cta="cloud-hero"[^>]*>[^<]*(Start Cloud|开始 Cloud|用 GitHub)/);
-      expect(html).toContain('data-cta="cloud-docs"');
-      expect(html).toContain('data-cta="pricing"');
-      expect(html).toContain('data-cta="install"');
+      expect(html, file).toContain(cta);
+      expect(html, file).toContain('data-cta="pricing"');
     }
   });
 
-  it("describes all three events on both privacy pages", async () => {
+  it("describes every engagement event on both privacy pages", async () => {
     for (const file of ["public/privacy/index.html", "public/zh/privacy/index.html"]) {
       const html = await read(file);
-      for (const kind of ["visit", "engaged", "cta_click", "scroll_depth"]) expect(html, file).toContain(kind);
+      for (const kind of ["visit", "engaged", "cta_click", "section_view", "scroll_depth"]) expect(html, file).toContain(kind);
     }
   });
 });

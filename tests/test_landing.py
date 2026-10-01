@@ -120,6 +120,7 @@ def parse(path: Path) -> tuple[str, PageParser]:
         ("soloRepositoriesToken", "soloRepositories"),
         ("proRepositoriesToken", "proRepositories"),
         ("foundingPartnerLimitToken", "foundingPartnerLimit"),
+        ("foundingPartnerRemainingToken", "foundingPartnerRemaining"),
         ("foundingPromoCodeToken", "foundingPromoCode"),
     ):
         html = html.replace(PRICING[token_key], str(PRICING[value_key]))
@@ -217,9 +218,9 @@ class LandingTests(unittest.TestCase):
     def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:
         """At least half the H2s should contain a term someone would search."""
         terms_en = ("ai", "agent", "github", "code review", "self-host",
-                    "open-source", "model", "automat", "issue", "pr")
+                    "open-source", "model", "automat", "issue", "pr", "repository")
         terms_zh = ("ai", "agent", "github", "代码审查", "自托管",
-                    "开源", "模型", "自动", "issue", "pr")
+                    "开源", "模型", "自动", "issue", "pr", "仓库")
         for page, terms in ((self.en, terms_en), (self.zh, terms_zh)):
             h2s = [h for h in page.headings_rendered if h]
             hits = [h for h in h2s if any(t in h.lower() for t in terms)]
@@ -265,23 +266,24 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_primary_navigation_names_the_first_visit_actions(self) -> None:
-        # Issue #626: Guides and Pricing are first-level entries; Resources
-        # and Docs are the two dropdown groups (tests/pages.test.js pins their menus).
+        # Issue #711: every wide and narrow nav uses the same six-link element;
+        # Guides, Resources and the language switch now live in the footer.
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Guides", "Pricing", "Resources", "Docs", "GitHub", "Sign in", "Start Cloud"),
+                ("How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "指南", "价格", "资源", "文档", "GitHub", "登录", "开始 Cloud"),
+                ("产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
             nav_end = html.index("</nav>", nav_start)
             primary_nav = html[nav_start:nav_end]
-            for label in labels:
-                self.assertIn(f">{label}<", primary_nav)
+            self.assertEqual(primary_nav.count("<a "), 6)
+            positions = [primary_nav.index(f">{label}<") for label in labels]
+            self.assertEqual(positions, sorted(positions))
 
     def test_language_switch_uses_readable_names(self) -> None:
         # Issue #519: pure ASCII ZH/EN — 「中文」 renders as tofu on systems
@@ -327,14 +329,15 @@ class LandingTests(unittest.TestCase):
                 ["/logo-mark-on-dark.svg", "/logo-mark.svg"],
             )
 
-    def test_pages_distinguish_shipping_product_from_future_direction(self) -> None:
+    def test_homepages_only_make_shipping_claims(self) -> None:
+        """Issue #712 removes the future-direction sections from home."""
         for page in (self.en, self.zh):
             sections = [attrs.get("data-status") for tag, attrs in page.elements if tag == "section"]
             self.assertIn("shipping", sections)
-            self.assertIn("direction", sections)
+            self.assertNotIn("direction", sections)
 
     def test_factory_map_covers_the_current_delivery_graph(self) -> None:
-        expected = {"epic", "dependency", "delivery", "release"}
+        expected = {"delivery", "review", "release"}
         for page in (self.en, self.zh):
             capabilities = {
                 attrs["data-capability"]
@@ -346,22 +349,16 @@ class LandingTests(unittest.TestCase):
     # Issue #540: the hero trust-line wording test (Issue #119) was removed —
     # it pinned three claim sentences verbatim.
 
-    def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
-        for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
+    def test_homepage_primary_action_goes_directly_to_login(self) -> None:
+        for page, login in ((self.en, "/cloud/login"), (self.zh, "/zh/cloud/login")):
             ctas = {
                 attrs.get("data-cta"): attrs.get("href")
                 for tag, attrs in page.elements
                 if tag == "a" and "data-cta" in attrs
             }
-            self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
-            # Issue #169: the hero proof link is the bootstrap evidence page,
-            # not a single Issue. The public GitHub objects live on /evidence/.
-            evidence = "/zh/evidence/" if page is self.zh else "/evidence/"
-            self.assertEqual(ctas["proof"], evidence)
-            # The Start Cloud CTA must exist; where it points is a product and
-            # configuration decision (Issue #99 sends it straight to
-            # /cloud/login), so no test pins its target (Issue #103).
-            self.assertIn("cloud-start", ctas)
+            self.assertEqual(ctas["cloud-start"], login)
+            self.assertNotIn("install", ctas)
+            self.assertNotIn("proof", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -426,16 +423,14 @@ class LandingTests(unittest.TestCase):
                 values[slot] = match.group(1)
             self.assertEqual(values["og:title"], values["twitter:title"])
 
-    def test_cloud_section_is_marked_a_direction(self) -> None:
-        """The Cloud section must be marked a direction, not a shipping
-        claim: a page that sells a managed service as shipped when it is not
-        misleads the visitor it asks to pay."""
+    def test_removed_run_orbi_section_stays_off_the_homepage(self) -> None:
+        """Issue #712 removes the long run-orbi section in both languages."""
         for page in (self.en, self.zh):
             cloud_sections = [
                 attrs for tag, attrs in page.elements
                 if tag == "section" and attrs.get("id") == "run-orbi"
             ]
-            self.assertEqual(cloud_sections[0].get("data-status"), "direction")
+            self.assertEqual(cloud_sections, [])
 
     def test_cloud_entry_is_github_login_not_an_application(self) -> None:
         for page, explainer in (
@@ -492,13 +487,44 @@ class LandingTests(unittest.TestCase):
             self.assertIn("/img/pr-193.png", html)
             self.assertIn('id="orbi-stats"', html)
 
-    def test_hero_plays_a_factory_trace(self) -> None:
-        js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
-        self.assertIn("data-trace-node", js)
-        self.assertIn("prefers-reduced-motion", js)
-        for html in (self.en_html, self.zh_html):
-            self.assertIn('id="factory-trace"', html)
-            self.assertIn("/demo.js", html)
+    def test_hero_shows_a_real_delivery_receipt(self) -> None:
+        expected = [
+            (
+                "orbi-build/orbi · real delivery",
+                "Issue #1306 → Release v0.5.42",
+                "Issue opened",
+                "start",
+                "PR #1309 reviewed &amp; merged",
+                "+1h 27m",
+                "Released v0.5.42",
+                "+6h 42m",
+                "Same day · every commit written by Orbi",
+            ),
+            (
+                "orbi-build/orbi · 真实交付",
+                "Issue #1306 → Release v0.5.42",
+                "提交 Issue",
+                "起点",
+                "PR #1309 审查并合并",
+                "+1 小时 27 分",
+                "发布 v0.5.42",
+                "+6 小时 42 分",
+                "同一天完成 · 每个提交都由 Orbi 写",
+            ),
+        ]
+        for html, copy in zip((self.en_html, self.zh_html), expected):
+            self.assertIn('<figure class="hero-receipt"', html)
+            for text in copy:
+                self.assertIn(text, html)
+            self.assertEqual(html.count('class="hero-receipt-timeline"'), 1)
+            self.assertEqual(html.count("hero-receipt-release"), 1)
+
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(
+            ".hero-receipt-timeline .hero-receipt-release strong,\n"
+            ".hero-receipt-timeline .hero-receipt-release small { color: var(--run-on-light); }",
+            css,
+        )
 
     def test_stats_count_up_when_the_record_enters_the_viewport(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
@@ -523,10 +549,13 @@ class LandingTests(unittest.TestCase):
         em-dashes that read as a broken page."""
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("data-floor", js)
-        for page in (self.en, self.zh):
+        for html in (self.en_html, self.zh_html):
+            stats_html = html.split('<section class="stats shell"', 1)[1].split("</section>", 1)[0]
+            stats_parser = PageParser()
+            stats_parser.feed(stats_html)
             stats = [
-                attrs for tag, attrs in page.elements
-                if tag == "strong" and "data-stat" in attrs
+                attrs for tag, attrs in stats_parser.elements
+                if tag == "strong" and "data-stat" in attrs and "data-floor" in attrs
             ]
             # Issue #101: three repositories, four counters each.
             self.assertEqual(len(stats), 12, stats)
@@ -1043,9 +1072,12 @@ class CloudLandingPageTests(unittest.TestCase):
     def test_body_states_all_plans_and_the_founding_offer(self) -> None:
         """Issue #441: the rendered Cloud pages carry all approved prices,
         allowances, and founding terms from pricing.json."""
+        remaining = PRICING["foundingPartnerRemaining"]
+        limit = PRICING["foundingPartnerLimit"]
+        code = PRICING["foundingPromoCode"]
         for page, founding in (
-            (self.en, "Founding partners: 50% off forever, 6 places; use code FOUNDING50 at checkout"),
-            (self.zh, "创始会员永久 5 折，限 6 位；结账时输入 FOUNDING50"),
+            (self.en, f"Founding partners: 50% off for life. Only {remaining} of {limit} places left. Code {code} at checkout."),
+            (self.zh, f"创始合作伙伴终身五折，{limit} 个名额只剩 {remaining} 个。结账时使用优惠码 {code}。"),
         ):
             for value in ("US$29", "US$290", "US$79", "US$790", "400M", "1.2B"):
                 self.assertIn(value, page.text)
@@ -1053,29 +1085,30 @@ class CloudLandingPageTests(unittest.TestCase):
 
     def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
         for page, headline in (
-            (self.en, "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills."),
-            (self.zh, "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"),
+            (self.en, "Fixed monthly price. No overage bills."),
+            (self.zh, "固定月费，不会超额扣费。"),
         ):
             self.assertIn(headline, page.text)
             self.assertIn("US$0", page.text)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
-        """Issue #277: /cloud/ keeps the owner-approved delivery range and
-        cache premise, and links to /cost/. Detailed measurements stay there."""
+        """Issue #744: measured delivery ranges live in the paid cards."""
         for page, needles, cost_href in (
             (
                 self.en,
                 (
-                    f"Solo's {PRICING['soloIncludedTokensLabel']} allowance: about {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredSoloLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine; Pro's {PRICING['includedTokensLabel']} allowance: about {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries for typical tickets in a small repository, about {PRICING['measuredLargeCodebaseDeliveries']} in a large codebase like Orbi's own engine (measured September 2026)",
-                    "prompt caching",
+                    f"≈ {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries / month",
+                    f"≈ {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries / month",
+                    "How we measured →",
                 ),
                 "/cost/",
             ),
             (
                 self.zh,
                 (
-                    f"Solo 的 {PRICING['soloIncludedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredSoloLargeCodebaseDeliveries']} 次；Pro 的 {PRICING['includedTokensLabel']} 额度：小仓库的常见票大约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付，像 Orbi 引擎这样的大代码库大约 {PRICING['measuredLargeCodebaseDeliveries']} 次（2026 年 9 月实测）",
-                    "prompt caching",
+                    f"每月约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付",
+                    f"每月约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付",
+                    "怎么测的 →",
                 ),
                 "/zh/cost/",
             ),
@@ -1817,27 +1850,20 @@ class BootstrapEvidenceTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://orbi.build/zh/evidence/"', self.zh_html)
         self.assertIn('hreflang="en" href="https://orbi.build/evidence/"', self.zh_html)
 
-    def test_homes_link_to_the_evidence_page(self) -> None:
+    def test_homes_link_to_the_evidence_page_outside_the_hero(self) -> None:
         _, home_en = parse(EN_PATH)
         _, home_zh = parse(ZH_PATH)
         self.assertIn("/evidence/", [href for _, href in home_en.hrefs])
         self.assertIn("/zh/evidence/", [href for _, href in home_zh.hrefs])
-        self.assertEqual(
-            dict(
-                (attrs.get("data-cta"), attrs.get("href"))
-                for tag, attrs in home_en.elements
-                if tag == "a" and attrs.get("data-cta") == "proof"
-            )["proof"],
-            "/evidence/",
-        )
-        self.assertEqual(
-            dict(
-                (attrs.get("data-cta"), attrs.get("href"))
-                for tag, attrs in home_zh.elements
-                if tag == "a" and attrs.get("data-cta") == "proof"
-            )["proof"],
-            "/zh/evidence/",
-        )
+        for page in (home_en, home_zh):
+            self.assertNotIn(
+                "proof",
+                [
+                    attrs.get("data-cta")
+                    for tag, attrs in page.elements
+                    if tag == "a" and "data-cta" in attrs
+                ],
+            )
 
     def test_at_least_three_public_github_records_are_clickable(self) -> None:
         for page in (self.en, self.zh):

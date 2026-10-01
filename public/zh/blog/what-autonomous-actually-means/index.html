@@ -6,6 +6,9 @@
   <title>AI 编码 agent 说不之后，交付会怎样？ | Orbi</title>
   <meta name="description" content="大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。">
   <link rel="canonical" href="https://orbi.build/zh/blog/what-autonomous-actually-means/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/what-autonomous-actually-means/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/what-autonomous-actually-means/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/what-autonomous-actually-means/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="AI 编码 agent 说不之后，交付会怎样？">
   <meta property="og:description" content="大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。">
@@ -23,17 +26,57 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
     .post-body code.post-code--spaced { white-space: normal; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
@@ -42,10 +85,25 @@
     .post-body strong { font-weight: 600; }
     .post-media { margin: 24px 0; }
     .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
   </style>
 
 </head>
@@ -63,41 +121,62 @@
       </button>
       <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
         <a href="/zh/#system">产品怎么运作</a>
-        <a href="/zh/guides/">指南</a>
         <a href="/zh/cloud/#pricing">价格</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi 交付自己的记录</span><span class="orbi-nav-dropdown-menu-description">公开的 Issue、PR 和发版，都在 GitHub 上</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">我们怎么测 harness</span><span class="orbi-nav-dropdown-menu-description">在开源 bug 上跑交付，用维护者的测试打分</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">每个 PR 花多少钱</span><span class="orbi-nav-dropdown-menu-description">在自家仓库实测，附样本量和限制</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready 12 要素</span><span class="orbi-nav-dropdown-menu-description">什么样的 Issue 能交给 AI 无人值守交付</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">与同类工具对比</span><span class="orbi-nav-dropdown-menu-description">Claude Code、Codex、Devin 等，逐条核实</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">博客</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-dropdown-toggle>文档<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-zh-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
-        <a href="https://github.com/orbi-build/orbi">GitHub</a>
-        <a href="/api/login">登录</a>
-        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
-        <span class="language" role="group" aria-label="语言">
-          <span aria-current="page">ZH</span>
-          <a href="/blog/what-autonomous-actually-means/" lang="en" aria-label="English">EN</a>
-        </span>
+        <a href="https://docs.orbi.build/zh">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">登录</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">免费开始</a>
       </nav>
     </header>
   </div>
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-20</p>
-        <h1 id="post-title">AI 编码 agent 说不之后，交付会怎样？</h1>
-        <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-20</p>
+          <h1 id="post-title">AI 编码 agent 说不之后，交付会怎样？</h1>
+          <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#这次交付">这次交付</a></li>
+          <li><a class="post-toc-link" href="#拒绝">拒绝</a></li>
+          <li><a class="post-toc-link" href="#截图说不出来的那部分">截图说不出来的那部分</a></li>
+          <li><a class="post-toc-link" href="#闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</a></li>
+          <li><a class="post-toc-link" href="#自己试">自己试</a></li>
+          <li><a class="post-toc-link" href="#账本">账本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 7 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#这次交付">这次交付</a></li>
+          <li><a class="post-toc-link" href="#拒绝">拒绝</a></li>
+          <li><a class="post-toc-link" href="#截图说不出来的那部分">截图说不出来的那部分</a></li>
+          <li><a class="post-toc-link" href="#闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</a></li>
+          <li><a class="post-toc-link" href="#自己试">自己试</a></li>
+          <li><a class="post-toc-link" href="#账本">账本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
 <p>搜「AI 编码 agent」，会看到很多能自动开 PR 的工具。开 PR 已经不难。</p>
-<p>少有人展示的是拒绝：另一个东西读完 diff，判断这份代码不能发。下面这次交付真的发生过。</p>
-<h2>这次交付</h2>
+<p>少有人展示的是拒绝：另一个东西读完 diff，判断这份代码不能发。下面这次交付真的发生过。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<h2 id="这次交付">这次交付</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> 是我们自己发版代码里的一个真实缺陷：
 有个改动把文档同步挪到了打 tag 之前，于是开出三个窗口，让「已发布的 tag」可能没有对应的文档页。</p>
 <p>这张票打上 <code class="post-code--single">ai-ready</code>。没有别的配置。</p>
 <p>Orbi 认领它，在隔离的 worktree 里干活，基于一个记录下来的 base commit 开出
 <a href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a>。到这里为止，每个 agent 都能做。</p>
 <p>然后另一个会话，全新的上下文、完全不记得自己写过这些代码，去读那份 diff。</p>
-<h2>拒绝</h2>
+<h2 id="拒绝">拒绝</h2>
 <p>第一轮回来一条 Major。不是风格建议：</p>
 <blockquote>
 <p><strong>Location:</strong> <code class="post-code--single">src/orbi/release.py:2377</code></p>
@@ -113,7 +192,7 @@
 <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a>，
 生成的 release notes 里列着这张 Issue 和这个 PR。</p>
 <p>这段时间里没有人做过任何决定。</p>
-<h2>截图说不出来的那部分</h2>
+<h2 id="截图说不出来的那部分">截图说不出来的那部分</h2>
 <p>我们用这次运行<a href="https://youtu.be/Et6gBSaXqqA">剪了个视频</a>，有一处必须在画面上标注，否则帧本身会骗人。</p>
 <p>runner 是拿我自己的 GitHub 账号发东西的。它用我的 token，所以它的 commit 署我的名，
 它的评审意见也署我的名、配我的头像。屏幕上，拦下 PR #1023 的那条评审显示在
@@ -123,7 +202,7 @@
 同一屏先教会你「机器人长这样」，再给你看一条不是机器人的评审。</p>
 <p>我没法让 GitHub 显示成别的样子。我能做的是把它说出来：那是第二个模型，
 跑在独立的会话里，不记得自己写过被它拒掉的那些代码。</p>
-<h2>闸门能拦住交付之后，变的是什么</h2>
+<h2 id="闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</h2>
 <p>一个能写代码、能开 PR 的 agent，只是把活挪给了人。总得有人去读、去判断、去合。
 agent 干的是打字那部分。</p>
 <p>把闸门做成真的，多半是管道活。verdict 必须绑定到某个具体 commit，
@@ -135,7 +214,7 @@ agent 干的是打字那部分。</p>
 <p>我觉得这件事的关键是谁在等，而不是检查对不对。拦一个人的 PR，当场花掉那个人的时间，
 他能感觉到。拦一个 agent 的 PR，不花任何人的时间。agent 读完 finding 自己再跑一遍，
 凌晨三点，所有人都在睡觉。</p>
-<h2>自己试</h2>
+<h2 id="自己试">自己试</h2>
 <p>整条流水线是一个容器。systemd 在里面当 PID 1，那几行 cgroup 挂载就是为了这个：</p>
 <pre><code class="language-bash">docker run -d --name orbi \
   --stop-signal SIGRTMIN+3 \
@@ -154,15 +233,22 @@ agent 干的是打字那部分。</p>
 <p>引擎就是那四个变量指向的模型。给一张 Issue 打上 <code class="post-code--single">ai-ready</code>，下一次 tick 就会认领它。
 评审跑在独立的会话里，对的是冻结的 head；那个会话不放行，就不会合并。
 完整步骤见 <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。</p>
-<h2>账本</h2>
+<h2 id="账本">账本</h2>
 <p>这套东西跑在它自己的仓库上。到今天为止，27 天：<code class="post-code--single">orbi/</code> 分支合并了 334 个 PR，
 发布了 51 个打了 tag 的 release。</p>
 <p>每一个都是能点开的链接，包括那些拦下了东西的评审，以及之后补上的 commit。</p>
 <p>Orbi 以 AGPL-3.0 开源并支持自托管：<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>。</p>
-<h2>相关</h2>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/orca/">Orca 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+<!--orbi:related-posts-->
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -171,7 +257,7 @@ agent 干的是打字那部分。</p>
     <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
     <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
     <input type="hidden" name="lang" value="zh">
-    <button class="button button-signal" type="submit">订阅</button>
+    <button class="button button-ghost" type="submit">订阅</button>
     <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
   </form>
   <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
@@ -196,7 +282,7 @@ agent 干的是打字那部分。</p>
       </div>
       <div class="footer-group footer-guides">
         <h2>指南</h2>
-        <ul><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>对比</h2>
@@ -207,6 +293,7 @@ agent 干的是打字那部分。</p>
         <ul><li><a href="/zh/support/">支持</a></li><li><a href="/zh/#direction">方向</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/what-autonomous-actually-means/" lang="en" aria-label="English">EN</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
@@ -216,7 +303,7 @@ agent 干的是打字那部分。</p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
@@ -234,5 +321,18 @@ agent 干的是打字那部分。</p>
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
 })();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
 </html>

@@ -43,6 +43,7 @@ describe("browser engagement endpoint", () => {
     ["cta_click", "film-end-cloud"],
     ["cta_click", "film-end-selfhost"],
     ["scroll_depth", "75"],
+    ["section_view", "pricing-section"],
   ])("forwards %s/%s with the visitor identity", async (kind, detail) => {
     const reports = [];
     const env = envFor({
@@ -132,8 +133,11 @@ describe("browser engagement endpoint", () => {
     [{ kind: "unknown" }],
     [{ kind: "visit", path: "/", search: "" }],
     [{ kind: "visit", path: "/", search: "", referrer: "", detail: "extra" }],
-    [{ kind: "cta_click", detail: "not-allowed" }],
+    [{ kind: "cta_click", detail: "not_allowed" }],
     [{ kind: "scroll_depth", detail: "60" }],
+    [{ kind: "section_view", detail: "Pricing Section" }],
+    [{ kind: "section_view", detail: "" }],
+    [{ kind: "section_view", detail: "a".repeat(41) }],
     [{ kind: "engaged", detail: "extra" }],
   ])("rejects invalid event %j without forwarding", async event => {
     const forwarded = vi.fn(async () => new Response(null, { status: 204 }));

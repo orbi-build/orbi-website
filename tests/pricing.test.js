@@ -17,6 +17,7 @@ const SOLO_ANNUAL_SAVINGS_PERCENT = String(pricing.soloAnnualSavingsPercent);
 const PRO_ANNUAL_SAVINGS_PERCENT = String(pricing.proAnnualSavingsPercent);
 const ANNUAL_SAVINGS_PERCENT = String(pricing.annualSavingsPercent);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
@@ -204,76 +205,56 @@ describe("Free delivery allowance constant (Issue #274)", () => {
   });
 });
 
-describe("Cloud trial copy (Issue #679)", () => {
-  const trialPages = [
+describe("Cloud pricing trial integration (Issue #742)", () => {
+  const pricingPages = [
     ["cloud/index.html", {
-      kicker: "CLOUD TRIAL",
-      title: "Trial",
-      priceUnit: `${FREE_DELIVERIES_TOKEN} merged deliveries, once per account`,
-      detail: `Run ${FREE_DELIVERIES_TOKEN} real deliveries on your own repository. No card required.`,
-      failed: "Failed deliveries don't use up the trial",
-      button: "Start trial",
+      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No card`,
+      failed: "· Failed deliveries don't count",
+      login: "/cloud/login",
+      soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,
+      soloClass: "button button-signal",
+      proClass: "button button-ghost",
+      subscribe: "or subscribe now →",
     }],
     ["zh/cloud/index.html", {
-      kicker: "CLOUD 试用",
-      title: "试用",
-      priceUnit: `${FREE_DELIVERIES_TOKEN} 次合并交付，每个账号一次`,
-      detail: `在你自己的仓库上跑 ${FREE_DELIVERIES_TOKEN} 次真实交付，不用绑卡。`,
-      failed: "失败的交付不占试用额度",
-      button: "开始试用",
+      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑卡`,
+      failed: "· 失败的交付不计次数",
+      login: "/zh/cloud/login",
+      soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,
+      soloClass: "button button-signal",
+      proClass: "button button-ghost",
+      subscribe: "或直接订阅 →",
     }],
   ];
 
-  it("uses trial language in every allowance sentence", async () => {
-    for (const dir of [SITE_PAGES_DIR]) {
-      for (const path of await listHtmlFiles(dir)) {
-        const html = await readFile(path, "utf8");
-        const text = html.replace(/<[^>]*>/g, "\n");
-        for (const sentence of text.split(/(?:。|\.\s+|\n+)/)) {
-          if (sentence.includes(FREE_DELIVERIES_TOKEN)) {
-            const copy = sentence.replaceAll(FREE_DELIVERIES_TOKEN, "");
-            expect(copy.toLowerCase(), path).not.toContain("free");
-            expect(copy, path).not.toContain("免费");
-          }
-        }
-      }
-    }
-  });
-
-  it("keeps every Cloud trial allowance tokenized and removes the retired free wording", async () => {
-    const retiredCopy = [
-      /first (?:3|three) merged deliveries (?:are )?free/i,
-      /three free deliveries/i,
-      /前 3 次合并交付免费/,
-      /三次免费交付/,
-    ];
-    for (const path of await listHtmlFiles(SITE_PAGES_DIR)) {
-      const html = await readFile(path, "utf8");
-      for (const pattern of retiredCopy) {
-        expect(html.match(pattern), `${path}: ${pattern}`).toBeNull();
-      }
-    }
-  });
-
-  it("matches the English and Chinese trial cards", async () => {
-    for (const [relativePath, expected] of trialPages) {
+  it("renders two paid cards with integrated trial actions and interval-aware subscriptions", async () => {
+    for (const [relativePath, expected] of pricingPages) {
       const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
-      const card = html.match(/<article class="pricing-card">[\s\S]*?<\/article>/)?.[0];
-      expect(card, relativePath).toBeDefined();
-      expect(card, relativePath).toContain(`<p class="pricing-card-kicker">${expected.kicker}</p>`);
-      expect(card, relativePath).toContain(`<h3>${expected.title}</h3>`);
-      expect(card, relativePath).toContain(expected.priceUnit);
-      expect(card, relativePath).toContain(expected.detail);
-      expect(card, relativePath).toContain(expected.failed);
-      expect(card, relativePath).toContain(`>${expected.button} <span`);
-      expect(card, relativePath).not.toContain("/ 月");
-      expect(card, relativePath).not.toContain("/ month");
+      const pricing = html.match(/<section id="pricing"[\s\S]*?<\/section>\n\s*<section class="compare-section shell" aria-labelledby="cost-title">/)?.[0];
+      expect(pricing, relativePath).toBeDefined();
+      expect(pricing, relativePath).toContain(expected.intro);
+      expect(pricing, relativePath).toContain(expected.failed);
+      expect(pricing, relativePath).not.toContain("CLOUD TRIAL");
+      expect(pricing, relativePath).not.toContain("CLOUD 试用");
+      expect(pricing.match(/<article class="pricing-card/g), relativePath).toHaveLength(2);
+
+      const cards = [...pricing.matchAll(/<article class="pricing-card[\s\S]*?<\/article>/g)].map(([card]) => card);
+      expect(cards[0], relativePath).toContain("<h3>Solo</h3>");
+      expect(cards[1], relativePath).toContain("<h3>Pro</h3>");
+      expect(cards[0], relativePath).toContain(`${expected.soloClass}" data-cta="pricing-solo-trial" href="${expected.login}"`);
+      expect(cards[0], relativePath).toContain(expected.soloButton);
+      expect(cards[1], relativePath).toContain(`${expected.proClass}" data-cta="pricing-pro-trial" href="${expected.login}"`);
+      expect(cards[1], relativePath).toContain(expected.soloButton);
+      expect(cards[0], relativePath).toContain(expected.subscribe);
+      expect(cards[1], relativePath).toContain(expected.subscribe);
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year"');
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year"');
     }
   });
 
   it("keeps the self-hosted free-forever claim", async () => {
     const homepage = await readFile(`${SITE_PAGES_DIR}index.html`, "utf8");
-    expect(homepage).toContain("Self-hosted, free forever");
+    expect(homepage).toContain("Self-hosted — code never leaves your machine");
   });
 });
 
@@ -370,7 +351,7 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
       for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
         const html = await readFile(`${dir}${cloudPage}`, "utf8");
         expect(html.split(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN).length - 1).toBe(2);
-        expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(2);
+        expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(1);
       }
     }
   });
@@ -405,24 +386,32 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     }
   });
 
-  it("serves both Cloud pages with both source-backed measurements", async () => {
-    for (const [cloudPage, wordings] of [
-      ["cloud/index.html", [
-        `Solo's ${pricing.soloIncludedTokensLabel} allowance: about ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine; Pro's ${pricing.includedTokensLabel} allowance: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
-        `${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, or about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
-      ]],
-      ["zh/cloud/index.html", [
-        `Solo 的 ${pricing.soloIncludedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} 次；Pro 的 ${pricing.includedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
-        `小仓库的常见票合并 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次，像 Orbi 引擎这样的大代码库约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
-      ]],
+  it("puts measured delivery ranges inside the paid pricing cards", async () => {
+    for (const [cloudPage, copy] of [
+      ["cloud/index.html", {
+        headline: "Fixed monthly price. No overage bills.",
+        solo: `≈ ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries / month`,
+        pro: `≈ ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries / month`,
+        link: 'href="/cost/">How we measured →',
+        stale: "Solo's __SOLO_INCLUDED_TOKENS__ allowance:",
+      }],
+      ["zh/cloud/index.html", {
+        headline: "固定月费，不会超额扣费。",
+        solo: `每月约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付`,
+        pro: `每月约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付`,
+        link: 'href="/zh/cost/">怎么测的 →',
+        stale: "Solo 的 __SOLO_INCLUDED_TOKENS__ 额度：",
+      }],
     ]) {
       const raw = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
       const served = await (await serve(raw, `/${cloudPage.replace("index.html", "")}`)).text();
-      for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
-      expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
-      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
-      expect(served).not.toContain(MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN);
+      expect(served).toContain(copy.headline);
+      expect(served).toContain(copy.solo);
+      expect(served).toContain(copy.pro);
+      expect(served).toContain(copy.link);
+      expect(served).not.toContain(copy.stale);
       expect(served).not.toContain(MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
       expect(served).toContain(FOUNDING_PROMO_CODE);
     }
   });
@@ -487,17 +476,17 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
   });
 });
 
-describe("Three-tier Cloud pricing (Issue #441)", () => {
-  it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
-    for (const [relativePath, metadata, card] of [
-      ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "Model usage included: 400M tokens a month on Solo, 1.2B on Pro"],
-      ["zh/cloud/index.html", "Solo 每月含 400M token 模型用量，Pro 每月含 1.2B", "模型用量包含在内：Solo 每月 400M token，Pro 每月 1.2B"],
+describe("Cloud paid-tier pricing (Issue #441)", () => {
+  it("states both monthly quotas in Cloud metadata and the homepage pricing summary", async () => {
+    for (const [relativePath, metadata, summary] of [
+      ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "400M tokens included"],
+      ["zh/cloud/index.html", "Solo 每月含 400M token 模型用量，Pro 每月含 1.2B", "含 400M token"],
     ]) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       expect(body, relativePath).toContain(metadata);
       const homePath = relativePath.startsWith("zh/") ? "zh/index.html" : "index.html";
       const home = await (await serve(await rawPage(homePath), `/${homePath.replace(/index\.html$/, "")}`)).text();
-      expect(home, homePath).toContain(card);
+      expect(home, homePath).toContain(summary);
     }
   });
 
@@ -542,7 +531,20 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       soloRepositories: 1,
       proRepositories: 5,
       foundingPartnerLimit: 6,
+      foundingPartnerRemaining: 5,
     });
+  });
+
+  it("renders the founding banner before pricing cards with live slot counts", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      const banner = relativePath.startsWith("zh/")
+        ? `创始合作伙伴终身五折，${FOUNDING_PARTNER_LIMIT} 个名额只剩 ${FOUNDING_PARTNER_REMAINING} 个。结账时使用优惠码 ${FOUNDING_PROMO_CODE}。`
+        : `Founding partners: 50% off for life. Only ${FOUNDING_PARTNER_REMAINING} of ${FOUNDING_PARTNER_LIMIT} places left. Code ${FOUNDING_PROMO_CODE} at checkout.`;
+      expect(body, relativePath).toContain(`<p class="founding-offer">${banner}</p>`);
+      expect(body.indexOf("founding-offer"), relativePath).toBeLessThan(body.indexOf("pricing-cards"));
+    }
   });
 
   it("renders pricing.json values, exact outcome copy, and checkout links on both Cloud pages", async () => {
@@ -577,16 +579,16 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once"',
         'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once"',
       ]);
-      expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
-      expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
       expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"
-        : "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+        ? "固定月费，不会超额扣费。"
+        : "Fixed monthly price. No overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
-        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
+        ? `创始合作伙伴终身五折，${FOUNDING_PARTNER_LIMIT} 个名额只剩 ${FOUNDING_PARTNER_REMAINING} 个。结账时使用优惠码 ${FOUNDING_PROMO_CODE}。`
+        : `Founding partners: 50% off for life. Only ${FOUNDING_PARTNER_REMAINING} of ${FOUNDING_PARTNER_LIMIT} places left. Code ${FOUNDING_PROMO_CODE} at checkout.`);
     }
   });
 
@@ -618,9 +620,9 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
         pricing.foundingPartnerLimitToken,
+        pricing.foundingPartnerRemainingToken,
         pricing.foundingPromoCodeToken,
         pricing.measuredSoloRepositoryDeliveryRangeToken,
-        pricing.measuredSoloLargeCodebaseDeliveriesToken,
       ]) expect(html, relativePath).toContain(token);
     }
   });

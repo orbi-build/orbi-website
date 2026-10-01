@@ -159,20 +159,12 @@
   <main id="main-content">
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cloud-title">
-        <p class="eyebrow"><span class="live-dot"></span>Orbi Cloud</p>
         <h1 id="cloud-title">Orbi Cloud: file an Issue, get a release</h1>
-        <p class="hero-lede">Label an Issue <code>ai-ready</code>. Orbi writes the change, a separate agent reviews it, then it merges and cuts the release. You read the diff.</p>
-        <p class="hero-proof"><a class="orbi-hero-alt-a" href="/proof/xiaods/k8e/612">See a real delivery on a user's repo (k8e): Issue → PR → release, with the token cost →</a><br>Model usage included: Solo US$__SOLO_MONTHLY_USD__/mo (__SOLO_INCLUDED_TOKENS__ tokens) · Pro US$__CLOUD_MONTHLY_USD__/mo (__INCLUDED_TOKENS__ tokens) · __FREE_DELIVERIES__-delivery trial, once per account</p>
-        <div class="cta-row hero-ctas">
-          <div class="hero-primary">
-            <a class="button button-signal" data-cta="cloud-hero" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
-            <p class="orbi-hero-primary-p">Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.</p>
-            <p class="orbi-hero-primary-p"><strong>Try __FREE_DELIVERIES__ merged deliveries on your own repository — no card, no subscription.</strong></p>
-          </div>
-          <p class="hero-alt">Need help getting started? <a class="orbi-hero-alt-a" data-cta="cloud-docs" href="https://cloud-docs.orbi.build/?ref=cloud-page">Read the Cloud docs ↗</a></p>
-          <p class="hero-alt">Prefer to self-host? <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build">Run Orbi yourself ↗</a></p>
-          <p class="hero-alt"><a class="orbi-hero-alt-a" href="/guides/issue-to-release/">How an Issue becomes a tagged release →</a></p>
-        </div>
+        <p class="hero-lede">Orbi runs your Issues all the way to a release, on infrastructure we operate.</p>
+        <a class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+        <p class="hero-cta-note">No card · Only the repos you pick</p>
+      </section>
+      <div class="shell">
         <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
           <div class="cloud-gate-copy">
             <h2 class="cloud-gate-title" id="cloud-gate-title">Before you connect GitHub</h2>
@@ -194,7 +186,7 @@
           </video>
           <figcaption>Watch the seven-step Cloud onboarding: sign in, install, connect a repository, provision the runner, open your first Issue, release, and subscribe after the __FREE_DELIVERIES__-delivery trial.</figcaption>
         </figure>
-      </section>
+      </div>
     </div>
 
     <section class="compare-section shell" aria-labelledby="what-title">
@@ -236,32 +228,26 @@
     <section id="pricing" class="compare-section compare-section-tint" aria-labelledby="pricing-title">
       <div class="shell">
         <p class="section-tag">PRICING</p>
-        <h2 class="orbi-compare-section-h2" id="pricing-title">A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.</h2>
-        <p class="pricing-capacity">Solo's __SOLO_INCLUDED_TOKENS__ allowance: about __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine; Pro's __INCLUDED_TOKENS__ allowance: about __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries for typical tickets in a small repository, about __MEASURED_LARGE_CODEBASE_DELIVERIES__ in a large codebase like Orbi's own engine (measured September 2026). See the <a href="/cost/">cost data</a>.</p>
+        <h2 class="orbi-compare-section-h2" id="pricing-title">Fixed monthly price. No overage bills.</h2>
         <div class="pricing-interval-toggle" data-pricing-toggle>
           <span>Pay</span>
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
+        <p class="pricing-trial-note">Every plan starts with __FREE_DELIVERIES__ free merged deliveries · No card <span>· Failed deliveries don't count</span></p>
+        <p class="founding-offer">Founding partners: 50% off for life. Only __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left. Code __FOUNDING_PROMO_CODE__ at checkout.</p>
         <div class="pricing-cards">
-          <article class="pricing-card">
-            <p class="pricing-card-kicker">CLOUD TRIAL</p>
-            <h3>Trial</h3>
-            <p class="pricing-card-price">US$0 <span class="pricing-card-price-unit">__FREE_DELIVERIES__ merged deliveries, once per account</span></p>
-            <p>Run __FREE_DELIVERIES__ real deliveries on your own repository. No card required.</p>
-            <ul><li>Failed deliveries don't use up the trial</li></ul>
-            <div class="pricing-card-actions">
-              <a class="button button-outline" href="/cloud/login">Start trial <span aria-hidden="true">↗</span></a>
-            </div>
-          </article>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
             <p class="pricing-card-price"><span data-pricing-price="solo" data-year-price="US$__SOLO_ANNUAL_MONTHLY_USD__" data-month-price="US$__SOLO_MONTHLY_USD__">US$__SOLO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
             <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-capacity">≈ __MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE__ merged deliveries / month</p>
+            <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">Choose Solo <span aria-hidden="true">↗</span></a>
+              <a class="button button-signal" data-cta="pricing-solo-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
           <article class="pricing-card">
@@ -269,13 +255,15 @@
             <h3>Pro</h3>
             <p class="pricing-card-price"><span data-pricing-price="pro" data-year-price="US$__PRO_ANNUAL_MONTHLY_USD__" data-month-price="US$__CLOUD_MONTHLY_USD__">US$__PRO_ANNUAL_MONTHLY_USD__</span> <span class="pricing-card-price-unit">/ month</span></p>
             <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
+            <p class="pricing-card-capacity">≈ __MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE__ merged deliveries / month</p>
+            <p class="pricing-card-measurement"><small><a href="/cost/">How we measured →</a></small></p>
             <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">Choose Pro <span aria-hidden="true">↗</span></a>
+              <a class="button button-ghost" data-cta="pricing-pro-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
         </div>
-        <p class="founding-offer"><strong>Founding partners: 50% off forever, __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout.</strong></p>
         <p class="once-pay-note">Alipay / WeChat Pay, paid once (no auto-renewal): <a data-cta="pricing-once-solo-month" href="/api/checkout?plan=solo&amp;interval=month&amp;payment=once">Solo monthly</a> · <a data-cta="pricing-once-solo-year" href="/api/checkout?plan=solo&amp;interval=year&amp;payment=once">Solo yearly</a> · <a data-cta="pricing-once-pro-month" href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once">Pro monthly</a> · <a data-cta="pricing-once-pro-year" href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once">Pro yearly</a></p>
         <p class="self-hosted-note">Self-hosted: US$0 under AGPL-3.0 or the Sustainable Use License; bring your own model key.</p>
       </div>
