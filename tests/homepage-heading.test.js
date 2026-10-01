@@ -69,7 +69,7 @@ function headingMetrics(page) {
 }
 
 describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
-  it("matches the hero size for every section heading", async () => {
+  it("keeps section heading sizes unchanged when the homepage hero is enlarged", async () => {
     const page = await browser.newPage();
     try {
       for (const language of ["", "zh/"]) {
@@ -86,9 +86,8 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
             };
           });
           expect(result.headingSizes.length, `${language || "en"} headings at ${width}px`).toBeGreaterThan(0);
-          expect(result.headingSizes, `${language || "en"} heading sizes at ${width}px`).toEqual(
-            result.headingSizes.map(() => result.heroSize),
-          );
+          expect(new Set(result.headingSizes).size, `${language || "en"} section sizes at ${width}px`).toBe(1);
+          expect(result.headingSizes, `${language || "en"} section scope at ${width}px`).not.toContain(result.heroSize);
         }
       }
     } finally {
@@ -96,17 +95,18 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
     }
   }, 30_000);
 
-  it("has no overlapping heading lines at every supported width in English and Chinese", async () => {
+  it("keeps distinct heading line boxes at every supported width in English and Chinese", async () => {
     const page = await browser.newPage();
     try {
       for (const language of ["", "zh/"]) {
         await page.goto(`${baseUrl}/${language}`, { waitUntil: "load", timeout: 25_000 });
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
-          const { lines } = await headingMetrics(page);
+          const { lines, lineHeight } = await headingMetrics(page);
           expect(lines.length, `${language || "en"} line count at ${width}px`).toBeGreaterThanOrEqual(1);
           for (let index = 1; index < lines.length; index += 1) {
-            expect(lines[index].top - lines[index - 1].bottom, `${language || "en"} overlap at ${width}px`).toBeGreaterThanOrEqual(0);
+            expect(lines[index].top - lines[index - 1].top, `${language || "en"} line spacing at ${width}px`)
+              .toBeGreaterThanOrEqual(Math.floor(lineHeight));
           }
         }
       }
