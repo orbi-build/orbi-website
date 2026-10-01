@@ -372,7 +372,7 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
       for (const cloudPage of ["cloud/index.html", "zh/cloud/index.html"]) {
         const html = await readFile(`${dir}${cloudPage}`, "utf8");
         expect(html.split(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN).length - 1).toBe(2);
-        expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(2);
+        expect(html.split(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN).length - 1).toBe(1);
       }
     }
   });
@@ -407,24 +407,32 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
     }
   });
 
-  it("serves both Cloud pages with both source-backed measurements", async () => {
-    for (const [cloudPage, wordings] of [
-      ["cloud/index.html", [
-        `Solo's ${pricing.soloIncludedTokensLabel} allowance: about ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine; Pro's ${pricing.includedTokensLabel} allowance: about ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
-        `${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries for typical tickets in a small repository, or about ${MEASURED_LARGE_CODEBASE_DELIVERIES} in a large codebase like Orbi's own engine (measured September 2026)`,
-      ]],
-      ["zh/cloud/index.html", [
-        `Solo 的 ${pricing.soloIncludedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES} 次；Pro 的 ${pricing.includedTokensLabel} 额度：小仓库的常见票大约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付，像 Orbi 引擎这样的大代码库大约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
-        `小仓库的常见票合并 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次，像 Orbi 引擎这样的大代码库约 ${MEASURED_LARGE_CODEBASE_DELIVERIES} 次（2026 年 9 月实测）`,
-      ]],
+  it("puts measured delivery ranges inside the paid pricing cards", async () => {
+    for (const [cloudPage, copy] of [
+      ["cloud/index.html", {
+        headline: "Fixed monthly price. No overage bills.",
+        solo: `≈ ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} merged deliveries / month`,
+        pro: `≈ ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} merged deliveries / month`,
+        link: 'href="/cost/">How we measured →',
+        stale: "Solo's __SOLO_INCLUDED_TOKENS__ allowance:",
+      }],
+      ["zh/cloud/index.html", {
+        headline: "固定月费，不会超额扣费。",
+        solo: `每月约 ${MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE} 次合并交付`,
+        pro: `每月约 ${MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE} 次合并交付`,
+        link: 'href="/zh/cost/">怎么测的 →',
+        stale: "Solo 的 __SOLO_INCLUDED_TOKENS__ 额度：",
+      }],
     ]) {
       const raw = await readFile(`${PUBLIC_DIR}${cloudPage}`, "utf8");
       const served = await (await serve(raw, `/${cloudPage.replace("index.html", "")}`)).text();
-      for (const wording of wordings) expect(served.split(wording).length - 1).toBe(1);
-      expect(served).not.toContain(MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN);
-      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
-      expect(served).not.toContain(MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE_TOKEN);
+      expect(served).toContain(copy.headline);
+      expect(served).toContain(copy.solo);
+      expect(served).toContain(copy.pro);
+      expect(served).toContain(copy.link);
+      expect(served).not.toContain(copy.stale);
       expect(served).not.toContain(MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES_TOKEN);
+      expect(served).not.toContain(MEASURED_LARGE_CODEBASE_DELIVERIES_TOKEN);
       expect(served).toContain(FOUNDING_PROMO_CODE);
     }
   });
@@ -584,8 +592,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
       expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"
-        : "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
+        ? "固定月费，不会超额扣费。"
+        : "Fixed monthly price. No overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
         ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
         : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
@@ -622,7 +630,6 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.foundingPartnerLimitToken,
         pricing.foundingPromoCodeToken,
         pricing.measuredSoloRepositoryDeliveryRangeToken,
-        pricing.measuredSoloLargeCodebaseDeliveriesToken,
       ]) expect(html, relativePath).toContain(token);
     }
   });
