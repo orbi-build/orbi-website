@@ -76,6 +76,13 @@ const countMatches = (html, re) => [...html.matchAll(re)].length;
 
 const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
 
+describe("inner-page h1 line height (Issue #791)", () => {
+  it("keeps wrapped shared h1 titles compact without changing the homepage hero", () => {
+    expect(styles).toMatch(/h1\s*\{[^}]*line-height:\s*1\.08;/);
+    expect(styles).toMatch(/\.hero\.homepage-hero h1\s*\{[^}]*line-height:\s*1\.02;/);
+  });
+});
+
 describe("top navigation Docs destination (Issue #762)", () => {
   const expected = {
     en: "https://cloud-docs.orbi.build/?ref=nav",
