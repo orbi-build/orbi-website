@@ -243,17 +243,8 @@
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
+        <p class="pricing-trial-note">Every plan starts with __FREE_DELIVERIES__ free merged deliveries · No card <span>· Failed deliveries don't count</span></p>
         <div class="pricing-cards">
-          <article class="pricing-card">
-            <p class="pricing-card-kicker">CLOUD TRIAL</p>
-            <h3>Trial</h3>
-            <p class="pricing-card-price">US$0 <span class="pricing-card-price-unit">__FREE_DELIVERIES__ merged deliveries, once per account</span></p>
-            <p>Run __FREE_DELIVERIES__ real deliveries on your own repository. No card required.</p>
-            <ul><li>Failed deliveries don't use up the trial</li></ul>
-            <div class="pricing-card-actions">
-              <a class="button button-outline" href="/cloud/login">Start trial <span aria-hidden="true">↗</span></a>
-            </div>
-          </article>
           <article class="pricing-card pricing-card-featured">
             <p class="pricing-card-kicker">SOLO</p>
             <h3>Solo</h3>
@@ -261,7 +252,8 @@
             <p data-pricing-detail="solo" data-year-detail="Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__SOLO_ANNUAL_USD__; save __SOLO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>__SOLO_INCLUDED_TOKENS__ tokens / month</li><li>__SOLO_REPOSITORIES__ repository</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">Choose Solo <span aria-hidden="true">↗</span></a>
+              <a class="button button-signal" data-cta="pricing-solo-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
           <article class="pricing-card">
@@ -271,7 +263,8 @@
             <p data-pricing-detail="pro" data-year-detail="Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%" data-month-detail="Billed monthly; cancel anytime">Billed yearly: US$__PRO_ANNUAL_USD__; save __PRO_ANNUAL_SAVINGS_PERCENT__%</p>
             <ul><li>__INCLUDED_TOKENS__ tokens / month</li><li>__PRO_REPOSITORIES__ repositories</li></ul>
             <div class="pricing-card-actions">
-              <a class="button button-signal" data-pricing-cta="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">Choose Pro <span aria-hidden="true">↗</span></a>
+              <a class="button button-ghost" data-cta="pricing-pro-trial" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+              <a class="pricing-subscribe" data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year">or subscribe now →</a>
             </div>
           </article>
         </div>

@@ -48,8 +48,8 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
     // Issue #571 adds the film-end "Sign in with GitHub" handoff on the EN
     // homepage; Issue #575 adds the matching "用 GitHub 登录" handoff on the ZH
-    // homepage — the twelfth bare, language-matching login link.
-    expect(hrefs).toHaveLength(12);
+    // homepage — the fourteen bare, language-matching login links.
+    expect(hrefs).toHaveLength(14);
     for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
