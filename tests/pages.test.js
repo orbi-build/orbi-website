@@ -243,11 +243,78 @@ describe("blog title and body alignment (Issue #695)", () => {
         /<div class="night">\s*<div class="post-grid">\s*<section class="post-hero"/,
       );
       expect(html, `${post.output}: body layout`).toMatch(
-        /<div class="post-grid">\s*<article class="post-body">/,
+        /<div class="post-grid">\s*(?:<nav class="post-toc"[\s\S]*?<\/nav>\s*)?<article class="post-body">/,
       );
       expect(countMatches(html, /class="post-grid"/g), `${post.output}: shared layout count`).toBe(2);
       expect(html, `${post.output}: shared compare styles stay unused`).not.toContain('class="compare-hero shell" aria-labelledby="post-title"');
     }
+  });
+
+  it("renders Unicode-safe unique H2 anchors and the shared TOC at the five-section threshold", async () => {
+    const tocPosts = [];
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const body = html.match(/<article class="post-body">([\s\S]*?)<\/article>/)?.[1] ?? "";
+      const headings = [...body.matchAll(/<h2 id="([^"]+)">([^<]*)<\/h2>/g)];
+      const ids = headings.map((match) => match[1]);
+      expect(ids, `${post.output}: every H2 has an id`).toHaveLength((body.match(/<h2\b/g) ?? []).length);
+      expect(new Set(ids).size, `${post.output}: H2 ids are unique`).toBe(ids.length);
+      if (post.lang === "zh" && headings.some((match) => /[\u4e00-\u9fff]/u.test(match[2]))) {
+        expect(headings.some((match) => /[\u4e00-\u9fff]/u.test(match[1])), `${post.output}: Chinese H2 id`).toBe(true);
+      }
+      const desktop = html.match(/<nav class="post-toc"[\s\S]*?<\/nav>/)?.[0] ?? "";
+      const inline = html.match(/<details class="post-toc-inline">[\s\S]*?<\/details>/)?.[0] ?? "";
+      const tocCount = (desktop.match(/class="post-toc-link"/g) ?? []).length;
+      const inlineCount = (inline.match(/class="post-toc-link"/g) ?? []).length;
+      if (ids.length >= 5) {
+        tocPosts.push(post.output);
+        const title = post.lang === "zh" ? "本页目录" : "On this page";
+        expect(desktop, `${post.output}: desktop TOC`).not.toBe("");
+        expect(desktop, `${post.output}: localized TOC label`).toContain(`aria-label="${title}"`);
+        expect(desktop, `${post.output}: localized TOC title`).toContain(`<h2>${title}</h2>`);
+        expect(inline, `${post.output}: inline TOC`).not.toBe("");
+        expect(inline, `${post.output}: localized inline summary`).toContain(`<summary>${title} · ${ids.length} ${post.lang === "zh" ? "节" : "sections"}</summary>`);
+        expect(tocCount, `${post.output}: desktop TOC count`).toBe(ids.length);
+        expect(inlineCount, `${post.output}: inline TOC count`).toBe(ids.length);
+        for (const id of ids) {
+          expect(desktop, `${post.output}: desktop href ${id}`).toContain(`href="#${id}"`);
+          expect(inline, `${post.output}: inline href ${id}`).toContain(`href="#${id}"`);
+        }
+      } else {
+        expect(desktop, `${post.output}: no desktop TOC`).toBe("");
+        expect(inline, `${post.output}: no inline TOC`).toBe("");
+      }
+    }
+    expect(tocPosts.length).toBeGreaterThan(0);
+  });
+
+  it("keeps normalized H2 ids unique when a heading already uses a duplicate suffix", () => {
+    const source = `---
+title: T
+date: 2026-09-18
+summary: s
+lang: en
+author: Orbi
+image: /img/blog-t.png
+---
+
+## A
+
+## A
+
+## A-2
+`;
+    const post = postFromSource("t.md", source);
+    expect(post.headings.map(({ id }) => id)).toEqual(["a", "a-2", "a-2-2"]);
+  });
+
+  it("keeps the blog TOC layout scoped to the established two-column grid", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toContain(".post-body h2 { font-family:");
+    expect(template).toMatch(/\.post-body h2 \{[^}]*scroll-margin-top: 24px;/);
+    expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
+    expect(template).toContain("{{POST_TOC}}");
+    expect(template).toContain("{{INLINE_TOC}}");
   });
 
   it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
@@ -465,7 +532,7 @@ describe("Issue #438 wording and internal-link contracts", () => {
   it("ends every blog body with two or three contextual links", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
-      const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
+      const relatedStart = Math.max(html.lastIndexOf("<h2 id=\"related\">Related</h2>"), html.lastIndexOf("<h2 id=\"相关\">相关</h2>"));
       const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
       const prefix = post.lang === "zh" ? "/zh" : "";
       const links = [...related.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);

@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,11 +117,45 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#ten-takeaways">Ten takeaways</a></li>
+          <li><a class="post-toc-link" href="#why-we-started">Why we started</a></li>
+          <li><a class="post-toc-link" href="#how-we-measured">How we measured</a></li>
+          <li><a class="post-toc-link" href="#the-grid">The grid</a></li>
+          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a></li>
+          <li><a class="post-toc-link" href="#what-the-models-did">What the models did</a></li>
+          <li><a class="post-toc-link" href="#nine-issues-the-harness-had-never-seen">Nine issues the harness had never seen</a></li>
+          <li><a class="post-toc-link" href="#issues-whose-first-real-fix-broke-something">Issues whose first real fix broke something</a></li>
+          <li><a class="post-toc-link" href="#building-the-benchmark-taught-us-as-much-as-running-it">Building the benchmark taught us as much as running it</a></li>
+          <li><a class="post-toc-link" href="#where-this-left-us">Where this left us</a></li>
+          <li><a class="post-toc-link" href="#if-you-run-coding-agents">If you run coding agents</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 12 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#ten-takeaways">Ten takeaways</a></li>
+          <li><a class="post-toc-link" href="#why-we-started">Why we started</a></li>
+          <li><a class="post-toc-link" href="#how-we-measured">How we measured</a></li>
+          <li><a class="post-toc-link" href="#the-grid">The grid</a></li>
+          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a></li>
+          <li><a class="post-toc-link" href="#what-the-models-did">What the models did</a></li>
+          <li><a class="post-toc-link" href="#nine-issues-the-harness-had-never-seen">Nine issues the harness had never seen</a></li>
+          <li><a class="post-toc-link" href="#issues-whose-first-real-fix-broke-something">Issues whose first real fix broke something</a></li>
+          <li><a class="post-toc-link" href="#building-the-benchmark-taught-us-as-much-as-running-it">Building the benchmark taught us as much as running it</a></li>
+          <li><a class="post-toc-link" href="#where-this-left-us">Where this left us</a></li>
+          <li><a class="post-toc-link" href="#if-you-run-coding-agents">If you run coding agents</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>Orbi takes a GitHub issue and hands back a reviewed, merged pull request. One agent writes the fix, another reviews it, and the loop runs until the review passes. Around the models sits the harness: the prompts each role gets, the skills loaded next to them, the tools on the runner&#39;s <code class="post-code--single">PATH</code>, and the rules for when a review may pass.</p>
 <p>When a delivery goes wrong, one run can&#39;t tell you whether the model or the harness is to blame. So we stopped guessing and spent a night and the following morning running Orbi&#39;s full loop over and over: first on three open-source issues where Orbi had shipped a regression, then on nine ordinary bugs it had never seen, then on three whose first real-world fix had broken something. We swapped prompts, skills, tools, implementation models and review models, and graded every merged result with a hidden grader Orbi never saw.</p>
 <p>This is part 1: how we found the failures and built a harness that fixes them. <a href="/blog/is-the-regression-guard-worth-its-tokens/">Part 2</a> asks whether that harness is worth what it costs. The results and scripts are on the <a href="/benchmark/">benchmark page</a> and in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>. Here&#39;s the short version.</p>
-<h2>Ten takeaways</h2>
+<h2 id="ten-takeaways">Ten takeaways</h2>
 <ol>
 <li><strong>On the issues we tuned on, the harness moved the numbers more than any model swap we tried.</strong> With <code class="post-code--single">deepseek-flash</code> in both roles, the original harness passed 6 of 15 runs on the three tuning issues. v13 to v15 passed 28 of 30. That&#39;s a training score. Takeaway 7 covers issues we didn&#39;t tune on.</li>
 <li><strong>&quot;Compare before and after&quot; is not enough.</strong> Ask an agent to check for regressions and it checks examples it already believes in. One run tested U+0301, which was never broken, and skipped U+3099, which was. Inputs have to be generated by a program, across whole classes of values.</li>
@@ -120,7 +169,7 @@
 <li><strong>A benchmark is software, and ours had bugs.</strong> Three of our graders were wrong at some point, one snapshot silently dropped tracked files, and a reviewer once looked up the real upstream fix. Every one of these would have produced a confident, wrong number.</li>
 </ol>
 <p>The rest of this post shows where each one came from, mistakes included.</p>
-<h2>Why we started</h2>
+<h2 id="why-we-started">Why we started</h2>
 <p>On September 28 Orbi fixed three issues in forks of open-source projects: <a href="https://github.com/orbi-build/pyinfra/pull/3">pyinfra</a>, <a href="https://github.com/orbi-build/chainloop/pull/3">chainloop</a> and <a href="https://github.com/orbi-build/fedify/pull/3">fedify</a>. All three passed their test suites and Orbi&#39;s own review. We checked them by hand before sending anything upstream. Two were wrong.</p>
 <p>The chainloop fix was in a secret redactor. The issue said a JWT in front of an escaped quote got redacted together with the backslash. Orbi&#39;s fix trimmed trailing backslashes from each finding, which fixed the JWT and broke two other things:</p>
 <pre><code class="post-code--spaced">input:  DB_PASSWORD=Zq8mLp2Vx9rT\n next
@@ -135,7 +184,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <p>The pyinfra fix was about CJK text misaligning a results table. The fix counted wide characters as two columns. That aligned the issue&#39;s example and made 👍🏽 and a decomposed が worse than before.</p>
 <p>On both, Orbi&#39;s review, posted on the fork&#39;s issue, reads in full <code class="post-code--spaced">review: pass, no findings</code>. The review ran the tests and checked the issue&#39;s example, which passed. The regressions sat in inputs nobody tried.</p>
 <p>We sent one of the three upstream. The pyinfra fix was reworked by hand with Claude Code and opened as <a href="https://github.com/pyinfra-dev/pyinfra/pull/1977">pyinfra-dev/pyinfra#1977</a>, with the AI involvement disclosed. chainloop&#39;s waits for a fix we trust. fedify&#39;s code was fine, but fedify asks contributors to be assigned an issue before opening a PR, and the maintainer took this one and closed it.</p>
-<h2>How we measured</h2>
+<h2 id="how-we-measured">How we measured</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-flow.svg" alt="Each run: a private snapshot of the repository goes through the real Orbi runner (claim, implement, PR, review, merge), then a hidden grader scores it. The grader was calibrated to fail the original code, fail Orbi's merged fork PR, and pass a hand-verified fix." width="720" height="300">
 <figcaption>The grader is calibrated before any variant runs. A grader that passes the bad fork PR measures nothing.</figcaption>
@@ -143,12 +192,12 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <p>Before any variant ran, each grader had to fail the original code, fail Orbi&#39;s merged fork PR, and pass a fix we had verified by hand. For chainloop, the two checks that fail on the fork PR are exactly the two outputs above. For pyinfra they are 👍🏽 and が.</p>
 <p>A variant is one combination of harness and models. We changed the prompt, the skills, the tools on <code class="post-code--single">PATH</code>, the implementation model, the review model, or a mix. The models were <code class="post-code--single">deepseek-flash</code>, <code class="post-code--single">gpt-5.6-luna</code> and <code class="post-code--single">gpt-5.6-sol</code> through Pi, Opus 5.5 through a Claude Code bridge, and GLM 5.3 flash through a zcode bridge. On the two bridges the same model both implements and reviews, and the agent loop is the bridge&#39;s own.</p>
 <p>Variants ran three or four at a time on one machine. Each had its own private repository, so no run could see another&#39;s branches.</p>
-<h2>The grid</h2>
+<h2 id="the-grid">The grid</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-grid.svg" alt="Grid of harness versions against model setups. deepseek-flash for both roles goes from 6/15 on the original harness to 9/9 on v15; luna/sol on the original harness scores 1/3; Opus 5.5 scores 1/3, 2/3 and 3/4 on v1, v5 and v11; GLM 5.3 flash scores 2/3 on v14; deepseek implementing with sol reviewing scores 4/4 on v15, chainloop only." width="720" height="428">
 <figcaption>Rows are harness versions, columns are implementer / reviewer. ds = deepseek-flash. Cells are passes / runs across the three repositories.</figcaption>
 </figure><p>The grid is sparse on purpose. At every step we picked the cheapest run that could answer the question in front of us; we never set out to fill a full factorial. Most non-deepseek cells have two to four runs. Treat the other columns as leads and the <code class="post-code--single">ds/ds</code> column as the result.</p>
-<h2>What the harness changes did</h2>
+<h2 id="what-the-harness-changes-did">What the harness changes did</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-trend.svg" alt="Bar chart of pass rate by harness version with deepseek-flash for both roles: v0 6/15, v1 5/7, v4 1/3, v5 4/4, v10 1/2, v11 6/9, v13 11/12, v14 8/9, v15 9/9." width="720" height="470">
 <figcaption>Same model throughout. Pale bars have fewer than five runs.</figcaption>
@@ -187,7 +236,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <p>The one-character <code class="post-code--single">s</code> bug worked differently. A fix changed the needle it searched for (a trimmed secret) and then replaced every occurrence of the shorter needle. v15 adds: if a change alters text that is searched for or replaced, test where else that text appears. 9/9.</p>
 <h3>v17: a producer table (experimental)</h3>
 <p>v17 asked the regression report to include a table of every producer that can emit the risky input, one row per rule, checked by the reviewer row by row. Agents did read the detector&#39;s rule file and list <code class="post-code--single">generic-password</code>. It scored 3/4 on chainloop, which we can&#39;t tell apart from v15.</p>
-<h2>What the models did</h2>
+<h2 id="what-the-models-did">What the models did</h2>
 <p>Model swaps are harder to read than harness changes. Each swap came with a different prompt version and, on the bridges, a different agent loop.</p>
 <ul>
 <li><strong>luna implementing, sol reviewing, original harness:</strong> 1/3. It missed the same pyinfra regression as <code class="post-code--single">deepseek-flash</code>. A stronger model with the same instructions checked the same examples.</li>
@@ -197,7 +246,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <li><strong>deepseek implementing, sol reviewing, v15:</strong> 4/4 on chainloop. That matches <code class="post-code--single">deepseek-flash</code> reviewing on v15 (4/4), so we can&#39;t yet say the stronger reviewer helps. It also took longer: a median of 29.5 minutes on chainloop, against 21 for v15.</li>
 </ul>
 <p>In these runs the harness moved the numbers far more than any model swap. That&#39;s a statement about this data. It doesn&#39;t say models don&#39;t matter.</p>
-<h2>Nine issues the harness had never seen</h2>
+<h2 id="nine-issues-the-harness-had-never-seen">Nine issues the harness had never seen</h2>
 <p>Everything above was tuned on the same three issues it was scored on. That&#39;s a training score. It can&#39;t tell us whether the rules generalize or just memorize three bugs, so we built a held-out set.</p>
 <p>We took nine real bug fixes merged upstream after August 10, 2026, three each in Go, TypeScript and Python: <code class="post-code--single">gojq</code> (empty regex matches in global mode), <code class="post-code--single">urfave/cli</code> (arguments after a bare <code class="post-code--single">-</code>), <code class="post-code--single">pflag</code> (wrapping after an unbreakable word), <code class="post-code--single">magic-string</code> (<code class="post-code--single">$</code> patterns in replacements), <code class="post-code--single">recast</code> (parentheses around mixed <code class="post-code--single">??</code> and <code class="post-code--single">||</code>), <code class="post-code--single">cron-parser</code> (stringifying stepped ranges), <code class="post-code--single">python-dotenv</code> (backslashes in single-quoted values), <code class="post-code--single">markdown-it-py</code> (a blockquote at end of file with tables on) and <code class="post-code--single">pyjwt</code> (padded Base64URL segments). The hidden grader for each is the maintainer&#39;s own test from the fix, which neither we nor Orbi wrote, calibrated the same way: it fails before the fix and passes after it. The issue text Orbi saw was rewritten to remove links, numbers and any hint of the fix.</p>
 <figure class="post-media">
@@ -208,7 +257,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <img src="/img/diagrams/harness-cost.svg" alt="Median tokens and minutes per run, original harness against v15, on the training issues and the held-out issues. On held-out issues v15 uses 5.8 million tokens against 2.8 million and 16 minutes against 11." width="720" height="360">
 <figcaption>Medians per run. Tokens include cache reads, which were about 97% of the total.</figcaption>
 </figure><p>And v15 cost more. On the held-out set, v15 used a median 5.8 million tokens per run against 2.8 million for the original harness, and 16 minutes against 11. On pflag it wrote 274 lines where the original wrote 88, most of it generated regression tests. About 97% of all tokens were cache reads, which on <code class="post-code--single">deepseek-flash</code> are cheap, so the bill is smaller than the token count suggests. The extra time is real.</p>
-<h2>Issues whose first real fix broke something</h2>
+<h2 id="issues-whose-first-real-fix-broke-something">Issues whose first real fix broke something</h2>
 <p>The nine held-out bugs were easy for both harnesses, but the original incident was a fix that broke something else. So we looked for real cases of exactly that: an upstream fix that was merged, found to cause a regression, and fixed again. Three made the cut, each with a grader that fails the code before the first fix, fails the first fix itself, and passes the final one.</p>
 <ul>
 <li><strong>numpy</strong>: <code class="post-code--spaced">np.linspace(np.inf, np.inf, 5)</code> returned NaNs. The first upstream fix handled infinities and broke <code class="post-code--single">ndarray</code> subclasses; astropy&#39;s <code class="post-code--single">Quantity</code> stopped working, and a second PR repaired it.</li>
@@ -222,7 +271,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 </figure><p>The original harness passed all four scored runs, and v15 all three. v15 never finished a numpy run: all three attempts were killed for memory, so its 3/3 covers aiohttp once and the OpenTelemetry Collector twice.</p>
 <p>We expected this set to separate the harnesses. It didn&#39;t, for a simple reason: the mistakes humans made on their first try aren&#39;t the mistakes this agent makes. None of the four original-harness runs reproduced the regression the first human fix had introduced. The regressions Orbi did ship, in pyinfra and chainloop, came from a different habit: checking the example in the issue and nothing around it.</p>
 <p>So a regression guard should target the agent&#39;s own failure modes rather than a general list of ways code breaks. With three bugs, that&#39;s as far as we can go.</p>
-<h2>Building the benchmark taught us as much as running it</h2>
+<h2 id="building-the-benchmark-taught-us-as-much-as-running-it">Building the benchmark taught us as much as running it</h2>
 <p>We found more bugs in our own measurement than in the harness. Each would have produced a confident, wrong number.</p>
 <ul>
 <li><strong>A grader enforced the wrong rule.</strong> Our first fedify grader required <code class="post-code--single">CHANGES.md</code> to stay untouched. Upstream always edits it. We switched to the project&#39;s own <code class="post-code--spaced">sacho check</code>.</li>
@@ -234,11 +283,11 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <li><strong>API budget is shared.</strong> Every run and every production runner on the account draws on the same GraphQL budget. We added a guard that holds the queue when the budget runs low. At first we blamed most of the drain on the production runners&#39; branch cleanup. Measured properly, it costs about 400 points an hour, far less than the figure we first wrote down.</li>
 </ul>
 <p>The rule we took from this: before a grader scores anything, show it failing the known-bad version and passing the known-good one. When a result surprises you, read the transcript before you believe it.</p>
-<h2>Where this left us</h2>
+<h2 id="where-this-left-us">Where this left us</h2>
 <p>After the first two rounds, v15 fixed every failure it was tuned on, broke nothing on twelve unseen bugs, and cost a median of about twice as much. You can&#39;t ship that as is. A guard that roughly doubles the median price of a fix has to show it catches something on bugs it has never seen, and the ordinary held-out bugs gave it nothing to catch.</p>
 <p>So the question for the next round was narrower and harder: on unseen bugs shaped like the ones Orbi actually got wrong, does the original harness fail, and can a cheaper harness keep the fix? <a href="/blog/is-the-regression-guard-worth-its-tokens/">Part 2</a> has the answer.</p>
 <p>This part has clear limits. The tuning set is three issues, the held-out sets are nine and three, and many cells have fewer than five runs. And a hidden grader only catches the defects someone knew to test for, even when that someone is the upstream maintainer.</p>
-<h2>If you run coding agents</h2>
+<h2 id="if-you-run-coding-agents">If you run coding agents</h2>
 <p>Five things you can do this week, whatever agent you use:</p>
 <ol>
 <li>Take a merged agent PR and write the one input you think it gets wrong. Run it. If it breaks, look at what your reviewer said.</li>
@@ -248,7 +297,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <li>If you benchmark, calibrate every grader against a known-bad and a known-good version first, and keep the agent away from the real answer.</li>
 </ol>
 <p><a href="https://orbi.build/cloud/?ref=blog-harness">Orbi Cloud</a> runs the loop described here on your own issues. The benchmark is at <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a> if you want to run it against your own agent.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -308,7 +357,7 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

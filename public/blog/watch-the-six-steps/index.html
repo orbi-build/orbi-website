@@ -31,7 +31,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -55,6 +66,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -103,7 +118,9 @@
     </div>
 
     <div class="post-grid">
+
       <article class="post-body">
+
 <p>The full setup is now on video: <a href="https://www.youtube.com/watch?v=_OEaBwrLvvs">Orbi Cloud: from zero to a tagged release in seven steps</a>. It is 83 seconds long, in English, and divided into chapters so you can skip to the step where you are stuck.</p>
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud setup from zero to subscription in seven steps" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Watch the complete seven-step Orbi Cloud setup.</figcaption></figure><h3>Seven key screens from the seven-step flow</h3>
 <figure class="post-media">
@@ -137,17 +154,17 @@
 <li><strong>Cut a release.</strong> Type the version; Orbi bumps it, tags it and publishes the GitHub Release.</li>
 <li><strong>Subscribe.</strong> The first <code class="post-code--single">__FREE_DELIVERIES__</code> deliveries are free; paid plans are Solo at US$<code class="post-code--single">__SOLO_MONTHLY_USD__</code>/month with <code class="post-code--single">__SOLO_INCLUDED_TOKENS__</code> tokens, or Pro at US$<code class="post-code--single">__CLOUD_MONTHLY_USD__</code>/month with <code class="post-code--single">__INCLUDED_TOKENS__</code> tokens. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.</li>
 </ol>
-<h2>The seventh step is the one that starts paid delivery</h2>
+<h2 id="the-seventh-step-is-the-one-that-starts-paid-delivery">The seventh step is the one that starts paid delivery</h2>
 <p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code class="post-code--single">__FREE_DELIVERIES__</code> free deliveries.</p>
 <p>The release step still requires your decision: <em>you decide the version, Orbi never increments it for you.</em> The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.</p>
 <p>Step five is one label, and you can add it without leaving the terminal:</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready
 </code></pre>
-<h2>What you are actually looking at</h2>
+<h2 id="what-you-are-actually-looking-at">What you are actually looking at</h2>
 <p>Every screen in the video is the product rendering, not a mockup: the sign-in card, the connect form with its repository and base-branch fields, the progress bar counting the step you are on, the connected-repository table with its provisioning status, the release form with the version box, and the subscription step. The GitHub App page is the real one at <a href="https://github.com/apps/orbi-build">github.com/apps/orbi-build</a>.</p>
 <p>If you want to read instead of watch, the same path is in the docs: <a href="https://docs.orbi.build">docs.orbi.build</a>. If you want to run the whole thing on your own machine instead of ours, that is the same product, <a href="https://github.com/orbi-build/orbi">free to self-host</a>.</p>
 <p>Start here: <a href="https://orbi.build/cloud/?ref=blog-seven-steps">orbi.build/cloud</a>.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/jules/">Google Jules comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>

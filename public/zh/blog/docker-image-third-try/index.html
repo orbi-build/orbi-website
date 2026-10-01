@@ -30,7 +30,18 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
+    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
+    .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
+    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -54,6 +65,10 @@
     @media (min-width: 1200px) {
       .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
       .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
@@ -102,14 +117,34 @@
     </div>
 
     <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#三次失败-三种不同的原因">三次失败，三种不同的原因</a></li>
+          <li><a class="post-toc-link" href="#三次失败换来的三条规则">三次失败换来的三条规则</a></li>
+          <li><a class="post-toc-link" href="#从拉取到第一次交付">从拉取到第一次交付</a></li>
+          <li><a class="post-toc-link" href="#拉镜像-建-issue-收-pr">拉镜像，建 Issue，收 PR</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 5 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#三次失败-三种不同的原因">三次失败，三种不同的原因</a></li>
+          <li><a class="post-toc-link" href="#三次失败换来的三条规则">三次失败换来的三条规则</a></li>
+          <li><a class="post-toc-link" href="#从拉取到第一次交付">从拉取到第一次交付</a></li>
+          <li><a class="post-toc-link" href="#拉镜像-建-issue-收-pr">拉镜像，建 Issue，收 PR</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
 <p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> 要求发布 <code class="post-code--single">3rd/docker/Dockerfile</code> 构建出的容器，让用户在 Docker 里搜索时能找到并拉取它。现在的 workflow 会在每次 Release 和手动触发时发布：<code class="post-code--single">linux/amd64</code> 和 <code class="post-code--single">linux/arm64</code>，打上 Release 版本号和 <code class="post-code--single">latest</code> 两个 tag，推到 <code class="post-code--single">ghcr.io/orbi-build/orbi</code> 和 <code class="post-code--single">docker.io/orbibuild/orbi</code>。</p>
 <p>拉取已发布的镜像：</p>
 <pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
 docker pull docker.io/orbibuild/orbi:latest
 </code></pre>
 <p>文档会带你从拉取镜像走到第一次真实交付：<a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。Hub 仓库主页在 <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>。</p>
-<h2>三次失败，三种不同的原因</h2>
+<h2 id="三次失败-三种不同的原因">三次失败，三种不同的原因</h2>
 <p>这一切都发生在 2026-09-17，也就是 workflow 随 Release v0.5.17 上线的那一天。每次失败都留下了一个修复，每个修复都是公开的 PR。</p>
 <h3>第一次（Release v0.5.17）：两个 job，两个构建上下文</h3>
 <p>build-only 验证 job 把镜像构建得好好的；发布 job 却失败了。Buildx 找不到 <code class="post-code--single">/orbi-container-setup.sh</code> 和 <code class="post-code--single">/orbi-container-setup.service</code>，也就是 Dockerfile 要 COPY 的文件。验证 job 指向了正确的目录；发布 job 指向了另一个上下文，它的构建从一开始就看不到这几个文件。</p>
@@ -117,7 +152,7 @@ docker pull docker.io/orbibuild/orbi:latest
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> 的三个构建步骤全部死于 <code class="post-code--spaced">failed to read dockerfile: open Dockerfile: no such file or directory</code>。<a href="https://github.com/orbi-build/orbi/pull/1044">PR #1044</a> 点明了原因：buildx 按 workspace 根目录解析 <code class="post-code--spaced">file: Dockerfile</code>；修复是把三处都写成 <code class="post-code--single">3rd/docker/Dockerfile</code>。随后这个修复自己的 PR 检查又从另一头失败了：workflow 用 git ref 推导镜像 tag，而 PR 的 ref 是 <code class="post-code--single">1044/merge</code>，buildx 直接拒绝：<code class="post-code--spaced">invalid reference format</code>。</p>
 <h3>第三次（手动触发）：镜像已经推上去了；overview 步骤却把 job 拉红</h3>
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> 把 <code class="post-code--single">0.5.17</code> 和 <code class="post-code--single">latest</code> 推到了两个 Registry，覆盖 <code class="post-code--single">linux/amd64</code> 和 <code class="post-code--single">linux/arm64</code>。但 job 还是红了：唯一失败的步骤是 Docker Hub 仓库主页更新，返回 403，原因是令牌缺一个权限。<a href="https://github.com/orbi-build/orbi/pull/1046">PR #1046</a> 给这一步加了 <code class="post-code--spaced">continue-on-error: true</code>，从此 overview 的意外再也拉不红一次发布。</p>
-<h2>三次失败换来的三条规则</h2>
+<h2 id="三次失败换来的三条规则">三次失败换来的三条规则</h2>
 <h3>规则一：每个构建步骤都写全路径</h3>
 <p>每个构建步骤现在都带着 <code class="post-code--spaced">context: 3rd/docker</code> 和 <code class="post-code--spaced">file: 3rd/docker/Dockerfile</code>。没有任何步骤依赖 buildx 启动时所在的工作目录。</p>
 <h3>规则二：PR ref 永不发布</h3>
@@ -125,12 +160,12 @@ docker pull docker.io/orbibuild/orbi:latest
 <h3>规则三：overview 拉不红 Release</h3>
 <p>Docker Hub overview 步骤带着 <code class="post-code--spaced">continue-on-error: true</code> 运行。发布承诺落在镜像本身；一次返回 403 的描述更新，不能把一次已完成的发布变成一次失败的运行。</p>
 <p>核对对象是 orbi-build/orbi main 分支上的 <code class="post-code--single">.github/workflows/docker-image.yml</code>，核对日期 2026-09-18。</p>
-<h2>从拉取到第一次交付</h2>
+<h2 id="从拉取到第一次交付">从拉取到第一次交付</h2>
 <p>拉下来的镜像在能交付之前还需要一个模型来源。<a href="https://github.com/orbi-build/orbi/issues/1048">Issue #1048</a> 增加了 <code class="post-code--single">ORBI_PI_*</code> 环境变量：设好 <code class="post-code--single">ORBI_PI_PROVIDER</code>、<code class="post-code--single">ORBI_PI_MODEL</code>、<code class="post-code--single">ORBI_PI_BASE_URL</code> 和 <code class="post-code--single">ORBI_PI_API_KEY</code>，entrypoint 就会在首次启动时生成 <code class="post-code--single">pi-providers.json</code>，并且绝不改动已存在的配置。<a href="https://github.com/orbi-build/orbi/issues/1049">Issue #1049</a> 据此重写了 Quick start：<code class="post-code--spaced">docker pull</code>，然后一段复制即用的 <code class="post-code--spaced">docker run</code> 直达一次真实交付，从源码构建则移进了独立的章节。</p>
 <p>修复之后的第一个 Release v0.5.18 端到端全绿发布。下一个 Release 继承的就是这个状态。</p>
-<h2>拉镜像，建 Issue，收 PR</h2>
+<h2 id="拉镜像-建-issue-收-pr">拉镜像，建 Issue，收 PR</h2>
 <p><a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> 上的 Quick start 会带你从 <code class="post-code--spaced">docker pull</code> 走到第一次交付。镜像主页在 <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/openhands/">OpenHands 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
       </article>
@@ -190,7 +225,7 @@ docker pull docker.io/orbibuild/orbi:latest
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

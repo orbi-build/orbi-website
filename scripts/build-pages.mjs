@@ -781,6 +781,36 @@ function parseVideo(label, fields) {
   };
 }
 
+function headingText(html) {
+  return decodeEntities(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+}
+
+function renderPostHeadings(html, label) {
+  const used = new Set();
+  const headings = [];
+  const rendered = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (full, inner) => {
+    const text = headingText(inner);
+    const base = text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "section";
+    let id = base;
+    for (let suffix = 2; used.has(id); suffix += 1) id = `${base}-${suffix}`;
+    used.add(id);
+    headings.push({ id, text });
+    return `<h2 id="${escAttr(id)}">${inner}</h2>`;
+  });
+  validateRenderedPostBody(label, rendered);
+  return { html: rendered, headings };
+}
+
+function renderPostToc(post) {
+  if (post.headings.length < 5) return { desktop: "", inline: "" };
+  const title = post.lang === "zh" ? "本页目录" : "On this page";
+  const entries = post.headings.map(({ id, text }) => `          <li><a class="post-toc-link" href="#${escAttr(id)}">${escAttr(text)}</a></li>`).join("\n");
+  return {
+    desktop: `        <nav class="post-toc" aria-label="${title}">\n          <h2>${title}</h2>\n          <ol>\n${entries}\n          </ol>\n        </nav>`,
+    inline: `        <details class="post-toc-inline">\n          <summary>${title} · ${post.headings.length} ${post.lang === "zh" ? "节" : "sections"}</summary>\n          <ol>\n${entries}\n          </ol>\n        </details>`,
+  };
+}
+
 export function postFromSource(displayName, source) {
   const label = `content/blog/${displayName}`;
   const lang = displayName.startsWith("zh/") ? "zh" : "en";
@@ -796,8 +826,8 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
-  validateRenderedPostBody(label, html);
+  const parsedHtml = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
+  const { html, headings } = renderPostHeadings(parsedHtml, label);
   const video = parseVideo(label, fields);
   const related = lang === "en" ? parseRelated(label, fields) : [];
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
@@ -818,6 +848,7 @@ export function postFromSource(displayName, source) {
     video,
     related,
     html,
+    headings,
   };
 }
 
@@ -1002,6 +1033,8 @@ function renderSubscribe(lang) {
 
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
+  const toc = renderPostToc(post);
+  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
   const page = {
     lang: post.lang,
     output: post.output,
@@ -1027,10 +1060,12 @@ function renderPost(post, template) {
     DATE: post.date,
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
+    POST_TOC: toc.desktop,
+    INLINE_TOC: toc.inline,
     BODY: post.html,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+  }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one
