@@ -504,6 +504,11 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   padding: 0 32px;
   font-size: 1.25rem;
 }
+@media (min-width: 761px) {
+  .hero-cta {
+    min-width: 340px;
+  }
+}
 .hero-cta-note {
   margin: 8px 0 0;
   color: #91aaa4;
