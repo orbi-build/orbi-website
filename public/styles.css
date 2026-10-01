@@ -260,14 +260,15 @@ img {
   min-width: 76px;
   min-height: 40px;
   padding: 0 14px;
-  background: var(--signal);
-  color: var(--night);
+  border: 1px solid var(--signal);
+  background: transparent;
+  color: var(--signal);
   font-weight: 700;
 }
 
 .site-header nav > a.nav-apply:hover {
-  background: #ffc43d;
-  color: var(--night);
+  background: rgba(255, 194, 61, 0.12);
+  color: var(--signal);
 }
 
 .language {
@@ -438,6 +439,17 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
 }
 .hero-proof-link:hover { color: #fff; }
 .hero-ctas { align-items: flex-start; }
+.hero-cta {
+  min-height: 64px;
+  padding: 0 32px;
+  font-size: 1.25rem;
+}
+.hero-cta-note {
+  margin: 8px 0 0;
+  color: #91aaa4;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
   max-width: 22rem;
@@ -1933,6 +1945,7 @@ h2 {
   .hero-lede { font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }
+  .hero-cta { width: 100%; }
   .hero-primary,
   .hero-alt,
   .hero-proof-link { width: 100%; }

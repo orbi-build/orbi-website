@@ -31,48 +31,19 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #91: the hero claims delivery to a tagged release. Issue #259 moved
-// the three-segment breakdown to the trust line (heroTrustLine below) and
-// shortened the lede to one sentence pair so the primary CTA stays inside
-// the first screen; the lede keeps the workspace claim and the
-// source-of-truth boundary.
+// Issue #704: the hero uses the approved short lede and keeps one pricing
+// CTA as its only link.
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: [
-      "No new workspace.",
-      "Orbi runs the delivery line on the Issues already in your repository",
-      "GitHub stays the source of truth",
-    ],
+    lede: ["An AI agent that takes your Issues all the way to a release."],
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: [
-      "不用迁移工作流。",
-      "在仓库里已有的 Issue 上跑完整条交付线",
-      "GitHub 始终是唯一事实源",
-    ],
+    lede: ["AI 把你的 Issue 一路做到发版。"],
     title: "提个 Issue，收个版本",
   },
-};
-
-// Issue #119: the hero trust line is the 5-second scan zone and must carry
-// exactly the three delivery capabilities no competitor documents. The
-// licence / self-host / BYOK attributes every competitor shares moved to
-// the end of the How-it-works section — decision-stage (licence, data
-// boundary, model lock-in), not first-glance, information.
-const heroTrustLine = {
-  "/": [
-    "Independent review that fixes and re-tests",
-    "Only the reviewed commit merges",
-    "Frozen SHA, tag, release",
-  ],
-  "/zh/": [
-    "独立审查能改代码并重跑测试",
-    "只合并审过的那个 commit",
-    "冻结 SHA、打 Tag、发 Release",
-  ],
 };
 const sharedAttributes = {
   "/": [
@@ -529,17 +500,12 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
     }
     await page.screenshot({ path: `${artifacts}/campaign-ref-hero.png`, fullPage: false });
 
-    await page.locator('[data-cta="cloud-start"]').click();
-    if (new URL(page.url()).pathname !== "/cloud/") {
-      throw new Error(`homepage hero CTA landed at ${page.url()}, expected /cloud/`);
-    }
-
     const handoffResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const target = new URL(targetURL);
       return url.origin === target.origin && url.pathname === "/cloud/login";
     });
-    await page.locator('a.button-signal[href="/cloud/login"]').first().click(
+    await page.locator('[data-cta="cloud-start"]').click(
       process.env.BASE_URL ? { noWaitAfter: true } : {},
     );
     const response = await handoffResponse;
@@ -729,14 +695,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  // Issue #119: the rendered hero trust line is exactly the three unmatched
-  // capabilities, and the shared attributes still render in How-it-works.
-  const trustTexts = (await hero.locator(".trust-line li").allTextContents())
-    .map((item) => item.replace(/\s+/g, " ").trim());
-  const expectedTrust = heroTrustLine[path];
-  if (trustTexts.length !== expectedTrust.length
-      || expectedTrust.some((item, i) => trustTexts[i] !== item)) {
-    throw new Error(`${path}: hero trust line is ${JSON.stringify(trustTexts)}, expected exactly ${JSON.stringify(expectedTrust)}`);
+  if (await hero.locator("a").count() !== 1 || await hero.locator('[data-cta="cloud-start"]').count() !== 1) {
+    throw new Error(`${path}: hero must contain exactly one cloud-start link`);
+  }
+  if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
+    throw new Error(`${path}: removed film control remains in the hero`);
   }
   const systemText = await page.locator("#system").textContent();
   for (const attribute of sharedAttributes[path]) {
@@ -826,15 +789,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // must not carry a competing focus.
   if (await hero.locator('[data-cta="comparisons"]').count() !== 0) {
     throw new Error(`${path}: compare CTA must not live in the hero`);
-  }
-  // The install alt-CTA's target is a real page contract of its own: a
-  // visitor on any environment is sent to the canonical docs host.
-  const installCta = hero.locator('[data-cta="install"]');
-  await installCta.scrollIntoViewIfNeeded();
-  if (!(await installCta.isVisible())) throw new Error(`${path}: install CTA is not visible`);
-  const installHref = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-  if ((await installCta.getAttribute("href")) !== installHref) {
-    throw new Error(`${path}: install CTA has wrong href`);
   }
   if ((await page.locator('[data-cta="cloud-start-card"]').count()) !== 1) {
     throw new Error(`${path}: expected exactly one cloud-start-card CTA`);
@@ -1054,30 +1008,9 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
     .evaluate((el) => el.getBoundingClientRect().top);
-  // Scoped to the hero: a second .trust-line.trust-line-paper sits further
-  // down the page (Product attributes).
-  const trust = await page.locator(".hero .trust-line").evaluate((el) => {
-    const rect = el.getBoundingClientRect();
-    return { top: rect.top, bottom: rect.bottom };
-  });
-  const footnoteTop = await page.locator(".hero .hero-footnote a")
-    .evaluate((el) => el.getBoundingClientRect().top);
   const view = `${path} ${size.width}x${size.height}`;
-  // Acceptance 2: on a 1366×768 laptop the primary CTA stays above 450px.
   if (size.width >= 1000 && ctaTop >= 450) {
     throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
-  }
-  // Acceptance 3: on the same laptop the trust line ends inside the fold.
-  if (size.width >= 1000 && trust.bottom >= 768) {
-    throw new Error(`${view}: trust-line bottom is ${trust.bottom}, must stay < 768`);
-  }
-  // Acceptance 4: on a phone the trust line top stays inside the fold.
-  if (trust.top >= size.height) {
-    throw new Error(`${view}: trust-line top is ${trust.top}, must stay < ${size.height}`);
-  }
-  // Acceptance 5: the 12-factors footnote never precedes the primary CTA.
-  if (footnoteTop <= ctaTop) {
-    throw new Error(`${view}: footnote top ${footnoteTop} must come after the primary CTA top ${ctaTop}`);
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.close();
@@ -1109,11 +1042,7 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
       columns: getComputedStyle(document.querySelector(".hero")).gridTemplateColumns.split(" ").length,
       copy: rect(".hero-copy"),
       figure: rect(".hero figure.factory-trace"),
-      ctas: [
-        rect('.hero [data-cta="cloud-start"]'),
-        rect(".hero .hero-alt"),
-        rect(".hero .hero-proof-link"),
-      ],
+      ctas: [rect('.hero [data-cta="cloud-start"]')],
       h1: rect(".hero h1"),
       checklist: [...document.querySelectorAll(".hero .trust-line li")].map(rect),
     };
@@ -1794,10 +1723,16 @@ async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "
     }
     await entry.click();
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
-    if (new URL(page.url()).pathname !== cloudPath) {
-      throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath}`);
-    }
+    const landedPath = new URL(page.url()).pathname;
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
+    const expectedEntryPath = selector === '[data-cta="cloud-start"]' ? loginPath : cloudPath;
+    if (landedPath !== expectedEntryPath) {
+      throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${expectedEntryPath}`);
+    }
+    if (landedPath === loginPath) {
+      await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+      return;
+    }
     const cta = page.locator("a.button-signal").first();
     const href = await cta.getAttribute("href");
     if (href !== loginPath) {
@@ -2425,9 +2360,8 @@ async function main() {
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issue #322: all three body CTAs introduce the language-matching Cloud
-    // page. Exercise every click; the dedicated Cloud checks below own the
-    // subsequent login handoff contract.
+    // Issue #704 sends the hero CTA directly to login; the two lower-page
+    // CTAs still introduce the language-matching Cloud page.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
@@ -2499,9 +2433,7 @@ async function main() {
     await assertCiGatesPage(browser, "/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-en-mobile.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 1440, height: 900 }, "ci-gates-zh-desktop.png");
     await assertCiGatesPage(browser, "/zh/guides/ci-gates/", { width: 390, height: 844 }, "ci-gates-zh-mobile.png");
-    // Issue #169: bootstrap evidence page, both languages, phone and desktop.
-    await assertHomeEvidenceEntry(browser, "/", "/evidence/");
-    await assertHomeEvidenceEntry(browser, "/zh/", "/zh/evidence/");
+    // Issue #169: evidence page, both languages, phone and desktop.
     await assertEvidencePage(browser, "/evidence/", { width: 1440, height: 900 }, "evidence-en-desktop.png");
     await assertEvidencePage(browser, "/evidence/", { width: 390, height: 844 }, "evidence-en-mobile.png");
     await assertEvidencePage(browser, "/zh/evidence/", { width: 1440, height: 900 }, "evidence-zh-desktop.png");

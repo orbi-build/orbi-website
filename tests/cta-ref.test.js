@@ -60,14 +60,14 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
     ];
     for (const [file, landingPath] of expectations) {
       const html = await read(file);
-      for (const marker of ["cloud-start", "midway-cloud", "cloud-start-card"]) {
+      expect(html, `${file}: hero cloud-start must use the login handoff`).toContain(
+        `data-cta="cloud-start" href="${file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login"}`,
+      );
+      for (const marker of ["midway-cloud", "cloud-start-card"]) {
         expect(html, `${file}: ${marker} must introduce Cloud`).toContain(
           `data-cta="${marker}" href="${landingPath}"`,
         );
       }
-      expect(html, `${file}: homepage CTAs must not skip to login`).not.toMatch(
-        /data-cta="(?:cloud-start|midway-cloud|cloud-start-card)" href="\/(?:zh\/)?cloud\/login/,
-      );
     }
   });
 

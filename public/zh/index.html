@@ -178,24 +178,10 @@
   <div class="night">
     <section class="hero shell" data-status="shipping">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="live-dot"></span>GitHub 原生的软件生产系统</p>
         <h1>提个 Issue，<span>收个版本</span></h1>
-        <p class="hero-lede"><strong>不用迁移工作流。</strong>Orbi 在仓库里已有的 Issue 上跑完整条交付线。GitHub 始终是唯一事实源。</p>
-        <div class="cta-row hero-ctas">
-          <div class="hero-primary">
-            <a class="button button-signal" data-cta="cloud-start" href="/zh/cloud/">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
-            <p class="orbi-hero-primary-p">用 GitHub 注册，然后在 Cloud 继续完成 onboarding。</p>
-          </div>
-          <p class="hero-alt">想自己部署？<a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
-          <a class="hero-proof-link" data-cta="proof" href="/zh/evidence/">查看 Orbi 如何造 Orbi →</a>
-        </div>
-        <ul class="trust-line" aria-label="只有 Orbi 做到的事">
-          <li class="orbi-trust-line-li">独立审查能改代码并重跑测试</li>
-          <li class="orbi-trust-line-li">只合并审过的那个 commit</li>
-          <li class="orbi-trust-line-li">冻结 SHA、打 Tag、发 Release</li>
-        </ul>
-        <p class="hero-footnote"><a class="orbi-hero-footnote-a" href="https://aiready.sh/zh/">如何写一张 ai-ready Issue（12 个要素）↗</a></p>
-         <p><a class="orbi-hero-footnote-a" href="/zh/guides/issue-to-release/">从 Issue 到打了 tag 的 Release →</a></p>
+        <p class="hero-lede">AI 把你的 Issue 一路做到发版。</p>
+        <a class="button button-signal hero-cta" data-cta="cloud-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+        <p class="hero-cta-note">不用绑卡 · 只授权你选的仓库</p>
       </div>
 
       <figure class="factory-trace" id="factory-trace" aria-label="Orbi 交付产线：从范围到打 Tag 发版">
@@ -228,12 +214,6 @@
             </li>
           </ol>
         </div>
-        <figcaption>
-          <button class="trace-film" type="button" data-cta="film-play" aria-haspopup="dialog" aria-controls="film-dialog">
-            <span class="trace-film-note">我们在造软件的黑灯工厂。它已经在发版本，合并这一步由你把关。</span>
-            <span class="trace-film-cta">▶ 观看短片 · 1:35</span>
-          </button>
-        </figcaption>
       </figure>
     </section>
 
@@ -606,24 +586,6 @@ orbi setup --config orbi.toml</code></pre>
     </section>
   </main>
 
-  <!-- Issue #575: 与英文首页（Issue #571）相同的品牌片弹层。放在 </main> 之外
-       （dialog 不是页面内容），只从 trace figure 的入口打开。视频与字幕沿用
-       同一份英文素材；登录跳转用中文页的语言匹配路径 /zh/cloud/login。 -->
-  <dialog id="film-dialog" aria-label="Orbi 品牌短片">
-    <button class="film-close" type="button" aria-label="关闭">×</button>
-    <video id="film-video" controls playsinline preload="none" poster="/video/orbi-film-poster.jpg">
-      <source src="/video/orbi-film.webm" type="video/webm">
-      <source src="/video/orbi-film.mp4" type="video/mp4">
-      <track kind="captions" srclang="en" label="English" src="/video/orbi-film.en.vtt">
-    </video>
-    <div class="film-foot">
-      <p class="film-evidence">真实运行：<a class="film-evidence-a" href="https://github.com/orbi-build/orbi/issues/1367">Issue #1367</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/pull/1370">PR #1370</a> · <a class="film-evidence-a" href="https://github.com/orbi-build/orbi/releases/tag/v0.5.47">v0.5.47</a></p>
-      <div class="film-end" hidden>
-        <a class="button button-signal" data-cta="film-end-cloud" href="/zh/cloud/login">用 GitHub 登录 <span aria-hidden="true">↗</span></a>
-        <a class="button button-ghost" data-cta="film-end-selfhost" href="https://github.com/orbi-build/orbi">自己部署 <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </dialog>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
   <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
@@ -675,50 +637,6 @@ orbi setup --config orbi.toml</code></pre>
   </footer>
 
   <script src="/demo.js" defer></script>
-  <script>
-    // Issue #575: 与英文首页相同的弹层脚本（Issue #571）。共享 engagement 脚本
-    // 的 send() 保持私有；入口按钮和片尾按钮用各自的 data-cta 上报。
-    (() => {
-      const dialog = document.getElementById("film-dialog");
-      const video = document.getElementById("film-video");
-      const evidence = dialog.querySelector(".film-evidence");
-      const endRow = dialog.querySelector(".film-end");
-      const beacon = (detail) => {
-        navigator.sendBeacon("/cloud/e", new Blob([JSON.stringify({ kind: "cta_click", path: location.pathname, detail })], { type: "application/json" }));
-      };
-      let halfSent = false;
-      let endSent = false;
-      document.getElementById("factory-trace").addEventListener("click", (event) => {
-        if (event.target.closest("a")) return; // an existing link navigates; the rest of the figure opens the film
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        dialog.showModal();
-      });
-      dialog.querySelector(".film-close").addEventListener("click", () => dialog.close());
-      dialog.addEventListener("click", (event) => {
-        if (event.target === dialog) dialog.close(); // the backdrop
-      });
-      dialog.addEventListener("close", () => video.pause());
-      video.addEventListener("play", () => {
-        endRow.hidden = true;
-        evidence.hidden = false;
-      });
-      video.addEventListener("ended", () => {
-        evidence.hidden = true;
-        endRow.hidden = false;
-        if (!endSent) {
-          endSent = true;
-          beacon("film-100");
-        }
-      });
-      video.addEventListener("timeupdate", () => {
-        if (!halfSent && video.duration > 0 && video.currentTime / video.duration >= 0.5) {
-          halfSent = true;
-          beacon("film-50");
-        }
-      });
-    })();
-  </script>
 
 <script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
