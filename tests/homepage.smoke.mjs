@@ -1121,9 +1121,11 @@ const cloudPages = {
       // that is 1.2B, the same quota the Founder plan carries); the
       // over-limit behavior is the pause, not a $0.10 overage price
       "US$29", "US$290", "US$79", "US$790", "1.2B tokens", "deliveries pause", "50% off forever",
-      // Issue #277: Cloud gives a range rather than a misleading single-point
-      // conversion; the detailed measurement remains on /cost/.
-      "Solo's 400M allowance: about 80–210 merged deliveries for typical tickets in a small repository, about 32 in a large codebase like Orbi's own engine; Pro's 1.2B allowance: about 240–630 merged deliveries for typical tickets in a small repository, about 96 in a large codebase like Orbi's own engine (measured September 2026)", "prompt caching",
+      // Issue #744: the short measured ranges sit in their paid cards; the
+      // detailed measurement remains on /cost/.
+      "Fixed monthly price. No overage bills.",
+      "≈ 80–210 merged deliveries / month", "≈ 240–630 merged deliveries / month",
+      "How we measured →", "prompt caching",
     ],
     guideHref: "/guides/ci-gates/",
   },
@@ -1154,8 +1156,10 @@ const cloudPages = {
       // included-token quota (rendered from the pricing.json label; zh rides
       // the same label, 1.2B since #663)
       "US$29", "US$290", "US$79", "US$790", "1.2B token", "交付暂停", "永久 5 折",
-      // Issue #277: Cloud gives the owner-approved delivery range.
-      "Solo 的 400M 额度：小仓库的常见票大约 80–210 次合并交付，像 Orbi 引擎这样的大代码库大约 32 次；Pro 的 1.2B 额度：小仓库的常见票大约 240–630 次合并交付，像 Orbi 引擎这样的大代码库大约 96 次（2026 年 9 月实测）", "prompt caching",
+      // Issue #744: the short measured ranges sit in their paid cards.
+      "固定月费，不会超额扣费。",
+      "每月约 80–210 次合并交付", "每月约 240–630 次合并交付",
+      "怎么测的 →", "prompt caching",
     ],
     guideHref: "/zh/guides/ci-gates/",
   },
