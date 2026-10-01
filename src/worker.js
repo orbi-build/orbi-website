@@ -72,15 +72,7 @@ const GUIDE_REDIRECTS = new Map([
   ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
 ]);
 const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth"]);
-const ENGAGEMENT_DETAILS = new Set([
-  "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
-  "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
-  "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
-  "pricing-pro-year", "pricing-pro-month",
-  // Issue #571: the brand-film entry, the dialog's own 50%/100% beacons, and
-  // the two end-of-film buttons.
-  "film-play", "film-50", "film-100", "film-end-cloud", "film-end-selfhost",
-]);
+const CTA_DETAIL = /^[a-z0-9-]{1,40}$/;
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
 function githubHeaders(token) {
@@ -851,7 +843,7 @@ async function engagementResponse(request, env, ctx) {
   const valid = ENGAGEMENT_KINDS.has(kind)
     && (kind === "visit" ? detail === undefined && typeof event.search === "string" && typeof event.referrer === "string"
       : kind === "engaged" ? detail === undefined
-        : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
+        : kind === "cta_click" ? typeof detail === "string" && CTA_DETAIL.test(detail)
           : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
   if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
 

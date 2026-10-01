@@ -132,7 +132,7 @@ describe("browser engagement endpoint", () => {
     [{ kind: "unknown" }],
     [{ kind: "visit", path: "/", search: "" }],
     [{ kind: "visit", path: "/", search: "", referrer: "", detail: "extra" }],
-    [{ kind: "cta_click", detail: "not-allowed" }],
+    [{ kind: "cta_click", detail: "not_allowed" }],
     [{ kind: "scroll_depth", detail: "60" }],
     [{ kind: "engaged", detail: "extra" }],
   ])("rejects invalid event %j without forwarding", async event => {
