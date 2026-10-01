@@ -444,15 +444,12 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   padding: 0 32px;
   font-size: 1.25rem;
 }
-.hero-cta-notes {
-  display: grid;
-  gap: 4px;
-  margin-top: 8px;
+.hero-cta-note {
+  margin: 8px 0 0;
   color: #91aaa4;
   font-size: 0.82rem;
   line-height: 1.45;
 }
-.hero-cta-note { margin: 0; }
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
   max-width: 22rem;

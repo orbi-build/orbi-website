@@ -31,45 +31,19 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #704: the hero states the reviewed delivery outcome and keeps one
-// pricing CTA as its only link.
+// Issue #704: the hero uses the approved short lede and keeps one pricing
+// CTA as its only link.
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: [
-      "Orbi writes the code",
-      "second session review",
-      "tags the release",
-    ],
+    lede: ["An AI agent that takes your Issues all the way to a release."],
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: [
-      "Orbi 写代码",
-      "另一个会话独立审查",
-      "打 tag 发版",
-    ],
+    lede: ["AI 把你的 Issue 一路做到发版。"],
     title: "提个 Issue，收个版本",
   },
-};
-
-// Issue #119: the hero trust line is the 5-second scan zone and must carry
-// exactly the three delivery capabilities no competitor documents. The
-// licence / self-host / BYOK attributes every competitor shares moved to
-// the end of the How-it-works section — decision-stage (licence, data
-// boundary, model lock-in), not first-glance, information.
-const heroTrustLine = {
-  "/": [
-    "Independent review that fixes and re-tests",
-    "Only the reviewed commit merges",
-    "Frozen SHA, tag, release",
-  ],
-  "/zh/": [
-    "独立审查能改代码并重跑测试",
-    "只合并审过的那个 commit",
-    "冻结 SHA、打 Tag、发 Release",
-  ],
 };
 const sharedAttributes = {
   "/": [
@@ -1751,8 +1725,9 @@ async function assertHomeCloudFlow(browser, path, size, screenshot, selector = "
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
     const landedPath = new URL(page.url()).pathname;
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
-    if (landedPath !== cloudPath && landedPath !== loginPath) {
-      throw new Error(`${path}: nav click landed at ${page.url()}, expected ${cloudPath} or ${loginPath}`);
+    const expectedEntryPath = selector === '[data-cta="cloud-start"]' ? loginPath : cloudPath;
+    if (landedPath !== expectedEntryPath) {
+      throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${expectedEntryPath}`);
     }
     if (landedPath === loginPath) {
       await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
@@ -2385,9 +2360,8 @@ async function main() {
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issue #322: all three body CTAs introduce the language-matching Cloud
-    // page. Exercise every click; the dedicated Cloud checks below own the
-    // subsequent login handoff contract.
+    // Issue #704 sends the hero CTA directly to login; the two lower-page
+    // CTAs still introduce the language-matching Cloud page.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
