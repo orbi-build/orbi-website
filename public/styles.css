@@ -1048,6 +1048,7 @@ h2 {
 .production-map {
   margin-top: 82px;
   border-top: 2px solid var(--ink);
+  border-radius: var(--radius-card);
 }
 
 .map-row {

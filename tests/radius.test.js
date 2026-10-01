@@ -34,6 +34,21 @@ describe("site radius tokens", () => {
     }
   });
 
+  it("uses the card radius for the named panels", () => {
+    for (const selector of [
+      ".hero-receipt",
+      ".stats",
+      ".proof-card",
+      ".production-map",
+      ".faq-item",
+      ".pricing-card",
+      ".subscribe-box",
+    ]) {
+      const rule = css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")} \\{[\\s\\S]*?\\}`));
+      expect(rule?.[0], selector).toContain("border-radius: var(--radius-card)");
+    }
+  });
+
   it("has no un-tokenized non-circular radius", () => {
     const declarations = [...css.matchAll(/border-radius\s*:\s*([^;]+);/g)].map((match) => match[1].trim());
     const nonCircular = declarations.filter((value) => !["50%", "999px"].includes(value));
