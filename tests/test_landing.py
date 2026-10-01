@@ -335,7 +335,7 @@ class LandingTests(unittest.TestCase):
             self.assertIn("direction", sections)
 
     def test_factory_map_covers_the_current_delivery_graph(self) -> None:
-        expected = {"epic", "dependency", "delivery", "release"}
+        expected = {"delivery", "review", "release"}
         for page in (self.en, self.zh):
             capabilities = {
                 attrs["data-capability"]
