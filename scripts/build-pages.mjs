@@ -1015,6 +1015,14 @@ function renderSubscribe(lang) {
   });
 }
 
+export function insertInlinePostCta(html, cta) {
+  const paragraphs = [...html.matchAll(/<p\b[\s\S]*?<\/p>/g)];
+  if (paragraphs.length < 3) return html;
+  const second = paragraphs[1];
+  const end = second.index + second[0].length;
+  return `${html.slice(0, end)}${cta}${html.slice(end)}`;
+}
+
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
   const toc = renderPostToc(post);
@@ -1045,8 +1053,12 @@ function renderPost(post, template) {
   <p class="post-cta-note">No card · Only the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside>`;
-  const body = post.html.replace(/<h2 id="(?:related|相关)">/, `${cta}$&`);
+  const inlineCta = post.lang === "zh"
+    ? `<aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>`
+    : `<aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>`;
+  const body = insertInlinePostCta(post.html, inlineCta).replace(/<h2 id="(?:related|相关)">/, `${cta}$&`);
   return fill(template, {
+    BODY: body,
     LANG_ATTR: t.htmlLang,
     TITLE: escAttr(`${post.title} | Orbi`),
     DESCRIPTION: escAttr(post.summary),
@@ -1060,7 +1072,6 @@ function renderPost(post, template) {
     SUMMARY: escAttr(post.summary),
     POST_TOC: toc.desktop,
     INLINE_TOC: toc.inline,
-    BODY: body,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
