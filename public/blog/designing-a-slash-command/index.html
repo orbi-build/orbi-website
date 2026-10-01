@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -90,57 +91,57 @@
 <p>When our engine finishes a milestone, it opens a ticket with the candidates for the next version and waits for a choice. That pause is intentional.</p>
 <p>Automatic version advancement stays off. The release engine should not choose what ships next.</p>
 <p>The problem was the answer. The ticket asked people to run
-<code>orbi milestone set v0.5.40</code>, a CLI command on the host machine. Managed
+<code class="post-code--spaced">orbi milestone set v0.5.40</code>, a CLI command on the host machine. Managed
 tenants have neither a host shell nor that CLI. Their sandbox runs on our
 hardware, so the engine was asking them for something they could not do.</p>
-<p>Closing that gap meant building an in-ticket command: comment <code>/milestone v0.5.40</code>
+<p>Closing that gap meant building an in-ticket command: comment <code class="post-code--spaced">/milestone v0.5.40</code>
 and the engine does the rest. It is one small feature. It took a day of design
 because almost every choice in it has been made before, by people who then had
 to live with it.</p>
 <h2>Why not a verb</h2>
-<p>The first argument was about the name. <code>/advance</code> was the obvious candidate, and
+<p>The first argument was about the name. <code class="post-code--single">/advance</code> was the obvious candidate, and
 it is wrong.</p>
-<p>In-ticket commands are named after states, not actions. Prow has <code>/lgtm</code>,
-<code>/hold</code>, <code>/approve</code>. bors has <code>bors r+</code>. None of them is an imperative verb.
+<p>In-ticket commands are named after states, not actions. Prow has <code class="post-code--single">/lgtm</code>,
+<code class="post-code--single">/hold</code>, <code class="post-code--single">/approve</code>. bors has <code class="post-code--spaced">bors r+</code>. None of them is an imperative verb.
 This is not a style preference. It comes from what the command means. A CLI
 says <em>do this thing</em>, so a verb fits. An in-ticket command says <em>set it to this</em>,
-so a noun fits. <code>/milestone v0.5.40</code> reads as &quot;milestone: v0.5.40&quot;, the same
-shape as <code>/hold</code>.</p>
+so a noun fits. <code class="post-code--spaced">/milestone v0.5.40</code> reads as &quot;milestone: v0.5.40&quot;, the same
+shape as <code class="post-code--single">/hold</code>.</p>
 <p>There is a second reason, specific to us. The CLI is already called
-<code>orbi milestone set</code>. Naming the in-ticket command <code>/milestone</code> means the
-documentation says the word once. <code>advance</code> would have been a third name for a
+<code class="post-code--spaced">orbi milestone set</code>. Naming the in-ticket command <code class="post-code--single">/milestone</code> means the
+documentation says the word once. <code class="post-code--single">advance</code> would have been a third name for a
 thing that already has two.</p>
-<p>We also rejected <code>bump version</code>, because it reads like editing the version
-string in <code>pyproject.toml</code>, which is what the release process does, not what
+<p>We also rejected <code class="post-code--spaced">bump version</code>, because it reads like editing the version
+string in <code class="post-code--single">pyproject.toml</code>, which is what the release process does, not what
 this command does. A name that makes people expect the wrong side effect is a
 bad name even if it is short.</p>
 <p>That last one is worth dwelling on, because it is the rule the other rejections
-follow from. A command name is a promise about side effects. <code>/advance</code> promises
+follow from. A command name is a promise about side effects. <code class="post-code--single">/advance</code> promises
 something moved forward but does not say what: the version? the delivery? the
-queue? <code>bump version</code> promises a file edit that never happens. Both are short,
+queue? <code class="post-code--spaced">bump version</code> promises a file edit that never happens. Both are short,
 pronounceable, and wrong in the same way: <strong>the reader forms an expectation the
 implementation will not honour.</strong></p>
-<p><code>/milestone v0.5.40</code> makes exactly one promise: the milestone is now v0.5.40,
+<p><code class="post-code--spaced">/milestone v0.5.40</code> makes exactly one promise: the milestone is now v0.5.40,
 and the three things it does are all in service of making that true. Creating
 the milestone, opening the release ticket, landing the config value: none of
 them is a surprise once you have read the name.</p>
 <h2>Why no @</h2>
-<p>The second argument: <code>/milestone</code> or <code>@orbi milestone</code>?</p>
+<p>The second argument: <code class="post-code--single">/milestone</code> or <code class="post-code--spaced">@orbi milestone</code>?</p>
 <p>The industry splits cleanly, and the dividing line is <strong>who controls the bot&#39;s
 account name</strong>.</p>
 <p>Prow and bors use a bare slash. They have to: the bot account name varies per
-deployment. Kubernetes runs <code>k8s-ci-robot</code>, OpenShift runs <code>openshift-ci-robot</code>.
-A syntax that hardcodes <code>@name</code> cannot be forked.</p>
-<p>Dependabot and Copilot use <code>@bot</code>. They can: there is exactly one Dependabot,
+deployment. Kubernetes runs <code class="post-code--single">k8s-ci-robot</code>, OpenShift runs <code class="post-code--single">openshift-ci-robot</code>.
+A syntax that hardcodes <code class="post-code--single">@name</code> cannot be forked.</p>
+<p>Dependabot and Copilot use <code class="post-code--single">@bot</code>. They can: there is exactly one Dependabot,
 its name is globally unique, and the mention buys a notification and
 autocomplete for free.</p>
 <p>We are the first kind. The engine is open source under AGPL-3.0, and self-hostable. More
 pointedly, the same engine already runs under two identities in our own org. On
 our bootstrap runner the comment author is a human account, and in a managed
-sandbox it is <code>orbi-build[bot]</code>. We confirmed both on our own repository the
+sandbox it is <code class="post-code--single">orbi-build[bot]</code>. We confirmed both on our own repository the
 same day. Binding the syntax to a name would break self-hosted users on day one.</p>
-<p>The tempting middle path is to accept both: match <code>@orbi milestone</code> <em>and</em>
-<code>/milestone</code>, and let people use whichever they like. We rejected that too, and
+<p>The tempting middle path is to accept both: match <code class="post-code--spaced">@orbi milestone</code> <em>and</em>
+<code class="post-code--single">/milestone</code>, and let people use whichever they like. We rejected that too, and
 the reason is not aesthetic. Two syntaxes mean two things to document, two
 things to test, and two things that can drift apart when someone adds the third
 command. The notification is genuinely useful, but the cost is
@@ -148,7 +149,7 @@ paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.</p>
 <h2>The regex is three decisions in one</h2>
 <p>Anchoring at the start of a line, with the multiline flag:</p>
-<pre><code>(?mi)^/milestone[\t ]+(\S+)[\t ]*$
+<pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
 </code></pre>
 <p>Prow writes this in Go. bors splits the comment into lines and anchors each one
 in Elixir. Two unrelated implementations made the same choice, usually a sign
@@ -157,7 +158,7 @@ the choice is load-bearing.</p>
 <ul>
 <li>the command can appear on any line of a long comment, so you can explain
 yourself and then issue it</li>
-<li>it is automatically immune to GitHub&#39;s quote-reply, because <code>&gt;</code> pushes the
+<li>it is automatically immune to GitHub&#39;s quote-reply, because <code class="post-code--single">&gt;</code> pushes the
 slash off the line start</li>
 <li>it is automatically immune to indented code blocks, for the same reason</li>
 </ul>
@@ -168,72 +169,72 @@ to be the most interesting thing we read all day.</p>
 <figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them. It leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler. It leaks at “permission”.</figcaption>
 </figure><h2>The bug Prow still has</h2>
 <p>A regex does not parse Markdown. If you write a comment explaining how to use
-<code>/hold</code>, and you put the example inside triple backticks, the regex sees a line
-starting with <code>/hold</code> and fires.</p>
-<p>Prow knows this. There is a function for it, <code>DropCodeBlock</code>, in
-<code>pkg/markdown/code_block.go</code>, with a 2025 copyright header. So we checked how
+<code class="post-code--single">/hold</code>, and you put the example inside triple backticks, the regex sees a line
+starting with <code class="post-code--single">/hold</code> and fires.</p>
+<p>Prow knows this. There is a function for it, <code class="post-code--single">DropCodeBlock</code>, in
+<code class="post-code--single">pkg/markdown/code_block.go</code>, with a 2025 copyright header. So we checked how
 widely it is used:</p>
-<pre><code>$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
+<pre><code class="post-code--spaced">$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
 pkg/plugins/trigger/generic-comment.go:66
 pkg/markdown/code_block.go:25   (the definition)
 </code></pre>
-<p>One call site. Out of fifty-plus plugins. Writing <code>/hold</code> inside a fenced block
+<p>One call site. Out of fifty-plus plugins. Writing <code class="post-code--single">/hold</code> inside a fenced block
 on Prow fires today.</p>
 <p>This is not a criticism of Prow&#39;s engineers; it is a structural consequence of
 where they put the regex. Prow gives every plugin its own pattern;
-<code>pkg/plugins/hold/hold.go:41</code> has <code>(?mi)^/hold(\s.*)?$</code> written out locally. The
+<code class="post-code--single">pkg/plugins/hold/hold.go:41</code> has <code class="post-code--single">(?mi)^/hold(\s.*)?$</code> written out locally. The
 convention is repo-wide but nothing enforces it, and when each command owns its
 own matching, <strong>a fix to the shared sanitiser cannot reach them</strong>. The fix
 exists. It just cannot arrive.</p>
 <p>So our shared layer compiles the pattern itself, from a declared verb. A command
-author supplies <code>verbs=(&quot;milestone&quot;,)</code> and never sees a regex. They cannot omit
+author supplies <code class="post-code--single">verbs=(&quot;milestone&quot;,)</code> and never sees a regex. They cannot omit
 the anchor, and they cannot skip the fenced-block stripping, because they were
 never given the opportunity to write either one.</p>
 <h2>The escalation bors has</h2>
 <p>The same question applies to permissions, and here the comparison inverts:
 bors has the better design and the worse bug.</p>
 <p>Prow makes permission each plugin&#39;s job. There is a shared helper,
-<code>TrustedUser(...)</code> at <code>pkg/plugins/trigger/trigger.go:253</code>, but a plugin has to
-remember to call it, and the standard differs per plugin: <code>lgtm.go:291</code> checks
-collaborator status, while <code>override.go:317</code> accepts repo admin <em>or</em> a GitHub
-team <em>or</em> top-level OWNERS. Worse, the <code>WhoCanUse</code> string shown in help
-(<code>override.go:251</code>) and the code that actually authorises (<code>override.go:326</code>)
+<code class="post-code--single">TrustedUser(...)</code> at <code class="post-code--single">pkg/plugins/trigger/trigger.go:253</code>, but a plugin has to
+remember to call it, and the standard differs per plugin: <code class="post-code--single">lgtm.go:291</code> checks
+collaborator status, while <code class="post-code--single">override.go:317</code> accepts repo admin <em>or</em> a GitHub
+team <em>or</em> top-level OWNERS. Worse, the <code class="post-code--single">WhoCanUse</code> string shown in help
+(<code class="post-code--single">override.go:251</code>) and the code that actually authorises (<code class="post-code--single">override.go:326</code>)
 are two separate truths, kept in sync by hand.</p>
-<p>bors declares instead. <code>required_permission_level_cmd/1</code> in
-<code>lib/web/command.ex:356</code> maps each command to <code>:none</code>, <code>:member</code> or <code>:reviewer</code>.
-Then <code>run/1</code> at <code>command.ex:337-354</code> takes the strictest level across every
+<p>bors declares instead. <code class="post-code--single">required_permission_level_cmd/1</code> in
+<code class="post-code--single">lib/web/command.ex:356</code> maps each command to <code class="post-code--single">:none</code>, <code class="post-code--single">:member</code> or <code class="post-code--single">:reviewer</code>.
+Then <code class="post-code--single">run/1</code> at <code class="post-code--single">command.ex:337-354</code> takes the strictest level across every
 command in one comment and checks once, before executing any of them. That is
 the right shape.</p>
-<p>But <code>run/2</code> is reachable directly, and <code>command.ex:513-516</code> reaches it:</p>
+<p>But <code class="post-code--single">run/2</code> is reachable directly, and <code class="post-code--single">command.ex:513-516</code> reaches it:</p>
 <pre><code class="language-elixir">def run(c, :retry) do
   {commenter, cmd} = Logging.most_recent_cmd(c.patch)
   run(%{c | commenter: commenter}, cmd)
 end
 </code></pre>
-<p><code>:retry</code> requires only <code>:member</code> (<code>command.ex:376</code>). It replays a historical
+<p><code class="post-code--single">:retry</code> requires only <code class="post-code--single">:member</code> (<code class="post-code--single">command.ex:376</code>). It replays a historical
 command <strong>under the original commenter&#39;s identity</strong>, and it enters through
-<code>run/2</code>, so the gate in <code>run/1</code> never runs. A member can replay a reviewer&#39;s
+<code class="post-code--single">run/2</code>, so the gate in <code class="post-code--single">run/1</code> never runs. A member can replay a reviewer&#39;s
 command.</p>
 <p>The lesson is not &quot;bors is insecure&quot;. It is that the gate was correct and the
 second entrance defeated it. One execution path, or the gate is decorative.</p>
 <h2>What we took from each</h2>
 <p>Two more findings worth copying, one in each direction.</p>
-<p>Prow&#39;s genuinely good idea: <code>ValidatePluginsUnknown</code> at
-<code>pkg/plugins/config.go:1381</code> rejects a configured-but-unregistered plugin by
+<p>Prow&#39;s genuinely good idea: <code class="post-code--single">ValidatePluginsUnknown</code> at
+<code class="post-code--single">pkg/plugins/config.go:1381</code> rejects a configured-but-unregistered plugin by
 looking it up in the help table. That makes &quot;shipped without documentation&quot; a
-hard error rather than a code review note. Our registry entry carries <code>usage</code>
-and <code>description</code>, and a binding test fails if a registered command is missing
+hard error rather than a code review note. Our registry entry carries <code class="post-code--single">usage</code>
+and <code class="post-code--single">description</code>, and a binding test fails if a registered command is missing
 from the docs.</p>
-<p>Prow&#39;s gap: <code>RegisterGenericCommentHandler</code> at <code>pkg/plugins/plugins.go:176</code> is a
+<p>Prow&#39;s gap: <code class="post-code--single">RegisterGenericCommentHandler</code> at <code class="post-code--single">pkg/plugins/plugins.go:176</code> is a
 bare map assignment. Register the same name twice and the second silently
-overwrites the first; two plugins both matching <code>^/hold</code> both run, in
+overwrites the first; two plugins both matching <code class="post-code--single">^/hold</code> both run, in
 nondeterministic goroutine order. We raise on a duplicate name and on
 overlapping verbs, at import time.</p>
 <h2>The registry already existed</h2>
 <p>The shape we landed on was not invented for this. Our journal module has had it
-for months. <code>JOURNAL_EVENTS</code> at <code>src/orbi/journal.py:167</code> is an explicit dict,
+for months. <code class="post-code--single">JOURNAL_EVENTS</code> at <code class="post-code--single">src/orbi/journal.py:167</code> is an explicit dict,
 written out in the module. No decorators discovering things, no entry points, no
-dynamic import. Registration <em>is</em> validation: <code>event()</code> raises on an
+dynamic import. Registration <em>is</em> validation: <code class="post-code--single">event()</code> raises on an
 unregistered name, so a typo fails immediately instead of writing a silently
 misnamed event. And a binding test pins the registry against the EN/ZH
 documentation tables and the exporter&#39;s known kinds, in all three directions.</p>
@@ -253,8 +254,8 @@ TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 <p>The shared layer alone owns regex construction with the anchor,
 fenced-block stripping, quoted-line stripping, skipping the runner&#39;s own
 comments, permission enforcement, last-occurrence-wins, and receipts.
-<code>milestone_command.py</code> shrinks to a registrant: a <code>validate</code> that checks the
-version against the candidate set, and an <code>apply</code> that runs the three steps.</p>
+<code class="post-code--single">milestone_command.py</code> shrinks to a registrant: a <code class="post-code--single">validate</code> that checks the
+version against the candidate set, and an <code class="post-code--single">apply</code> that runs the three steps.</p>
 <p>Adding a second command becomes &quot;edit one dict, and the tests tell you what else
 you forgot&quot;.</p>
 <figure class="post-media">
@@ -302,50 +303,50 @@ and finding out why took a grep.</p>
 </thead>
 <tbody><tr>
 <td>Create the milestone</td>
-<td><strong>None.</strong> <code>create_milestone</code> and <code>milestones --method POST</code> had zero hits repo-wide</td>
+<td><strong>None.</strong> <code class="post-code--single">create_milestone</code> and <code class="post-code--spaced">milestones --method POST</code> had zero hits repo-wide</td>
 </tr>
 <tr>
 <td>Open the release ticket</td>
-<td><strong>None.</strong> Only <code>arm_release_ticket</code>, which labels an <em>existing</em> ticket</td>
+<td><strong>None.</strong> Only <code class="post-code--single">arm_release_ticket</code>, which labels an <em>existing</em> ticket</td>
 </tr>
 <tr>
-<td>Land <code>active_milestone</code></td>
-<td>Yes; <code>rewrite_active_milestone_line</code></td>
+<td>Land <code class="post-code--single">active_milestone</code></td>
+<td>Yes; <code class="post-code--single">rewrite_active_milestone_line</code></td>
 </tr>
 </tbody></table></div>
 <p>The evidence was sitting in our own repository: v0.5.40&#39;s milestone had been
-created by hand with <code>gh api</code>, and its release ticket did not exist at all.</p>
+created by hand with <code class="post-code--spaced">gh api</code>, and its release ticket did not exist at all.</p>
 <p>The reason it had gone unnoticed for so long is more uncomfortable. A release
-ticket template lives at <code>.github/release-ticket-template.md</code>, fully specified.
-But <code>grep -rn &quot;release-ticket-template&quot; src/ prompts/ AGENTS.md</code> returns nothing.
+ticket template lives at <code class="post-code--single">.github/release-ticket-template.md</code>, fully specified.
+But <code class="post-code--spaced">grep -rn &quot;release-ticket-template&quot; src/ prompts/ AGENTS.md</code> returns nothing.
 No code has ever read it. Maintainers had been filling it in with a local
 client-side tool, a patch installed on exactly one machine. <strong>Managed tenants
 were hitting the unpatched original.</strong></p>
 <p>The fix is not to ship that local tool. It depends on a specific client, and
 which client a tenant uses is not ours to decide. What belongs in the engine is
 the capability: render the repo&#39;s own template, fill the fields, open the ticket.</p>
-<p>So <code>/milestone v0.5.40</code> does three things, each independently idempotent: create
+<p>So <code class="post-code--spaced">/milestone v0.5.40</code> does three things, each independently idempotent: create
 the milestone if absent, open the release ticket if absent, land the config
 value. Run it twice and you get one milestone and one ticket.</p>
 <h3>The branch we refused to write</h3>
-<p>Landing the config value has two destinations, because <code>active_milestone</code> can
-come from two places: a repository policy file (<code>.github/orbi.toml</code>) or the
+<p>Landing the config value has two destinations, because <code class="post-code--single">active_milestone</code> can
+come from two places: a repository policy file (<code class="post-code--single">.github/orbi.toml</code>) or the
 host&#39;s own config. Write to the wrong one and the value either does not take
 effect or takes effect for the wrong scope.</p>
 <p>The obvious implementation is a runtime check: <em>am I running in a managed
 sandbox or on a self-hosted runner?</em> We refused to write that branch.</p>
-<p>There is no reliable signal for it. The nearest candidate, <code>engine_source_track</code>,
+<p>There is no reliable signal for it. The nearest candidate, <code class="post-code--single">engine_source_track</code>,
 can be set on a bootstrap runner too, so the check would be a heuristic
 pretending to be a fact, and heuristics in a write path fail in the direction
 nobody tests.</p>
 <p>More importantly, <strong>the question is the wrong one.</strong> We do not need to know
 where we are running. We need to know where this value came from, and that is
-already known, precisely, by the code that read it: <code>resolve_policy</code> in
-<code>src/orbi/repo_config.py:287-290</code> knows whether <code>active_milestone</code> came from the
+already known, precisely, by the code that read it: <code class="post-code--single">resolve_policy</code> in
+<code class="post-code--single">src/orbi/repo_config.py:287-290</code> knows whether <code class="post-code--single">active_milestone</code> came from the
 repo policy or the host config, because it is the thing that looked.</p>
 <p>So the branch keys off provenance, not environment. Policy-sourced values are
-written back to <code>.github/orbi.toml</code> and pushed; host-sourced values go through
-<code>rewrite_active_milestone_line</code>. Two paths, one question, and the answer is a
+written back to <code class="post-code--single">.github/orbi.toml</code> and pushed; host-sourced values go through
+<code class="post-code--single">rewrite_active_milestone_line</code>. Two paths, one question, and the answer is a
 fact rather than an inference.</p>
 <p>This generalises: when you find yourself about to detect your own environment,
 check whether the thing you actually need was already determined by whoever
@@ -359,14 +360,14 @@ entire value is being predictable.</p>
 rather than answering it by accident.</p>
 <p>Commands are currently read from exactly one place: the confirmation ticket the
 engine itself opened, on an idle tick, only when auto-advance is off. Three
-conditions stacked. Outside that intersection, a <code>/command</code> is never seen.</p>
+conditions stacked. Outside that intersection, a <code class="post-code--single">/command</code> is never seen.</p>
 <p>That is the narrowest possible scope, and it was the right call for a first
-command. But it decides which commands can <em>exist</em>. <code>/approve</code> to clear a review
-gate, <code>/retry</code> to requeue a blocked delivery, <code>/cancel</code> to stop one in flight,
-<code>/model</code> to override for a single run. None of them has anywhere to land,
+command. But it decides which commands can <em>exist</em>. <code class="post-code--single">/approve</code> to clear a review
+gate, <code class="post-code--single">/retry</code> to requeue a blocked delivery, <code class="post-code--single">/cancel</code> to stop one in flight,
+<code class="post-code--single">/model</code> to override for a single run. None of them has anywhere to land,
 because delivery tickets are opened by humans and the engine never opens a
 confirmation ticket for them.</p>
-<p>Widening the scope to scan every <code>ai-*</code> ticket costs N extra API calls per tick,
+<p>Widening the scope to scan every <code class="post-code--single">ai-*</code> ticket costs N extra API calls per tick,
 a per-ticket cursor, and a rethink of how receipts dedupe across many tickets.
 That cost is only justified by a command that needs it.</p>
 <p>So the question is not &quot;which option is better&quot;. It is: <strong>which of those four
@@ -388,11 +389,11 @@ delivery ticket&quot;. Those are not incidental; they are the design of a differ
 feature, and they would have been designed in passing, to serve commands nobody
 had specified yet.</p>
 <p>The alternative failure is just as real: deciding now to stay narrow, and
-writing that into the architecture so firmly that <code>/retry</code> becomes expensive
+writing that into the architecture so firmly that <code class="post-code--single">/retry</code> becomes expensive
 later. So #1294 states its own scope neutrality explicitly: it moves code and
 adds nothing, and it does not read the discussion&#39;s conclusion.</p>
 <p><strong>The cost of Option B is only justified by a command that needs it.</strong> Until one
-of <code>/approve</code>, <code>/retry</code>, <code>/cancel</code> or <code>/model</code> is specified, there is no
+of <code class="post-code--single">/approve</code>, <code class="post-code--single">/retry</code>, <code class="post-code--single">/cancel</code> or <code class="post-code--single">/model</code> is specified, there is no
 information that would make the choice better than a coin flip. Writing the
 question down, with both option&#39;s costs enumerated, is what keeps it from being
 answered by whoever next opens that file.</p>

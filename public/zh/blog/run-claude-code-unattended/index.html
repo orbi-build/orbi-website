@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -87,56 +88,56 @@
     </div>
 
     <article class="post-body">
-<p>Claude Code 的 headless 模式，就是加了 <code>-p</code>（全称 <code>--print</code>）的非交互模式：不开交互界面，跑完一个提示词，把结果打到终端就退出，失败时返回非零退出码。官方中文文档把这一页叫<a href="https://code.claude.com/docs/zh-CN/headless">「以编程方式运行 Claude Code」</a>，正文里叫非交互模式，headless 这个词只留在了网址里。把 Claude Code 放进 cron 或 CI 做自动化执行，靠的就是它。没人回答授权提示时，headless 运行会直接拒掉需要授权的操作，所以要给它一个放行的权限模式：</p>
+<p>Claude Code 的 headless 模式，就是加了 <code class="post-code--single">-p</code>（全称 <code class="post-code--single">--print</code>）的非交互模式：不开交互界面，跑完一个提示词，把结果打到终端就退出，失败时返回非零退出码。官方中文文档把这一页叫<a href="https://code.claude.com/docs/zh-CN/headless">「以编程方式运行 Claude Code」</a>，正文里叫非交互模式，headless 这个词只留在了网址里。把 Claude Code 放进 cron 或 CI 做自动化执行，靠的就是它。没人回答授权提示时，headless 运行会直接拒掉需要授权的操作，所以要给它一个放行的权限模式：</p>
 <pre><code class="language-bash">claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre>
-<p><code>--permission-prompts none</code> 在这里是可选的：普通 cron 或 CI 里本来就没人回答授权提示，它的作用是告诉 Claude 被拒的操作别再重试，并拿掉 AskUserQuestion 这类需要人来回答的工具。它要求 Claude Code v2.1.259 及以上，旧版本去掉就行。</p>
+<p><code class="post-code--spaced">--permission-prompts none</code> 在这里是可选的：普通 cron 或 CI 里本来就没人回答授权提示，它的作用是告诉 Claude 被拒的操作别再重试，并拿掉 AskUserQuestion 这类需要人来回答的工具。它要求 Claude Code v2.1.259 及以上，旧版本去掉就行。</p>
 <p>我是 Lawrence Liu，Orbi 的维护者。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。</p>
 <h2>headless（非交互）模式要知道的参数</h2>
 <p>headless 模式给你的是一个没人看着也能跑完的会话。放进 cron 或 CI 之后，有几个参数要知道：</p>
 <ul>
-<li><code>--allowedTools</code> 预先放行指定工具，<code>--permission-mode</code> 给其余操作定一个默认权限。</li>
-<li><code>--output-format json</code> 让脚本拿到结果、会话 ID 和花费。</li>
-<li><code>--dangerously-skip-permissions</code> 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查（仍有少数保护生效，headless 运行里仍需人批准的操作会被拒绝），官方说只能在容器或虚拟机里、用非 root 用户跑。在自己的机器上跑，<code>auto</code> 或者 <code>dontAsk</code> 加白名单更稳妥。</li>
-<li><code>--bare</code> 跳过机器和仓库里配置的 hooks、插件、MCP server 和 CLAUDE.md。不加的话，在一个你从没信任过的仓库里跑 headless，照样会执行这个仓库自带的 hooks，而且不会弹信任对话框。</li>
+<li><code class="post-code--single">--allowedTools</code> 预先放行指定工具，<code class="post-code--single">--permission-mode</code> 给其余操作定一个默认权限。</li>
+<li><code class="post-code--spaced">--output-format json</code> 让脚本拿到结果、会话 ID 和花费。</li>
+<li><code class="post-code--single">--dangerously-skip-permissions</code> 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查（仍有少数保护生效，headless 运行里仍需人批准的操作会被拒绝），官方说只能在容器或虚拟机里、用非 root 用户跑。在自己的机器上跑，<code class="post-code--single">auto</code> 或者 <code class="post-code--single">dontAsk</code> 加白名单更稳妥。</li>
+<li><code class="post-code--single">--bare</code> 跳过机器和仓库里配置的 hooks、插件、MCP server 和 CLAUDE.md。不加的话，在一个你从没信任过的仓库里跑 headless，照样会执行这个仓库自带的 hooks，而且不会弹信任对话框。</li>
 </ul>
 <h3>headless 登录与认证</h3>
-<p>订阅用户最容易卡在登录上。<code>--bare</code> 不认 Pro 或 Max 的登录。直接用 Anthropic API 时，要设 <code>ANTHROPIC_API_KEY</code>，或者用 <code>--settings</code> 传入 <code>apiKeyHelper</code>；Bedrock 这类云服务商照旧用它们自己的凭据。</p>
-<p>想在 CI 里用订阅额度，先跑 <code>claude setup-token</code>，把打印出来的 token 设成 <code>CLAUDE_CODE_OAUTH_TOKEN</code>，并且不要加 <code>--bare</code>。这个 token 有两点要注意：</p>
+<p>订阅用户最容易卡在登录上。<code class="post-code--single">--bare</code> 不认 Pro 或 Max 的登录。直接用 Anthropic API 时，要设 <code class="post-code--single">ANTHROPIC_API_KEY</code>，或者用 <code class="post-code--single">--settings</code> 传入 <code class="post-code--single">apiKeyHelper</code>；Bedrock 这类云服务商照旧用它们自己的凭据。</p>
+<p>想在 CI 里用订阅额度，先跑 <code class="post-code--spaced">claude setup-token</code>，把打印出来的 token 设成 <code class="post-code--single">CLAUDE_CODE_OAUTH_TOKEN</code>，并且不要加 <code class="post-code--single">--bare</code>。这个 token 有两点要注意：</p>
 <ul>
 <li>有效期一年。</li>
-<li><code>ANTHROPIC_API_KEY</code>、<code>ANTHROPIC_AUTH_TOKEN</code> 或 <code>apiKeyHelper</code> 优先于它，不管是设在机器上还是仓库的配置里，所以要核对一次运行到底用的哪个凭据。</li>
+<li><code class="post-code--single">ANTHROPIC_API_KEY</code>、<code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 或 <code class="post-code--single">apiKeyHelper</code> 优先于它，不管是设在机器上还是仓库的配置里，所以要核对一次运行到底用的哪个凭据。</li>
 </ul>
-<p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不能加 <code>--bare</code> 的时候，可以用 <code>--setting-sources user</code> 不读仓库自己的配置和 <code>.mcp.json</code>，<code>--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code>--bare</code> 将来会成为 <code>-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
+<p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不能加 <code class="post-code--single">--bare</code> 的时候，可以用 <code class="post-code--spaced">--setting-sources user</code> 不读仓库自己的配置和 <code class="post-code--single">.mcp.json</code>，<code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code class="post-code--single">--bare</code> 将来会成为 <code class="post-code--single">-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
 <h3>最小的 cron 定时任务</h3>
-<p>cron 的 <code>PATH</code> 很短，也不读你的 shell 配置，所以工作目录、可执行文件路径和凭据都要写全。token 放进一个只有运行这个任务的用户能读的文件（<code>chmod 600</code>），并且要用 <code>export</code>，否则 Claude 读不到：</p>
+<p>cron 的 <code class="post-code--single">PATH</code> 很短，也不读你的 shell 配置，所以工作目录、可执行文件路径和凭据都要写全。token 放进一个只有运行这个任务的用户能读的文件（<code class="post-code--spaced">chmod 600</code>），并且要用 <code class="post-code--single">export</code>，否则 Claude 读不到：</p>
 <pre><code class="language-bash"># ~/.claude-nightly.env
 export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
 export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 </code></pre>
-<p><code>PATH</code> 这一行和 token 一样重要：Claude 在任务里执行的命令，比如你的测试工具，看到的也是 cron 那个很短的 <code>PATH</code>。你的工具装在哪，就把哪加进去。</p>
-<p>然后在这个用户的 crontab 里写（仓库路径换成你的，<code>claude</code> 的路径用 <code>which claude</code> 查）：</p>
+<p><code class="post-code--single">PATH</code> 这一行和 token 一样重要：Claude 在任务里执行的命令，比如你的测试工具，看到的也是 cron 那个很短的 <code class="post-code--single">PATH</code>。你的工具装在哪，就把哪加进去。</p>
+<p>然后在这个用户的 crontab 里写（仓库路径换成你的，<code class="post-code--single">claude</code> 的路径用 <code class="post-code--spaced">which claude</code> 查）：</p>
 <pre><code class="language-bash"># crontab -e：每天凌晨 3 点
 0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; /usr/local/bin/claude -p &quot;跑一遍测试，修掉失败的&quot; --permission-mode auto --permission-prompts none --output-format json &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
 </code></pre>
-<p>日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；<code>cd</code> 失败这类 Claude 启动前的错误不会进这个日志。<code>auto</code> 模式不一定可用：模型可能不支持，也可能被组织、某个配置文件或 Anthropic 关掉了。不可用时 Claude Code 会退回 Manual（手动）模式，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 <code>--permission-mode dontAsk</code>，再用 <code>--allowedTools</code> 列出放行的工具。</p>
+<p>日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；<code class="post-code--single">cd</code> 失败这类 Claude 启动前的错误不会进这个日志。<code class="post-code--single">auto</code> 模式不一定可用：模型可能不支持，也可能被组织、某个配置文件或 Anthropic 关掉了。不可用时 Claude Code 会退回 Manual（手动）模式，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 <code class="post-code--spaced">--permission-mode dontAsk</code>，再用 <code class="post-code--single">--allowedTools</code> 列出放行的工具。</p>
 <p>如果你只需要这样一个定时任务，到这里就够了。下面的内容是给想让 GitHub Issue 一路自动走到合并、发版的人。</p>
 <h2>用 claude -p 做自动化开发，还要自己解决的六件事</h2>
-<p>Orbi 从 8 月下旬开始无人值守地交付自己仓库里的 Issue。截至今天，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code>ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。下面有几件事，我是先做错了才改对的。只在 <code>claude -p</code> 外面套个循环，这六件事全得你自己补。</p>
+<p>Orbi 从 8 月下旬开始无人值守地交付自己仓库里的 Issue。截至今天，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code class="post-code--single">ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。下面有几件事，我是先做错了才改对的。只在 <code class="post-code--spaced">claude -p</code> 外面套个循环，这六件事全得你自己补。</p>
 <h3>认领哪个 Issue，而且只认领一次</h3>
-<p>在 Orbi 里，人给 Issue 打上 <code>ai-ready</code> 标签。runner 在一把认领锁里选票，两个 runner 不会同时拿到同一个 Issue；选中后加上 <code>ai-in-progress</code>，之后的扫描都会跳过它。认领的 runner 接着从一个固定的提交建 worktree。紧急的先做，然后是 bug。每一步都以评论的形式写回 Issue，所以队列就是 Issue 列表，运行日志就是 Issue 的时间线。</p>
+<p>在 Orbi 里，人给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签。runner 在一把认领锁里选票，两个 runner 不会同时拿到同一个 Issue；选中后加上 <code class="post-code--single">ai-in-progress</code>，之后的扫描都会跳过它。认领的 runner 接着从一个固定的提交建 worktree。紧急的先做，然后是 bug。每一步都以评论的形式写回 Issue，所以队列就是 Issue 列表，运行日志就是 Issue 的时间线。</p>
 <h3>用哪个系统用户跑</h3>
-<p>没人审批命令时，专用的系统用户能多加一层隔离，这是权限规则和沙箱替代不了的。Orbi Cloud 给每个接入的仓库单独开一个 Unix 用户。9 月 25 日，我看到 GitSpawn（借仓库的 git 配置让编程 agent 执行程序的漏洞），反应过度，开票让 Orbi 写了 1164 行加固代码，不到四个小时又撤了。agent 本来就以那个用户的身份运行，单独护住 runner 自己调用的 git 什么也防不住。如果你用 cron 跑 <code>claude -p</code>，就给它一个专用用户，只放这个仓库的凭据。来龙去脉写在 <a href="/zh/blog/gitspawn-unattended-agent/">GitSpawn 那篇</a>里。</p>
+<p>没人审批命令时，专用的系统用户能多加一层隔离，这是权限规则和沙箱替代不了的。Orbi Cloud 给每个接入的仓库单独开一个 Unix 用户。9 月 25 日，我看到 GitSpawn（借仓库的 git 配置让编程 agent 执行程序的漏洞），反应过度，开票让 Orbi 写了 1164 行加固代码，不到四个小时又撤了。agent 本来就以那个用户的身份运行，单独护住 runner 自己调用的 git 什么也防不住。如果你用 cron 跑 <code class="post-code--spaced">claude -p</code>，就给它一个专用用户，只放这个仓库的凭据。来龙去脉写在 <a href="/zh/blog/gitspawn-unattended-agent/">GitSpawn 那篇</a>里。</p>
 <h3>谁来评审</h3>
 <p>Orbi 另起一个会话做评审。它拿 Issue 里的验收项，对照 PR 冻结下来的 base 提交和 head 提交逐条检查，发现问题当场修，最后把结论和测试通过数一起贴回 Issue。写代码的那个会话不参与评审。</p>
 <h3>什么时候能合并</h3>
 <p>合并前一刻，Orbi 会再确认四件事：评审结论对应的是 PR 现在的最新提交；这个提交包含目标分支的最新改动；它上面的 CI 已经跑通；GitHub 显示 PR 可以合并。CI 还在跑，就等下一轮。每一条在<a href="/zh/guides/auto-merge-ai-prs/">自动合并指南</a>里都有说明。</p>
-<p>这张清单直到 9 月 30 日上午都有个漏洞。北京时间 9 月 30 日凌晨 0 点 47 分，我给一个 Issue 打了 <code>ai-blocked</code>，还留言说它的 PR 不能合。71 秒后，runner 照样把它合了。合并前的检查重读了目标分支、最新提交和 CI，唯独没重读 Issue 的标签，评审期间加上的标签等于没加。当天早上我开了 <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a>，随后回滚了这次合并：</p>
+<p>这张清单直到 9 月 30 日上午都有个漏洞。北京时间 9 月 30 日凌晨 0 点 47 分，我给一个 Issue 打了 <code class="post-code--single">ai-blocked</code>，还留言说它的 PR 不能合。71 秒后，runner 照样把它合了。合并前的检查重读了目标分支、最新提交和 CI，唯独没重读 Issue 的标签，评审期间加上的标签等于没加。当天早上我开了 <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a>，随后回滚了这次合并：</p>
 <p><img src="/img/headless-1504-bug.webp" alt="GitHub 上的 Issue #1504（截图里的时间是 UTC）：维护者打上 ai-blocked 71 秒后 PR 仍被合并的时间线，以及原因：merge_gate 从不重读 Issue 标签"></p>
-<p>Orbi 在我开票一分钟后认领，开了 <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>，独立评审一轮没发现问题，认领后 45 分钟合并。现在合并前会最后读一次标签，Issue 上有 <code>ai-blocked</code> 就不合。</p>
+<p>Orbi 在我开票一分钟后认领，开了 <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>，独立评审一轮没发现问题，认领后 45 分钟合并。现在合并前会最后读一次标签，Issue 上有 <code class="post-code--single">ai-blocked</code> 就不合。</p>
 <p><img src="/img/headless-1504-merged.webp" alt="#1504 时间线的后半段：Orbi 开了 PR #1505，一轮评审后合并，标签从 ai-pr-opened 换成 ai-merged"></p>
-<p>你的循环如果最后一步是 <code>gh pr merge</code>，同样有这个漏洞。立即合并的情况下，在它前面加几行就能补上。这几行要存成 bash 脚本再运行；直接贴进交互终端的话，缺了 SHA 也拦不住后面那几行。<code>:</code> 那一行要求 Issue、PR 和评审通过的 SHA 都必须给出；<code>labels=</code> 那一行读不到标签就直接退出，免得查询失败反而放行；<code>grep</code> 那一行在 Issue 被拦下时以非零码退出，这样循环不会把它当成成功；<code>--match-head-commit</code> 保证合进去的正是评审过的那个提交。如果目标分支要求 merge queue，检查没通过时 <code>gh pr merge</code> 会开启自动合并，通过时会把 PR 排进队列，之后再加的阻止标签这段脚本管不到：</p>
+<p>你的循环如果最后一步是 <code class="post-code--spaced">gh pr merge</code>，同样有这个漏洞。立即合并的情况下，在它前面加几行就能补上。这几行要存成 bash 脚本再运行；直接贴进交互终端的话，缺了 SHA 也拦不住后面那几行。<code class="post-code--single">:</code> 那一行要求 Issue、PR 和评审通过的 SHA 都必须给出；<code class="post-code--single">labels=</code> 那一行读不到标签就直接退出，免得查询失败反而放行；<code class="post-code--single">grep</code> 那一行在 Issue 被拦下时以非零码退出，这样循环不会把它当成成功；<code class="post-code--single">--match-head-commit</code> 保证合进去的正是评审过的那个提交。如果目标分支要求 merge queue，检查没通过时 <code class="post-code--spaced">gh pr merge</code> 会开启自动合并，通过时会把 PR 排进队列，之后再加的阻止标签这段脚本管不到：</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
 : &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?缺少评审通过的 SHA}&quot;
 labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1
@@ -144,12 +145,12 @@ grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;bloc
 gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
 </code></pre>
 <h3>失败了怎么办</h3>
-<p>能自己恢复的，Orbi 把 Issue 转成 <code>ai-fix-needed</code>，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就停在 <code>ai-blocked</code>，留一条评论说明发生了什么。</p>
-<p>这条评论有时并不够用。9 月 28 日，<a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> 的第一轮不到三分钟就结束了，一个提交都没有，Orbi 打上了 <code>ai-blocked</code>：</p>
+<p>能自己恢复的，Orbi 把 Issue 转成 <code class="post-code--single">ai-fix-needed</code>，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就停在 <code class="post-code--single">ai-blocked</code>，留一条评论说明发生了什么。</p>
+<p>这条评论有时并不够用。9 月 28 日，<a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> 的第一轮不到三分钟就结束了，一个提交都没有，Orbi 打上了 <code class="post-code--single">ai-blocked</code>：</p>
 <p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482：Orbi 启动 Pi 之后贴出「Orbi blocked — waiting on a human decision」，说明 agent 没有交付提交，HEAD 还停在起点"></p>
 <p>这条评论只说了没提交，没说为什么，我只能去翻日志。我判断 Issue 本身没问题，摘掉了标签，第二轮开了 <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>，当天合并。</p>
 <h3>谁来发版</h3>
-<p>修复合进去了，没发版，用户还是用不上。Orbi 里发版也是一个 Issue，打 <code>ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的 Issue 都关了，发版提交上的 CI 通过后打 tag。这是 v0.5.58 的发版 Issue，#1504 的修复就是随它发出去的：</p>
+<p>修复合进去了，没发版，用户还是用不上。Orbi 里发版也是一个 Issue，打 <code class="post-code--single">ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的 Issue 都关了，发版提交上的 CI 通过后打 tag。这是 v0.5.58 的发版 Issue，#1504 的修复就是随它发出去的：</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508「Release v0.5.58」：范围是 v0.5.58 里程碑，Release 段写明版本号、目标分支和版本文件，Orbi 以 ai-in-progress 认领"></p>
 <h2>六件事之外，还留给人做的一步</h2>
 <p>如果你的自动化会改界面，光靠自动测试不够。9 月 25 日，Orbi 给这个网站合了一个<a href="https://github.com/orbi-build/orbi-website/pull/523">手机端表格的修复</a>，现有的溢出测试全部通过。可 390px 宽的截图上，单词被从中间断开了。我按 390px 宽把 34 个表格页逐页量了一遍：横向溢出为零，但 25 个页面上有 193 处单词或数字被断开。下图是在今天的页面上套回那次的 CSS 复现的效果：</p>
@@ -158,7 +159,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <p><img src="/img/headless-table-after.webp" alt="orbi.build 今天的同一张表，390px 下：这一行叠成一块，单词都是完整的"></p>
 <p>PR #523 的测试做到了它那个 Issue 要求的，可那个 Issue 里没提单词断行。所以每次从 beta 推到生产之前，我都会在手机和电脑上把改过的页面打开看一遍。</p>
 <h2>不想自己搭自动化工作流的话</h2>
-<p>上面这六件事都能围着 <code>claude -p</code> 自己搭：认领加锁、专用的运行用户、另起一个会话评审、合并前检查、失败续跑、发版任务。Orbi 自己这一套写在 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>里，有八百来行。</p>
+<p>上面这六件事都能围着 <code class="post-code--spaced">claude -p</code> 自己搭：认领加锁、专用的运行用户、另起一个会话评审、合并前检查、失败续跑、发版任务。Orbi 自己这一套写在 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>里，有八百来行。</p>
 <p>也可以直接用 Orbi。它的 agent <a href="https://github.com/earendil-works/pi">Pi</a> 和 runner 都是开源的，runner 可以<a href="https://github.com/orbi-build/orbi">自托管</a>。模型可以接 DeepSeek，也可以接其他你有 key 的服务，Anthropic 的 API 也在列表里，Claude 模型照样能用。放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>里写了两者各自做到哪一步。</p>
 <p>不想维护机器，可以<a href="https://orbi.build/zh/cloud/?ref=blog-headless">把仓库接入 Orbi Cloud</a>。</p>
 <h2>相关</h2>

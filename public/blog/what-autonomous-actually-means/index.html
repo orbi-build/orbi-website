@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -97,7 +98,7 @@ watching a reviewer refuse it is harder.</p>
 defect in our own release code. A change had moved the docs sync before the tag
 push, which opened three windows where a tagged release could exist without its
 docs page.</p>
-<p>The Issue got the <code>ai-ready</code> label. Nothing else was set up.</p>
+<p>The Issue got the <code class="post-code--single">ai-ready</code> label. Nothing else was set up.</p>
 <p>Orbi claimed it, worked in an isolated worktree, and opened
 <a href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a> against a recorded base
 commit. So far this is what every agent does.</p>
@@ -106,9 +107,9 @@ read that diff.</p>
 <h2>The refusal</h2>
 <p>Round one came back with one Major finding. Not a style note:</p>
 <blockquote>
-<p><strong>Location:</strong> <code>src/orbi/release.py:2377</code></p>
-<p><strong>Note:</strong> If <code>publish_release</code> fails after the tag is pushed,
-<code>rollback_release_docs</code> removes the docs commit while leaving the remote tag
+<p><strong>Location:</strong> <code class="post-code--single">src/orbi/release.py:2377</code></p>
+<p><strong>Note:</strong> If <code class="post-code--single">publish_release</code> fails after the tag is pushed,
+<code class="post-code--single">rollback_release_docs</code> removes the docs commit while leaving the remote tag
 published. CI can then observe a released tag without its docs page,
 violating acceptance criteria.</p>
 </blockquote>
@@ -126,11 +127,11 @@ run</a>, because the frames are misleading on their
 own.</p>
 <p>The runner posts through my own GitHub account. It has my token, so its commits
 carry my name and its review comments carry my name and my avatar. On screen,
-the review that blocked PR #1023 appears under <code>xqliu</code>, with the badges
-<code>Collaborator</code> and <code>Author</code>.</p>
+the review that blocked PR #1023 appears under <code class="post-code--single">xqliu</code>, with the badges
+<code class="post-code--single">Collaborator</code> and <code class="post-code--single">Author</code>.</p>
 <p>A first-time visitor reads that as a developer reviewing his own pull request,
 which is exactly the impression the whole exercise is meant to refute. Directly
-below that comment sits a <code>github-actions</code> comment wearing a <code>Bot</code> badge, so the
+below that comment sits a <code class="post-code--single">github-actions</code> comment wearing a <code class="post-code--single">Bot</code> badge, so the
 same screen teaches you what a bot looks like here and then shows you a review
 that is not one.</p>
 <p>I cannot make GitHub show it differently. What I can do is say it out loud: that
@@ -170,12 +171,12 @@ the cgroup bind is for:</p>
   ghcr.io/orbi-build/orbi:latest
 </code></pre>
 <p>The engine is whichever model you point those four variables at. Label an Issue
-<code>ai-ready</code> and the next tick picks it up. The review runs as a separate session
+<code class="post-code--single">ai-ready</code> and the next tick picks it up. The review runs as a separate session
 against the frozen head, and nothing merges unless that session passes it.
 Full walkthrough: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>.</p>
 <h2>The ledger</h2>
 <p>This is running on its own repository. As of today, 27 days in: 334 merged pull
-requests from <code>orbi/</code> branches, 51 tagged releases.</p>
+requests from <code class="post-code--single">orbi/</code> branches, 51 tagged releases.</p>
 <p>Every one of those is a link you can open, including the reviews that blocked
 something and the commits that came after.</p>
 <p>Orbi is open source under AGPL-3.0, and self-hostable:

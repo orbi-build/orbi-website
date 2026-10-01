@@ -32,9 +32,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -117,12 +118,12 @@
 <li><strong>Install the Orbi GitHub App</strong> on your account.</li>
 <li><strong>Connect a repository</strong>: the repo and the base branch Orbi works from.</li>
 <li><strong>Provision the environment.</strong> About a minute.</li>
-<li><strong>Your first Issue.</strong> Label it <code>ai-ready</code>, and Orbi writes the code and opens a pull request.</li>
+<li><strong>Your first Issue.</strong> Label it <code class="post-code--single">ai-ready</code>, and Orbi writes the code and opens a pull request.</li>
 <li><strong>Cut a release.</strong> Type the version; Orbi bumps it, tags it and publishes the GitHub Release.</li>
-<li><strong>Subscribe.</strong> The first <code>__FREE_DELIVERIES__</code> deliveries are free; paid plans are Solo at US$<code>__SOLO_MONTHLY_USD__</code>/month with <code>__SOLO_INCLUDED_TOKENS__</code> tokens, or Pro at US$<code>__CLOUD_MONTHLY_USD__</code>/month with <code>__INCLUDED_TOKENS__</code> tokens. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.</li>
+<li><strong>Subscribe.</strong> The first <code class="post-code--single">__FREE_DELIVERIES__</code> deliveries are free; paid plans are Solo at US$<code class="post-code--single">__SOLO_MONTHLY_USD__</code>/month with <code class="post-code--single">__SOLO_INCLUDED_TOKENS__</code> tokens, or Pro at US$<code class="post-code--single">__CLOUD_MONTHLY_USD__</code>/month with <code class="post-code--single">__INCLUDED_TOKENS__</code> tokens. When the allowance runs out, only new deliveries pause: your data stays intact, and you can cancel at any time.</li>
 </ol>
 <h2>The seventh step is the one that starts paid delivery</h2>
-<p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code>__FREE_DELIVERIES__</code> free deliveries.</p>
+<p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code class="post-code--single">__FREE_DELIVERIES__</code> free deliveries.</p>
 <p>The release step still requires your decision: <em>you decide the version, Orbi never increments it for you.</em> The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.</p>
 <p>Step five is one label, and you can add it without leaving the terminal:</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready

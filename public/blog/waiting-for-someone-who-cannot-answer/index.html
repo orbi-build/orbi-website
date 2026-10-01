@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -102,21 +103,21 @@ previous one filled up has confused a counter with a judgement.</p>
 <p>So the ticket is right. The pause is right. What was wrong is the sentence
 inside the ticket:</p>
 <blockquote>
-<p>Please run <code>orbi milestone set &lt;target&gt;</code> to advance <code>active_milestone</code>.</p>
+<p>Please run <code class="post-code--spaced">orbi milestone set &lt;target&gt;</code> to advance <code class="post-code--single">active_milestone</code>.</p>
 </blockquote>
 <p>That instruction assumes a CLI and a shell on the host. A managed tenant has
 neither. Their sandbox runs on our hardware, which is the entire point of it
 being managed. The engine asked a question, on a ticket the tenant could read,
 and accepted only an answer they could not produce.</p>
-<p>Worse, managed sandboxes never rendered <code>auto_next_milestone = false</code> at all. So
+<p>Worse, managed sandboxes never rendered <code class="post-code--spaced">auto_next_milestone = false</code> at all. So
 they did not get the ticket either. The engine paused silently and waited for a
 decision that nobody had been asked to make.</p>
 <h2>The day we noticed</h2>
-<p>On 2026-09-22 we migrated <code>orbi-build/orbi</code>, the engine&#39;s own repository, onto
+<p>On 2026-09-22 we migrated <code class="post-code--single">orbi-build/orbi</code>, the engine&#39;s own repository, onto
 our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.</p>
 <p>Then the milestone closed, and everything stopped. No notification. No error.
 Delivery simply ceased, until a human noticed, created the v0.5.40 milestone by
-hand with <code>gh api</code>, and edited the policy file directly.</p>
+hand with <code class="post-code--spaced">gh api</code>, and edited the policy file directly.</p>
 <p>We had been running this gap in production for our customers. It took putting
 our own release line behind it to feel it.</p>
 <h2>The same shape, in the UI</h2>
@@ -126,11 +127,11 @@ surfaced the second instance.</p>
 <p>The status page has a release form. It is a text box. You type a version number
 from memory, and that string becomes the release scope.</p>
 <p>The page never shows you which milestones exist. We checked:
-<code>grep -rn &quot;milestone&quot; src/pages/status.ts src/page.ts</code> returns nothing. Not one
+<code class="post-code--spaced">grep -rn &quot;milestone&quot; src/pages/status.ts src/page.ts</code> returns nothing. Not one
 line. Meanwhile, six hundred lines away in the same file, the page does this for
 issues:</p>
 <blockquote>
-<p>These issues have not been handed to Orbi yet: label an issue <code>ai-ready</code> and
+<p>These issues have not been handed to Orbi yet: label an issue <code class="post-code--single">ai-ready</code> and
 Orbi will start on it.</p>
 </blockquote>
 <p>The page already scans GitHub on your behalf and lists what you can act on. It
@@ -143,17 +144,17 @@ later, asynchronously, on a ticket you have to go find.</p>
 <figcaption>The control plane can open a release ticket while the sandbox still believes nothing is in flight. The engine faithfully reports what it was told, once per tick, and nothing in the loop is broken.</figcaption>
 </figure><p>The third instance is the one that explains the other two.</p>
 <p>Our engine writes the active milestone into a repository variable on every tick.
-The value comes from <code>config.active_milestone</code>, which lives in the sandbox&#39;s own
-<code>orbi.toml</code> file. Not GitHub. Not our control plane.</p>
+The value comes from <code class="post-code--single">config.active_milestone</code>, which lives in the sandbox&#39;s own
+<code class="post-code--single">orbi.toml</code> file. Not GitHub. Not our control plane.</p>
 <p>So the control plane can create a release ticket while the sandbox still
 believes nothing is in flight. Two systems, two answers, no reconciliation. In
 our production logs, every tick, for the repository we had just walked through:</p>
-<pre><code>INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
+<pre><code class="post-code--spaced">INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
 </code></pre>
 <p>Then we looked at how a field gets from the control plane into that file, and
 found there is no general mechanism at all. There are four separate
-hand-written sync functions: <code>sync_orbi_toml_engine_track</code>,
-<code>sync_orbi_toml_providers</code>, <code>sync_orbi_toml_oauth</code>, plus the initial render.
+hand-written sync functions: <code class="post-code--single">sync_orbi_toml_engine_track</code>,
+<code class="post-code--single">sync_orbi_toml_providers</code>, <code class="post-code--single">sync_orbi_toml_oauth</code>, plus the initial render.
 Each one was added for a single field, and each stages a temp file before
 swapping it atomically. The comments record the accretion:</p>
 <pre><code class="language-bash"># Issue #116: the connect-time base branch rides the payload and must reach
@@ -161,7 +162,7 @@ swapping it atomically. The comments record the accretion:</p>
 # Issue #770: attribution_footer rides the same way
 </code></pre>
 <p>Adding one field means editing four files. Which is why nobody added
-<code>active_milestone</code>: <code>grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
+<code class="post-code--single">active_milestone</code>: <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
 returns nothing. The control plane does not know the field exists.</p>
 <h2>What the tenant can and cannot touch</h2>
 <p>One design question resolved itself once we looked at the filesystem.</p>
@@ -176,12 +177,12 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 -rw------- ... known_hosts
                                 # no authorized_keys
 </code></pre>
-<p>Mode 0600, owned by the sandbox user, and no <code>authorized_keys</code>. The tenant
+<p>Mode 0600, owned by the sandbox user, and no <code class="post-code--single">authorized_keys</code>. The tenant
 cannot SSH in. There is no hand-editing to reconcile.</p>
 <p>That makes the design simpler than we assumed. The control plane is the sole
 writer, so the merge only has to preserve <em>other control-plane fields</em>, because there
 is no external drift to detect.</p>
-<p>It also points at a stronger invariant worth holding: <strong><code>orbi.toml</code> should be a
+<p>It also points at a stronger invariant worth holding: <strong><code class="post-code--single">orbi.toml</code> should be a
 pure derivative, reconstructible from control-plane state alone.</strong></p>
 <p>Today it is not. Engine track and providers live only in the sandbox; the
 control plane holds a partial truth. Those four sync functions each maintain a
@@ -206,7 +207,7 @@ surface.</p>
 <pre><code class="language-console">$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
 OnUnitActiveSec=1min
 </code></pre>
-<p>And the refresh endpoint&#39;s query is <code>WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>
+<p>And the refresh endpoint&#39;s query is <code class="post-code--spaced">WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>
 for every live sandbox, every minute, not just pending ones. So a pull costs at
 most sixty seconds, on an action that already waits for the engine&#39;s next claim.
 There is no tradeoff to weigh. Push would open an inbound path to buy less than
@@ -214,19 +215,19 @@ a minute.</p>
 <p>Measuring the thing before arguing about it took two commands.</p>
 <h2>A wrong diagnosis, corrected by the database</h2>
 <p>While reading production logs we found 288 identical errors in six hours:</p>
-<pre><code>ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
+<pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
 </code></pre>
 <p>The obvious read was credential rot, so that is what we wrote down. Reproducing
-it inside the sandbox gave <code>401 Bad credentials</code>, which seemed to confirm it,
+it inside the sandbox gave <code class="post-code--spaced">401 Bad credentials</code>, which seemed to confirm it,
 especially since the repository is public and readable with a maintainer token.</p>
 <p>Then we checked the database, and the diagnosis collapsed:</p>
-<pre><code>login=cdredfox    tenant=inactive  codeduck          repo=inactive
+<pre><code class="post-code--spaced">login=cdredfox    tenant=inactive  codeduck          repo=inactive
 login=zzuu080603  tenant=active    VCPToolBox-macOS  repo=inactive   ← failing
 login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← fine
 </code></pre>
 <p>Both failing sandboxes belong to <strong>inactive</strong> repositories. The refresh endpoint
-filters on <code>status = &#39;active&#39;</code>, so those tokens are never refreshed by design,
+filters on <code class="post-code--spaced">status = &#39;active&#39;</code>, so those tokens are never refreshed by design,
 correctly. The same tenant&#39;s active repository works perfectly. That is the
 control group, sitting right there in the same query.</p>
 <p>The real defect was never credentials. It is that we keep reconciling milestones
@@ -237,12 +238,12 @@ filed a ticket with the wrong root cause, which then had to be publicly
 corrected.</p>
 <p>What makes this worth writing down is not the mistake. It is that reproducing
 the error <strong>confirmed</strong> the wrong diagnosis. Running the failing command inside
-the sandbox returned <code>401 Bad credentials</code>, which is exactly what a credential
+the sandbox returned <code class="post-code--spaced">401 Bad credentials</code>, which is exactly what a credential
 problem looks like. The repository was public and readable with a maintainer
 token, which seemed to rule out &quot;the repo is gone&quot;. Two pieces of evidence, both
 genuine, both pointing the wrong way.</p>
 <p>A reproduction tells you what happens. It does not tell you whether it is
-supposed to happen. The database row, <code>repo_status = inactive</code>, was the only
+supposed to happen. The database row, <code class="post-code--spaced">repo_status = inactive</code>, was the only
 thing that could distinguish &quot;this token should work and doesn&#39;t&quot; from &quot;this
 token was never meant to be refreshed&quot;. And the control group was sitting in the
 same query the whole time: the same tenant&#39;s <em>active</em> repository was working
