@@ -150,6 +150,28 @@ describe("shared hero layout (Issue #355)", () => {
     }
   }, 60_000);
 
+  it("stacks the secondary self-host link below the closing CTA", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const path of ["/", "/zh/"]) {
+        for (const width of [390, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+          const positions = await page.locator(".closing .cta-row").evaluate((row) => {
+            const button = row.querySelector('[data-cta="closing-start"]').getBoundingClientRect();
+            const selfHost = row.querySelector('[data-cta="closing-selfhost"]').getBoundingClientRect();
+            return { buttonBottom: button.bottom, selfHostTop: selfHost.top };
+          });
+          expect(positions.selfHostTop, `${path} at ${width}px: self-host link below CTA`).toBeGreaterThanOrEqual(
+            positions.buttonBottom,
+          );
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
   it("keeps conservative proof values when live stats are unavailable", async () => {
     const page = await browser.newPage();
     try {
