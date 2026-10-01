@@ -22,6 +22,18 @@ describe("component typography selectors (Issue #402)", () => {
     expect(focused).toContain("transform: translateY(0);");
   });
 
+  it("does not center section tags or eyebrows (Issue #786)", () => {
+    const centeredRules = [...css.matchAll(/([^{}]+)\{([^{}]*text-align:\s*center;[^{}]*)\}/g)];
+    const centeredSelectors = centeredRules.map(([, selectors]) => selectors.trim());
+
+    expect(centeredSelectors.some((selectors) => selectors.includes(".section-tag"))).toBe(false);
+    expect(centeredSelectors.some((selectors) => selectors.includes(".eyebrow"))).toBe(false);
+
+    const runtimeProof = css.match(/\.runtime-proof\s*\{([^{}]+)\}/)?.[1] ?? "";
+    expect(runtimeProof).toContain("padding: 18px 0 8px;");
+    expect(runtimeProof).toContain("text-align: center;");
+  });
+
   it("does not ship descendant selectors that target bare content tags", () => {
     const leaked = css.match(/^\s*\.[a-z-]+ (?:h[1-6]|p|a|ul|li|table|img)\b[^\{]*\{/gm) ?? [];
     expect(leaked, leaked.join("\n")).toEqual([]);
