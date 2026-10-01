@@ -1,95 +1,138 @@
 ---
-title: Run Claude Code unattended: headless is step one
+title: Run Claude Code unattended: headless mode is step one
 date: 2026-10-01
-summary: claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.
+summary: Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.
 lang: en
 author: Orbi
 image: /img/blog-headless-card.png
 mirror: run-claude-code-unattended
 ---
 
-Running Claude Code with nobody watching takes one flag. `claude -p` runs a prompt non-interactively and exits non-zero if the run fails. Give it a permission mode and it stops asking you things:
+To run Claude Code unattended you use headless mode: `claude -p` runs one prompt without the interactive UI, prints the result and exits, with a non-zero code if the run fails. Anthropic's page for it is now titled "Run Claude Code programmatically", but the address still ends in [/headless](https://code.claude.com/docs/en/headless). With no one to answer prompts, a headless run denies anything that needs approval, so give it a permission mode that lets the work through:
 
 ```bash
 claude -p "Fix the failing test in tests/test_auth.py" \
   --permission-mode auto --permission-prompts none
 ```
 
-Put that in a cron job and the agent works while you sleep. The [headless docs](https://code.claude.com/docs/en/headless) cover the rest of the flags: `--allowedTools` to pre-approve tools, `--output-format json` for scripts, and `--bare` so the run ignores whatever hooks and MCP servers happen to be on the machine.
+`--permission-prompts none` is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.
 
-What you have at that point is one session that runs to the end on its own. Deciding what it should work on, and what to do with the result, is still on you.
+I'm Lawrence Liu, and I maintain Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn't run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.
 
-## What a cron job doesn't answer
+## What Claude Code headless mode gives you
 
-Orbi has been delivering its own GitHub Issues unattended since late August. As of today, 599 Issues in [its repository](https://github.com/orbi-build/orbi) carry the `ai-merged` label, and v0.5.58 went out on September 30. Getting there meant answering the questions below, mostly by getting them wrong first. A loop around `claude -p` answers none of them.
+One session that runs to the end without a person. A few flags matter once it runs from cron or CI:
+
+- `--allowedTools` pre-approves specific tools, and `--permission-mode` sets a baseline for everything else.
+- `--output-format json` gives a script the result, the session ID and the cost.
+- `--dangerously-skip-permissions` is the direct way to run Claude Code without confirmation. It skips the routine permission prompts and checks (a few protections still apply, and in a headless run anything that still needs a person is denied), and Anthropic says to use it only inside a container or VM, as a non-root user. On a machine you care about, `auto` or `dontAsk` with an allowlist is the safer choice.
+- `--bare` skips hooks, plugins, MCP servers and CLAUDE.md from the machine and the repository. Without it, a headless run in a repository you've never trusted still runs that repository's hooks, and no trust dialog appears.
+
+### Headless authentication: API key or subscription token
+
+Headless login is where subscription users trip. `--bare` ignores your Pro or Max login. Against the Anthropic API it needs `ANTHROPIC_API_KEY`, or an `apiKeyHelper` passed in with `--settings`; cloud providers such as Bedrock keep their own credentials.
+
+To use a subscription in CI, run `claude setup-token`, set the token it prints as `CLAUDE_CODE_OAUTH_TOKEN`, and leave `--bare` off. Two things to know about that token:
+
+- It lasts a year.
+- An `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` or `apiKeyHelper` takes priority over it, whether it's set on the machine or in the repository's settings, so check which credential a run actually used.
+
+The [authentication docs](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) cover both. Without `--bare`, a headless run reads the repository's settings, hooks and `.mcp.json`, even in a repository you've never trusted. `--setting-sources user` keeps project settings and `.mcp.json` out, and `--settings '{"disableAllHooks":true}'` turns hooks off for one run. Anthropic also says `--bare` will become the default for `-p` in a future release, so a token-based setup may need changing then.
+
+### A minimal cron job
+
+cron runs with a short `PATH` and none of your shell setup, so spell out the directory, the binary and the credentials. Put the token in a file only the user running the job can read (`chmod 600`), and `export` it, or Claude won't see it:
+
+```bash
+# ~/.claude-nightly.env
+export CLAUDE_CODE_OAUTH_TOKEN="..."
+export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
+```
+
+The `PATH` line matters as much as the token: the commands Claude runs during the job, such as your test runner, see the same short `PATH` as cron does. Add wherever your tools live.
+
+Then, in that user's crontab, with your own repository path and the output of `which claude`:
+
+```bash
+# crontab -e: every night at 03:00
+0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && /usr/local/bin/claude -p "Run the test suite and fix what fails" --permission-mode auto --permission-prompts none --output-format json >> "$HOME/claude-nightly.log" 2>&1
+```
+
+The log keeps Claude's output and errors, and a run that completes writes a JSON result there; a failure before Claude starts, such as a bad `cd`, won't show up in it. `auto` needs a model that supports it and an organization that allows it. If either is missing, Claude Code falls back to Manual, and a headless run then denies whatever needs approval. In that case use `--permission-mode dontAsk` with an explicit `--allowedTools` list.
+
+If one scheduled job like that is all you need, you're done. The rest of this post is for when you want GitHub Issues to come out the other end as merged, released changes.
+
+## What a headless loop doesn't answer
+
+Orbi has been delivering its own Issues unattended since late August. As of today, 599 Issues in [its repository](https://github.com/orbi-build/orbi) carry the `ai-merged` label, and v0.5.58 went out on September 30. Some of the answers below I only found after getting them wrong. A bare loop around `claude -p` leaves every one of them to you.
 
 ### Which task, and only once
 
-Something has to pick the next Issue and keep two runs from grabbing the same one. In Orbi a person adds the `ai-ready` label. The runner claims the Issue by swapping that label for `ai-in-progress` and creates a worktree from a pinned base commit. Urgent Issues go first, then bugs.
+In Orbi a person adds the `ai-ready` label to an Issue. A runner picks it inside a claim lock, so two runners can't take the same Issue at the same moment, and adds `ai-in-progress`, which later scans skip. It then creates a worktree from a pinned base commit. Urgent Issues go first, then bugs. Each step is posted back to the Issue as a comment, which means the queue is the Issue list and the log is the Issue's timeline.
 
-Every step is written back to the Issue, so the queue is the GitHub Issue list and the log is the Issue's own timeline. Nothing about a run lives only on the machine that ran it.
+### Which system user it runs as
 
-### Which account it runs as
-
-A `-p` session shows no workspace trust dialog. Without `--bare` it runs the project's hooks and MCP servers, even in a folder you have never opened. Nobody approves anything, so the operating system user it runs as is the only boundary left. In Orbi Cloud every connected repository gets its own Unix user. I got this wrong once, shipped 1,164 lines of hardening, and reverted it the same afternoon. That story is in [GitSpawn and the agent that never asks](/blog/gitspawn-unattended-agent/).
+With nobody approving commands, a dedicated operating system user adds a layer of isolation that permission rules and a sandbox don't replace. In Orbi Cloud each connected repository runs as its own Unix user. On September 25, after reading about GitSpawn, a way to make coding agents run programs through a repository's git config, I over-corrected: I filed an Issue, Orbi wrote and merged 1,164 lines of hardening, and I reverted it under four hours later. The agent already ran as that user, so guarding the runner's own git calls protected nothing. If you run `claude -p` from cron, give it a dedicated user that holds only that repository's credentials. The full story is in [GitSpawn and the agent that never asks](/blog/gitspawn-unattended-agent/).
 
 ### Who reviews it
 
-If the session that wrote the change also gets to say it's done, nothing was reviewed. Orbi starts a separate session that reads the exact base and head commits against the Issue's acceptance criteria. It fixes what it finds and ends with a verdict, which is posted on the Issue next to the test count.
+Orbi starts a second session that reads the exact base and head commits against the Issue's acceptance criteria. It fixes what it finds and posts a verdict on the Issue, next to the test count. The session that wrote the change never gets to say it's done.
 
 ### When it may merge
 
-CI that passed on an older commit tells you little about the one you're merging. So right before merging, Orbi checks that the verdict names the current PR head, that the head contains the latest base branch, that CI has finished, and that GitHub reports the PR as mergeable. If CI is still running, the merge waits for the next pass. The [auto-merge guide](/guides/auto-merge-ai-prs/) goes through each condition.
+Right before merging, Orbi checks that the verdict names the current PR head, that the head contains the latest base branch, that CI on it has passed, and that GitHub reports the PR as mergeable. If CI is still running, it waits for the next pass. The [auto-merge guide](/guides/auto-merge-ai-prs/) goes through each condition.
 
-That list had a hole until two days ago. On September 29 I labelled an Issue `ai-blocked` and commented that its PR must not be merged. Seventy seconds later the runner merged it. The gate re-read the base, the head and CI, but never the Issue's labels, so a label added during review was ignored. We reverted the merge and filed [#1504](https://github.com/orbi-build/orbi/issues/1504):
+Until September 30 that list had a hole. On September 29 (UTC) I labelled an Issue `ai-blocked` and commented that its PR must not be merged. Seventy-one seconds later the runner merged it. The gate re-read the base, the head and CI, but never the Issue's labels, so a label added during review changed nothing. About eight hours later I filed [#1504](https://github.com/orbi-build/orbi/issues/1504) and reverted the merge:
 
-![Issue #1504 on GitHub: the timeline of a merge that happened 70 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue's labels](/img/headless-1504-bug.webp)
+![Issue #1504 on GitHub: the timeline of a merge that happened 71 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue's labels](/img/headless-1504-bug.webp)
 
-Eight hours later Orbi claimed the Issue, opened [PR #1505](https://github.com/orbi-build/orbi/pull/1505), passed its own review with no findings and merged 45 minutes after the claim. Now the gate reads the labels one last time, and an `ai-blocked` Issue stops the merge.
+Orbi claimed it a minute after I filed it, opened [PR #1505](https://github.com/orbi-build/orbi/pull/1505), passed the independent review with no findings and merged 45 minutes after the claim. The gate now reads the labels one last time, and an `ai-blocked` Issue stops the merge.
 
 ![The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged](/img/headless-1504-merged.webp)
 
-A loop that ends in `gh pr merge` would have the same hole. You find out when someone tries to stop it.
+If your loop ends in `gh pr merge`, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn't stop the lines after it. The `:` line refuses to run without the Issue, the PR and the SHA your review approved; the `labels=` line exits if the labels can't be read, so a failed lookup never turns into a merge, the `grep` line exits non-zero when the Issue is blocked so your loop doesn't count it as a success, and `--match-head-commit` makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, `gh pr merge` enables auto-merge when checks haven't passed and queues the PR when they have, and a blocking label added after that isn't checked by this script:
+
+```bash
+#!/usr/bin/env bash
+: "${ISSUE:?}" "${PR:?}" "${REVIEWED_SHA:?missing the SHA the review approved}"
+labels=$(gh issue view "$ISSUE" --json labels -q '.labels[].name') || exit 1
+grep -qx ai-blocked <<<"$labels" && { echo "blocked: $ISSUE"; exit 3; }
+gh pr merge "$PR" --squash --match-head-commit "$REVIEWED_SHA"
+```
 
 ### What happens when it fails
 
-Runs fail a lot. What matters is where a failed run goes next. If Orbi can recover, the Issue moves to `ai-fix-needed` and the next pass picks up the same branch and the same PR instead of opening a new one. If a person has to decide, it stops at `ai-blocked` and says why on the Issue.
+If Orbi can recover, the Issue moves to `ai-fix-needed` and the next pass continues on the same branch and the same PR. If a person has to decide, it stops at `ai-blocked` with a comment saying what happened.
 
-On September 28, the first run on [#1482](https://github.com/orbi-build/orbi/issues/1482) finished without a single commit. Orbi didn't open an empty PR. It labelled the Issue `ai-blocked` and wrote what had happened:
+That comment isn't always enough. On September 28 the first run on [#1482](https://github.com/orbi-build/orbi/issues/1482) ended in under three minutes with no commit at all, and Orbi labelled it `ai-blocked`:
 
-![Issue #1482: Orbi started Pi, then posted "Orbi blocked, waiting on a human decision": the agent delivered no commit and HEAD is still the frozen base](/img/headless-1482-blocked.webp)
+![Issue #1482: Orbi started Pi, then posted "Orbi blocked — waiting on a human decision": the agent delivered no commit and HEAD is still the frozen base](/img/headless-1482-blocked.webp)
 
-I read it, decided the Issue itself was fine, and removed the label. The second run opened [PR #1491](https://github.com/orbi-build/orbi/pull/1491), and it was merged the same day. That is about as much as a person should have to do when a run fails: read one comment and make one decision.
+It told me there was no commit, not why, so I went to the logs. I judged the Issue itself was fine and removed the label, and the second run opened [PR #1491](https://github.com/orbi-build/orbi/pull/1491), merged the same day.
 
 ### Who ships it
 
-Nobody gets a merged PR until it's in a release. In Orbi a release is an Issue too, labelled `ai-release`. It names the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. Here is the one for v0.5.58, which shipped the #1504 fix:
+A merged fix reaches nobody until it's released. In Orbi a release is an Issue too, labelled `ai-release`, naming the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. This is the one for v0.5.58, which shipped the #1504 fix:
 
 ![Issue #1508, Release v0.5.58: the scope is milestone v0.5.58, the Release block names version, base branch and version file, and Orbi claimed it with ai-in-progress](/img/headless-1508-release.webp)
 
-## The step we still do by hand
+## The step I still do by hand
 
-On September 25, Orbi merged [a mobile table fix](https://github.com/orbi-build/orbi-website/pull/523) for this website. Its tests checked every table page for horizontal overflow, and all of them passed. Then we opened a screenshot at 390px.
+If your runs change a user interface, automated tests won't be enough. On September 25, Orbi merged [a mobile table fix](https://github.com/orbi-build/orbi-website/pull/523) for this website. Its overflow tests all passed. Then a 390px screenshot showed words split mid-word, so I measured all 34 table pages at 390px: no horizontal overflow anywhere, but 193 split words or numbers on 25 of them. Here is the effect, reproduced on today's page by putting PR #523's CSS back:
 
-![The Orbi vs Devin pricing table at 390px with PR #523's CSS put back, reproduced on today's page: "Free" breaks after "Fre", and "Individual" runs over four lines](/img/headless-table-before.webp)
+![The Orbi vs Devin capability table at 390px with PR #523's CSS put back: "Task entry" breaks into "Tas", "k", "ent", "ry"](/img/headless-table-before.webp)
 
-That image is a reproduction: today's page with PR #523's rules put back, so the prices are current.
+I filed the measurements as [#526](https://github.com/orbi-build/orbi-website/issues/526), and Orbi merged the fix 53 minutes after picking it up. The same table on orbi.build today:
 
-Across 25 pages, 193 words were cut in the middle. The tests measured overflow correctly. Nobody had asked them about words.
+![The same table on orbi.build today at 390px: the row is a stacked block and every word reads whole](/img/headless-table-after.webp)
 
-We filed the fix as a new Issue with those measurements attached, and Orbi delivered it [in 32 minutes](https://github.com/orbi-build/orbi-website/pull/530):
+PR #523's tests did what its Issue asked, and that Issue never mentioned words. So before anything is promoted from beta to production, I open the changed pages on a phone and a desktop and look.
 
-![The same table on orbi.build today at 390px: each plan is a stacked block and every word reads whole](/img/headless-table-after.webp)
+## If you'd rather not build it
 
-The screenshot is what caught it, so that's the part we kept. Before anything is promoted from beta to production, one of us opens the changed pages on a phone and on a desktop and looks. The agent did what the Issue asked. The Issue just didn't mention words.
+All of this can be built around `claude -p`: a claim lock on labelled Issues, a dedicated system user, a second session for review, a merge check, a resume path, a release job. Orbi's [workflow doc](https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx), which describes how its version works, runs to about 800 lines.
 
-## If you want to stay on Claude Code
-
-You can build all of this around `claude -p`: labels for the queue, a lock on claims, a second session for review, a merge check, a resume path, a release job. Expect most of the effort to go into failure handling. Orbi's [workflow doc](https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx) is about 800 lines, and much of it is about what happens when a step goes wrong. #1504 was one of those, found by hand two days ago.
-
-Or use Orbi. It doesn't run Claude Code, though. Its agent is [Pi](https://github.com/earendil-works/pi), on a ChatGPT plan or a DeepSeek API key, and Orbi's own deliveries have run on DeepSeek since September 22. If you're attached to Claude, that's a real cost. If all you need is for an Issue to come out the other end as a reviewed release, most of the work sits outside the model.
-
-[Connect a repository to Orbi Cloud](https://orbi.build/cloud/?ref=blog-headless), or self-host the [open-source runner](https://github.com/orbi-build/orbi).
+Or use Orbi. Orbi Cloud runs [Pi](https://github.com/earendil-works/pi) on DeepSeek by default, and Orbi's own deliveries have run on DeepSeek since September 22. You can bring your own key instead, and Anthropic's API is on the provider list, so Claude models stay available. What you give up is Claude Code itself, and using your Claude Pro or Max quota for it. [Orbi vs Claude Code](/compare/claude-code/) compares where each one stops. If what you want is an Issue coming out the other end as a reviewed release, [connect a repository to Orbi Cloud](https://orbi.build/cloud/?ref=blog-headless) or self-host the [open-source runner](https://github.com/orbi-build/orbi).
 
 ## Related
 

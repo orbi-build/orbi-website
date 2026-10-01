@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Run Claude Code unattended: headless is step one</title>
+      <title>Run Claude Code unattended: headless mode is step one</title>
       <link>https://orbi.build/blog/run-claude-code-unattended/</link>
       <guid isPermaLink="true">https://orbi.build/blog/run-claude-code-unattended/</guid>
       <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
-      <description>claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.</description>
+      <description>Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</description>
     </item>
     <item>
       <title>Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</title>
