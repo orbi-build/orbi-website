@@ -218,9 +218,9 @@ class LandingTests(unittest.TestCase):
     def test_headings_carry_search_terms_not_only_rhetoric(self) -> None:
         """At least half the H2s should contain a term someone would search."""
         terms_en = ("ai", "agent", "github", "code review", "self-host",
-                    "open-source", "model", "automat", "issue", "pr")
+                    "open-source", "model", "automat", "issue", "pr", "repository")
         terms_zh = ("ai", "agent", "github", "代码审查", "自托管",
-                    "开源", "模型", "自动", "issue", "pr")
+                    "开源", "模型", "自动", "issue", "pr", "仓库")
         for page, terms in ((self.en, terms_en), (self.zh, terms_zh)):
             h2s = [h for h in page.headings_rendered if h]
             hits = [h for h in h2s if any(t in h.lower() for t in terms)]
@@ -329,11 +329,12 @@ class LandingTests(unittest.TestCase):
                 ["/logo-mark-on-dark.svg", "/logo-mark.svg"],
             )
 
-    def test_pages_distinguish_shipping_product_from_future_direction(self) -> None:
+    def test_homepages_only_make_shipping_claims(self) -> None:
+        """Issue #712 removes the future-direction sections from home."""
         for page in (self.en, self.zh):
             sections = [attrs.get("data-status") for tag, attrs in page.elements if tag == "section"]
             self.assertIn("shipping", sections)
-            self.assertIn("direction", sections)
+            self.assertNotIn("direction", sections)
 
     def test_factory_map_covers_the_current_delivery_graph(self) -> None:
         expected = {"delivery", "review", "release"}
@@ -422,16 +423,14 @@ class LandingTests(unittest.TestCase):
                 values[slot] = match.group(1)
             self.assertEqual(values["og:title"], values["twitter:title"])
 
-    def test_cloud_section_is_marked_a_direction(self) -> None:
-        """The Cloud section must be marked a direction, not a shipping
-        claim: a page that sells a managed service as shipped when it is not
-        misleads the visitor it asks to pay."""
+    def test_removed_run_orbi_section_stays_off_the_homepage(self) -> None:
+        """Issue #712 removes the long run-orbi section in both languages."""
         for page in (self.en, self.zh):
             cloud_sections = [
                 attrs for tag, attrs in page.elements
                 if tag == "section" and attrs.get("id") == "run-orbi"
             ]
-            self.assertEqual(cloud_sections[0].get("data-status"), "direction")
+            self.assertEqual(cloud_sections, [])
 
     def test_cloud_entry_is_github_login_not_an_application(self) -> None:
         for page, explainer in (
