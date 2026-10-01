@@ -76,6 +76,40 @@ const countMatches = (html, re) => [...html.matchAll(re)].length;
 
 const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
 
+describe("top navigation Docs destination (Issue #762)", () => {
+  const expected = {
+    en: "https://cloud-docs.orbi.build/?ref=nav",
+    zh: "https://cloud-docs.orbi.build/zh/?ref=nav",
+  };
+  const selfHosted = {
+    en: "https://docs.orbi.build",
+    zh: "https://docs.orbi.build/zh",
+  };
+
+  it("uses the Cloud Docs URL for the Docs link on every generated page", () => {
+    for (const [output, html] of shipped) {
+      const lang = output.startsWith("zh/") || output.includes("/zh/") ? "zh" : "en";
+      const docs = navRegion(html).match(/<a href="([^"]+)">(?:Docs|文档)<\/a>/g) ?? [];
+      expect(docs, `${output}: exactly one Docs nav link`).toHaveLength(1);
+      expect(docs[0], `${output}: Cloud Docs nav link`).toBe(`<a href="${expected[lang]}">${lang === "zh" ? "文档" : "Docs"}</a>`);
+    }
+  });
+
+  it("keeps self-hosted Docs in the footer", () => {
+    for (const [output, html] of shipped) {
+      const lang = output.startsWith("zh/") || output.includes("/zh/") ? "zh" : "en";
+      expect(footerRegion(html), `${output}: self-hosted Docs footer link`).toContain(`href="${selfHosted[lang]}"`);
+    }
+  });
+
+  it("keeps both homepage self-hosted CTAs on self-hosted Docs", () => {
+    expect(shipped.get("index.html")).toContain('<a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">');
+    expect(shipped.get("zh/index.html")).toContain('<a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">');
+    expect(shipped.get("index.html")).toContain('data-cta="closing-selfhost" href="https://docs.orbi.build"');
+    expect(shipped.get("zh/index.html")).toContain('data-cta="closing-selfhost" href="https://docs.orbi.build/zh"');
+  });
+});
+
 describe("homepage section order (Issue #712)", () => {
   for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} keeps the buyer journey sections adjacent and ordered`, () => {
