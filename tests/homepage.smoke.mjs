@@ -1018,8 +1018,15 @@ async function assertProofLoop(browser, path, size, screenshot) {
   if (JSON.stringify(captionLinks) !== JSON.stringify(expectedCaption)) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
-  const midwayHref = await page.locator('[data-cta="midway-cloud"]').getAttribute("href");
-  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+  const midwayCta = page.locator('[data-cta="midway-cloud"]');
+  const heroCta = page.locator('[data-cta="cloud-start"]');
+  const midwayText = (await midwayCta.textContent()).trim();
+  const heroText = (await heroCta.textContent()).trim();
+  if (midwayText !== heroText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected hero text ${JSON.stringify(heroText)}`);
+  }
+  const midwayHref = await midwayCta.getAttribute("href");
+  const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
   if (midwayHref !== expectedHref) {
     throw new Error(`${view}: midway CTA href is ${midwayHref}, expected ${expectedHref}`);
   }
@@ -1590,8 +1597,8 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issues #308/#322: exercise an actual homepage journey at each acceptance
-// viewport, then verify the Cloud page's language-specific login handoff
+// Issues #308/#322/#745: exercise an actual homepage journey at each
+// acceptance viewport, then verify its language-specific login handoff
 // without following the interactive GitHub OAuth page.
 export async function assertHomeCloudFlow(
   browser,
@@ -1611,17 +1618,17 @@ export async function assertHomeCloudFlow(
     }
     const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
-    if (selector === '[data-cta="cloud-start"]') {
+    if (selector === '[data-cta="cloud-start"]' || selector === '[data-cta="midway-cloud"]') {
       const href = await entry.getAttribute("href");
       if (href !== loginPath) {
-        throw new Error(`${path}: [data-cta="cloud-start"] href is ${JSON.stringify(href)}, expected ${loginPath}`);
+        throw new Error(`${path}: ${selector} href is ${JSON.stringify(href)}, expected ${loginPath}`);
       }
       const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
       const target = new URL(href, `${flowTargetURL}${path}`).toString();
       const response = await (requestGet ? requestGet(target) : context.request.get(target));
       if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
         throw new Error(
-          `${path}: [data-cta="cloud-start"] landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`
+          `${path}: ${selector} landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`
         );
       }
       await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
@@ -2268,8 +2275,8 @@ async function main() {
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issues #704/#711 send the hero and nav CTAs directly to login; the two
-    // lower-page CTAs still introduce the language-matching Cloud page.
+    // Issues #704/#745 send the hero and midway CTAs directly to login;
+    // the Cloud card still introduces its language-matching product page.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
