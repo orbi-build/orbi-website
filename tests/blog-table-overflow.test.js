@@ -232,7 +232,7 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       ["/cloud/", ".compare-section h2", 26, 702],
       ["/pricing/", ".compare-section h2", 26, 702],
       ["/", ".faq h2", 24, 648],
-      ["/", ".closing h2", 12, 324],
+      ["/", ".closing h2", 22, 594],
     ];
     for (const [route, selector, ch, productionWidth] of cases) {
       const result = await constrainedHeadingAt(route, selector, ch);
