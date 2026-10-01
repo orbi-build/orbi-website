@@ -1032,6 +1032,20 @@ function renderPost(post, template) {
       langSwitchHref: pathToHref(post.mirrorOutput),
     },
   };
+  const cta = post.lang === "zh"
+    ? `<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside>`
+    : `<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside>`;
+  const body = post.html.replace(/<h2 id="(?:related|相关)">/, `${cta}$&`);
   return fill(template, {
     LANG_ATTR: t.htmlLang,
     TITLE: escAttr(`${post.title} | Orbi`),
@@ -1046,7 +1060,7 @@ function renderPost(post, template) {
     SUMMARY: escAttr(post.summary),
     POST_TOC: toc.desktop,
     INLINE_TOC: toc.inline,
-    BODY: post.html,
+    BODY: body,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);

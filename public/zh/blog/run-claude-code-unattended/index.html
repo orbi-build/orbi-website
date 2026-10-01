@@ -32,6 +32,19 @@
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card, 12px);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -73,6 +86,8 @@
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
     }
   </style>
 
@@ -207,7 +222,12 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <p>上面这六件事都能围着 <code class="post-code--spaced">claude -p</code> 自己搭：认领加锁、专用的运行用户、另起一个会话评审、合并前检查、失败续跑、发版任务。Orbi 自己这一套写在 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>里，有八百来行。</p>
 <p>也可以直接用 Orbi。它的 agent <a href="https://github.com/earendil-works/pi">Pi</a> 和 runner 都是开源的，runner 可以<a href="https://github.com/orbi-build/orbi">自托管</a>。模型可以接 DeepSeek，也可以接其他你有 key 的服务，Anthropic 的 API 也在列表里，Claude 模型照样能用。放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>里写了两者各自做到哪一步。</p>
 <p>不想维护机器，可以<a href="https://orbi.build/zh/cloud/?ref=blog-headless">把仓库接入 Orbi Cloud</a>。</p>
-<h2 id="相关">相关</h2>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>、<a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 跑完之后，谁来合并 PR</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
 <!--orbi:related-posts-->
