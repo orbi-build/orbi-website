@@ -1339,14 +1339,20 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     // Cloud button in DOM order — its left in the nav row.
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
     expect(partial, "nav partial carries the Sign in slot").toContain(
-      '<a href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
+      '<a data-cta="nav-signin" href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
+    );
+    expect(partial, "nav partial carries the GitHub tracking slot").toContain(
+      '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
     );
     expect(partial.indexOf('href="{{SIGNIN_HREF}}"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
     for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
       const nav = navRegion(shipped.get(output));
-      const link = nav.match(/<a href="\/api\/login">([^<]*)<\/a>/);
-      expect(link, `${output}: nav Sign in link missing`).toBeTruthy();
+      const link = nav.match(/<a data-cta="nav-signin" href="\/api\/login">([^<]*)<\/a>/);
+      expect(link, `${output}: nav Sign in link or tracking attribute missing`).toBeTruthy();
       expect(link[1], `${output}: nav Sign in label`).toBe(label);
+      expect(nav, `${output}: nav GitHub tracking attribute missing`).toContain(
+        '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
+      );
     }
   });
 
@@ -1423,6 +1429,14 @@ describe("six-link primary nav and relocated links (Issue #711)", () => {
         page.lang === "zh"
           ? ["产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"]
           : ["How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"],
+      );
+      const nav = navRegion(shipped.get(page.output));
+      expect(nav, `${page.output}: GitHub CTA tracking`).toContain(
+        '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
+      );
+      const signInLabel = page.lang === "zh" ? "登录" : "Sign in";
+      expect(nav, `${page.output}: Sign in CTA tracking`).toMatch(
+        new RegExp(`<a data-cta="nav-signin" href="(?:/api/login|https://orbi\\.build/api/login)">${signInLabel}</a>`),
       );
     }
   });
