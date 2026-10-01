@@ -19,6 +19,7 @@ const SOLO_INCLUDED_TOKENS = String(pricing.soloIncludedTokensLabel);
 const SOLO_REPOSITORIES = String(pricing.soloRepositories);
 const PRO_REPOSITORIES = String(pricing.proRepositories);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const INCLUDED_TOKENS = String(pricing.includedTokensLabel);
 const FOUNDING_TOKENS = String(pricing.foundingTokensLabel);
@@ -456,6 +457,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], r
     .replaceAll(pricing.soloRepositoriesToken, SOLO_REPOSITORIES)
     .replaceAll(pricing.proRepositoriesToken, PRO_REPOSITORIES)
     .replaceAll(pricing.foundingPartnerLimitToken, FOUNDING_PARTNER_LIMIT)
+    .replaceAll(pricing.foundingPartnerRemainingToken, FOUNDING_PARTNER_REMAINING)
     .replaceAll(pricing.foundingPromoCodeToken, FOUNDING_PROMO_CODE)
     .replaceAll(pricing.includedTokensToken, INCLUDED_TOKENS)
     .replaceAll(pricing.foundingTokensToken, FOUNDING_TOKENS)

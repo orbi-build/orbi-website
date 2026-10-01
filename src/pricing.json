@@ -28,6 +28,8 @@
   "proRepositoriesToken": "__PRO_REPOSITORIES__",
   "foundingPartnerLimit": 6,
   "foundingPartnerLimitToken": "__FOUNDING_PARTNER_LIMIT__",
+  "foundingPartnerRemaining": 5,
+  "foundingPartnerRemainingToken": "__FOUNDING_PARTNER_REMAINING__",
   "foundingPromoCode": "FOUNDING50",
   "foundingPromoCodeToken": "__FOUNDING_PROMO_CODE__",
   "foundingTokensLabel": "1.2B",
