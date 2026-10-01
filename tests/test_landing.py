@@ -120,6 +120,7 @@ def parse(path: Path) -> tuple[str, PageParser]:
         ("soloRepositoriesToken", "soloRepositories"),
         ("proRepositoriesToken", "proRepositories"),
         ("foundingPartnerLimitToken", "foundingPartnerLimit"),
+        ("foundingPartnerRemainingToken", "foundingPartnerRemaining"),
         ("foundingPromoCodeToken", "foundingPromoCode"),
     ):
         html = html.replace(PRICING[token_key], str(PRICING[value_key]))
@@ -1072,9 +1073,12 @@ class CloudLandingPageTests(unittest.TestCase):
     def test_body_states_all_plans_and_the_founding_offer(self) -> None:
         """Issue #441: the rendered Cloud pages carry all approved prices,
         allowances, and founding terms from pricing.json."""
+        remaining = PRICING["foundingPartnerRemaining"]
+        limit = PRICING["foundingPartnerLimit"]
+        code = PRICING["foundingPromoCode"]
         for page, founding in (
-            (self.en, "Founding partners: 50% off forever, 6 places; use code FOUNDING50 at checkout"),
-            (self.zh, "创始会员永久 5 折，限 6 位；结账时输入 FOUNDING50"),
+            (self.en, f"Founding partners: 50% off for life. Only {remaining} of {limit} places left. Code {code} at checkout."),
+            (self.zh, f"创始合作伙伴终身五折，{limit} 个名额只剩 {remaining} 个。结账时使用优惠码 {code}。"),
         ):
             for value in ("US$29", "US$290", "US$79", "US$790", "400M", "1.2B"):
                 self.assertIn(value, page.text)
