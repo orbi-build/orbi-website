@@ -995,6 +995,47 @@ describe("aiready.sh install entry (Issue #174)", () => {
   });
 });
 
+describe("engagement beacon", () => {
+  it("accepts new-format CTA details and forwards each event to Cloud", async () => {
+    const forwarded = [];
+    const reports = [];
+    const env = {
+      CLOUD_VISIT_URL: "https://cloud.test/visit",
+      WEBSITE_SECRET: "secret",
+      CLOUD: { fetch: async request => { forwarded.push(await request.json()); return new Response(null, { status: 204 }); } },
+    };
+    for (const detail of ["nav-start", "closing-start", "pricing-summary"]) {
+      const response = await handleFetch(
+        new Request("https://beta.orbi.build/cloud/e", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "User-Agent": "Mozilla/5.0" },
+          body: JSON.stringify({ kind: "cta_click", path: "/", detail }),
+        }),
+        env,
+        { waitUntil: promise => reports.push(promise) },
+      );
+      expect(response.status).toBe(204);
+    }
+    await Promise.all(reports);
+    expect(forwarded.map(event => event.detail)).toEqual(["nav-start", "closing-start", "pricing-summary"]);
+  });
+
+  it("rejects CTA details outside the Cloud format", async () => {
+    const fetchMock = vi.fn();
+    const response = await handleFetch(
+      new Request("https://beta.orbi.build/cloud/e", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": "Mozilla/5.0" },
+        body: JSON.stringify({ kind: "cta_click", detail: "Nav Start" }),
+      }),
+      { CLOUD_VISIT_URL: "https://cloud.test/visit", WEBSITE_SECRET: "secret", CLOUD: { fetch: fetchMock } },
+      { waitUntil: vi.fn() },
+    );
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
 // Issue #618: visits are reported by the page beacon, not by HTML responses.
 describe("page attribution", () => {
   const assets = {
