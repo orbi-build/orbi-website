@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -88,7 +89,7 @@
 
     <article class="post-body">
 <p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>, asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.</p>
-<p>At 10:28 (UTC+8) he added the <code>ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
+<p>At 10:28 (UTC+8) he added the <code class="post-code--single">ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
 <h3>The first version was rejected</h3>
 <p>Orbi opened <a href="https://github.com/xiaods/k8e/pull/613">PR #613</a> at 11:37 with phase one only: 10 new files, 2,483 lines. It had an operation history recorder, a recovery oracle, a SIGKILL test that kills a child process mid-write, a WAL corruption test and a quota test.</p>
 <p>At 11:46 the maintainer posted what SonarCloud and DeepSource had flagged. Orbi started pushing fixes at 11:57.</p>
@@ -96,7 +97,7 @@
 <ul>
 <li><p><strong>R1: the oracle accepted an impossible state.</strong> Say two CAS writes both expect revision 3. A is acknowledged and B&#39;s outcome is unknown. If recovery shows B&#39;s value, something went wrong, because whichever write ran second must have failed its compare. The oracle accepted it anyway: it treated an unknown CAS as an unconditional put.</p>
 <p>The history in question:</p>
-<pre><code>k is at rev 3
+<pre><code class="post-code--spaced">k is at rev 3
 A: CAS rev3 -&gt; a  acked
 B: CAS rev3 -&gt; b  unknown
 recovered: k = b
@@ -108,23 +109,23 @@ oracle: OK   (should fail)
 <li><p><strong>R3: an empty value looked like a missing key.</strong> An empty payload was never hashed, so the oracle read &quot;written as empty&quot; as &quot;does not exist&quot;. A lost empty key would pass.</p>
 </li>
 </ul>
-<p>The review also said the PR body&#39;s <code>Fixes #612</code> would close a four-phase issue after phase one.</p>
+<p>The review also said the PR body&#39;s <code class="post-code--spaced">Fixes #612</code> would close a four-phase issue after phase one.</p>
 <p>None of the three was about style. Each meant the suite could report &quot;recovered correctly&quot; when the data had not recovered. A test suite that does that gives you confidence you haven&#39;t earned, which is worse than having no suite at all.</p>
 <h3>Orbi&#39;s own mistakes on the same PR</h3>
 <p>Orbi&#39;s engine also reported three failures of its own, each in a PR comment:</p>
 <ol>
-<li>At 12:28 it tried to add a label the repository didn&#39;t have (<code>ai-awaiting-merge</code>). At 12:37 the engine gave up and marked the issue <code>ai-blocked</code>, which hands the next step to a human. The maintainer removed that label at 14:16 and put <code>ai-ready</code> back at 14:41, and the work resumed.</li>
+<li>At 12:28 it tried to add a label the repository didn&#39;t have (<code class="post-code--single">ai-awaiting-merge</code>). At 12:37 the engine gave up and marked the issue <code class="post-code--single">ai-blocked</code>, which hands the next step to a human. The maintainer removed that label at 14:16 and put <code class="post-code--single">ai-ready</code> back at 14:41, and the work resumed.</li>
 <li>At 14:54 Orbi&#39;s own independent review produced no verdict line, so its result couldn&#39;t be parsed.</li>
-<li>At 15:19 its resume check demanded <code>Fixes #612</code> in the PR body, the same line the maintainer&#39;s review had rightly asked Orbi to remove.</li>
+<li>At 15:19 its resume check demanded <code class="post-code--spaced">Fixes #612</code> in the PR body, the same line the maintainer&#39;s review had rightly asked Orbi to remove.</li>
 </ol>
-<p>Orbi never cleared the third one, and the failure spread beyond the ticket: it crashed the whole runner process serving his repository, 84 times between 15:19 and 22:10 by the runner&#39;s own log, and his entire queue stalled. The public write-up, <a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>, was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 (&quot;go ahead and keep fixing&quot;). Nothing happened after that. The rule that every PR body must say <code>Fixes</code> works for a single-shot issue and is wrong for a phased one; the engine enforced it anyway, and the human reviewer was right.</p>
+<p>Orbi never cleared the third one, and the failure spread beyond the ticket: it crashed the whole runner process serving his repository, 84 times between 15:19 and 22:10 by the runner&#39;s own log, and his entire queue stalled. The public write-up, <a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>, was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 (&quot;go ahead and keep fixing&quot;). Nothing happened after that. The rule that every PR body must say <code class="post-code--single">Fixes</code> works for a single-shot issue and is wrong for a phased one; the engine enforced it anyway, and the human reviewer was right.</p>
 <h3>The fix</h3>
-<p>At 15:05 one commit, <code>f8e9dd9c</code>, addressed all three findings. An unknown CAS whose expected revision is older than the key&#39;s last acknowledged revision is now dropped. The child process only hosts the etcd member, while the parent runs the client and the recorder, so the recorder survives the kill. Every put and CAS payload is hashed, including the empty string.</p>
+<p>At 15:05 one commit, <code class="post-code--single">f8e9dd9c</code>, addressed all three findings. An unknown CAS whose expected revision is older than the key&#39;s last acknowledged revision is now dropped. The child process only hosts the etcd member, while the parent runs the client and the recorder, so the recorder survives the kill. Every put and CAS payload is hashed, including the empty string.</p>
 <p>New tests cover R1 and R3 in both directions. The PR body now reads &quot;Part of #612 — this PR lands the phase-1 layer only&quot;.</p>
-<p>At 22:12 the second review came back <strong>APPROVED</strong>. It traced each fix and set two conditions. The first was to run the race tests independently. The second was to drop a stale <code>Fixes #612</code> from Orbi&#39;s first commit message; the review called that one optional, because it believed only the PR body closes issues. It also listed the remaining gaps, which the design doc already disclosed. The maintainer merged it himself at 22:13, 38 seconds later, and the record doesn&#39;t show either condition being carried out first. CI on the merged head: 801 tests, 49 new, 0 failing.</p>
+<p>At 22:12 the second review came back <strong>APPROVED</strong>. It traced each fix and set two conditions. The first was to run the race tests independently. The second was to drop a stale <code class="post-code--spaced">Fixes #612</code> from Orbi&#39;s first commit message; the review called that one optional, because it believed only the PR body closes issues. It also listed the remaining gaps, which the design doc already disclosed. The maintainer merged it himself at 22:13, 38 seconds later, and the record doesn&#39;t show either condition being carried out first. CI on the merged head: 801 tests, 49 new, 0 failing.</p>
 <h3>The issue closed anyway</h3>
 <p>The review was wrong about that commit message. GitHub also closes an issue when a closing keyword in a merged commit message points at it. One second after the merge, #612 closed as <em>completed</em>, closed by Orbi&#39;s first commit, with one phase of four landed. The first review had warned about exactly this outcome, and it came through the one place nobody had fixed.</p>
-<p>That was Orbi&#39;s fourth mistake on this ticket, and the one with the biggest consequence. Our engine&#39;s rules require <code>Fixes #N</code> in the PR body, and the delivery agent also put it in its first commit message. Both reviews flagged the keyword, the first in the PR body and the second in the commit. As of this writing, #612 is still closed.</p>
+<p>That was Orbi&#39;s fourth mistake on this ticket, and the one with the biggest consequence. Our engine&#39;s rules require <code class="post-code--spaced">Fixes #N</code> in the PR body, and the delivery agent also put it in its first commit message. Both reviews flagged the keyword, the first in the PR body and the second in the commit. As of this writing, #612 is still closed.</p>
 <h3>The second PR: 3 hours 12 minutes from open to merge</h3>
 <p>The next day brought <a href="https://github.com/xiaods/k8e/issues/614">#614</a>, rqlite compatibility for the M0 gate. The maintainer labelled it at 15:21. <a href="https://github.com/xiaods/k8e/pull/615">PR #615</a> added 3,294 lines across 11 files. It opened at 16:49 and was waiting for approval from 17:33. A LoopX review was posted from the maintainer&#39;s account, he approved at 20:00:52, and Orbi merged 29 seconds later.</p>
 <h3>Looking back</h3>

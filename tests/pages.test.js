@@ -2027,7 +2027,7 @@ See [the docs](https://docs.orbi.build/docker).
       expect(newHtml).toContain('<h1 id="post-title">Fixture new</h1>');
       expect(newHtml).toContain('<link rel="canonical" href="https://orbi.build/blog/fixture-new/">');
       expect(newHtml).toContain('<meta property="article:published_time" content="2026-09-10">');
-      expect(newHtml).toContain("Intro for Fixture new with <code>inline code</code>");
+      expect(newHtml).toContain('Intro for Fixture new with <code class="post-code--spaced">inline code</code>');
       expect(newHtml).toContain("<pre><code");
       expect(newHtml).toContain("echo hello from Fixture new");
       expect(newHtml).toContain('<a href="https://docs.orbi.build/docker">the docs</a>');

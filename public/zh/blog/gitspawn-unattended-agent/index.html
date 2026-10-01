@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -99,7 +100,7 @@
 <p>我漏问了一个问题：跑这条 git 命令的是谁，用的是哪个用户？</p>
 <p>受影响的七个工具，安全模型是一样的：模型提议一条命令，人批准，然后执行。GitSpawn 危险，是因为它在人批准之前就执行了东西。</p>
 <p>Orbi 没有审批这一步。它本来就是无人值守的，agent 手里本来就有 shell。我们的边界是操作系统账号：在 Orbi Cloud 里，每个接入的仓库都跑在自己独立的 Unix 用户下，runner 和 agent 用的是同一个用户。就算 runner 自己的 git 调用被骗去执行了什么，拿到的权限也和 agent 本来就有的一样，所以这个修复什么也没挡住。</p>
-<p>权限更高的地方我们也查了。宿主机上有个读取各沙箱用量的任务，以 root 运行。但它读 git 时本来就切换成了各沙箱自己的用户。这是一次故障留下的：9 月 12 日它以 root 身份跑 git，git 的 <code>safe.directory</code> 检查拒绝操作别的用户的仓库，用量统计每 5 分钟静默失败一次，后来才改成以仓库主人的身份运行。</p>
+<p>权限更高的地方我们也查了。宿主机上有个读取各沙箱用量的任务，以 root 运行。但它读 git 时本来就切换成了各沙箱自己的用户。这是一次故障留下的：9 月 12 日它以 root 身份跑 git，git 的 <code class="post-code--single">safe.directory</code> 检查拒绝操作别的用户的仓库，用量统计每 5 分钟静默失败一次，后来才改成以仓库主人的身份运行。</p>
 <p>所以这 1164 行，守的是一条 Orbi 根本没有的边界。回滚 PR 里写得很直接：以现阶段来说，设计过度了。同一个 PR 还在仓库的 AGENTS.md 里加了一条规矩：不为理论上的风险开预防性的票。</p>
 <h2>我们的结论</h2>
 <p>如果你的 agent 在执行命令前会先问人，照 Manifold 的建议修。这类工具的修法很小，值得做。</p>

@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -116,7 +117,7 @@
 </tbody></table></div>
 <h3>9 月 4 日为什么离开 Apache</h3>
 <p>Apache-2.0 允许任何人拿代码去卖托管服务。Orbi 的 runner 本来就是跑在用户自己机器上的，SUL 的边界正好划在同一个地方：自己用免费，拿去当服务转售要另外签协议。n8n 用的就是这个许可证，我们照搬了原文，限制条款和专利条款一字没改。</p>
-<p>时机也有关系。当时仓库才十天，版权持有人只有一个，换许可证只要一个人点头。那次提交还在 <code>CONTRIBUTING.md</code> 里加了一条重新授权条款：贡献者同意维护者以后可以换许可证发布他们的代码，<strong>前提是新许可证必须继续允许免费自托管</strong>。</p>
+<p>时机也有关系。当时仓库才十天，版权持有人只有一个，换许可证只要一个人点头。那次提交还在 <code class="post-code--single">CONTRIBUTING.md</code> 里加了一条重新授权条款：贡献者同意维护者以后可以换许可证发布他们的代码，<strong>前提是新许可证必须继续允许免费自托管</strong>。</p>
 <h3>SUL 的代价</h3>
 <p>SUL 不是 OSI 认可的许可证，所以 Orbi 不能说自己是开源软件。这件事的影响比我们预想的大。</p>
 <p>有几个很对口的列表只收开源项目。<a href="https://github.com/kyrolabs/awesome-agents/blob/main/CONTRIBUTING.md">kyrolabs/awesome-agents</a> 写明投稿必须开源；<a href="https://github.com/Jenqyang/Awesome-AI-Agents/blob/main/CONTRIBUTING.md">Awesome-AI-Agents</a> 写明源码公开类许可证通常会被拒。其他地方也一样，每次介绍 Orbi 都得补一句：源码公开，自托管免费，但不是 OSI 定义的开源。</p>
@@ -131,11 +132,11 @@
 <li><strong>把 Orbi 作为服务提供给别人</strong>：按 AGPL-3.0 可以，前提是公开你的修改。SUL 不允许这样做，除非另外签协议。</li>
 <li><strong>Orbi Cloud</strong>：不变，仍然是我们运营的收费托管版。</li>
 </ul>
-<p>包的元数据用一条 SPDX 表达式同时声明两种许可，摘自 <code>pyproject.toml</code>：</p>
+<p>包的元数据用一条 SPDX 表达式同时声明两种许可，摘自 <code class="post-code--single">pyproject.toml</code>：</p>
 <pre><code class="language-toml">license = &quot;AGPL-3.0-only OR LicenseRef-Sustainable-Use-1.0&quot;
 license-files = [&quot;LICENSE&quot;, &quot;docs/licenses/sustainable-use-license.md&quot;]
 </code></pre>
-<p>许可证文件都在仓库里：<a href="https://github.com/orbi-build/orbi/blob/main/LICENSE"><code>LICENSE</code></a> 是未经改动的 GNU AGPL-3.0 原文，<a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md"><code>docs/licenses/sustainable-use-license.md</code></a> 是 SUL 全文，并附有两种许可怎么选的简短说明。</p>
+<p>许可证文件都在仓库里：<a href="https://github.com/orbi-build/orbi/blob/main/LICENSE"><code class="post-code--single">LICENSE</code></a> 是未经改动的 GNU AGPL-3.0 原文，<a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md"><code class="post-code--single">docs/licenses/sustainable-use-license.md</code></a> 是 SUL 全文，并附有两种许可怎么选的简短说明。</p>
 <h2>相关</h2>
 <p>继续阅读：<a href="/zh/compare/openhands/">OpenHands 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
