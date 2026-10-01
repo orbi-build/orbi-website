@@ -118,11 +118,12 @@
 <p>PR 合了，没进版本，用户还是用不上。Orbi 里发版也是一张 Issue，打 <code>ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的票都关了，发版提交上的 CI 通过后打 tag。这是 v0.5.58 的发版票，#1504 的修复就是随它发出去的：</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508「Release v0.5.58」：范围是 v0.5.58 里程碑，Release 段写明版本号、基线分支和版本文件，Orbi 以 ai-in-progress 认领"></p>
 <h2>还留给人做的那一步</h2>
-<p>9 月 25 日，Orbi 给这个网站合了一个<a href="https://github.com/orbi-build/orbi-website/pull/523">手机端表格的修复</a>。测试检查了每个有表格的页面会不会横向溢出，全部通过。然后我们打开了一张 390px 宽的截图。（两张截图里的价格已经变了，所以做了模糊处理。）</p>
-<p><img src="/img/headless-table-before.webp" alt="修复后第一版在 390px 下的 Orbi 与 Devin 价格表：「Free」被拆成「Fr」和「ee」，「Individual」占了四行"></p>
+<p>9 月 25 日，Orbi 给这个网站合了一个<a href="https://github.com/orbi-build/orbi-website/pull/523">手机端表格的修复</a>。测试检查了每个有表格的页面会不会横向溢出，全部通过。然后我们打开了一张 390px 宽的截图。</p>
+<p><img src="/img/headless-table-before.webp" alt="在今天的页面上套回 PR #523 的 CSS，390px 下的 Orbi 与 Devin 价格表：「Free」在「Fre」处断开，「Individual」占了四行"></p>
+<p>这张是复现图：在今天的页面上把 PR #523 的规则套回去截的，所以价格是现在的。</p>
 <p>25 个页面上，一共 193 个英文单词被从中间劈开。测试测溢出测得没错，只是没人让它看单词。</p>
 <p>我们把量到的数字写进一张新 Issue，Orbi <a href="https://github.com/orbi-build/orbi-website/pull/530">32 分钟</a>交付了修复：</p>
-<p><img src="/img/headless-table-after.webp" alt="同一张表修复后在 390px 下：每个套餐叠成一块，单词都是完整的"></p>
+<p><img src="/img/headless-table-after.webp" alt="orbi.build 今天的同一张表，390px 下：每个套餐叠成一块，单词都是完整的"></p>
 <p>抓住问题的是那张截图，所以留下来的也是这一步：从 beta 推到生产之前，我们会有人在手机和桌面上把改过的页面打开看一遍。agent 做到了票上写的每一条，只是票上没提单词这回事。</p>
 <h2>如果你想继续用 Claude Code</h2>
 <p>上面这些都可以围着 <code>claude -p</code> 自己搭：用标签做队列、给认领加锁、另起一个会话做评审、合并前的检查、失败后的续跑、发版任务。大部分力气会花在处理失败上。Orbi 的 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>有八百来行，很大一部分讲的是某一步出错之后怎么办。#1504 就是其中一种，还是前几天人工发现的。</p>

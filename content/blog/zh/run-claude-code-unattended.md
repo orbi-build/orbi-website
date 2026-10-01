@@ -69,15 +69,17 @@ PR 合了，没进版本，用户还是用不上。Orbi 里发版也是一张 Is
 
 ## 还留给人做的那一步
 
-9 月 25 日，Orbi 给这个网站合了一个[手机端表格的修复](https://github.com/orbi-build/orbi-website/pull/523)。测试检查了每个有表格的页面会不会横向溢出，全部通过。然后我们打开了一张 390px 宽的截图。（两张截图里的价格已经变了，所以做了模糊处理。）
+9 月 25 日，Orbi 给这个网站合了一个[手机端表格的修复](https://github.com/orbi-build/orbi-website/pull/523)。测试检查了每个有表格的页面会不会横向溢出，全部通过。然后我们打开了一张 390px 宽的截图。
 
-![修复后第一版在 390px 下的 Orbi 与 Devin 价格表：「Free」被拆成「Fr」和「ee」，「Individual」占了四行](/img/headless-table-before.webp)
+![在今天的页面上套回 PR #523 的 CSS，390px 下的 Orbi 与 Devin 价格表：「Free」在「Fre」处断开，「Individual」占了四行](/img/headless-table-before.webp)
+
+这张是复现图：在今天的页面上把 PR #523 的规则套回去截的，所以价格是现在的。
 
 25 个页面上，一共 193 个英文单词被从中间劈开。测试测溢出测得没错，只是没人让它看单词。
 
 我们把量到的数字写进一张新 Issue，Orbi [32 分钟](https://github.com/orbi-build/orbi-website/pull/530)交付了修复：
 
-![同一张表修复后在 390px 下：每个套餐叠成一块，单词都是完整的](/img/headless-table-after.webp)
+![orbi.build 今天的同一张表，390px 下：每个套餐叠成一块，单词都是完整的](/img/headless-table-after.webp)
 
 抓住问题的是那张截图，所以留下来的也是这一步：从 beta 推到生产之前，我们会有人在手机和桌面上把改过的页面打开看一遍。agent 做到了票上写的每一条，只是票上没提单词这回事。
 
