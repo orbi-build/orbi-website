@@ -772,9 +772,9 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 7, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 8]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
     }
   });
 
@@ -1357,14 +1357,10 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   });
 });
 
-// Issue #612: the primary-nav dropdown is labeled Resources/资源 on EVERY
-// page with the site nav (it used to exist only on the two homes, other pages
-// showed a plain Docs link), and its first item is the ai-ready methodology
-// entry. The mobile hamburger opens this same <nav data-primary-nav> element
-// (styles.css .site-header nav.is-open) — there is no second DOM copy — so
-// extracting the dropdown from the nav region proves the items are in the
-// hamburger menu's DOM too; the browser smoke drives the real interaction.
-describe("Resources dropdown in the primary nav (Issue #612)", () => {
+// Issue #711: every page has the same six-link primary nav. The former Guides
+// entry, every Resources destination and the language switch live in the
+// footer; the mobile hamburger opens the same six-link nav DOM.
+describe("six-link primary nav and relocated links (Issue #711)", () => {
   const RESOURCES = {
     en: {
       label: "Resources",
@@ -1405,6 +1401,11 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
   it("keeps Guides and Resources links in the footer", () => {
     for (const page of [...pages.filter((p) => p.nav), ...posts]) {
       const footer = footerRegion(shipped.get(page.output));
+      const siteBase = page.nav?.siteBase ?? "";
+      const guidesHref = `${siteBase}${page.lang === "zh" ? "/zh/guides/" : "/guides/"}`;
+      expect(footer, `${page.output}: footer lost the Guides index`).toContain(
+        `<a href="${guidesHref}">${page.lang === "zh" ? "指南" : "Guides"}</a>`,
+      );
       expect(footer, `${page.output}: footer lost Guides`).toContain(page.lang === "zh" ? "Issue 到发版" : "Issue to release");
       expect(footer, `${page.output}: footer lost Resources`).toContain(page.lang === "zh" ? "博客" : "Blog");
       expect(footer, `${page.output}: footer lost language switch`).toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);

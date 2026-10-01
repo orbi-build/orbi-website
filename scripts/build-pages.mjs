@@ -147,23 +147,16 @@ const LANG = {
     guidesLabel: "Guides",
     guidesHref: "/guides/",
     comparisonsLabel: "Orbi vs alternatives",
-    comparisonsDescription: "Claude Code, Codex, Devin and more, fact-checked",
     costLabel: "Pricing",
     evidenceLabel: "Orbi builds Orbi",
-    evidenceDescription: "Public issues, PRs and releases on GitHub",
     docsLabel: "Docs",
-    resourcesLabel: "Resources",
     methodLabel: "ai-ready: 12 factors",
-    methodDescription: "What makes an Issue safe to hand to an AI",
     methodHref: "/aiready/",
     benchmarkLabel: "How we test the harness",
-    benchmarkDescription: "Delivery runs on open-source bugs, graded by maintainers' tests",
     benchmarkHref: "/benchmark/",
     selfHostedDocsLabel: "Self-hosted Docs",
-    cloudDocsNavLabel: "Cloud Docs",
     blogLabel: "Blog",
     costPerPrLabel: "Cost per merged PR",
-    costPerPrDescription: "Measured on our own repos, with sample size and limits",
     productHeading: "Product",
     resourcesHeading: "Resources",
     guidesHeading: "Guides",
@@ -210,23 +203,16 @@ const LANG = {
     guidesLabel: "指南",
     guidesHref: "/zh/guides/",
     comparisonsLabel: "与同类工具对比",
-    comparisonsDescription: "Claude Code、Codex、Devin 等，逐条核实",
     costLabel: "价格",
     evidenceLabel: "Orbi 交付自己的记录",
-    evidenceDescription: "公开的 Issue、PR 和发版，都在 GitHub 上",
     docsLabel: "文档",
-    resourcesLabel: "资源",
     methodLabel: "ai-ready 12 要素",
-    methodDescription: "什么样的 Issue 能交给 AI 无人值守交付",
     methodHref: "/aiready/zh/",
     benchmarkLabel: "我们怎么测 harness",
-    benchmarkDescription: "在开源 bug 上跑交付，用维护者的测试打分",
     benchmarkHref: "/zh/benchmark/",
     selfHostedDocsLabel: "自托管文档",
-    cloudDocsNavLabel: "Cloud 文档",
     blogLabel: "博客",
     costPerPrLabel: "每个 PR 花多少钱",
-    costPerPrDescription: "在自家仓库实测，附样本量和限制",
     productHeading: "产品",
     resourcesHeading: "资源",
     guidesHeading: "指南",
@@ -283,23 +269,13 @@ function withSiteBase(nav, href) {
   return nav?.siteBase && href.startsWith("/") ? `${nav.siteBase}${href}` : href;
 }
 
-const NAV_DROPDOWN_INDICATOR = '<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
-
 export function renderNav(page, partial = NAV_PARTIAL) {
   if (!partial) throw new Error("nav partial not loaded; call buildPages() first or pass the partial");
   const t = LANG[page.lang];
   const n = page.nav;
   if (!n) throw new Error(`${page.output}: page has no nav params`);
   const base = (href) => withSiteBase(n, href);
-  const compareAttrs =
-    (n.compareDataCta ? ' data-cta="comparisons"' : "") +
-    (n.compareCurrent ? ' aria-current="page"' : "");
   const costAttrs = n.costCurrent ? ' aria-current="page"' : "";
-  const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
-  const otherLine = `<a href="${base(n.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
-  const [lineA, lineB] = n.langCurrentFirst
-    ? [currentLine, otherLine]
-    : [otherLine, currentLine];
   return fill(partial, {
     HOME_HREF: base(t.homeHref),
     HOME_ARIA: t.homeAria,
@@ -310,10 +286,6 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     NAV_ARIA: t.navAria,
     SYSTEM_HREF: base(n.systemHref),
     SYSTEM_LABEL: t.systemLabel,
-    COMPARE_HREF: base(n.compareHref),
-    COMPARE_ATTRS: compareAttrs,
-    COMPARE_LABEL: n.compareLabel,
-    COMPARE_COST_JOIN: join,
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
@@ -357,7 +329,7 @@ export function renderFooter(page) {
     RESOURCES_HEADING: t.resourcesHeading,
     RESOURCES_LINKS: [`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="${base(t.benchmarkHref)}">${t.benchmarkLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cost/`)}">${t.costPerPrLabel}</a></li>`,`<li><a href="${base(t.methodHref)}">${t.methodLabel}</a></li>`,`<li><a href="${base(page.nav.compareHref)}">${t.comparisonsLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/blog/`)}">${t.blogLabel}</a></li>`,`<li><a href="${t.docsHref}">${t.selfHostedDocsLabel}</a></li>`,`<li><a href="${t.cloudDocsHref}">${t.cloudDocsLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#faq`)}">${t.faqLabel}</a></li>`].join(""),
     GUIDES_HEADING: t.guidesHeading,
-    GUIDES_LINKS: guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>"),
+    GUIDES_LINKS: `<li><a href="${base(t.guidesHref)}">${t.guidesLabel}</a></li>${guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}`,
     COMPARE_HEADING: t.compareHeading,
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
