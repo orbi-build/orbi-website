@@ -46,9 +46,9 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
   it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
-    // Issue #712 removes the long Cloud card; Issue #742 adds the Solo and Pro
-    // trial login CTAs on each Cloud page.
-    expect(hrefs).toHaveLength(16);
+    // Issue #712 removes the long Cloud card; Issues #714/#742 add closing and
+    // paid-plan trial login CTAs.
+    expect(hrefs).toHaveLength(18);
     for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
