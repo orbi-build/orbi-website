@@ -58,12 +58,14 @@ describe("Issue #409 engagement build contract", () => {
       const ctas = [...html.matchAll(/data-cta="([^"]+)"/g)].map(match => match[1]);
       expect(ctas.length, file).toBeGreaterThan(0);
     }
-    for (const file of ["public/cloud/index.html", "public/zh/cloud/index.html"]) {
+    const cloudCtas = {
+      "public/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →',
+      "public/zh/cloud/index.html": 'class="button button-signal hero-cta" data-cta="cloud-hero" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →',
+    };
+    for (const [file, cta] of Object.entries(cloudCtas)) {
       const html = await read(file);
-      expect(html).toMatch(/data-cta="cloud-hero"[^>]*>[^<]*(Start Cloud|开始 Cloud|用 GitHub)/);
-      expect(html).toContain('data-cta="cloud-docs"');
-      expect(html).toContain('data-cta="pricing"');
-      expect(html).toContain('data-cta="install"');
+      expect(html, file).toContain(cta);
+      expect(html, file).toContain('data-cta="pricing"');
     }
   });
 

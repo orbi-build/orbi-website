@@ -954,25 +954,41 @@ describe("per-page head parameters (title / description / canonical)", () => {
   });
 });
 
-describe("cloud hero CTA handoff (Issue #156)", () => {
-  // The hero CTA fires three instant redirects into GitHub's password box.
-  // The line under the button is the only warning the user gets; its wording
-  // is free to change (Issue #540), but it must add no jump of its own.
-  const outputs = ["cloud/index.html", "zh/cloud/index.html"];
-
-  const heroCtaBlock = (output) => {
-    const hero = region(shipped.get(output), '<section class="compare-hero', "</section>");
-    return hero.match(/<div class="hero-primary">([\s\S]*?)<\/div>/)?.[1] ?? "";
+describe("Cloud hero single CTA (Issue #741)", () => {
+  const expectations = {
+    "cloud/index.html": {
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      href: "/cloud/login",
+      button: "Try __FREE_DELIVERIES__ deliveries free →",
+      note: "No card · Only the repos you pick",
+    },
+    "zh/cloud/index.html": {
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      href: "/zh/cloud/login",
+      button: "免费试 __FREE_DELIVERIES__ 次 →",
+      note: "不用绑卡 · 只授权你选的仓库",
+    },
   };
 
-  it("keeps a warning paragraph under the hero CTA that adds no link of its own", () => {
-    for (const output of outputs) {
-      const block = heroCtaBlock(output);
-      const button = block.indexOf(output.startsWith("zh/") ? 'href="/zh/cloud/login"' : 'href="/cloud/login"');
-      expect(button, `${output}: hero CTA missing`).toBeGreaterThan(-1);
-      const paragraph = block.slice(block.indexOf("<p>"));
-      expect(block.indexOf("<p"), `${output}: CTA microcopy paragraph missing`).toBeGreaterThan(button);
-      expect(paragraph, `${output}: CTA microcopy must not carry links`).not.toContain("<a ");
+  it("keeps only the ordered h1, lede, CTA, and CTA note in the Cloud hero", () => {
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      const hero = region(html, '<section class="compare-hero', '</section>');
+      const h1 = hero.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "").trim();
+      const elements = [...hero.matchAll(/<(h1|p|a)\b[^>]*>([\s\S]*?)<\/\1>/g)]
+        .map(([, tag, body]) => ({ tag, body: body.replace(/<[^>]+>/g, "").trim() }));
+      expect(h1, `${output}: h1 remains`).toBeTruthy();
+      expect(elements, `${output}: hero content order`).toEqual([
+        { tag: "h1", body: h1 },
+        { tag: "p", body: expected.lede },
+        { tag: "a", body: expected.button },
+        { tag: "p", body: expected.note },
+      ]);
+      expect(hero).toContain(`class="button button-signal hero-cta" data-cta="cloud-hero" href="${expected.href}"`);
+      expect(hero).not.toContain("k8e");
+      expect(hero).not.toContain("cloud-docs");
+      expect(hero).not.toContain("Run Orbi yourself");
+      expect(hero).not.toContain("How an Issue becomes a tagged release");
     }
   });
 });
@@ -989,22 +1005,14 @@ describe("Cloud documentation links (Issue #315)", () => {
     },
   };
 
-  // Issue #612 made the nav dropdown (which carries the Self-hosted Docs
-  // item) sitewide, superseding this test's old nav-level ban on the engine
-  // docs href; the footer still routes Cloud buyers to the Cloud docs only.
-  it("routes the Cloud footer Docs to Cloud docs while preserving self-hosting CTA", () => {
+  // Issue #741 removes the Cloud docs and self-hosting links from the hero;
+  // the footer remains the durable place for both resources.
+  it("keeps Cloud and self-hosting links in the footer", () => {
     for (const [output, expected] of Object.entries(expectations)) {
-      const html = shipped.get(output);
-      const footer = footerRegion(html);
+      const footer = footerRegion(shipped.get(output));
       expect(footer, `${output}: Cloud Docs link`).toContain(`href="${expected.docs}"`);
       expect(footer, `${output}: engine docs are in the Resources group`).toContain(
         `href="${expected.selfHost}"`,
-      );
-      expect(html, `${output}: self-hosting CTA`).toContain(
-        `data-cta="install" href="${expected.selfHost}">`,
-      );
-      expect(html, `${output}: visible Cloud docs CTA`).toContain(
-        'href="https://cloud-docs.orbi.build/?ref=cloud-page">',
       );
     }
   });
