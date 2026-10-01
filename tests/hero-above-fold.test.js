@@ -9,7 +9,7 @@ const cases = [
   {
     source: "site/pages/index.html",
     built: "public/index.html",
-    h1: "File an Issue.<br><span>Get a release.</span>",
+    h1: "File an Issue.<br> <span>Get a release.</span>",
     lede: "An AI agent that takes your Issues all the way to a release.",
     href: "/cloud/login",
     button: "Try __FREE_DELIVERIES__ deliveries free →",
@@ -18,7 +18,7 @@ const cases = [
   {
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
-    h1: "提个 Issue，<br><span>收个版本</span>",
+    h1: "提个 Issue，<br> <span>收个版本</span>",
     lede: "AI 把你的 Issue 一路做到发版。",
     href: "/zh/cloud/login",
     button: "免费试 __FREE_DELIVERIES__ 次 →",
