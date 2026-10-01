@@ -59,16 +59,18 @@
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
-    .post-toc h2 { margin: 0 0 12px; padding-left: 14px; font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-    .post-toc ol { list-style: none; counter-reset: toc; margin: 0; padding-left: 0; border-left: 1px solid var(--line); }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
     .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li { counter-increment: toc; margin: 0; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
     .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc .post-toc-link { display: grid; grid-template-columns: 1.6em 1fr; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 2px solid transparent; }
-    .post-toc .post-toc-link::before { content: counter(toc); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc .post-toc-link.is-current { border-left-color: var(--signal-on-light); color: var(--ink); font-weight: 600; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -94,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -156,8 +159,14 @@
           <li><a class="post-toc-link" href="#bors-的那条提权路径">bors 的那条提权路径</a></li>
           <li><a class="post-toc-link" href="#两边各抄一条">两边各抄一条</a></li>
           <li><a class="post-toc-link" href="#注册表的形状早就有了">注册表的形状早就有了</a></li>
-          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a></li>
-          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a></li>
+          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a>
+            <ol>
+              <li><a class="post-toc-link" href="#我们拒绝写的那个分支">我们拒绝写的那个分支</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a>
+            <ol>
+              <li><a class="post-toc-link" href="#为什么-暂不决定-是一个决定-不是回避">为什么「暂不决定」是一个决定，不是回避</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#结果">结果</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -173,8 +182,14 @@
           <li><a class="post-toc-link" href="#bors-的那条提权路径">bors 的那条提权路径</a></li>
           <li><a class="post-toc-link" href="#两边各抄一条">两边各抄一条</a></li>
           <li><a class="post-toc-link" href="#注册表的形状早就有了">注册表的形状早就有了</a></li>
-          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a></li>
-          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a></li>
+          <li><a class="post-toc-link" href="#一条命令-三个幂等步骤">一条命令，三个幂等步骤</a>
+            <ol>
+              <li><a class="post-toc-link" href="#我们拒绝写的那个分支">我们拒绝写的那个分支</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#我们刻意没有决定的事">我们刻意没有决定的事</a>
+            <ol>
+              <li><a class="post-toc-link" href="#为什么-暂不决定-是一个决定-不是回避">为什么「暂不决定」是一个决定，不是回避</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#结果">结果</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
@@ -366,7 +381,7 @@ TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 该内置的是能力：读仓内自己的模板、填字段、开票。</p>
 <p>所以 <code class="post-code--spaced">/milestone v0.5.40</code> 做三件事，各自独立幂等：milestone 不存在就建、
 release 票不存在就开、落地配置值。跑两遍，得到一个 milestone 和一张票。</p>
-<h3>我们拒绝写的那个分支</h3>
+<h3 id="我们拒绝写的那个分支">我们拒绝写的那个分支</h3>
 <p>落地配置值有两个去处，因为 <code class="post-code--single">active_milestone</code> 可能来自两个地方：
 仓库策略文件（<code class="post-code--single">.github/orbi.toml</code>）或宿主自己的 config。写错地方，
 这个值要么不生效，要么在错误的范围生效。</p>
@@ -397,7 +412,7 @@ release 票不存在就开、落地配置值。跑两遍，得到一个 mileston
 以及重新设计回执如何跨多票去重。这个代价只有被一条真正需要它的命令证明才值得。</p>
 <p>所以问题不是「哪个方案更好」，而是：<strong>那四条命令我们到底想要哪条，有没有哪条值得一次逐 tick 扫描？</strong>
 如果暂时一条都不要，窄范围就继续。</p>
-<h3>为什么「暂不决定」是一个决定，不是回避</h3>
+<h3 id="为什么-暂不决定-是一个决定-不是回避">为什么「暂不决定」是一个决定，不是回避</h3>
 <p>我们把它放进 discussion 而不是当场定下来，这个选择应当和其他决定受同样的审视。</p>
 <p>抽共享层的那次重构（#1294）碰到了更宽扫描会用到的每一个部件，解析器、权限闸门、回执去重。
 <strong>顺手把范围放宽，会显得很整洁</strong>。而「反正已经在改这块代码了」正是范围决策被顺带做掉的
