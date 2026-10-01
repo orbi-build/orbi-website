@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,14 +101,19 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-23</p>
-        <h1 id="post-title">Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了</h1>
-        <p class="hero-lede">Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-23</p>
+          <h1 id="post-title">Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了</h1>
+          <p class="hero-lede">Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+
+      <article class="post-body">
+
 <p><a href="https://github.com/xiaods/k8e">k8e</a> 是一个内嵌 etcd 的 Kubernetes 发行版，497 星，维护者是 Deshi (Tommy) Xiao。9 月 20 日他开了 <a href="https://github.com/xiaods/k8e/issues/612">#612</a>，要给内嵌的 etcd 做一套端到端的健壮性测试，分四期：先测崩溃后能不能安全恢复，再测多节点故障、备份能否还原、长时间运行是否稳定。</p>
 <p>10:28（北京时间，下同）他给票打上 <code class="post-code--single">ai-ready</code>，交给了 Orbi。下面的时间和数字来自这张票的标签历史、PR 和评审记录，只有 runner 崩溃的次数取自 runner 日志。</p>
 <h3>第一版被打回了</h3>
@@ -138,10 +164,11 @@ oracle: OK   (should fail)
 <p>不过评审说「不行」的时候理由是具体的，修复也落在同一个 PR 上。在别人的代码库里接一张难票，从开 PR 到合并用了十个半小时。所有失败，包括 Orbi 自己的，都留在公开记录里，可以拿这篇文章去对。</p>
 <p>事后 Orbi 改了两处（<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>）。一是 PR 正文不合规时，只让这一张票失败，不再拖垮整个 runner。二是工作流规范里写明：分期的工作不要用一张票承载，维护者先把每一期拆成子票，每张子票的 PR 只关它自己。</p>
 <p>如果你的仓库里也排着一串写清楚了的 issue，可以让 <a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 在你的仓库里跑同样的流程。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/devin/">Devin 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">

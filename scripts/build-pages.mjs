@@ -732,6 +732,28 @@ export function addTableDataLabels(html) {
   return output + html.slice(cursor);
 }
 
+function headingId(text, counts) {
+  const slug = text
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "") || "section";
+  const count = (counts.get(slug) ?? 0) + 1;
+  counts.set(slug, count);
+  return count === 1 ? slug : `${slug}-${count}`;
+}
+
+function addPostHeadingAnchors(html) {
+  const counts = new Map();
+  const headings = [];
+  const rendered = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (match, content) => {
+    const text = decodeEntities(content.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+    const id = headingId(text, counts);
+    headings.push({ id, text });
+    return `<h2 id="${escAttr(id)}">${content}</h2>`;
+  });
+  return { html: rendered, headings };
+}
+
 export function validateRenderedPostBody(label, html) {
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     if (!match[0].match(/\balt\s*=\s*["'][^"']+\s*["']/i)) {
@@ -778,7 +800,8 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
+  const rendered = addPostHeadingAnchors(classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body)))));
+  const html = rendered.html;
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
@@ -798,6 +821,7 @@ export function postFromSource(displayName, source) {
     image: fields.image,
     video,
     html,
+    headings: rendered.headings,
   };
 }
 
@@ -967,6 +991,23 @@ function renderSubscribe(lang) {
   });
 }
 
+function renderPostToc(post, inline = false) {
+  if (post.headings.length < 5) return "";
+  const zh = post.lang === "zh";
+  const label = zh ? "本页目录" : "On this page";
+  const items = post.headings.map(({ id, text }) => `      <li><a href="#${escAttr(id)}">${escAttr(text)}</a></li>`).join("\n");
+  if (inline) {
+    return `      <details class="post-toc-inline">\n        <summary>${label} · ${post.headings.length} ${zh ? "节" : "sections"}</summary>\n        <ol>\n${items}\n        </ol>\n      </details>`;
+  }
+  return `      <nav class="post-toc" aria-label="${label}">\n        <p>${label}</p>\n        <ol>\n${items}\n        </ol>\n      </nav>`;
+}
+
+function renderPostTocScript(post) {
+  if (post.headings.length < 5) return "";
+  const ids = JSON.stringify(post.headings.map(({ id }) => id));
+  return `<script>(()=>{const ids=${ids},links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===\`#\${id}\`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script>`;
+}
+
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
   const page = {
@@ -994,9 +1035,11 @@ function renderPost(post, template) {
     DATE: post.date,
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
+    DESKTOP_TOC: renderPostToc(post),
+    INLINE_TOC: renderPostToc(post, true),
     BODY: post.html,
     FOOTER: toLayout(renderFooter(page), "pretty"),
-  }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+  }).replace("</body>", `${renderPostTocScript(post)}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
 // The blog index entry list: title, date, one-line summary, link — one

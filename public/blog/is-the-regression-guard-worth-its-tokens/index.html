@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,17 +101,48 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-30</p>
-        <h1 id="post-title">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</h1>
-        <p class="hero-lede">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-30</p>
+          <h1 id="post-title">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</h1>
+          <p class="hero-lede">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+      <li><a href="#six-takeaways">Six takeaways</a></li>
+      <li><a href="#eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</a></li>
+      <li><a href="#five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</a></li>
+      <li><a href="#what-it-costs-set-by-set">What it costs, set by set</a></li>
+      <li><a href="#what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</a></li>
+      <li><a href="#where-the-gated-guard-fell-short">Where the gated guard fell short</a></li>
+      <li><a href="#what-we-re-doing">What we're doing</a></li>
+      <li><a href="#limits">Limits</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>On this page · 9 sections</summary>
+        <ol>
+      <li><a href="#six-takeaways">Six takeaways</a></li>
+      <li><a href="#eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</a></li>
+      <li><a href="#five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</a></li>
+      <li><a href="#what-it-costs-set-by-set">What it costs, set by set</a></li>
+      <li><a href="#what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</a></li>
+      <li><a href="#where-the-gated-guard-fell-short">Where the gated guard fell short</a></li>
+      <li><a href="#what-we-re-doing">What we're doing</a></li>
+      <li><a href="#limits">Limits</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </details>
 <p><a href="/blog/searching-for-orbis-harness/">Part 1</a> ended with a harness that fixed every failure it was tuned on but cost a median of about twice as much on other bugs, with no gain we could measure there. A guard like that is insurance. Two questions follow: does the risk it covers show up on bugs it has never seen, and can the premium come down?</p>
 <p>This part answers both with eight more bugs and three more harness designs. The setup is the same as in part 1: a private snapshot, the real Orbi runner doing the full loop, and a hidden grader calibrated to fail the code before the fix and pass a known-good fix. The implementation and review model is <code class="post-code--single">deepseek-flash</code> throughout. All scripts, tasks and results are in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>.</p>
-<h2>Six takeaways</h2>
+<h2 id="six-takeaways">Six takeaways</h2>
 <ol>
 <li><strong>The failure shows up on unseen bugs too.</strong> On eight bugs whose Issue shows one narrow example of a wider problem, the original harness failed 4 of 12 runs. <code class="post-code--single">dateparser</code> and <code class="post-code--single">picomatch</code> each failed twice in three tries, both times on cases the Issue didn&#39;t show.</li>
 <li><strong>The always-on guard fixes it.</strong> It passed 9 of 10 on the same eight bugs. Its one miss, on <code class="post-code--single">dateparser</code>, failed 2 of the maintainer&#39;s tests; the original harness&#39;s misses there failed 4 or 5. One of those 2 failures was new, though: that fix modified Python&#39;s global <code class="post-code--single">calendar</code> module.</li>
@@ -99,7 +151,7 @@
 <li><strong>Two cheaper designs didn&#39;t work, and the reviewer never said no.</strong> Strengthening only the reviewer passed 1 of 3 original failures: even with the full regression hunt in its prompt, it approved both regressions. Enriching the ticket first passed 2 of 3. Across all 183 runs, every one of the 38 that failed the hidden grader had passed Orbi&#39;s review.</li>
 <li><strong>So we&#39;re dropping the gate.</strong> We&#39;re going with the simpler design: the always-on guard behind a per-repository switch, off by default. Repositories whose bugs look like these (parsers, formatters, redactors, anything with escaping) turn it on. With no classifier, there&#39;s nothing to misclassify. Separately, Orbi merged our gated version 71 seconds after we paused it; we reverted it before any release.</li>
 </ol>
-<h2>Eight unseen bugs like the ones Orbi got wrong</h2>
+<h2 id="eight-unseen-bugs-like-the-ones-orbi-got-wrong">Eight unseen bugs like the ones Orbi got wrong</h2>
 <p>At the end of part 1, the harnesses looked identical everywhere except the three issues they were tuned on. But those three failures shared something the ordinary held-out bugs lacked: the Issue showed one example, and the correct fix had to handle a whole class of inputs around it. So we went looking for bugs like that.</p>
 <p>Eight real bug fixes, all merged after August 10, 2026, all in small pure-Python, Go or JavaScript libraries: <code class="post-code--single">loguru</code> (negative timestamps), <code class="post-code--single">dateparser</code> (week-number formats), <code class="post-code--single">gocsv</code> (zero-padded integers), <code class="post-code--single">goja</code> (a dash after a class escape in a regex), <code class="post-code--single">doublestar</code> (character classes inside <code class="post-code--single">{}</code>), <code class="post-code--single">picomatch</code> (negated brackets), <code class="post-code--single">markdown-it</code> (IPv6 hosts in links) and <code class="post-code--single">marked</code> (entities in link targets). In each, the maintainer&#39;s tests cover more than the Issue&#39;s example. We checked that a fix written only for the example passes the example and fails those tests. The ticket Orbi saw kept only the Issue&#39;s own example.</p>
 <figure class="post-media">
@@ -107,7 +159,7 @@
 <figcaption>Where the harnesses differ. dateparser and picomatch were run three times on the original harness.</figcaption>
 </figure><p>This is where the original harness slips, and on bugs it has never seen. On <code class="post-code--single">dateparser</code>, the Issue showed two week-number formats; the maintainer&#39;s tests also cover week 00 rolling into the previous year and incomplete formats. Two of three original-harness runs fixed the two formats and missed both of those. On <code class="post-code--single">picomatch</code>, the Issue showed <code class="post-code--single">[!abc]</code>; the tests also cover an unclosed <code class="post-code--single">[!]</code> and the <code class="post-code--single">literalBrackets</code> option. Two of three runs missed them.</p>
 <p>The always-on guard passed 9 of 10. Its one miss, on <code class="post-code--single">dateparser</code>, failed 2 tests (the original harness&#39;s misses failed 4 to 5), and one of those two was a regression of its own: a change to Python&#39;s global <code class="post-code--single">calendar</code> module. The gated guard passed 7 of 8, missing <code class="post-code--single">picomatch</code> once. The numbers are small and a single run can flip a cell, but they point the same way as the three original failures. When the fix has to cover more than the example, generating inputs across the whole class is what finds the gap.</p>
-<h2>Five harnesses on the failures Orbi shipped</h2>
+<h2 id="five-harnesses-on-the-failures-orbi-shipped">Five harnesses on the failures Orbi shipped</h2>
 <p>The always-on guard fixes the failures but roughly doubles the median cost of the other fixes. So we tried three cheaper designs on the three issues Orbi originally got wrong, with <code class="post-code--single">deepseek-flash</code> in both roles:</p>
 <ul>
 <li><strong>Reviewer only (v21)</strong>: the original implementer prompt (plus the contribution skill and repository tools on <code class="post-code--single">PATH</code>), with the guard only in the review. 1 of 3. Even with the full regression hunt in its prompt, the reviewer passed <code class="post-code--single">chainloop</code> with no findings and passed <code class="post-code--single">pyinfra</code> after fixing one finding itself. Both shipped the same regressions as before (the password leak and the 👍🏽 misalignment).</li>
@@ -118,7 +170,7 @@
 <img src="/img/diagrams/harness-variants.svg" alt="Five harnesses on the three issues Orbi got wrong: original 6 of 15, reviewer only 1 of 3, enrich ticket 2 of 3, gated guard 3 of 3, always-on guard 9 of 9, with median tokens per run under each bar." width="720" height="400">
 <figcaption>Pale bars have fewer than five runs. Median million tokens per run under each bar.</figcaption>
 </figure><p>The gate saved less than we hoped. On all nine ordinary bugs, the gated guard passed 9 of 9 at a median 5.2 million tokens per run, against 2.8 million for the original harness and 5.8 million for the always-on guard. Most of those bugs touch text handling too (a regex, an argument parser, a line wrapper), so the gate opened on eight of the nine.</p>
-<h2>What it costs, set by set</h2>
+<h2 id="what-it-costs-set-by-set">What it costs, set by set</h2>
 <p>Pass rate is only half the decision. Cache reads make up about 97% of each run&#39;s tokens, and they grow with the number of turns an agent takes. A harness that asks for more checking usually costs more.</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
@@ -159,7 +211,7 @@
 <img src="/img/diagrams/harness-tradeoff.svg" alt="Pass rate and median tokens per run for the original harness, the always-on guard and the gated guard, on the tuning issues, the narrow-example bugs and the ordinary bugs." width="720" height="450">
 <figcaption>Bars show pass rate; labels show median million tokens per run.</figcaption>
 </figure><p>Read the table by row. On the bugs where the guard matters (the first two rows), both guarded harnesses move the pass rate from 6 in 15 and 8 in 12 to between 7 in 8 and 9 in 9. On the bugs where it doesn&#39;t (the last two rows), the original harness already passes everything, and any guard is pure cost. The gated version beats always-on on cost only where the gate stays shut; where it opens, the two cost about the same.</p>
-<h2>What an independent review said, and what happened next</h2>
+<h2 id="what-an-independent-review-said-and-what-happened-next">What an independent review said, and what happened next</h2>
 <p>We planned to make the gated guard Orbi&#39;s default, opened a ticket for it, <a href="https://github.com/orbi-build/orbi/issues/1501">orbi#1501</a>, and Orbi opened the PR. Then the maintainer asked how we knew it was right, and we stopped. We labelled the ticket <code class="post-code--single">ai-blocked</code> and asked an independent reviewer to find what was wrong with the decision, using the data above. Its conclusion was not to merge this as the default, for four reasons.</p>
 <ul>
 <li><strong>The shipped version wasn&#39;t the tested version.</strong> The gate asked the implementer to write its decision into the PR body. But Orbi&#39;s runner writes the PR body, not the agent, so the line never appeared and the reviewer had nothing to check. We moved the decision into <code class="post-code--single">.orbi/plan.md</code>, which the reviewer already reads. That fix (v19b) was itself a change, and it hadn&#39;t been benchmarked yet.</li>
@@ -168,10 +220,10 @@
 <li><strong>The benchmark doesn&#39;t belong in the product.</strong> Our first PR carried about 3,000 lines of benchmark scripts into Orbi&#39;s own repository. They&#39;re now in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>.</li>
 </ul>
 <p>Then we found that Orbi had merged the PR anyway, 71 seconds after the <code class="post-code--single">ai-blocked</code> label went on. The runner re-checks the base branch, mergeability, the reviewed head and CI before it merges, but not the issue&#39;s labels, so a pause added mid-review is ignored. We reverted the merge (<a href="https://github.com/orbi-build/orbi/pull/1503">orbi#1503</a>) before any release included it and filed the runner bug (<a href="https://github.com/orbi-build/orbi/issues/1504">orbi#1504</a>). It&#39;s the same lesson as the rest of this study, one level up: a check that only runs at the start doesn&#39;t hold at the end.</p>
-<h2>Where the gated guard fell short</h2>
+<h2 id="where-the-gated-guard-fell-short">Where the gated guard fell short</h2>
 <p>After the review we benchmarked v19b, the version that records the gate decision where the reviewer can read it. It passed all three original failures and <code class="post-code--single">dateparser</code>, and failed <code class="post-code--single">picomatch</code>.</p>
 <p>The transcripts show the problem was in the guard itself. The gate decided sensibly: &quot;applies&quot; for the <code class="post-code--single">pyinfra</code> table widths, <code class="post-code--single">chainloop</code> redaction, <code class="post-code--single">dateparser</code> formats and <code class="post-code--single">picomatch</code> glob parsing, &quot;not needed&quot; for the <code class="post-code--single">fedify</code> mock setters, which only rewire calls. On <code class="post-code--single">picomatch</code> both gated runs, v19 and v19b, ran the guard and still missed the same two cases: an unclosed <code class="post-code--single">[!]</code> and the <code class="post-code--single">literalBrackets</code> option. The v19 run used Python&#39;s <code class="post-code--single">fnmatch</code> and bash as its independent references, which implement POSIX globbing and know nothing of picomatch&#39;s options. The two always-on runs that passed enumerated those options on their own; their reports name them 4 and 12 times, the gated runs&#39; reports not once. The rule that sends an agent looking for an independent reference sent it to one that couldn&#39;t express the input that mattered.</p>
-<h2>What we&#39;re doing</h2>
+<h2 id="what-we-re-doing">What we&#39;re doing</h2>
 <p>The change is reverted; the work lives on its branch and in the benchmark repository. Next, in order:</p>
 <ol>
 <li>Ship the always-on guard (v15) behind a per-repository switch, off by default, with no gate. Repositories where text handling is the risk (parsers, formatters, redactors, anything with escaping) turn it on.</li>
@@ -180,12 +232,13 @@
 <li>Run the held-out sets on other implementer and reviewer models. Every unseen-bug result here uses <code class="post-code--single">deepseek-flash</code>, so we can&#39;t yet say which combination to recommend.</li>
 </ol>
 <p>Models will change, and the right harness will change with them. Every study we run goes on the <a href="/benchmark/">benchmark page</a>, with its data in the benchmark repository, so the next one picks up from this one&#39;s numbers.</p>
-<h2>Limits</h2>
+<h2 id="limits">Limits</h2>
 <p>Eight narrow-example bugs is a small set. Most cells have one to three runs, so a single run can move a cell by a third or more. The held-out results use one implementation model. We chose the narrow-example bugs because a narrow fix fails them. That&#39;s the class the guard targets, so their failure rate says little about Orbi&#39;s bugs in general. And a hidden grader only catches the defects the maintainer wrote tests for.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -239,7 +292,7 @@
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["six-takeaways","eight-unseen-bugs-like-the-ones-orbi-got-wrong","five-harnesses-on-the-failures-orbi-shipped","what-it-costs-set-by-set","what-an-independent-review-said-and-what-happened-next","where-the-gated-guard-fell-short","what-we-re-doing","limits","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

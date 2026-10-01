@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,21 +101,44 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-10-01</p>
-        <h1 id="post-title">Claude Code headless 模式是什么？自动化开发还差六件事</h1>
-        <p class="hero-lede">Claude Code 的 headless 模式就是 claude -p 非交互模式，跑完一个提示词就退出。做自动化开发，认领、运行用户、评审、合并、续跑和发版还得自己搭。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-10-01</p>
+          <h1 id="post-title">Claude Code headless 模式是什么？自动化开发还差六件事</h1>
+          <p class="hero-lede">Claude Code 的 headless 模式就是 claude -p 非交互模式，跑完一个提示词就退出。做自动化开发，认领、运行用户、评审、合并、续跑和发版还得自己搭。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="本页目录">
+        <p>本页目录</p>
+        <ol>
+      <li><a href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a></li>
+      <li><a href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a></li>
+      <li><a href="#六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</a></li>
+      <li><a href="#不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>本页目录 · 5 节</summary>
+        <ol>
+      <li><a href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a></li>
+      <li><a href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a></li>
+      <li><a href="#六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</a></li>
+      <li><a href="#不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </details>
 <p>Claude Code 的 headless 模式，就是加了 <code class="post-code--single">-p</code>（全称 <code class="post-code--single">--print</code>）的非交互模式：不开交互界面，跑完一个提示词，把结果打到终端就退出，失败时返回非零退出码。官方中文文档把这一页叫<a href="https://code.claude.com/docs/zh-CN/headless">「以编程方式运行 Claude Code」</a>，正文里叫非交互模式，headless 这个词只留在了网址里。把 Claude Code 放进 cron 或 CI 做自动化执行，靠的就是它。没人回答授权提示时，headless 运行会直接拒掉需要授权的操作，所以要给它一个放行的权限模式：</p>
 <pre><code class="language-bash">claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre>
 <p><code class="post-code--spaced">--permission-prompts none</code> 在这里是可选的：普通 cron 或 CI 里本来就没人回答授权提示，它的作用是告诉 Claude 被拒的操作别再重试，并拿掉 AskUserQuestion 这类需要人来回答的工具。它要求 Claude Code v2.1.259 及以上，旧版本去掉就行。</p>
 <p>我是 Lawrence Liu，Orbi 的维护者。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。</p>
-<h2>headless（非交互）模式要知道的参数</h2>
+<h2 id="headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</h2>
 <p>headless 模式给你的是一个没人看着也能跑完的会话。放进 cron 或 CI 之后，有几个参数要知道：</p>
 <ul>
 <li><code class="post-code--single">--allowedTools</code> 预先放行指定工具，<code class="post-code--single">--permission-mode</code> 给其余操作定一个默认权限。</li>
@@ -123,7 +167,7 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 </code></pre>
 <p>日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；<code class="post-code--single">cd</code> 失败这类 Claude 启动前的错误不会进这个日志。<code class="post-code--single">auto</code> 模式不一定可用：模型可能不支持，也可能被组织、某个配置文件或 Anthropic 关掉了。不可用时 Claude Code 会退回 Manual（手动）模式，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 <code class="post-code--spaced">--permission-mode dontAsk</code>，再用 <code class="post-code--single">--allowedTools</code> 列出放行的工具。</p>
 <p>如果你只需要这样一个定时任务，到这里就够了。下面的内容是给想让 GitHub Issue 一路自动走到合并、发版的人。</p>
-<h2>用 claude -p 做自动化开发，还要自己解决的六件事</h2>
+<h2 id="用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</h2>
 <p>Orbi 从 8 月下旬开始无人值守地交付自己仓库里的 Issue。截至今天，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code class="post-code--single">ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。下面有几件事，我是先做错了才改对的。只在 <code class="post-code--spaced">claude -p</code> 外面套个循环，这六件事全得你自己补。</p>
 <h3>认领哪个 Issue，而且只认领一次</h3>
 <p>在 Orbi 里，人给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签。runner 在一把认领锁里选票，两个 runner 不会同时拿到同一个 Issue；选中后加上 <code class="post-code--single">ai-in-progress</code>，之后的扫描都会跳过它。认领的 runner 接着从一个固定的提交建 worktree。紧急的先做，然后是 bug。每一步都以评论的形式写回 Issue，所以队列就是 Issue 列表，运行日志就是 Issue 的时间线。</p>
@@ -152,20 +196,21 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <h3>谁来发版</h3>
 <p>修复合进去了，没发版，用户还是用不上。Orbi 里发版也是一个 Issue，打 <code class="post-code--single">ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的 Issue 都关了，发版提交上的 CI 通过后打 tag。这是 v0.5.58 的发版 Issue，#1504 的修复就是随它发出去的：</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508「Release v0.5.58」：范围是 v0.5.58 里程碑，Release 段写明版本号、目标分支和版本文件，Orbi 以 ai-in-progress 认领"></p>
-<h2>六件事之外，还留给人做的一步</h2>
+<h2 id="六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</h2>
 <p>如果你的自动化会改界面，光靠自动测试不够。9 月 25 日，Orbi 给这个网站合了一个<a href="https://github.com/orbi-build/orbi-website/pull/523">手机端表格的修复</a>，现有的溢出测试全部通过。可 390px 宽的截图上，单词被从中间断开了。我按 390px 宽把 34 个表格页逐页量了一遍：横向溢出为零，但 25 个页面上有 193 处单词或数字被断开。下图是在今天的页面上套回那次的 CSS 复现的效果：</p>
 <p><img src="/img/headless-table-before.webp" alt="在今天的页面上套回 PR #523 的 CSS，390px 下的 Orbi 与 Devin 能力对比表：「Task entry」被拆成「Tas」「k」「ent」「ry」"></p>
 <p>我把量到的数字写进 <a href="https://github.com/orbi-build/orbi-website/issues/526">#526</a>，Orbi 认领后 53 分钟合并了修复。今天的同一张表：</p>
 <p><img src="/img/headless-table-after.webp" alt="orbi.build 今天的同一张表，390px 下：这一行叠成一块，单词都是完整的"></p>
 <p>PR #523 的测试做到了它那个 Issue 要求的，可那个 Issue 里没提单词断行。所以每次从 beta 推到生产之前，我都会在手机和电脑上把改过的页面打开看一遍。</p>
-<h2>不想自己搭自动化工作流的话</h2>
+<h2 id="不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</h2>
 <p>上面这六件事都能围着 <code class="post-code--spaced">claude -p</code> 自己搭：认领加锁、专用的运行用户、另起一个会话评审、合并前检查、失败续跑、发版任务。Orbi 自己这一套写在 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>里，有八百来行。</p>
 <p>也可以直接用 Orbi。它的 agent <a href="https://github.com/earendil-works/pi">Pi</a> 和 runner 都是开源的，runner 可以<a href="https://github.com/orbi-build/orbi">自托管</a>。模型可以接 DeepSeek，也可以接其他你有 key 的服务，Anthropic 的 API 也在列表里，Claude 模型照样能用。放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>里写了两者各自做到哪一步。</p>
 <p>不想维护机器，可以<a href="https://orbi.build/zh/cloud/?ref=blog-headless">把仓库接入 Orbi Cloud</a>。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>、<a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 跑完之后，谁来合并 PR</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -219,7 +264,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["headless-非交互-模式要知道的参数","用-claude-p-做自动化开发-还要自己解决的六件事","六件事之外-还留给人做的一步","不想自己搭自动化工作流的话","相关"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

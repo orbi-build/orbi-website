@@ -24,9 +24,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -47,6 +50,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -81,14 +102,19 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-21</p>
-        <h1 id="post-title">Orbi Cloud 七步上手流程，83 秒看完</h1>
-        <p class="hero-lede">83 秒视频记录 Orbi Cloud 从 GitHub 登录到带 tag 的 Release 和订阅。最后一步进入 Cloud 的付费交付流程。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-21</p>
+          <h1 id="post-title">Orbi Cloud 七步上手流程，83 秒看完</h1>
+          <p class="hero-lede">83 秒视频记录 Orbi Cloud 从 GitHub 登录到带 tag 的 Release 和订阅。最后一步进入 Cloud 的付费交付流程。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+
+      <article class="post-body">
+
 <p>Orbi Cloud 的上手流程拍成了视频：<a href="https://www.youtube.com/watch?v=_OEaBwrLvvs">Orbi Cloud: from zero to a tagged release in seven steps</a>。全长 83 秒，英文配章节，卡在哪一步可以直接跳过去。</p>
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud 七步上手流程：从登录到订阅" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>观看完整的七步 Orbi Cloud 上手流程。</figcaption></figure><h3>七步流程里的七个关键画面</h3>
 <figure class="post-media">
@@ -122,20 +148,21 @@
 <li><strong>发一个版本</strong>，你填版本号，Orbi 负责 bump、打 tag、发布 GitHub Release。</li>
 <li><strong>订阅</strong>，前 <code class="post-code--single">__FREE_DELIVERIES__</code> 次交付免费；付费档为 Solo（每月 US$<code class="post-code--single">__SOLO_MONTHLY_USD__</code>，含 <code class="post-code--single">__SOLO_INCLUDED_TOKENS__</code> tokens）和 Pro（每月 US$<code class="post-code--single">__CLOUD_MONTHLY_USD__</code>，含 <code class="post-code--single">__INCLUDED_TOKENS__</code> tokens）。额度用完只会暂停新的交付，不会删除数据，随时可以取消。</li>
 </ol>
-<h2>第七步是开始付费交付的那一步</h2>
+<h2 id="第七步是开始付费交付的那一步">第七步是开始付费交付的那一步</h2>
 <p>第一到第六步是配置和交付：你把 Orbi 推断不出来的东西交给它：身份、安装、仓库、运行环境、Issue 和 Release。完成 <code class="post-code--single">__FREE_DELIVERIES__</code> 次免费交付后，第七步就是选择 Managed Cloud 计划。</p>
 <p>发版这一步仍然需要你做决定：<strong>版本号由你决定，Orbi 不替你递增</strong>。runner 会改版本文件、打 tag、发布 Release，但它不选那个数字。版本号是一个声明，说这次改了什么、谁该关心。这是产品决策，靠计数器读一个数出来就是在假装它不是。发布范围从同名 Milestone 派生；没有同名 Milestone，发版会停在范围派生这一步，并告诉你为什么。</p>
 <p>第五步就是打一个标签，不用离开终端：</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready
 </code></pre>
-<h2>视频里是什么</h2>
+<h2 id="视频里是什么">视频里是什么</h2>
 <p>每一屏都是产品真实渲染，不是效果图：登录卡片、带仓库和 base branch 两个字段的连接表单、标出你当前在第几步的进度条、带开通状态列的「绑定的仓库」表格、带版本号输入框的发版表单，以及订阅这一步。GitHub App 那一屏是真的，就是 <a href="https://github.com/apps/orbi-build">github.com/apps/orbi-build</a>。</p>
 <p>不想看视频想读文字，同一条路径在文档里：<a href="https://docs.orbi.build/zh">docs.orbi.build/zh</a>。不想跑在我们的机器上、想自己跑，那是同一个产品，<a href="https://github.com/orbi-build/orbi">可以免费自托管</a>。</p>
 <p>从这里开始：<a href="https://orbi.build/zh/cloud/?ref=blog-seven-steps">orbi.build/zh/cloud</a>。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/jules/">Google Jules 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">

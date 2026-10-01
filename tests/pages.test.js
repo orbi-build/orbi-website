@@ -436,7 +436,10 @@ describe("Issue #438 wording and internal-link contracts", () => {
   it("ends every blog body with two or three contextual links", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
-      const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
+      const relatedStart = Math.max(
+        html.lastIndexOf('<h2 id="related">Related</h2>'),
+        html.lastIndexOf('<h2 id="相关">相关</h2>'),
+      );
       const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
       const prefix = post.lang === "zh" ? "/zh" : "";
       const links = [...related.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);

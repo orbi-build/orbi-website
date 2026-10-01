@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,18 +101,49 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-22</p>
-        <h1 id="post-title">引擎等来的答案，托管用户给不了：三个交互缺口记录</h1>
-        <p class="hero-lede">引擎为人的决定而暂停，却要求托管租户执行一条没有的命令。本文复盘这个交互缺口的三种形态，以及一个下午找到的命令输出、数据库证据和具体修复结果。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-22</p>
+          <h1 id="post-title">引擎等来的答案，托管用户给不了：三个交互缺口记录</h1>
+          <p class="hero-lede">引擎为人的决定而暂停，却要求托管租户执行一条没有的命令。本文复盘这个交互缺口的三种形态，以及一个下午找到的命令输出、数据库证据和具体修复结果。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="本页目录">
+        <p>本页目录</p>
+        <ol>
+      <li><a href="#等待本身是对的">等待本身是对的</a></li>
+      <li><a href="#我们撞上它的那天">我们撞上它的那天</a></li>
+      <li><a href="#同一个形状-在界面上">同一个形状，在界面上</a></li>
+      <li><a href="#同一个形状-在配置里">同一个形状，在配置里</a></li>
+      <li><a href="#租户能碰什么-不能碰什么">租户能碰什么，不能碰什么</a></li>
+      <li><a href="#拉还是推-也自己解决了">拉还是推，也自己解决了</a></li>
+      <li><a href="#一个被数据库纠正的错误诊断">一个被数据库纠正的错误诊断</a></li>
+      <li><a href="#三者的共同点">三者的共同点</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>本页目录 · 9 节</summary>
+        <ol>
+      <li><a href="#等待本身是对的">等待本身是对的</a></li>
+      <li><a href="#我们撞上它的那天">我们撞上它的那天</a></li>
+      <li><a href="#同一个形状-在界面上">同一个形状，在界面上</a></li>
+      <li><a href="#同一个形状-在配置里">同一个形状，在配置里</a></li>
+      <li><a href="#租户能碰什么-不能碰什么">租户能碰什么，不能碰什么</a></li>
+      <li><a href="#拉还是推-也自己解决了">拉还是推，也自己解决了</a></li>
+      <li><a href="#一个被数据库纠正的错误诊断">一个被数据库纠正的错误诊断</a></li>
+      <li><a href="#三者的共同点">三者的共同点</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </details>
 <p>有些故障看起来像系统安静地停着。没有崩溃，也没有报错，系统只是按设计在等。
 问题是，被等的那个人不知道该做什么，也没有办法回答。</p>
 <p>这种问题我们发布了三个版本。一个下午里，我们把自己当成客户走了一遍，才把它们全找出来。</p>
-<h2>等待本身是对的</h2>
+<h2 id="等待本身是对的">等待本身是对的</h2>
 <p>我们的引擎不会自己推进版本。里程碑关闭后，空闲 tick 会开一张票：这一版完了，
 候选是这些，下一版发哪个。然后它停下。</p>
 <p>这个锁是刻意的，我们不打算去掉。<strong>发什么版本是产品决定。</strong> 一个因为上一版装满了
@@ -104,13 +156,13 @@
 这正是托管的含义。引擎在一张租户看得见的票上提了问题，却只接受一种他产不出的答案。</p>
 <p>更糟的是，托管沙箱压根不渲染 <code class="post-code--spaced">auto_next_milestone = false</code>，所以<strong>连那张票都不会开</strong>。
 引擎静默地停下，等一个从来没人被告知要做的决定。</p>
-<h2>我们撞上它的那天</h2>
+<h2 id="我们撞上它的那天">我们撞上它的那天</h2>
 <p>2026-09-22，我们把 <code class="post-code--single">orbi-build/orbi</code>，引擎自己的仓库，迁进了自家的托管沙箱。
 当天上午它就从那个沙箱发布了 v0.5.39。</p>
 <p>然后里程碑关闭，一切停止。没有通知，没有报错。交付就是不动了，
 直到有人发现，手工用 <code class="post-code--spaced">gh api</code> 建出 v0.5.40，再直接编辑策略文件。</p>
 <p>这个缺口我们已经在生产上让客户扛了一段时间。直到把自己的发版线放到它后面，才感觉到。</p>
-<h2>同一个形状，在界面上</h2>
+<h2 id="同一个形状-在界面上">同一个形状，在界面上</h2>
 <p>同一天稍晚，一次完整的产品走查，注册、装 App、绑仓库、开通沙箱、开 Issue、
 交付、合并、发版，暴露了第二个实例。</p>
 <p>状态页有一个发版表单。它是一个文本框。你凭记忆敲一个版本号，那个字符串就成了发版范围。</p>
@@ -123,7 +175,7 @@
 <p><strong>页面已经在替你扫 GitHub 并列出你能操作的东西了。</strong> 只是这份好意从没延伸到里程碑。
 于是你敲一个记得一半的版本号，敲错了也没人告诉你，拒绝发生在异步的引擎侧，
 在一张你得自己去找的票上。</p>
-<h2>同一个形状，在配置里</h2>
+<h2 id="同一个形状-在配置里">同一个形状，在配置里</h2>
 <figure class="post-media">
 <img src="/img/diagrams/three-truths.svg" alt="三个系统对当前里程碑持有三个不同答案。控制面知道租户要的是 v0.2.0，但没有任何通路把它送到沙箱的 orbi.toml，后者是空的。GitHub 仓库变量忠实镜像了那个空值，于是引擎每个 tick 记一条 active_milestone_variable_absent。" width="880" height="150">
 <figcaption>控制面可以建出一张 release 票，而沙箱仍然认为什么都没在跑。引擎忠实地汇报它被告知的东西，每个 tick 一次，而这条链路上没有任何一环是坏的。</figcaption>
@@ -145,7 +197,7 @@
 <p>加一个字段要改四个文件。所以没人加 <code class="post-code--single">active_milestone</code>：
 <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code> 零命中。
 <strong>控制面不知道这个字段存在。</strong></p>
-<h2>租户能碰什么，不能碰什么</h2>
+<h2 id="租户能碰什么-不能碰什么">租户能碰什么，不能碰什么</h2>
 <p>有一个设计问题，我们一看文件系统就自己解决了。</p>
 <p>本来我们要为「租户手工改了托管字段怎么办」设计合并语义。然后查了一下：</p>
 <pre><code class="language-console">$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
@@ -171,7 +223,7 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 成了权威，之后才不得不补一条改它的路。</p>
 <p>这件事不会一步做完。但知道自己要的是哪条不变式，下一个字段的默认做法就清楚了：
 <strong>控制面持有它，沙箱派生它。</strong></p>
-<h2>拉还是推，也自己解决了</h2>
+<h2 id="拉还是推-也自己解决了">拉还是推，也自己解决了</h2>
 <p>配置下发到沙箱，直觉上的取舍是拉（沙箱定时问）还是推（控制面主动触发）。</p>
 <p>推意味着给沙箱主机开入站通道，拉意味着最多一个刷新周期的延迟。
 常规做法是在延迟与攻击面之间权衡。</p>
@@ -184,7 +236,7 @@ OnUnitActiveSec=1min
 而这个动作本来就要等引擎下一次认领。<strong>没有取舍可权衡。</strong>
 推会为了省不到一分钟而开一条入站路径。</p>
 <p>先量再吵，花了两条命令。</p>
-<h2>一个被数据库纠正的错误诊断</h2>
+<h2 id="一个被数据库纠正的错误诊断">一个被数据库纠正的错误诊断</h2>
 <p>读生产日志时我们发现六小时内 288 条一模一样的错误：</p>
 <pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
@@ -213,7 +265,7 @@ login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← 正常�
 同一个租户的 <strong>active</strong> 仓库完全正常。</p>
 <p>可推广的版本是：<strong>当一个错误能复现时，你确认的是机制，不是诊断。</strong>
 下一个问题永远是&quot;有没有某条策略本来就打算让它这样&quot;，而策略住在数据里，不在日志里。</p>
-<h2>三者的共同点</h2>
+<h2 id="三者的共同点">三者的共同点</h2>
 <p>三个缺陷，一个形状：<strong>系统知道一件用户需要知道的事，而没有说出来。</strong></p>
 <p>它知道有哪些里程碑，却让你凭记忆敲一个。它知道有一个决定悬着，
 却让你去用一个你没有的 CLI。它知道控制面的意图，却让沙箱握着另一个答案。</p>
@@ -229,10 +281,11 @@ orbi-cloud#878（托管租户没有决定通路）、
 orbi-cloud#869（界面列出里程碑）、
 orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
 <a href="https://github.com/orbi-build/orbi/issues/1283">orbi#1283</a>（根因一开始写错的那张）。</em></p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/managed-agents/">托管 agent 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -286,7 +339,7 @@ orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["等待本身是对的","我们撞上它的那天","同一个形状-在界面上","同一个形状-在配置里","租户能碰什么-不能碰什么","拉还是推-也自己解决了","一个被数据库纠正的错误诊断","三者的共同点","相关"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

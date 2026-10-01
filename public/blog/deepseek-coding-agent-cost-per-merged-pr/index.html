@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,27 +101,50 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-24</p>
-        <h1 id="post-title">DeepSeek coding agent cost per merged PR</h1>
-        <p class="hero-lede">See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-24</p>
+          <h1 id="post-title">DeepSeek coding agent cost per merged PR</h1>
+          <p class="hero-lede">See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+      <li><a href="#what-one-merged-pr-cost">What one merged PR cost</a></li>
+      <li><a href="#why-the-number-stays-low">Why the number stays low</a></li>
+      <li><a href="#connect-deepseek-to-a-self-hosted-orbi">Connect DeepSeek to a self-hosted Orbi</a></li>
+      <li><a href="#what-to-take-away">What to take away</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>On this page · 5 sections</summary>
+        <ol>
+      <li><a href="#what-one-merged-pr-cost">What one merged PR cost</a></li>
+      <li><a href="#why-the-number-stays-low">Why the number stays low</a></li>
+      <li><a href="#connect-deepseek-to-a-self-hosted-orbi">Connect DeepSeek to a self-hosted Orbi</a></li>
+      <li><a href="#what-to-take-away">What to take away</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </details>
 <p>Orbi turns a GitHub Issue into a reviewed, merged PR and a tagged release. From September 22 to 24, 2026, Orbi&#39;s own repository merged 20 PRs using <code class="post-code--single">deepseek-flash</code> for the whole loop: writing code, independent review, fixes, merge, and release. You can inspect <a href="https://github.com/orbi-build/orbi/issues/1328">issue #1328</a>, <a href="https://github.com/orbi-build/orbi/issues/1332">issue #1332</a>, and <a href="https://github.com/orbi-build/orbi/issues/1336">issue #1336</a>.</p>
 <p>This is a cost report, not a model leaderboard. The unit here is one merged PR. The numbers come from the same dataset as the site&#39;s <a href="/cost/">full cost table</a>.</p>
-<h2>What one merged PR cost</h2>
+<h2 id="what-one-merged-pr-cost">What one merged PR cost</h2>
 <p>Across those runs, the median was <strong>10.6M tokens</strong> per merged PR. At DeepSeek&#39;s official prices, checked on September 24, 2026, that works out to:</p>
 <ul>
 <li><strong>$0.125</strong> median and <strong>$0.417</strong> maximum outside peak hours.</li>
 <li><strong>$0.249</strong> median and <strong>$0.834</strong> maximum during peak hours.</li>
 </ul>
 <p>The figures use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">official pricing</a>. Peak prices are double the off-peak rates during weekdays 01:00–04:00 and 06:00–10:00 UTC. For an unattended coding agent, scheduling around those windows is a practical cost control. The <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a> explains the delivery loop; this post puts a price on its merged-PR unit.</p>
-<h2>Why the number stays low</h2>
+<h2 id="why-the-number-stays-low">Why the number stays low</h2>
 <p>Of the tokens in these runs, <strong>97.1% were cache reads</strong>. A cache hit costs $0.003 per one million tokens; a cache miss costs $0.15 per one million. That is <strong>1/50</strong> of the uncached price. Orbi&#39;s session structure repeatedly reuses the same context, so the context needed for an independent review and its fixes is not paid for as a fresh read each time.</p>
 <p>One caveat matters: when the cache-hit rate drops below 90%, cost rises quickly. The median is useful for planning, but your own context shape and review rounds determine the result.</p>
-<h2>Connect DeepSeek to a self-hosted Orbi</h2>
+<h2 id="connect-deepseek-to-a-self-hosted-orbi">Connect DeepSeek to a self-hosted Orbi</h2>
 <p>Orbi runs on Pi. Its engine can use an OpenAI-compatible API or a Codex subscription; it does <strong>not</strong> support Claude Code. Orbi is open source under AGPL-3.0.</p>
 <p>The provider template in <a href="https://github.com/orbi-build/orbi/blob/main/templates/pi-providers/deepseek.json"><code class="post-code--single">templates/pi-providers/deepseek.json</code></a> is:</p>
 <pre><code class="language-json">{
@@ -120,12 +164,13 @@
 <pre><code class="language-bash">export DEEPSEEK_API_KEY=&quot;your-key&quot;
 </code></pre>
 <p>Use the <a href="https://github.com/orbi-build/orbi/blob/main/docs/providers.mdx">provider documentation</a> for the rest of the self-hosted setup. Never put the key in a checked-in config file.</p>
-<h2>What to take away</h2>
+<h2 id="what-to-take-away">What to take away</h2>
 <p>Measure cost per merged PR, keep the cache-hit rate above 90%, and move unattended work outside peak hours when that fits your queue. The important unit is not a model call in isolation: it is the complete path from GitHub Issue to PR, independent review, merge, and tagged release. Orbi&#39;s own 20-PR sample makes that path inspectable, and the <a href="/cost/">cost page</a> keeps the full table in one place.</p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/cost/">cost table</a>, <a href="/cloud/">Cloud</a>, and <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a>.</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -179,7 +224,7 @@
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["what-one-merged-pr-cost","why-the-number-stays-low","connect-deepseek-to-a-self-hosted-orbi","what-to-take-away","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

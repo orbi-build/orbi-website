@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,24 +101,51 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-20</p>
-        <h1 id="post-title">AI 编码 agent 说不之后，交付会怎样？</h1>
-        <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-20</p>
+          <h1 id="post-title">AI 编码 agent 说不之后，交付会怎样？</h1>
+          <p class="hero-lede">大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="本页目录">
+        <p>本页目录</p>
+        <ol>
+      <li><a href="#这次交付">这次交付</a></li>
+      <li><a href="#拒绝">拒绝</a></li>
+      <li><a href="#截图说不出来的那部分">截图说不出来的那部分</a></li>
+      <li><a href="#闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</a></li>
+      <li><a href="#自己试">自己试</a></li>
+      <li><a href="#账本">账本</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>本页目录 · 7 节</summary>
+        <ol>
+      <li><a href="#这次交付">这次交付</a></li>
+      <li><a href="#拒绝">拒绝</a></li>
+      <li><a href="#截图说不出来的那部分">截图说不出来的那部分</a></li>
+      <li><a href="#闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</a></li>
+      <li><a href="#自己试">自己试</a></li>
+      <li><a href="#账本">账本</a></li>
+      <li><a href="#相关">相关</a></li>
+        </ol>
+      </details>
 <p>搜「AI 编码 agent」，会看到很多能自动开 PR 的工具。开 PR 已经不难。</p>
 <p>少有人展示的是拒绝：另一个东西读完 diff，判断这份代码不能发。下面这次交付真的发生过。</p>
-<h2>这次交付</h2>
+<h2 id="这次交付">这次交付</h2>
 <p><a href="https://github.com/orbi-build/orbi/issues/1018">Issue #1018</a> 是我们自己发版代码里的一个真实缺陷：
 有个改动把文档同步挪到了打 tag 之前，于是开出三个窗口，让「已发布的 tag」可能没有对应的文档页。</p>
 <p>这张票打上 <code class="post-code--single">ai-ready</code>。没有别的配置。</p>
 <p>Orbi 认领它，在隔离的 worktree 里干活，基于一个记录下来的 base commit 开出
 <a href="https://github.com/orbi-build/orbi/pull/1023">PR #1023</a>。到这里为止，每个 agent 都能做。</p>
 <p>然后另一个会话，全新的上下文、完全不记得自己写过这些代码，去读那份 diff。</p>
-<h2>拒绝</h2>
+<h2 id="拒绝">拒绝</h2>
 <p>第一轮回来一条 Major。不是风格建议：</p>
 <blockquote>
 <p><strong>Location:</strong> <code class="post-code--single">src/orbi/release.py:2377</code></p>
@@ -113,7 +161,7 @@
 <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.17">v0.5.17</a>，
 生成的 release notes 里列着这张 Issue 和这个 PR。</p>
 <p>这段时间里没有人做过任何决定。</p>
-<h2>截图说不出来的那部分</h2>
+<h2 id="截图说不出来的那部分">截图说不出来的那部分</h2>
 <p>我们用这次运行<a href="https://youtu.be/Et6gBSaXqqA">剪了个视频</a>，有一处必须在画面上标注，否则帧本身会骗人。</p>
 <p>runner 是拿我自己的 GitHub 账号发东西的。它用我的 token，所以它的 commit 署我的名，
 它的评审意见也署我的名、配我的头像。屏幕上，拦下 PR #1023 的那条评审显示在
@@ -123,7 +171,7 @@
 同一屏先教会你「机器人长这样」，再给你看一条不是机器人的评审。</p>
 <p>我没法让 GitHub 显示成别的样子。我能做的是把它说出来：那是第二个模型，
 跑在独立的会话里，不记得自己写过被它拒掉的那些代码。</p>
-<h2>闸门能拦住交付之后，变的是什么</h2>
+<h2 id="闸门能拦住交付之后-变的是什么">闸门能拦住交付之后，变的是什么</h2>
 <p>一个能写代码、能开 PR 的 agent，只是把活挪给了人。总得有人去读、去判断、去合。
 agent 干的是打字那部分。</p>
 <p>把闸门做成真的，多半是管道活。verdict 必须绑定到某个具体 commit，
@@ -135,7 +183,7 @@ agent 干的是打字那部分。</p>
 <p>我觉得这件事的关键是谁在等，而不是检查对不对。拦一个人的 PR，当场花掉那个人的时间，
 他能感觉到。拦一个 agent 的 PR，不花任何人的时间。agent 读完 finding 自己再跑一遍，
 凌晨三点，所有人都在睡觉。</p>
-<h2>自己试</h2>
+<h2 id="自己试">自己试</h2>
 <p>整条流水线是一个容器。systemd 在里面当 PID 1，那几行 cgroup 挂载就是为了这个：</p>
 <pre><code class="language-bash">docker run -d --name orbi \
   --stop-signal SIGRTMIN+3 \
@@ -154,15 +202,16 @@ agent 干的是打字那部分。</p>
 <p>引擎就是那四个变量指向的模型。给一张 Issue 打上 <code class="post-code--single">ai-ready</code>，下一次 tick 就会认领它。
 评审跑在独立的会话里，对的是冻结的 head；那个会话不放行，就不会合并。
 完整步骤见 <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。</p>
-<h2>账本</h2>
+<h2 id="账本">账本</h2>
 <p>这套东西跑在它自己的仓库上。到今天为止，27 天：<code class="post-code--single">orbi/</code> 分支合并了 334 个 PR，
 发布了 51 个打了 tag 的 release。</p>
 <p>每一个都是能点开的链接，包括那些拦下了东西的评审，以及之后补上的 commit。</p>
 <p>Orbi 以 AGPL-3.0 开源并支持自托管：<a href="https://github.com/orbi-build/orbi">github.com/orbi-build/orbi</a>。</p>
-<h2>相关</h2>
+<h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/orca/">Orca 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -216,7 +265,7 @@ agent 干的是打字那部分。</p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["这次交付","拒绝","截图说不出来的那部分","闸门能拦住交付之后-变的是什么","自己试","账本","相关"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

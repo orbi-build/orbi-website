@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,20 +101,51 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-22</p>
-        <h1 id="post-title">The engine waited for an answer users could not give</h1>
-        <p class="hero-lede">Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-22</p>
+          <h1 id="post-title">The engine waited for an answer users could not give</h1>
+          <p class="hero-lede">Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+      <li><a href="#the-waiting-is-correct">The waiting is correct</a></li>
+      <li><a href="#the-day-we-noticed">The day we noticed</a></li>
+      <li><a href="#the-same-shape-in-the-ui">The same shape, in the UI</a></li>
+      <li><a href="#the-same-shape-in-the-config">The same shape, in the config</a></li>
+      <li><a href="#what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</a></li>
+      <li><a href="#the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</a></li>
+      <li><a href="#a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</a></li>
+      <li><a href="#what-connects-them">What connects them</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>On this page · 9 sections</summary>
+        <ol>
+      <li><a href="#the-waiting-is-correct">The waiting is correct</a></li>
+      <li><a href="#the-day-we-noticed">The day we noticed</a></li>
+      <li><a href="#the-same-shape-in-the-ui">The same shape, in the UI</a></li>
+      <li><a href="#the-same-shape-in-the-config">The same shape, in the config</a></li>
+      <li><a href="#what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</a></li>
+      <li><a href="#the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</a></li>
+      <li><a href="#a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</a></li>
+      <li><a href="#what-connects-them">What connects them</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </details>
 <p>Some failures look like a quiet system. Nothing crashes or logs an error. The
 engine is waiting as designed, but the person it is waiting for does not know
 what to do and has no way to answer.</p>
 <p>We shipped three versions of this mistake. We found them in one afternoon,
 when we tried the product as our own customer.</p>
-<h2>The waiting is correct</h2>
+<h2 id="the-waiting-is-correct">The waiting is correct</h2>
 <p>Our engine will not advance a version on its own. When a milestone closes, an
 idle tick opens a ticket: this version is complete, here are the candidates,
 which one is next. Then it stops.</p>
@@ -112,7 +164,7 @@ and accepted only an answer they could not produce.</p>
 <p>Worse, managed sandboxes never rendered <code class="post-code--spaced">auto_next_milestone = false</code> at all. So
 they did not get the ticket either. The engine paused silently and waited for a
 decision that nobody had been asked to make.</p>
-<h2>The day we noticed</h2>
+<h2 id="the-day-we-noticed">The day we noticed</h2>
 <p>On 2026-09-22 we migrated <code class="post-code--single">orbi-build/orbi</code>, the engine&#39;s own repository, onto
 our hosted sandbox. It shipped v0.5.39 from that sandbox the same morning.</p>
 <p>Then the milestone closed, and everything stopped. No notification. No error.
@@ -120,7 +172,7 @@ Delivery simply ceased, until a human noticed, created the v0.5.40 milestone by
 hand with <code class="post-code--spaced">gh api</code>, and edited the policy file directly.</p>
 <p>We had been running this gap in production for our customers. It took putting
 our own release line behind it to feel it.</p>
-<h2>The same shape, in the UI</h2>
+<h2 id="the-same-shape-in-the-ui">The same shape, in the UI</h2>
 <p>Later the same day, a full walkthrough of the product (register, install the
 App, connect a repo, provision a sandbox, file an issue, deliver, merge, release)
 surfaced the second instance.</p>
@@ -138,7 +190,7 @@ Orbi will start on it.</p>
 just never extended that courtesy to milestones. So you type a version you half
 remember, and if you get it wrong nothing tells you. The rejection happens
 later, asynchronously, on a ticket you have to go find.</p>
-<h2>The same shape, in the config</h2>
+<h2 id="the-same-shape-in-the-config">The same shape, in the config</h2>
 <figure class="post-media">
 <img src="/img/diagrams/three-truths.svg" alt="Three systems holding three different answers about the active milestone. The control plane knows the tenant asked for v0.2.0. No path carries that to the sandbox orbi.toml, which knows nothing. The GitHub repo variable mirrors the empty value, so the engine logs active_milestone_variable_absent once per tick." width="880" height="150">
 <figcaption>The control plane can open a release ticket while the sandbox still believes nothing is in flight. The engine faithfully reports what it was told, once per tick, and nothing in the loop is broken.</figcaption>
@@ -164,7 +216,7 @@ swapping it atomically. The comments record the accretion:</p>
 <p>Adding one field means editing four files. Which is why nobody added
 <code class="post-code--single">active_milestone</code>: <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
 returns nothing. The control plane does not know the field exists.</p>
-<h2>What the tenant can and cannot touch</h2>
+<h2 id="what-the-tenant-can-and-cannot-touch">What the tenant can and cannot touch</h2>
 <p>One design question resolved itself once we looked at the filesystem.</p>
 <p>We were about to specify merge semantics for &quot;what if the tenant edited a managed
 field by hand&quot;. Then we checked:</p>
@@ -197,7 +249,7 @@ the sandbox first, and a way to change it had to be retrofitted afterwards.</p>
 <p>We are not fixing that in one step. But knowing which invariant we want makes
 the next field&#39;s default obvious: the control plane holds it, the sandbox
 derives it.</p>
-<h2>The pull-versus-push question answered itself too</h2>
+<h2 id="the-pull-versus-push-question-answered-itself-too">The pull-versus-push question answered itself too</h2>
 <p>For pushing config down to sandboxes, the obvious tradeoff is pull (the sandbox
 asks on a schedule) versus push (the control plane triggers a refresh).</p>
 <p>Push means opening an inbound channel to sandbox hosts. Pull means a delay of up
@@ -213,7 +265,7 @@ most sixty seconds, on an action that already waits for the engine&#39;s next cl
 There is no tradeoff to weigh. Push would open an inbound path to buy less than
 a minute.</p>
 <p>Measuring the thing before arguing about it took two commands.</p>
-<h2>A wrong diagnosis, corrected by the database</h2>
+<h2 id="a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</h2>
 <p>While reading production logs we found 288 identical errors in six hours:</p>
 <pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
@@ -251,7 +303,7 @@ perfectly.</p>
 <p>The generalisable version: when an error reproduces, you have confirmed the
 mechanism, not the diagnosis. The next question is always whether some policy
 intends this outcome. Policy lives in data, not in logs.</p>
-<h2>What connects them</h2>
+<h2 id="what-connects-them">What connects them</h2>
 <p>Three defects, one shape: <strong>the system knew something the user needed, and did
 not say it.</strong></p>
 <p>It knew which milestones existed, and made you type one from memory. It knew a
@@ -272,10 +324,11 @@ orbi-cloud#869 (list the milestones in the UI),
 orbi-cloud#870 (a general config push instead of a fifth hand-written sync), and
 <a href="https://github.com/orbi-build/orbi/issues/1283">orbi#1283</a> (the one whose root
 cause we got wrong first).</em></p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/managed-agents/">Managed agents comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -329,7 +382,7 @@ cause we got wrong first).</em></p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["the-waiting-is-correct","the-day-we-noticed","the-same-shape-in-the-ui","the-same-shape-in-the-config","what-the-tenant-can-and-cannot-touch","the-pull-versus-push-question-answered-itself-too","a-wrong-diagnosis-corrected-by-the-database","what-connects-them","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

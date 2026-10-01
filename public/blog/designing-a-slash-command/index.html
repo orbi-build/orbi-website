@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
+    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
+    .post-hero h1 { max-width: none; }
+    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -46,6 +49,24 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
+    .post-toc p { margin: 0 0 8px; font-weight: 600; }
+    .post-toc ol { margin: 0; padding: 0; list-style: none; }
+    .post-toc li { margin: 0; }
+    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
+    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
+    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
+    .post-toc-inline a { overflow-wrap: anywhere; }
+    @media (max-width: 1199px) {
+      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
+      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 
 </head>
@@ -80,14 +101,49 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-22</p>
-        <h1 id="post-title">How one slash command got its shape</h1>
-        <p class="hero-lede">A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-22</p>
+          <h1 id="post-title">How one slash command got its shape</h1>
+          <p class="hero-lede">A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <nav class="post-toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+      <li><a href="#why-not-a-verb">Why not a verb</a></li>
+      <li><a href="#why-no">Why no @</a></li>
+      <li><a href="#the-regex-is-three-decisions-in-one">The regex is three decisions in one</a></li>
+      <li><a href="#the-bug-prow-still-has">The bug Prow still has</a></li>
+      <li><a href="#the-escalation-bors-has">The escalation bors has</a></li>
+      <li><a href="#what-we-took-from-each">What we took from each</a></li>
+      <li><a href="#the-registry-already-existed">The registry already existed</a></li>
+      <li><a href="#one-command-three-idempotent-steps">One command, three idempotent steps</a></li>
+      <li><a href="#what-we-deliberately-did-not-decide">What we deliberately did not decide</a></li>
+      <li><a href="#the-result">The result</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </nav>
+      <article class="post-body">
+      <details class="post-toc-inline">
+        <summary>On this page · 11 sections</summary>
+        <ol>
+      <li><a href="#why-not-a-verb">Why not a verb</a></li>
+      <li><a href="#why-no">Why no @</a></li>
+      <li><a href="#the-regex-is-three-decisions-in-one">The regex is three decisions in one</a></li>
+      <li><a href="#the-bug-prow-still-has">The bug Prow still has</a></li>
+      <li><a href="#the-escalation-bors-has">The escalation bors has</a></li>
+      <li><a href="#what-we-took-from-each">What we took from each</a></li>
+      <li><a href="#the-registry-already-existed">The registry already existed</a></li>
+      <li><a href="#one-command-three-idempotent-steps">One command, three idempotent steps</a></li>
+      <li><a href="#what-we-deliberately-did-not-decide">What we deliberately did not decide</a></li>
+      <li><a href="#the-result">The result</a></li>
+      <li><a href="#related">Related</a></li>
+        </ol>
+      </details>
 <p>When our engine finishes a milestone, it opens a ticket with the candidates for the next version and waits for a choice. That pause is intentional.</p>
 <p>Automatic version advancement stays off. The release engine should not choose what ships next.</p>
 <p>The problem was the answer. The ticket asked people to run
@@ -98,7 +154,7 @@ hardware, so the engine was asking them for something they could not do.</p>
 and the engine does the rest. It is one small feature. It took a day of design
 because almost every choice in it has been made before, by people who then had
 to live with it.</p>
-<h2>Why not a verb</h2>
+<h2 id="why-not-a-verb">Why not a verb</h2>
 <p>The first argument was about the name. <code class="post-code--single">/advance</code> was the obvious candidate, and
 it is wrong.</p>
 <p>In-ticket commands are named after states, not actions. Prow has <code class="post-code--single">/lgtm</code>,
@@ -125,7 +181,7 @@ implementation will not honour.</strong></p>
 and the three things it does are all in service of making that true. Creating
 the milestone, opening the release ticket, landing the config value: none of
 them is a surprise once you have read the name.</p>
-<h2>Why no @</h2>
+<h2 id="why-no">Why no @</h2>
 <p>The second argument: <code class="post-code--single">/milestone</code> or <code class="post-code--spaced">@orbi milestone</code>?</p>
 <p>The industry splits cleanly, and the dividing line is <strong>who controls the bot&#39;s
 account name</strong>.</p>
@@ -147,7 +203,7 @@ things to test, and two things that can drift apart when someone adds the third
 command. The notification is genuinely useful, but the cost is
 paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.</p>
-<h2>The regex is three decisions in one</h2>
+<h2 id="the-regex-is-three-decisions-in-one">The regex is three decisions in one</h2>
 <p>Anchoring at the start of a line, with the multiline flag:</p>
 <pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
 </code></pre>
@@ -167,7 +223,7 @@ to be the most interesting thing we read all day.</p>
 <figure class="post-media">
 <img src="/img/diagrams/command-pipeline.svg" alt="The in-ticket command pipeline: a comment passes through fence stripping, quote stripping, a bot-author check, a permission gate, last-occurrence-wins, and finally a receipt. The fence-stripping and permission stages are highlighted as the two places where Prow and bors respectively leak." width="880" height="120">
 <figcaption>Six stages, one owner. Prow gives each plugin its own regex, so the fenced-block fix cannot reach them. It leaks at “strip fences”. bors declares permissions correctly but leaves a second door into the handler. It leaks at “permission”.</figcaption>
-</figure><h2>The bug Prow still has</h2>
+</figure><h2 id="the-bug-prow-still-has">The bug Prow still has</h2>
 <p>A regex does not parse Markdown. If you write a comment explaining how to use
 <code class="post-code--single">/hold</code>, and you put the example inside triple backticks, the regex sees a line
 starting with <code class="post-code--single">/hold</code> and fires.</p>
@@ -190,7 +246,7 @@ exists. It just cannot arrive.</p>
 author supplies <code class="post-code--single">verbs=(&quot;milestone&quot;,)</code> and never sees a regex. They cannot omit
 the anchor, and they cannot skip the fenced-block stripping, because they were
 never given the opportunity to write either one.</p>
-<h2>The escalation bors has</h2>
+<h2 id="the-escalation-bors-has">The escalation bors has</h2>
 <p>The same question applies to permissions, and here the comparison inverts:
 bors has the better design and the worse bug.</p>
 <p>Prow makes permission each plugin&#39;s job. There is a shared helper,
@@ -217,7 +273,7 @@ command <strong>under the original commenter&#39;s identity</strong>, and it ent
 command.</p>
 <p>The lesson is not &quot;bors is insecure&quot;. It is that the gate was correct and the
 second entrance defeated it. One execution path, or the gate is decorative.</p>
-<h2>What we took from each</h2>
+<h2 id="what-we-took-from-each">What we took from each</h2>
 <p>Two more findings worth copying, one in each direction.</p>
 <p>Prow&#39;s genuinely good idea: <code class="post-code--single">ValidatePluginsUnknown</code> at
 <code class="post-code--single">pkg/plugins/config.go:1381</code> rejects a configured-but-unregistered plugin by
@@ -230,7 +286,7 @@ bare map assignment. Register the same name twice and the second silently
 overwrites the first; two plugins both matching <code class="post-code--single">^/hold</code> both run, in
 nondeterministic goroutine order. We raise on a duplicate name and on
 overlapping verbs, at import time.</p>
-<h2>The registry already existed</h2>
+<h2 id="the-registry-already-existed">The registry already existed</h2>
 <p>The shape we landed on was not invented for this. Our journal module has had it
 for months. <code class="post-code--single">JOURNAL_EVENTS</code> at <code class="post-code--single">src/orbi/journal.py:167</code> is an explicit dict,
 written out in the module. No decorators discovering things, no entry points, no
@@ -290,7 +346,7 @@ you forgot&quot;.</p>
 </g>
 </svg>
 <figcaption>The registry was not designed for this feature. It was already in the repository, holding journal event names, with the property that mattered: registering a thing is what validates it.</figcaption>
-</figure><h2>One command, three idempotent steps</h2>
+</figure><h2 id="one-command-three-idempotent-steps">One command, three idempotent steps</h2>
 <p>The original ticket said this command changes a config value. That was wrong,
 and finding out why took a grep.</p>
 <p>A complete advance needs three things to happen. We had one of them:</p>
@@ -355,7 +411,7 @@ supplied the input.</p>
 the input, string substitution is the transformation, and a file write is the
 output. An LLM in that path would add nondeterminism to an operation whose
 entire value is being predictable.</p>
-<h2>What we deliberately did not decide</h2>
+<h2 id="what-we-deliberately-did-not-decide">What we deliberately did not decide</h2>
 <p>There is a real open question underneath all of this, and we wrote it down
 rather than answering it by accident.</p>
 <p>Commands are currently read from exactly one place: the confirmation ticket the
@@ -397,7 +453,7 @@ of <code class="post-code--single">/approve</code>, <code class="post-code--sing
 information that would make the choice better than a coin flip. Writing the
 question down, with both option&#39;s costs enumerated, is what keeps it from being
 answered by whoever next opens that file.</p>
-<h2>The result</h2>
+<h2 id="the-result">The result</h2>
 <p>The command shipped the same day. The implementation was +2073/-81 across 18
 files, and the follow-up that lifts the shared layer out of the milestone module
 is specified and queued.</p>
@@ -416,10 +472,11 @@ shared layer), and
 <a href="https://github.com/orbi-build/orbi/discussions/1295">#1295</a> (where commands
 should be read from). Every Prow and bors line number above was grepped at HEAD
 on 2026-09-22, not recalled.</em></p>
-<h2>Related</h2>
+<h2 id="related">Related</h2>
 <p>Read the <a href="/compare/cursor/">Cursor comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -473,7 +530,7 @@ on 2026-09-22, not recalled.</em></p>
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{const ids=["why-not-a-verb","why-no","the-regex-is-three-decisions-in-one","the-bug-prow-still-has","the-escalation-bors-has","what-we-took-from-each","the-registry-already-existed","one-command-three-idempotent-steps","what-we-deliberately-did-not-decide","the-result","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
