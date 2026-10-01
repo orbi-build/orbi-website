@@ -42,6 +42,7 @@ describe("site radius tokens", () => {
       ".production-map",
       ".faq-item",
       ".pricing-card",
+      ".founding-offer",
       ".subscribe-box",
     ]) {
       const rule = css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")} \\{[\\s\\S]*?\\}`));
