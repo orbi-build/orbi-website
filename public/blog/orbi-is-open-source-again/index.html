@@ -59,16 +59,18 @@
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
-    .post-toc h2 { margin: 0 0 12px; padding-left: 14px; font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-    .post-toc ol { list-style: none; counter-reset: toc; margin: 0; padding-left: 0; border-left: 1px solid var(--line); }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
     .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li { counter-increment: toc; margin: 0; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
     .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc .post-toc-link { display: grid; grid-template-columns: 1.6em 1fr; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 2px solid transparent; }
-    .post-toc .post-toc-link::before { content: counter(toc); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc .post-toc-link.is-current { border-left-color: var(--signal-on-light); color: var(--ink); font-weight: 600; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -94,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 0; padding-right: 0; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -146,12 +149,32 @@
     </div>
 
     <div class="post-grid">
-
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#the-timeline">The timeline</a></li>
+          <li><a class="post-toc-link" href="#why-we-left-apache-on-september-4">Why we left Apache on September 4</a></li>
+          <li><a class="post-toc-link" href="#what-the-sustainable-use-license-cost-us">What the Sustainable Use License cost us</a></li>
+          <li><a class="post-toc-link" href="#why-agpl-and-why-keep-the-sul">Why AGPL, and why keep the SUL</a></li>
+          <li><a class="post-toc-link" href="#what-changes-for-you">What changes for you</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
       <article class="post-body">
-
+        <details class="post-toc-inline">
+          <summary>On this page · 1 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#the-timeline">The timeline</a></li>
+          <li><a class="post-toc-link" href="#why-we-left-apache-on-september-4">Why we left Apache on September 4</a></li>
+          <li><a class="post-toc-link" href="#what-the-sustainable-use-license-cost-us">What the Sustainable Use License cost us</a></li>
+          <li><a class="post-toc-link" href="#why-agpl-and-why-keep-the-sul">Why AGPL, and why keep the SUL</a></li>
+          <li><a class="post-toc-link" href="#what-changes-for-you">What changes for you</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
 <p>As of <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.44">v0.5.44</a>, released on September 24, Orbi is licensed under <strong>AGPL-3.0, or the Sustainable Use License (SUL) v1.0</strong>. You pick one. Self-hosting is free under either, and GitHub now reports the repository&#39;s license as AGPL-3.0.</p>
 <p>This is the second license change in a month, so here is the whole history and the reasoning behind each step.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<h3>The timeline</h3>
+<h3 id="the-timeline">The timeline</h3>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
 <tr>
@@ -176,17 +199,17 @@
 <td data-label="Where"><a href="https://github.com/orbi-build/orbi/issues/1332">#1332</a>, shipped in v0.5.44</td>
 </tr>
 </tbody></table></div>
-<h3>Why we left Apache on September 4</h3>
+<h3 id="why-we-left-apache-on-september-4">Why we left Apache on September 4</h3>
 <p>Apache-2.0 lets anyone take the code and sell it as a hosted service. Orbi&#39;s runner is meant to run on your own machine, and the SUL draws its line in the same place: free for your own use, a separate agreement if you resell it as a service. It is the license n8n uses, and its restriction and patent clauses were copied word for word.</p>
 <p>Timing mattered too. The repository was ten days old and had a single copyright holder, so the change needed one person&#39;s agreement. The commit also added a relicensing clause to <code class="post-code--single">CONTRIBUTING.md</code>. Contributors agree that their work may be released under a different license later, <strong>provided that license continues to allow self-hosted use free of charge</strong>.</p>
-<h3>What the Sustainable Use License cost us</h3>
+<h3 id="what-the-sustainable-use-license-cost-us">What the Sustainable Use License cost us</h3>
 <p>The SUL is not an OSI-approved license, so Orbi could not be described as open source. That turned out to matter more than we expected.</p>
 <p>Several lists that fit Orbi accept only open source projects. <a href="https://github.com/kyrolabs/awesome-agents/blob/main/CONTRIBUTING.md">kyrolabs/awesome-agents</a> says a contribution &quot;needs to be open source&quot;. <a href="https://github.com/Jenqyang/Awesome-AI-Agents/blob/main/CONTRIBUTING.md">Awesome-AI-Agents</a> says licenses that only make the source public &quot;will usually be rejected&quot;. Everywhere else, every description of Orbi needed the same footnote: the source is public and self-hosting is free, but it is not OSI open source.</p>
-<h3>Why AGPL, and why keep the SUL</h3>
+<h3 id="why-agpl-and-why-keep-the-sul">Why AGPL, and why keep the SUL</h3>
 <p>AGPL-3.0 is OSI-approved. It also has a network clause: if you modify Orbi and offer it to others as a service, you have to publish your changes under the same license. It does not stop anyone from running an unmodified Orbi as a service. The SUL did stop that, and we are giving it up.</p>
 <p>Elastic made the same move in 2024, when it <a href="https://www.elastic.co/blog/elasticsearch-is-open-source-again">added AGPL</a> as an option next to its existing licenses. We kept the SUL as the alternative because some companies do not allow AGPL code at all. They can still use Orbi under the SUL.</p>
 <p>The relicensing clause made this possible, and its condition still holds. Self-hosting stays free under both licenses. The one outside contributor so far started contributing after the clause was in place.</p>
-<h3>What changes for you</h3>
+<h3 id="what-changes-for-you">What changes for you</h3>
 <ul>
 <li><strong>Self-hosting</strong>: nothing. It is free under either license, with your own model and your own repository.</li>
 <li><strong>Describing Orbi</strong>: you can call it open source now, and list it anywhere that requires an OSI license.</li>
@@ -263,7 +286,7 @@ license-files = [&quot;LICENSE&quot;, &quot;docs/licenses/sustainable-use-licens
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

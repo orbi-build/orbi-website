@@ -59,16 +59,18 @@
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
-    .post-toc h2 { margin: 0 0 12px; padding-left: 14px; font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-    .post-toc ol { list-style: none; counter-reset: toc; margin: 0; padding-left: 0; border-left: 1px solid var(--line); }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
     .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li { counter-increment: toc; margin: 0; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
     .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc .post-toc-link { display: grid; grid-template-columns: 1.6em 1fr; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 2px solid transparent; }
-    .post-toc .post-toc-link::before { content: counter(toc); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc .post-toc-link.is-current { border-left-color: var(--signal-on-light); color: var(--ink); font-weight: 600; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -94,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 0; padding-right: 0; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -149,8 +152,20 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a></li>
-          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a></li>
+          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a>
+            <ol>
+              <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
+              <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a>
+            <ol>
+              <li><a class="post-toc-link" href="#which-task-and-only-once">Which task, and only once</a></li>
+              <li><a class="post-toc-link" href="#which-system-user-it-runs-as">Which system user it runs as</a></li>
+              <li><a class="post-toc-link" href="#who-reviews-it">Who reviews it</a></li>
+              <li><a class="post-toc-link" href="#when-it-may-merge">When it may merge</a></li>
+              <li><a class="post-toc-link" href="#what-happens-when-it-fails">What happens when it fails</a></li>
+              <li><a class="post-toc-link" href="#who-ships-it">Who ships it</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#the-step-i-still-do-by-hand">The step I still do by hand</a></li>
           <li><a class="post-toc-link" href="#if-you-d-rather-not-build-it">If you'd rather not build it</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -160,8 +175,20 @@
         <details class="post-toc-inline">
           <summary>On this page · 5 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a></li>
-          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a></li>
+          <li><a class="post-toc-link" href="#what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</a>
+            <ol>
+              <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
+              <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a>
+            <ol>
+              <li><a class="post-toc-link" href="#which-task-and-only-once">Which task, and only once</a></li>
+              <li><a class="post-toc-link" href="#which-system-user-it-runs-as">Which system user it runs as</a></li>
+              <li><a class="post-toc-link" href="#who-reviews-it">Who reviews it</a></li>
+              <li><a class="post-toc-link" href="#when-it-may-merge">When it may merge</a></li>
+              <li><a class="post-toc-link" href="#what-happens-when-it-fails">What happens when it fails</a></li>
+              <li><a class="post-toc-link" href="#who-ships-it">Who ships it</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#the-step-i-still-do-by-hand">The step I still do by hand</a></li>
           <li><a class="post-toc-link" href="#if-you-d-rather-not-build-it">If you'd rather not build it</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -181,7 +208,7 @@
 <li><code class="post-code--single">--dangerously-skip-permissions</code> is the direct way to run Claude Code without confirmation. It skips the routine permission prompts and checks (a few protections still apply, and in a headless run anything that still needs a person is denied), and Anthropic says to use it only inside a container or VM, as a non-root user. On a machine you care about, <code class="post-code--single">auto</code> or <code class="post-code--single">dontAsk</code> with an allowlist is the safer choice.</li>
 <li><code class="post-code--single">--bare</code> skips hooks, plugins, MCP servers and CLAUDE.md from the machine and the repository. Without it, a headless run in a repository you&#39;ve never trusted still runs that repository&#39;s hooks, and no trust dialog appears.</li>
 </ul>
-<h3>Headless authentication: API key or subscription token</h3>
+<h3 id="headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</h3>
 <p>Headless login is where subscription users trip. <code class="post-code--single">--bare</code> ignores your Pro or Max login. Against the Anthropic API it needs <code class="post-code--single">ANTHROPIC_API_KEY</code>, or an <code class="post-code--single">apiKeyHelper</code> passed in with <code class="post-code--single">--settings</code>; cloud providers such as Bedrock keep their own credentials.</p>
 <p>To use a subscription in CI, run <code class="post-code--spaced">claude setup-token</code>, set the token it prints as <code class="post-code--single">CLAUDE_CODE_OAUTH_TOKEN</code>, and leave <code class="post-code--single">--bare</code> off. Two things to know about that token:</p>
 <ul>
@@ -189,7 +216,7 @@
 <li>An <code class="post-code--single">ANTHROPIC_API_KEY</code>, <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> or <code class="post-code--single">apiKeyHelper</code> takes priority over it, whether it&#39;s set on the machine or in the repository&#39;s settings, so check which credential a run actually used.</li>
 </ul>
 <p>The <a href="https://code.claude.com/docs/en/authentication#generate-a-long-lived-token">authentication docs</a> cover both. To keep the repository&#39;s own settings and <code class="post-code--single">.mcp.json</code> out of a run that can&#39;t use <code class="post-code--single">--bare</code>, add <code class="post-code--spaced">--setting-sources user</code>, and <code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> turns hooks off for one run. Anthropic also says <code class="post-code--single">--bare</code> will become the default for <code class="post-code--single">-p</code> in a future release, so a token-based setup may need changing then.</p>
-<h3>A minimal cron job</h3>
+<h3 id="a-minimal-cron-job">A minimal cron job</h3>
 <p>cron runs with a short <code class="post-code--single">PATH</code> and none of your shell setup, so spell out the directory, the binary and the credentials. Put the token in a file only the user running the job can read (<code class="post-code--spaced">chmod 600</code>), and <code class="post-code--single">export</code> it, or Claude won&#39;t see it:</p>
 <pre><code class="language-bash"># ~/.claude-nightly.env
 export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
@@ -204,13 +231,13 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <p>If one scheduled job like that is all you need, you&#39;re done. The rest of this post is for when you want GitHub Issues to come out the other end as merged, released changes.</p>
 <h2 id="six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn&#39;t answer</h2>
 <p>Orbi has been delivering its own Issues unattended since late August. As of today, 599 Issues in <a href="https://github.com/orbi-build/orbi">its repository</a> carry the <code class="post-code--single">ai-merged</code> label, and v0.5.58 went out on September 30. Some of the answers below I only found after getting them wrong. A bare loop around <code class="post-code--spaced">claude -p</code> leaves every one of them to you.</p>
-<h3>Which task, and only once</h3>
+<h3 id="which-task-and-only-once">Which task, and only once</h3>
 <p>In Orbi a person adds the <code class="post-code--single">ai-ready</code> label to an Issue. A runner picks it inside a claim lock, so two runners can&#39;t take the same Issue at the same moment, and adds <code class="post-code--single">ai-in-progress</code>, which later scans skip. It then creates a worktree from a pinned base commit. Urgent Issues go first, then bugs. Each step is posted back to the Issue as a comment, which means the queue is the Issue list and the log is the Issue&#39;s timeline.</p>
-<h3>Which system user it runs as</h3>
+<h3 id="which-system-user-it-runs-as">Which system user it runs as</h3>
 <p>With nobody approving commands, a dedicated operating system user adds a layer of isolation that permission rules and a sandbox don&#39;t replace. In Orbi Cloud each connected repository runs as its own Unix user. On September 25, after reading about GitSpawn, a way to make coding agents run programs through a repository&#39;s git config, I over-corrected: I filed an Issue, Orbi wrote and merged 1,164 lines of hardening, and I reverted it under four hours later. The agent already ran as that user, so guarding the runner&#39;s own git calls protected nothing. If you run <code class="post-code--spaced">claude -p</code> from cron, give it a dedicated user that holds only that repository&#39;s credentials. The full story is in <a href="/blog/gitspawn-unattended-agent/">GitSpawn and the agent that never asks</a>.</p>
-<h3>Who reviews it</h3>
+<h3 id="who-reviews-it">Who reviews it</h3>
 <p>Orbi starts a second session that reads the exact base and head commits against the Issue&#39;s acceptance criteria. It fixes what it finds and posts a verdict on the Issue, next to the test count. The session that wrote the change never gets to say it&#39;s done.</p>
-<h3>When it may merge</h3>
+<h3 id="when-it-may-merge">When it may merge</h3>
 <p>Right before merging, Orbi checks that the verdict names the current PR head, that the head contains the latest base branch, that CI on it has passed, and that GitHub reports the PR as mergeable. If CI is still running, it waits for the next pass. The <a href="/guides/auto-merge-ai-prs/">auto-merge guide</a> goes through each condition.</p>
 <p>Until September 30 that list had a hole. On September 29 (UTC) I labelled an Issue <code class="post-code--single">ai-blocked</code> and commented that its PR must not be merged. Seventy-one seconds later the runner merged it. The gate re-read the base, the head and CI, but never the Issue&#39;s labels, so a label added during review changed nothing. About eight hours later I filed <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a> and reverted the merge:</p>
 <p><img src="/img/headless-1504-bug.webp" alt="Issue #1504 on GitHub: the timeline of a merge that happened 71 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue&#39;s labels"></p>
@@ -223,12 +250,12 @@ labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#
 grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;blocked: $ISSUE&quot;; exit 3; }
 gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
 </code></pre>
-<h3>What happens when it fails</h3>
+<h3 id="what-happens-when-it-fails">What happens when it fails</h3>
 <p>If Orbi can recover, the Issue moves to <code class="post-code--single">ai-fix-needed</code> and the next pass continues on the same branch and the same PR. If a person has to decide, it stops at <code class="post-code--single">ai-blocked</code> with a comment saying what happened.</p>
 <p>That comment isn&#39;t always enough. On September 28 the first run on <a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> ended in under three minutes with no commit at all, and Orbi labelled it <code class="post-code--single">ai-blocked</code>:</p>
 <p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482: Orbi started Pi, then posted &quot;Orbi blocked — waiting on a human decision&quot;: the agent delivered no commit and HEAD is still the frozen base"></p>
 <p>It told me there was no commit, not why, so I went to the logs. I judged the Issue itself was fine and removed the label, and the second run opened <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>, merged the same day.</p>
-<h3>Who ships it</h3>
+<h3 id="who-ships-it">Who ships it</h3>
 <p>A merged fix reaches nobody until it&#39;s released. In Orbi a release is an Issue too, labelled <code class="post-code--single">ai-release</code>, naming the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. This is the one for v0.5.58, which shipped the #1504 fix:</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508, Release v0.5.58: the scope is milestone v0.5.58, the Release block names version, base branch and version file, and Orbi claimed it with ai-in-progress"></p>
 <h2 id="the-step-i-still-do-by-hand">The step I still do by hand</h2>
