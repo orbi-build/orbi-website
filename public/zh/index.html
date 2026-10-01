@@ -335,29 +335,20 @@
         </div>
 
         <div class="production-map" role="group" aria-label="Orbi 当前生产系统">
-          <div class="map-row" data-capability="epic">
-            <div class="map-label"><span>01</span><strong>组织</strong></div>
-            <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
-            <p >聚合多个结果，但不让 Runner 把协调事项错当成可执行任务。</p>
+          <div class="map-row" data-capability="delivery">
+            <div class="map-label"><span>01</span><strong>给 Issue 打 ai-ready 标签</strong></div>
+            <div class="map-track"><span>Issue</span><i></i><span>ai-ready</span><i></i><span>Worktree</span></div>
+            <p >Orbi 认领后在隔离的工作区里写代码。</p>
           </div>
-          <div class="map-row" data-capability="dependency">
-            <div class="map-label"><span>02</span><strong>排序</strong></div>
-            <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
-            <p >读取 GitHub 原生依赖；前置关闭以后，任务才自然进入生产。</p>
-          </div>
-          <div class="map-row map-row-signal" data-capability="delivery">
-            <div class="map-label"><span>03</span><strong>交付</strong></div>
-            <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>测试</span><i></i><span>审查 + 修复</span><i></i><span>精确合并</span></div>
-            <p >第二场会话可以直接修复分支；只有刚刚审过的那个 Head 可以进入主分支。</p>
+          <div class="map-row map-row-signal" data-capability="review">
+            <div class="map-label"><span>02</span><strong>另一个会话审查</strong></div>
+            <div class="map-track map-track-long"><span>PR</span><i></i><span>审查</span><i></i><span>修复</span><i></i><span>验收</span></div>
+            <p >对照 Issue 的验收项检查 PR，不过就修。</p>
           </div>
           <div class="map-row" data-capability="release">
-            <div class="map-label"><span>04</span><strong>发版</strong></div>
-            <div class="map-track"><span>冻结 SHA</span><i></i><span>完整门禁</span><i></i><span>Tag + Release</span></div>
-            <p >逐项核对范围和仓库状态，再发布不可变版本；发版不是让 Agent 临场发挥。</p>
-          </div>
-          <div class="recovery-rail">
-            <span>恢复总线</span>
-            <p class="orbi-recovery-rail-p">进程被杀、测试失败、提交没推出去——下一拍仍然回到同一个 Run、分支、Worktree 和 PR。</p>
+            <div class="map-label"><span>03</span><strong>合并并发版</strong></div>
+            <div class="map-track"><span>审过的 commit</span><i></i><span>合并</span><i></i><span>Tag</span></div>
+            <p >只合并审过的那个 commit，然后打 tag 发版。</p>
           </div>
         </div>
         <!-- Issue #119：开源（AGPL-3.0）、自托管、自带模型是决策后期才展开的考量
