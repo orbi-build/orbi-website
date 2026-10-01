@@ -169,7 +169,7 @@ const LANG = {
     docsHref: "https://docs.orbi.build",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud Docs",
-    applyLabel: "Start Cloud",
+    applyLabel: "Start free",
     signInLabel: "Sign in",
     cloudLabel: "Cloud",
     compareLabel: "Compare",
@@ -232,7 +232,7 @@ const LANG = {
     docsHref: "https://docs.orbi.build/zh",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud 文档",
-    applyLabel: "开始 Cloud",
+    applyLabel: "免费开始",
     signInLabel: "登录",
     cloudLabel: "Cloud",
     compareLabel: "竞品对比",
@@ -304,19 +304,12 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    GUIDES_HREF: base(t.guidesHref),
-    GUIDES_LABEL: t.guidesLabel,
-    RESOURCES_ITEM: `<div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-resources-menu" data-dropdown-toggle>${t.resourcesLabel}${NAV_DROPDOWN_INDICATOR}</button><div class="nav-dropdown-menu" id="${n.navId}-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/evidence/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.evidenceLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.evidenceDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(t.benchmarkHref)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.benchmarkLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.benchmarkDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/cost/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.costPerPrLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.costPerPrDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(t.methodHref)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.methodLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.methodDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(n.compareHref)}"${compareAttrs} role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.comparisonsLabel}</span><span class="orbi-nav-dropdown-menu-description">${t.comparisonsDescription}</span></a><a class="orbi-nav-dropdown-menu-a" href="${base(`${t.langPrefix}/blog/`)}" role="menuitem"><span class="orbi-nav-dropdown-menu-label">${t.blogLabel}</span></a></div></div>`,
-    DOCS_ITEM: `<div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="${n.navId}-docs-menu" data-dropdown-toggle>${t.docsLabel}${NAV_DROPDOWN_INDICATOR}</button><div class="nav-dropdown-menu" id="${n.navId}-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="${t.docsHref}" role="menuitem">${t.selfHostedDocsLabel}</a><a class="orbi-nav-dropdown-menu-a" href="${t.cloudDocsHref.replace("ref=footer", "ref=nav")}" role="menuitem">${t.cloudDocsNavLabel}</a></div></div>`,
-    BLOG_HREF: base(`${t.langPrefix}/blog/`),
-    BLOG_LABEL: t.blogLabel,
-    APPLY_LABEL: t.applyLabel,
+    DOCS_HREF: t.docsHref,
+    DOCS_LABEL: t.docsLabel,
     SIGNIN_LABEL: t.signInLabel,
     SIGNIN_HREF: base("/api/login"),
-    CLOUD_HREF: base(`${t.langPrefix}/cloud/`),
-    LANG_GROUP_ARIA: t.langGroupAria,
-    LANG_LINE_A: lineA,
-    LANG_LINE_B: lineB,
+    APPLY_LABEL: t.applyLabel,
+    CLOUD_HREF: base(`${t.langPrefix}/cloud/login`),
   });
 }
 
@@ -328,6 +321,11 @@ export function renderFooter(page) {
   // (Issue #106: the anchor-prefix rule).
   const anchorPrefix = isHome ? "" : `${t.langPrefix}/`;
   const base = (href) => withSiteBase(page.nav, href);
+  const currentLine = `<span aria-current="page">${t.currentLangLabel}</span>`;
+  const otherLine = `<a href="${base(page.nav.langSwitchHref)}" lang="${t.otherLangAttr}" aria-label="${t.otherLangAria}">${t.otherLangLabel}</a>`;
+  const [lineA, lineB] = page.nav.langCurrentFirst
+    ? [currentLine, otherLine]
+    : [otherLine, currentLine];
   const deepLinks = DEEP_DIVES.map(
     ([slug, name]) =>
       `      <a href="${base(`${t.langPrefix}/compare/${slug}/`)}">${name}</a>`
@@ -351,6 +349,7 @@ export function renderFooter(page) {
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
     COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
+    LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
   })}`;

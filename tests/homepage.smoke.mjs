@@ -799,7 +799,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const cardText = await page.locator(".run-option-cloud").textContent();
   if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
   if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
-  const navCompare = page.locator(`[data-primary-nav] .nav-resources a[href="${comparisonPath}"]`);
+  const navCompare = page.locator(`.site-footer a[href="${comparisonPath}"]`);
   if ((await navCompare.count()) !== 1) {
     throw new Error(`${path}: Resources dropdown comparisons link has wrong href`);
   }
@@ -853,7 +853,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // Below 900px the navigation is collapsed; open it before clicking through.
   const menuToggle = page.locator("[data-menu-toggle]");
   if (await menuToggle.isVisible()) await menuToggle.click();
-  await page.locator(".nav-resources [data-dropdown-toggle]").click();
   await navCompare.click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
@@ -1728,7 +1727,6 @@ export async function assertHomeCloudFlow(
     if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
       await page.locator("[data-menu-toggle]").click();
     }
-    const cloudPath = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
     const loginPath = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     if (selector === '[data-cta="cloud-start"]') {
       const href = await entry.getAttribute("href");
@@ -1746,20 +1744,14 @@ export async function assertHomeCloudFlow(
       await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
       return;
     }
-    await entry.click();
-    const landedPath = new URL(page.url()).pathname;
-    if (landedPath !== cloudPath) {
-      throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${cloudPath}`);
-    }
-    const cta = page.locator("a.button-signal").first();
-    const href = await cta.getAttribute("href");
+    const href = await entry.getAttribute("href");
     if (href !== loginPath) {
-      throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+      throw new Error(`${path}: navigation CTA href is ${JSON.stringify(href)}, expected ${loginPath}`);
     }
     const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
-    const response = await context.request.get(new URL(href, page.url()).toString());
+    const response = await context.request.get(new URL(href, `${flowTargetURL}${path}`).toString());
     if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
-      throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+      throw new Error(`${path}: navigation CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
     }
     await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   } finally {
@@ -1767,9 +1759,7 @@ export async function assertHomeCloudFlow(
   }
 }
 
-// Issue #308: /compare/ is on the buyer-decision path. The nav CTA a visitor
-// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the language
-// Cloud introduction page before its login handoff.
+// Issue #711: /compare/ uses the same six-link nav and direct login handoff.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -1785,7 +1775,7 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     if (href !== expectedHref) {
       throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected ${JSON.stringify(expectedHref)}`);
     }
@@ -2344,12 +2334,8 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 360, height: 844 }, "homepage-en-narrow.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertHomeDropdowns(browser, "/", { width: 1440, height: 900 }, "dropdowns-en-desktop.png");
-    await assertHomeDropdowns(browser, "/", { width: 390, height: 844 }, "dropdowns-en-mobile.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 1440, height: 900 }, "dropdowns-zh-desktop.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 390, height: 844 }, "dropdowns-zh-mobile.png");
-    await assertCloudDocsNav(browser, "/cloud/");
-    await assertCloudDocsNav(browser, "/zh/cloud/");
+    // Issue #711 removes the old nav dropdowns; the shared footer retains
+    // their destinations and the language switch.
     await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
@@ -2436,8 +2422,8 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Start Cloud");
-    await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
+    await assertCompareNavCta(browser, "/compare/", "Start free");
+    await assertCompareNavCta(browser, "/zh/compare/", "免费开始");
     // The compare nav CTA now introduces Cloud; assertCompareNavCta checks its
     // language-specific landing href above, while the Cloud page flow above
     // verifies the login handoff.
