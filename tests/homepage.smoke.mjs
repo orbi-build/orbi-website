@@ -680,8 +680,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       overflows: h1.scrollWidth > h1.clientWidth,
     };
   });
-  if (heroLayout.lines !== 1) {
-    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 1`);
+  if (heroLayout.lines !== 2) {
+    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 2`);
   }
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
