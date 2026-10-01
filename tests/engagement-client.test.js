@@ -13,13 +13,24 @@ async function browserHarness() {
   const timers = [];
   const handlers = new Map();
   const beacons = [];
+  const sections = [
+    { id: "hero", classList: ["hero-section"] },
+    { id: "", classList: ["pricing-section", "extra"] },
+  ];
+  let observeSections;
+  class IntersectionObserver {
+    constructor(callback) { observeSections = callback; }
+    observe() {}
+  }
   const document = {
     visibilityState: "visible",
     documentElement: { scrollHeight: 400 },
+    querySelectorAll: selector => selector === "main > section" ? sections : [],
   };
   const context = {
     Blob,
     Date: { now: () => now },
+    IntersectionObserver,
     console: { warn() {} },
     document,
     innerHeight: 100,
@@ -54,7 +65,7 @@ async function browserHarness() {
     for (const handler of handlers.get(type) ?? []) handler(event);
   };
   const events = async () => Promise.all(beacons.map(async body => JSON.parse(await body.text())));
-  return { advance, context, dispatch, document, events };
+  return { advance, context, dispatch, document, events, observeSections: entries => observeSections(entries) };
 }
 
 describe("engagement browser reporter", () => {
@@ -84,6 +95,26 @@ describe("engagement browser reporter", () => {
     page.dispatch("pointerdown");
     page.advance(20_000);
     expect((await page.events()).filter(event => event.kind === "engaged")).toHaveLength(1);
+  });
+
+  it("reports each section once when it reaches the visibility threshold", async () => {
+    const page = await browserHarness();
+    page.observeSections([
+      { target: page.document.querySelectorAll("main > section")[0], intersectionRatio: 0.3, intersectionRect: { height: 20 } },
+      { target: page.document.querySelectorAll("main > section")[1], intersectionRatio: 0.1, intersectionRect: { height: 50 } },
+      { target: page.document.querySelectorAll("main > section")[0], intersectionRatio: 1, intersectionRect: { height: 100 } },
+    ]);
+
+    expect((await page.events()).filter(event => event.kind === "section_view")).toEqual([
+      { kind: "section_view", path: "/", detail: "hero" },
+      { kind: "section_view", path: "/", detail: "pricing-section" },
+    ]);
+  });
+
+  it("reports sections that fill half the viewport even below 30 percent", async () => {
+    const page = await browserHarness();
+    page.observeSections([{ target: page.document.querySelectorAll("main > section")[0], intersectionRatio: 0.1, intersectionRect: { height: 50 } }]);
+    expect((await page.events()).filter(event => event.kind === "section_view")).toHaveLength(1);
   });
 
   it("reports the reached scroll band only once across hide and pagehide", async () => {

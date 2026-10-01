@@ -55,6 +55,17 @@ const ENGAGEMENT_SCRIPT = `<script>(()=>{
   addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
   addEventListener("pagehide",hide);
   addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){ 
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)&&!sectionViews.has(detail)){
+        sectionViews.add(detail);send("section_view",detail);
+      }
+    });},{threshold:[0,.3]});
+    document.querySelectorAll("main > section").forEach(section=>sectionObserver.observe(section));
+  }
 })();</script>`;
 
 // The four pages that carry the data-driven social-proof section (Issue #226):
