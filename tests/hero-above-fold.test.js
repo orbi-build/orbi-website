@@ -22,7 +22,7 @@ const cases = [
     lede: "AI 把你的 Issue 一路做到发版。",
     href: "/zh/cloud/login",
     button: "免费试 __FREE_DELIVERIES__ 次 →",
-    note: "不用绑卡 · 只授权你选的仓库",
+    note: "不用绑定信用卡 · 只授权你选的仓库",
   },
 ];
 
