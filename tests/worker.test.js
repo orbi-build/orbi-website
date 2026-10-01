@@ -1,8 +1,43 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFile } from "node:fs/promises";
 import pricing from "../src/pricing.json";
 import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 describe("Worker request helpers", () => {
+  it("renders the homepage pricing summary from pricing.json in both languages", async () => {
+    const pages = new Map([
+      ["/", await readFile(new URL("../public/index.html", import.meta.url), "utf8")],
+      ["/zh/", await readFile(new URL("../public/zh/index.html", import.meta.url), "utf8")],
+    ]);
+    for (const [path, html] of pages) {
+      const response = await handleFetch(
+        new Request(`https://orbi.build${path}`),
+        {
+          ASSETS: { fetch: () => Promise.resolve(new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } })) },
+          CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+        },
+      );
+      const body = await response.text();
+      expect(body).toContain('<section class="pricing-summary"');
+      expect(body.indexOf("pricing-summary")).toBeLessThan(body.indexOf('id="faq"'));
+      for (const value of [
+        pricing.soloMonthlyUsd,
+        pricing.cloudMonthlyUsd,
+        pricing.soloIncludedTokensLabel,
+        pricing.includedTokensLabel,
+        pricing.soloRepositories,
+        pricing.proRepositories,
+        pricing.freeDeliveries,
+        pricing.foundingPartnerLimit,
+      ]) {
+        expect(body).toContain(String(value));
+      }
+      expect(body).not.toContain("__SOLO_MONTHLY_USD__");
+      expect(body).not.toContain("__CLOUD_MONTHLY_USD__");
+      expect(body).not.toContain("__FOUNDING_PARTNER_LIMIT__");
+    }
+  });
+
   it("301 redirects moved guide URLs while preserving query attribution", async () => {
     const assets = { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) };
     for (const [oldPath, newPath] of [

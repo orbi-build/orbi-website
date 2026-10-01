@@ -232,7 +232,9 @@ describe("Cloud trial copy (Issue #679)", () => {
         const text = html.replace(/<[^>]*>/g, "\n");
         for (const sentence of text.split(/(?:。|\.\s+|\n+)/)) {
           const homepageOffer = sentence.includes(`Try ${FREE_DELIVERIES_TOKEN} deliveries free`)
-            || sentence.includes(`免费试 ${FREE_DELIVERIES_TOKEN} 次`);
+            || sentence.includes(`Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries`)
+            || sentence.includes(`免费试 ${FREE_DELIVERIES_TOKEN} 次`)
+            || sentence.includes(`每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付`);
           if (sentence.includes(FREE_DELIVERIES_TOKEN) && !homepageOffer) {
             const copy = sentence.replaceAll(FREE_DELIVERIES_TOKEN, "");
             expect(copy.toLowerCase(), path).not.toContain("free");
