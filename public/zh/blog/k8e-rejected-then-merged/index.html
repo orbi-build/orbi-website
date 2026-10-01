@@ -32,6 +32,19 @@
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card, 12px);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -73,6 +86,8 @@
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
     }
   </style>
 
@@ -165,7 +180,12 @@ oracle: OK   (should fail)
 <p>不过评审说「不行」的时候理由是具体的，修复也落在同一个 PR 上。在别人的代码库里接一张难票，从开 PR 到合并用了十个半小时。所有失败，包括 Orbi 自己的，都留在公开记录里，可以拿这篇文章去对。</p>
 <p>事后 Orbi 改了两处（<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>）。一是 PR 正文不合规时，只让这一张票失败，不再拖垮整个 runner。二是工作流规范里写明：分期的工作不要用一张票承载，维护者先把每一期拆成子票，每张子票的 PR 只关它自己。</p>
 <p>如果你的仓库里也排着一串写清楚了的 issue，可以让 <a href="https://orbi.build/zh/cloud/?ref=blog-k8e">Orbi Cloud</a> 在你的仓库里跑同样的流程。</p>
-<h2 id="相关">相关</h2>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/devin/">Devin 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
 <!--orbi:related-posts-->
