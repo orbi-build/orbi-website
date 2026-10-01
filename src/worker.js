@@ -72,15 +72,7 @@ const GUIDE_REDIRECTS = new Map([
   ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
 ]);
 const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth", "section_view"]);
-const ENGAGEMENT_DETAILS = new Set([
-  "cloud-start", "cloud-start-card", "cloud-hero", "home-hero", "midway-cloud",
-  "install", "midway-install", "proof", "comparisons", "cloud-docs", "pricing",
-  "pricing-year", "pricing-month", "pricing-solo-year", "pricing-solo-month",
-  "pricing-pro-year", "pricing-pro-month",
-  // Issue #571: the brand-film entry, the dialog's own 50%/100% beacons, and
-  // the two end-of-film buttons.
-  "film-play", "film-50", "film-100", "film-end-cloud", "film-end-selfhost",
-]);
+const ENGAGEMENT_DETAIL = /^[a-z0-9-]{1,40}$/;
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
 function githubHeaders(token) {
@@ -837,6 +829,9 @@ async function subscribeResponse(request, env) {
 
 async function engagementResponse(request, env, ctx) {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: SECURITY_HEADERS });
+  if (cookieFrom(request, "orbi_internal") === "1") {
+    return new Response(null, { status: 204, headers: SECURITY_HEADERS });
+  }
   let event;
   try {
     event = await request.json();
@@ -848,9 +843,8 @@ async function engagementResponse(request, env, ctx) {
   const valid = ENGAGEMENT_KINDS.has(kind)
     && (kind === "visit" ? detail === undefined && typeof event.search === "string" && typeof event.referrer === "string"
       : kind === "engaged" ? detail === undefined
-        : kind === "cta_click" ? typeof detail === "string" && ENGAGEMENT_DETAILS.has(detail)
-          : kind === "section_view" ? typeof detail === "string" && /^[a-z0-9-]{1,40}$/.test(detail)
-            : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
+        : kind === "cta_click" || kind === "section_view" ? typeof detail === "string" && ENGAGEMENT_DETAIL.test(detail)
+          : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
   if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
 
   const path = typeof event.path === "string" && event.path.startsWith("/")
@@ -936,6 +930,11 @@ function randomVid() {
 
 function attributionCookieString(name, value, secure) {
   return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ATTRIBUTION_MAX_AGE_SECONDS}${secure ? "; Secure" : ""}`;
+}
+
+function internalCookieString(value) {
+  const enabled = value === "1";
+  return `orbi_internal=${enabled ? "1" : ""}; Path=/; Max-Age=${enabled ? 31536000 : 0}; SameSite=Lax; Secure`;
 }
 
 // Same fallback chain as the cloud signup source (orbi-cloud#716), so the
@@ -1070,6 +1069,8 @@ async function reportVisit(env, visitRequest, payload) {
 function withAttribution(request, response, env, ctx) {
   const url = new URL(request.url);
   const secure = url.protocol === "https:";
+  const internal = url.searchParams.get("internal");
+  const internalCookie = internal === "1" || internal === "0" ? internal : null;
   const existingVid = cookieFrom(request, "vid");
   const vid = existingVid ?? randomVid();
   const firstTouch = existingVid === null;
@@ -1083,10 +1084,13 @@ function withAttribution(request, response, env, ctx) {
     ? rawRef.toLowerCase()
     : null;
   const seedsRef = explicitRef !== null || (existingRef === null && source !== "direct");
-  if (!firstTouch && !seedsRef) {
+  if (!firstTouch && !seedsRef && internalCookie === null) {
     return response;
   }
   const stamped = new Response(response.body, response);
+  if (internalCookie !== null) {
+    stamped.headers.append("Set-Cookie", internalCookieString(internalCookie));
+  }
   if (firstTouch) {
     stamped.headers.append("Set-Cookie", attributionCookieString("vid", vid, secure));
   }
