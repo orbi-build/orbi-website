@@ -1686,6 +1686,8 @@ h2 {
 
 .closing .orbi-closing-h2 { max-width: 12ch; }
 .closing > p:not(.section-tag) { max-width: 48rem; margin-bottom: 34px; color: var(--ink-soft); font-size: 1.1rem; }
+.closing .cta-row { flex-direction: column; align-items: flex-start; }
+.closing .text-link { margin-left: 0; }
 .button-dark { background: var(--ink); color: #fff; }
 .button-dark:hover { background: #1f4142; }
 .button-outline { border-color: var(--ink); color: var(--ink); }

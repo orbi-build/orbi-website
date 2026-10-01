@@ -1191,16 +1191,19 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
   const expected = {
     "index.html": {
       title: "Try it on your own repository",
-      cta: '<a class="button button-signal hero-cta" data-cta="closing-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>',
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
       trialCopy: "Try __FREE_DELIVERIES__ deliveries free",
     },
     "zh/index.html": {
       title: "在你自己的仓库上试一试",
-      cta: '<a class="button button-signal hero-cta" data-cta="closing-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>',
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
       trialCopy: "免费试 __FREE_DELIVERIES__ 次",
     },
+  };
+
+  const cta = (html, name) => {
+    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)</a>`));
+    return match ? { className: match[1], href: match[2], text: match[3] } : null;
   };
 
   for (const [output, contract] of Object.entries(expected)) {
@@ -1209,7 +1212,9 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       const closing = region(html, '<section class="closing shell"', "</section>");
       expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
       expect(closing, `${output}: free trial copy`).toContain(contract.trialCopy);
-      expect(closing, `${output}: closing CTA`).toContain(contract.cta);
+      expect(cta(closing, "closing-start"), `${output}: closing CTA matches the hero`).toEqual(
+        cta(html, "cloud-start"),
+      );
       expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
       expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
     });
