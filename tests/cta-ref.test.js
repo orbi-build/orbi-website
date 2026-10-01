@@ -46,9 +46,8 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
   it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
-    // The closing CTA uses the same bare, language-matching login handoff as
-    // the hero, adding one link per homepage.
-    expect(hrefs).toHaveLength(16);
+    // Issues #714/#742/#745 add closing, pricing, and evidence login CTAs.
+    expect(hrefs).toHaveLength(18);
     for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
