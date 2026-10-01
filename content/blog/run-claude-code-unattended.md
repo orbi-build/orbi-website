@@ -37,7 +37,7 @@ To use a subscription in CI, run `claude setup-token`, set the token it prints a
 - It lasts a year.
 - An `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` or `apiKeyHelper` takes priority over it, whether it's set on the machine or in the repository's settings, so check which credential a run actually used.
 
-The [authentication docs](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) cover both. Without `--bare`, a headless run reads the repository's settings, hooks and `.mcp.json`, even in a repository you've never trusted. `--setting-sources user` keeps project settings and `.mcp.json` out, and `--settings '{"disableAllHooks":true}'` turns hooks off for one run. Anthropic also says `--bare` will become the default for `-p` in a future release, so a token-based setup may need changing then.
+The [authentication docs](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) cover both. To keep the repository's own settings and `.mcp.json` out of a run that can't use `--bare`, add `--setting-sources user`, and `--settings '{"disableAllHooks":true}'` turns hooks off for one run. Anthropic also says `--bare` will become the default for `-p` in a future release, so a token-based setup may need changing then.
 
 ### A minimal cron job
 
@@ -58,11 +58,11 @@ Then, in that user's crontab, with your own repository path and the output of `w
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && /usr/local/bin/claude -p "Run the test suite and fix what fails" --permission-mode auto --permission-prompts none --output-format json >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-The log keeps Claude's output and errors, and a run that completes writes a JSON result there; a failure before Claude starts, such as a bad `cd`, won't show up in it. `auto` needs a model that supports it and an organization that allows it. If either is missing, Claude Code falls back to Manual, and a headless run then denies whatever needs approval. In that case use `--permission-mode dontAsk` with an explicit `--allowedTools` list.
+The log keeps Claude's output and errors, and a run that completes writes a JSON result there; a failure before Claude starts, such as a bad `cd`, won't show up in it. `auto` isn't always available: the model may not support it, or your organization, a settings file or Anthropic may have turned it off. When it's unavailable, Claude Code falls back to Manual, and a headless run then denies whatever needs approval. In that case use `--permission-mode dontAsk` with an explicit `--allowedTools` list.
 
 If one scheduled job like that is all you need, you're done. The rest of this post is for when you want GitHub Issues to come out the other end as merged, released changes.
 
-## What a headless loop doesn't answer
+## Six things a headless loop doesn't answer
 
 Orbi has been delivering its own Issues unattended since late August. As of today, 599 Issues in [its repository](https://github.com/orbi-build/orbi) carry the `ai-merged` label, and v0.5.58 went out on September 30. Some of the answers below I only found after getting them wrong. A bare loop around `claude -p` leaves every one of them to you.
 

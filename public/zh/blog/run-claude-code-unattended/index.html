@@ -109,7 +109,7 @@
 <li>有效期一年。</li>
 <li><code class="post-code--single">ANTHROPIC_API_KEY</code>、<code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 或 <code class="post-code--single">apiKeyHelper</code> 优先于它，不管是设在机器上还是仓库的配置里，所以要核对一次运行到底用的哪个凭据。</li>
 </ul>
-<p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不加 <code class="post-code--single">--bare</code> 时，headless 运行会读仓库的配置、hooks 和 <code class="post-code--single">.mcp.json</code>，哪怕这个仓库你从没信任过。<code class="post-code--spaced">--setting-sources user</code> 可以不读项目配置和 <code class="post-code--single">.mcp.json</code>，<code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code class="post-code--single">--bare</code> 将来会成为 <code class="post-code--single">-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
+<p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不能加 <code class="post-code--single">--bare</code> 的时候，可以用 <code class="post-code--spaced">--setting-sources user</code> 不读仓库自己的配置和 <code class="post-code--single">.mcp.json</code>，<code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code class="post-code--single">--bare</code> 将来会成为 <code class="post-code--single">-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
 <h3>最小的 cron 定时任务</h3>
 <p>cron 的 <code class="post-code--single">PATH</code> 很短，也不读你的 shell 配置，所以工作目录、可执行文件路径和凭据都要写全。token 放进一个只有运行这个任务的用户能读的文件（<code class="post-code--spaced">chmod 600</code>），并且要用 <code class="post-code--single">export</code>，否则 Claude 读不到：</p>
 <pre><code class="language-bash"># ~/.claude-nightly.env
@@ -121,7 +121,7 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <pre><code class="language-bash"># crontab -e：每天凌晨 3 点
 0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; /usr/local/bin/claude -p &quot;跑一遍测试，修掉失败的&quot; --permission-mode auto --permission-prompts none --output-format json &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
 </code></pre>
-<p>日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；<code class="post-code--single">cd</code> 失败这类 Claude 启动前的错误不会进这个日志。<code class="post-code--single">auto</code> 模式要求模型支持、组织也没关掉它，否则 Claude Code 会退回 Manual，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 <code class="post-code--spaced">--permission-mode dontAsk</code>，再用 <code class="post-code--single">--allowedTools</code> 列出放行的工具。</p>
+<p>日志里存的是 Claude 的输出和报错，正常跑完的那次会写一条 JSON 结果；<code class="post-code--single">cd</code> 失败这类 Claude 启动前的错误不会进这个日志。<code class="post-code--single">auto</code> 模式不一定可用：模型可能不支持，也可能被组织、某个配置文件或 Anthropic 关掉了。不可用时 Claude Code 会退回 Manual（手动）模式，headless 运行就会拒掉所有需要授权的操作。这种情况下改用 <code class="post-code--spaced">--permission-mode dontAsk</code>，再用 <code class="post-code--single">--allowedTools</code> 列出放行的工具。</p>
 <p>如果你只需要这样一个定时任务，到这里就够了。下面的内容是给想让 GitHub Issue 一路自动走到合并、发版的人。</p>
 <h2>用 claude -p 做自动化开发，还要自己解决的六件事</h2>
 <p>Orbi 从 8 月下旬开始无人值守地交付自己仓库里的 Issue。截至今天，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code class="post-code--single">ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。下面有几件事，我是先做错了才改对的。只在 <code class="post-code--spaced">claude -p</code> 外面套个循环，这六件事全得你自己补。</p>
