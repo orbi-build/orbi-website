@@ -71,8 +71,8 @@ const GUIDE_REDIRECTS = new Map([
   ["/zh/self-hosted-coding-agent", "/zh/guides/self-hosted-coding-agent/"],
   ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
 ]);
-const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth"]);
-const CTA_DETAIL = /^[a-z0-9-]{1,40}$/;
+const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth", "section_view"]);
+const ENGAGEMENT_DETAIL = /^[a-z0-9-]{1,40}$/;
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
 
 function githubHeaders(token) {
@@ -843,7 +843,7 @@ async function engagementResponse(request, env, ctx) {
   const valid = ENGAGEMENT_KINDS.has(kind)
     && (kind === "visit" ? detail === undefined && typeof event.search === "string" && typeof event.referrer === "string"
       : kind === "engaged" ? detail === undefined
-        : kind === "cta_click" ? typeof detail === "string" && CTA_DETAIL.test(detail)
+        : kind === "cta_click" || kind === "section_view" ? typeof detail === "string" && ENGAGEMENT_DETAIL.test(detail)
           : typeof detail === "string" && SCROLL_DEPTHS.has(detail));
   if (!valid) return new Response(null, { status: 400, headers: SECURITY_HEADERS });
 
