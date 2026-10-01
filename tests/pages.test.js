@@ -80,20 +80,18 @@ describe("homepage section order (Issue #712)", () => {
   for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} keeps the buyer journey sections adjacent and ordered`, () => {
       const html = mainRegion(shipped.get(output));
-      const markers = [
-        '<section class="hero ',
-        '<section class="system-section"',
-        '<section class="proof ',
-        '<section class="stats ',
-        '<section class="social-proof ',
-        '<section class="avatar-wall ',
-        '<section class="pricing-summary ',
-        '<section class="faq"',
-        '<section class="closing ',
-      ];
-      const positions = markers.map((marker) => html.indexOf(marker));
-      expect(positions.every((position) => position >= 0), `${output}: missing ordered section`).toBe(true);
-      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      const sectionClasses = [...html.matchAll(/<section class="([^"]+)"/g)]
+        .map((match) => match[1].split(" ")[0]);
+      expect(sectionClasses).toEqual([
+        "hero",
+        "system-section",
+        "proof",
+        "stats",
+        "social-proof",
+        "avatar-wall",
+        "faq",
+        "closing",
+      ]);
       for (const removed of ["runtime-proof", "thesis", "ownership", "run-orbi", "direction"]) {
         expect(html, `${output}: ${removed} remains`).not.toContain(`class="${removed}`);
       }
@@ -1412,7 +1410,7 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("keeps Cloud page CTAs on the matching language login handoff", () => {
     for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
       const html = shipped.get(output);
-      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(4);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(5);
     }
   });
 });

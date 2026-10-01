@@ -46,18 +46,18 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
   it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
-    // Issue #712 removes the long Cloud card; the remaining hero and proof
-    // handoffs stay bare and language-matching.
+    // Issue #712 removes the long Cloud card; Issue #742 adds the Solo and Pro
+    // trial login CTAs on each Cloud page.
     expect(hrefs).toHaveLength(16);
     for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
   it("keeps homepage Cloud CTA destinations intentional (Issues #322/#745)", async () => {
     const expectations = [
-      ["site/pages/index.html", null, "/cloud/login"],
-      ["site/pages/zh/index.html", null, "/zh/cloud/login"],
+      ["site/pages/index.html", "/cloud/login"],
+      ["site/pages/zh/index.html", "/zh/cloud/login"],
     ];
-    for (const [file, landingPath, loginPath] of expectations) {
+    for (const [file, loginPath] of expectations) {
       const html = await read(file);
       expect(html, `${file}: hero cloud-start must use the login handoff`).toContain(
         `data-cta="cloud-start" href="${loginPath}`,
@@ -65,11 +65,7 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
       expect(html, `${file}: midway-cloud must use the login handoff`).toContain(
         `data-cta="midway-cloud" href="${loginPath}`,
       );
-      if (landingPath) {
-        expect(html, `${file}: cloud-start-card must introduce Cloud`).toContain(
-          `data-cta="cloud-start-card" href="${landingPath}"`,
-        );
-      }
+      expect(html, `${file}: removed Cloud card remains`).not.toContain('data-cta="cloud-start-card"');
     }
   });
 
