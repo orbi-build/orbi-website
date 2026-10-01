@@ -1357,6 +1357,25 @@ describe("cloud buyer FAQ (Issue #166)", () => {
       }
     }
   });
+
+  it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
+    const expectations = {
+      "cloud/index.html": {
+        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no card required, and failed deliveries don't count\./,
+        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no card required, and failed deliveries don't count\./g,
+      },
+      "zh/cloud/index.html": {
+        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑卡，失败交付不计次数。/,
+        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑卡，失败交付不计次数。/g,
+      },
+    };
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      expect(cloudFaqItems(html)[0].answer, `${output}: visible FAQ trial terms`).toMatch(expected.faq);
+      expect(html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [], `${output}: sharing descriptions`).toHaveLength(2);
+      expect(html.match(expected.share) ?? [], `${output}: sharing trial terms`).toHaveLength(2);
+    }
+  });
 });
 
 describe("Devin comparison SEO and pricing (Issue #511)", () => {
