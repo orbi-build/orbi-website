@@ -673,6 +673,26 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height) {
     throw new Error(`${path}: hero proof bar is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroProofBox)}`);
   }
+  const ctaNoteLayout = await hero.evaluate((heroElement) => {
+    const button = heroElement.querySelector(".hero-cta").getBoundingClientRect();
+    const note = heroElement.querySelector(".hero-cta-note").getBoundingClientRect();
+    const separator = heroElement.querySelector(".hero-cta-note-separator");
+    return {
+      gap: note.top - button.bottom,
+      leftOffset: note.left - button.left,
+      separatorDisplay: getComputedStyle(separator).display,
+    };
+  });
+  if (ctaNoteLayout.gap < 12 || ctaNoteLayout.gap > 14) {
+    throw new Error(`${path}: hero CTA note gap is ${ctaNoteLayout.gap}px at ${size.width}px, expected 12–14px`);
+  }
+  if (Math.abs(ctaNoteLayout.leftOffset) > 1) {
+    throw new Error(`${path}: hero CTA note is not left-aligned with its button at ${size.width}px: ${JSON.stringify(ctaNoteLayout)}`);
+  }
+  const separatorVisible = ctaNoteLayout.separatorDisplay !== "none";
+  if (separatorVisible !== (size.width > 760)) {
+    throw new Error(`${path}: hero CTA note separator visibility is wrong at ${size.width}px: ${JSON.stringify(ctaNoteLayout)}`);
+  }
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
   if (heroH1 !== claim.h1) {
