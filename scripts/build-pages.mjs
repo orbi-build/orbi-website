@@ -914,6 +914,11 @@ function renderPostMeta(post) {
     url,
   };
   const blocks = [article];
+  const alternates = post.paired ? [
+    `  <link rel="alternate" hreflang="en" href="https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}">`,
+    `  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build${post.lang === "zh" ? post.href : pathToHref(post.mirrorOutput)}">`,
+    `  <link rel="alternate" hreflang="x-default" href="https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}">`,
+  ] : [];
   if (post.video) blocks.push({
     "@context": "https://schema.org",
     "@type": "VideoObject",
@@ -927,6 +932,7 @@ function renderPostMeta(post) {
   const json = (value) => JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e").replaceAll("&", "\\u0026");
   return [
     `  <link rel="canonical" href="${url}">`,
+    ...alternates,
     `  <meta property="og:type" content="article">`,
     `  <meta property="og:title" content="${escAttr(post.headline)}">`,
     `  <meta property="og:description" content="${escAttr(post.summary)}">`,

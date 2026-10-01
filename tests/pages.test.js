@@ -1990,6 +1990,31 @@ describe("blog mirror pairing (Issue #214)", () => {
     }));
 });
 
+describe("blog hreflang metadata (Issue #696)", () => {
+  it("emits exactly three mutual alternates for every paired post", () => {
+    const paired = posts.filter((post) => post.paired);
+    expect(paired.length).toBeGreaterThan(0);
+    for (const post of paired) {
+      const html = shipped.get(post.output);
+      const enHref = `https://orbi.build${post.lang === "en" ? post.href : pathToHref(post.mirrorOutput)}`;
+      const zhHref = `https://orbi.build${post.lang === "zh" ? post.href : pathToHref(post.mirrorOutput)}`;
+      const links = [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map((match) => [match[1], match[2]]);
+      expect(links, `${post.output}: exactly three hreflang links`).toEqual([
+        ["en", enHref],
+        ["zh-CN", zhHref],
+        ["x-default", enHref],
+      ]);
+      const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      expect(links.find(([lang]) => lang === (post.lang === "en" ? "en" : "zh-CN"))[1], `${post.output}: self canonical`)
+        .toBe(canonical);
+    }
+    for (const post of posts.filter((candidate) => !candidate.paired)) {
+      expect(shipped.get(post.output), `${post.output}: single-language post`).not.toMatch(/hreflang=/);
+    }
+  });
+});
+
 // Issue #212 acceptance 7: a brand-new post fixture goes through the real
 // build — post page with title and rendered body HTML, index entry newest
 // first, feed item, sitemap URL — never a re-implementation of the pipeline.
@@ -2142,6 +2167,35 @@ Body of ${title} with [a link](https://docs.orbi.build/docker).
       await writeFile(join(contentDir, "zh", "solo-zh.md"), md("Solo ZH", "2026-09-04", "Chinese only.", "zh"));
 
       await buildPages(outDir, { contentDir });
+
+      // Paired posts emit the same three absolute alternates in both heads;
+      // each page's own alternate must match its canonical URL.
+      const hreflangTags = (html) => [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map((match) => [match[1], match[2]]);
+      const expectedAlternates = [
+        ["en", "https://orbi.build/blog/pair/"],
+        ["zh-CN", "https://orbi.build/zh/blog/pair/"],
+        ["x-default", "https://orbi.build/blog/pair/"],
+      ];
+      for (const output of ["blog/pair/index.html", "zh/blog/pair/index.html"]) {
+        const html = await readFile(join(outDir, output), "utf8");
+        expect(hreflangTags(html), `${output}: hreflang`).toEqual(expectedAlternates);
+        const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+        expect(expectedAlternates.find(([lang]) => lang === (output.startsWith("zh/") ? "zh-CN" : "en"))[1])
+          .toBe(canonical);
+      }
+      const alphaHtml = await readFile(join(outDir, "blog/alpha/index.html"), "utf8");
+      const betaHtml = await readFile(join(outDir, "zh/blog/beta/index.html"), "utf8");
+      const declaredAlternates = [
+        ["en", "https://orbi.build/blog/alpha/"],
+        ["zh-CN", "https://orbi.build/zh/blog/beta/"],
+        ["x-default", "https://orbi.build/blog/alpha/"],
+      ];
+      expect(hreflangTags(alphaHtml), "declared EN pair: hreflang").toEqual(declaredAlternates);
+      expect(hreflangTags(betaHtml), "declared ZH pair: hreflang").toEqual(declaredAlternates);
+      for (const output of ["blog/solo-en/index.html", "zh/blog/solo-zh/index.html"]) {
+        expect(hreflangTags(await readFile(join(outDir, output), "utf8")), `${output}: no hreflang`).toEqual([]);
+      }
 
       // The nav language switcher points at the counterpart page for a pair,
       // or the other language's blog index for a single-language post — never
