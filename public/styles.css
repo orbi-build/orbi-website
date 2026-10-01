@@ -591,7 +591,8 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   line-height: 1.4;
 }
 
-.hero-receipt-timeline .hero-receipt-release strong { color: var(--run-on-light); }
+.hero-receipt-timeline .hero-receipt-release strong,
+.hero-receipt-timeline .hero-receipt-release small { color: var(--run-on-light); }
 
 .hero-receipt figcaption {
   margin-top: 24px;

@@ -518,6 +518,13 @@ class LandingTests(unittest.TestCase):
             self.assertEqual(html.count('class="hero-receipt-timeline"'), 1)
             self.assertEqual(html.count("hero-receipt-release"), 1)
 
+        css = (ROOT / "public" / "styles.css").read_text(encoding="utf-8")
+        self.assertIn(
+            ".hero-receipt-timeline .hero-receipt-release strong,\n"
+            ".hero-receipt-timeline .hero-receipt-release small { color: var(--run-on-light); }",
+            css,
+        )
+
     def test_stats_count_up_when_the_record_enters_the_viewport(self) -> None:
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("IntersectionObserver", js)
