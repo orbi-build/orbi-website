@@ -332,7 +332,95 @@ function foundingAvatarMarkup(logins) {
   }).join("");
 }
 
-async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
+function escapeHtml(value) {
+  return String(value).replace(/[&<>\"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[character]);
+}
+
+function cosineSimilarity(left, right) {
+  let dot = 0;
+  let leftNorm = 0;
+  let rightNorm = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    dot += left[index] * right[index];
+    leftNorm += left[index] ** 2;
+    rightNorm += right[index] ** 2;
+  }
+  return leftNorm && rightNorm ? dot / Math.sqrt(leftNorm * rightNorm) : 0;
+}
+
+async function sha256Hex(value) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function relatedPostsMarkup(request, env, slug, language) {
+  const postsResponse = await env.ASSETS.fetch(new Request(new URL("/blog/posts.json", request.url)));
+  if (!postsResponse.ok) throw new Error(`posts.json returned ${postsResponse.status}`);
+  const postsText = await postsResponse.text();
+  const posts = JSON.parse(postsText);
+  if (!Array.isArray(posts) || posts.some((post) => !post?.slug || !post?.title || !post?.summary)) {
+    throw new Error("posts.json has an invalid shape");
+  }
+  const current = posts.find((post) => language === "zh" ? post.zhSlug === slug : post.slug === slug);
+  if (!current) throw new Error(`unknown blog slug: ${slug}`);
+  const hash = await sha256Hex(postsText);
+  const cacheKey = new Request(`https://orbi.build/__related/${hash}`);
+  const cache = caches.default;
+  let table;
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    table = await cached.json();
+  } else {
+    if (!env.AI || typeof env.AI.run !== "function") throw new Error("Workers AI binding is unavailable");
+    const result = await env.AI.run("@cf/baai/bge-m3", {
+      text: posts.map((post) => `${post.title}\n${post.summary}`),
+    });
+    const vectors = result?.data;
+    const dimensions = Array.isArray(vectors?.[0]) ? vectors[0].length : 0;
+    if (!Array.isArray(vectors) || vectors.length !== posts.length || dimensions === 0
+      || vectors.some((vector) => !Array.isArray(vector) || vector.length !== dimensions
+        || vector.some((value) => typeof value !== "number" || !Number.isFinite(value)))) {
+      throw new Error("Workers AI returned invalid embeddings");
+    }
+    table = Object.fromEntries(posts.map((post, index) => {
+      const ranked = posts
+        .map((candidate, candidateIndex) => ({
+          slug: candidate.slug,
+          score: candidateIndex === index ? -Infinity : cosineSimilarity(vectors[index], vectors[candidateIndex]),
+          index: candidateIndex,
+        }))
+        .sort((left, right) => right.score - left.score || left.index - right.index)
+        .slice(0, 3)
+        .map((candidate) => candidate.slug);
+      return [post.slug, ranked];
+    }));
+    await cache.put(cacheKey, new Response(JSON.stringify(table), {
+      headers: { "Content-Type": "application/json" },
+    }));
+  }
+  const selected = [];
+  for (const candidate of [...(current.related || []), ...(table[current.slug] || [])]) {
+    if (candidate !== current.slug && !selected.includes(candidate) && posts.some((post) => post.slug === candidate)) {
+      selected.push(candidate);
+    }
+    if (selected.length === 3) break;
+  }
+  if (selected.length !== 3) throw new Error(`fewer than three related posts for ${slug}`);
+  const zh = language === "zh";
+  const links = selected.map((candidateSlug) => {
+    const post = posts.find((entry) => entry.slug === candidateSlug);
+    const href = zh ? `/zh/blog/${post.zhSlug}/` : `/blog/${post.slug}/`;
+    const title = zh ? post.zhTitle : post.title;
+    if (!title || (zh && !post.zhSlug)) throw new Error(`missing Chinese mirror for ${candidateSlug}`);
+    return `<li><a href="${href}">${escapeHtml(title)}</a></li>`;
+  }).join("");
+  const heading = zh ? "相关文章" : "Related posts";
+  return `<section class="related-links shell" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
+}
+
+async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], request, env) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -351,7 +439,18 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = []) {
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
-  let body = html
+  let body = html;
+  const blogMatch = request?.url && new URL(request.url).pathname.match(/^(\/zh)?\/blog\/([^/]+)\/?$/);
+  if (blogMatch && body.includes("<!--orbi:related-posts-->")) {
+    try {
+      const related = await relatedPostsMarkup(request, env, blogMatch[2], blogMatch[1] ? "zh" : "en");
+      body = body.replaceAll("<!--orbi:related-posts-->", related);
+    } catch (error) {
+      console.error("related_posts_failed:", error && error.message ? error.message : error);
+      body = body.replaceAll("<!--orbi:related-posts-->", "");
+    }
+  }
+  body = body
     .replaceAll(pricing.monthlyUsdToken, MONTHLY_USD)
     .replaceAll(pricing.soloMonthlyUsdToken, SOLO_MONTHLY_USD)
     .replaceAll(pricing.soloAnnualUsdToken, SOLO_ANNUAL_USD)
@@ -671,7 +770,7 @@ async function handleFetch(request, env, ctx) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins);
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins, request, env);
 }
 
 // Issue #541: the subscription endpoint answers JSON only — the form is
