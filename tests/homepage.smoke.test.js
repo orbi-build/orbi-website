@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import {
   assertCloudLoginRedirect,
+  assertCloudStartLanding,
   expectedCtaLanding,
   localStatsFixture,
   resolveCloudLoginExpect,
@@ -266,6 +267,39 @@ describe("cloud login smoke contract (Issue #74)", () => {
 // rewrites where CLOUD_LOGIN_URL is unset (Issue #77). Pinning the href copied
 // that rewrite into the test and broke beta's deploy smoke while the site
 // itself was fine.
+describe("homepage cloud-start landing contract (Issue #720)", () => {
+  it("accepts the login href and a local 302 chain ending at GitHub authorization", async () => {
+    const server = await loginServer(loginChain());
+    try {
+      const base = `http://127.0.0.1:${server.address().port}`;
+      const handoff = await fetch(`${base}/cloud/login`, { redirect: "manual" });
+      expect(handoff.status).toBe(302);
+      const landing = expectedCtaLanding("github-app-302");
+      expect(() => assertCloudStartLanding(
+        "/",
+        "/cloud/login",
+        "/cloud/login",
+        "https://github.com/login/oauth/authorize?client_id=Iv23test",
+        200,
+        landing,
+      )).not.toThrow();
+    } finally {
+      await stopLoginServer(server);
+    }
+  });
+
+  it("rejects the obsolete or wrong homepage href before following it", () => {
+    expect(() => assertCloudStartLanding(
+      "/",
+      "/cloud/",
+      "/cloud/login",
+      "https://github.com/login/oauth/authorize?client_id=Iv23test",
+      200,
+      expectedCtaLanding("github-app-302"),
+    )).toThrow(/href.*\/cloud\/login/);
+  });
+});
+
 describe("Cloud CTA landing contract (Issue #107)", () => {
   it("github-app-302 lands the click in GitHub's sign-in authorization (Issue #570)", () => {
     const landing = expectedCtaLanding("github-app-302");
