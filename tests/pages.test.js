@@ -268,8 +268,12 @@ describe("blog title and body alignment (Issue #695)", () => {
       const inlineCount = (inline.match(/class="post-toc-link"/g) ?? []).length;
       if (ids.length >= 5) {
         tocPosts.push(post.output);
+        const title = post.lang === "zh" ? "本页目录" : "On this page";
         expect(desktop, `${post.output}: desktop TOC`).not.toBe("");
+        expect(desktop, `${post.output}: localized TOC label`).toContain(`aria-label="${title}"`);
+        expect(desktop, `${post.output}: localized TOC title`).toContain(`<h2>${title}</h2>`);
         expect(inline, `${post.output}: inline TOC`).not.toBe("");
+        expect(inline, `${post.output}: localized inline summary`).toContain(`<summary>${title} · ${ids.length} ${post.lang === "zh" ? "节" : "sections"}</summary>`);
         expect(tocCount, `${post.output}: desktop TOC count`).toBe(ids.length);
         expect(inlineCount, `${post.output}: inline TOC count`).toBe(ids.length);
         for (const id of ids) {
@@ -282,6 +286,26 @@ describe("blog title and body alignment (Issue #695)", () => {
       }
     }
     expect(tocPosts.length).toBeGreaterThan(0);
+  });
+
+  it("keeps normalized H2 ids unique when a heading already uses a duplicate suffix", () => {
+    const source = `---
+title: T
+date: 2026-09-18
+summary: s
+lang: en
+author: Orbi
+image: /img/blog-t.png
+---
+
+## A
+
+## A
+
+## A-2
+`;
+    const post = postFromSource("t.md", source);
+    expect(post.headings.map(({ id }) => id)).toEqual(["a", "a-2", "a-2-2"]);
   });
 
   it("keeps the blog TOC layout scoped to the established two-column grid", async () => {

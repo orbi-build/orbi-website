@@ -786,14 +786,14 @@ function headingText(html) {
 }
 
 function renderPostHeadings(html, label) {
-  const used = new Map();
+  const used = new Set();
   const headings = [];
   const rendered = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (full, inner) => {
     const text = headingText(inner);
     const base = text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "section";
-    const count = (used.get(base) ?? 0) + 1;
-    used.set(base, count);
-    const id = count === 1 ? base : `${base}-${count}`;
+    let id = base;
+    for (let suffix = 2; used.has(id); suffix += 1) id = `${base}-${suffix}`;
+    used.add(id);
     headings.push({ id, text });
     return `<h2 id="${escAttr(id)}">${inner}</h2>`;
   });
@@ -1034,7 +1034,7 @@ function renderSubscribe(lang) {
 function renderPost(post, template) {
   const t = POST_LANG[post.lang];
   const toc = renderPostToc(post);
-  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const headings=links.map(link=>document.getElementById(link.hash.slice(1))).filter(Boolean);const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',link.hash.slice(1)===heading.id));};if('IntersectionObserver' in window){const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((entry)=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)setCurrent(visible.target);},{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
+  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
   const page = {
     lang: post.lang,
     output: post.output,
