@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Run Claude Code unattended: headless is step one | Orbi</title>
+  <meta name="description" content="claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.">
+  <link rel="canonical" href="https://orbi.build/blog/run-claude-code-unattended/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Run Claude Code unattended: headless is step one">
+  <meta property="og:description" content="claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.">
+  <meta property="og:url" content="https://orbi.build/blog/run-claude-code-unattended/">
+  <meta property="og:image" content="https://orbi.build/img/blog-headless-card.png">
+  <meta property="og:image:alt" content="Run Claude Code unattended: headless is step one">
+  <meta property="article:published_time" content="2026-10-01">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Run Claude Code unattended: headless is step one","datePublished":"2026-10-01","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"en","description":"claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.","url":"https://orbi.build/blog/run-claude-code-unattended/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/guides/">Guides</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
+        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">Sign in</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/" lang="zh-CN" aria-label="简体中文">ZH</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-10-01</p>
+        <h1 id="post-title">Run Claude Code unattended: headless is step one</h1>
+        <p class="hero-lede">claude -p gets a coding agent running with nobody watching. Picking the work, reviewing it, merging it and shipping it are still yours to build. Here is that list, with the times it went wrong in Orbi's own repository.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>Running Claude Code with nobody watching takes one flag. <code>claude -p</code> runs a prompt non-interactively and exits non-zero if the run fails. Give it a permission mode and it stops asking you things:</p>
+<pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
+  --permission-mode auto --permission-prompts none
+</code></pre>
+<p>Put that in a cron job and the agent works while you sleep. The <a href="https://code.claude.com/docs/en/headless">headless docs</a> cover the rest of the flags: <code>--allowedTools</code> to pre-approve tools, <code>--output-format json</code> for scripts, and <code>--bare</code> so the run ignores whatever hooks and MCP servers happen to be on the machine.</p>
+<p>What you have at that point is one session that runs to the end on its own. Deciding what it should work on, and what to do with the result, is still on you.</p>
+<h2>What a cron job doesn&#39;t answer</h2>
+<p>Orbi has been delivering its own GitHub Issues unattended since late August. As of today, 599 Issues in <a href="https://github.com/orbi-build/orbi">its repository</a> carry the <code>ai-merged</code> label, and v0.5.58 went out on September 30. Getting there meant answering the questions below, mostly by getting them wrong first. A loop around <code>claude -p</code> answers none of them.</p>
+<h3>Which task, and only once</h3>
+<p>Something has to pick the next Issue and keep two runs from grabbing the same one. In Orbi a person adds the <code>ai-ready</code> label. The runner claims the Issue by swapping that label for <code>ai-in-progress</code> and creates a worktree from a pinned base commit. Urgent Issues go first, then bugs.</p>
+<p>Every step is written back to the Issue, so the queue is the GitHub Issue list and the log is the Issue&#39;s own timeline. Nothing about a run lives only on the machine that ran it.</p>
+<h3>Which account it runs as</h3>
+<p>A <code>-p</code> session shows no workspace trust dialog. Without <code>--bare</code> it runs the project&#39;s hooks and MCP servers, even in a folder you have never opened. Nobody approves anything, so the operating system user it runs as is the only boundary left. In Orbi Cloud every connected repository gets its own Unix user. I got this wrong once, shipped 1,164 lines of hardening, and reverted it the same afternoon. That story is in <a href="/blog/gitspawn-unattended-agent/">GitSpawn and the agent that never asks</a>.</p>
+<h3>Who reviews it</h3>
+<p>If the session that wrote the change also gets to say it&#39;s done, nothing was reviewed. Orbi starts a separate session that reads the exact base and head commits against the Issue&#39;s acceptance criteria. It fixes what it finds and ends with a verdict, which is posted on the Issue next to the test count.</p>
+<h3>When it may merge</h3>
+<p>CI that passed on an older commit tells you little about the one you&#39;re merging. So right before merging, Orbi checks that the verdict names the current PR head, that the head contains the latest base branch, that CI has finished, and that GitHub reports the PR as mergeable. If CI is still running, the merge waits for the next pass. The <a href="/guides/auto-merge-ai-prs/">auto-merge guide</a> goes through each condition.</p>
+<p>That list had a hole until two days ago. On September 29 I labelled an Issue <code>ai-blocked</code> and commented that its PR must not be merged. Seventy seconds later the runner merged it. The gate re-read the base, the head and CI, but never the Issue&#39;s labels, so a label added during review was ignored. We reverted the merge and filed <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a>:</p>
+<p><img src="/img/headless-1504-bug.webp" alt="Issue #1504 on GitHub: the timeline of a merge that happened 70 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue&#39;s labels"></p>
+<p>Eight hours later Orbi claimed the Issue, opened <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>, passed its own review with no findings and merged 45 minutes after the claim. Now the gate reads the labels one last time, and an <code>ai-blocked</code> Issue stops the merge.</p>
+<p><img src="/img/headless-1504-merged.webp" alt="The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged"></p>
+<p>A loop that ends in <code>gh pr merge</code> would have the same hole. You find out when someone tries to stop it.</p>
+<h3>What happens when it fails</h3>
+<p>Runs fail a lot. What matters is where a failed run goes next. If Orbi can recover, the Issue moves to <code>ai-fix-needed</code> and the next pass picks up the same branch and the same PR instead of opening a new one. If a person has to decide, it stops at <code>ai-blocked</code> and says why on the Issue.</p>
+<p>On September 28, the first run on <a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> finished without a single commit. Orbi didn&#39;t open an empty PR. It labelled the Issue <code>ai-blocked</code> and wrote what had happened:</p>
+<p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482: Orbi started Pi, then posted &quot;Orbi blocked, waiting on a human decision&quot;: the agent delivered no commit and HEAD is still the frozen base"></p>
+<p>I read it, decided the Issue itself was fine, and removed the label. The second run opened <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>, and it was merged the same day. That is about as much as a person should have to do when a run fails: read one comment and make one decision.</p>
+<h3>Who ships it</h3>
+<p>Nobody gets a merged PR until it&#39;s in a release. In Orbi a release is an Issue too, labelled <code>ai-release</code>. It names the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. Here is the one for v0.5.58, which shipped the #1504 fix:</p>
+<p><img src="/img/headless-1508-release.webp" alt="Issue #1508, Release v0.5.58: the scope is milestone v0.5.58, the Release block names version, base branch and version file, and Orbi claimed it with ai-in-progress"></p>
+<h2>The step we still do by hand</h2>
+<p>On September 25, Orbi merged <a href="https://github.com/orbi-build/orbi-website/pull/523">a mobile table fix</a> for this website. Its tests checked every table page for horizontal overflow, and all of them passed. Then we opened a screenshot at 390px. (The prices in these two screenshots are blurred because they have changed since.)</p>
+<p><img src="/img/headless-table-before.webp" alt="The Orbi vs Devin pricing table at 390px after the first fix: &quot;Free&quot; is split into &quot;Fr&quot; and &quot;ee&quot;, and &quot;Individual&quot; runs over four lines"></p>
+<p>Across 25 pages, 193 words were cut in the middle. The tests measured overflow correctly. Nobody had asked them about words.</p>
+<p>We filed the fix as a new Issue with those measurements attached, and Orbi delivered it <a href="https://github.com/orbi-build/orbi-website/pull/530">in 32 minutes</a>:</p>
+<p><img src="/img/headless-table-after.webp" alt="The same table at 390px after the fix: each plan is a stacked block and every word reads whole"></p>
+<p>The screenshot is what caught it, so that&#39;s the part we kept. Before anything is promoted from beta to production, one of us opens the changed pages on a phone and on a desktop and looks. The agent did what the Issue asked. The Issue just didn&#39;t mention words.</p>
+<h2>If you want to stay on Claude Code</h2>
+<p>You can build all of this around <code>claude -p</code>: labels for the queue, a lock on claims, a second session for review, a merge check, a resume path, a release job. Expect most of the effort to go into failure handling. Orbi&#39;s <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow doc</a> is about 800 lines, and much of it is about what happens when a step goes wrong. #1504 was one of those, found by hand two days ago.</p>
+<p>Or use Orbi. It doesn&#39;t run Claude Code, though. Its agent is <a href="https://github.com/earendil-works/pi">Pi</a>, on a ChatGPT plan or a DeepSeek API key, and Orbi&#39;s own deliveries have run on DeepSeek since September 22. If you&#39;re attached to Claude, that&#39;s a real cost. If all you need is for an Issue to come out the other end as a reviewed release, most of the work sits outside the model.</p>
+<p><a href="https://orbi.build/cloud/?ref=blog-headless">Connect a repository to Orbi Cloud</a>, or self-host the <a href="https://github.com/orbi-build/orbi">open-source runner</a>.</p>
+<h2>Related</h2>
+<p>Read <a href="/compare/claude-code/">Orbi vs Claude Code</a>, <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> and <a href="/cloud/">Cloud</a>.</p>
+
+    </article>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
