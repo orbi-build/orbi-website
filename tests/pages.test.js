@@ -1000,7 +1000,7 @@ describe("Cloud hero single CTA (Issue #741)", () => {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
       href: "/cloud/login",
       button: "Try __FREE_DELIVERIES__ deliveries free →",
-      note: "No card · Only the repos you pick",
+      note: "No credit card required · Orbi only sees the repos you pick",
     },
     "zh/cloud/index.html": {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
@@ -1799,7 +1799,7 @@ describe("blog (Issue #212)", () => {
         : {
             title: "Orbi takes your Issues all the way to a release.",
             button: "Try __FREE_DELIVERIES__ deliveries free →",
-            note: "No card · Only the repos you pick",
+            note: "No credit card required · Orbi only sees the repos you pick",
             href: "/cloud/login",
             selfHost: "Prefer to self-host? It's open source (AGPL) →",
           };

@@ -1050,7 +1050,7 @@ function renderPost(post, template) {
     : `<aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
-  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside>`;
   const inlineCta = post.lang === "zh"
