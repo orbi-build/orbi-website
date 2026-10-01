@@ -276,7 +276,7 @@ describe("Cloud trial copy (Issue #679)", () => {
 
   it("keeps the self-hosted free-forever claim", async () => {
     const homepage = await readFile(`${SITE_PAGES_DIR}index.html`, "utf8");
-    expect(homepage).toContain("Self-hosted, free forever");
+    expect(homepage).toContain("Self-hosted — code never leaves your machine");
   });
 });
 
