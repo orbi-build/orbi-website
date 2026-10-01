@@ -160,6 +160,43 @@ async function constrainedHeadingAt(route, selector, ch) {
   }
 }
 
+async function postCtaAt(route, width) {
+  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  try {
+    await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+    return await page.locator(".post-cta").evaluate((cta) => {
+      const button = cta.querySelector('[data-cta="post-start"]');
+      const selfHost = cta.querySelector('[data-cta="post-selfhost"]');
+      const buttonStyle = getComputedStyle(button);
+      return {
+        buttonColor: buttonStyle.color,
+        buttonDecoration: buttonStyle.textDecorationLine,
+        buttonWidth: button.getBoundingClientRect().width,
+        contentWidth: cta.clientWidth
+          - Number.parseFloat(getComputedStyle(cta).paddingLeft)
+          - Number.parseFloat(getComputedStyle(cta).paddingRight),
+        selfHostColor: getComputedStyle(selfHost).color,
+      };
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+describe("post registration CTA (Issue #732)", () => {
+  it("preserves the homepage button treatment and readable night-surface link in both languages", async () => {
+    for (const route of ["/blog/run-claude-code-unattended/", "/zh/blog/run-claude-code-unattended/"]) {
+      const desktop = await postCtaAt(route, 1440);
+      expect(desktop.buttonColor, `${route}: button label`).toBe("rgb(6, 21, 27)");
+      expect(desktop.buttonDecoration, `${route}: button decoration`).toBe("none");
+      expect(desktop.selfHostColor, `${route}: self-host link`).toBe("rgb(237, 245, 240)");
+
+      const mobile = await postCtaAt(route, 390);
+      expect(mobile.buttonWidth, `${route}: full-width mobile button`).toBeCloseTo(mobile.contentWidth, 0);
+    }
+  });
+});
+
 describe("blog titles use the post entry width (Issue #401)", () => {
   it("matches title and summary widths in both languages and keeps long English titles on one line", async () => {
     for (const route of ["/blog/", "/zh/blog/"]) {
