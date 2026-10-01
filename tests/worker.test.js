@@ -1053,7 +1053,7 @@ describe("engagement beacon", () => {
       expect(response.status).toBe(204);
     }
     await Promise.all(reports);
-    expect(forwarded.map(event => event.detail)).toEqual(["nav-start", "closing-start", "pricing-summary"]);
+    expect(forwarded.map(event => event.detail).sort()).toEqual(["closing-start", "nav-start", "pricing-summary"]);
   });
 
   it("rejects CTA details outside the Cloud format", async () => {

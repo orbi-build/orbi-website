@@ -1111,10 +1111,6 @@ const cloudPages = {
     metaNeedle: ["US$29", "US$79"],
     text: [
       "exact-head merge",
-      // Issue #534: the hero lede is now the one-sentence delivery claim; the
-      // release boundary it names is pinned here (the old five-line lede was
-      // the only body-text carrier of "tagged GitHub Release").
-      "merges and cuts the release",
       "cuts the tag",
       "closes the milestone",
       // the release boundary: you start it, Orbi runs it
@@ -1217,7 +1213,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // Issue #578: the walkthrough carries narration — the visitor presses
   // play and hears it. The element must move on the visitor's action only.
-  const ctaBottom = await page.locator(".hero-ctas").evaluate((element) => element.getBoundingClientRect().bottom);
+  const ctaBottom = await page.locator(".hero-cta").evaluate((element) => element.getBoundingClientRect().bottom);
   const demoTop = await demo.evaluate((element) => element.getBoundingClientRect().top);
   if (demoTop < ctaBottom) throw new Error(`${path}: Cloud walkthrough must follow the hero CTA`);
   await demo.scrollIntoViewIfNeeded();
@@ -1334,16 +1330,43 @@ async function assertCloudPage(browser, path, size, screenshot) {
   for (let i = 0; i < (await loginButtons.count()); i += 1) {
     if (!(await loginButtons.nth(i).isVisible())) throw new Error(`${path}: Cloud CTA is not visible`);
   }
-  // Issue #156: the handoff is three redirects into GitHub's password box,
-  // and the microcopy under the hero CTA is the only warning the user gets
-  // (no intermediate screen by design). It must render below the button and
-  // carry the three layers — where the next step happens, that repositories
-  // are chosen, that the choice is revisable — without adding a jump.
-  const ctaBlock = page.locator(".compare-hero .hero-primary");
-  if ((await ctaBlock.count()) !== 1) throw new Error(`${path}: expected one hero-primary CTA block in the hero`);
-  const microcopy = (await ctaBlock.locator("p").first().textContent()).replace(/\s+/g, " ").trim();
-  if (microcopy !== claim.ctaMicrocopy) {
-    throw new Error(`${path}: hero CTA microcopy is ${JSON.stringify(microcopy)}, expected ${JSON.stringify(claim.ctaMicrocopy)}`);
+  // Issue #741: the Cloud hero has one action and one concise reassurance,
+  // matching the homepage's first-screen conversion path.
+  const hero = page.locator(".compare-hero");
+  const expectedHero = path === "/cloud/"
+    ? {
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      button: `Try ${pricing.freeDeliveries} deliveries free →`,
+      note: "No card · Only the repos you pick",
+      href: "/cloud/login",
+    }
+    : {
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      button: `免费试 ${pricing.freeDeliveries} 次 →`,
+      note: "不用绑卡 · 只授权你选的仓库",
+      href: "/zh/cloud/login",
+    };
+  const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>
+    elements.map((element) => ({ tag: element.tagName, text: element.textContent.trim() })));
+  const expectedSequence = [
+    { tag: "H1", text: claim.h1 },
+    { tag: "P", text: expectedHero.lede },
+    { tag: "A", text: expectedHero.button },
+    { tag: "P", text: expectedHero.note },
+  ];
+  if (JSON.stringify(heroSequence) !== JSON.stringify(expectedSequence)) {
+    throw new Error(`${path}: hero must contain only h1, lede, one CTA, and reassurance in order; got ${JSON.stringify(heroSequence)}`);
+  }
+  const heroButton = hero.locator("a.hero-cta");
+  if (await heroButton.count() !== 1
+    || await heroButton.getAttribute("href") !== expectedHero.href
+    || await heroButton.getAttribute("data-cta") !== "cloud-hero") {
+    throw new Error(`${path}: Cloud hero CTA contract is incorrect`);
+  }
+  for (const forbidden of ["k8e", "cloud-docs", "Run Orbi yourself", "自己运行 Orbi", "How an Issue becomes a tagged release", "Issue 如何变成打了 tag 的 Release"]) {
+    if (await hero.getByText(forbidden, { exact: false }).count()) {
+      throw new Error(`${path}: forbidden first-screen copy remains: ${forbidden}`);
+    }
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.

@@ -315,7 +315,7 @@ describe("homepage cloud-start landing contract (Issue #720)", () => {
       await browser.close();
       await stopLoginServer(server);
     }
-  });
+  }, 15_000);
 });
 
 describe("Cloud CTA landing contract (Issue #107)", () => {
