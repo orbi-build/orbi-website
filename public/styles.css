@@ -62,18 +62,30 @@ img {
 }
 
 .skip-link {
-  position: fixed;
+  position: absolute;
   top: 12px;
   left: 12px;
   z-index: 100;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
   padding: 10px 14px;
   background: var(--signal);
   color: var(--night);
   font-weight: 700;
-  transform: translateY(-150%);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.skip-link:focus { transform: translateY(0); }
+.skip-link:focus,
+.skip-link:focus-visible {
+  position: fixed;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  transform: translateY(0);
+}
 
 :focus-visible {
   outline: 3px solid var(--signal);
