@@ -30,9 +30,15 @@ describe("Worker request helpers", () => {
         pricing.proRepositories,
         pricing.freeDeliveries,
         pricing.foundingPartnerLimit,
+        pricing.foundingPartnerRemaining,
       ]) {
         expect(summary).toContain(String(value));
       }
+      expect(summary).toContain(
+        path === "/"
+          ? `Founding partners: 50% off for life. Only ${pricing.foundingPartnerRemaining} of ${pricing.foundingPartnerLimit} places left.`
+          : `创始合作伙伴终身五折，${pricing.foundingPartnerLimit} 个名额只剩 ${pricing.foundingPartnerRemaining} 个。`,
+      );
       expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
       expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
       expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
