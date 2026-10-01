@@ -1195,6 +1195,43 @@ describe("Self-hosted landing pages (Issue #556)", () => {
   });
 });
 
+describe("homepage closing Cloud CTA (Issue #714)", () => {
+  const expected = {
+    "index.html": {
+      tag: "MANAGED CLOUD",
+      title: "Try it on your own repository",
+      description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
+      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
+    },
+    "zh/index.html": {
+      tag: "托管 Cloud",
+      title: "在你自己的仓库上试一试",
+      description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
+      selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
+    },
+  };
+
+  const cta = (html, name) => {
+    const match = html.match(new RegExp(`<a class="([^"]+)" data-cta="${name}" href="([^"]+)">([^<]+)</a>`));
+    return match ? { className: match[1], href: match[2], text: match[3] } : null;
+  };
+
+  for (const [output, contract] of Object.entries(expected)) {
+    it(`${output} keeps the closing CTA in the Cloud trial context`, () => {
+      const html = shipped.get(output);
+      const closing = region(html, '<section class="closing shell"', "</section>");
+      expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
+      expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
+      expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
+      expect(cta(closing, "closing-start"), `${output}: closing CTA matches the hero`).toEqual(
+        cta(html, "cloud-start"),
+      );
+      expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
+      expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
+    });
+  }
+});
+
 describe("cloud buyer FAQ (Issue #166)", () => {
   it("sits between the three-step section and the closing CTA on both languages", () => {
     for (const { output } of CLOUD_FAQ_PAGES) {
