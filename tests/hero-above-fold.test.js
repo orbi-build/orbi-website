@@ -13,7 +13,7 @@ const cases = [
     lede: "An AI agent that takes your Issues all the way to a release.",
     href: "/cloud/login",
     button: "Try __FREE_DELIVERIES__ deliveries free →",
-    note: "No card · Only the repos you pick",
+    note: '<span class="hero-cta-note-first">No credit card required ·</span> <span>Orbi only sees the repos you pick</span>',
   },
   {
     source: "site/pages/zh/index.html",
@@ -22,7 +22,7 @@ const cases = [
     lede: "AI 把你的 Issue 一路做到发版。",
     href: "/zh/cloud/login",
     button: "免费试 __FREE_DELIVERIES__ 次 →",
-    note: "不用绑卡 · 只授权你选的仓库",
+    note: "不用绑定信用卡 · 只授权你选的仓库",
   },
 ];
 

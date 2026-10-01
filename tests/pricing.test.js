@@ -208,7 +208,7 @@ describe("Free delivery allowance constant (Issue #274)", () => {
 describe("Cloud pricing trial integration (Issue #742)", () => {
   const pricingPages = [
     ["cloud/index.html", {
-      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No card`,
+      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No credit card required`,
       failed: "· Failed deliveries don't count",
       login: "/cloud/login",
       soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,
@@ -217,7 +217,7 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       subscribe: "or subscribe now →",
     }],
     ["zh/cloud/index.html", {
-      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑卡`,
+      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑定信用卡`,
       failed: "· 失败的交付不计次数",
       login: "/zh/cloud/login",
       soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,
@@ -594,8 +594,8 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
 
   it("renders tier-specific repository limits in visible FAQ and JSON-LD", async () => {
     const faqCopy = {
-      "cloud/index.html": `Free and Solo connect up to ${pricing.soloRepositories} repository at a time; Pro connects up to ${pricing.proRepositories}. Once you reach the limit, deactivate a repository on the connect page before connecting another.`,
-      "zh/cloud/index.html": `Free 和 Solo 同时最多接 ${pricing.soloRepositories} 个仓库，Pro 最多 ${pricing.proRepositories} 个。连满之后，先在连接页停用一个仓库，再连新的。`,
+      "cloud/index.html": `Solo connects up to ${pricing.soloRepositories} repository at a time; Pro connects up to ${pricing.proRepositories}. Once you reach the limit, deactivate a repository on the connect page before connecting another.`,
+      "zh/cloud/index.html": `Solo 同时最多接 ${pricing.soloRepositories} 个仓库，Pro 最多 ${pricing.proRepositories} 个。连满之后，先在连接页停用一个仓库，再连新的。`,
     };
     for (const relativePath of CLOUD_PAGES) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();

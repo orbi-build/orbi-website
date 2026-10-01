@@ -76,6 +76,40 @@ const countMatches = (html, re) => [...html.matchAll(re)].length;
 
 const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
 
+describe("top navigation Docs destination (Issue #762)", () => {
+  const expected = {
+    en: "https://cloud-docs.orbi.build/?ref=nav",
+    zh: "https://cloud-docs.orbi.build/zh/?ref=nav",
+  };
+  const selfHosted = {
+    en: "https://docs.orbi.build",
+    zh: "https://docs.orbi.build/zh",
+  };
+
+  it("uses the Cloud Docs URL for the Docs link on every generated page", () => {
+    for (const [output, html] of shipped) {
+      const lang = output.startsWith("zh/") || output.includes("/zh/") ? "zh" : "en";
+      const docs = navRegion(html).match(/<a href="([^"]+)">(?:Docs|文档)<\/a>/g) ?? [];
+      expect(docs, `${output}: exactly one Docs nav link`).toHaveLength(1);
+      expect(docs[0], `${output}: Cloud Docs nav link`).toBe(`<a href="${expected[lang]}">${lang === "zh" ? "文档" : "Docs"}</a>`);
+    }
+  });
+
+  it("keeps self-hosted Docs in the footer", () => {
+    for (const [output, html] of shipped) {
+      const lang = output.startsWith("zh/") || output.includes("/zh/") ? "zh" : "en";
+      expect(footerRegion(html), `${output}: self-hosted Docs footer link`).toContain(`href="${selfHosted[lang]}"`);
+    }
+  });
+
+  it("keeps both homepage self-hosted CTAs on self-hosted Docs", () => {
+    expect(shipped.get("index.html")).toContain('<a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build">');
+    expect(shipped.get("zh/index.html")).toContain('<a class="button button-outline" data-cta="midway-install" href="https://docs.orbi.build/zh">');
+    expect(shipped.get("index.html")).toContain('data-cta="closing-selfhost" href="https://docs.orbi.build"');
+    expect(shipped.get("zh/index.html")).toContain('data-cta="closing-selfhost" href="https://docs.orbi.build/zh"');
+  });
+});
+
 describe("homepage section order (Issue #712)", () => {
   for (const output of ["index.html", "zh/index.html"]) {
     it(`${output} keeps the buyer journey sections adjacent and ordered`, () => {
@@ -825,9 +859,15 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 7]);
+      const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+        .map(([, href, label]) => [href, label]);
+      const siteBase = page.nav.siteBase ?? "";
+      expect(companyLinks, `${page.output}: Company links`).toEqual(page.lang === "zh"
+        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
+        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
     }
   });
 
@@ -960,13 +1000,13 @@ describe("Cloud hero single CTA (Issue #741)", () => {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
       href: "/cloud/login",
       button: "Try __FREE_DELIVERIES__ deliveries free →",
-      note: "No card · Only the repos you pick",
+      note: "No credit card required · Orbi only sees the repos you pick",
     },
     "zh/cloud/index.html": {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
       href: "/zh/cloud/login",
       button: "免费试 __FREE_DELIVERIES__ 次 →",
-      note: "不用绑卡 · 只授权你选的仓库",
+      note: "不用绑定信用卡 · 只授权你选的仓库",
     },
   };
 
@@ -1315,6 +1355,25 @@ describe("cloud buyer FAQ (Issue #166)", () => {
       for (const question of questions) {
         expect(home, `${output}: ${question}`).not.toContain(question);
       }
+    }
+  });
+
+  it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
+    const expectations = {
+      "cloud/index.html": {
+        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count\./,
+        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count\./g,
+      },
+      "zh/cloud/index.html": {
+        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/,
+        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/g,
+      },
+    };
+    for (const [output, expected] of Object.entries(expectations)) {
+      const html = shipped.get(output);
+      expect(cloudFaqItems(html)[0].answer, `${output}: visible FAQ trial terms`).toMatch(expected.faq);
+      expect(html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [], `${output}: sharing descriptions`).toHaveLength(2);
+      expect(html.match(expected.share) ?? [], `${output}: sharing trial terms`).toHaveLength(2);
     }
   });
 });
@@ -1752,14 +1811,14 @@ describe("blog (Issue #212)", () => {
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
             button: "免费试 __FREE_DELIVERIES__ 次 →",
-            note: "不用绑卡 · 只授权你选的仓库",
+            note: "不用绑定信用卡 · 只授权你选的仓库",
             href: "/zh/cloud/login",
             selfHost: "想自己部署？开源免费（AGPL）→",
           }
         : {
             title: "Orbi takes your Issues all the way to a release.",
             button: "Try __FREE_DELIVERIES__ deliveries free →",
-            note: "No card · Only the repos you pick",
+            note: "No credit card required · Orbi only sees the repos you pick",
             href: "/cloud/login",
             selfHost: "Prefer to self-host? It's open source (AGPL) →",
           };

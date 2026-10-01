@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/cloud/">
   <meta property="og:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta property="og:description" content="A hosted runner that takes GitHub Issues to tagged GitHub Releases — independent review, exact-head merge, milestone closed. Solo includes __SOLO_INCLUDED_TOKENS__ tokens of model usage per month; Pro includes __INCLUDED_TOKENS__. Solo and Pro are the two paid plans, at US$__SOLO_MONTHLY_USD__/month and US$__CLOUD_MONTHLY_USD__/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta property="og:image" content="https://orbi.build/img/og-cloud.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi Cloud — file an Issue, get a release">
-  <meta name="twitter:description" content="A hosted runner: file an Issue, get a release. Solo is US$__SOLO_MONTHLY_USD__/month and Pro is US$__CLOUD_MONTHLY_USD__/month; founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
+  <meta name="twitter:description" content="A hosted runner: file an Issue, get a release. Solo and Pro are the two paid plans, at US$__SOLO_MONTHLY_USD__/month and US$__CLOUD_MONTHLY_USD__/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count. Founding partners receive 50% off forever, __FOUNDING_PARTNER_LIMIT__ places.">
   <meta name="twitter:image" content="https://orbi.build/img/og-cloud.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -72,7 +72,7 @@
             "name": "What are the Cloud plans and how do I cancel?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Cloud has Free, Solo, and Pro plans. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
+              "text": "Cloud has two paid plans, Solo and Pro. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places. After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel."
             }
           },
           {
@@ -88,7 +88,7 @@
             "name": "How many repositories can one subscription connect?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Free and Solo connect up to __SOLO_REPOSITORIES__ repository at a time; Pro connects up to __PRO_REPOSITORIES__. Once you reach the limit, deactivate a repository on the connect page before connecting another."
+              "text": "Solo connects up to __SOLO_REPOSITORIES__ repository at a time; Pro connects up to __PRO_REPOSITORIES__. Once you reach the limit, deactivate a repository on the connect page before connecting another."
             }
           },
           {
@@ -104,7 +104,7 @@
             "name": "What does the founding offer include?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout. The offer does not change the Free, Solo, or Pro plan allowances."
+              "text": "Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout. The offer does not change the Solo or Pro plan allowances."
             }
           },
           {
@@ -144,7 +144,7 @@
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
         <a href="/cloud/#pricing" aria-current="page">Pricing</a>
-        <a href="https://docs.orbi.build">Docs</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
         <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
         <a data-cta="nav-signin" href="/api/login">Sign in</a>
         <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
@@ -158,7 +158,7 @@
         <h1 id="cloud-title">Orbi Cloud: file an Issue, get a release</h1>
         <p class="hero-lede">Orbi runs your Issues all the way to a release, on infrastructure we operate.</p>
         <a class="button button-signal hero-cta" data-cta="cloud-hero" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
-        <p class="hero-cta-note">No card · Only the repos you pick</p>
+        <p class="hero-cta-note"><span class="hero-cta-note-first">No credit card required ·</span> <span>Orbi only sees the repos you pick</span></p>
       </section>
       <div class="shell">
         <aside class="cloud-gate" aria-labelledby="cloud-gate-title">
@@ -230,7 +230,7 @@
           <button type="button" data-pricing-interval="month" aria-pressed="false" data-cta="pricing-month">Monthly</button>
           <button type="button" class="is-selected" data-pricing-interval="year" aria-pressed="true" data-cta="pricing-year">Yearly <span class="pricing-savings">Save __ANNUAL_SAVINGS_PERCENT__%</span></button>
         </div>
-        <p class="pricing-trial-note">Every plan starts with __FREE_DELIVERIES__ free merged deliveries · No card <span>· Failed deliveries don't count</span></p>
+        <p class="pricing-trial-note">Every plan starts with __FREE_DELIVERIES__ free merged deliveries · No credit card required <span>· Failed deliveries don't count</span></p>
         <p class="founding-offer">Founding partners: 50% off for life. Only __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left. Code __FOUNDING_PROMO_CODE__ at checkout.</p>
         <div class="pricing-cards">
           <article class="pricing-card pricing-card-featured">
@@ -289,7 +289,7 @@
         <li class="orbi-proof-ledger-li">
           <span>03</span>
           <strong>Connect a repository</strong>
-          <p class="orbi-proof-ledger-p">Connect the first repository and we provision your runner. Try __FREE_DELIVERIES__ merged deliveries on your own repository — no card, no subscription.</p>
+          <p class="orbi-proof-ledger-p">Connect the first repository and we provision your runner. Try __FREE_DELIVERIES__ merged deliveries on your own repository — no credit card, no subscription.</p>
         </li>
         <li class="orbi-proof-ledger-li">
           <span>04</span>
@@ -309,7 +309,7 @@
           <details class="faq-item" open>
             <summary><span>01</span>What are the Cloud plans and how do I cancel?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Cloud has Free, Solo, and Pro plans. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places.</p>
+              <p class="orbi-faq-answer-p">Cloud has two paid plans, Solo and Pro. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count. Founding partners receive 50% off forever; there are __FOUNDING_PARTNER_LIMIT__ places.</p>
               <p class="orbi-faq-answer-p">After you sign in, the Cloud status page has a subscription management control that opens Stripe's customer portal — cancel, update the payment method, and view invoices there. The status page updates after you cancel.</p>
             </div>
           </details>
@@ -324,7 +324,7 @@
           <details class="faq-item">
             <summary><span>03</span>How many repositories can one subscription connect?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Free and Solo connect up to __SOLO_REPOSITORIES__ repository at a time; Pro connects up to __PRO_REPOSITORIES__. Once you reach the limit, deactivate a repository on the connect page before connecting another.</p>
+              <p class="orbi-faq-answer-p">Solo connects up to __SOLO_REPOSITORIES__ repository at a time; Pro connects up to __PRO_REPOSITORIES__. Once you reach the limit, deactivate a repository on the connect page before connecting another.</p>
             </div>
           </details>
 
@@ -345,7 +345,7 @@
           <details class="faq-item">
             <summary><span>05</span>What does the founding offer include?</summary>
             <div class="faq-answer">
-              <p class="orbi-faq-answer-p">Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout. The offer does not change the Free, Solo, or Pro plan allowances.</p>
+              <p class="orbi-faq-answer-p">Founding partners receive 50% off forever. There are __FOUNDING_PARTNER_LIMIT__ places; use code __FOUNDING_PROMO_CODE__ at checkout. The offer does not change the Solo or Pro plan allowances.</p>
             </div>
           </details>
 
@@ -416,7 +416,7 @@
       </div>
       <div class="footer-group">
         <h2>Company</h2>
-        <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
     <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/cloud/" lang="zh-CN" aria-label="简体中文">ZH</a></div>

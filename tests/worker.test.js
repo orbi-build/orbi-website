@@ -30,9 +30,15 @@ describe("Worker request helpers", () => {
         pricing.proRepositories,
         pricing.freeDeliveries,
         pricing.foundingPartnerLimit,
+        pricing.foundingPartnerRemaining,
       ]) {
         expect(summary).toContain(String(value));
       }
+      expect(summary).toContain(
+        path === "/"
+          ? `Founding partners: 50% off for life. Only ${pricing.foundingPartnerRemaining} of ${pricing.foundingPartnerLimit} places left.`
+          : `创始合作伙伴终身五折，${pricing.foundingPartnerLimit} 个名额只剩 ${pricing.foundingPartnerRemaining} 个。`,
+      );
       expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
       expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
       expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
@@ -891,6 +897,36 @@ describe("retired apply routes (Issue #179)", () => {
     );
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("missing");
+  });
+});
+
+describe("/x short link (Issue #772)", () => {
+  const env = {
+    ASSETS: { fetch: () => Promise.reject(new Error("asset fallback")) },
+  };
+
+  it.each([
+    ["https://orbi.build/x", "https://orbi.build/?ref=x-bio"],
+    ["https://orbi.build/x/", "https://orbi.build/?ref=x-bio"],
+    ["https://beta.orbi.build/x", "https://beta.orbi.build/?ref=x-bio"],
+  ])("302s %s to the homepage on the request host", async (from, to) => {
+    const response = await handleFetch(new Request(from), env);
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(to);
+  });
+
+  it("seeds x-bio attribution on the redirected HTML landing request", async () => {
+    const response = await worker.fetch(new Request("https://orbi.build/?ref=x-bio", {
+      headers: { Accept: "text/html" },
+    }), {
+      ASSETS: { fetch: async () => new Response("<html>home</html>", {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      }) },
+    }, {});
+    expect(response.status).toBe(200);
+    expect(response.headers.getSetCookie()).toContain(
+      "ref=x-bio; Path=/; HttpOnly; SameSite=Lax; Max-Age=7776000; Secure",
+    );
   });
 });
 

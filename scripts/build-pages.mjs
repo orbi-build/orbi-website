@@ -173,6 +173,7 @@ const LANG = {
     tagline: "Software production that survives the session.",
     footerNavAria: "Footer navigation",
     docsHref: "https://docs.orbi.build",
+    navDocsHref: "https://cloud-docs.orbi.build/?ref=nav",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud Docs",
     applyLabel: "Start free",
@@ -185,7 +186,6 @@ const LANG = {
     privacyLabel: "Privacy",
     termsLabel: "Terms",
     supportLabel: "Support",
-    directionLabel: "Direction",
     roadmapLabel: "Roadmap",
     deepAria: "Compare deep dives",
     deepSpan: "Compare",
@@ -229,6 +229,7 @@ const LANG = {
     tagline: "不会随 Session 消失的软件生产。",
     footerNavAria: "页脚导航",
     docsHref: "https://docs.orbi.build/zh",
+    navDocsHref: "https://cloud-docs.orbi.build/zh/?ref=nav",
     cloudDocsHref: "https://cloud-docs.orbi.build/?ref=footer",
     cloudDocsLabel: "Cloud 文档",
     applyLabel: "免费开始",
@@ -241,7 +242,6 @@ const LANG = {
     privacyLabel: "隐私政策",
     termsLabel: "服务条款",
     supportLabel: "支持",
-    directionLabel: "方向",
     roadmapLabel: "路线图",
     deepAria: "竞品深度对比",
     deepSpan: "深度对比",
@@ -289,7 +289,7 @@ export function renderNav(page, partial = NAV_PARTIAL) {
     COST_HREF: base(n.costHref),
     COST_ATTRS: costAttrs,
     COST_LABEL: t.costLabel,
-    DOCS_HREF: t.docsHref,
+    DOCS_HREF: t.navDocsHref,
     DOCS_LABEL: t.docsLabel,
     SIGNIN_LABEL: t.signInLabel,
     SIGNIN_HREF: base("/api/login"),
@@ -301,8 +301,8 @@ export function renderNav(page, partial = NAV_PARTIAL) {
 export function renderFooter(page) {
   const t = LANG[page.lang];
   const isHome = page.output === "index.html" || page.output === "zh/index.html";
-  // Anchors #faq/#direction live on the language home; other pages need the
-  // absolute path in front — "/#faq" on EN pages, "/zh/#faq" on ZH pages
+  // The #faq anchor lives on the language home; other pages need the absolute
+  // path in front — "/#faq" on EN pages, "/zh/#faq" on ZH pages
   // (Issue #106: the anchor-prefix rule).
   const anchorPrefix = isHome ? "" : `${t.langPrefix}/`;
   const base = (href) => withSiteBase(page.nav, href);
@@ -333,7 +333,7 @@ export function renderFooter(page) {
     COMPARE_HEADING: t.compareHeading,
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
-    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
+    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
     LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
@@ -1044,13 +1044,13 @@ function renderPost(post, template) {
     ? `<aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
-  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside>`
     : `<aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
-  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside>`;
   const inlineCta = post.lang === "zh"
