@@ -93,6 +93,7 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
   // language tree: EN pages never link /zh/, ZH pages never link the EN tree.
   it("carries a footer guides group with only the page's own language tree on every footer page", () => {
     const enGuides = [
+      "/guides/",
       "/guides/issue-to-release/",
       "/guides/ci-gates/",
       "/guides/auto-merge-ai-prs/",
@@ -102,6 +103,7 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
       "https://aiready.sh/",
     ];
     const zhGuides = [
+      "/zh/guides/",
       "/zh/guides/issue-to-release/",
       "/zh/guides/ci-gates/",
       "/zh/guides/auto-merge-ai-prs/",

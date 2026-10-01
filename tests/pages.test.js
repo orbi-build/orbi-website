@@ -772,9 +772,9 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 7, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 8]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
     }
   });
 
@@ -830,14 +830,14 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("switches language to the mirror page from the nav", () => {
+  it("switches language to the mirror page from the footer", () => {
     for (const page of pages.filter((p) => p.mirror && !p.standalone)) {
       const html = shipped.get(page.output);
       const expected = `${page.nav?.siteBase ?? ""}${pathToHref(page.mirror)}`;
-      const navSwitch = [...navRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
+      const footerSwitch = [...footerRegion(html).matchAll(/<a href="([^"]+)" lang="(?:zh-CN|en)"[^>]*>/g)]
         .map((m) => m[1]);
-      expect(navSwitch, `${page.output}: nav language switch`).toEqual([expected]);
-      expect(footerRegion(html), `${page.output}: language switch belongs only in the top nav`)
+      expect(footerSwitch, `${page.output}: footer language switch`).toEqual([expected]);
+      expect(navRegion(html), `${page.output}: language switch belongs in the footer`)
         .not.toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);
     }
   });
@@ -1340,11 +1340,11 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     for (const output of outputs) {
       const html = await readFile(join(builtDir, output), "utf8");
       const nav = navRegion(html);
-      const cta = nav.match(/<a class="nav-apply" href="([^"]+)">([^<]*)<\/a>/);
+      const cta = nav.match(/<a class="nav-apply" data-cta="nav-start" href="([^"]+)">([^<]*)<\/a>/);
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
-      const cloudPath = output.startsWith("zh/") ? "/zh/cloud/" : "/cloud/";
-      expect(cta[1], `${output}: nav CTA must introduce the language Cloud page`).toBe(cloudPath);
-      const label = output.startsWith("zh/") ? "开始 Cloud" : "Start Cloud";
+      const loginPath = output.startsWith("zh/") ? "/zh/cloud/login" : "/cloud/login";
+      expect(cta[1], `${output}: nav CTA must use the language login handoff`).toBe(loginPath);
+      const label = output.startsWith("zh/") ? "免费开始" : "Start free";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }
   });
@@ -1352,19 +1352,15 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("keeps Cloud page CTAs on the matching language login handoff", () => {
     for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
       const html = shipped.get(output);
-      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(3);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(4);
     }
   });
 });
 
-// Issue #612: the primary-nav dropdown is labeled Resources/资源 on EVERY
-// page with the site nav (it used to exist only on the two homes, other pages
-// showed a plain Docs link), and its first item is the ai-ready methodology
-// entry. The mobile hamburger opens this same <nav data-primary-nav> element
-// (styles.css .site-header nav.is-open) — there is no second DOM copy — so
-// extracting the dropdown from the nav region proves the items are in the
-// hamburger menu's DOM too; the browser smoke drives the real interaction.
-describe("Resources dropdown in the primary nav (Issue #612)", () => {
+// Issue #711: every page has the same six-link primary nav. The former Guides
+// entry, every Resources destination and the language switch live in the
+// footer; the mobile hamburger opens the same six-link nav DOM.
+describe("six-link primary nav and relocated links (Issue #711)", () => {
   const RESOURCES = {
     en: {
       label: "Resources",
@@ -1390,38 +1386,29 @@ describe("Resources dropdown in the primary nav (Issue #612)", () => {
     },
   };
 
-  it("labels the dropdown Resources/资源 with evidence and benchmark first on every page with the primary nav", () => {
-    // Blog posts render the same nav through POST_LANG.nav, so they count as
-    // "every page with primary-navigation" too. Pages carrying a siteBase
-    // (the aiready pages, Issue #610) render every local nav href absolute.
-    const surfaces = [...pages.filter((p) => p.nav), ...posts];
-    for (const page of surfaces) {
-      const expected = RESOURCES[page.lang];
-      const siteBase = page.nav?.siteBase ?? "";
-      const nav = navRegion(shipped.get(page.output));
-      const dropdown = region(nav, '<div class="nav-dropdown nav-resources">', "</div></div>");
-      expect(dropdown, `${page.output}: nav-docs dropdown missing from the nav element`).not.toBe("");
-      expect(dropdown, `${page.output}: dropdown label`).toContain(
-        `data-dropdown-toggle>${expected.label}<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>`,
+  it("keeps the primary navigation to six links", () => {
+    for (const page of [...pages.filter((p) => p.nav), ...posts]) {
+      const links = [...navRegion(shipped.get(page.output)).matchAll(/<a\b[^>]*>([^<]*)<\/a>/g)]
+        .map(([, label]) => label.trim());
+      expect(links, `${page.output}: primary navigation`).toEqual(
+        page.lang === "zh"
+          ? ["产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"]
+          : ["How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"],
       );
-      const items = [...dropdown.matchAll(/<a class="orbi-nav-dropdown-menu-a" href="([^"]+)"[^>]* role="menuitem">([\s\S]*?)<\/a>/g)]
-        .map((match) => [match[1], match[2]]);
-      const expectedItems = expected.items.map(([href, label, description]) => [
-        href.startsWith("/") ? `${siteBase}${href}` : href,
-        `<span class="orbi-nav-dropdown-menu-label">${label}</span>${description ? `<span class="orbi-nav-dropdown-menu-description">${description}</span>` : ""}`,
-      ]);
-      expect(items, `${page.output}: dropdown items drifted`).toEqual(expectedItems);
-      expect(dropdown, `${page.output}: dropdown links must contain their complete copy`).not.toMatch(/>[^<]+<\/a>/);
     }
   });
 
-  it("uses the same decorative SVG indicator for Resources and Docs", () => {
+  it("keeps Guides and Resources links in the footer", () => {
     for (const page of [...pages.filter((p) => p.nav), ...posts]) {
-      const nav = navRegion(shipped.get(page.output));
-      const indicators = [...nav.matchAll(/<svg class="nav-dropdown-indicator"[\s\S]*?<path d="([^"]+)"[\s\S]*?><\/path><\/svg>/g)];
-      expect(indicators, `${page.output}: both dropdowns need the shared indicator`).toHaveLength(2);
-      expect(indicators.map(([, path]) => path), `${page.output}: indicator geometry drifted`).toEqual(["M3 5.5 8 10.5 13 5.5", "M3 5.5 8 10.5 13 5.5"]);
-      expect(nav, `${page.output}: indicator must not expose text`).not.toContain("⌄");
+      const footer = footerRegion(shipped.get(page.output));
+      const siteBase = page.nav?.siteBase ?? "";
+      const guidesHref = `${siteBase}${page.lang === "zh" ? "/zh/guides/" : "/guides/"}`;
+      expect(footer, `${page.output}: footer lost the Guides index`).toContain(
+        `<a href="${guidesHref}">${page.lang === "zh" ? "指南" : "Guides"}</a>`,
+      );
+      expect(footer, `${page.output}: footer lost Guides`).toContain(page.lang === "zh" ? "Issue 到发版" : "Issue to release");
+      expect(footer, `${page.output}: footer lost Resources`).toContain(page.lang === "zh" ? "博客" : "Blog");
+      expect(footer, `${page.output}: footer lost language switch`).toMatch(/<a href="[^"]+" lang="(?:zh-CN|en)"/);
     }
   });
 
@@ -1698,8 +1685,8 @@ print(json.dumps({
   });
 
   it("links the blog from the primary nav on both language homes", () => {
-    expect(navRegion(shipped.get("index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a>');
-    expect(navRegion(shipped.get("zh/index.html"))).toContain('<a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">博客</span></a>');
+    expect(footerRegion(shipped.get("index.html"))).toContain('<a href="/blog/">Blog</a>');
+    expect(footerRegion(shipped.get("zh/index.html"))).toContain('<a href="/zh/blog/">博客</a>');
   });
 });
 

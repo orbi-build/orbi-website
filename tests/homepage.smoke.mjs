@@ -778,9 +778,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
-  // Issue #99: the homepage carries exactly one primary hero CTA, visible,
-  // plus the card CTA and the nav "Start Cloud" keeping the same promise.
-  // The nav introduces the Cloud page; that page's CTA remains the login handoff.
+  // Issue #711: the homepage carries exactly one primary hero CTA, visible,
+  // plus the card CTA and the nav "Start free" keeping the same promise.
+  // The hero and nav go straight to login; the card still introduces Cloud.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
   await cloudCta.scrollIntoViewIfNeeded();
@@ -794,14 +794,18 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: expected exactly one cloud-start-card CTA`);
   }
   if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
-    throw new Error(`${path}: expected exactly one nav Start Cloud`);
+    throw new Error(`${path}: expected exactly one nav Start free`);
   }
   const cardText = await page.locator(".run-option-cloud").textContent();
   if (!cardText.includes("US$79")) throw new Error(`${path}: the Managed Cloud card hides the US$79 price`);
   if (!cardText.includes("50% off forever") && !cardText.includes("永久 5 折")) throw new Error(`${path}: the Managed Cloud card hides the founding partner terms`);
-  const navCompare = page.locator(`[data-primary-nav] .nav-resources a[href="${comparisonPath}"]`);
-  if ((await navCompare.count()) !== 1) {
-    throw new Error(`${path}: Resources dropdown comparisons link has wrong href`);
+  const resourcesHeading = path.startsWith("/zh") ? "资源" : "Resources";
+  const resourcesGroup = page.locator(".footer-group", {
+    has: page.locator("h2", { hasText: resourcesHeading }),
+  });
+  const footerCompare = resourcesGroup.locator(`a[href="${comparisonPath}"]`);
+  if ((await footerCompare.count()) !== 1) {
+    throw new Error(`${path}: Resources footer comparison link has wrong href`);
   }
   // Issue #165: Pricing in the primary nav is the subscription-price entry,
   // not the measured-cost essay. A real click must land on #pricing.
@@ -850,11 +854,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.locator(".site-footer").screenshot({ path: `${artifacts}/footer-${screenshot}` });
-  // Below 900px the navigation is collapsed; open it before clicking through.
-  const menuToggle = page.locator("[data-menu-toggle]");
-  if (await menuToggle.isVisible()) await menuToggle.click();
-  await page.locator(".nav-resources [data-dropdown-toggle]").click();
-  await navCompare.click();
+  await footerCompare.click();
   await page.waitForLoadState("networkidle");
   if (new URL(page.url()).pathname !== comparisonPath) {
     throw new Error(`${path}: expected ${comparisonPath}, got ${page.url()}`);
@@ -864,138 +864,6 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.close();
-}
-
-async function assertHomeDropdowns(browser, path, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
-  try {
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    const zh = path.startsWith("/zh");
-    const dropdowns = [
-      {
-        name: "Resources",
-        root: page.locator(".nav-resources"),
-        links: zh
-          ? ["/zh/evidence/", "/zh/benchmark/", "/zh/cost/", "/aiready/zh/", "/zh/compare/", "/zh/blog/"]
-          : ["/evidence/", "/benchmark/", "/cost/", "/aiready/", "/compare/", "/blog/"],
-      },
-      {
-        name: "Docs",
-        root: page.locator(".nav-docs"),
-        links: [zh ? "https://docs.orbi.build/zh" : "https://docs.orbi.build", "https://cloud-docs.orbi.build/?ref=nav"],
-      },
-    ];
-    const menuToggle = page.locator("[data-menu-toggle]");
-    if (size.width <= 900) await menuToggle.click();
-    for (const dropdown of dropdowns) {
-      const trigger = dropdown.root.locator("[data-dropdown-toggle]");
-      const menu = dropdown.root.locator("[data-dropdown-menu]");
-      if (await trigger.count() !== 1 || await menu.count() !== 1) {
-        throw new Error(`${path}: expected one ${dropdown.name} dropdown`);
-      }
-      if ((await trigger.getAttribute("aria-expanded")) !== "false") {
-        throw new Error(`${path}: ${dropdown.name} aria-expanded is not initially false`);
-      }
-      if ((await trigger.getAttribute("aria-controls")) !== await menu.getAttribute("id")) {
-        throw new Error(`${path}: ${dropdown.name} aria-controls does not point to its menu`);
-      }
-      if ((await menu.getAttribute("role")) !== "menu" || await menu.locator('[role="menuitem"]').count() !== dropdown.links.length) {
-        throw new Error(`${path}: ${dropdown.name} menu accessibility contract changed`);
-      }
-      await trigger.click();
-      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-        throw new Error(`${path}: click did not open ${dropdown.name}`);
-      }
-      await page.keyboard.press("Tab");
-      if (!(await menu.locator('[role="menuitem"]').first().evaluate((link) => link === document.activeElement))) {
-        throw new Error(`${path}: Tab did not enter the ${dropdown.name} menu`);
-      }
-      await page.keyboard.press("Escape");
-      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
-        throw new Error(`${path}: Escape did not restore focus after Tab in ${dropdown.name}`);
-      }
-      const indicatorGeometry = await trigger.evaluate((button) => {
-        const svg = button.querySelector(".nav-dropdown-indicator");
-        const path = svg?.querySelector("path");
-        const textNode = [...button.childNodes].find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
-        if (!svg || !path || !textNode) throw new Error("dropdown indicator or label text is missing");
-        const svgRect = svg.getBoundingClientRect();
-        const textRange = document.createRange();
-        textRange.selectNodeContents(textNode);
-        const textRect = textRange.getBoundingClientRect();
-        const pathBox = path.getBBox();
-        const viewBox = svg.viewBox.baseVal;
-        const stroke = Number.parseFloat(getComputedStyle(path).strokeWidth) || 0;
-        const visibleCenter = svgRect.top + ((pathBox.y + pathBox.height / 2) / viewBox.height) * svgRect.height;
-        return {
-          visibleCenter,
-          textCenter: textRect.top + textRect.height / 2,
-          svgWidth: svgRect.width,
-          svgHeight: svgRect.height,
-          stroke,
-          pathCenter: pathBox.y + pathBox.height / 2,
-          viewBoxCenter: viewBox.y + viewBox.height / 2,
-        };
-      });
-      if (indicatorGeometry.svgWidth !== 16 || indicatorGeometry.svgHeight !== 16) {
-        throw new Error(`${path}: ${dropdown.name} indicator box changed: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      if (Math.abs(indicatorGeometry.pathCenter - indicatorGeometry.viewBoxCenter) > 0.01) {
-        throw new Error(`${path}: ${dropdown.name} visible stroke is not centered in its SVG box: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      if (Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter) > 1) {
-        throw new Error(`${path}: ${dropdown.name} indicator is ${Math.abs(indicatorGeometry.visibleCenter - indicatorGeometry.textCenter).toFixed(2)}px from label center: ${JSON.stringify(indicatorGeometry)}`);
-      }
-      await trigger.focus();
-      await page.keyboard.press("Enter");
-      if (!(await menu.evaluate((node) => node.classList.contains("is-open")))) {
-        throw new Error(`${path}: Enter did not open ${dropdown.name}`);
-      }
-      const links = await menu.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-      if (links.length !== dropdown.links.length || links.some((link, index) => link !== dropdown.links[index])) {
-        throw new Error(`${path}: ${dropdown.name} links are ${JSON.stringify(links)}`);
-      }
-      await page.keyboard.press("Escape");
-      if (await menu.evaluate((node) => node.classList.contains("is-open"))) {
-        throw new Error(`${path}: Escape did not close ${dropdown.name}`);
-      }
-      if (!(await trigger.evaluate((button) => button === document.activeElement))) {
-        throw new Error(`${path}: Escape did not restore focus to ${dropdown.name}`);
-      }
-      await page.keyboard.press("Space");
-      if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-        throw new Error(`${path}: Space did not open ${dropdown.name}`);
-      }
-      await page.keyboard.press("Escape");
-    }
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    if (overflow > 0) throw new Error(`${path}: dropdowns cause horizontal overflow of ${overflow}px at ${size.width}px`);
-    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
-  } finally {
-    await page.close();
-  }
-}
-
-async function assertCloudDocsNav(browser, path) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  try {
-    await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    if ((await page.locator(".nav-resources [data-dropdown-toggle]").count()) !== 1) {
-      throw new Error(`${path}: expected the Resources dropdown trigger`);
-    }
-    const docs = page.locator(".nav-docs");
-    await docs.locator("[data-dropdown-toggle]").click();
-    const expectedSelfHost = path.startsWith("/zh") ? "https://docs.orbi.build/zh" : "https://docs.orbi.build";
-    const expectedLinks = [expectedSelfHost, "https://cloud-docs.orbi.build/?ref=nav"];
-    const links = await docs.locator("[data-dropdown-menu] a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
-    if (links.length !== expectedLinks.length || links.some((link, index) => link !== expectedLinks[index])) {
-      throw new Error(`${path}: Docs dropdown links are ${JSON.stringify(links)}`);
-    }
-    const footerDocs = page.locator("footer a[href='https://cloud-docs.orbi.build/?ref=footer']");
-    if ((await footerDocs.count()) !== 1) throw new Error(`${path}: footer must keep one cloud-docs ref=footer link`);
-  } finally {
-    await page.close();
-  }
 }
 
 // Issue #259: the hero used to push the primary CTA to 630px — under every
@@ -1575,8 +1443,8 @@ async function assertCostPage(browser, path, size, screenshot) {
   // just anywhere on the page.
   if (!text.includes(claim.verified)) throw new Error(`${path}: sources carry no ${JSON.stringify(claim.verified)} date`);
   // Issue #165: the primary-nav price item now points at /cloud/#pricing, so
-  // /cost/ is no longer a current nav entry. Language switch still leads to
-  // the counterpart cost page.
+  // /cost/ is no longer a current nav entry. The footer language switch leads
+  // to the counterpart cost page (Issue #711).
   const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
   if ((await navPricing.count()) !== 1) {
@@ -1585,8 +1453,8 @@ async function assertCostPage(browser, path, size, screenshot) {
   if ((await navPricing.getAttribute("aria-current")) === "page") {
     throw new Error(`${path}: Pricing must not be aria-current on the cost page`);
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -1691,13 +1559,12 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   for (const date of claim.dates) {
     if (!text.includes(date)) throw new Error(`${path}: missing the verification date ${date}`);
   }
-  // Navigation consistency, same contract as the cost pages.
-  const navSelf = page.locator(`[data-primary-nav] a[href="${path}"]`);
-  if ((await navSelf.getAttribute("aria-current")) !== "page") {
-    throw new Error(`${path}: nav does not mark ${path} as the current page`);
+  // Issue #711 moved the comparison entry and language switch to the footer.
+  if ((await page.locator(`.site-footer a[href="${path}"]`).count()) < 1) {
+    throw new Error(`${path}: footer lost its comparison entry`);
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -1746,20 +1613,35 @@ export async function assertHomeCloudFlow(
       await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
       return;
     }
-    await entry.click();
-    const landedPath = new URL(page.url()).pathname;
-    if (landedPath !== cloudPath) {
-      throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${cloudPath}`);
+    if (selector !== "[data-primary-nav] .nav-apply") {
+      await entry.click();
+      const landedPath = new URL(page.url()).pathname;
+      if (landedPath !== cloudPath) {
+        throw new Error(`${path}: ${selector} landed at ${page.url()}, expected ${cloudPath}`);
+      }
+      const cta = page.locator("a.button-signal").first();
+      const href = await cta.getAttribute("href");
+      if (href !== loginPath) {
+        throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+      }
+      const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
+      const target = new URL(href, page.url()).toString();
+      const response = await (requestGet ? requestGet(target) : context.request.get(target));
+      if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
+        throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+      }
+      await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
+      return;
     }
-    const cta = page.locator("a.button-signal").first();
-    const href = await cta.getAttribute("href");
+    const href = await entry.getAttribute("href");
     if (href !== loginPath) {
-      throw new Error(`${cloudPath}: page CTA does not use ${loginPath}`);
+      throw new Error(`${path}: navigation CTA href is ${JSON.stringify(href)}, expected ${loginPath}`);
     }
     const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
-    const response = await context.request.get(new URL(href, page.url()).toString());
+    const target = new URL(href, `${flowTargetURL}${path}`).toString();
+    const response = await (requestGet ? requestGet(target) : context.request.get(target));
     if (!landing.matches(new URL(response.url())) || !landing.statusOk(response.status())) {
-      throw new Error(`${cloudPath}: page CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
+      throw new Error(`${path}: navigation CTA landed at ${response.url()} with ${response.status()}, expected ${landing.describe}`);
     }
     await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   } finally {
@@ -1767,9 +1649,7 @@ export async function assertHomeCloudFlow(
   }
 }
 
-// Issue #308: /compare/ is on the buyer-decision path. The nav CTA a visitor
-// sees there must be Start Cloud (ZH: 开始 Cloud) pointing at the language
-// Cloud introduction page before its login handoff.
+// Issue #711: /compare/ uses the same six-link nav and direct login handoff.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -1785,7 +1665,7 @@ async function assertCompareNavCta(browser, path, label) {
       throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
     }
     const href = await cta.getAttribute("href");
-    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/" : "/cloud/";
+    const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     if (href !== expectedHref) {
       throw new Error(`${path}: nav CTA href is ${JSON.stringify(href)}, expected ${JSON.stringify(expectedHref)}`);
     }
@@ -1865,9 +1745,9 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   for (const count of claim.counts) {
     if (!text.includes(count)) throw new Error(`${path}: missing the measured count ${JSON.stringify(count)}`);
   }
-  // Navigation consistency, same contract as the cost pages.
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  // Issue #711 moved the language switch to the footer.
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2116,8 +1996,8 @@ async function assertEvidencePage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the cross link ${href}`);
     }
   }
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2203,9 +2083,9 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
       throw new Error(`${path}: missing the cross link ${href}`);
     }
   }
-  // Navigation consistency: the language switch leads to the counterpart page.
-  const navSwitch = page.locator("[data-primary-nav] .language a");
-  if ((await navSwitch.getAttribute("href")) !== claim.zh) {
+  // Issue #711: the footer language switch leads to the counterpart page.
+  const languageSwitch = page.locator(".site-footer .language a");
+  if ((await languageSwitch.getAttribute("href")) !== claim.zh) {
     throw new Error(`${path}: language switch does not lead to ${claim.zh}`);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -2344,12 +2224,8 @@ async function main() {
     await assertHomepage(browser, "/", "/compare/", { width: 360, height: 844 }, "homepage-en-narrow.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 1440, height: 900 }, "homepage-zh-desktop.png");
     await assertHomepage(browser, "/zh/", "/zh/compare/", { width: 390, height: 844 }, "homepage-zh-mobile.png");
-    await assertHomeDropdowns(browser, "/", { width: 1440, height: 900 }, "dropdowns-en-desktop.png");
-    await assertHomeDropdowns(browser, "/", { width: 390, height: 844 }, "dropdowns-en-mobile.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 1440, height: 900 }, "dropdowns-zh-desktop.png");
-    await assertHomeDropdowns(browser, "/zh/", { width: 390, height: 844 }, "dropdowns-zh-mobile.png");
-    await assertCloudDocsNav(browser, "/cloud/");
-    await assertCloudDocsNav(browser, "/zh/cloud/");
+    // Issue #711 removes the old nav dropdowns; the shared footer retains
+    // their destinations and the language switch.
     await assertCampaignRefSurvivesHeroClick(browser);
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
@@ -2378,8 +2254,8 @@ async function main() {
       ["cloud-start-card", '[data-cta="cloud-start-card"]'],
       ["midway-cloud", '[data-cta="midway-cloud"]'],
     ];
-    // Issue #704 sends the hero CTA directly to login; the two lower-page
-    // CTAs still introduce the language-matching Cloud page.
+    // Issues #704/#711 send the hero and nav CTAs directly to login; the two
+    // lower-page CTAs still introduce the language-matching Cloud page.
     for (const [label, selector] of homepageCloudCtas) {
       await assertHomeCloudFlow(browser, "/", { width: 1440, height: 900 }, `cloud-${label}-en.png`, selector);
       await assertHomeCloudFlow(browser, "/zh/", { width: 1440, height: 900 }, `cloud-${label}-zh.png`, selector);
@@ -2436,11 +2312,10 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Start Cloud");
-    await assertCompareNavCta(browser, "/zh/compare/", "开始 Cloud");
-    // The compare nav CTA now introduces Cloud; assertCompareNavCta checks its
-    // language-specific landing href above, while the Cloud page flow above
-    // verifies the login handoff.
+    await assertCompareNavCta(browser, "/compare/", "Start free");
+    await assertCompareNavCta(browser, "/zh/compare/", "免费开始");
+    // assertCompareNavCta checks the language-specific direct-login href;
+    // assertHomeCloudFlow above verifies the same nav handoff lands correctly.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
     await assertOrcaPage(browser, "/compare/orca/", { width: 1440, height: 900 }, "compare-orca-en-desktop.png");
     await assertOrcaPage(browser, "/compare/orca/", { width: 390, height: 844 }, "compare-orca-en-mobile.png");
@@ -2497,7 +2372,7 @@ async function main() {
     if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
     await assertFooterDeepDives(page, "/compare/cursor/");
     // Issue #519: the switch link's accessible name comes from aria-label.
-    const languageSwitch = page.locator('[data-primary-nav] a[aria-label="简体中文"]');
+    const languageSwitch = page.locator('.site-footer a[aria-label="简体中文"]');
     if ((await languageSwitch.count()) !== 1 || (await languageSwitch.getAttribute("href")) !== "/zh/compare/cursor/") {
       throw new Error("detail language switch is wrong");
     }
