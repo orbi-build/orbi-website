@@ -269,11 +269,11 @@ describe("cloud login smoke contract (Issue #74)", () => {
 // that rewrite into the test and broke beta's deploy smoke while the site
 // itself was fine.
 describe("homepage cloud-start landing contract (Issue #720)", () => {
-  it("runs the homepage flow through its login href and local 302 chain to GitHub authorization", async () => {
+  it("runs the homepage and nav flows through their login href and local 302 chain to GitHub authorization", async () => {
     const server = await loginServer((request, response) => {
       if (request.url === "/") {
         response.writeHead(200, { "content-type": "text/html" });
-        response.end('<a data-cta="cloud-start" href="/cloud/login">Start Cloud</a>');
+        response.end('<a data-cta="cloud-start" href="/cloud/login">Start Cloud</a><nav data-primary-nav><a class="nav-apply" href="/cloud/login">Start free</a></nav>');
         return;
       }
       loginChain()(request, response);
@@ -282,26 +282,34 @@ describe("homepage cloud-start landing contract (Issue #720)", () => {
     const base = `http://127.0.0.1:${server.address().port}`;
     process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
     try {
-      await expect(assertHomeCloudFlow(
-        browser,
-        "/",
-        { width: 1440, height: 900 },
-        "cloud-start-local.png",
-        '[data-cta="cloud-start"]',
-        {
-          flowTargetURL: base,
-          requestGet: async (url) => {
-            let next = url;
-            for (const expectedPath of ["/cloud/login", "/api/login"]) {
-              const response = await fetch(next, { redirect: "manual" });
-              expect(new URL(next).pathname).toBe(expectedPath);
-              expect(response.status).toBe(302);
-              next = new URL(response.headers.get("location"), next).toString();
-            }
-            return { url: () => next, status: () => 200 };
+      for (const [selector, screenshot] of [
+        ['[data-cta="cloud-start"]', "cloud-start-local.png"],
+        ["[data-primary-nav] .nav-apply", "cloud-nav-local.png"],
+      ]) {
+        let requestGetCalls = 0;
+        await expect(assertHomeCloudFlow(
+          browser,
+          "/",
+          { width: 1440, height: 900 },
+          screenshot,
+          selector,
+          {
+            flowTargetURL: base,
+            requestGet: async (url) => {
+              requestGetCalls += 1;
+              let next = url;
+              for (const expectedPath of ["/cloud/login", "/api/login"]) {
+                const response = await fetch(next, { redirect: "manual" });
+                expect(new URL(next).pathname).toBe(expectedPath);
+                expect(response.status).toBe(302);
+                next = new URL(response.headers.get("location"), next).toString();
+              }
+              return { url: () => next, status: () => 200 };
+            },
           },
-        },
-      )).resolves.toBeUndefined();
+        )).resolves.toBeUndefined();
+        expect(requestGetCalls, `${selector} must verify the landing through the injected request`).toBe(1);
+      }
     } finally {
       delete process.env.CLOUD_LOGIN_EXPECT;
       await browser.close();

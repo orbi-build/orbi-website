@@ -9,17 +9,11 @@
       </button>
       <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
         <a href="/zh/#system">产品怎么运作</a>
-        <a href="/zh/guides/">指南</a>
         <a href="/zh/cloud/#pricing">价格</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-resources-menu" data-dropdown-toggle>资源<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-zh-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/zh/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi 交付自己的记录</span><span class="orbi-nav-dropdown-menu-description">公开的 Issue、PR 和发版，都在 GitHub 上</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">我们怎么测 harness</span><span class="orbi-nav-dropdown-menu-description">在开源 bug 上跑交付，用维护者的测试打分</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">每个 PR 花多少钱</span><span class="orbi-nav-dropdown-menu-description">在自家仓库实测，附样本量和限制</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/zh/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready 12 要素</span><span class="orbi-nav-dropdown-menu-description">什么样的 Issue 能交给 AI 无人值守交付</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/compare/" data-cta="comparisons" role="menuitem"><span class="orbi-nav-dropdown-menu-label">与同类工具对比</span><span class="orbi-nav-dropdown-menu-description">Claude Code、Codex、Devin 等，逐条核实</span></a><a class="orbi-nav-dropdown-menu-a" href="/zh/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">博客</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-zh-docs-menu" data-dropdown-toggle>文档<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-zh-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build/zh" role="menuitem">自托管文档</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud 文档</a></div></div>
+        <a href="https://docs.orbi.build/zh">文档</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a href="/api/login">登录</a>
-        <a class="nav-apply" href="/zh/cloud/">开始 Cloud</a>
-        <span class="language" role="group" aria-label="语言">
-          <a href="/terms/" lang="en" aria-label="English">EN</a>
-          <span aria-current="page">ZH</span>
-        </span>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">免费开始</a>
       </nav>
     </header>
   </div><main id="main-content"><div class="night"><section class="compare-hero shell" aria-labelledby="terms-title"><p class="eyebrow">条款 · Orbi Cloud</p><h1 id="terms-title">服务条款</h1><p class="hero-lede"><strong>为托管交付线写清楚的约定。</strong> 使用 Orbi Cloud 即表示你同意合法使用服务、保护 GitHub 访问权限，并支付所选订阅。</p></section></div><section class="compare-section shell" aria-labelledby="service-title"><p class="section-tag">服务</p><h2 class="orbi-compare-section-h2" id="service-title">Issue 进去，经过审查的交付出来</h2><p>Orbi Cloud 是面向你授权仓库的托管 runner。它可以按 Cloud 页面所述执行交付：实现、独立审查与修复、精确 head 合并和 Release 证据。你仍负责仓库、指令、模型 provider 以及对结果的检查。</p><p>付费档为 Solo（<strong>每月 US$__SOLO_MONTHLY_USD__</strong>，含 <strong>__SOLO_INCLUDED_TOKENS__ token</strong>）和 Pro（<strong>每月 US$__CLOUD_MONTHLY_USD__</strong>，含 <strong>__INCLUDED_TOKENS__ token</strong>）。依据 <code>FREE_DELIVERY_ALLOWANCE=3</code>，前<strong>3 次 merged 交付</strong>免费。未来订阅的用量和计划可能变化；你订阅时显示的价格和额度适用于该订阅。</p></section><section class="compare-section compare-section-tint" aria-labelledby="billing-title"><div class="shell"><p class="section-tag">订阅</p><h2 class="orbi-compare-section-h2" id="billing-title">计费与创始会员</h2><p>Stripe 处理付款、发票和客户门户。订阅会每月续费，直到你在门户中取消。创始会员享受<strong>永久 5 折</strong>，限 __FOUNDING_PARTNER_LIMIT__ 个订阅名额。折扣在订阅存续期间有效；名额用完后，新订阅按正价计费。</p><p>退款请求逐笔处理。请把发票和原因发到 <a href="mailto:support@orbi.build">support@orbi.build</a>，不要先要求发卡行撤销扣款。</p></div></section><section class="compare-section shell" aria-labelledby="limits-title"><p class="section-tag">边界</p><h2 class="orbi-compare-section-h2" id="limits-title">可用性、终止与法律</h2><p>Cloud 按“现状”和“可用”提供。我们不保证服务不间断、特定模型 provider、交付成功或生成的修改正确。对由指令、凭据、仓库内容、provider 故障或你合并/部署的修改造成的损失，我们不承担责任。</p><p>你可以随时停止使用 Cloud。若未付款、滥用、违法、安全风险或严重违反条款，我们可以暂停或终止访问。GitHub、Stripe 和模型 provider 也可能适用各自条款。本条款适用服务运营方主要营业地适用的法律，不适用法律冲突规则；你所在地强制适用的消费者保护不受影响。</p></section></main><section class="subscribe-box shell" aria-labelledby="subscribe-title">
@@ -53,7 +47,7 @@
       </div>
       <div class="footer-group footer-guides">
         <h2>指南</h2>
-        <ul><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>对比</h2>
@@ -64,6 +58,7 @@
         <ul><li><a href="/zh/support/">支持</a></li><li><a href="/zh/#direction">方向</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><a href="/terms/" lang="en" aria-label="English">EN</a><span aria-current="page">ZH</span></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
