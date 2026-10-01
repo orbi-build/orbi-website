@@ -209,7 +209,6 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
     ["cloud/index.html", {
       intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No card`,
       failed: "· Failed deliveries don't count",
-      language: "en",
       login: "/cloud/login",
       soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,
       soloClass: "button button-signal",
@@ -219,7 +218,6 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
     ["zh/cloud/index.html", {
       intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑卡`,
       failed: "· 失败的交付不计次数",
-      language: "zh",
       login: "/zh/cloud/login",
       soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,
       soloClass: "button button-signal",
