@@ -235,6 +235,35 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
   });
 });
 
+describe("blog title and body alignment (Issue #695)", () => {
+  it("renders every post hero and body in the same blog-only layout class", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      expect(html, `${post.output}: hero layout`).toMatch(
+        /<div class="night">\s*<div class="post-grid">\s*<section class="post-hero"/,
+      );
+      expect(html, `${post.output}: body layout`).toMatch(
+        /<div class="post-grid">\s*<article class="post-body">/,
+      );
+      expect(countMatches(html, /class="post-grid"/g), `${post.output}: shared layout count`).toBe(2);
+      expect(html, `${post.output}: shared compare styles stay unused`).not.toContain('class="compare-hero shell" aria-labelledby="post-title"');
+    }
+  });
+
+  it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
+    const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
+    expect(template).toMatch(
+      /\.post-grid\s*\{[^}]*max-width:\s*52rem;[^}]*margin:\s*0 auto;[^}]*padding:\s*0 24px;/,
+    );
+    expect(template).toMatch(
+      /@media\s*\(min-width:\s*1200px\)\s*\{[\s\S]*?\.post-grid\s*\{[^}]*grid-template-columns:\s*232px minmax\(0, 52rem\);[^}]*column-gap:\s*24px;[^}]*max-width:\s*68rem;[^}]*padding:\s*0;/,
+    );
+    expect(template).toMatch(
+      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*2;[^}]*padding-left:\s*24px;[^}]*padding-right:\s*24px;/,
+    );
+  });
+});
+
 describe("email subscription forms (Issue #665)", () => {
   it("renders exactly one form and script on every page with the shared footer", () => {
     for (const [output, html] of shipped) {
@@ -436,10 +465,7 @@ describe("Issue #438 wording and internal-link contracts", () => {
   it("ends every blog body with two or three contextual links", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
-      const relatedStart = Math.max(
-        html.lastIndexOf('<h2 id="related">Related</h2>'),
-        html.lastIndexOf('<h2 id="相关">相关</h2>'),
-      );
+      const relatedStart = Math.max(html.lastIndexOf("<h2>Related</h2>"), html.lastIndexOf("<h2>相关</h2>"));
       const related = html.slice(relatedStart, html.indexOf("</main>", relatedStart));
       const prefix = post.lang === "zh" ? "/zh" : "";
       const links = [...related.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);

@@ -27,11 +27,10 @@
 
   <style>
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
-    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
-    .post-hero h1 { max-width: none; }
-    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -52,23 +51,12 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
-    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
-    .post-toc p { margin: 0 0 8px; font-weight: 600; }
-    .post-toc ol { margin: 0; padding: 0; list-style: none; }
-    .post-toc li { margin: 0; }
-    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
-    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
-    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
-    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
-    .post-toc-inline a { overflow-wrap: anywhere; }
-    @media (max-width: 1199px) {
-      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
-      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
-      .post-toc { display: none; }
-      .post-toc-inline { display: block; }
     }
   </style>
 
@@ -114,34 +102,14 @@
     </div>
 
     <div class="post-grid">
-      <nav class="post-toc" aria-label="On this page">
-        <p>On this page</p>
-        <ol>
-      <li><a href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
-      <li><a href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
-      <li><a href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
-      <li><a href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
-      <li><a href="#related">Related</a></li>
-        </ol>
-      </nav>
       <article class="post-body">
-      <details class="post-toc-inline">
-        <summary>On this page · 5 sections</summary>
-        <ol>
-      <li><a href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
-      <li><a href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
-      <li><a href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
-      <li><a href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
-      <li><a href="#related">Related</a></li>
-        </ol>
-      </details>
 <p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> asked for a straightforward fix: publish the container built by <code class="post-code--single">3rd/docker/Dockerfile</code>, so a Docker search returns an image people can pull. The workflow now publishes on every release and on a manual dispatch: <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>, tagged with the release version and <code class="post-code--single">latest</code>, to both <code class="post-code--single">ghcr.io/orbi-build/orbi</code> and <code class="post-code--single">docker.io/orbibuild/orbi</code>.</p>
 <p>Pull the published image:</p>
 <pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
 docker pull docker.io/orbibuild/orbi:latest
 </code></pre>
 <p>The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
-<h2 id="three-failures-three-different-causes">Three failures, three different causes</h2>
+<h2>Three failures, three different causes</h2>
 <p>All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>
 <h3>Try 1 (release v0.5.17): two jobs, two build contexts</h3>
 <p>The build-only verify job built the image fine; the publish job failed. Buildx could not find <code class="post-code--single">/orbi-container-setup.sh</code> and <code class="post-code--single">/orbi-container-setup.service</code>, the files the Dockerfile copies. The verify job pointed at the right directory; the publish job pointed at another context, so its build started from a view of the repository that was missing exactly those files.</p>
@@ -149,7 +117,7 @@ docker pull docker.io/orbibuild/orbi:latest
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> failed all three build steps with <code class="post-code--spaced">failed to read dockerfile: open Dockerfile: no such file or directory</code>. <a href="https://github.com/orbi-build/orbi/pull/1044">#1044</a> names the cause: buildx resolves <code class="post-code--spaced">file: Dockerfile</code> against the workspace root, so the fix wrote <code class="post-code--single">3rd/docker/Dockerfile</code> in all three places. The fix&#39;s own pull-request checks then failed from the other side: the workflow derived the image tag from the git ref, and a pull request&#39;s ref is <code class="post-code--single">1044/merge</code>, which buildx rejects as <code class="post-code--spaced">invalid reference format</code>.</p>
 <h3>Try 3 (manual dispatch): the images landed; the overview step kept the job red</h3>
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> pushed <code class="post-code--single">0.5.17</code> and <code class="post-code--single">latest</code> to both registries, for <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>. The job still ended red: the only failing step was the Docker Hub overview update, answered 403 because the token lacked a permission. <a href="https://github.com/orbi-build/orbi/pull/1046">#1046</a> made that step <code class="post-code--spaced">continue-on-error: true</code>, so an overview hiccup can never fail a release again.</p>
-<h2 id="three-rules-the-failures-bought">Three rules the failures bought</h2>
+<h2>Three rules the failures bought</h2>
 <h3>Rule 1: every build spells out its paths</h3>
 <p>Each build step now carries <code class="post-code--spaced">context: 3rd/docker</code> and <code class="post-code--spaced">file: 3rd/docker/Dockerfile</code>. Nothing depends on the working directory buildx happens to start from.</p>
 <h3>Rule 2: publish never runs on a PR ref</h3>
@@ -157,12 +125,12 @@ docker pull docker.io/orbibuild/orbi:latest
 <h3>Rule 3: an overview cannot fail a release</h3>
 <p>The Docker Hub overview step runs with <code class="post-code--spaced">continue-on-error: true</code>. The release contract lives in the images; a description update answered 403 cannot turn a finished publish into a failed run.</p>
 <p>Checked against <code class="post-code--single">.github/workflows/docker-image.yml</code> on orbi-build/orbi main, 2026-09-18.</p>
-<h2 id="from-pull-to-first-delivery">From pull to first delivery</h2>
+<h2>From pull to first delivery</h2>
 <p>A pulled image still needs a model provider before it can deliver. <a href="https://github.com/orbi-build/orbi/issues/1048">#1048</a> added the <code class="post-code--single">ORBI_PI_*</code> environment variables: with <code class="post-code--single">ORBI_PI_PROVIDER</code>, <code class="post-code--single">ORBI_PI_MODEL</code>, <code class="post-code--single">ORBI_PI_BASE_URL</code> and <code class="post-code--single">ORBI_PI_API_KEY</code> set, the entrypoint generates <code class="post-code--single">pi-providers.json</code> on first start, and it never touches an existing configuration. <a href="https://github.com/orbi-build/orbi/issues/1049">#1049</a> rewrote the Quick start around that: <code class="post-code--spaced">docker pull</code>, then one copy-pasted <code class="post-code--spaced">docker run</code> that reaches a real delivery, with build-from-source moved to its own section.</p>
 <p>The first release after the fixes, v0.5.18, published green end to end. That is the state the next release inherits.</p>
-<h2 id="pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</h2>
+<h2>Pull the image, create an Issue, get a PR</h2>
 <p>The Quick start on <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a> takes you from <code class="post-code--spaced">docker pull</code> to a first delivery. The image overview lives on <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
-<h2 id="related">Related</h2>
+<h2>Related</h2>
 <p>Read the <a href="/compare/openhands/">OpenHands comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -220,7 +188,7 @@ docker pull docker.io/orbibuild/orbi:latest
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{const ids=["three-failures-three-different-causes","three-rules-the-failures-bought","from-pull-to-first-delivery","pull-the-image-create-an-issue-get-a-pr","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
+<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

@@ -27,11 +27,10 @@
 
   <style>
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
-    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
-    .post-hero h1 { max-width: none; }
-    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -52,23 +51,12 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
-    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
-    .post-toc p { margin: 0 0 8px; font-weight: 600; }
-    .post-toc ol { margin: 0; padding: 0; list-style: none; }
-    .post-toc li { margin: 0; }
-    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
-    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
-    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
-    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
-    .post-toc-inline a { overflow-wrap: anywhere; }
-    @media (max-width: 1199px) {
-      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
-      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
-      .post-toc { display: none; }
-      .post-toc-inline { display: block; }
     }
   </style>
 
@@ -114,9 +102,7 @@
     </div>
 
     <div class="post-grid">
-
       <article class="post-body">
-
 <p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>, asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.</p>
 <p>At 10:28 (UTC+8) he added the <code class="post-code--single">ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
 <h3>The first version was rejected</h3>
@@ -162,7 +148,7 @@ oracle: OK   (should fail)
 <p>When the review said no, it gave reasons, and the fix landed on the same PR. On a hard ticket in someone else&#39;s codebase, that took 10 and a half hours from PR open to merge. Every failure, Orbi&#39;s included, is in the public record, so you can check this post against it.</p>
 <p>Two things changed in Orbi afterwards (<a href="https://github.com/orbi-build/orbi/issues/1219">orbi#1219</a>). A bad PR body now fails only its own ticket and no longer kills the runner. And Orbi&#39;s workflow contract now says a phased initiative must not be carried by one issue: the maintainer splits each phase into a child issue, and each child&#39;s PR closes that child and nothing else.</p>
 <p>If you maintain a repo with a queue of well-specified issues, <a href="https://orbi.build/cloud/?ref=blog-k8e">Orbi Cloud</a> runs the same loop on yours.</p>
-<h2 id="related">Related</h2>
+<h2>Related</h2>
 <p>Read the <a href="/compare/devin/">Devin comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
       </article>

@@ -27,11 +27,10 @@
 
   <style>
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
-    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
-    .post-hero h1 { max-width: none; }
-    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -52,23 +51,12 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
-    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
-    .post-toc p { margin: 0 0 8px; font-weight: 600; }
-    .post-toc ol { margin: 0; padding: 0; list-style: none; }
-    .post-toc li { margin: 0; }
-    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
-    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
-    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
-    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
-    .post-toc-inline a { overflow-wrap: anywhere; }
-    @media (max-width: 1199px) {
-      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
-      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
-      .post-toc { display: none; }
-      .post-toc-inline { display: block; }
     }
   </style>
 
@@ -114,45 +102,11 @@
     </div>
 
     <div class="post-grid">
-      <nav class="post-toc" aria-label="本页目录">
-        <p>本页目录</p>
-        <ol>
-      <li><a href="#十条结论">十条结论</a></li>
-      <li><a href="#为什么开始">为什么开始</a></li>
-      <li><a href="#怎么测">怎么测</a></li>
-      <li><a href="#网格">网格</a></li>
-      <li><a href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a></li>
-      <li><a href="#模型起了什么作用">模型起了什么作用</a></li>
-      <li><a href="#九个它从没见过的-issue">九个它从没见过的 issue</a></li>
-      <li><a href="#第一次真实修复就改坏过东西的-issue">第一次真实修复就改坏过东西的 issue</a></li>
-      <li><a href="#搭-benchmark-学到的-和跑-benchmark-一样多">搭 benchmark 学到的，和跑 benchmark 一样多</a></li>
-      <li><a href="#上篇走到哪一步">上篇走到哪一步</a></li>
-      <li><a href="#如果你也在跑-coding-agent">如果你也在跑 coding agent</a></li>
-      <li><a href="#相关">相关</a></li>
-        </ol>
-      </nav>
       <article class="post-body">
-      <details class="post-toc-inline">
-        <summary>本页目录 · 12 节</summary>
-        <ol>
-      <li><a href="#十条结论">十条结论</a></li>
-      <li><a href="#为什么开始">为什么开始</a></li>
-      <li><a href="#怎么测">怎么测</a></li>
-      <li><a href="#网格">网格</a></li>
-      <li><a href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a></li>
-      <li><a href="#模型起了什么作用">模型起了什么作用</a></li>
-      <li><a href="#九个它从没见过的-issue">九个它从没见过的 issue</a></li>
-      <li><a href="#第一次真实修复就改坏过东西的-issue">第一次真实修复就改坏过东西的 issue</a></li>
-      <li><a href="#搭-benchmark-学到的-和跑-benchmark-一样多">搭 benchmark 学到的，和跑 benchmark 一样多</a></li>
-      <li><a href="#上篇走到哪一步">上篇走到哪一步</a></li>
-      <li><a href="#如果你也在跑-coding-agent">如果你也在跑 coding agent</a></li>
-      <li><a href="#相关">相关</a></li>
-        </ol>
-      </details>
 <p>Orbi 接一个 GitHub issue，交出一个评审过、已合并的 PR。一个 agent 写修复，另一个 agent 评审，评审不过就接着改。包在模型外面的那一层叫 harness：每个角色拿到的 prompt、加载的 skill、runner <code class="post-code--single">PATH</code> 里的工具，还有评审怎样才算通过的规矩。</p>
 <p>交付出错时，只看一次运行，分不清该怪模型还是 harness。我们决定不猜了，花了一个晚上加第二天上午，把 Orbi 的完整流程一遍遍重跑。先跑三个 Orbi 交付出过回归的开源 issue，再跑九个它没见过的普通 bug，最后是三个上游第一次修复就改坏过东西的 bug。prompt、skill、工具、实现模型、评审模型轮流换，每次合并的代码都交给一个 Orbi 看不到的隐藏评分器打分。</p>
 <p>这是上篇，讲我们怎么找到这些失败，又怎么调出一个能修好它们的 harness。<a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">下篇</a>算的是这个 harness 值不值它的成本。结果和脚本在 <a href="/zh/benchmark/">benchmark 页</a>和 <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>。先说结论。</p>
-<h2 id="十条结论">十条结论</h2>
+<h2>十条结论</h2>
 <ol>
 <li><strong>在我们拿来调参的 issue 上，harness 对结果的影响比任何一次换模型都大。</strong> 实现和评审都用 <code class="post-code--single">deepseek-flash</code>，原版 harness 在三个调参 issue 上 15 次过 6 次，v13 到 v15 是 30 次过 28 次。不过这是训练集成绩，没调过参的 issue 看第 7 条。</li>
 <li><strong>「对比修复前后」不够。</strong> 让 agent 查回归，它只查自己本来就觉得没问题的例子。有一次它测了从没坏过的 U+0301，偏偏漏了坏掉的 U+3099。输入得用程序按整类批量生成。</li>
@@ -166,7 +120,7 @@
 <li><strong>benchmark 本身也是软件，我们的就有 bug。</strong> 我们的评分器前后错过三次，快照有一次悄悄漏了被跟踪的文件，还有一次评审直接去翻了上游真正的修复。每个 bug 都会产出一个看着很确定、其实是错的数字。</li>
 </ol>
 <p>下面逐条讲它们怎么来的，我们自己搞砸的地方也在里面。</p>
-<h2 id="为什么开始">为什么开始</h2>
+<h2>为什么开始</h2>
 <p>9 月 28 日，Orbi 在三个开源项目的 fork 里各修了一个 issue：<a href="https://github.com/orbi-build/pyinfra/pull/3">pyinfra</a>、<a href="https://github.com/orbi-build/chainloop/pull/3">chainloop</a>、<a href="https://github.com/orbi-build/fedify/pull/3">fedify</a>。三个都过了测试和 Orbi 自己的评审。往上游提之前我们手工复查了一遍，两个是错的。</p>
 <p>chainloop 那个是密钥脱敏器。原 issue 说：JWT 后面紧跟一个转义引号时，反斜杠会跟着 JWT 一起被脱敏。Orbi 的修法是剥掉每条命中结果末尾的反斜杠。JWT 修好了，另外两处坏了：</p>
 <pre><code class="post-code--spaced">输入：DB_PASSWORD=Zq8mLp2Vx9rT\n next
@@ -181,7 +135,7 @@
 <p>pyinfra 那个是中日韩文字把结果表格挤歪了。修复把宽字符按两列算，issue 里的例子对齐了，👍🏽 和分解形式的「が」却比修之前更歪。</p>
 <p>两个交付上，Orbi 写在 fork issue 里的评审意见全文都是 <code class="post-code--spaced">review: pass, no findings</code>。评审跑了测试，核对了 issue 里的例子，例子确实过了。回归藏在没人试过的输入里。</p>
 <p>三个修复里我们只提了一个到上游。pyinfra 的修复用 Claude Code 手工重写后，提成了 <a href="https://github.com/pyinfra-dev/pyinfra/pull/1977">pyinfra-dev/pyinfra#1977</a>，并注明了 AI 的参与。chainloop 的要等我们有了信得过的修法再提。fedify 的代码没问题，可 fedify 要求贡献者先被指派 issue 才能开 PR，而维护者自己接了这张票，已经关掉。</p>
-<h2 id="怎么测">怎么测</h2>
+<h2>怎么测</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-flow-zh.svg" alt="每次运行：私有快照仓库交给真实的 Orbi runner 跑完认领、实现、开 PR、评审、合并，再由隐藏评分器打分。评分器事先校准：原始代码判失败，Orbi 当初合并的 fork PR 判失败，手工核实的正确修复判通过。" width="720" height="300">
 <figcaption>评分器在任何变体开跑之前先校准。连坏 PR 都放过的评分器，测不出任何东西。</figcaption>
@@ -189,12 +143,12 @@
 <p>任何变体开跑之前，评分器都要过三关：原始代码判失败，Orbi 当初合并的 fork PR 判失败，我们手工核实过的正确修复判通过。chainloop 评分器在 fork PR 上判失败的两项，正是上面那两个输出；pyinfra 的是 👍🏽 和「が」。</p>
 <p>一个变体就是一种 harness 和模型的组合，每次改 prompt、skill、<code class="post-code--single">PATH</code> 里的工具、实现模型、评审模型中的一样或几样。模型有这几个：经 Pi 跑的 <code class="post-code--single">deepseek-flash</code>、<code class="post-code--single">gpt-5.6-luna</code>、<code class="post-code--single">gpt-5.6-sol</code>，经 Claude Code 桥接跑的 Opus 5.5，经 zcode 桥接跑的 GLM 5.3 flash。走桥接时，实现和评审用同一个模型，agent 循环也换成桥接自己的。</p>
 <p>变体在一台机器上三四个并行，各用各的私有仓库，看不到彼此的分支。</p>
-<h2 id="网格">网格</h2>
+<h2>网格</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-grid-zh.svg" alt="harness 版本与模型组合的网格。实现和评审都用 deepseek-flash 时，原版 6/15，v15 9/9；原版配 luna 实现、sol 评审 1/3；Opus 5.5 在 v1、v5、v11 上分别是 1/3、2/3、3/4；GLM 5.3 flash 在 v14 上 2/3；v15 配 deepseek 实现、sol 评审 4/4，只跑了 chainloop。" width="720" height="428">
 <figcaption>行是 harness 版本，列是「实现 / 评审」。ds = deepseek-flash。格子里是三个仓库合计的「通过 / 运行」。</figcaption>
 </figure><p>网格故意留得稀疏。那一夜每一步都在挑「最便宜、又能回答眼前问题」的那次运行，没打算做全因子实验。非 deepseek 的格子大多只有 2 到 4 次，当线索看就好，<code class="post-code--single">ds/ds</code> 那一列才是结果。</p>
-<h2 id="harness-的改动起了什么作用">harness 的改动起了什么作用</h2>
+<h2>harness 的改动起了什么作用</h2>
 <figure class="post-media">
 <img src="/img/diagrams/harness-trend-zh.svg" alt="实现和评审都用 deepseek-flash 时各 harness 版本的通过率：v0 6/15，v1 5/7，v4 1/3，v5 4/4，v10 1/2，v11 6/9，v13 11/12，v14 8/9，v15 9/9。" width="720" height="470">
 <figcaption>全程同一个模型。浅色柱不到 5 次。</figcaption>
@@ -233,7 +187,7 @@
 <p>单字符 <code class="post-code--single">s</code> 的问题是另一回事。修复改了要搜索的串（一个被截短的密钥），然后把这个更短的串出现的地方全替换了。v15 加了一条：改动要是改变了要搜索或替换的文本，就得测这段文本在别处出现的情况。9/9。</p>
 <h3>v17：产出方清单（实验）</h3>
 <p>v17 要求回归报告附一张表，列出每条可能产出风险输入的规则，评审逐行核对。agent 真去读了检测器的规则文件，把 <code class="post-code--single">generic-password</code> 列了进去。chainloop 上 3/4，和 v15 分不出高下。</p>
-<h2 id="模型起了什么作用">模型起了什么作用</h2>
+<h2>模型起了什么作用</h2>
 <p>换模型的结果比改 harness 难解读：每次换模型都连带换了 prompt 版本，走桥接的还换了 agent 循环。</p>
 <ul>
 <li><strong>原版 harness，luna 实现、sol 评审：</strong> 1/3，漏掉的 pyinfra 回归和 <code class="post-code--single">deepseek-flash</code> 一样。模型更强，指令没变，查的还是那几个例子。</li>
@@ -243,7 +197,7 @@
 <li><strong>v15，deepseek 实现、sol 评审：</strong> chainloop 上 4/4。v15 用 <code class="post-code--single">deepseek-flash</code> 评审也是 4/4，还看不出更强的评审有帮助。耗时反而更长：chainloop 上中位数 29.5 分钟，v15 是 21 分钟。</li>
 </ul>
 <p>在这批运行里，harness 对结果的影响远大于任何一次换模型。这只是这批数据的结论，不等于说模型不重要。</p>
-<h2 id="九个它从没见过的-issue">九个它从没见过的 issue</h2>
+<h2>九个它从没见过的 issue</h2>
 <p>上面这些，都是在同样三个 issue 上调参、又在同样三个 issue 上打分，属于训练集成绩。规则到底能推广，还是只记住了这三个 bug，从这里看不出来。所以我们又做了一个留出集。</p>
 <p>我们挑了九个 2026 年 8 月 10 日之后在上游合并的真实 bug 修复，Go、TypeScript、Python 各三个：<code class="post-code--single">gojq</code>（全局模式下的空正则匹配）、<code class="post-code--single">urfave/cli</code>（单独一个 <code class="post-code--single">-</code> 之后的参数）、<code class="post-code--single">pflag</code>（超宽单词之后的换行）、<code class="post-code--single">magic-string</code>（替换串里的 <code class="post-code--single">$</code> 模式）、<code class="post-code--single">recast</code>（<code class="post-code--single">??</code> 与 <code class="post-code--single">||</code> 混用时的括号）、<code class="post-code--single">cron-parser</code>（带步长区间的字符串化）、<code class="post-code--single">python-dotenv</code>（单引号值里的反斜杠）、<code class="post-code--single">markdown-it-py</code>（开启表格时文件末尾的引用块）、<code class="post-code--single">pyjwt</code>（带填充的 Base64URL 段）。隐藏评分器用的是维护者在修复里自己写的测试，我们和 Orbi 都没碰过，校准方法相同：修复前判失败，修复后判通过。Orbi 看到的 issue 正文经过改写，去掉了链接、编号和一切修法提示。</p>
 <figure class="post-media">
@@ -254,7 +208,7 @@
 <img src="/img/diagrams/harness-cost-zh.svg" alt="原版与 v15 每次运行的 token 和耗时中位数，分训练 issue 和留出 issue。留出 issue 上 v15 用了 580 万 token，原版 280 万；耗时 16 分钟对 11 分钟。" width="720" height="360">
 <figcaption>每次运行的中位数。token 里包含缓存读取，约占 97%。</figcaption>
 </figure><p>而且 v15 更贵。留出集上，它每次运行的 token 中位数是 580 万，原版是 280 万；耗时 16 分钟对 11 分钟。pflag 上它写了 274 行，原版 88 行，多出来的大多是生成的回归测试。token 里约 97% 是缓存读取，在 <code class="post-code--single">deepseek-flash</code> 上很便宜，账单没有 token 数看着那么吓人，多花的时间却是实打实的。</p>
-<h2 id="第一次真实修复就改坏过东西的-issue">第一次真实修复就改坏过东西的 issue</h2>
+<h2>第一次真实修复就改坏过东西的 issue</h2>
 <p>九个留出 bug 对两套 harness 都不难，可当初出事，偏偏是修复改坏了别的东西。于是我们专门找这种真实案例：上游合并了一个修复，后来发现它引入了回归，又修了一次。挑出三个，每个的评分器都满足三点：第一次修复之前的代码判失败，第一次修复本身判失败，最终修复判通过。</p>
 <ul>
 <li><strong>numpy</strong>：<code class="post-code--spaced">np.linspace(np.inf, np.inf, 5)</code> 返回一串 NaN。上游第一次修复处理了无穷大，却改坏了 <code class="post-code--single">ndarray</code> 的子类，astropy 的 <code class="post-code--single">Quantity</code> 用不了了，又补了一个 PR。</li>
@@ -268,7 +222,7 @@
 </figure><p>原版 harness 计分的四次全过，v15 三次全过。v15 一次也没跑完 numpy，三次尝试都因内存被杀，所以它的 3/3 是 aiohttp 一次、OpenTelemetry Collector 两次。</p>
 <p>我们本以为这一组能把两套 harness 分开，结果没有。原因很简单：人第一次修时犯的错，不是这个 agent 会犯的错。原版的四次运行里，没有一次重现上游第一次修复引入的那个回归。Orbi 真正交付过的回归，就是 pyinfra 和 chainloop 那两个，出自另一个习惯：只核对 issue 里的例子，别的不看。</p>
 <p>所以回归防护该盯住 agent 自己的失败方式，而不是一份「代码会怎么坏」的通用清单。当然，只有三个样本，能说的也就这么多。</p>
-<h2 id="搭-benchmark-学到的-和跑-benchmark-一样多">搭 benchmark 学到的，和跑 benchmark 一样多</h2>
+<h2>搭 benchmark 学到的，和跑 benchmark 一样多</h2>
 <p>我们在自己的测量里找到的 bug，比在 harness 里找到的还多。每一个都会产出一个看着很确定、其实是错的数字。</p>
 <ul>
 <li><strong>评分器执行了错的规则。</strong> 我们第一版 fedify 评分器要求 <code class="post-code--single">CHANGES.md</code> 不能动，可上游每次都改它。后来换成了项目自己的 <code class="post-code--spaced">sacho check</code>。</li>
@@ -280,11 +234,11 @@
 <li><strong>API 额度是共享的。</strong> 每次运行、账号下每个生产 runner 都在用同一份 GraphQL 额度。我们加了一道闸：额度低于阈值就让队列等着。我们起初把额度消耗主要算在生产 runner 的分支清理头上，认真量过才发现它每小时只用约 400 点，比最初写下的数小得多。</li>
 </ul>
 <p>由此定下的规矩：评分器打任何分之前，先让它在已知坏版本上判失败、在已知好版本上判通过。结果出乎意料时，先读会话记录，再决定信不信。</p>
-<h2 id="上篇走到哪一步">上篇走到哪一步</h2>
+<h2>上篇走到哪一步</h2>
 <p>头两轮下来，v15 修好了调参时碰到的所有失败，在十二个没见过的 bug 上没弄坏任何东西，成本中位数却多了差不多一倍。这样的结果没法直接上线。一个让修复成本中位数翻倍的防护，得先证明它在没见过的 bug 上真能拦住点什么，而普通留出题根本没给它出手的机会。</p>
 <p>所以下一轮的问题更窄，也更难：碰上和 Orbi 真实失败同一类的新 bug，原版会不会翻车？能不能用更便宜的 harness 保住修复？答案在<a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">下篇</a>。</p>
 <p>上篇的局限很明显。调参集只有三个 issue，留出集是九个和三个，很多格子不到 5 次。隐藏评分器也只抓得到有人事先想到要测的缺陷，哪怕这个人是上游维护者。</p>
-<h2 id="如果你也在跑-coding-agent">如果你也在跑 coding agent</h2>
+<h2>如果你也在跑 coding agent</h2>
 <p>不管用的是哪个 agent，这周就能做五件事：</p>
 <ol>
 <li>挑一个已经合并的 agent PR，写出你觉得它会处理错的输入，跑一下。要是真坏了，回头看看评审当时说了什么。</li>
@@ -294,7 +248,7 @@
 <li>如果你也做 benchmark，每个评分器先对着已知坏版本和已知好版本校准，并且让 agent 碰不到真正的答案。</li>
 </ol>
 <p><a href="https://orbi.build/cloud/?ref=blog-harness-zh">Orbi Cloud</a> 可以在你自己的 issue 上跑这里描述的流程。benchmark 在 <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>，可以拿去测你自己的 agent。</p>
-<h2 id="相关">相关</h2>
+<h2>相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
       </article>
@@ -352,7 +306,7 @@
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{const ids=["十条结论","为什么开始","怎么测","网格","harness-的改动起了什么作用","模型起了什么作用","九个它从没见过的-issue","第一次真实修复就改坏过东西的-issue","搭-benchmark-学到的-和跑-benchmark-一样多","上篇走到哪一步","如果你也在跑-coding-agent","相关"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
+<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};

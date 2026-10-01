@@ -27,11 +27,10 @@
 
   <style>
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; margin: 0 auto; }
-    .post-hero { grid-column: 2; padding: 84px 24px 68px; }
-    .post-hero h1 { max-width: none; }
-    .post-body { grid-column: 2; max-width: none; margin: 0; padding: 12px 24px 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
@@ -52,23 +51,12 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
-    .post-toc { grid-column: 1; grid-row: 1; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; margin-top: 12px; padding: 12px 0 12px 16px; border-left: 2px solid var(--line); }
-    .post-toc p { margin: 0 0 8px; font-weight: 600; }
-    .post-toc ol { margin: 0; padding: 0; list-style: none; }
-    .post-toc li { margin: 0; }
-    .post-toc a { display: block; padding: 4px 0; color: var(--ink-soft); text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc a:hover, .post-toc a.is-active { color: var(--ink); font-weight: 600; }
-    .post-toc a.is-active { border-left: 3px solid var(--signal); margin-left: -18px; padding-left: 15px; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); }
-    .post-toc-inline summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
-    .post-toc-inline ol { margin: 0; padding: 0 12px 10px 34px; }
-    .post-toc-inline a { overflow-wrap: anywhere; }
-    @media (max-width: 1199px) {
-      .post-grid { display: block; width: min(52rem, calc(100% - 48px)); }
-      .post-hero, .post-body { padding-left: 0; padding-right: 0; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
-      .post-toc { display: none; }
-      .post-toc-inline { display: block; }
     }
   </style>
 
@@ -114,35 +102,15 @@
     </div>
 
     <div class="post-grid">
-      <nav class="post-toc" aria-label="On this page">
-        <p>On this page</p>
-        <ol>
-      <li><a href="#the-model-is-not-the-bottleneck">The model is not the bottleneck</a></li>
-      <li><a href="#three-conditions-checked-at-the-moment-of-merge">Three conditions, checked at the moment of merge</a></li>
-      <li><a href="#what-a-person-still-does">What a person still does</a></li>
-      <li><a href="#if-you-are-running-the-action-today">If you are running the action today</a></li>
-      <li><a href="#related">Related</a></li>
-        </ol>
-      </nav>
       <article class="post-body">
-      <details class="post-toc-inline">
-        <summary>On this page · 5 sections</summary>
-        <ol>
-      <li><a href="#the-model-is-not-the-bottleneck">The model is not the bottleneck</a></li>
-      <li><a href="#three-conditions-checked-at-the-moment-of-merge">Three conditions, checked at the moment of merge</a></li>
-      <li><a href="#what-a-person-still-does">What a person still does</a></li>
-      <li><a href="#if-you-are-running-the-action-today">If you are running the action today</a></li>
-      <li><a href="#related">Related</a></li>
-        </ol>
-      </details>
 <p>Once <a href="https://github.com/anthropics/claude-code-action">Claude Code</a> is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.</p>
 <p>That boundary makes sense for a general-purpose action. It still leaves the question teams meet almost immediately: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?</p>
 <p>For the last month the answer on my own repository has been: nobody. 431 pull requests merged, 416 Issues walked the full delivery path, 40 releases tagged and published. I have not read the diffs. This post is what had to exist for that to be a reasonable thing to do rather than a reckless one.</p>
-<h2 id="the-model-is-not-the-bottleneck">The model is not the bottleneck</h2>
+<h2>The model is not the bottleneck</h2>
 <p>The failure people expect is that the model writes something wrong. That happens, and tests catch most of it. The failure that actually costs you is different: the thing that decides &quot;this is good enough to merge&quot; is the same session that wrote the code, or it is a person who stopped reading carefully three weeks ago.</p>
 <p>So the first rule is that the reviewer is not the author. Not a second pass in the same session with a different prompt: a separate process, a fresh context, started after the pull request exists, reading the frozen diff. It does not know what the implementer was thinking, which is the point. If the code needs the author&#39;s intentions to make sense, the code is not finished.</p>
 <p>That reviewer can also fix what it finds and push to the same branch, then re-emit its verdict against the new head. A round that ends with findings is not a merge; it is another round. The loop is bounded at five rounds, and exhausting them is a stop, not a merge.</p>
-<h2 id="three-conditions-checked-at-the-moment-of-merge">Three conditions, checked at the moment of merge</h2>
+<h2>Three conditions, checked at the moment of merge</h2>
 <p>A verdict is not enough by itself, because time passes between the review and the merge. Three things are re-checked against the live remote:</p>
 <ul>
 <li><strong>Continuous integration is green</strong> on the exact head that was reviewed.</li>
@@ -154,11 +122,11 @@
 </code></pre>
 <p>If the remote head moved after the review, that call fails instead of merging something nobody reviewed. Only then does the merge land, pinned to that exact commit. If any condition fails the Issue moves to a state that waits for the next tick, or stops for a human. There is no path where a delivery merges because it looked fine.</p>
 <p>These are ordinary conditions. Any team would say them out loud in a code review conversation. The difference is that they are three lines in a state machine rather than three habits in a person&#39;s head, so they hold at 3 a.m. on the ninetieth pull request.</p>
-<h2 id="what-a-person-still-does">What a person still does</h2>
+<h2>What a person still does</h2>
 <p>I write the Issue. That is the whole job, and it is more work than it sounds: one runtime outcome, the acceptance conditions written so that &quot;done&quot; is checkable by something that cannot ask me what I meant. A vague ticket produces a confident wrong delivery, and no gate downstream catches that, because the gate checks whether the code does what the ticket said.</p>
 <p>I also write the release ticket: a version number and a scope. The release itself is a deterministic state machine, not a model session. It freezes the base, waits for green CI, bumps the version, tags, publishes and closes the milestone. Any failure stops and waits for me.</p>
 <p>Between those two tickets, nobody is in the room.</p>
-<h2 id="if-you-are-running-the-action-today">If you are running the action today</h2>
+<h2>If you are running the action today</h2>
 <p>You do not need to replace it. The action is the execution layer; what is missing is the part that decides. Three things to add, in order of how much they buy you:</p>
 <ol>
 <li><strong>A reviewer that is a different session from the implementer</strong>, reading the frozen diff, with the authority to fail the delivery.</li>
@@ -167,7 +135,7 @@
 </ol>
 <p><a href="https://github.com/orbi-build/orbi">Orbi</a> is my implementation of exactly that, open source (AGPL-3.0) and self-hostable, and it drives its own repository: every one of those 431 pull requests is public, and so is every review verdict, in the Issue threads. It runs on the Pi agent harness with your own model: any OpenAI-compatible API, or a Codex subscription. Claude Code is not one of its engines.</p>
 <p>Or take the three conditions and build them into whatever you already run. The conditions matter more than whose code enforces them.</p>
-<h2 id="related">Related</h2>
+<h2>Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a>, <a href="/guides/ci-gates/">CI gates guide</a>, and <a href="/cloud/">Cloud</a>.</p>
 
       </article>
@@ -225,7 +193,7 @@
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{const ids=["the-model-is-not-the-bottleneck","three-conditions-checked-at-the-moment-of-merge","what-a-person-still-does","if-you-are-running-the-action-today","related"],links=[...document.querySelectorAll('.post-toc a')],headings=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window)||!headings.length)return;const active=id=>links.forEach(link=>link.classList.toggle('is-active',link.hash===`#${id}`));const observer=new IntersectionObserver(entries=>{const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(visible)active(visible.target.id)},{rootMargin:'-24px 0px -65% 0px',threshold:0});headings.forEach(heading=>observer.observe(heading));})();</script><script>(()=>{
+<script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
