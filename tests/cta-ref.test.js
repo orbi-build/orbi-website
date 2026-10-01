@@ -46,28 +46,28 @@ describe("internal Cloud login CTA attribution (Issue #273)", () => {
   it("uses bare, language-matching login handoffs in all source CTAs", async () => {
     const html = await Promise.all(sourceFiles.map(read));
     const hrefs = html.flatMap((contents, index) => cloudLoginHrefs(contents).map((href) => [sourceFiles[index], href]));
-    // Issue #571 adds the film-end "Sign in with GitHub" handoff on the EN
-    // homepage; Issue #575 adds the matching "用 GitHub 登录" handoff on the ZH
-    // homepage — the fourteen bare, language-matching login links.
-    expect(hrefs).toHaveLength(14);
+    // Issue #745 adds the evidence login CTA on each homepage; Issue #742 adds
+    // the Solo and Pro trial login CTAs on each Cloud page.
+    expect(hrefs).toHaveLength(16);
     for (const [file, href] of hrefs) expect(href).toBe(file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login");
   });
 
-  it("introduces the matching-language Cloud page from all homepage CTAs (Issue #322)", async () => {
+  it("keeps homepage Cloud CTA destinations intentional (Issues #322/#745)", async () => {
     const expectations = [
-      ["site/pages/index.html", "/cloud/"],
-      ["site/pages/zh/index.html", "/zh/cloud/"],
+      ["site/pages/index.html", "/cloud/", "/cloud/login"],
+      ["site/pages/zh/index.html", "/zh/cloud/", "/zh/cloud/login"],
     ];
-    for (const [file, landingPath] of expectations) {
+    for (const [file, landingPath, loginPath] of expectations) {
       const html = await read(file);
       expect(html, `${file}: hero cloud-start must use the login handoff`).toContain(
-        `data-cta="cloud-start" href="${file.includes("/zh/") ? "/zh/cloud/login" : "/cloud/login"}`,
+        `data-cta="cloud-start" href="${loginPath}`,
       );
-      for (const marker of ["midway-cloud", "cloud-start-card"]) {
-        expect(html, `${file}: ${marker} must introduce Cloud`).toContain(
-          `data-cta="${marker}" href="${landingPath}"`,
-        );
-      }
+      expect(html, `${file}: midway-cloud must use the login handoff`).toContain(
+        `data-cta="midway-cloud" href="${loginPath}`,
+      );
+      expect(html, `${file}: cloud-start-card must introduce Cloud`).toContain(
+        `data-cta="cloud-start-card" href="${landingPath}"`,
+      );
     }
   });
 
