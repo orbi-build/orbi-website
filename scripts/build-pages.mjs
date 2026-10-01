@@ -772,14 +772,14 @@ function headingText(html) {
 function renderPostHeadings(html, label) {
   const used = new Set();
   const headings = [];
-  const rendered = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (full, inner) => {
+  const rendered = html.replace(/<h([23])>([\s\S]*?)<\/h\1>/g, (full, level, inner) => {
     const text = headingText(inner);
     const base = text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "section";
     let id = base;
     for (let suffix = 2; used.has(id); suffix += 1) id = `${base}-${suffix}`;
     used.add(id);
-    headings.push({ id, text });
-    return `<h2 id="${escAttr(id)}">${inner}</h2>`;
+    headings.push({ id, text, level: Number(level) });
+    return `<h${level} id="${escAttr(id)}">${inner}</h${level}>`;
   });
   validateRenderedPostBody(label, rendered);
   return { html: rendered, headings };
@@ -788,10 +788,27 @@ function renderPostHeadings(html, label) {
 function renderPostToc(post) {
   if (post.headings.length < 5) return { desktop: "", inline: "" };
   const title = post.lang === "zh" ? "本页目录" : "On this page";
-  const entries = post.headings.map(({ id, text }) => `          <li><a class="post-toc-link" href="#${escAttr(id)}">${escAttr(text)}</a></li>`).join("\n");
+  const tree = [];
+  let parent;
+  for (const heading of post.headings) {
+    if (heading.level === 2) {
+      parent = { ...heading, children: [] };
+      tree.push(parent);
+    } else if (parent) {
+      parent.children.push(heading);
+    } else {
+      tree.push({ ...heading, children: [] });
+    }
+  }
+  const renderEntries = (entries, indent) => entries.map(({ id, text, children = [] }) => {
+    const nested = children.length ? `\n${" ".repeat(indent + 2)}<ol>\n${renderEntries(children, indent + 4)}\n${" ".repeat(indent + 2)}</ol>` : "";
+    return `${" ".repeat(indent)}<li><a class="post-toc-link" href="#${escAttr(id)}">${escAttr(text)}</a>${nested}</li>`;
+  }).join("\n");
+  const entries = renderEntries(tree, 10);
+  const h2Count = post.headings.filter(({ level }) => level === 2).length;
   return {
     desktop: `        <nav class="post-toc" aria-label="${title}">\n          <h2>${title}</h2>\n          <ol>\n${entries}\n          </ol>\n        </nav>`,
-    inline: `        <details class="post-toc-inline">\n          <summary>${title} · ${post.headings.length} ${post.lang === "zh" ? "节" : "sections"}</summary>\n          <ol>\n${entries}\n          </ol>\n        </details>`,
+    inline: `        <details class="post-toc-inline">\n          <summary>${title} · ${h2Count} ${post.lang === "zh" ? "节" : "sections"}</summary>\n          <ol>\n${entries}\n          </ol>\n        </details>`,
   };
 }
 

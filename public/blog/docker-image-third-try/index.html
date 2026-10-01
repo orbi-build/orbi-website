@@ -59,16 +59,18 @@
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
-    .post-toc h2 { margin: 0 0 12px; padding-left: 14px; font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-    .post-toc ol { list-style: none; counter-reset: toc; margin: 0; padding-left: 0; border-left: 1px solid var(--line); }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
     .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li { counter-increment: toc; margin: 0; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
     .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
-    .post-toc .post-toc-link { display: grid; grid-template-columns: 1.6em 1fr; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 2px solid transparent; }
-    .post-toc .post-toc-link::before { content: counter(toc); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc .post-toc-link.is-current { border-left-color: var(--signal-on-light); color: var(--ink); font-weight: 600; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -94,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -149,8 +152,18 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
-          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
+          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a>
+            <ol>
+              <li><a class="post-toc-link" href="#try-1-release-v0-5-17-two-jobs-two-build-contexts">Try 1 (release v0.5.17): two jobs, two build contexts</a></li>
+              <li><a class="post-toc-link" href="#try-2-manual-dispatch-the-dockerfile-path-resolved-from-the-workspace-root">Try 2 (manual dispatch): the Dockerfile path resolved from the workspace root</a></li>
+              <li><a class="post-toc-link" href="#try-3-manual-dispatch-the-images-landed-the-overview-step-kept-the-job-red">Try 3 (manual dispatch): the images landed; the overview step kept the job red</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a>
+            <ol>
+              <li><a class="post-toc-link" href="#rule-1-every-build-spells-out-its-paths">Rule 1: every build spells out its paths</a></li>
+              <li><a class="post-toc-link" href="#rule-2-publish-never-runs-on-a-pr-ref">Rule 2: publish never runs on a PR ref</a></li>
+              <li><a class="post-toc-link" href="#rule-3-an-overview-cannot-fail-a-release">Rule 3: an overview cannot fail a release</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
           <li><a class="post-toc-link" href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -160,8 +173,18 @@
         <details class="post-toc-inline">
           <summary>On this page · 5 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a></li>
-          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a></li>
+          <li><a class="post-toc-link" href="#three-failures-three-different-causes">Three failures, three different causes</a>
+            <ol>
+              <li><a class="post-toc-link" href="#try-1-release-v0-5-17-two-jobs-two-build-contexts">Try 1 (release v0.5.17): two jobs, two build contexts</a></li>
+              <li><a class="post-toc-link" href="#try-2-manual-dispatch-the-dockerfile-path-resolved-from-the-workspace-root">Try 2 (manual dispatch): the Dockerfile path resolved from the workspace root</a></li>
+              <li><a class="post-toc-link" href="#try-3-manual-dispatch-the-images-landed-the-overview-step-kept-the-job-red">Try 3 (manual dispatch): the images landed; the overview step kept the job red</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#three-rules-the-failures-bought">Three rules the failures bought</a>
+            <ol>
+              <li><a class="post-toc-link" href="#rule-1-every-build-spells-out-its-paths">Rule 1: every build spells out its paths</a></li>
+              <li><a class="post-toc-link" href="#rule-2-publish-never-runs-on-a-pr-ref">Rule 2: publish never runs on a PR ref</a></li>
+              <li><a class="post-toc-link" href="#rule-3-an-overview-cannot-fail-a-release">Rule 3: an overview cannot fail a release</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#from-pull-to-first-delivery">From pull to first delivery</a></li>
           <li><a class="post-toc-link" href="#pull-the-image-create-an-issue-get-a-pr">Pull the image, create an Issue, get a PR</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -175,18 +198,18 @@ docker pull docker.io/orbibuild/orbi:latest
 <p>The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
 <h2 id="three-failures-three-different-causes">Three failures, three different causes</h2>
 <p>All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>
-<h3>Try 1 (release v0.5.17): two jobs, two build contexts</h3>
+<h3 id="try-1-release-v0-5-17-two-jobs-two-build-contexts">Try 1 (release v0.5.17): two jobs, two build contexts</h3>
 <p>The build-only verify job built the image fine; the publish job failed. Buildx could not find <code class="post-code--single">/orbi-container-setup.sh</code> and <code class="post-code--single">/orbi-container-setup.service</code>, the files the Dockerfile copies. The verify job pointed at the right directory; the publish job pointed at another context, so its build started from a view of the repository that was missing exactly those files.</p>
-<h3>Try 2 (manual dispatch): the Dockerfile path resolved from the workspace root</h3>
+<h3 id="try-2-manual-dispatch-the-dockerfile-path-resolved-from-the-workspace-root">Try 2 (manual dispatch): the Dockerfile path resolved from the workspace root</h3>
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35215809993">35215809993</a> failed all three build steps with <code class="post-code--spaced">failed to read dockerfile: open Dockerfile: no such file or directory</code>. <a href="https://github.com/orbi-build/orbi/pull/1044">#1044</a> names the cause: buildx resolves <code class="post-code--spaced">file: Dockerfile</code> against the workspace root, so the fix wrote <code class="post-code--single">3rd/docker/Dockerfile</code> in all three places. The fix&#39;s own pull-request checks then failed from the other side: the workflow derived the image tag from the git ref, and a pull request&#39;s ref is <code class="post-code--single">1044/merge</code>, which buildx rejects as <code class="post-code--spaced">invalid reference format</code>.</p>
-<h3>Try 3 (manual dispatch): the images landed; the overview step kept the job red</h3>
+<h3 id="try-3-manual-dispatch-the-images-landed-the-overview-step-kept-the-job-red">Try 3 (manual dispatch): the images landed; the overview step kept the job red</h3>
 <p>Run <a href="https://github.com/orbi-build/orbi/actions/runs/35216638306">35216638306</a> pushed <code class="post-code--single">0.5.17</code> and <code class="post-code--single">latest</code> to both registries, for <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>. The job still ended red: the only failing step was the Docker Hub overview update, answered 403 because the token lacked a permission. <a href="https://github.com/orbi-build/orbi/pull/1046">#1046</a> made that step <code class="post-code--spaced">continue-on-error: true</code>, so an overview hiccup can never fail a release again.</p>
 <h2 id="three-rules-the-failures-bought">Three rules the failures bought</h2>
-<h3>Rule 1: every build spells out its paths</h3>
+<h3 id="rule-1-every-build-spells-out-its-paths">Rule 1: every build spells out its paths</h3>
 <p>Each build step now carries <code class="post-code--spaced">context: 3rd/docker</code> and <code class="post-code--spaced">file: 3rd/docker/Dockerfile</code>. Nothing depends on the working directory buildx happens to start from.</p>
-<h3>Rule 2: publish never runs on a PR ref</h3>
+<h3 id="rule-2-publish-never-runs-on-a-pr-ref">Rule 2: publish never runs on a PR ref</h3>
 <p>The build-only job runs on pull requests and builds under a <code class="post-code--single">pr-&lt;n&gt;</code> tag with <code class="post-code--spaced">push: false</code>; the publish job is gated on the event name. A ref like <code class="post-code--single">1044/merge</code> can no longer reach a tag.</p>
-<h3>Rule 3: an overview cannot fail a release</h3>
+<h3 id="rule-3-an-overview-cannot-fail-a-release">Rule 3: an overview cannot fail a release</h3>
 <p>The Docker Hub overview step runs with <code class="post-code--spaced">continue-on-error: true</code>. The release contract lives in the images; a description update answered 403 cannot turn a finished publish into a failed run.</p>
 <p>Checked against <code class="post-code--single">.github/workflows/docker-image.yml</code> on orbi-build/orbi main, 2026-09-18.</p>
 <h2 id="from-pull-to-first-delivery">From pull to first delivery</h2>
