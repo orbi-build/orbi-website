@@ -146,6 +146,7 @@ function startServer() {
               .replaceAll(pricing.soloRepositoriesToken, String(pricing.soloRepositories))
               .replaceAll(pricing.proRepositoriesToken, String(pricing.proRepositories))
               .replaceAll(pricing.foundingPartnerLimitToken, String(pricing.foundingPartnerLimit))
+              .replaceAll(pricing.foundingPartnerRemainingToken, String(pricing.foundingPartnerRemaining))
               .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
@@ -801,9 +802,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const summary = page.locator(".pricing-summary");
   if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
   const summaryText = await summary.textContent();
-  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit]) {
+  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit, pricing.foundingPartnerRemaining]) {
     if (!summaryText.includes(String(value))) throw new Error(`${path}: pricing summary is missing ${value}`);
   }
+  const foundingSummary = path.startsWith("/zh")
+    ? `创始合作伙伴终身五折，${pricing.foundingPartnerLimit} 个名额只剩 ${pricing.foundingPartnerRemaining} 个。`
+    : `Founding partners: 50% off for life. Only ${pricing.foundingPartnerRemaining} of ${pricing.foundingPartnerLimit} places left.`;
+  if (!summaryText.includes(foundingSummary)) throw new Error(`${path}: founding partner summary is stale`);
   const summaryHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const summaryLink = summary.locator(`[data-cta="pricing-summary"][href="${summaryHref}"]`);
   if (await summaryLink.count() !== 1) throw new Error(`${path}: pricing summary link has wrong target`);
