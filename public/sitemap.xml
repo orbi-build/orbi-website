@@ -542,6 +542,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/run-claude-code-unattended/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/run-claude-code-unattended/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/run-claude-code-unattended/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/run-claude-code-unattended/"/>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/run-claude-code-unattended/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/run-claude-code-unattended/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/run-claude-code-unattended/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/run-claude-code-unattended/"/>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/"/>
