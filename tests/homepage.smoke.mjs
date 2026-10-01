@@ -2315,14 +2315,15 @@ async function main() {
     await assertCloudPage(browser, "/zh/cloud/", { width: 390, height: 844 }, "cloud-zh-mobile.png");
     await assertProofLoopReducedMotion(browser, "/cloud/");
     await assertProofLoopReducedMotion(browser, "/zh/cloud/");
-    // Issue #107: the /cloud/ page's login buttons land at the same contract.
+    // Issues #107/#742: both pricing cards' trial buttons land at the same
+    // language-matching login contract.
     await assertCtaLandsAtEndpoint(browser, "/cloud/", [
-      ["Start Cloud", 'a.button-signal[href="/cloud/login"]'],
-      ["Start free", 'a.button-outline[href="/cloud/login"]'],
+      ["Solo trial", 'a[data-cta="pricing-solo-trial"][href="/cloud/login"]'],
+      ["Pro trial", 'a[data-cta="pricing-pro-trial"][href="/cloud/login"]'],
     ]);
     await assertCtaLandsAtEndpoint(browser, "/zh/cloud/", [
-      ["开始 Cloud", 'a.button-signal[href="/zh/cloud/login"]'],
-      ["免费开始", 'a.button-outline[href="/zh/cloud/login"]'],
+      ["Solo trial", 'a[data-cta="pricing-solo-trial"][href="/zh/cloud/login"]'],
+      ["Pro trial", 'a[data-cta="pricing-pro-trial"][href="/zh/cloud/login"]'],
     ]);
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.

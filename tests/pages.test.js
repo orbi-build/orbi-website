@@ -1395,7 +1395,7 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   it("keeps Cloud page CTAs on the matching language login handoff", () => {
     for (const [output, loginPath] of [["cloud/index.html", "/cloud/login"], ["zh/cloud/index.html", "/zh/cloud/login"]]) {
       const html = shipped.get(output);
-      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(4);
+      expect(html.split(`href="${loginPath}"`).length - 1, `${output}: missing language login CTA`).toBe(5);
     }
   });
 });
