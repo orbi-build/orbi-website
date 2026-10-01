@@ -32,6 +32,19 @@
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card, 12px);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -73,6 +86,8 @@
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
     }
   </style>
 
@@ -91,17 +106,11 @@
       </button>
       <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
         <a href="/#system">How it works</a>
-        <a href="/guides/">Guides</a>
         <a href="/cloud/#pricing">Pricing</a>
-        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
-        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
+        <a href="https://docs.orbi.build">Docs</a>
         <a href="https://github.com/orbi-build/orbi">GitHub</a>
         <a href="/api/login">Sign in</a>
-        <a class="nav-apply" href="/cloud/">Start Cloud</a>
-        <span class="language" role="group" aria-label="Language">
-          <span aria-current="page">EN</span>
-          <a href="/zh/blog/designing-a-slash-command/" lang="zh-CN" aria-label="简体中文">ZH</a>
-        </span>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
       </nav>
     </header>
   </div>
@@ -479,7 +488,12 @@ shared layer), and
 <a href="https://github.com/orbi-build/orbi/discussions/1295">#1295</a> (where commands
 should be read from). Every Prow and bors line number above was grepped at HEAD
 on 2026-09-22, not recalled.</em></p>
-<h2 id="related">Related</h2>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No card · Only the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
 <p>Read the <a href="/compare/cursor/">Cursor comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
 <!--orbi:related-posts-->
@@ -518,7 +532,7 @@ on 2026-09-22, not recalled.</em></p>
       </div>
       <div class="footer-group footer-guides">
         <h2>Guides</h2>
-        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
       </div>
       <div class="footer-group footer-compare">
         <h2>Compare</h2>
@@ -529,6 +543,7 @@ on 2026-09-22, not recalled.</em></p>
         <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/designing-a-slash-command/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>

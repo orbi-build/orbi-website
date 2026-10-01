@@ -265,23 +265,24 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_primary_navigation_names_the_first_visit_actions(self) -> None:
-        # Issue #626: Guides and Pricing are first-level entries; Resources
-        # and Docs are the two dropdown groups (tests/pages.test.js pins their menus).
+        # Issue #711: every wide and narrow nav uses the same six-link element;
+        # Guides, Resources and the language switch now live in the footer.
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Guides", "Pricing", "Resources", "Docs", "GitHub", "Sign in", "Start Cloud"),
+                ("How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "指南", "价格", "资源", "文档", "GitHub", "登录", "开始 Cloud"),
+                ("产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
             nav_end = html.index("</nav>", nav_start)
             primary_nav = html[nav_start:nav_end]
-            for label in labels:
-                self.assertIn(f">{label}<", primary_nav)
+            self.assertEqual(primary_nav.count("<a "), 6)
+            positions = [primary_nav.index(f">{label}<") for label in labels]
+            self.assertEqual(positions, sorted(positions))
 
     def test_language_switch_uses_readable_names(self) -> None:
         # Issue #519: pure ASCII ZH/EN — 「中文」 renders as tofu on systems
