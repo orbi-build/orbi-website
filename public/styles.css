@@ -2512,6 +2512,8 @@ h2 {
 .subscribe-title { margin: 0 0 16px; font-family: var(--display); font-size: 1.35rem; }
 .subscribe-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .subscribe-form input[type="email"] { min-width: 0; flex: 1; padding: 12px 14px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; }
+.subscribe-form .button-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: var(--radius-control, 8px); }
+.subscribe-form .button-ghost:hover { background: rgba(16, 41, 44, 0.06); }
 .subscribe-form button:disabled { opacity: .6; cursor: wait; }
 .subscribe-note, .subscribe-status { margin: 10px 0 0; color: var(--muted); font-size: .88rem; }
 .subscribe-status { min-height: 1.2em; flex: 0 0 100%; color: var(--ink); font-weight: 600; }
