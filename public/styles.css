@@ -303,7 +303,7 @@ img {
   grid-template-columns: minmax(0, 1.08fr) minmax(480px, 0.92fr);
   gap: clamp(56px, 7vw, 112px);
   align-items: center;
-  min-height: 750px;
+  min-height: calc(100svh - 177px);
   padding: 92px 0 80px;
 }
 
@@ -321,6 +321,30 @@ img {
 }
 .runtime-proof-line strong { color: #fff; font-size: 1.15rem; }
 .runtime-proof-line .orbi-runtime-proof-line-a { color: var(--run); }
+.hero-proof-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line-dark);
+  border-bottom: 1px solid var(--line-dark);
+}
+.hero-proof-item {
+  display: grid;
+  gap: 2px;
+  padding: 18px 24px 20px;
+  border-right: 1px solid var(--line-dark);
+}
+.hero-proof-item:last-child { border-right: 0; }
+.hero-proof-item strong {
+  color: #edf5f0;
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.hero-proof-item span {
+  color: #a9bbb8;
+  font: 500 .72rem/1.4 var(--mono);
+}
 .avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
 .avatar-wall-label { margin: 0; color: #a9bbb8; font: 500 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
 .avatar-wall-list { display: flex; }
@@ -1877,7 +1901,11 @@ h2 {
   .site-header { min-height: 72px; }
   .wordmark { font-size: 1rem; }
 
-  .hero { gap: 56px; padding: 10px 0 58px; }
+  .hero {
+    gap: 16px;
+    min-height: calc(100svh - 243px);
+    padding: 10px 0 16px;
+  }
   .eyebrow { margin-bottom: 12px; }
   h1 { margin-bottom: 12px; }
   .hero-lede { font-size: 1rem; }
@@ -1891,7 +1919,13 @@ h2 {
   .hero-proof-link { margin: 0; text-align: center; }
   .trust-line { gap: 13px; }
 
-  .hero-receipt { width: 100%; }
+  .hero-receipt { width: 100%; padding: 14px 16px; }
+  .hero-receipt-kicker { margin-bottom: 6px; }
+  .hero-receipt-title { margin-bottom: 12px; }
+  .hero-receipt-timeline { gap: 10px; }
+  .hero-receipt-step { min-height: 32px; }
+  .hero-receipt-step:not(:last-child)::after { bottom: -10px; }
+  .hero-receipt figcaption { margin-top: 12px; }
   .cloud-gate { margin-top: 26px; padding-top: 20px; }
 
   /* Three columns no longer fit a phone: stack one repo group per row and
@@ -1940,6 +1974,9 @@ h2 {
   .pricing-equation { grid-template-columns: 1fr; gap: 10px; padding: 24px 20px; }
   .runtime-proof { padding: 16px 20px 6px; }
   .runtime-proof-line { font-size: .75rem; }
+  .hero-proof-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-proof-item { padding: 16px 14px 18px; }
+  .hero-proof-item:last-child { grid-column: 1 / -1; border-top: 1px solid var(--line-dark); }
   .founding-offer { align-items: flex-start; flex-wrap: wrap; gap: 8px 12px; }
   .pricing-equation small { grid-column: 1; }
 
