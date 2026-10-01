@@ -150,6 +150,21 @@ describe("shared hero layout (Issue #355)", () => {
     }
   }, 60_000);
 
+  it("keeps conservative proof values when live stats are unavailable", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const path of ["/", "/zh/"]) {
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await expect.poll(
+          () => page.locator(".hero-proof-bar [data-stat]").allTextContents(),
+          { message: `${path}: proof bar fallback values` },
+        ).toEqual(["150", "8"]);
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
   it("uses one CSS width source and scopes the homepage headline treatment", async () => {
     const css = await readFile("public/styles.css", "utf8");
 

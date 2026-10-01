@@ -74,6 +74,33 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
+
+describe("homepage hero proof bar (Issue #710)", () => {
+  const expected = {
+    "index.html": [
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>PRs merged by Orbi on its own repo</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>releases shipped</span>',
+      '<strong>Open source</strong><span>AGPL-3.0, self-host free</span>',
+    ],
+    "zh/index.html": [
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span>',
+      '<strong>开源</strong><span>AGPL-3.0，自托管免费</span>',
+    ],
+  };
+
+  for (const [output, items] of Object.entries(expected)) {
+    it(`${output} keeps live counters and copy in the requested order`, () => {
+      const html = shipped.get(output);
+      expect(html, `${output}: proof bar follows hero`).toMatch(/<section class="hero [^"]*shell"[\s\S]*?<\/section>\s*<div class="hero-proof-bar shell">/);
+      const bar = proofBar(html);
+      expect(bar, `${output}: proof bar`).not.toBe("");
+      expect(bar.match(/<div class="hero-proof-item">[\s\S]*?<\/div>/g), output).toEqual(items.map((item) => `<div class="hero-proof-item">${item}</div>`));
+    });
+  }
+});
+
 const GUIDE_SLUGS = [
   "issue-to-release",
   "ci-gates",
