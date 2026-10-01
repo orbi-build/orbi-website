@@ -205,74 +205,50 @@ describe("Free delivery allowance constant (Issue #274)", () => {
   });
 });
 
-describe("Cloud trial copy (Issue #679)", () => {
-  const trialPages = [
+describe("Cloud pricing trial integration (Issue #742)", () => {
+  const pricingPages = [
     ["cloud/index.html", {
-      kicker: "CLOUD TRIAL",
-      title: "Trial",
-      priceUnit: `${FREE_DELIVERIES_TOKEN} merged deliveries, once per account`,
-      detail: `Run ${FREE_DELIVERIES_TOKEN} real deliveries on your own repository. No card required.`,
-      failed: "Failed deliveries don't use up the trial",
-      button: "Start trial",
+      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No card`,
+      failed: "· Failed deliveries don't count",
+      login: "/cloud/login",
+      soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,
+      soloClass: "button button-signal",
+      proClass: "button button-ghost",
+      subscribe: "or subscribe now →",
     }],
     ["zh/cloud/index.html", {
-      kicker: "CLOUD 试用",
-      title: "试用",
-      priceUnit: `${FREE_DELIVERIES_TOKEN} 次合并交付，每个账号一次`,
-      detail: `在你自己的仓库上跑 ${FREE_DELIVERIES_TOKEN} 次真实交付，不用绑卡。`,
-      failed: "失败的交付不占试用额度",
-      button: "开始试用",
+      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑卡`,
+      failed: "· 失败的交付不计次数",
+      login: "/zh/cloud/login",
+      soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,
+      soloClass: "button button-signal",
+      proClass: "button button-ghost",
+      subscribe: "或直接订阅 →",
     }],
   ];
 
-  it("uses trial language in every allowance sentence", async () => {
-    for (const dir of [SITE_PAGES_DIR]) {
-      for (const path of await listHtmlFiles(dir)) {
-        const html = await readFile(path, "utf8");
-        const text = html.replace(/<[^>]*>/g, "\n");
-        for (const sentence of text.split(/(?:。|\.\s+|\n+)/)) {
-          const homepageOffer = sentence.includes(`Try ${FREE_DELIVERIES_TOKEN} deliveries free`)
-            || sentence.includes(`Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries`)
-            || sentence.includes(`免费试 ${FREE_DELIVERIES_TOKEN} 次`)
-            || sentence.includes(`每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付`);
-          if (sentence.includes(FREE_DELIVERIES_TOKEN) && !homepageOffer) {
-            const copy = sentence.replaceAll(FREE_DELIVERIES_TOKEN, "");
-            expect(copy.toLowerCase(), path).not.toContain("free");
-            expect(copy, path).not.toContain("免费");
-          }
-        }
-      }
-    }
-  });
-
-  it("keeps every Cloud trial allowance tokenized and removes the retired free wording", async () => {
-    const retiredCopy = [
-      /first (?:3|three) merged deliveries (?:are )?free/i,
-      /three free deliveries/i,
-      /前 3 次合并交付免费/,
-      /三次免费交付/,
-    ];
-    for (const path of await listHtmlFiles(SITE_PAGES_DIR)) {
-      const html = await readFile(path, "utf8");
-      for (const pattern of retiredCopy) {
-        expect(html.match(pattern), `${path}: ${pattern}`).toBeNull();
-      }
-    }
-  });
-
-  it("matches the English and Chinese trial cards", async () => {
-    for (const [relativePath, expected] of trialPages) {
+  it("renders two paid cards with integrated trial actions and interval-aware subscriptions", async () => {
+    for (const [relativePath, expected] of pricingPages) {
       const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
-      const card = html.match(/<article class="pricing-card">[\s\S]*?<\/article>/)?.[0];
-      expect(card, relativePath).toBeDefined();
-      expect(card, relativePath).toContain(`<p class="pricing-card-kicker">${expected.kicker}</p>`);
-      expect(card, relativePath).toContain(`<h3>${expected.title}</h3>`);
-      expect(card, relativePath).toContain(expected.priceUnit);
-      expect(card, relativePath).toContain(expected.detail);
-      expect(card, relativePath).toContain(expected.failed);
-      expect(card, relativePath).toContain(`>${expected.button} <span`);
-      expect(card, relativePath).not.toContain("/ 月");
-      expect(card, relativePath).not.toContain("/ month");
+      const pricing = html.match(/<section id="pricing"[\s\S]*?<\/section>\n\s*<section class="compare-section shell" aria-labelledby="cost-title">/)?.[0];
+      expect(pricing, relativePath).toBeDefined();
+      expect(pricing, relativePath).toContain(expected.intro);
+      expect(pricing, relativePath).toContain(expected.failed);
+      expect(pricing, relativePath).not.toContain("CLOUD TRIAL");
+      expect(pricing, relativePath).not.toContain("CLOUD 试用");
+      expect(pricing.match(/<article class="pricing-card/g), relativePath).toHaveLength(2);
+
+      const cards = [...pricing.matchAll(/<article class="pricing-card[\s\S]*?<\/article>/g)].map(([card]) => card);
+      expect(cards[0], relativePath).toContain("<h3>Solo</h3>");
+      expect(cards[1], relativePath).toContain("<h3>Pro</h3>");
+      expect(cards[0], relativePath).toContain(`${expected.soloClass}" data-cta="pricing-solo-trial" href="${expected.login}"`);
+      expect(cards[0], relativePath).toContain(expected.soloButton);
+      expect(cards[1], relativePath).toContain(`${expected.proClass}" data-cta="pricing-pro-trial" href="${expected.login}"`);
+      expect(cards[1], relativePath).toContain(expected.soloButton);
+      expect(cards[0], relativePath).toContain(expected.subscribe);
+      expect(cards[1], relativePath).toContain(expected.subscribe);
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year"');
+      expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year"');
     }
   });
 
@@ -500,7 +476,7 @@ describe("llms.txt states Cloud accurately (Issue #146)", () => {
   });
 });
 
-describe("Three-tier Cloud pricing (Issue #441)", () => {
+describe("Cloud paid-tier pricing (Issue #441)", () => {
   it("states both monthly quotas in Cloud metadata and the homepage Cloud card", async () => {
     for (const [relativePath, metadata, card] of [
       ["cloud/index.html", "Solo includes 400M tokens of model usage per month; Pro includes 1.2B", "Model usage included: 400M tokens a month on Solo, 1.2B on Pro"],
@@ -603,8 +579,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         'href="/api/checkout?plan=pro&amp;interval=month&amp;payment=once"',
         'href="/api/checkout?plan=pro&amp;interval=year&amp;payment=once"',
       ]);
-      expect(body.match(/data-pricing-cta="solo"/g), relativePath).toHaveLength(1);
-      expect(body.match(/data-pricing-cta="pro"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-subscribe="solo"/g), relativePath).toHaveLength(1);
+      expect(body.match(/data-pricing-subscribe="pro"/g), relativePath).toHaveLength(1);
       expect(body, relativePath).toContain('data-cta="pricing-solo-year"');
       expect(body, relativePath).toContain('data-cta="pricing-pro-year"');
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")

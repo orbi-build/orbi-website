@@ -18,8 +18,9 @@ describe("Worker request helpers", () => {
         },
       );
       const body = await response.text();
-      expect(body).toContain('<section class="pricing-summary"');
-      expect(body.indexOf("pricing-summary")).toBeLessThan(body.indexOf('id="faq"'));
+      const summary = body.match(/<section class="pricing-summary"[\s\S]*?<\/section>/)?.[0];
+      expect(summary).toBeDefined();
+      expect(body.indexOf(summary)).toBeLessThan(body.indexOf('id="faq"'));
       for (const value of [
         pricing.soloMonthlyUsd,
         pricing.cloudMonthlyUsd,
@@ -30,11 +31,11 @@ describe("Worker request helpers", () => {
         pricing.freeDeliveries,
         pricing.foundingPartnerLimit,
       ]) {
-        expect(body).toContain(String(value));
+        expect(summary).toContain(String(value));
       }
-      expect(body).not.toContain("__SOLO_MONTHLY_USD__");
-      expect(body).not.toContain("__CLOUD_MONTHLY_USD__");
-      expect(body).not.toContain("__FOUNDING_PARTNER_LIMIT__");
+      expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
+      expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
+      expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
     }
   });
 
