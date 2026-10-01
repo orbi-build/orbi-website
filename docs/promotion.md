@@ -46,7 +46,7 @@ The workflow smoke-tests the deployment, but the quota-copy acceptance is
 greppable and belongs in the promotion record:
 
 ```
-curl -s https://orbi.build/ | grep -c "2B tokens"    # must be 0
+curl -s https://orbi.build/ | grep -cE "(^|[^.0-9])2B tokens"  # must be 0 (a plain "2B tokens" also matches inside "1.2B tokens")
 curl -s https://orbi.build/ | grep -o "1.2B tokens"  # must match
 git show origin/main:src/pricing.json                # must carry includedTokens
 ```
