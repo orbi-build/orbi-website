@@ -217,7 +217,7 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       subscribe: "or subscribe now →",
     }],
     ["zh/cloud/index.html", {
-      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑卡`,
+      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑定信用卡`,
       failed: "· 失败的交付不计次数",
       login: "/zh/cloud/login",
       soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,

@@ -1337,7 +1337,7 @@ async function assertCloudPage(browser, path, size, screenshot) {
     : {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
       button: `免费试 ${pricing.freeDeliveries} 次 →`,
-      note: "不用绑卡 · 只授权你选的仓库",
+      note: "不用绑定信用卡 · 只授权你选的仓库",
       href: "/zh/cloud/login",
     };
   const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>

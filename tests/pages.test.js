@@ -1006,7 +1006,7 @@ describe("Cloud hero single CTA (Issue #741)", () => {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
       href: "/zh/cloud/login",
       button: "免费试 __FREE_DELIVERIES__ 次 →",
-      note: "不用绑卡 · 只授权你选的仓库",
+      note: "不用绑定信用卡 · 只授权你选的仓库",
     },
   };
 
@@ -1365,8 +1365,8 @@ describe("cloud buyer FAQ (Issue #166)", () => {
         share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no card required, and failed deliveries don't count\./g,
       },
       "zh/cloud/index.html": {
-        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑卡，失败交付不计次数。/,
-        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑卡，失败交付不计次数。/g,
+        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/,
+        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/g,
       },
     };
     for (const [output, expected] of Object.entries(expectations)) {
@@ -1811,7 +1811,7 @@ describe("blog (Issue #212)", () => {
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
             button: "免费试 __FREE_DELIVERIES__ 次 →",
-            note: "不用绑卡 · 只授权你选的仓库",
+            note: "不用绑定信用卡 · 只授权你选的仓库",
             href: "/zh/cloud/login",
             selfHost: "想自己部署？开源免费（AGPL）→",
           }
