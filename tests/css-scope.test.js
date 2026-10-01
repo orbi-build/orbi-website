@@ -27,6 +27,13 @@ describe("component typography selectors (Issue #402)", () => {
     expect(leaked, leaked.join("\n")).toEqual([]);
   });
 
+  it("keeps the mobile Start free button border intact", () => {
+    const mobileNavApply = css.match(/\.site-header nav > a\.nav-apply\s*\{([\s\S]*?)\n  \}/g)?.at(-1) ?? "";
+
+    expect(mobileNavApply).toContain(".site-header nav > a.nav-apply");
+    expect(mobileNavApply).not.toContain("border-top: 0;");
+  });
+
   it("uses the explicit comparison heading class without applying it to blog entries", async () => {
     const html = await Promise.all(pages.map((path) => readFile(path, "utf8")));
     expect(html[0]).not.toContain("orbi-compare-section-h2");
