@@ -371,7 +371,9 @@ describe("email subscription forms (Issue #665)", () => {
       const htmlLang = html.match(/<html lang="([^"]+)"/)?.[1];
       const formLang = html.match(/<input type="hidden" name="lang" value="([^"]+)"/)?.[1];
       expect(formLang, `${output}: subscription language`).toBe(htmlLang === "zh-CN" ? "zh" : "en");
+      expect(html, `${output}: subscription submit button`).toContain('<button class="button button-ghost" type="submit">');
     }
+    expect(styles, "subscription ghost button style").toMatch(/\.subscribe-form \.button-ghost\s*\{[^}]*background:\s*transparent;[^}]*border:\s*1px solid var\(--line\);[^}]*color:\s*var\(--ink\);[^}]*border-radius:\s*var\(--radius-control,\s*8px\);/);
   });
 
   it("keeps subscription markup in one source partial", async () => {
