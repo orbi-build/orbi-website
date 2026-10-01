@@ -32,9 +32,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -117,12 +118,12 @@
 <li><strong>安装 Orbi GitHub App</strong>。</li>
 <li><strong>连接仓库</strong>，选择仓库，以及 Orbi 从哪个 base branch 开始工作。</li>
 <li><strong>开通运行环境</strong>，大约一分钟。</li>
-<li><strong>第一个 Issue</strong>，打上 <code>ai-ready</code>，Orbi 开始写代码，写完提 PR。</li>
+<li><strong>第一个 Issue</strong>，打上 <code class="post-code--single">ai-ready</code>，Orbi 开始写代码，写完提 PR。</li>
 <li><strong>发一个版本</strong>，你填版本号，Orbi 负责 bump、打 tag、发布 GitHub Release。</li>
-<li><strong>订阅</strong>，前 <code>__FREE_DELIVERIES__</code> 次交付免费；付费档为 Solo（每月 US$<code>__SOLO_MONTHLY_USD__</code>，含 <code>__SOLO_INCLUDED_TOKENS__</code> tokens）和 Pro（每月 US$<code>__CLOUD_MONTHLY_USD__</code>，含 <code>__INCLUDED_TOKENS__</code> tokens）。额度用完只会暂停新的交付，不会删除数据，随时可以取消。</li>
+<li><strong>订阅</strong>，前 <code class="post-code--single">__FREE_DELIVERIES__</code> 次交付免费；付费档为 Solo（每月 US$<code class="post-code--single">__SOLO_MONTHLY_USD__</code>，含 <code class="post-code--single">__SOLO_INCLUDED_TOKENS__</code> tokens）和 Pro（每月 US$<code class="post-code--single">__CLOUD_MONTHLY_USD__</code>，含 <code class="post-code--single">__INCLUDED_TOKENS__</code> tokens）。额度用完只会暂停新的交付，不会删除数据，随时可以取消。</li>
 </ol>
 <h2>第七步是开始付费交付的那一步</h2>
-<p>第一到第六步是配置和交付：你把 Orbi 推断不出来的东西交给它：身份、安装、仓库、运行环境、Issue 和 Release。完成 <code>__FREE_DELIVERIES__</code> 次免费交付后，第七步就是选择 Managed Cloud 计划。</p>
+<p>第一到第六步是配置和交付：你把 Orbi 推断不出来的东西交给它：身份、安装、仓库、运行环境、Issue 和 Release。完成 <code class="post-code--single">__FREE_DELIVERIES__</code> 次免费交付后，第七步就是选择 Managed Cloud 计划。</p>
 <p>发版这一步仍然需要你做决定：<strong>版本号由你决定，Orbi 不替你递增</strong>。runner 会改版本文件、打 tag、发布 Release，但它不选那个数字。版本号是一个声明，说这次改了什么、谁该关心。这是产品决策，靠计数器读一个数出来就是在假装它不是。发布范围从同名 Milestone 派生；没有同名 Milestone，发版会停在范围派生这一步，并告诉你为什么。</p>
 <p>第五步就是打一个标签，不用离开终端：</p>
 <pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready

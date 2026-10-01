@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -99,7 +100,7 @@
 <p>I had skipped a question: who runs that git command, and as which user?</p>
 <p>The seven affected tools share a safety model. The model proposes a command, a person approves it, then it runs. GitSpawn mattered because it ran something before that approval.</p>
 <p>Orbi has no approval step. It works unattended by design, and its agent already has a shell. For us the boundary is the operating system account. In Orbi Cloud every connected repository runs as its own Unix user, and the runner and the agent run as that same user. Anything the runner&#39;s own git call could be tricked into running would get the access the agent already had, so the fix protected nothing.</p>
-<p>We checked the one place with more privilege too. A host job reads usage data from every sandbox and runs as root. It already does its git reads as each sandbox&#39;s own user. That came from an earlier outage: on September 12 the job ran git as root, git&#39;s <code>safe.directory</code> check refused to touch a repository another user owned, and usage collection failed silently every five minutes until we switched it to the owning user.</p>
+<p>We checked the one place with more privilege too. A host job reads usage data from every sandbox and runs as root. It already does its git reads as each sandbox&#39;s own user. That came from an earlier outage: on September 12 the job ran git as root, git&#39;s <code class="post-code--single">safe.directory</code> check refused to touch a repository another user owned, and usage collection failed silently every five minutes until we switched it to the owning user.</p>
 <p>So we had 1,164 lines guarding a boundary Orbi doesn&#39;t have. The revert says so directly: over-engineered for the current stage. The same PR added a rule to the repository&#39;s AGENTS.md: no preventive tickets for theoretical risks.</p>
 <h2>What we took from it</h2>
 <p>If your agent asks a person before it runs commands, follow Manifold&#39;s advice. The fix for that kind of tool is small and worth making.</p>

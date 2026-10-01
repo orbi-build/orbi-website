@@ -642,6 +642,17 @@ function decodeEntities(text) {
   });
 }
 
+// Keep a single inline token together (notably CLI flags containing hyphens),
+// while marking code that contains spaces so it can still wrap at those spaces.
+function classifyInlineCode(html) {
+  return html.replace(/<code>([\s\S]*?)<\/code>/g, (tag, content) => {
+    const className = /\s/.test(decodeEntities(content))
+      ? "post-code--spaced"
+      : "post-code--single";
+    return `<code class="${className}">${content}</code>`;
+  });
+}
+
 function tableCellText(markup) {
   return decodeEntities(markup.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
 }
@@ -767,7 +778,7 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  const html = addTableDataLabels(wrapRenderedTables(marked.parse(body)));
+  const html = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");

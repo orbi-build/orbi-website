@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -116,7 +117,7 @@
 </tbody></table></div>
 <h3>Why we left Apache on September 4</h3>
 <p>Apache-2.0 lets anyone take the code and sell it as a hosted service. Orbi&#39;s runner is meant to run on your own machine, and the SUL draws its line in the same place: free for your own use, a separate agreement if you resell it as a service. It is the license n8n uses, and its restriction and patent clauses were copied word for word.</p>
-<p>Timing mattered too. The repository was ten days old and had a single copyright holder, so the change needed one person&#39;s agreement. The commit also added a relicensing clause to <code>CONTRIBUTING.md</code>. Contributors agree that their work may be released under a different license later, <strong>provided that license continues to allow self-hosted use free of charge</strong>.</p>
+<p>Timing mattered too. The repository was ten days old and had a single copyright holder, so the change needed one person&#39;s agreement. The commit also added a relicensing clause to <code class="post-code--single">CONTRIBUTING.md</code>. Contributors agree that their work may be released under a different license later, <strong>provided that license continues to allow self-hosted use free of charge</strong>.</p>
 <h3>What the Sustainable Use License cost us</h3>
 <p>The SUL is not an OSI-approved license, so Orbi could not be described as open source. That turned out to matter more than we expected.</p>
 <p>Several lists that fit Orbi accept only open source projects. <a href="https://github.com/kyrolabs/awesome-agents/blob/main/CONTRIBUTING.md">kyrolabs/awesome-agents</a> says a contribution &quot;needs to be open source&quot;. <a href="https://github.com/Jenqyang/Awesome-AI-Agents/blob/main/CONTRIBUTING.md">Awesome-AI-Agents</a> says licenses that only make the source public &quot;will usually be rejected&quot;. Everywhere else, every description of Orbi needed the same footnote: the source is public and self-hosting is free, but it is not OSI open source.</p>
@@ -131,11 +132,11 @@
 <li><strong>Offering Orbi to others as a service</strong>: under AGPL-3.0 you can, as long as you publish any modifications. The SUL does not allow it without a separate agreement.</li>
 <li><strong>Orbi Cloud</strong>: unchanged. It is the paid hosted version, run by us.</li>
 </ul>
-<p>The package metadata carries both options as one SPDX expression, from <code>pyproject.toml</code>:</p>
+<p>The package metadata carries both options as one SPDX expression, from <code class="post-code--single">pyproject.toml</code>:</p>
 <pre><code class="language-toml">license = &quot;AGPL-3.0-only OR LicenseRef-Sustainable-Use-1.0&quot;
 license-files = [&quot;LICENSE&quot;, &quot;docs/licenses/sustainable-use-license.md&quot;]
 </code></pre>
-<p>The files are in the repository: <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE"><code>LICENSE</code></a> holds the unmodified GNU AGPL-3.0 text, and <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md"><code>docs/licenses/sustainable-use-license.md</code></a> holds the SUL and a short note on how the two options work.</p>
+<p>The files are in the repository: <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE"><code class="post-code--single">LICENSE</code></a> holds the unmodified GNU AGPL-3.0 text, and <a href="https://github.com/orbi-build/orbi/blob/main/docs/licenses/sustainable-use-license.md"><code class="post-code--single">docs/licenses/sustainable-use-license.md</code></a> holds the SUL and a short note on how the two options work.</p>
 <h2>Related</h2>
 <p>Read the <a href="/compare/openhands/">OpenHands comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 

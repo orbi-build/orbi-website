@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Run Claude Code unattended: headless mode is step one | Orbi</title>
+  <meta name="description" content="Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.">
+  <link rel="canonical" href="https://orbi.build/blog/run-claude-code-unattended/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Run Claude Code unattended: headless mode is step one">
+  <meta property="og:description" content="Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.">
+  <meta property="og:url" content="https://orbi.build/blog/run-claude-code-unattended/">
+  <meta property="og:image" content="https://orbi.build/img/blog-headless-card.png">
+  <meta property="og:image:alt" content="Run Claude Code unattended: headless mode is step one">
+  <meta property="article:published_time" content="2026-10-01">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Run Claude Code unattended: headless mode is step one","datePublished":"2026-10-01","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"en","description":"Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.","url":"https://orbi.build/blog/run-claude-code-unattended/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Post template: the CommonMark body rendered from content/blog/*.md. */
+    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/guides/">Guides</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <div class="nav-dropdown nav-resources"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-resources-menu" data-dropdown-toggle>Resources<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-resources-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="/evidence/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi builds Orbi</span><span class="orbi-nav-dropdown-menu-description">Public issues, PRs and releases on GitHub</span></a><a class="orbi-nav-dropdown-menu-a" href="/benchmark/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">How we test the harness</span><span class="orbi-nav-dropdown-menu-description">Delivery runs on open-source bugs, graded by maintainers' tests</span></a><a class="orbi-nav-dropdown-menu-a" href="/cost/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Cost per merged PR</span><span class="orbi-nav-dropdown-menu-description">Measured on our own repos, with sample size and limits</span></a><a class="orbi-nav-dropdown-menu-a" href="/aiready/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">ai-ready: 12 factors</span><span class="orbi-nav-dropdown-menu-description">What makes an Issue safe to hand to an AI</span></a><a class="orbi-nav-dropdown-menu-a" href="/compare/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Orbi vs alternatives</span><span class="orbi-nav-dropdown-menu-description">Claude Code, Codex, Devin and more, fact-checked</span></a><a class="orbi-nav-dropdown-menu-a" href="/blog/" role="menuitem"><span class="orbi-nav-dropdown-menu-label">Blog</span></a></div></div>
+        <div class="nav-dropdown nav-docs"><button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="primary-navigation-docs-menu" data-dropdown-toggle>Docs<svg class="nav-dropdown-indicator" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="16" height="16" fill="none"><path d="M3 5.5 8 10.5 13 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><div class="nav-dropdown-menu" id="primary-navigation-docs-menu" role="menu" data-dropdown-menu><a class="orbi-nav-dropdown-menu-a" href="https://docs.orbi.build" role="menuitem">Self-hosted Docs</a><a class="orbi-nav-dropdown-menu-a" href="https://cloud-docs.orbi.build/?ref=nav" role="menuitem">Cloud Docs</a></div></div>
+        <a href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a href="/api/login">Sign in</a>
+        <a class="nav-apply" href="/cloud/">Start Cloud</a>
+        <span class="language" role="group" aria-label="Language">
+          <span aria-current="page">EN</span>
+          <a href="/zh/blog/run-claude-code-unattended/" lang="zh-CN" aria-label="简体中文">ZH</a>
+        </span>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <section class="compare-hero shell" aria-labelledby="post-title">
+        <p class="eyebrow">Blog · 2026-10-01</p>
+        <h1 id="post-title">Run Claude Code unattended: headless mode is step one</h1>
+        <p class="hero-lede">Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</p>
+      </section>
+    </div>
+
+    <article class="post-body">
+<p>To run Claude Code unattended you use headless mode: <code class="post-code--spaced">claude -p</code> runs one prompt without the interactive UI, prints the result and exits, with a non-zero code if the run fails. Anthropic&#39;s page for it is now titled &quot;Run Claude Code programmatically&quot;, but the address still ends in <a href="https://code.claude.com/docs/en/headless">/headless</a>. With no one to answer prompts, a headless run denies anything that needs approval, so give it a permission mode that lets the work through:</p>
+<pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
+  --permission-mode auto --permission-prompts none
+</code></pre>
+<p><code class="post-code--spaced">--permission-prompts none</code> is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.</p>
+<p>I&#39;m Lawrence Liu, and I maintain Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn&#39;t run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.</p>
+<h2>What Claude Code headless mode gives you</h2>
+<p>One session that runs to the end without a person. A few flags matter once it runs from cron or CI:</p>
+<ul>
+<li><code class="post-code--single">--allowedTools</code> pre-approves specific tools, and <code class="post-code--single">--permission-mode</code> sets a baseline for everything else.</li>
+<li><code class="post-code--spaced">--output-format json</code> gives a script the result, the session ID and the cost.</li>
+<li><code class="post-code--single">--dangerously-skip-permissions</code> is the direct way to run Claude Code without confirmation. It skips the routine permission prompts and checks (a few protections still apply, and in a headless run anything that still needs a person is denied), and Anthropic says to use it only inside a container or VM, as a non-root user. On a machine you care about, <code class="post-code--single">auto</code> or <code class="post-code--single">dontAsk</code> with an allowlist is the safer choice.</li>
+<li><code class="post-code--single">--bare</code> skips hooks, plugins, MCP servers and CLAUDE.md from the machine and the repository. Without it, a headless run in a repository you&#39;ve never trusted still runs that repository&#39;s hooks, and no trust dialog appears.</li>
+</ul>
+<h3>Headless authentication: API key or subscription token</h3>
+<p>Headless login is where subscription users trip. <code class="post-code--single">--bare</code> ignores your Pro or Max login. Against the Anthropic API it needs <code class="post-code--single">ANTHROPIC_API_KEY</code>, or an <code class="post-code--single">apiKeyHelper</code> passed in with <code class="post-code--single">--settings</code>; cloud providers such as Bedrock keep their own credentials.</p>
+<p>To use a subscription in CI, run <code class="post-code--spaced">claude setup-token</code>, set the token it prints as <code class="post-code--single">CLAUDE_CODE_OAUTH_TOKEN</code>, and leave <code class="post-code--single">--bare</code> off. Two things to know about that token:</p>
+<ul>
+<li>It lasts a year.</li>
+<li>An <code class="post-code--single">ANTHROPIC_API_KEY</code>, <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> or <code class="post-code--single">apiKeyHelper</code> takes priority over it, whether it&#39;s set on the machine or in the repository&#39;s settings, so check which credential a run actually used.</li>
+</ul>
+<p>The <a href="https://code.claude.com/docs/en/authentication#generate-a-long-lived-token">authentication docs</a> cover both. To keep the repository&#39;s own settings and <code class="post-code--single">.mcp.json</code> out of a run that can&#39;t use <code class="post-code--single">--bare</code>, add <code class="post-code--spaced">--setting-sources user</code>, and <code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> turns hooks off for one run. Anthropic also says <code class="post-code--single">--bare</code> will become the default for <code class="post-code--single">-p</code> in a future release, so a token-based setup may need changing then.</p>
+<h3>A minimal cron job</h3>
+<p>cron runs with a short <code class="post-code--single">PATH</code> and none of your shell setup, so spell out the directory, the binary and the credentials. Put the token in a file only the user running the job can read (<code class="post-code--spaced">chmod 600</code>), and <code class="post-code--single">export</code> it, or Claude won&#39;t see it:</p>
+<pre><code class="language-bash"># ~/.claude-nightly.env
+export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
+export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
+</code></pre>
+<p>The <code class="post-code--single">PATH</code> line matters as much as the token: the commands Claude runs during the job, such as your test runner, see the same short <code class="post-code--single">PATH</code> as cron does. Add wherever your tools live.</p>
+<p>Then, in that user&#39;s crontab, with your own repository path and the output of <code class="post-code--spaced">which claude</code>:</p>
+<pre><code class="language-bash"># crontab -e: every night at 03:00
+0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; /usr/local/bin/claude -p &quot;Run the test suite and fix what fails&quot; --permission-mode auto --permission-prompts none --output-format json &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
+</code></pre>
+<p>The log keeps Claude&#39;s output and errors, and a run that completes writes a JSON result there; a failure before Claude starts, such as a bad <code class="post-code--single">cd</code>, won&#39;t show up in it. <code class="post-code--single">auto</code> isn&#39;t always available: the model may not support it, or your organization, a settings file or Anthropic may have turned it off. When it&#39;s unavailable, Claude Code falls back to Manual, and a headless run then denies whatever needs approval. In that case use <code class="post-code--spaced">--permission-mode dontAsk</code> with an explicit <code class="post-code--single">--allowedTools</code> list.</p>
+<p>If one scheduled job like that is all you need, you&#39;re done. The rest of this post is for when you want GitHub Issues to come out the other end as merged, released changes.</p>
+<h2>Six things a headless loop doesn&#39;t answer</h2>
+<p>Orbi has been delivering its own Issues unattended since late August. As of today, 599 Issues in <a href="https://github.com/orbi-build/orbi">its repository</a> carry the <code class="post-code--single">ai-merged</code> label, and v0.5.58 went out on September 30. Some of the answers below I only found after getting them wrong. A bare loop around <code class="post-code--spaced">claude -p</code> leaves every one of them to you.</p>
+<h3>Which task, and only once</h3>
+<p>In Orbi a person adds the <code class="post-code--single">ai-ready</code> label to an Issue. A runner picks it inside a claim lock, so two runners can&#39;t take the same Issue at the same moment, and adds <code class="post-code--single">ai-in-progress</code>, which later scans skip. It then creates a worktree from a pinned base commit. Urgent Issues go first, then bugs. Each step is posted back to the Issue as a comment, which means the queue is the Issue list and the log is the Issue&#39;s timeline.</p>
+<h3>Which system user it runs as</h3>
+<p>With nobody approving commands, a dedicated operating system user adds a layer of isolation that permission rules and a sandbox don&#39;t replace. In Orbi Cloud each connected repository runs as its own Unix user. On September 25, after reading about GitSpawn, a way to make coding agents run programs through a repository&#39;s git config, I over-corrected: I filed an Issue, Orbi wrote and merged 1,164 lines of hardening, and I reverted it under four hours later. The agent already ran as that user, so guarding the runner&#39;s own git calls protected nothing. If you run <code class="post-code--spaced">claude -p</code> from cron, give it a dedicated user that holds only that repository&#39;s credentials. The full story is in <a href="/blog/gitspawn-unattended-agent/">GitSpawn and the agent that never asks</a>.</p>
+<h3>Who reviews it</h3>
+<p>Orbi starts a second session that reads the exact base and head commits against the Issue&#39;s acceptance criteria. It fixes what it finds and posts a verdict on the Issue, next to the test count. The session that wrote the change never gets to say it&#39;s done.</p>
+<h3>When it may merge</h3>
+<p>Right before merging, Orbi checks that the verdict names the current PR head, that the head contains the latest base branch, that CI on it has passed, and that GitHub reports the PR as mergeable. If CI is still running, it waits for the next pass. The <a href="/guides/auto-merge-ai-prs/">auto-merge guide</a> goes through each condition.</p>
+<p>Until September 30 that list had a hole. On September 29 (UTC) I labelled an Issue <code class="post-code--single">ai-blocked</code> and commented that its PR must not be merged. Seventy-one seconds later the runner merged it. The gate re-read the base, the head and CI, but never the Issue&#39;s labels, so a label added during review changed nothing. About eight hours later I filed <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a> and reverted the merge:</p>
+<p><img src="/img/headless-1504-bug.webp" alt="Issue #1504 on GitHub: the timeline of a merge that happened 71 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue&#39;s labels"></p>
+<p>Orbi claimed it a minute after I filed it, opened <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>, passed the independent review with no findings and merged 45 minutes after the claim. The gate now reads the labels one last time, and an <code class="post-code--single">ai-blocked</code> Issue stops the merge.</p>
+<p><img src="/img/headless-1504-merged.webp" alt="The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged"></p>
+<p>If your loop ends in <code class="post-code--spaced">gh pr merge</code>, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn&#39;t stop the lines after it. The <code class="post-code--single">:</code> line refuses to run without the Issue, the PR and the SHA your review approved; the <code class="post-code--single">labels=</code> line exits if the labels can&#39;t be read, so a failed lookup never turns into a merge, the <code class="post-code--single">grep</code> line exits non-zero when the Issue is blocked so your loop doesn&#39;t count it as a success, and <code class="post-code--single">--match-head-commit</code> makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, <code class="post-code--spaced">gh pr merge</code> enables auto-merge when checks haven&#39;t passed and queues the PR when they have, and a blocking label added after that isn&#39;t checked by this script:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+: &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?missing the SHA the review approved}&quot;
+labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1
+grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;blocked: $ISSUE&quot;; exit 3; }
+gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
+</code></pre>
+<h3>What happens when it fails</h3>
+<p>If Orbi can recover, the Issue moves to <code class="post-code--single">ai-fix-needed</code> and the next pass continues on the same branch and the same PR. If a person has to decide, it stops at <code class="post-code--single">ai-blocked</code> with a comment saying what happened.</p>
+<p>That comment isn&#39;t always enough. On September 28 the first run on <a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> ended in under three minutes with no commit at all, and Orbi labelled it <code class="post-code--single">ai-blocked</code>:</p>
+<p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482: Orbi started Pi, then posted &quot;Orbi blocked — waiting on a human decision&quot;: the agent delivered no commit and HEAD is still the frozen base"></p>
+<p>It told me there was no commit, not why, so I went to the logs. I judged the Issue itself was fine and removed the label, and the second run opened <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>, merged the same day.</p>
+<h3>Who ships it</h3>
+<p>A merged fix reaches nobody until it&#39;s released. In Orbi a release is an Issue too, labelled <code class="post-code--single">ai-release</code>, naming the version and the milestone. Orbi waits until everything else in that milestone is closed, then tags the release once CI passes on the release commit. This is the one for v0.5.58, which shipped the #1504 fix:</p>
+<p><img src="/img/headless-1508-release.webp" alt="Issue #1508, Release v0.5.58: the scope is milestone v0.5.58, the Release block names version, base branch and version file, and Orbi claimed it with ai-in-progress"></p>
+<h2>The step I still do by hand</h2>
+<p>If your runs change a user interface, automated tests won&#39;t be enough. On September 25, Orbi merged <a href="https://github.com/orbi-build/orbi-website/pull/523">a mobile table fix</a> for this website. Its overflow tests all passed. Then a 390px screenshot showed words split mid-word, so I measured all 34 table pages at 390px: no horizontal overflow anywhere, but 193 split words or numbers on 25 of them. Here is the effect, reproduced on today&#39;s page by putting PR #523&#39;s CSS back:</p>
+<p><img src="/img/headless-table-before.webp" alt="The Orbi vs Devin capability table at 390px with PR #523&#39;s CSS put back: &quot;Task entry&quot; breaks into &quot;Tas&quot;, &quot;k&quot;, &quot;ent&quot;, &quot;ry&quot;"></p>
+<p>I filed the measurements as <a href="https://github.com/orbi-build/orbi-website/issues/526">#526</a>, and Orbi merged the fix 53 minutes after picking it up. The same table on orbi.build today:</p>
+<p><img src="/img/headless-table-after.webp" alt="The same table on orbi.build today at 390px: the row is a stacked block and every word reads whole"></p>
+<p>PR #523&#39;s tests did what its Issue asked, and that Issue never mentioned words. So before anything is promoted from beta to production, I open the changed pages on a phone and a desktop and look.</p>
+<h2>If you&#39;d rather not build it</h2>
+<p>All of this can be built around <code class="post-code--spaced">claude -p</code>: a claim lock on labelled Issues, a dedicated system user, a second session for review, a merge check, a resume path, a release job. Orbi&#39;s <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow doc</a>, which describes how its version works, runs to about 800 lines.</p>
+<p>Or use Orbi. Orbi Cloud runs <a href="https://github.com/earendil-works/pi">Pi</a> on DeepSeek by default, and Orbi&#39;s own deliveries have run on DeepSeek since September 22. You can bring your own key instead, and Anthropic&#39;s API is on the provider list, so Claude models stay available. What you give up is Claude Code itself, and using your Claude Pro or Max quota for it. <a href="/compare/claude-code/">Orbi vs Claude Code</a> compares where each one stops. If what you want is an Issue coming out the other end as a reviewed release, <a href="https://orbi.build/cloud/?ref=blog-headless">connect a repository to Orbi Cloud</a> or self-host the <a href="https://github.com/orbi-build/orbi">open-source runner</a>.</p>
+<h2>Related</h2>
+<p>Read <a href="/compare/claude-code/">Orbi vs Claude Code</a>, <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> and <a href="/cloud/">Cloud</a>.</p>
+
+    </article>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-signal" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="/#direction">Direction</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

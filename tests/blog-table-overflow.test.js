@@ -12,12 +12,15 @@ const existingRoutes = [
   "/blog/docker-image-third-try/",
   "/blog/watch-the-six-steps/",
   "/blog/what-autonomous-actually-means/",
+  "/blog/run-claude-code-unattended/",
+  "/zh/blog/run-claude-code-unattended/",
   "/zh/blog/claude-code-github-actions-who-merges/",
   "/zh/blog/docker-image-third-try/",
   "/zh/blog/watch-the-six-steps/",
   "/zh/blog/what-autonomous-actually-means/",
 ];
 const widths = [390, 1440];
+const inlineCodeWidths = [360, 375, 390];
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8" };
 let browser;
 let fixtureRoot;
@@ -89,6 +92,23 @@ async function overflowAt(route, width) {
           .filter((wrapper) => wrapper.scrollWidth > wrapper.clientWidth).length,
       };
     });
+  } finally {
+    await page.close();
+  }
+}
+
+async function inlineCodeLayoutAt(route, width) {
+  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  try {
+    await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+    return await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      singleTokenRects: [...document.querySelectorAll(".post-body p code, .post-body li code")]
+        .filter((code) => !/\s/.test(code.textContent))
+        .map((code) => ({ text: code.textContent, rects: code.getClientRects().length })),
+      preWhiteSpaces: [...document.querySelectorAll(".post-body pre code")]
+        .map((code) => getComputedStyle(code).whiteSpace),
+    }));
   } finally {
     await page.close();
   }
@@ -183,6 +203,23 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       expect(result.width, `${route} ${selector}: rendered width`).toBeCloseTo(result.expectedWidth, 1);
       // CI's fallback font is up to 6px narrower than the production webfont.
       expect(Math.abs(result.width - productionWidth), `${route} ${selector}: production baseline`).toBeLessThanOrEqual(6);
+    }
+  }, 30_000);
+});
+
+describe("inline blog code stays readable on mobile (Issue #689)", () => {
+  it("keeps single-token code together and the document within the viewport", async () => {
+    for (const route of ["/blog/run-claude-code-unattended/", "/zh/blog/run-claude-code-unattended/"]) {
+      for (const width of inlineCodeWidths) {
+        const result = await inlineCodeLayoutAt(route, width);
+        expect(result.overflow, `${route} at ${width}px document overflow`).toBe(0);
+        for (const entry of result.singleTokenRects) {
+          expect(entry.rects, `${route} at ${width}px: ${entry.text}`).toBe(1);
+        }
+        expect(result.preWhiteSpaces, `${route} at ${width}px pre whitespace`).toEqual(
+          result.preWhiteSpaces.map(() => "pre"),
+        );
+      }
     }
   }, 30_000);
 });

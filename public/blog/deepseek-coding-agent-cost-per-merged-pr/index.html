@@ -31,9 +31,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code { background: none; border: none; padding: 0; font-size: 0.85rem; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -87,7 +88,7 @@
     </div>
 
     <article class="post-body">
-<p>Orbi turns a GitHub Issue into a reviewed, merged PR and a tagged release. From September 22 to 24, 2026, Orbi&#39;s own repository merged 20 PRs using <code>deepseek-flash</code> for the whole loop: writing code, independent review, fixes, merge, and release. You can inspect <a href="https://github.com/orbi-build/orbi/issues/1328">issue #1328</a>, <a href="https://github.com/orbi-build/orbi/issues/1332">issue #1332</a>, and <a href="https://github.com/orbi-build/orbi/issues/1336">issue #1336</a>.</p>
+<p>Orbi turns a GitHub Issue into a reviewed, merged PR and a tagged release. From September 22 to 24, 2026, Orbi&#39;s own repository merged 20 PRs using <code class="post-code--single">deepseek-flash</code> for the whole loop: writing code, independent review, fixes, merge, and release. You can inspect <a href="https://github.com/orbi-build/orbi/issues/1328">issue #1328</a>, <a href="https://github.com/orbi-build/orbi/issues/1332">issue #1332</a>, and <a href="https://github.com/orbi-build/orbi/issues/1336">issue #1336</a>.</p>
 <p>This is a cost report, not a model leaderboard. The unit here is one merged PR. The numbers come from the same dataset as the site&#39;s <a href="/cost/">full cost table</a>.</p>
 <h2>What one merged PR cost</h2>
 <p>Across those runs, the median was <strong>10.6M tokens</strong> per merged PR. At DeepSeek&#39;s official prices, checked on September 24, 2026, that works out to:</p>
@@ -101,7 +102,7 @@
 <p>One caveat matters: when the cache-hit rate drops below 90%, cost rises quickly. The median is useful for planning, but your own context shape and review rounds determine the result.</p>
 <h2>Connect DeepSeek to a self-hosted Orbi</h2>
 <p>Orbi runs on Pi. Its engine can use an OpenAI-compatible API or a Codex subscription; it does <strong>not</strong> support Claude Code. Orbi is open source under AGPL-3.0.</p>
-<p>The provider template in <a href="https://github.com/orbi-build/orbi/blob/main/templates/pi-providers/deepseek.json"><code>templates/pi-providers/deepseek.json</code></a> is:</p>
+<p>The provider template in <a href="https://github.com/orbi-build/orbi/blob/main/templates/pi-providers/deepseek.json"><code class="post-code--single">templates/pi-providers/deepseek.json</code></a> is:</p>
 <pre><code class="language-json">{
   &quot;providers&quot;: {
     &quot;deepseek&quot;: {
