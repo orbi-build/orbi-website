@@ -45,6 +45,19 @@
     .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
     .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
     .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card, 12px);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -88,6 +101,8 @@
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
       .post-cta { padding: 24px 18px; }
       .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
     }
   </style>
 
@@ -149,7 +164,7 @@
           </ol>
         </details>
 <p>Once <a href="https://github.com/anthropics/claude-code-action">Claude Code</a> is wired into GitHub Actions, the implementation side is covered. The action answers questions, makes fixes, reviews a pull request, and posts progress to the thread. Its feature list stops there. The merge and the release still need an owner.</p>
-<p>That boundary makes sense for a general-purpose action. It still leaves the question teams meet almost immediately: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?</p>
+<p>That boundary makes sense for a general-purpose action. It still leaves the question teams meet almost immediately: a pull request is sitting there, tests are green, Claude wrote it and Claude reviewed it. Who presses merge?</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <p>For the last month the answer on my own repository has been: nobody. 431 pull requests merged, 416 Issues walked the full delivery path, 40 releases tagged and published. I have not read the diffs. This post is what had to exist for that to be a reasonable thing to do rather than a reckless one.</p>
 <h2 id="the-model-is-not-the-bottleneck">The model is not the bottleneck</h2>
 <p>The failure people expect is that the model writes something wrong. That happens, and tests catch most of it. The failure that actually costs you is different: the thing that decides &quot;this is good enough to merge&quot; is the same session that wrote the code, or it is a person who stopped reading carefully three weeks ago.</p>

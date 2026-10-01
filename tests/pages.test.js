@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
+import { buildPages, collectPosts, insertInlinePostCta, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -1638,6 +1638,39 @@ describe("blog (Issue #212)", () => {
       expect(html, `${post.output}: shared nav must render`).toContain('<nav id="');
       expect(html, `${post.output}: shared footer must render`).toContain('<footer class="site-footer shell">');
     }
+  });
+
+  it("renders one compact localized CTA after the second paragraph on posts with three paragraphs", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const body = html.match(/<article class="post-body">([\s\S]*?)<aside class="post-cta">/)?.[1] ?? "";
+      const paragraphs = [...body.matchAll(/<p\b[\s\S]*?<\/p>/g)];
+      const inline = body.match(/<aside class="post-cta-inline">[\s\S]*?<\/aside>/g) ?? [];
+      expect(paragraphs.length, `${post.output}: rendered paragraphs`).toBeGreaterThanOrEqual(3);
+      expect(inline, `${post.output}: inline CTA count`).toHaveLength(1);
+      const secondParagraphEnd = paragraphs[1].index + paragraphs[1][0].length;
+      const inlineStart = body.indexOf(inline[0]);
+      expect(inlineStart, `${post.output}: inline CTA follows paragraph two`).toBe(secondParagraphEnd);
+      const expected = post.lang === "zh"
+        ? {
+            title: "Orbi 把你的 Issue 一路做到发版。",
+            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            href: "/zh/cloud/login",
+          }
+        : {
+            title: "Orbi takes your Issues all the way to a release.",
+            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            href: "/cloud/login",
+          };
+      expect(inline[0]).toContain(`<span>${expected.title}</span>`);
+      expect(inline[0]).toContain(`<a class="button button-signal" data-cta="post-inline-start" href="${expected.href}">${expected.button}</a>`);
+    }
+  });
+
+  it("does not add the inline CTA when fewer than three paragraphs are rendered", () => {
+    const cta = `<aside class="post-cta-inline">inline</aside>`;
+    expect(insertInlinePostCta("<p>one</p><p>two</p>", cta)).toBe("<p>one</p><p>two</p>");
+    expect(insertInlinePostCta("<p>one</p><p>two</p><p>three</p>", cta)).toBe(`<p>one</p><p>two</p>${cta}<p>three</p>`);
   });
 
   it("renders one localized registration CTA after every post body and before related posts", () => {
