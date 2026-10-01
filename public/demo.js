@@ -379,6 +379,7 @@
     const prices = Array.from(document.querySelectorAll("[data-pricing-price]"));
     const details = Array.from(document.querySelectorAll("[data-pricing-detail]"));
     const ctas = Array.from(document.querySelectorAll("[data-pricing-cta]"));
+    const subscriptions = Array.from(document.querySelectorAll("[data-pricing-subscribe]"));
     const checkout = {
       solo: { year: "/api/checkout?plan=solo&interval=year", month: "/api/checkout?plan=solo" },
       pro: { year: "/api/checkout?plan=pro&interval=year", month: "/api/checkout?plan=pro" },
@@ -399,6 +400,11 @@
         const plan = cta.getAttribute("data-pricing-cta");
         cta.href = checkout[plan][interval];
         cta.dataset.cta = `pricing-${plan}-${interval}`;
+      });
+      subscriptions.forEach(function (link) {
+        const plan = link.getAttribute("data-pricing-subscribe");
+        link.href = checkout[plan][interval];
+        link.dataset.cta = `pricing-${plan}-${interval}`;
       });
     }
     intervalButtons.forEach(function (button) {
