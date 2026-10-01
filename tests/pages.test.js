@@ -315,6 +315,7 @@ image: /img/blog-t.png
     expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
     expect(template).toContain("{{POST_TOC}}");
     expect(template).toContain("{{INLINE_TOC}}");
+    expect(template).toMatch(/\.post-toc ol, \.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
   });
 
   it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
