@@ -24,7 +24,7 @@
     .post-cta {
       margin: 42px 0 12px;
       padding: 30px;
-      border-radius: var(--radius-card, 12px);
+      border-radius: var(--radius-card);
       background: var(--night);
       color: #edf5f0;
       text-align: center;
@@ -42,7 +42,7 @@
       margin: 28px 0;
       padding: 12px 16px;
       border: 1px solid var(--line);
-      border-radius: var(--radius-card, 12px);
+      border-radius: var(--radius-card);
       background: var(--paper-2);
     }
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
@@ -54,7 +54,7 @@
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
     .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
-    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); padding: 12px 16px; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
 
@@ -63,9 +63,9 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
     .post-body code.post-code--spaced { white-space: normal; }
-    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
     .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
@@ -74,7 +74,7 @@
     .post-body strong { font-weight: 600; }
     .post-media { margin: 24px 0; }
     .post-body svg { max-width: 100%; height: auto; }
-    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: 10px; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
