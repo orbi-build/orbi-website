@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
+import { chromium } from "@playwright/test";
 import {
   assertCloudLoginRedirect,
+  assertHomeCloudFlow,
   expectedCtaLanding,
   localStatsFixture,
   resolveCloudLoginExpect,
@@ -266,6 +268,48 @@ describe("cloud login smoke contract (Issue #74)", () => {
 // rewrites where CLOUD_LOGIN_URL is unset (Issue #77). Pinning the href copied
 // that rewrite into the test and broke beta's deploy smoke while the site
 // itself was fine.
+describe("homepage cloud-start landing contract (Issue #720)", () => {
+  it("runs the homepage flow through its login href and local 302 chain to GitHub authorization", async () => {
+    const server = await loginServer((request, response) => {
+      if (request.url === "/") {
+        response.writeHead(200, { "content-type": "text/html" });
+        response.end('<a data-cta="cloud-start" href="/cloud/login">Start Cloud</a>');
+        return;
+      }
+      loginChain()(request, response);
+    });
+    const browser = await chromium.launch({ headless: true });
+    const base = `http://127.0.0.1:${server.address().port}`;
+    process.env.CLOUD_LOGIN_EXPECT = "github-app-302";
+    try {
+      await expect(assertHomeCloudFlow(
+        browser,
+        "/",
+        { width: 1440, height: 900 },
+        "cloud-start-local.png",
+        '[data-cta="cloud-start"]',
+        {
+          flowTargetURL: base,
+          requestGet: async (url) => {
+            let next = url;
+            for (const expectedPath of ["/cloud/login", "/api/login"]) {
+              const response = await fetch(next, { redirect: "manual" });
+              expect(new URL(next).pathname).toBe(expectedPath);
+              expect(response.status).toBe(302);
+              next = new URL(response.headers.get("location"), next).toString();
+            }
+            return { url: () => next, status: () => 200 };
+          },
+        },
+      )).resolves.toBeUndefined();
+    } finally {
+      delete process.env.CLOUD_LOGIN_EXPECT;
+      await browser.close();
+      await stopLoginServer(server);
+    }
+  });
+});
+
 describe("Cloud CTA landing contract (Issue #107)", () => {
   it("github-app-302 lands the click in GitHub's sign-in authorization (Issue #570)", () => {
     const landing = expectedCtaLanding("github-app-302");
