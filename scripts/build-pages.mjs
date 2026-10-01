@@ -186,7 +186,6 @@ const LANG = {
     privacyLabel: "Privacy",
     termsLabel: "Terms",
     supportLabel: "Support",
-    directionLabel: "Direction",
     roadmapLabel: "Roadmap",
     deepAria: "Compare deep dives",
     deepSpan: "Compare",
@@ -243,7 +242,6 @@ const LANG = {
     privacyLabel: "隐私政策",
     termsLabel: "服务条款",
     supportLabel: "支持",
-    directionLabel: "方向",
     roadmapLabel: "路线图",
     deepAria: "竞品深度对比",
     deepSpan: "深度对比",
@@ -303,8 +301,8 @@ export function renderNav(page, partial = NAV_PARTIAL) {
 export function renderFooter(page) {
   const t = LANG[page.lang];
   const isHome = page.output === "index.html" || page.output === "zh/index.html";
-  // Anchors #faq/#direction live on the language home; other pages need the
-  // absolute path in front — "/#faq" on EN pages, "/zh/#faq" on ZH pages
+  // The #faq anchor lives on the language home; other pages need the absolute
+  // path in front — "/#faq" on EN pages, "/zh/#faq" on ZH pages
   // (Issue #106: the anchor-prefix rule).
   const anchorPrefix = isHome ? "" : `${t.langPrefix}/`;
   const base = (href) => withSiteBase(page.nav, href);
@@ -335,7 +333,7 @@ export function renderFooter(page) {
     COMPARE_HEADING: t.compareHeading,
     COMPARE_LINKS: `${deepLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}<li><a href="${base(`${t.langPrefix}/compare/`)}">${t.compareLabel === "竞品对比" ? "全部对比" : "All comparisons"}</a></li>`,
     COMPANY_HEADING: t.companyHeading,
-    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#direction`)}">${t.directionLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
+    COMPANY_LINKS: [`<li><a href="${base(`${t.langPrefix}/support/`)}">${t.supportLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/milestones">${t.roadmapLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/privacy/`)}">${t.privacyLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/terms/`)}">${t.termsLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi">GitHub</a></li>`,`<li><a href="https://x.com/xqliu" rel="me">X</a></li>`,`<li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li>`].join(""),
     LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,

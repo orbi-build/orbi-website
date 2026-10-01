@@ -859,9 +859,15 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 8]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 7]);
+      const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+        .map(([, href, label]) => [href, label]);
+      const siteBase = page.nav.siteBase ?? "";
+      expect(companyLinks, `${page.output}: Company links`).toEqual(page.lang === "zh"
+        ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
+        : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
     }
   });
 
