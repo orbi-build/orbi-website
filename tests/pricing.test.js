@@ -17,6 +17,7 @@ const SOLO_ANNUAL_SAVINGS_PERCENT = String(pricing.soloAnnualSavingsPercent);
 const PRO_ANNUAL_SAVINGS_PERCENT = String(pricing.proAnnualSavingsPercent);
 const ANNUAL_SAVINGS_PERCENT = String(pricing.annualSavingsPercent);
 const FOUNDING_PARTNER_LIMIT = String(pricing.foundingPartnerLimit);
+const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
@@ -544,7 +545,20 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
       soloRepositories: 1,
       proRepositories: 5,
       foundingPartnerLimit: 6,
+      foundingPartnerRemaining: 5,
     });
+  });
+
+  it("renders the founding banner before pricing cards with live slot counts", async () => {
+    for (const relativePath of CLOUD_PAGES) {
+      const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
+      const body = await response.text();
+      const banner = relativePath.startsWith("zh/")
+        ? `创始合作伙伴终身五折，${FOUNDING_PARTNER_LIMIT} 个名额只剩 ${FOUNDING_PARTNER_REMAINING} 个。结账时使用优惠码 ${FOUNDING_PROMO_CODE}。`
+        : `Founding partners: 50% off for life. Only ${FOUNDING_PARTNER_REMAINING} of ${FOUNDING_PARTNER_LIMIT} places left. Code ${FOUNDING_PROMO_CODE} at checkout.`;
+      expect(body, relativePath).toContain(`<p class="founding-offer">${banner}</p>`);
+      expect(body.indexOf("founding-offer"), relativePath).toBeLessThan(body.indexOf("pricing-cards"));
+    }
   });
 
   it("renders pricing.json values, exact outcome copy, and checkout links on both Cloud pages", async () => {
@@ -587,8 +601,8 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         ? "按月固定价。失败的交付不收钱。额度用完就暂停，不会多扣钱。"
         : "A fixed monthly price. Failed deliveries are free. When the allowance runs out, deliveries pause — no overage bills.");
       expect(body, relativePath).toContain(relativePath.startsWith("zh/")
-        ? `创始会员永久 5 折，限 ${FOUNDING_PARTNER_LIMIT} 位；结账时输入 ${FOUNDING_PROMO_CODE}`
-        : `Founding partners: 50% off forever, ${FOUNDING_PARTNER_LIMIT} places; use code ${FOUNDING_PROMO_CODE} at checkout`);
+        ? `创始合作伙伴终身五折，${FOUNDING_PARTNER_LIMIT} 个名额只剩 ${FOUNDING_PARTNER_REMAINING} 个。结账时使用优惠码 ${FOUNDING_PROMO_CODE}。`
+        : `Founding partners: 50% off for life. Only ${FOUNDING_PARTNER_REMAINING} of ${FOUNDING_PARTNER_LIMIT} places left. Code ${FOUNDING_PROMO_CODE} at checkout.`);
     }
   });
 
@@ -620,6 +634,7 @@ describe("Three-tier Cloud pricing (Issue #441)", () => {
         pricing.soloRepositoriesToken,
         pricing.proRepositoriesToken,
         pricing.foundingPartnerLimitToken,
+        pricing.foundingPartnerRemainingToken,
         pricing.foundingPromoCodeToken,
         pricing.measuredSoloRepositoryDeliveryRangeToken,
         pricing.measuredSoloLargeCodebaseDeliveriesToken,
