@@ -106,6 +106,27 @@ const COMPARISON_SLUGS = [
 const jsonLdObjects = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
   .map((match) => JSON.parse(match[1]));
 
+const jsonLdNodes = (value) => {
+  if (Array.isArray(value)) return value.flatMap(jsonLdNodes);
+  if (!value || typeof value !== "object") return [];
+  return [value, ...Object.values(value).flatMap(jsonLdNodes)];
+};
+
+describe("SoftwareApplication structured data (Issue #683)", () => {
+  it("requires offers.price on every emitted SoftwareApplication node", () => {
+    for (const [output, html] of shipped) {
+      for (const object of jsonLdObjects(html)) {
+        for (const node of jsonLdNodes(object).filter((entry) => {
+          const types = Array.isArray(entry["@type"]) ? entry["@type"] : [entry["@type"]];
+          return types.includes("SoftwareApplication");
+        })) {
+          expect(node.offers?.price, `${output}: SoftwareApplication offers.price`).toBeDefined();
+        }
+      }
+    }
+  });
+});
+
 describe("guide collection, breadcrumbs and related content (Issue #625)", () => {
   it("publishes both guide indexes with all six built guide targets and SEO-length metadata", () => {
     for (const prefix of ["", "zh/"]) {
