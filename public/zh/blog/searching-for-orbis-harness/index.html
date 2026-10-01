@@ -30,7 +30,8 @@
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
-    .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-toc-inline ol { margin: 0; padding-left: 20px; }
@@ -300,10 +301,9 @@
 <h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
+<!--orbi:related-posts-->
       </article>
     </div>
-
-    <!--orbi:related-posts-->
   </main>
 
 <section class="subscribe-box shell" aria-labelledby="subscribe-title">

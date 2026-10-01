@@ -310,8 +310,9 @@ image: /img/blog-t.png
 
   it("keeps the blog TOC layout scoped to the established two-column grid", async () => {
     const template = await readFile(join(ROOT, "site", "partials", "post.html"), "utf8");
-    expect(template).toContain(".post-body h2 { font-family:");
-    expect(template).toMatch(/\.post-body h2 \{[^}]*scroll-margin-top: 24px;/);
+    expect(template).toContain(".post-body h2, .post-body .related-links h2 { font-family:");
+    expect(template).toMatch(/\.post-body h2, \.post-body \.related-links h2 \{[^}]*font-size: 1\.5rem;[^}]*line-height: 1\.25;[^}]*margin: 42px 0 10px;[^}]*scroll-margin-top: 24px;/);
+    expect(template).toMatch(/\.post-body \.related-links \{[^}]*margin: 0;/);
     expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
     expect(template).toContain("{{POST_TOC}}");
     expect(template).toContain("{{INLINE_TOC}}");

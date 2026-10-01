@@ -69,6 +69,20 @@ describe("blog related posts", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
+  it("inserts the related section inside the article column", async () => {
+    const cache = cacheDouble();
+    vi.stubGlobal("caches", cache);
+    const env = {
+      AI: { run: async () => aiVectors() },
+      ASSETS: assetsFor(JSON.stringify(posts), '<html><body><div class="post-grid"><article class="post-body"><p>Body</p><!--orbi:related-posts--></article></div></body></html>'),
+    };
+
+    const response = await worker.fetch(new Request("https://beta.orbi.build/blog/one/"), env);
+    const html = await response.text();
+    expect(html).toMatch(/<article class="post-body"><p>Body<\/p><section class="related-links"[\s\S]*<\/section><\/article>/);
+    expect(html).not.toContain('<section class="related-links shell"');
+  });
+
   it("renders manual-first same-language links and caches embeddings by posts.json", async () => {
     const cache = cacheDouble();
     vi.stubGlobal("caches", cache);
