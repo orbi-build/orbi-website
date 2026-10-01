@@ -89,6 +89,7 @@ describe("homepage section order (Issue #712)", () => {
         "stats",
         "social-proof",
         "avatar-wall",
+        "pricing-summary",
         "faq",
         "closing",
       ]);

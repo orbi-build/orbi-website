@@ -798,6 +798,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
     throw new Error(`${path}: expected exactly one nav Start free`);
   }
+  const summary = page.locator(".pricing-summary");
+  if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
+  const summaryText = await summary.textContent();
+  for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit]) {
+    if (!summaryText.includes(String(value))) throw new Error(`${path}: pricing summary is missing ${value}`);
+  }
+  const summaryHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
+  const summaryLink = summary.locator(`[data-cta="pricing-summary"][href="${summaryHref}"]`);
+  if (await summaryLink.count() !== 1) throw new Error(`${path}: pricing summary link has wrong target`);
+  await summary.scrollIntoViewIfNeeded();
+  await summary.screenshot({ path: `${artifacts}/pricing-summary-${screenshot}` });
   const resourcesHeading = path.startsWith("/zh") ? "资源" : "Resources";
   const resourcesGroup = page.locator(".footer-group", {
     has: page.locator("h2", { hasText: resourcesHeading }),
