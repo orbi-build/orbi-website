@@ -58,13 +58,19 @@
     }
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
-    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
-    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
-    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -90,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -149,7 +156,18 @@
           <li><a class="post-toc-link" href="#why-we-started">Why we started</a></li>
           <li><a class="post-toc-link" href="#how-we-measured">How we measured</a></li>
           <li><a class="post-toc-link" href="#the-grid">The grid</a></li>
-          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a></li>
+          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a>
+            <ol>
+              <li><a class="post-toc-link" href="#v1-ask-for-a-before-after-comparison">v1: ask for a before/after comparison</a></li>
+              <li><a class="post-toc-link" href="#v4-the-same-rule-as-a-separate-skill">v4: the same rule as a separate skill</a></li>
+              <li><a class="post-toc-link" href="#v5-generate-the-inputs">v5: generate the inputs</a></li>
+              <li><a class="post-toc-link" href="#v9-and-v11-the-oracle-must-not-be-the-change">v9 and v11: the oracle must not be the change</a></li>
+              <li><a class="post-toc-link" href="#v11-tools-on-path-and-a-bug-in-our-own-text">v11: tools on PATH, and a bug in our own text</a></li>
+              <li><a class="post-toc-link" href="#v13-the-characters-you-strip-are-data">v13: the characters you strip are data</a></li>
+              <li><a class="post-toc-link" href="#v14-cross-check-reference-implementations">v14: cross-check reference implementations</a></li>
+              <li><a class="post-toc-link" href="#v15-collision-checks">v15: collision checks</a></li>
+              <li><a class="post-toc-link" href="#v17-a-producer-table-experimental">v17: a producer table (experimental)</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#what-the-models-did">What the models did</a></li>
           <li><a class="post-toc-link" href="#nine-issues-the-harness-had-never-seen">Nine issues the harness had never seen</a></li>
           <li><a class="post-toc-link" href="#issues-whose-first-real-fix-broke-something">Issues whose first real fix broke something</a></li>
@@ -167,7 +185,18 @@
           <li><a class="post-toc-link" href="#why-we-started">Why we started</a></li>
           <li><a class="post-toc-link" href="#how-we-measured">How we measured</a></li>
           <li><a class="post-toc-link" href="#the-grid">The grid</a></li>
-          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a></li>
+          <li><a class="post-toc-link" href="#what-the-harness-changes-did">What the harness changes did</a>
+            <ol>
+              <li><a class="post-toc-link" href="#v1-ask-for-a-before-after-comparison">v1: ask for a before/after comparison</a></li>
+              <li><a class="post-toc-link" href="#v4-the-same-rule-as-a-separate-skill">v4: the same rule as a separate skill</a></li>
+              <li><a class="post-toc-link" href="#v5-generate-the-inputs">v5: generate the inputs</a></li>
+              <li><a class="post-toc-link" href="#v9-and-v11-the-oracle-must-not-be-the-change">v9 and v11: the oracle must not be the change</a></li>
+              <li><a class="post-toc-link" href="#v11-tools-on-path-and-a-bug-in-our-own-text">v11: tools on PATH, and a bug in our own text</a></li>
+              <li><a class="post-toc-link" href="#v13-the-characters-you-strip-are-data">v13: the characters you strip are data</a></li>
+              <li><a class="post-toc-link" href="#v14-cross-check-reference-implementations">v14: cross-check reference implementations</a></li>
+              <li><a class="post-toc-link" href="#v15-collision-checks">v15: collision checks</a></li>
+              <li><a class="post-toc-link" href="#v17-a-producer-table-experimental">v17: a producer table (experimental)</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#what-the-models-did">What the models did</a></li>
           <li><a class="post-toc-link" href="#nine-issues-the-harness-had-never-seen">Nine issues the harness had never seen</a></li>
           <li><a class="post-toc-link" href="#issues-whose-first-real-fix-broke-something">Issues whose first real fix broke something</a></li>
@@ -230,14 +259,14 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <img src="/img/diagrams/harness-per-repo.svg" alt="Per repository, original harness against v13 to v15: pyinfra 0/5 to 11/11, chainloop 5/6 to 10/12, fedify 1/4 to 7/7." width="720" height="340">
 <figcaption>pyinfra and fedify moved the most. chainloop already passed most runs on the original harness. Its regression shows up rarely, and that's what makes it dangerous.</figcaption>
 </figure><p>Every rule below came from reading the transcript of a failed run. Each version builds on the one before.</p>
-<h3>v1: ask for a before/after comparison</h3>
+<h3 id="v1-ask-for-a-before-after-comparison">v1: ask for a before/after comparison</h3>
 <p>The first attempt was the obvious one: tell both roles to compare behaviour before and after the fix and write down what they checked. pyinfra went from 0/5 to 2/3.</p>
 <p>The failures are worth a close look. The agent did compare, but on examples it picked itself. In one run it tested combining marks with U+0301 (a Latin acute accent, which the old code already handled) and never tried U+3099 (the Japanese voiced sound mark, which the fix broke). Ask an agent to look for regressions and you get the ones it already expects.</p>
-<h3>v4: the same rule as a separate skill</h3>
+<h3 id="v4-the-same-rule-as-a-separate-skill">v4: the same rule as a separate skill</h3>
 <p>We moved the v1 rule into a standalone skill instead of the prompt. It scored 1/3. The transcripts show the skill was read. Three runs are too few to say the packaging hurt, but they do show it didn&#39;t help: the rule still let the agent pick its own samples.</p>
-<h3>v5: generate the inputs</h3>
+<h3 id="v5-generate-the-inputs">v5: generate the inputs</h3>
 <p>v5 required inputs to be generated by a program across whole classes (for text: ASCII, CJK and fullwidth, combining marks, emoji modifiers, zero-width sequences, ANSI codes; for syntax: escapes, even and odd backslash runs, quotes, delimiters), with the counts written into <code class="post-code--single">.orbi/regression.md</code> so the reviewer could check them. From then on, runs generated a thousand inputs or more. A v5 run generated 2,756 inputs for the redactor; the largest corpus we saw later, from an Opus run, was 1.19 million character units for the table. v5 passed 4 of 4.</p>
-<h3>v9 and v11: the oracle must not be the change</h3>
+<h3 id="v9-and-v11-the-oracle-must-not-be-the-change">v9 and v11: the oracle must not be the change</h3>
 <p>Then a strong model showed us what generated inputs can&#39;t fix on their own. This is from a <code class="post-code--single">gpt-5.6-sol</code> run&#39;s own regression report on pyinfra:</p>
 <pre><code class="post-code--spaced">The comparison uses an independent reference formatter implementing that rule
 ...
@@ -248,18 +277,18 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 </code></pre>
 <p>&quot;That rule&quot; was the rule the fix had just implemented: count East Asian wide characters as two columns. The &quot;independent&quot; reference was the fix written a second time, so of course it agreed. The 👍🏽 regression was still there.</p>
 <p>v11 requires an oracle that doesn&#39;t depend on the patch: an existing library, the old behaviour where it was right, or an invariant. It also asks the agent to list the dependency tree first, because the reference is often already installed.</p>
-<h3>v11: tools on <code class="post-code--single">PATH</code>, and a bug in our own text</h3>
+<h3 id="v11-tools-on-path-and-a-bug-in-our-own-text">v11: tools on <code class="post-code--single">PATH</code>, and a bug in our own text</h3>
 <p>fedify failed because of us. Our prompt included an example: &quot;add a changelog fragment, don&#39;t edit the generated changelog&quot;. That&#39;s good advice for many projects, but fedify uses <code class="post-code--single">sacho</code> with materialization turned on, so every upstream commit edits both the fragment and <code class="post-code--single">CHANGES.md</code>. Runs that followed our example failed <code class="post-code--spaced">sacho check</code>.</p>
 <p>The fix was to stop writing project rules into the harness. v11 says: find the repository&#39;s own contribution tooling, run its check command, and treat that as the rule. We also put <code class="post-code--single">sacho</code> and <code class="post-code--single">deno</code> on the runner&#39;s <code class="post-code--single">PATH</code>, because an agent guesses at any rule it can&#39;t run. fedify went from 1/4 to 3/3. The same change showed up in whether a fix could be sent upstream as is (conventional commit titles, sign-off, AI disclosure, no fork-local <code class="post-code--single">#1</code> references): 9 of 15 original-harness runs passed that check, and 39 of 39 from v11 to v15.</p>
-<h3>v13: the characters you strip are data</h3>
+<h3 id="v13-the-characters-you-strip-are-data">v13: the characters you strip are data</h3>
 <p>The chainloop regression still got through v11 in some runs. Their generated corpora were large and varied, yet every one put the backslash after the secret: <code class="post-code--single">secret\</code>, <code class="post-code--single">secret\\</code>, <code class="post-code--single">secret\n</code>. None had a secret that itself ended in a backslash and <code class="post-code--single">n</code>, and that&#39;s the input that leaks.</p>
 <p>v13 names the class directly: when a change strips or trims characters, test values that themselves contain or end with those characters, and ask which producers (here, detection rules) can emit such a value. chainloop went to 4/5.</p>
-<h3>v14: cross-check reference implementations</h3>
+<h3 id="v14-cross-check-reference-implementations">v14: cross-check reference implementations</h3>
 <p>Once agents used real references, a new failure appeared. In the pyinfra environment, <code class="post-code--single">wcwidth</code> 0.2.14 counts 👍🏽 as four columns instead of two. An agent that trusted it would conclude the regression was correct and the old behaviour wrong. <code class="post-code--single">rich</code>, installed in the same environment, gets it right.</p>
 <p>v14 tells the agent to compare references when more than one exists and to say which one it trusts and why (usually the one with the newer Unicode data). 8/9.</p>
-<h3>v15: collision checks</h3>
+<h3 id="v15-collision-checks">v15: collision checks</h3>
 <p>The one-character <code class="post-code--single">s</code> bug worked differently. A fix changed the needle it searched for (a trimmed secret) and then replaced every occurrence of the shorter needle. v15 adds: if a change alters text that is searched for or replaced, test where else that text appears. 9/9.</p>
-<h3>v17: a producer table (experimental)</h3>
+<h3 id="v17-a-producer-table-experimental">v17: a producer table (experimental)</h3>
 <p>v17 asked the regression report to include a table of every producer that can emit the risky input, one row per rule, checked by the reviewer row by row. Agents did read the detector&#39;s rule file and list <code class="post-code--single">generic-password</code>. It scored 3/4 on chainloop, which we can&#39;t tell apart from v15.</p>
 <h2 id="what-the-models-did">What the models did</h2>
 <p>Model swaps are harder to read than harness changes. Each swap came with a different prompt version and, on the bridges, a different agent loop.</p>

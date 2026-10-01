@@ -504,18 +504,25 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   padding: 0 32px;
   font-size: 1.25rem;
 }
+@media (min-width: 761px) {
+  .hero-cta {
+    min-width: 340px;
+  }
+}
 .hero-cta-note {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   color: #91aaa4;
   font-size: 0.82rem;
   line-height: 1.45;
 }
 @media (max-width: 760px) {
   .hero-cta-note {
-    margin-top: 0;
+    margin-top: 12px;
     line-height: 1.2;
   }
-  .hero-cta-note span { display: block; }
+  .hero-cta-note-first,
+  .hero-cta-note > span:last-child { display: block; }
+  .hero-cta-note-separator { display: none; }
 }
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
@@ -1969,7 +1976,6 @@ h2 {
   .site-header nav > a.nav-apply {
     justify-content: center;
     margin-top: 8px;
-    border-top: 0;
   }
 
   .site-header nav > a + a { border-top: 1px solid var(--line-dark); }
@@ -2012,7 +2018,7 @@ h2 {
   }
   .eyebrow { margin-bottom: 12px; }
   h1 { margin-bottom: 12px; }
-  .hero-lede { font-size: 1rem; }
+  .hero-lede { margin-bottom: 22px; font-size: 1rem; }
   .button { width: 100%; }
   .hero-ctas { display: grid; gap: 18px; }
   .hero-cta { width: 100%; }

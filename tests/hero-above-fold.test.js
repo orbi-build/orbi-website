@@ -13,7 +13,7 @@ const cases = [
     lede: "An AI agent that takes your Issues all the way to a release.",
     href: "/cloud/login",
     button: "Try __FREE_DELIVERIES__ deliveries free →",
-    note: '<span class="hero-cta-note-first">No credit card required ·</span> <span>Orbi only sees the repos you pick</span>',
+    note: '<span class="hero-cta-note-first">No credit card required</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span>Orbi only sees the repos you pick</span>',
   },
   {
     source: "site/pages/zh/index.html",
@@ -22,7 +22,7 @@ const cases = [
     lede: "AI 把你的 Issue 一路做到发版。",
     href: "/zh/cloud/login",
     button: "免费试 __FREE_DELIVERIES__ 次 →",
-    note: "不用绑定信用卡 · 只授权你选的仓库",
+    note: '<span class="hero-cta-note-first">不用绑定信用卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span>只授权你选的仓库</span>',
   },
 ];
 
@@ -52,10 +52,30 @@ describe("homepage hero CTA (Issue #704)", () => {
     }
   });
 
+  it("uses the same responsive note markup across home and Cloud heroes", async () => {
+    for (const path of [
+      "site/pages/index.html",
+      "site/pages/zh/index.html",
+      "site/pages/cloud/index.html",
+      "site/pages/zh/cloud/index.html",
+      "public/index.html",
+      "public/zh/index.html",
+      "public/cloud/index.html",
+      "public/zh/cloud/index.html",
+    ]) {
+      const html = await read(path);
+      expect(html).toContain('<span class="hero-cta-note-separator" aria-hidden="true">·</span>');
+    }
+  });
+
   it("makes the sole hero CTA large and the global nav CTA outlined", async () => {
     const css = await read("public/styles.css");
     expect(css).toContain(".hero-cta {\n  min-height: 64px;\n  padding: 0 32px;\n  font-size: 1.25rem;");
-    expect(css).toContain(".hero-cta-note {\n  margin: 8px 0 0;\n  color: #91aaa4;\n  font-size: 0.82rem;");
+    expect(css).toContain("@media (min-width: 761px) {\n  .hero-cta {\n    min-width: 340px;\n  }\n}");
+    expect(css).toContain(".hero-cta-note {\n  margin: 12px 0 0;\n  color: #91aaa4;\n  font-size: 0.82rem;");
+    const mobile = css.match(/@media \(max-width: 760px\) \{\n  \.hero-cta-note \{([\s\S]*?)\n  \}/)?.[1] ?? "";
+    expect(mobile).toContain("margin-top: 12px;");
+    expect(mobile).not.toContain("margin-top: 0;");
     expect(css).toContain(".hero-cta { width: 100%; }");
     expect(css).toContain(".site-header nav > a.nav-apply {\n  min-width: 76px;");
     expect(css).toContain("background: transparent;");

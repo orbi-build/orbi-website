@@ -58,13 +58,19 @@
     }
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
-    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
-    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
-    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -90,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -145,8 +152,20 @@
         <nav class="post-toc" aria-label="本页目录">
           <h2>本页目录</h2>
           <ol>
-          <li><a class="post-toc-link" href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a></li>
-          <li><a class="post-toc-link" href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a></li>
+          <li><a class="post-toc-link" href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a>
+            <ol>
+              <li><a class="post-toc-link" href="#headless-登录与认证">headless 登录与认证</a></li>
+              <li><a class="post-toc-link" href="#最小的-cron-定时任务">最小的 cron 定时任务</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a>
+            <ol>
+              <li><a class="post-toc-link" href="#认领哪个-issue-而且只认领一次">认领哪个 Issue，而且只认领一次</a></li>
+              <li><a class="post-toc-link" href="#用哪个系统用户跑">用哪个系统用户跑</a></li>
+              <li><a class="post-toc-link" href="#谁来评审">谁来评审</a></li>
+              <li><a class="post-toc-link" href="#什么时候能合并">什么时候能合并</a></li>
+              <li><a class="post-toc-link" href="#失败了怎么办">失败了怎么办</a></li>
+              <li><a class="post-toc-link" href="#谁来发版">谁来发版</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</a></li>
           <li><a class="post-toc-link" href="#不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
@@ -156,8 +175,20 @@
         <details class="post-toc-inline">
           <summary>本页目录 · 5 节</summary>
           <ol>
-          <li><a class="post-toc-link" href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a></li>
-          <li><a class="post-toc-link" href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a></li>
+          <li><a class="post-toc-link" href="#headless-非交互-模式要知道的参数">headless（非交互）模式要知道的参数</a>
+            <ol>
+              <li><a class="post-toc-link" href="#headless-登录与认证">headless 登录与认证</a></li>
+              <li><a class="post-toc-link" href="#最小的-cron-定时任务">最小的 cron 定时任务</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</a>
+            <ol>
+              <li><a class="post-toc-link" href="#认领哪个-issue-而且只认领一次">认领哪个 Issue，而且只认领一次</a></li>
+              <li><a class="post-toc-link" href="#用哪个系统用户跑">用哪个系统用户跑</a></li>
+              <li><a class="post-toc-link" href="#谁来评审">谁来评审</a></li>
+              <li><a class="post-toc-link" href="#什么时候能合并">什么时候能合并</a></li>
+              <li><a class="post-toc-link" href="#失败了怎么办">失败了怎么办</a></li>
+              <li><a class="post-toc-link" href="#谁来发版">谁来发版</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</a></li>
           <li><a class="post-toc-link" href="#不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
@@ -177,7 +208,7 @@
 <li><code class="post-code--single">--dangerously-skip-permissions</code> 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查（仍有少数保护生效，headless 运行里仍需人批准的操作会被拒绝），官方说只能在容器或虚拟机里、用非 root 用户跑。在自己的机器上跑，<code class="post-code--single">auto</code> 或者 <code class="post-code--single">dontAsk</code> 加白名单更稳妥。</li>
 <li><code class="post-code--single">--bare</code> 跳过机器和仓库里配置的 hooks、插件、MCP server 和 CLAUDE.md。不加的话，在一个你从没信任过的仓库里跑 headless，照样会执行这个仓库自带的 hooks，而且不会弹信任对话框。</li>
 </ul>
-<h3>headless 登录与认证</h3>
+<h3 id="headless-登录与认证">headless 登录与认证</h3>
 <p>订阅用户最容易卡在登录上。<code class="post-code--single">--bare</code> 不认 Pro 或 Max 的登录。直接用 Anthropic API 时，要设 <code class="post-code--single">ANTHROPIC_API_KEY</code>，或者用 <code class="post-code--single">--settings</code> 传入 <code class="post-code--single">apiKeyHelper</code>；Bedrock 这类云服务商照旧用它们自己的凭据。</p>
 <p>想在 CI 里用订阅额度，先跑 <code class="post-code--spaced">claude setup-token</code>，把打印出来的 token 设成 <code class="post-code--single">CLAUDE_CODE_OAUTH_TOKEN</code>，并且不要加 <code class="post-code--single">--bare</code>。这个 token 有两点要注意：</p>
 <ul>
@@ -185,7 +216,7 @@
 <li><code class="post-code--single">ANTHROPIC_API_KEY</code>、<code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 或 <code class="post-code--single">apiKeyHelper</code> 优先于它，不管是设在机器上还是仓库的配置里，所以要核对一次运行到底用的哪个凭据。</li>
 </ul>
 <p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不能加 <code class="post-code--single">--bare</code> 的时候，可以用 <code class="post-code--spaced">--setting-sources user</code> 不读仓库自己的配置和 <code class="post-code--single">.mcp.json</code>，<code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code class="post-code--single">--bare</code> 将来会成为 <code class="post-code--single">-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
-<h3>最小的 cron 定时任务</h3>
+<h3 id="最小的-cron-定时任务">最小的 cron 定时任务</h3>
 <p>cron 的 <code class="post-code--single">PATH</code> 很短，也不读你的 shell 配置，所以工作目录、可执行文件路径和凭据都要写全。token 放进一个只有运行这个任务的用户能读的文件（<code class="post-code--spaced">chmod 600</code>），并且要用 <code class="post-code--single">export</code>，否则 Claude 读不到：</p>
 <pre><code class="language-bash"># ~/.claude-nightly.env
 export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
@@ -200,13 +231,13 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <p>如果你只需要这样一个定时任务，到这里就够了。下面的内容是给想让 GitHub Issue 一路自动走到合并、发版的人。</p>
 <h2 id="用-claude-p-做自动化开发-还要自己解决的六件事">用 claude -p 做自动化开发，还要自己解决的六件事</h2>
 <p>Orbi 从 8 月下旬开始无人值守地交付自己仓库里的 Issue。截至今天，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code class="post-code--single">ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。下面有几件事，我是先做错了才改对的。只在 <code class="post-code--spaced">claude -p</code> 外面套个循环，这六件事全得你自己补。</p>
-<h3>认领哪个 Issue，而且只认领一次</h3>
+<h3 id="认领哪个-issue-而且只认领一次">认领哪个 Issue，而且只认领一次</h3>
 <p>在 Orbi 里，人给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签。runner 在一把认领锁里选票，两个 runner 不会同时拿到同一个 Issue；选中后加上 <code class="post-code--single">ai-in-progress</code>，之后的扫描都会跳过它。认领的 runner 接着从一个固定的提交建 worktree。紧急的先做，然后是 bug。每一步都以评论的形式写回 Issue，所以队列就是 Issue 列表，运行日志就是 Issue 的时间线。</p>
-<h3>用哪个系统用户跑</h3>
+<h3 id="用哪个系统用户跑">用哪个系统用户跑</h3>
 <p>没人审批命令时，专用的系统用户能多加一层隔离，这是权限规则和沙箱替代不了的。Orbi Cloud 给每个接入的仓库单独开一个 Unix 用户。9 月 25 日，我看到 GitSpawn（借仓库的 git 配置让编程 agent 执行程序的漏洞），反应过度，开票让 Orbi 写了 1164 行加固代码，不到四个小时又撤了。agent 本来就以那个用户的身份运行，单独护住 runner 自己调用的 git 什么也防不住。如果你用 cron 跑 <code class="post-code--spaced">claude -p</code>，就给它一个专用用户，只放这个仓库的凭据。来龙去脉写在 <a href="/zh/blog/gitspawn-unattended-agent/">GitSpawn 那篇</a>里。</p>
-<h3>谁来评审</h3>
+<h3 id="谁来评审">谁来评审</h3>
 <p>Orbi 另起一个会话做评审。它拿 Issue 里的验收项，对照 PR 冻结下来的 base 提交和 head 提交逐条检查，发现问题当场修，最后把结论和测试通过数一起贴回 Issue。写代码的那个会话不参与评审。</p>
-<h3>什么时候能合并</h3>
+<h3 id="什么时候能合并">什么时候能合并</h3>
 <p>合并前一刻，Orbi 会再确认四件事：评审结论对应的是 PR 现在的最新提交；这个提交包含目标分支的最新改动；它上面的 CI 已经跑通；GitHub 显示 PR 可以合并。CI 还在跑，就等下一轮。每一条在<a href="/zh/guides/auto-merge-ai-prs/">自动合并指南</a>里都有说明。</p>
 <p>这张清单直到 9 月 30 日上午都有个漏洞。北京时间 9 月 30 日凌晨 0 点 47 分，我给一个 Issue 打了 <code class="post-code--single">ai-blocked</code>，还留言说它的 PR 不能合。71 秒后，runner 照样把它合了。合并前的检查重读了目标分支、最新提交和 CI，唯独没重读 Issue 的标签，评审期间加上的标签等于没加。当天早上我开了 <a href="https://github.com/orbi-build/orbi/issues/1504">#1504</a>，随后回滚了这次合并：</p>
 <p><img src="/img/headless-1504-bug.webp" alt="GitHub 上的 Issue #1504（截图里的时间是 UTC）：维护者打上 ai-blocked 71 秒后 PR 仍被合并的时间线，以及原因：merge_gate 从不重读 Issue 标签"></p>
@@ -219,12 +250,12 @@ labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#
 grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;blocked: $ISSUE&quot;; exit 3; }
 gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
 </code></pre>
-<h3>失败了怎么办</h3>
+<h3 id="失败了怎么办">失败了怎么办</h3>
 <p>能自己恢复的，Orbi 把 Issue 转成 <code class="post-code--single">ai-fix-needed</code>，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就停在 <code class="post-code--single">ai-blocked</code>，留一条评论说明发生了什么。</p>
 <p>这条评论有时并不够用。9 月 28 日，<a href="https://github.com/orbi-build/orbi/issues/1482">#1482</a> 的第一轮不到三分钟就结束了，一个提交都没有，Orbi 打上了 <code class="post-code--single">ai-blocked</code>：</p>
 <p><img src="/img/headless-1482-blocked.webp" alt="Issue #1482：Orbi 启动 Pi 之后贴出「Orbi blocked — waiting on a human decision」，说明 agent 没有交付提交，HEAD 还停在起点"></p>
 <p>这条评论只说了没提交，没说为什么，我只能去翻日志。我判断 Issue 本身没问题，摘掉了标签，第二轮开了 <a href="https://github.com/orbi-build/orbi/pull/1491">PR #1491</a>，当天合并。</p>
-<h3>谁来发版</h3>
+<h3 id="谁来发版">谁来发版</h3>
 <p>修复合进去了，没发版，用户还是用不上。Orbi 里发版也是一个 Issue，打 <code class="post-code--single">ai-release</code> 标签，写明版本号和里程碑。Orbi 等里程碑里其余的 Issue 都关了，发版提交上的 CI 通过后打 tag。这是 v0.5.58 的发版 Issue，#1504 的修复就是随它发出去的：</p>
 <p><img src="/img/headless-1508-release.webp" alt="Issue #1508「Release v0.5.58」：范围是 v0.5.58 里程碑，Release 段写明版本号、目标分支和版本文件，Orbi 以 ai-in-progress 认领"></p>
 <h2 id="六件事之外-还留给人做的一步">六件事之外，还留给人做的一步</h2>

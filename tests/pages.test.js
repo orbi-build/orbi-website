@@ -335,18 +335,19 @@ describe("blog title and body alignment (Issue #695)", () => {
     }
   });
 
-  it("renders Unicode-safe unique H2 anchors and the shared TOC at the five-section threshold", async () => {
+  it("renders Unicode-safe unique H2/H3 anchors and a nested TOC at the five-heading threshold", async () => {
     const tocPosts = [];
     for (const post of posts) {
       const html = shipped.get(post.output);
       const body = (html.match(/<article class="post-body">([\s\S]*?)<\/article>/)?.[1] ?? "").replace(/<aside class="post-cta">[\s\S]*?<\/aside>/, "");
-      const headings = [...body.matchAll(/<h2 id="([^"]+)">([^<]*)<\/h2>/g)];
-      const ids = headings.map((match) => match[1]);
-      expect(ids, `${post.output}: every H2 has an id`).toHaveLength((body.match(/<h2\b/g) ?? []).length);
-      expect(new Set(ids).size, `${post.output}: H2 ids are unique`).toBe(ids.length);
-      if (post.lang === "zh" && headings.some((match) => /[\u4e00-\u9fff]/u.test(match[2]))) {
-        expect(headings.some((match) => /[\u4e00-\u9fff]/u.test(match[1])), `${post.output}: Chinese H2 id`).toBe(true);
+      const headings = [...body.matchAll(/<h([23]) id="([^"]+)">[\s\S]*?<\/h\1>/g)];
+      const ids = headings.map((match) => match[2]);
+      expect(ids, `${post.output}: every H2/H3 has an id`).toHaveLength((body.match(/<h[23]\b/g) ?? []).length);
+      expect(new Set(ids).size, `${post.output}: H2/H3 ids are unique`).toBe(ids.length);
+      if (post.lang === "zh") {
+        expect(headings.some((match) => /[\u4e00-\u9fff]/u.test(match[2])), `${post.output}: Chinese heading id`).toBe(true);
       }
+      const h2Count = headings.filter((match) => match[1] === "2").length;
       const desktop = html.match(/<nav class="post-toc"[\s\S]*?<\/nav>/)?.[0] ?? "";
       const inline = html.match(/<details class="post-toc-inline">[\s\S]*?<\/details>/)?.[0] ?? "";
       const tocCount = (desktop.match(/class="post-toc-link"/g) ?? []).length;
@@ -358,12 +359,16 @@ describe("blog title and body alignment (Issue #695)", () => {
         expect(desktop, `${post.output}: localized TOC label`).toContain(`aria-label="${title}"`);
         expect(desktop, `${post.output}: localized TOC title`).toContain(`<h2>${title}</h2>`);
         expect(inline, `${post.output}: inline TOC`).not.toBe("");
-        expect(inline, `${post.output}: localized inline summary`).toContain(`<summary>${title} · ${ids.length} ${post.lang === "zh" ? "节" : "sections"}</summary>`);
+        expect(inline, `${post.output}: localized inline summary`).toContain(`<summary>${title} · ${h2Count} ${post.lang === "zh" ? "节" : "sections"}</summary>`);
         expect(tocCount, `${post.output}: desktop TOC count`).toBe(ids.length);
         expect(inlineCount, `${post.output}: inline TOC count`).toBe(ids.length);
         for (const id of ids) {
           expect(desktop, `${post.output}: desktop href ${id}`).toContain(`href="#${id}"`);
           expect(inline, `${post.output}: inline href ${id}`).toContain(`href="#${id}"`);
+        }
+        if (post.output.includes("run-claude-code-unattended")) {
+          const h3 = headings.find((match) => match[1] === "3");
+          expect(desktop, `${post.output}: H3 nested link ${h3[2]}`).toMatch(new RegExp(`<li>[\\s\\S]*<ol>[\\s\\S]*href="#${h3[2]}"`));
         }
       } else {
         expect(desktop, `${post.output}: no desktop TOC`).toBe("");
@@ -371,6 +376,7 @@ describe("blog title and body alignment (Issue #695)", () => {
       }
     }
     expect(tocPosts.length).toBeGreaterThan(0);
+    expect(tocPosts.some((output) => output.includes("k8e-rejected-then-merged"))).toBe(true);
   });
 
   it("keeps normalized H2 ids unique when a heading already uses a duplicate suffix", () => {
@@ -399,9 +405,18 @@ image: /img/blog-t.png
     expect(template).toMatch(/\.post-body h2, \.post-body \.related-links h2 \{[^}]*font-size: 1\.5rem;[^}]*line-height: 1\.25;[^}]*margin: 42px 0 10px;[^}]*scroll-margin-top: 24px;/);
     expect(template).toMatch(/\.post-body \.related-links \{[^}]*margin: 0;/);
     expect(template).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;[^}]*max-height: calc\(100vh - 48px\);[^}]*overflow-y: auto;/);
+    expect(template).toMatch(/\.post-toc \{[^}]*padding-top:\s*26px;/);
+    expect(template).toMatch(/\.post-toc h2 \{[^}]*font:\s*500 0\.75rem\/1\.5rem var\(--mono\);[^}]*letter-spacing:\s*0\.1em;[^}]*text-transform:\s*uppercase;/);
+    expect(template).not.toContain("counter-reset");
+    expect(template).not.toContain("counter-increment");
+    expect(template).not.toContain("post-toc-link::before");
+    expect(template).toMatch(/\.post-toc \.post-toc-link \{[^}]*font-size:\s*0\.875rem;[^}]*line-height:\s*1\.25rem;/);
+    expect(template).toMatch(/\.post-toc \.post-toc-link\.is-current \{[^}]*border-left-color:\s*var\(--ink\);/);
+    expect(template).toMatch(/\.post-toc ol ol \{[^}]*border-left:\s*0;/);
+    expect(template).toMatch(/\.post-toc ol ol \.post-toc-link \{[^}]*padding-left:\s*27px;/);
     expect(template).toContain("{{POST_TOC}}");
     expect(template).toContain("{{INLINE_TOC}}");
-    expect(template).toMatch(/\.post-toc ol, \.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
+    expect(template).toMatch(/\.post-body \.post-toc-inline ol \{[^}]*padding-left:\s*2\.2em;/);
   });
 
   it("uses the required desktop grid and one padded 52rem column below 1200px", async () => {
@@ -410,11 +425,12 @@ image: /img/blog-t.png
       /\.post-grid\s*\{[^}]*max-width:\s*52rem;[^}]*margin:\s*0 auto;[^}]*padding:\s*0 24px;/,
     );
     expect(template).toMatch(
-      /@media\s*\(min-width:\s*1200px\)\s*\{[\s\S]*?\.post-grid\s*\{[^}]*grid-template-columns:\s*232px minmax\(0, 52rem\);[^}]*column-gap:\s*24px;[^}]*max-width:\s*68rem;[^}]*padding:\s*0;/,
+      /@media\s*\(min-width:\s*1200px\)\s*\{[\s\S]*?\.post-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0, 52rem\) 200px;[^}]*column-gap:\s*56px;[^}]*max-width:\s*calc\(52rem \+ 256px\);[^}]*padding:\s*0;/,
     );
     expect(template).toMatch(
-      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*2;[^}]*padding-left:\s*24px;[^}]*padding-right:\s*24px;/,
+      /@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-hero, \.post-body\s*\{[^}]*grid-column:\s*1;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/,
     );
+    expect(template).toMatch(/@media\s*\(min-width:\s*1200px\)[\s\S]*?\.post-toc\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;/);
   });
 });
 

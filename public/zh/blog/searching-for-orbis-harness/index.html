@@ -58,13 +58,19 @@
     }
     .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
     .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
-    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
-    .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
-    .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
-    .post-toc li, .post-toc-inline li { margin: 6px 0; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
     .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
     .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
-    .post-toc-link.is-current { border-left: 3px solid var(--signal-on-light); font-weight: 600; margin-left: -3px; padding-left: 8px; }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
     .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
     .post-toc-inline summary { cursor: pointer; font-weight: 600; }
     .post-toc-inline ol { margin-top: 12px; }
@@ -90,8 +96,9 @@
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
     @media (min-width: 1200px) {
-      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
-      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
     }
     @media (max-width: 1199px) {
       .post-toc { display: none; }
@@ -149,7 +156,18 @@
           <li><a class="post-toc-link" href="#为什么开始">为什么开始</a></li>
           <li><a class="post-toc-link" href="#怎么测">怎么测</a></li>
           <li><a class="post-toc-link" href="#网格">网格</a></li>
-          <li><a class="post-toc-link" href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a></li>
+          <li><a class="post-toc-link" href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a>
+            <ol>
+              <li><a class="post-toc-link" href="#v1-要求对比修复前后">v1：要求对比修复前后</a></li>
+              <li><a class="post-toc-link" href="#v4-同一条规则做成独立-skill">v4：同一条规则做成独立 skill</a></li>
+              <li><a class="post-toc-link" href="#v5-输入用程序生成">v5：输入用程序生成</a></li>
+              <li><a class="post-toc-link" href="#v9-与-v11-判据不能是改动本身">v9 与 v11：判据不能是改动本身</a></li>
+              <li><a class="post-toc-link" href="#v11-工具进-path-以及我们自己文本里的-bug">v11：工具进 PATH，以及我们自己文本里的 bug</a></li>
+              <li><a class="post-toc-link" href="#v13-被剥掉的字符也是数据">v13：被剥掉的字符也是数据</a></li>
+              <li><a class="post-toc-link" href="#v14-参考实现交叉比对">v14：参考实现交叉比对</a></li>
+              <li><a class="post-toc-link" href="#v15-碰撞检查">v15：碰撞检查</a></li>
+              <li><a class="post-toc-link" href="#v17-产出方清单-实验">v17：产出方清单（实验）</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#模型起了什么作用">模型起了什么作用</a></li>
           <li><a class="post-toc-link" href="#九个它从没见过的-issue">九个它从没见过的 issue</a></li>
           <li><a class="post-toc-link" href="#第一次真实修复就改坏过东西的-issue">第一次真实修复就改坏过东西的 issue</a></li>
@@ -167,7 +185,18 @@
           <li><a class="post-toc-link" href="#为什么开始">为什么开始</a></li>
           <li><a class="post-toc-link" href="#怎么测">怎么测</a></li>
           <li><a class="post-toc-link" href="#网格">网格</a></li>
-          <li><a class="post-toc-link" href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a></li>
+          <li><a class="post-toc-link" href="#harness-的改动起了什么作用">harness 的改动起了什么作用</a>
+            <ol>
+              <li><a class="post-toc-link" href="#v1-要求对比修复前后">v1：要求对比修复前后</a></li>
+              <li><a class="post-toc-link" href="#v4-同一条规则做成独立-skill">v4：同一条规则做成独立 skill</a></li>
+              <li><a class="post-toc-link" href="#v5-输入用程序生成">v5：输入用程序生成</a></li>
+              <li><a class="post-toc-link" href="#v9-与-v11-判据不能是改动本身">v9 与 v11：判据不能是改动本身</a></li>
+              <li><a class="post-toc-link" href="#v11-工具进-path-以及我们自己文本里的-bug">v11：工具进 PATH，以及我们自己文本里的 bug</a></li>
+              <li><a class="post-toc-link" href="#v13-被剥掉的字符也是数据">v13：被剥掉的字符也是数据</a></li>
+              <li><a class="post-toc-link" href="#v14-参考实现交叉比对">v14：参考实现交叉比对</a></li>
+              <li><a class="post-toc-link" href="#v15-碰撞检查">v15：碰撞检查</a></li>
+              <li><a class="post-toc-link" href="#v17-产出方清单-实验">v17：产出方清单（实验）</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#模型起了什么作用">模型起了什么作用</a></li>
           <li><a class="post-toc-link" href="#九个它从没见过的-issue">九个它从没见过的 issue</a></li>
           <li><a class="post-toc-link" href="#第一次真实修复就改坏过东西的-issue">第一次真实修复就改坏过东西的 issue</a></li>
@@ -230,14 +259,14 @@
 <img src="/img/diagrams/harness-per-repo-zh.svg" alt="分仓库，原版 harness 对比 v13 到 v15：pyinfra 从 0/5 到 11/11，chainloop 从 5/6 到 10/12，fedify 从 1/4 到 7/7。" width="720" height="340">
 <figcaption>pyinfra 和 fedify 变化最大。chainloop 在原版下多数时候就能过，回归只是偶尔出现，这才危险。</figcaption>
 </figure><p>下面每条规则，都是读完一次失败运行的会话记录后加的。版本逐个累加。</p>
-<h3>v1：要求对比修复前后</h3>
+<h3 id="v1-要求对比修复前后">v1：要求对比修复前后</h3>
 <p>第一次尝试最直接：让两个角色都对比修复前后的行为，写下查了什么。pyinfra 从 0/5 变成 2/3。</p>
 <p>失败的那几次值得细看。agent 确实做了对比，只是例子是它自己挑的。有一次它拿 U+0301（拉丁字母的尖音符，旧代码本来就处理得对）去测组合字符，从头到尾没试 U+3099（日文浊音符，恰好被修复改坏）。让 agent 自己找回归，它只找得到早就料到的那些。</p>
-<h3>v4：同一条规则做成独立 skill</h3>
+<h3 id="v4-同一条规则做成独立-skill">v4：同一条规则做成独立 skill</h3>
 <p>我们把 v1 的规则从 prompt 挪进一个独立 skill，结果 1/3。会话记录显示 skill 确实读了。3 次运行说明不了换载体有没有坏处，至少看得出没有好处：这条规则照样允许 agent 自己挑样本。</p>
-<h3>v5：输入用程序生成</h3>
+<h3 id="v5-输入用程序生成">v5：输入用程序生成</h3>
 <p>v5 要求输入由程序按整类批量生成（文本类：ASCII、中日韩与全角、组合字符、emoji 修饰符、零宽序列、ANSI 码；语法类：转义、奇偶数个反斜杠、引号、分隔符），并把数量写进 <code class="post-code--single">.orbi/regression.md</code>，方便评审核对。此后的运行动辄生成上千个输入：v5 有一次给脱敏器生成了 2756 个；后来一次 Opus 运行给表格生成了 119 万个字符单元，是我们见过最多的。v5 四次全过。</p>
-<h3>v9 与 v11：判据不能是改动本身</h3>
+<h3 id="v9-与-v11-判据不能是改动本身">v9 与 v11：判据不能是改动本身</h3>
 <p>接着一个强模型让我们看到，光生成输入还不够。下面摘自 <code class="post-code--single">gpt-5.6-sol</code> 在 pyinfra 上一次运行自己写的回归报告：</p>
 <pre><code class="post-code--spaced">The comparison uses an independent reference formatter implementing that rule
 ...
@@ -248,18 +277,18 @@
 </code></pre>
 <p>它说的「that rule」，就是修复刚实现的那条规则：东亚宽字符按两列算。这个「独立」的参考实现只是把修复重写了一遍，当然处处对得上。👍🏽 的回归还在。</p>
 <p>v11 要求判据独立于补丁：现成的库、修改前行为中本来正确的部分，或者某个不变量。它还要求 agent 先列出依赖树，参考实现往往已经装在环境里。</p>
-<h3>v11：工具进 <code class="post-code--single">PATH</code>，以及我们自己文本里的 bug</h3>
+<h3 id="v11-工具进-path-以及我们自己文本里的-bug">v11：工具进 <code class="post-code--single">PATH</code>，以及我们自己文本里的 bug</h3>
 <p>fedify 失败怪我们自己。prompt 里有个例子：「加 changelog 片段，别改生成的 changelog」。对很多项目这是好建议，可 fedify 用 <code class="post-code--single">sacho</code> 且开了 materialize，上游每个 commit 都同时改片段和 <code class="post-code--single">CHANGES.md</code>。照着例子做的运行，全挂在 <code class="post-code--spaced">sacho check</code> 上。</p>
 <p>修法是不再把项目规矩写进 harness。v11 的规则是：找到仓库自带的贡献工具，跑它的检查命令，以它为准。我们还把 <code class="post-code--single">sacho</code> 和 <code class="post-code--single">deno</code> 放进了 runner 的 <code class="post-code--single">PATH</code>，agent 跑不了的规则，它只能猜。fedify 从 1/4 到了 3/3。修复能不能原样提到上游也跟着变了（commit 标题合规、签名、AI 披露、没有 fork 里的 <code class="post-code--single">#1</code> 引用）：原版 15 次里 9 次过，v11 到 v15 是 39 次全过。</p>
-<h3>v13：被剥掉的字符也是数据</h3>
+<h3 id="v13-被剥掉的字符也是数据">v13：被剥掉的字符也是数据</h3>
 <p>v11 下，chainloop 的回归偶尔还能漏过去。那几次运行生成的输入又多又杂，可每一个都把反斜杠放在密钥后面：<code class="post-code--single">secret\</code>、<code class="post-code--single">secret\\</code>、<code class="post-code--single">secret\n</code>。没有哪个密钥自己以反斜杠加 <code class="post-code--single">n</code> 结尾，而会泄漏的偏偏就是这种。</p>
 <p>v13 直接点名这类输入：改动要是会剥掉或截掉某些字符，就得测本身包含或以这些字符结尾的值，并查清哪些产出方（这里是检测规则）会产出这种值。chainloop 到了 4/5。</p>
-<h3>v14：参考实现交叉比对</h3>
+<h3 id="v14-参考实现交叉比对">v14：参考实现交叉比对</h3>
 <p>agent 用上真正的参考实现后，又冒出一种新失败。pyinfra 环境里的 <code class="post-code--single">wcwidth</code> 0.2.14 把 👍🏽 算成 4 列，应该是 2 列。agent 信了它，就会认定回归是对的、旧行为才错。同一个环境里的 <code class="post-code--single">rich</code> 倒是算对了。</p>
 <p>v14 要求有多个参考实现时互相比对，写明信哪个、为什么（一般信 Unicode 数据更新的那个）。8/9。</p>
-<h3>v15：碰撞检查</h3>
+<h3 id="v15-碰撞检查">v15：碰撞检查</h3>
 <p>单字符 <code class="post-code--single">s</code> 的问题是另一回事。修复改了要搜索的串（一个被截短的密钥），然后把这个更短的串出现的地方全替换了。v15 加了一条：改动要是改变了要搜索或替换的文本，就得测这段文本在别处出现的情况。9/9。</p>
-<h3>v17：产出方清单（实验）</h3>
+<h3 id="v17-产出方清单-实验">v17：产出方清单（实验）</h3>
 <p>v17 要求回归报告附一张表，列出每条可能产出风险输入的规则，评审逐行核对。agent 真去读了检测器的规则文件，把 <code class="post-code--single">generic-password</code> 列了进去。chainloop 上 3/4，和 v15 分不出高下。</p>
 <h2 id="模型起了什么作用">模型起了什么作用</h2>
 <p>换模型的结果比改 harness 难解读：每次换模型都连带换了 prompt 版本，走桥接的还换了 agent 循环。</p>
