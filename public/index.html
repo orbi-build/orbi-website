@@ -310,29 +310,20 @@
           </div>
 
           <div class="production-map" role="group" aria-label="Current Orbi production system">
-            <div class="map-row" data-capability="epic">
-              <div class="map-label"><span>01</span><strong>Coordinate</strong></div>
-              <div class="map-track"><span>Epic</span><i></i><span>Milestone</span><i></i><span>Scope</span></div>
-              <p >Group outcomes without letting the Runner mistake coordination for execution.</p>
+            <div class="map-row" data-capability="delivery">
+              <div class="map-label"><span>01</span><strong>Label an Issue ai-ready</strong></div>
+              <div class="map-track"><span>Issue</span><i></i><span>ai-ready</span><i></i><span>Worktree</span></div>
+              <p >Orbi picks it up and writes the code in an isolated worktree.</p>
             </div>
-            <div class="map-row" data-capability="dependency">
-              <div class="map-label"><span>02</span><strong>Order</strong></div>
-              <div class="map-track"><span>Issue</span><i></i><span>blockedBy</span><i></i><span>Ready</span></div>
-              <p >Use GitHub's real dependency graph. A task enters production only when its blockers close.</p>
-            </div>
-            <div class="map-row map-row-signal" data-capability="delivery">
-              <div class="map-label"><span>03</span><strong>Deliver</strong></div>
-              <div class="map-track map-track-long"><span>Worktree</span><i></i><span>Agent</span><i></i><span>Tests</span><i></i><span>Review + fix</span><i></i><span>Exact-head merge</span></div>
-              <p >A second session may patch the branch. Only its reviewed head is allowed to land.</p>
+            <div class="map-row map-row-signal" data-capability="review">
+              <div class="map-label"><span>02</span><strong>A second session reviews it</strong></div>
+              <div class="map-track map-track-long"><span>PR</span><i></i><span>Review</span><i></i><span>Fix</span><i></i><span>Acceptance</span></div>
+              <p >It checks the PR against the Issue's acceptance criteria and fixes what fails.</p>
             </div>
             <div class="map-row" data-capability="release">
-              <div class="map-label"><span>04</span><strong>Release</strong></div>
-              <div class="map-track"><span>Freeze SHA</span><i></i><span>Full gate</span><i></i><span>Tag + release</span></div>
-              <p >Validate scope and the repository, then publish an immutable version—without an Agent improvising the release.</p>
-            </div>
-            <div class="recovery-rail">
-              <span>RECOVERY BUS</span>
-              <p class="orbi-recovery-rail-p">Process killed. Test failed. Commit not pushed. The same run, branch, worktree, and PR remain the scene for the next tick.</p>
+              <div class="map-label"><span>03</span><strong>Merge and release</strong></div>
+              <div class="map-track"><span>Reviewed commit</span><i></i><span>Merge</span><i></i><span>Tag</span></div>
+              <p >Only the reviewed commit merges, then Orbi tags the release.</p>
             </div>
           </div>
           <!-- Issue #119: open source (AGPL-3.0), self-hosting, and BYOK are decision-stage
