@@ -417,7 +417,7 @@ async function relatedPostsMarkup(request, env, slug, language) {
     return `<li><a href="${href}">${escapeHtml(title)}</a></li>`;
   }).join("");
   const heading = zh ? "相关文章" : "Related posts";
-  return `<section class="related-links shell" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
+  return `<section class="related-links" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
 }
 
 async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], request, env) {
