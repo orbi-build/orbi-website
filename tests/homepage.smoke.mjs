@@ -668,6 +668,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   const hero = page.locator(".hero");
+  const heroProofBox = await page.locator(".hero-proof-bar").boundingBox();
+  if (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height) {
+    throw new Error(`${path}: hero proof bar is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroProofBox)}`);
+  }
   const claim = releaseClaims[path];
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
   if (heroH1 !== claim.h1) {
@@ -707,9 +711,10 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       throw new Error(`${path}: the How-it-works section lost the shared attribute ${JSON.stringify(attribute)}`);
     }
   }
-  const stats = page.locator("[data-stat]");
-  await stats.last().scrollIntoViewIfNeeded();
-  if (!(await statsResponse) || !statsRequested) throw new Error(`${path}: /stats was not requested`);
+  const receivedStatsResponse = await statsResponse;
+  if (!receivedStatsResponse || !statsRequested) {
+    throw new Error(`${path}: /stats before scroll response=${Boolean(receivedStatsResponse)} request=${statsRequested}`);
+  }
   // Issue #101: one repo's failure must not blur the other two. Issue #126:
   // the wait asserts that contract against whatever payload the page actually
   // received (the real Worker response on beta, the fixture locally), so the
@@ -722,6 +727,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: stats render did not match the served /stats payload: ${dump}`);
   });
   const flagship = servedStats?.repos?.orbi;
+  const heroProofValues = await page.locator(".hero-proof-bar [data-stat]").allTextContents();
+  const expectedHeroProofValues = [flagship?.prs_merged, flagship?.releases].map(String);
+  if (JSON.stringify(heroProofValues) !== JSON.stringify(expectedHeroProofValues)) {
+    throw new Error(`${path}: hero proof rendered ${JSON.stringify(heroProofValues)}, expected live values ${JSON.stringify(expectedHeroProofValues)}`);
+  }
   const proof = page.locator("[data-runtime-proof]");
   if (!flagship || !(await proof.isVisible())) throw new Error(`${path}: runtime proof is not visible`);
   const proofText = await proof.textContent();

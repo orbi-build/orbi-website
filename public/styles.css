@@ -303,7 +303,7 @@ img {
   grid-template-columns: minmax(0, 1.08fr) minmax(480px, 0.92fr);
   gap: clamp(56px, 7vw, 112px);
   align-items: center;
-  min-height: 750px;
+  min-height: calc(100svh - 177px);
   padding: 92px 0 80px;
 }
 
@@ -335,14 +335,14 @@ img {
 }
 .hero-proof-item:last-child { border-right: 0; }
 .hero-proof-item strong {
-  color: #fff;
+  color: #edf5f0;
   font-family: var(--display);
   font-size: clamp(1.35rem, 2.2vw, 2rem);
   font-weight: 700;
   line-height: 1.1;
 }
 .hero-proof-item span {
-  color: #a9bbb7;
+  color: #a9bbb8;
   font: 500 .72rem/1.4 var(--mono);
 }
 .avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
@@ -1963,7 +1963,11 @@ h2 {
   .site-header { min-height: 72px; }
   .wordmark { font-size: 1rem; }
 
-  .hero { gap: 56px; padding: 10px 0 58px; }
+  .hero {
+    gap: 16px;
+    min-height: calc(100svh - 243px);
+    padding: 10px 0 16px;
+  }
   .eyebrow { margin-bottom: 12px; }
   h1 { margin-bottom: 12px; }
   .hero-lede { font-size: 1rem; }
@@ -1978,7 +1982,7 @@ h2 {
   .trust-line { gap: 13px; }
 
   .factory-trace { margin-left: 0; box-shadow: 10px 12px 0 rgba(0, 0, 0, 0.18); }
-  .trace-head { padding: 13px 14px; }
+  .trace-head { padding: 8px 14px; }
   .trace-head span:last-child { display: none; }
   /* Issue #607: the two-line film card can't float in the 48px hero gap any
      more — the whole button returns to flow ahead of the figure and fills
@@ -1989,8 +1993,9 @@ h2 {
   /* the frame's top-left corner tick would land on the film card, which now
      opens the figure — keep only the bottom-right tick at phone width */
   .factory-trace::before { display: none; }
-  .trace-body { grid-template-columns: 20px 1fr; padding: 14px 12px 8px; }
-  .trace-node { grid-template-columns: 54px 1fr; min-height: 88px; padding-left: 13px; }
+  .trace-body { grid-template-columns: 20px 1fr; padding: 8px 12px 4px; }
+  .trace-node { grid-template-columns: 54px 1fr; min-height: 52px; padding-left: 13px; }
+  .trace-node small { display: none; }
   .trace-node::before { left: -19px; }
   .trace-node strong { font-size: 1rem; }
   .cloud-gate { margin-top: 26px; padding-top: 20px; }

@@ -265,25 +265,29 @@
       });
     }
 
+    function fillStat(element, repo) {
+      const stat = element.getAttribute("data-stat");
+      let value;
+      let duration = 900;
+      if (repo) {
+        if (stat === "days") {
+          value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
+        } else {
+          const [field, statDuration] = statFields[stat];
+          value = repo[field];
+          duration = statDuration;
+        }
+      }
+      if (Number.isFinite(value)) {
+        countUp(element, value, duration);
+      } else {
+        fallBackToFloors(element.parentElement);
+      }
+    }
+
     function fillGroup(group, repo) {
       group.querySelectorAll("[data-stat]").forEach(function (element) {
-        const stat = element.getAttribute("data-stat");
-        let value;
-        let duration = 900;
-        if (repo) {
-          if (stat === "days") {
-            value = Math.max(0, Math.floor((Date.now() - Date.parse(repo.started)) / 86400000));
-          } else {
-            const [field, statDuration] = statFields[stat];
-            value = repo[field];
-            duration = statDuration;
-          }
-        }
-        if (Number.isFinite(value)) {
-          countUp(element, value, duration);
-        } else {
-          fallBackToFloors(element.parentElement);
-        }
+        fillStat(element, repo);
       });
       const started = group.querySelector("[data-started]");
       if (started) {
@@ -338,6 +342,9 @@
           root.querySelectorAll("[data-repo-group]").forEach(function (group) {
             fillGroup(group, repos[group.getAttribute("data-repo-group")]);
           });
+          root.parentElement.querySelectorAll(".hero-proof-bar [data-repo][data-stat]").forEach(function (element) {
+            fillStat(element, repos[element.getAttribute("data-repo")]);
+          });
           drawStarChart(root, repos.orbi);
         })
         .catch(function () {
@@ -353,7 +360,7 @@
         });
     }
 
-    if (!("IntersectionObserver" in window)) {
+    if (root.parentElement.querySelector(".hero-proof-bar") || !("IntersectionObserver" in window)) {
       startStats();
       return;
     }

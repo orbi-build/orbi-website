@@ -520,7 +520,7 @@ class LandingTests(unittest.TestCase):
         for page in (self.en, self.zh):
             stats = [
                 attrs for tag, attrs in page.elements
-                if tag == "strong" and "data-stat" in attrs
+                if tag == "strong" and "data-stat" in attrs and "data-floor" in attrs
             ]
             # Issue #101: three repositories, four counters each.
             self.assertEqual(len(stats), 12, stats)
