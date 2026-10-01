@@ -71,6 +71,7 @@ describe("homepage hero CTA (Issue #704)", () => {
   it("makes the sole hero CTA large and the global nav CTA outlined", async () => {
     const css = await read("public/styles.css");
     expect(css).toContain(".hero-cta {\n  min-height: 64px;\n  padding: 0 32px;\n  font-size: 1.25rem;");
+    expect(css).toContain("@media (min-width: 761px) {\n  .hero-cta {\n    min-width: 340px;\n  }\n}");
     expect(css).toContain(".hero-cta-note {\n  margin: 12px 0 0;\n  color: #91aaa4;\n  font-size: 0.82rem;");
     const mobile = css.match(/@media \(max-width: 760px\) \{\n  \.hero-cta-note \{([\s\S]*?)\n  \}/)?.[1] ?? "";
     expect(mobile).toContain("margin-top: 12px;");
