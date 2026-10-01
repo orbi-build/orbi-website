@@ -1,0 +1,106 @@
+[
+  {
+    "slug": "run-claude-code-unattended",
+    "title": "Run Claude Code unattended: headless mode is step one",
+    "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.",
+    "zhSlug": "run-claude-code-unattended",
+    "zhTitle": "Claude Code headless 模式是什么？自动化开发还差六件事",
+    "related": []
+  },
+  {
+    "slug": "is-the-regression-guard-worth-its-tokens",
+    "title": "Searching for Orbi's harness, part 2: is the regression guard worth its tokens?",
+    "summary": "On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.",
+    "zhSlug": "is-the-regression-guard-worth-its-tokens",
+    "zhTitle": "给 Orbi 找 harness（下）：回归防护值不值它的 token",
+    "related": []
+  },
+  {
+    "slug": "searching-for-orbis-harness",
+    "title": "Searching for Orbi's harness, part 1: what our reviewer missed",
+    "summary": "Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.",
+    "zhSlug": "searching-for-orbis-harness",
+    "zhTitle": "给 Orbi 找 harness（上）：我们的评审漏掉了什么",
+    "related": []
+  },
+  {
+    "slug": "gitspawn-unattended-agent",
+    "title": "GitSpawn and the agent that never asks",
+    "summary": "A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.",
+    "zhSlug": "gitspawn-unattended-agent",
+    "zhTitle": "GitSpawn 绕开的是审批，我们的 agent 本来就不审批",
+    "related": []
+  },
+  {
+    "slug": "deepseek-coding-agent-cost-per-merged-pr",
+    "title": "DeepSeek coding agent cost per merged PR",
+    "summary": "See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.",
+    "zhSlug": "deepseek-coding-agent-cost-per-merged-pr",
+    "zhTitle": "用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花多少钱",
+    "related": []
+  },
+  {
+    "slug": "orbi-is-open-source-again",
+    "title": "Why Orbi is open source again",
+    "summary": "Orbi began on Apache-2.0 and switched to the Sustainable Use License on Sep 4. From v0.5.44 it is AGPL-3.0, or the SUL if AGPL is ruled out. Here is why.",
+    "zhSlug": "orbi-is-open-source-again",
+    "zhTitle": "Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0",
+    "related": []
+  },
+  {
+    "slug": "k8e-rejected-then-merged",
+    "title": "The k8e etcd ticket that closed too early",
+    "summary": "Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.",
+    "zhSlug": "k8e-rejected-then-merged",
+    "zhTitle": "Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了",
+    "related": []
+  },
+  {
+    "slug": "designing-a-slash-command",
+    "title": "How one slash command got its shape",
+    "summary": "A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.",
+    "zhSlug": "designing-a-slash-command",
+    "zhTitle": "一条斜杠命令在票里是怎么定下来的：从名字到权限边界",
+    "related": []
+  },
+  {
+    "slug": "waiting-for-someone-who-cannot-answer",
+    "title": "The engine waited for an answer users could not give",
+    "summary": "Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.",
+    "zhSlug": "waiting-for-someone-who-cannot-answer",
+    "zhTitle": "引擎等来的答案，托管用户给不了：三个交互缺口记录",
+    "related": []
+  },
+  {
+    "slug": "watch-the-six-steps",
+    "title": "Seven steps of an Orbi Cloud setup, on video",
+    "summary": "An 83-second video follows the Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The final step starts paid Cloud delivery here.",
+    "zhSlug": "watch-the-six-steps",
+    "zhTitle": "Orbi Cloud 七步上手流程，83 秒看完",
+    "related": []
+  },
+  {
+    "slug": "what-autonomous-actually-means",
+    "title": "What an autonomous coding agent does when it says no",
+    "summary": "Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.",
+    "zhSlug": "what-autonomous-actually-means",
+    "zhTitle": "AI 编码 agent 说不之后，交付会怎样？",
+    "related": []
+  },
+  {
+    "slug": "claude-code-github-actions-who-merges",
+    "title": "Claude Code in Actions: who presses merge?",
+    "summary": "Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.",
+    "zhSlug": "claude-code-github-actions-who-merges",
+    "zhTitle": "Claude Code 跑完之后，谁来合并 PR",
+    "related": []
+  },
+  {
+    "slug": "docker-image-third-try",
+    "title": "The Docker image made it out on try three",
+    "summary": "The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.",
+    "zhSlug": "docker-image-third-try",
+    "zhTitle": "Docker 镜像到第三次才发布成功：三次失败记录",
+    "related": []
+  }
+]

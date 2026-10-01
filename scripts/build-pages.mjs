@@ -748,6 +748,24 @@ function requiredField(label, fields, name) {
   return fields[name];
 }
 
+function parseRelated(label, fields) {
+  if (fields.related === undefined) return [];
+  let related;
+  try {
+    related = JSON.parse(fields.related);
+  } catch {
+    const value = fields.related.trim();
+    if (!value.startsWith("[") || !value.endsWith("]")) {
+      throw new Error(`${label}: front matter "related" must be an array of English slugs`);
+    }
+    related = value.slice(1, -1).split(",").map((slug) => slug.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
+  }
+  if (!Array.isArray(related) || related.some((slug) => typeof slug !== "string" || !slug)) {
+    throw new Error(`${label}: front matter "related" must be a JSON array of English slugs`);
+  }
+  return related;
+}
+
 function parseVideo(label, fields) {
   const names = ["video_name", "video_description", "video_thumbnail", "video_upload_date", "video_duration", "video_embed_url"];
   const present = names.filter((name) => fields[name] !== undefined);
@@ -781,6 +799,7 @@ export function postFromSource(displayName, source) {
   const html = classifyInlineCode(addTableDataLabels(wrapRenderedTables(marked.parse(body))));
   validateRenderedPostBody(label, html);
   const video = parseVideo(label, fields);
+  const related = lang === "en" ? parseRelated(label, fields) : [];
   const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
   const output = lang === "en" ? `blog/${slug}/index.html` : `zh/blog/${slug}/index.html`;
   return {
@@ -797,6 +816,7 @@ export function postFromSource(displayName, source) {
     author: fields.author,
     image: fields.image,
     video,
+    related,
     html,
   };
 }
@@ -833,6 +853,13 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
   const label = (post) => `content/blog/${post.source}`;
   const otherLang = (post) => (post.lang === "en" ? "zh" : "en");
   const byKey = new Map(posts.map((post) => [`${post.lang}/${post.slug}`, post]));
+  const englishSlugs = new Set(posts.filter((post) => post.lang === "en").map((post) => post.slug));
+  for (const post of posts.filter((post) => post.lang === "en")) {
+    for (const related of post.related) {
+      if (related === post.slug) throw new Error(`${label(post)}: related: cannot name itself: ${related}`);
+      if (!englishSlugs.has(related)) throw new Error(`${label(post)}: related: English slug does not exist: ${related}`);
+    }
+  }
   for (const post of posts) {
     if (post.mirror === undefined) continue;
     if (!byKey.has(`${otherLang(post)}/${post.mirror}`)) {
@@ -995,6 +1022,7 @@ function renderPost(post, template) {
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
     BODY: post.html,
+    RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
@@ -1224,7 +1252,19 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
     renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, contentDir),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
-  await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(posts.filter((post) => post.lang === "en")));
+  const englishPosts = posts.filter((post) => post.lang === "en");
+  await writeFile(join(outDir, "blog", "posts.json"), JSON.stringify(englishPosts.map((post) => {
+    const zh = post.paired ? posts.find((candidate) => candidate.lang === "zh" && candidate.slug === post.counterpartSlug) : null;
+    return {
+      slug: post.slug,
+      title: post.title,
+      summary: post.summary,
+      zhSlug: zh?.slug ?? null,
+      zhTitle: zh?.title ?? null,
+      related: post.related,
+    };
+  }), null, 2) + "\n");
+  await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(englishPosts));
   await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
   await writeFile(
     join(outDir, "llms-full.txt"),
