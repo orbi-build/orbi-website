@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-23</p>
-        <h1 id="post-title">The k8e etcd ticket that closed too early</h1>
-        <p class="hero-lede">Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-23</p>
+          <h1 id="post-title">The k8e etcd ticket that closed too early</h1>
+          <p class="hero-lede">Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p><a href="https://github.com/xiaods/k8e">k8e</a> is a Kubernetes distribution with an embedded etcd. It has 497 stars; Deshi (Tommy) Xiao maintains it. On September 20 he opened <a href="https://github.com/xiaods/k8e/issues/612">issue #612</a>, asking for an end-to-end robustness suite for the embedded etcd, delivered in four phases. Safe recovery after a crash comes first, then multi-node failure, backup restore and long-running stability.</p>
 <p>At 10:28 (UTC+8) he added the <code class="post-code--single">ai-ready</code> label. The times and numbers below come from the public PR, its reviews and the issue&#39;s label history, except the runner crash count, which comes from the runner&#39;s log.</p>
 <h3>The first version was rejected</h3>
@@ -139,7 +151,8 @@ oracle: OK   (should fail)
 <h2>Related</h2>
 <p>Read the <a href="/compare/devin/">Devin comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>

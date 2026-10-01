@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-30</p>
-        <h1 id="post-title">给 Orbi 找 harness（下）：回归防护值不值它的 token</h1>
-        <p class="hero-lede">八个 Orbi 没见过的 bug，issue 都只给一个窄例子，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。这篇讲哪些管用、哪些不管用，以及最后为什么选了最简单的那个。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-30</p>
+          <h1 id="post-title">给 Orbi 找 harness（下）：回归防护值不值它的 token</h1>
+          <p class="hero-lede">八个 Orbi 没见过的 bug，issue 都只给一个窄例子，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。这篇讲哪些管用、哪些不管用，以及最后为什么选了最简单的那个。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p><a href="/zh/blog/searching-for-orbis-harness/">上篇</a>结束时，我们手上有一个 harness：调参时碰到的失败它全修好了，可在其他 bug 上成本中位数多了差不多一倍，还测不出任何收益。这样的防护像一份保险。要问的有两件事：它保的风险，在没见过的 bug 上会不会真的出现；这份保险能不能便宜点。</p>
 <p>下篇用另外八个 bug 和三种新的 harness 设计来回答。跑法和上篇一样：私有快照，真实的 Orbi runner 跑完整流程，隐藏评分器事先校准，修复前判失败、已知正确的修复判通过。实现和评审全程用 <code class="post-code--single">deepseek-flash</code>。脚本、任务和结果都在 <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>。</p>
 <h2>六条结论</h2>
@@ -188,7 +200,8 @@
 <h2>相关</h2>
 <p>继续阅读：<a href="/zh/compare/claude-code/">Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>

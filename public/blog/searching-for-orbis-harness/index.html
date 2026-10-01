@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-09-29</p>
-        <h1 id="post-title">Searching for Orbi's harness, part 1: what our reviewer missed</h1>
-        <p class="hero-lede">Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-09-29</p>
+          <h1 id="post-title">Searching for Orbi's harness, part 1: what our reviewer missed</h1>
+          <p class="hero-lede">Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p>Orbi takes a GitHub issue and hands back a reviewed, merged pull request. One agent writes the fix, another reviews it, and the loop runs until the review passes. Around the models sits the harness: the prompts each role gets, the skills loaded next to them, the tools on the runner&#39;s <code class="post-code--single">PATH</code>, and the rules for when a review may pass.</p>
 <p>When a delivery goes wrong, one run can&#39;t tell you whether the model or the harness is to blame. So we stopped guessing and spent a night and the following morning running Orbi&#39;s full loop over and over: first on three open-source issues where Orbi had shipped a regression, then on nine ordinary bugs it had never seen, then on three whose first real-world fix had broken something. We swapped prompts, skills, tools, implementation models and review models, and graded every merged result with a hidden grader Orbi never saw.</p>
 <p>This is part 1: how we found the failures and built a harness that fixes them. <a href="/blog/is-the-regression-guard-worth-its-tokens/">Part 2</a> asks whether that harness is worth what it costs. The results and scripts are on the <a href="/benchmark/">benchmark page</a> and in <a href="https://github.com/orbi-build/orbi-bench">orbi-build/orbi-bench</a>. Here&#39;s the short version.</p>
@@ -239,7 +251,8 @@ output: pa[REDACTED][REDACTED]word: [REDACTED]
 <h2>Related</h2>
 <p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>

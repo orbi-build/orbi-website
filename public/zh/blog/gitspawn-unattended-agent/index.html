@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-26</p>
-        <h1 id="post-title">GitSpawn 绕开的是审批，我们的 agent 本来就不审批</h1>
-        <p class="hero-lede">GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-26</p>
+          <h1 id="post-title">GitSpawn 绕开的是审批，我们的 agent 本来就不审批</h1>
+          <p class="hero-lede">GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p>9 月 1 日，Manifold Security 披露了 <a href="https://www.manifold.security/blog/ai-coding-agents-git-hijack">GitSpawn</a>，涉及七个编程 agent 的八个问题：Claude Code、Codex、Cursor、Goose、Hermes Agent、Qwen Code 和 Grok Build。简单说，仓库里的 git 配置能让一个程序在 agent 弹出审批之前就跑起来。细节看 Manifold 的原文，好几家已经发了修复。</p>
 <p>我在 X 上<a href="https://x.com/xqliu/status/2103343487668154834">发了一条</a>。回复里大家的意见差不多：agent 的工作区得在循环开始前就确认可信，等到审批 shell 命令时再管，已经晚了。</p>
 <p>对我们来说，真正要回答的是：Orbi 受不受影响？我们第二天上午合了一个修复，当天下午又撤了。</p>
@@ -112,7 +124,8 @@
 <h2>相关</h2>
 <p>继续阅读：<a href="/zh/compare/managed-agents/">托管 agent 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>

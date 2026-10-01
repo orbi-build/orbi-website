@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">Blog · 2026-10-01</p>
-        <h1 id="post-title">Run Claude Code unattended: headless mode is step one</h1>
-        <p class="hero-lede">Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-10-01</p>
+          <h1 id="post-title">Run Claude Code unattended: headless mode is step one</h1>
+          <p class="hero-lede">Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p>To run Claude Code unattended you use headless mode: <code class="post-code--spaced">claude -p</code> runs one prompt without the interactive UI, prints the result and exits, with a non-zero code if the run fails. Anthropic&#39;s page for it is now titled &quot;Run Claude Code programmatically&quot;, but the address still ends in <a href="https://code.claude.com/docs/en/headless">/headless</a>. With no one to answer prompts, a headless run denies anything that needs approval, so give it a permission mode that lets the work through:</p>
 <pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
   --permission-mode auto --permission-prompts none
@@ -167,7 +179,8 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <h2>Related</h2>
 <p>Read <a href="/compare/claude-code/">Orbi vs Claude Code</a>, <a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a> and <a href="/cloud/">Cloud</a>.</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>

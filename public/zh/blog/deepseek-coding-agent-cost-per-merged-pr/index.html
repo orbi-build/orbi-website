@@ -26,8 +26,10 @@
   <link rel="stylesheet" href="/styles.css">
 
   <style>
-    /* Post template: the CommonMark body rendered from content/blog/*.md. */
-    .post-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 30px; }
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; }
     .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .post-body p { margin: 14px 0; }
@@ -49,6 +51,13 @@
     .post-media img, .post-media svg { height: auto; }
     .post-media iframe { aspect-ratio: 16 / 9; }
     .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: 232px minmax(0, 52rem); column-gap: 24px; max-width: 68rem; padding: 0; }
+      .post-hero, .post-body { grid-column: 2; padding-left: 24px; padding-right: 24px; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+    }
   </style>
 
 </head>
@@ -83,14 +92,17 @@
 
   <main id="main-content">
     <div class="night">
-      <section class="compare-hero shell" aria-labelledby="post-title">
-        <p class="eyebrow">博客 · 2026-09-24</p>
-        <h1 id="post-title">用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花多少钱</h1>
-        <p class="hero-lede">看 Orbi 如何用 DeepSeek 无人值守地完成编程、独立评审、修复、合并和发版，以及每个合并 PR 的成本、缓存命中率和接入方法，附配置。</p>
-      </section>
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-09-24</p>
+          <h1 id="post-title">用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花多少钱</h1>
+          <p class="hero-lede">看 Orbi 如何用 DeepSeek 无人值守地完成编程、独立评审、修复、合并和发版，以及每个合并 PR 的成本、缓存命中率和接入方法，附配置。</p>
+        </section>
+      </div>
     </div>
 
-    <article class="post-body">
+    <div class="post-grid">
+      <article class="post-body">
 <p>Orbi 把 GitHub Issue 交付成经过独立评审、已合并的 PR，再打 tag 发 Release。2026 年 9 月 22 日到 24 日，Orbi 自己的仓库有 20 个 PR 全部用 <code class="post-code--single">deepseek-flash</code> 跑完了整条链路：写代码、独立评审、修复、合并和发版。你可以查看 <a href="https://github.com/orbi-build/orbi/issues/1328">#1328</a>、<a href="https://github.com/orbi-build/orbi/issues/1332">#1332</a> 和 <a href="https://github.com/orbi-build/orbi/issues/1336">#1336</a> 的公开记录。</p>
 <p>这不是模型能力排行，而是一份成本记录。这里把<strong>每个合并 PR</strong>作为计量单位；完整数据见 <a href="/zh/cost/">成本表</a>。</p>
 <h2>每个合并 PR 花多少钱</h2>
@@ -128,7 +140,8 @@
 <h2>相关</h2>
 <p>继续阅读：<a href="/zh/cost/">成本表</a>、<a href="/zh/cloud/">Cloud</a>和<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
 
-    </article>
+      </article>
+    </div>
 
     <!--orbi:related-posts-->
   </main>
