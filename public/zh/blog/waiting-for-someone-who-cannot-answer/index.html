@@ -45,6 +45,19 @@
     .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
     .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
     .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card, 12px);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -88,6 +101,8 @@
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
       .post-cta { padding: 24px 18px; }
       .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
     }
   </style>
 
@@ -158,7 +173,7 @@
         </details>
 <p>有些故障看起来像系统安静地停着。没有崩溃，也没有报错，系统只是按设计在等。
 问题是，被等的那个人不知道该做什么，也没有办法回答。</p>
-<p>这种问题我们发布了三个版本。一个下午里，我们把自己当成客户走了一遍，才把它们全找出来。</p>
+<p>这种问题我们发布了三个版本。一个下午里，我们把自己当成客户走了一遍，才把它们全找出来。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="等待本身是对的">等待本身是对的</h2>
 <p>我们的引擎不会自己推进版本。里程碑关闭后，空闲 tick 会开一张票：这一版完了，
 候选是这些，下一版发哪个。然后它停下。</p>
