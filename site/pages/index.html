@@ -178,37 +178,16 @@
           <p class="hero-cta-note">No card · Only the repos you pick</p>
         </div>
 
-        <figure class="factory-trace" id="factory-trace" aria-label="Orbi delivery line: from scope to tagged release">
-          <div class="trace-head">
-            <span><i class="live-dot"></i> LINE 01 / RUNNING</span>
-            <span>orbi-build/orbi</span>
-          </div>
-          <div class="trace-body">
-            <div class="trace-axis" aria-hidden="true"><span></span></div>
-            <ol class="trace-nodes">
-              <li class="trace-node" data-trace-node data-capability="epic">
-                <span class="trace-index">SCOPE</span>
-                <strong>Epic + milestone</strong>
-                <small>define the release boundary</small>
-              </li>
-              <li class="trace-node" data-trace-node data-capability="dependency">
-                <span class="trace-index">ORDER</span>
-                <strong>Native blockedBy</strong>
-                <small>work starts when evidence says ready</small>
-              </li>
-              <li class="trace-node" data-trace-node data-capability="delivery">
-                <span class="trace-index">BUILD</span>
-                <strong>Issue #48 → PR #193</strong>
-                <small>implement · test · review · fix · merge</small>
-              </li>
-              <li class="trace-node" data-trace-node data-capability="release">
-                <span class="trace-index">SHIP</span>
-                <strong>Release v0.2.0</strong>
-                <small>frozen SHA · full gate · immutable tag</small>
-              </li>
-            </ol>
-          </div>
-          </figure>
+        <figure class="hero-receipt" aria-label="A real Orbi delivery from Issue to release">
+          <p class="hero-receipt-kicker">orbi-build/orbi · real delivery</p>
+          <p class="hero-receipt-title">Issue #1306 → Release v0.5.42</p>
+          <ol class="hero-receipt-timeline">
+            <li class="hero-receipt-step"><strong>Issue opened</strong><small>start</small></li>
+            <li class="hero-receipt-step"><strong>PR #1309 reviewed &amp; merged</strong><small>+1h 27m</small></li>
+            <li class="hero-receipt-step hero-receipt-release"><strong>Released v0.5.42</strong><small>+6h 42m</small></li>
+          </ol>
+          <figcaption>Same day · every commit written by Orbi</figcaption>
+        </figure>
       </section>
 
       <section class="runtime-proof shell" data-runtime-proof hidden aria-label="Live Orbi delivery numbers">
