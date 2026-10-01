@@ -346,22 +346,16 @@ class LandingTests(unittest.TestCase):
     # Issue #540: the hero trust-line wording test (Issue #119) was removed —
     # it pinned three claim sentences verbatim.
 
-    def test_primary_actions_install_and_show_a_real_delivery(self) -> None:
-        for page, docs in ((self.en, DOCS_EN), (self.zh, DOCS_ZH)):
+    def test_homepage_primary_action_goes_directly_to_login(self) -> None:
+        for page, login in ((self.en, "/cloud/login"), (self.zh, "/zh/cloud/login")):
             ctas = {
                 attrs.get("data-cta"): attrs.get("href")
                 for tag, attrs in page.elements
                 if tag == "a" and "data-cta" in attrs
             }
-            self.assertTrue(ctas["install"].rstrip("/").startswith(docs), ctas)
-            # Issue #169: the hero proof link is the bootstrap evidence page,
-            # not a single Issue. The public GitHub objects live on /evidence/.
-            evidence = "/zh/evidence/" if page is self.zh else "/evidence/"
-            self.assertEqual(ctas["proof"], evidence)
-            # The Start Cloud CTA must exist; where it points is a product and
-            # configuration decision (Issue #99 sends it straight to
-            # /cloud/login), so no test pins its target (Issue #103).
-            self.assertIn("cloud-start", ctas)
+            self.assertEqual(ctas["cloud-start"], login)
+            self.assertNotIn("install", ctas)
+            self.assertNotIn("proof", ctas)
 
     def test_parser_reads_text_the_way_a_crawler_does(self) -> None:
         """Inline tags must not invent whitespace; <br> must produce it.
@@ -1817,27 +1811,20 @@ class BootstrapEvidenceTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://orbi.build/zh/evidence/"', self.zh_html)
         self.assertIn('hreflang="en" href="https://orbi.build/evidence/"', self.zh_html)
 
-    def test_homes_link_to_the_evidence_page(self) -> None:
+    def test_homes_link_to_the_evidence_page_outside_the_hero(self) -> None:
         _, home_en = parse(EN_PATH)
         _, home_zh = parse(ZH_PATH)
         self.assertIn("/evidence/", [href for _, href in home_en.hrefs])
         self.assertIn("/zh/evidence/", [href for _, href in home_zh.hrefs])
-        self.assertEqual(
-            dict(
-                (attrs.get("data-cta"), attrs.get("href"))
-                for tag, attrs in home_en.elements
-                if tag == "a" and attrs.get("data-cta") == "proof"
-            )["proof"],
-            "/evidence/",
-        )
-        self.assertEqual(
-            dict(
-                (attrs.get("data-cta"), attrs.get("href"))
-                for tag, attrs in home_zh.elements
-                if tag == "a" and attrs.get("data-cta") == "proof"
-            )["proof"],
-            "/zh/evidence/",
-        )
+        for page in (home_en, home_zh):
+            self.assertNotIn(
+                "proof",
+                [
+                    attrs.get("data-cta")
+                    for tag, attrs in page.elements
+                    if tag == "a" and "data-cta" in attrs
+                ],
+            )
 
     def test_at_least_three_public_github_records_are_clickable(self) -> None:
         for page in (self.en, self.zh):
