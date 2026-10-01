@@ -79,13 +79,13 @@ const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<
 describe("homepage hero proof bar (Issue #710)", () => {
   const expected = {
     "index.html": [
-      '<strong data-repo="orbi" data-stat="prs">0</strong><span>PRs merged by Orbi on its own repo</span>',
-      '<strong data-repo="orbi" data-stat="releases">0</strong><span>releases shipped</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>PRs merged by Orbi on its own repo</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>releases shipped</span>',
       '<strong>Open source</strong><span>AGPL-3.0, self-host free</span>',
     ],
     "zh/index.html": [
-      '<strong data-repo="orbi" data-stat="prs">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
-      '<strong data-repo="orbi" data-stat="releases">0</strong><span>个版本已发布</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span>',
       '<strong>开源</strong><span>AGPL-3.0，自托管免费</span>',
     ],
   };
@@ -93,7 +93,7 @@ describe("homepage hero proof bar (Issue #710)", () => {
   for (const [output, items] of Object.entries(expected)) {
     it(`${output} keeps live counters and copy in the requested order`, () => {
       const html = shipped.get(output);
-      expect(html, `${output}: proof bar follows hero`).toMatch(/<section class="hero shell"[\s\S]*?<\/section>\s*<div class="hero-proof-bar shell">/);
+      expect(html, `${output}: proof bar follows hero`).toMatch(/<section class="hero [^"]*shell"[\s\S]*?<\/section>\s*<div class="hero-proof-bar shell">/);
       const bar = proofBar(html);
       expect(bar, `${output}: proof bar`).not.toBe("");
       expect(bar.match(/<div class="hero-proof-item">[\s\S]*?<\/div>/g), output).toEqual(items.map((item) => `<div class="hero-proof-item">${item}</div>`));

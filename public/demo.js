@@ -356,7 +356,7 @@
           // read as a broken page, so fall back to the conservative floor
           // values in the HTML, which under-state the real record and need
           // no network.
-          fallBackToFloors(root);
+          fallBackToFloors(root.parentElement);
         });
     }
 
