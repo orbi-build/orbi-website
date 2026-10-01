@@ -45,6 +45,19 @@
     .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
     .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
     .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card, 12px);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -88,6 +101,8 @@
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
       .post-cta { padding: 24px 18px; }
       .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
     }
   </style>
 
@@ -152,7 +167,7 @@
 <pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre>
-<p><code class="post-code--spaced">--permission-prompts none</code> is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.</p>
+<p><code class="post-code--spaced">--permission-prompts none</code> is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <p>I&#39;m Lawrence Liu, and I maintain Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn&#39;t run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.</p>
 <h2 id="what-claude-code-headless-mode-gives-you">What Claude Code headless mode gives you</h2>
 <p>One session that runs to the end without a person. A few flags matter once it runs from cron or CI:</p>
