@@ -32,6 +32,19 @@
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card, 12px);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta-link:hover { color: #fff; }
     .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; }
     .post-toc h2 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 600; }
     .post-toc ol, .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
@@ -73,6 +86,8 @@
     }
     @media (max-width: 760px) {
       .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
     }
   </style>
 
@@ -173,7 +188,12 @@
 <p>剩下的自托管步骤看 <a href="https://github.com/orbi-build/orbi/blob/main/docs/providers.mdx">provider 文档</a>。不要把 key 写进会提交到仓库的配置文件。</p>
 <h2 id="可以带走的两个判断">可以带走的两个判断</h2>
 <p>第一，记账时用每个合并 PR，而不是只看一次模型调用；第二，把缓存命中率保持在九成以上，并在队列允许时避开高峰。无人值守编程智能体的完整成本路径，是 GitHub Issue → PR → 独立评审 → 合并 → 打 tag 发 Release。Orbi 自己的这 20 个 PR 都留有公开记录，完整表格在<a href="/zh/cost/">成本页</a>。</p>
-<h2 id="相关">相关</h2>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
 <p>继续阅读：<a href="/zh/cost/">成本表</a>、<a href="/zh/cloud/">Cloud</a>和<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
 
 <!--orbi:related-posts-->

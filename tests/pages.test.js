@@ -254,7 +254,7 @@ describe("blog title and body alignment (Issue #695)", () => {
     const tocPosts = [];
     for (const post of posts) {
       const html = shipped.get(post.output);
-      const body = html.match(/<article class="post-body">([\s\S]*?)<\/article>/)?.[1] ?? "";
+      const body = (html.match(/<article class="post-body">([\s\S]*?)<\/article>/)?.[1] ?? "").replace(/<aside class="post-cta">[\s\S]*?<\/aside>/, "");
       const headings = [...body.matchAll(/<h2 id="([^"]+)">([^<]*)<\/h2>/g)];
       const ids = headings.map((match) => match[1]);
       expect(ids, `${post.output}: every H2 has an id`).toHaveLength((body.match(/<h2\b/g) ?? []).length);
@@ -1609,6 +1609,36 @@ describe("blog (Issue #212)", () => {
       expect(html).toContain(`<meta property="article:published_time" content="${post.date}">`);
       expect(html, `${post.output}: shared nav must render`).toContain('<nav id="');
       expect(html, `${post.output}: shared footer must render`).toContain('<footer class="site-footer shell">');
+    }
+  });
+
+  it("renders one localized registration CTA after every post body and before related posts", () => {
+    for (const post of posts) {
+      const html = shipped.get(post.output);
+      const cta = html.match(/<aside class="post-cta">[\s\S]*?<\/aside>/g) ?? [];
+      const expected = post.lang === "zh"
+        ? {
+            title: "Orbi 把你的 Issue 一路做到发版。",
+            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            note: "不用绑卡 · 只授权你选的仓库",
+            href: "/zh/cloud/login",
+            selfHost: "想自己部署？开源免费（AGPL）→",
+          }
+        : {
+            title: "Orbi takes your Issues all the way to a release.",
+            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            note: "No card · Only the repos you pick",
+            href: "/cloud/login",
+            selfHost: "Prefer to self-host? It's open source (AGPL) →",
+          };
+      expect(cta, `${post.output}: CTA count`).toHaveLength(1);
+      const [block] = cta;
+      const relatedHeading = post.lang === "zh" ? '<h2 id="相关">' : '<h2 id="related">';
+      expect(html.indexOf(block), `${post.output}: CTA precedes related posts`).toBeLessThan(html.indexOf(relatedHeading));
+      expect(block).toContain(`<h2>${expected.title}</h2>`);
+      expect(block).toContain(`<a class="button button-signal" data-cta="post-start" href="${expected.href}">${expected.button}</a>`);
+      expect(block).toContain(`<p class="post-cta-note">${expected.note}</p>`);
+      expect(block).toContain(`<a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">${expected.selfHost}</a>`);
     }
   });
 
