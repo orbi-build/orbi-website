@@ -69,15 +69,17 @@ Nobody gets a merged PR until it's in a release. In Orbi a release is an Issue t
 
 ## The step we still do by hand
 
-On September 25, Orbi merged [a mobile table fix](https://github.com/orbi-build/orbi-website/pull/523) for this website. Its tests checked every table page for horizontal overflow, and all of them passed. Then we opened a screenshot at 390px. (The prices in these two screenshots are blurred because they have changed since.)
+On September 25, Orbi merged [a mobile table fix](https://github.com/orbi-build/orbi-website/pull/523) for this website. Its tests checked every table page for horizontal overflow, and all of them passed. Then we opened a screenshot at 390px.
 
-![The Orbi vs Devin pricing table at 390px after the first fix: "Free" is split into "Fr" and "ee", and "Individual" runs over four lines](/img/headless-table-before.webp)
+![The Orbi vs Devin pricing table at 390px with PR #523's CSS put back, reproduced on today's page: "Free" breaks after "Fre", and "Individual" runs over four lines](/img/headless-table-before.webp)
+
+That image is a reproduction: today's page with PR #523's rules put back, so the prices are current.
 
 Across 25 pages, 193 words were cut in the middle. The tests measured overflow correctly. Nobody had asked them about words.
 
 We filed the fix as a new Issue with those measurements attached, and Orbi delivered it [in 32 minutes](https://github.com/orbi-build/orbi-website/pull/530):
 
-![The same table at 390px after the fix: each plan is a stacked block and every word reads whole](/img/headless-table-after.webp)
+![The same table on orbi.build today at 390px: each plan is a stacked block and every word reads whole](/img/headless-table-after.webp)
 
 The screenshot is what caught it, so that's the part we kept. Before anything is promoted from beta to production, one of us opens the changed pages on a phone and on a desktop and looks. The agent did what the Issue asked. The Issue just didn't mention words.
 
