@@ -1439,6 +1439,33 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
       }
     }
   });
+
+  // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
+  // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
+  // successful-merged-delivery trial. The FAQ sentence appears twice per page
+  // (JSON-LD answer + visible answer) and must stay in lockstep.
+  it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
+    const expectations = [
+      [
+        "compare/devin/index.html",
+        "Orbi Cloud has two paid plans, Solo and Pro, each starting with a trial of __FREE_DELIVERIES__ successful merged deliveries;",
+        "or run as Cloud on a Solo or Pro plan, each starting with a free trial of __FREE_DELIVERIES__ merged deliveries.",
+      ],
+      [
+        "zh/compare/devin/index.html",
+        "Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；",
+        "也可以用 Cloud 的 Solo 或 Pro 套餐，各自先送 __FREE_DELIVERIES__ 次合并交付的免费试用。",
+      ],
+    ];
+    for (const [output, faqSentence, ledeSentence] of expectations) {
+      const html = shipped.get(output);
+      expect(html.split(faqSentence).length - 1, `${output}: FAQ sentence occurrences`).toBe(2);
+      expect(html, `${output}: pricing section lede`).toContain(ledeSentence);
+      // The only remaining "Free" mentions are Devin's own plan names in the
+      // dated source list, never Orbi's Cloud tiers (Issue #795).
+      expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);
+    }
+  });
 });
 
 // Issue #540 removed the privacy-copy regex tests (Issue #276): they pinned
