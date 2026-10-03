@@ -925,6 +925,20 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #798: LaunchNest (launchnest.io) grants the dofollow backlink only
+  // once the site carries this badge. The maintainer's embed is copied
+  // verbatim — LaunchNest checks the anchor and img attributes on review — so
+  // both lines are pinned character for character on every footer page.
+  it("carries the LaunchNest badge with a dofollow backlink on every footer page", () => {
+    const anchor = '<a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">';
+    const image = '<img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: LaunchNest badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: LaunchNest badge image drifted`).toContain(image);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
