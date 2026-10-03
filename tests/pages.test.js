@@ -925,6 +925,20 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #798: LaunchNest (launchnest.io) grants the dofollow backlink only
+  // once the site carries this badge. The maintainer's embed is copied
+  // verbatim — LaunchNest checks the anchor and img attributes on review — so
+  // both lines are pinned character for character on every footer page.
+  it("carries the LaunchNest badge with a dofollow backlink on every footer page", () => {
+    const anchor = '<a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">';
+    const image = '<img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: LaunchNest badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: LaunchNest badge image drifted`).toContain(image);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -1437,6 +1451,33 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
         expect(entity.name, `${output} Q${index + 1}`).toBe(items[index].question);
         expect(entity.acceptedAnswer.text, `${output} Q${index + 1}`).toBe(items[index].answer);
       }
+    }
+  });
+
+  // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
+  // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
+  // successful-merged-delivery trial. The FAQ sentence appears twice per page
+  // (JSON-LD answer + visible answer) and must stay in lockstep.
+  it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
+    const expectations = [
+      [
+        "compare/devin/index.html",
+        "Orbi Cloud has two paid plans, Solo and Pro, each starting with a trial of __FREE_DELIVERIES__ successful merged deliveries;",
+        "or run as Cloud on a Solo or Pro plan, each starting with a free trial of __FREE_DELIVERIES__ merged deliveries.",
+      ],
+      [
+        "zh/compare/devin/index.html",
+        "Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；",
+        "也可以用 Cloud 的 Solo 或 Pro 套餐，各自先送 __FREE_DELIVERIES__ 次合并交付的免费试用。",
+      ],
+    ];
+    for (const [output, faqSentence, ledeSentence] of expectations) {
+      const html = shipped.get(output);
+      expect(html.split(faqSentence).length - 1, `${output}: FAQ sentence occurrences`).toBe(2);
+      expect(html, `${output}: pricing section lede`).toContain(ledeSentence);
+      // The only remaining "Free" mentions are Devin's own plan names in the
+      // dated source list, never Orbi's Cloud tiers (Issue #795).
+      expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);
     }
   });
 });
