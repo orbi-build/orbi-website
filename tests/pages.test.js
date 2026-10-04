@@ -939,6 +939,31 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #801: aiagentsdirectory.com and aiagentslisting.com both trade the
+  // free listing for a live, crawlable backlink badge. The maintainer-supplied
+  // embeds are copied verbatim (each directory checks the attributes on
+  // review); width/height are scaled 200x50 -> 168x42 to match the LaunchNest
+  // badge's 42px rendered height.
+  it("carries the AI Agents Directory badge on every footer page", () => {
+    const anchor = '<a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">';
+    const image = '<img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: AI Agents Directory badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: AI Agents Directory badge image drifted`).toContain(image);
+    }
+  });
+
+  it("carries the AI Agents Listing badge on every footer page", () => {
+    const anchor = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
+    const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: AI Agents Listing badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: AI Agents Listing badge image drifted`).toContain(image);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
