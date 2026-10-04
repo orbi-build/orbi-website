@@ -1861,6 +1861,15 @@ h2 {
   font-size: 0.78rem;
 }
 .site-footer .footer-friends span { color: var(--ink); font-weight: 600; }
+/* Issue #805: the three directory badges get their own last row, clear of the
+   20px-tall text links above them. */
+.site-footer .footer-badges {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
 
 /* The hero keeps two columns far longer than the prose sections do: it needs
    ~913px (480px trace + 81px gap + 271px headline + 80px shell padding), so

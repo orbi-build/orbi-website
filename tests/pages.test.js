@@ -964,6 +964,33 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #805: the three directory badges take their own bottom row, so they
+  // live in one wrapper that is the last child of footer-friends, after the
+  // text friends (the Friends label + the two text links).
+  it("keeps the three directory badges in their own wrapper after the text friends (Issue #805)", () => {
+    const badgeHrefs = [
+      "https://launchnest.io/p/orbi",
+      "https://aiagentsdirectory.com/agent/orbi",
+      "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+    ];
+    for (const page of content()) {
+      const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
+      expect(nav, `${page.output}: footer-friends missing`).not.toBe("");
+      const wrapper = region(nav, '<div class="footer-badges">', "</div>");
+      expect(wrapper, `${page.output}: badge wrapper missing`).not.toBe("");
+      expect([...wrapper.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]), `${page.output}: badges in the wrapper`)
+        .toEqual(badgeHrefs);
+      // The text friends stay above the wrapper, never inside it.
+      expect(wrapper, `${page.output}: text friends leaked into the badge row`)
+        .not.toMatch(/Open Source Alternatives|ez背单词/);
+      // Nothing but whitespace and the closing tag follows the wrapper, so it
+      // is the last child of footer-friends.
+      const after = nav.slice(nav.indexOf(wrapper) + wrapper.length);
+      expect(after, `${page.output}: the badge wrapper must be the last child of footer-friends`)
+        .toMatch(/^\s*<\/nav>$/);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
