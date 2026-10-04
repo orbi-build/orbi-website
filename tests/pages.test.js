@@ -1782,6 +1782,61 @@ describe("canonical install one-liner (Issue #186)", () => {
   });
 });
 
+// Issue #807: Cursor 2.0 renamed Background Agents to Cloud Agents (2025-10-29),
+// but the old name still carries more search demand than the new one. The page
+// leads with the old name on title, h1, hero lede and share metadata, names the
+// current one beside it, and cites the changelog that recorded the rename.
+describe("Cursor page names the Background Agents rename (Issue #807)", () => {
+  const pages = {
+    "compare/cursor/index.html": {
+      title: "<title>Orbi vs Cursor Background Agents (now Cloud Agents)</title>",
+      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
+      lede: "Cursor Background Agents, now called Cloud Agents, run tasks",
+      meta: 'content="Orbi vs Cursor Background Agents (now Cloud Agents): ',
+      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)',
+      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)">',
+      headline: '"headline":"Orbi vs Cursor Background Agents (now Cloud Agents)',
+      source: ["Cursor 2.0 changelog", "Background Agents renamed to Cloud Agents"],
+    },
+    "zh/compare/cursor/index.html": {
+      title: "<title>Orbi vs Cursor Background Agents（现名 Cloud Agents）：交付对比</title>",
+      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
+      lede: "Cursor Background Agents（现名 Cloud Agents）",
+      meta: 'content="Orbi vs Cursor Background Agents（现名 Cloud Agents）：',
+      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）',
+      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）">',
+      headline: '"headline":"Orbi vs Cursor Background Agents（现名 Cloud Agents）',
+      source: ["Cursor 2.0 changelog", "Background Agents 改名为 Cloud Agents"],
+    },
+  };
+
+  it("leads with the old name and names the current one beside it", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const html = shipped.get(output);
+      expect(html, `${output}: title`).toContain(expected.title);
+      expect(html, `${output}: h1`).toContain(expected.h1);
+      const hero = region(html, '<p class="hero-lede">', "</p>");
+      expect(hero, `${output}: hero lede`).toContain(expected.lede);
+      expect(html, `${output}: meta description`).toContain(expected.meta);
+      expect(html, `${output}: og:title`).toContain(expected.og);
+      expect(html, `${output}: twitter:title`).toContain(expected.twitter);
+      expect(html, `${output}: JSON-LD headline`).toContain(expected.headline);
+    }
+  });
+
+  it("cites the 2.0 changelog that recorded the rename", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const sources = region(shipped.get(output), '<ul class="source-list">', "</ul>");
+      expect(sources, `${output}: changelog source link`).toContain(
+        'href="https://cursor.com/changelog/2-0"',
+      );
+      for (const text of expected.source) {
+        expect(sources, `${output}: changelog source description`).toContain(text);
+      }
+    }
+  });
+});
+
 describe("Cursor Cloud Agents comparison contract (Issue #199)", () => {
   it("ships both Cursor mirrors with Article metadata, hreflang, and sitemap entries", () => {
     const en = shipped.get("compare/cursor/index.html");
