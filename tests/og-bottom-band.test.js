@@ -9,6 +9,11 @@
 // The caption that used to live there now sits directly under the main
 // title, above y = 504. This guard pins both halves of that contract: the
 // strip stays background, and the caption still exists above it.
+//
+// The whole band is checked, not just the label's own width: the label's
+// right edge is only approximate (the ticket measures ~60%, this file's
+// region was 780 of 1200), so ink that survives just past 780 still shows
+// on the card - as a chopped-off fragment of the line that moved away.
 
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -18,7 +23,7 @@ import { describe, expect, it } from "vitest";
 
 const PUBLIC = fileURLToPath(new URL("../public/", import.meta.url));
 const BAND_TOP = 504;
-const BAND_RIGHT = 780;
+const BAND_RIGHT = 780; // where the label's own coverage is assumed to end
 const CAPTION_TOP = 410; // a moved caption reaches into this band on every card
 const CAPTION_BOTTOM = 504;
 const LABEL_TOLERANCE = 60; // per-pixel |dR| + |dG| + |dB| against the background
@@ -100,8 +105,12 @@ function decodePng(bytes) {
         const pb = Math.abs(p - b);
         const pc = Math.abs(p - c);
         value += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
-      } else {
-        expect(filter, "unknown PNG row filter").toBe(0);
+      } else if (filter !== 0) {
+        // A plain throw: a filter-0 row reaches the "no filter" case below
+        // hundreds of times per image, and an expect() per row turns the
+        // decode of a plainly encoded PNG into a several-second stall that
+        // trips the test timeout.
+        throw new Error("unknown PNG row filter " + filter);
       }
       row[i] = value & 0xff;
     }
@@ -148,7 +157,7 @@ describe("share card bottom strip", () => {
       let worst = 0;
       let worstAt = null;
       for (let y = BAND_TOP; y < image.height; y++) {
-        for (let x = 0; x < BAND_RIGHT; x++) {
+        for (let x = 0; x < image.width; x++) {
           const [r, g, b] = image.at(x, y);
           const distance = Math.abs(r - background[0]) + Math.abs(g - background[1]) + Math.abs(b - background[2]);
           if (distance > worst) {
@@ -162,7 +171,7 @@ describe("share card bottom strip", () => {
       // ...and the caption that moved out of it has to be above it.
       let ink = 0;
       for (let y = CAPTION_TOP; y < CAPTION_BOTTOM; y++) {
-        for (let x = 0; x < BAND_RIGHT; x++) {
+        for (let x = 0; x < image.width; x++) {
           const [r, g, b] = image.at(x, y);
           if (Math.abs(r - background[0]) + Math.abs(g - background[1]) + Math.abs(b - background[2]) > INK) ink++;
         }
