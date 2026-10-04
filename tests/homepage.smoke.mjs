@@ -15,7 +15,9 @@ const artifacts = ".orbi";
 // remains public/install.sh; this line is the user-facing command.
 const installCommand = "curl -fsSL https://aiready.sh | sh";
 
-// Same order as the /compare/ grid; anchor text matches each page's own title.
+// Same order as the /compare/ grid and footer; the shared "Orbi vs X" label.
+// Issue #807 made the Cursor page's own h1 lead with the old product name, so
+// the label and that page's h1 intentionally differ.
 const deepDives = [
   ["Orbi vs Orca", "/compare/orca/"],
   ["Orbi vs OpenClaw", "/compare/openclaw/"],
@@ -2445,7 +2447,7 @@ async function main() {
     if ((await languageSwitch.count()) !== 1 || (await languageSwitch.getAttribute("href")) !== "/zh/compare/cursor/") {
       throw new Error("detail language switch is wrong");
     }
-    await page.getByRole("heading", { name: "Orbi vs Cursor Cloud Agents", exact: true }).waitFor();
+    await page.getByRole("heading", { name: "Orbi vs Cursor Background Agents", exact: true }).waitFor();
     await page.screenshot({ path: `${artifacts}/comparison-cursor.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();

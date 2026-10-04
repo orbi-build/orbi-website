@@ -939,6 +939,58 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #801: aiagentsdirectory.com and aiagentslisting.com both trade the
+  // free listing for a live, crawlable backlink badge. The maintainer-supplied
+  // embeds are copied verbatim (each directory checks the attributes on
+  // review); width/height are scaled 200x50 -> 168x42 to match the LaunchNest
+  // badge's 42px rendered height.
+  it("carries the AI Agents Directory badge on every footer page", () => {
+    const anchor = '<a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">';
+    const image = '<img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: AI Agents Directory badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: AI Agents Directory badge image drifted`).toContain(image);
+    }
+  });
+
+  it("carries the AI Agents Listing badge on every footer page", () => {
+    const anchor = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
+    const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: AI Agents Listing badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: AI Agents Listing badge image drifted`).toContain(image);
+    }
+  });
+
+  // Issue #805: the three directory badges take their own bottom row, so they
+  // live in one wrapper that is the last child of footer-friends, after the
+  // text friends (the Friends label + the two text links).
+  it("keeps the three directory badges in their own wrapper after the text friends (Issue #805)", () => {
+    const badgeHrefs = [
+      "https://launchnest.io/p/orbi",
+      "https://aiagentsdirectory.com/agent/orbi",
+      "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+    ];
+    for (const page of content()) {
+      const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
+      expect(nav, `${page.output}: footer-friends missing`).not.toBe("");
+      const wrapper = region(nav, '<div class="footer-badges">', "</div>");
+      expect(wrapper, `${page.output}: badge wrapper missing`).not.toBe("");
+      expect([...wrapper.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]), `${page.output}: badges in the wrapper`)
+        .toEqual(badgeHrefs);
+      // The text friends stay above the wrapper, never inside it.
+      expect(wrapper, `${page.output}: text friends leaked into the badge row`)
+        .not.toMatch(/Open Source Alternatives|ez背单词/);
+      // Nothing but whitespace and the closing tag follows the wrapper, so it
+      // is the last child of footer-friends.
+      const after = nav.slice(nav.indexOf(wrapper) + wrapper.length);
+      expect(after, `${page.output}: the badge wrapper must be the last child of footer-friends`)
+        .toMatch(/^\s*<\/nav>$/);
+    }
+  });
+
   it("carries the 11 compare deep dives, in the right language tree", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -1726,6 +1778,61 @@ describe("canonical install one-liner (Issue #186)", () => {
     for (const rel of ["site/pages/index.html", "site/pages/zh/index.html"]) {
       const html = await readFile(join(ROOT, rel), "utf8");
       expect(snippetOf(html), `${rel}: missing copyable install snippet`).toBe(canonical);
+    }
+  });
+});
+
+// Issue #807: Cursor 2.0 renamed Background Agents to Cloud Agents (2025-10-29),
+// but the old name still carries more search demand than the new one. The page
+// leads with the old name on title, h1, hero lede and share metadata, names the
+// current one beside it, and cites the changelog that recorded the rename.
+describe("Cursor page names the Background Agents rename (Issue #807)", () => {
+  const pages = {
+    "compare/cursor/index.html": {
+      title: "<title>Orbi vs Cursor Background Agents (now Cloud Agents)</title>",
+      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
+      lede: "Cursor Background Agents, now called Cloud Agents, run tasks",
+      meta: 'content="Orbi vs Cursor Background Agents (now Cloud Agents): ',
+      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)',
+      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents (now Cloud Agents)">',
+      headline: '"headline":"Orbi vs Cursor Background Agents (now Cloud Agents)',
+      source: ["Cursor 2.0 changelog", "Background Agents renamed to Cloud Agents"],
+    },
+    "zh/compare/cursor/index.html": {
+      title: "<title>Orbi vs Cursor Background Agents（现名 Cloud Agents）：交付对比</title>",
+      h1: '<h1 id="compare-title">Orbi vs Cursor Background Agents</h1>',
+      lede: "Cursor Background Agents（现名 Cloud Agents）",
+      meta: 'content="Orbi vs Cursor Background Agents（现名 Cloud Agents）：',
+      og: '<meta property="og:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）',
+      twitter: '<meta name="twitter:title" content="Orbi vs Cursor Background Agents（现名 Cloud Agents）">',
+      headline: '"headline":"Orbi vs Cursor Background Agents（现名 Cloud Agents）',
+      source: ["Cursor 2.0 changelog", "Background Agents 改名为 Cloud Agents"],
+    },
+  };
+
+  it("leads with the old name and names the current one beside it", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const html = shipped.get(output);
+      expect(html, `${output}: title`).toContain(expected.title);
+      expect(html, `${output}: h1`).toContain(expected.h1);
+      const hero = region(html, '<p class="hero-lede">', "</p>");
+      expect(hero, `${output}: hero lede`).toContain(expected.lede);
+      expect(html, `${output}: meta description`).toContain(expected.meta);
+      expect(html, `${output}: og:title`).toContain(expected.og);
+      expect(html, `${output}: twitter:title`).toContain(expected.twitter);
+      expect(html, `${output}: JSON-LD headline`).toContain(expected.headline);
+    }
+  });
+
+  it("cites the 2.0 changelog that recorded the rename", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const sources = region(shipped.get(output), '<ul class="source-list">', "</ul>");
+      expect(sources, `${output}: changelog source link`).toContain(
+        'href="https://cursor.com/changelog/2-0"',
+      );
+      for (const text of expected.source) {
+        expect(sources, `${output}: changelog source description`).toContain(text);
+      }
     }
   });
 });
