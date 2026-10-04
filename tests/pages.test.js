@@ -2619,6 +2619,31 @@ describe("legal contact addresses (Issue #307)", () => {
   });
 });
 
+// Issue #813: the terms billing paragraph is the contract the /cloud/
+// pricing page actually sells — the yearly interval and the one-time
+// Alipay / WeChat Pay path must not diverge between the two.
+describe("terms billing copy matches the Cloud pricing page (Issue #813)", () => {
+  const expected = {
+    "terms/index.html": [
+      "Card subscriptions are handled by Stripe, which provides invoices and the customer portal. They renew monthly or yearly, matching the interval you chose, until you cancel in that portal. Alipay and WeChat Pay are one-time payments for the period you buy and do not renew automatically.",
+      "A subscription renews monthly until you cancel it through that portal.",
+    ],
+    "zh/terms/index.html": [
+      "银行卡订阅由 Stripe 处理，提供发票和客户门户，按你选择的周期每月或每年续费，直到你在门户中取消。支付宝和微信支付是按所购周期一次性付款，不会自动续费。",
+      "订阅会每月续费，直到你在门户中取消。",
+    ],
+  };
+
+  for (const [output, [current, stale]] of Object.entries(expected)) {
+    it(`${output} states the yearly interval and the one-time payments`, () => {
+      const html = shipped.get(output);
+      expect(html, `${output} is shipped`).toBeTruthy();
+      expect(html, `${output}: billing paragraph`).toContain(current);
+      expect(html, `${output}: stale monthly-only sentence`).not.toContain(stale);
+    });
+  }
+});
+
 // Issue #214 evidence: all three shapes through the real build — the
 // same-slug pair, a mirror:-declared pair across different slugs, and
 // single-language posts in both languages — with the rendered language
