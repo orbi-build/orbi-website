@@ -15,6 +15,7 @@
 // region was 780 of 1200), so ink that survives just past 780 still shows
 // on the card - as a chopped-off fragment of the line that moved away.
 
+import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +29,8 @@ const CAPTION_TOP = 410; // a moved caption reaches into this band on every card
 const CAPTION_BOTTOM = 504;
 const LABEL_TOLERANCE = 60; // per-pixel |dR| + |dG| + |dB| against the background
 const INK = 90; // a pixel this far from the background is card content
+const LINE_MIN = 13; // a single caption line is 13-17 ink rows tall...
+const LINE_MAX = 17; // ...wrapping it into two or more lines falls outside that
 
 async function htmlFiles(dir) {
   const out = [];
@@ -125,6 +128,38 @@ function decodePng(bytes) {
   };
 }
 
+/** The card's background is whatever fills the bottom-right of the strip. */
+function stripBackground(image) {
+  const counts = new Map();
+  for (let y = BAND_TOP; y < image.height; y++) {
+    for (let x = BAND_RIGHT; x < image.width; x++) {
+      const key = image.at(x, y).join(",");
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number);
+}
+
+/**
+ * The y ranges inside `region` that carry ink, each run collapsed to one
+ * entry: one caption line is one run, a wrapped or clipped caption is several.
+ */
+function inkRuns(image, background, { left, right, top, bottom }) {
+  const runs = [];
+  for (let y = top; y < bottom; y++) {
+    let ink = false;
+    for (let x = left; x < right && !ink; x++) {
+      const [r, g, b] = image.at(x, y);
+      if (Math.abs(r - background[0]) + Math.abs(g - background[1]) + Math.abs(b - background[2]) > INK) ink = true;
+    }
+    if (!ink) continue;
+    const last = runs[runs.length - 1];
+    if (last && last.end === y - 1) last.end = y;
+    else runs.push({ start: y, end: y });
+  }
+  return runs.map((run) => ({ ...run, height: run.end - run.start + 1 }));
+}
+
 async function cardImages() {
   const urls = new Set();
   for (const file of await htmlFiles(PUBLIC)) {
@@ -144,15 +179,7 @@ describe("share card bottom strip", () => {
       const image = decodePng(await readFile(join(PUBLIC, path)));
       expect([image.width, image.height], path).toEqual([1200, 630]);
 
-      // The card's background is whatever fills the bottom-right of the strip.
-      const counts = new Map();
-      for (let y = BAND_TOP; y < image.height; y++) {
-        for (let x = BAND_RIGHT; x < image.width; x++) {
-          const key = image.at(x, y).join(",");
-          counts.set(key, (counts.get(key) || 0) + 1);
-        }
-      }
-      const background = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0].split(",").map(Number);
+      const background = stripBackground(image);
 
       let worst = 0;
       let worstAt = null;
@@ -177,6 +204,42 @@ describe("share card bottom strip", () => {
         }
       }
       expect(ink, path + ": the caption must sit above the label strip, not be deleted").toBeGreaterThan(500);
+    }
+  });
+});
+
+// The caption above the strip is one line of text on every card. Issue #803's
+// reflow broke that on two cards and the assertions above stayed green: they
+// only ask whether *some* ink sits above the strip, so a caption wrapped into
+// two rows - or into three with the last one clipped by the band - passed.
+// These two cards pin the line back to a single run of ink rows.
+const CAPTION_LINES = {
+  "/img/og.png": { left: 60, right: 900, top: 386, bottom: BAND_TOP },
+  "/img/og-watch-the-six-steps.png": { left: 30, right: 620, top: 360, bottom: BAND_TOP },
+};
+
+describe("share card caption line", () => {
+  it("keeps each pinned card's caption on exactly one line", async () => {
+    for (const [path, region] of Object.entries(CAPTION_LINES)) {
+      const image = decodePng(await readFile(join(PUBLIC, path)));
+      const runs = inkRuns(image, stripBackground(image), region);
+      expect(
+        runs.map((run) => run.start + "-" + run.end + " (" + run.height + " rows)"),
+        path + ": the caption is one line, so its ink must be one unbroken run of rows",
+      ).toHaveLength(1);
+      expect(runs[0].height, path + ": one caption line is " + LINE_MIN + "-" + LINE_MAX + " rows tall").toBeGreaterThanOrEqual(LINE_MIN);
+      expect(runs[0].height, path + ": one caption line is " + LINE_MIN + "-" + LINE_MAX + " rows tall").toBeLessThanOrEqual(LINE_MAX);
+    }
+  });
+
+  it("pins the corrected card bytes so the pixels cannot drift again", async () => {
+    const pins = {
+      "/img/og.png": "8ede8a36893882f8dd329967b03153e979326eae5f9a9c5a33576ee820d1e58d",
+      "/img/og-watch-the-six-steps.png": "afe2052532c923a3dd86faf2e7e4abde423743036d248ce94c5125c2b2bfedc2",
+    };
+    for (const [path, sha256] of Object.entries(pins)) {
+      const actual = createHash("sha256").update(await readFile(join(PUBLIC, path))).digest("hex");
+      expect(actual, path + ": share card bytes are pinned (Issue #808)").toBe(sha256);
     }
   });
 });
