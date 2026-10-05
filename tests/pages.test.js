@@ -979,10 +979,13 @@ describe("one unified footer on every content page", () => {
   // embed is copied verbatim after the AI Agents Listing badge. Only width and
   // height differ from the original: 280x80 scaled to 147x42 so the badge
   // matches the 42px height of the other three. The link must stay crawlable
-  // (no nofollow) or Toolradar never verifies it.
+  // (no nofollow) or Toolradar never verifies it. Issue #843 switched the
+  // embed from style=dark to style=light so the badge matches the two light
+  // Featured badges on the same row; type, version, size and the anchor stay
+  // as #832 shipped them.
   it("carries the Toolradar badge with a crawlable backlink on every footer page", () => {
     const anchor = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=dark&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
+    const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
     const listing = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
