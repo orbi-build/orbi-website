@@ -2,7 +2,7 @@
   {
     "slug": "orbi-on-pi-coding-agent",
     "title": "Orbi on Pi: what we built around the Pi coding agent",
-    "summary": "Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.",
+    "summary": "One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.",
     "zhSlug": "orbi-on-pi-coding-agent",
     "zhTitle": "Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么",
     "related": []

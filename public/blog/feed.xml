@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/orbi-on-pi-coding-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/orbi-on-pi-coding-agent/</guid>
       <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
-      <description>Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.</description>
+      <description>One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.</description>
     </item>
     <item>
       <title>Run Claude Code unattended: headless mode is step one</title>
