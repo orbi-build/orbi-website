@@ -72,6 +72,59 @@ describe("browser engagement endpoint", () => {
     expect(reports[0].ref).toBe(ref);
   });
 
+  // Issue #844: the raw landing evidence rides along verbatim — cloud stores
+  // it and re-derives its own attribution later, so the website must not
+  // normalize it (the derived ref stays the only normalized value).
+  it("forwards the raw landing query and referrer verbatim on a visit", async () => {
+    const reports = [];
+    const env = envFor({ fetch: async request => { reports.push(await request.json()); return new Response(null, { status: 204 }); } });
+    await send("visit", undefined, env, [], {
+      path: "/cloud/",
+      search: "?ref=x-2610051200&utm_campaign=Launch_Week",
+      referrer: "https://news.ycombinator.com/item?id=1",
+    });
+    expect(reports[0].raw_query).toBe("?ref=x-2610051200&utm_campaign=Launch_Week");
+    expect(reports[0].raw_referrer).toBe("https://news.ycombinator.com/item?id=1");
+    expect(reports[0].ref).toBe("x-2610051200");
+  });
+
+  it("truncates raw_query and raw_referrer at 1024 characters", async () => {
+    const reports = [];
+    const env = envFor({ fetch: async request => { reports.push(await request.json()); return new Response(null, { status: 204 }); } });
+    const search = `?${"a".repeat(1999)}`;
+    const referrer = `https://example.com/${"b".repeat(1980)}`;
+    expect(search).toHaveLength(2000);
+    expect(referrer).toHaveLength(2000);
+    await send("visit", undefined, env, [], { path: "/cloud/", search, referrer });
+    expect(reports[0].raw_query).toHaveLength(1024);
+    expect(reports[0].raw_referrer).toHaveLength(1024);
+    expect(reports[0].raw_query).toBe(search.slice(0, 1024));
+    expect(reports[0].raw_referrer).toBe(referrer.slice(0, 1024));
+  });
+
+  it("keeps an empty referrer empty and the derived ref unchanged", async () => {
+    const reports = [];
+    const env = envFor({ fetch: async request => { reports.push(await request.json()); return new Response(null, { status: 204 }); } });
+    await send("visit", undefined, env, [], { path: "/cloud/", search: "?ref=x-2609281823", referrer: "" });
+    expect(reports[0].raw_query).toBe("?ref=x-2609281823");
+    expect(reports[0].raw_referrer).toBe("");
+    expect(reports[0].ref).toBe("x-2609281823");
+  });
+
+  it.each([
+    ["engaged", undefined],
+    ["cta_click", "cloud-hero"],
+    ["section_view", "pricing-section"],
+    ["scroll_depth", "75"],
+  ])("omits the raw landing fields on %s", async (kind, detail) => {
+    const reports = [];
+    const env = envFor({ fetch: async request => { reports.push(await request.json()); return new Response(null, { status: 204 }); } });
+    await send(kind, detail, env, []);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]).not.toHaveProperty("raw_query");
+    expect(reports[0]).not.toHaveProperty("raw_referrer");
+  });
+
   it.each([
     ["visit", undefined, { path: "/", search: "", referrer: "" }],
     ["engaged", undefined, {}],
