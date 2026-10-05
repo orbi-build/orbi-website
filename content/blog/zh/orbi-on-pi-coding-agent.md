@@ -16,10 +16,10 @@ Orbi 里所有写代码的活都交给 [Pi 编程 agent](https://pi.dev)。我�
 
 ## 一张 issue 从头到尾
 
-这张 issue 是 [orbi#1554](https://github.com/orbi-build/orbi/issues/1554)，正好和 Pi 本身有关。Orbi 会在每个 worktree 里写一份本次 run 专用的 Pi `models.json`。Pi 0.84.3 读不懂这个文件里的 `$VAR` 引用，所以 Orbi 只能先把 API key 解析出来，明文写进去。Pi 1.0 自己会展开 `$NAME` 和 `${NAME}`，正确的做法就变成：保留引用，不再写 key。我半夜开了这张票，打上 `ai-ready`，就去睡了。
+这张 issue 是 [orbi#1554](https://github.com/orbi-build/orbi/issues/1554)，正好和 Pi 本身有关。Orbi 会在每个 worktree 里写一份本次 run 专用的 Pi `models.json`，之前它会先把 `$VAR` 形式的 API key 引用解析出来，再把 key 明文写进去。我们代码里的注释说，这是因为 Pi 0.84.3 不会展开这种引用。可 Pi 0.84.3 自己的文档写得清清楚楚：`apiKey` 支持 `$ENV_VAR` 和 `${ENV_VAR}`。我们一直在绕一个并不存在的限制。修法就是保留引用，交给 Pi 去展开。我半夜开了这张票，打上 `ai-ready`，就去睡了。
 
 <figure class="post-media">
-<img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从冻结的 base 建 worktree，推送、开 PR，合并闸门检查 base 是否为绿、CI 和评审结论。Pi 会话：实现会话（plan.md、改代码、测试、commit）和评审会话（审、修、输出 REVIEW_VERDICT）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
+<img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从冻结的 base 建 worktree，推送、开 PR，合并闸门检查 CI、评审结论，以及 base 是否最新。Pi 会话：实现会话（plan.md、改代码、测试、commit）和评审会话（审、修、输出 REVIEW_VERDICT）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
 </figure>
 
 下面是这张 issue 自己的时间线（北京时间）：
@@ -28,14 +28,16 @@ Orbi 里所有写代码的活都交给 [Pi 编程 agent](https://pi.dev)。我�
 |---|---|
 | 03:21 | 开票，打上 `ai-ready`。 |
 | 03:31 | runner 认领，起了第一个 Pi 会话（run `598a0fb3`）。 |
-| 03:42 | 实现会话提交了修复：`fix(pi): keep apiKey env-var references verbatim in per-run models.json`。runner 推送，开了 [PR #1555](https://github.com/orbi-build/orbi/pull/1555)。 |
+| 03:42 | 实现会话提交了修复：`fix(pi): keep apiKey env-var references verbatim in per-run models.json`。 |
+| 03:43 | runner 推送，开了 [PR #1555](https://github.com/orbi-build/orbi/pull/1555)。 |
 | 03:47、04:08 | CI 两次失败，失败指纹相同，挂在一个文档测试上，这个测试在 `main` 上也是红的。每次 runner 都起一个新的评审会话，它先读 CI 日志再修（第二次 CI 跑的就是它推上来的文档提交）。 |
-| 04:22 | 评审会话停在交付闸门：`main` 本身在 `macos-compatibility` 这项检查上就是红的。issue 被标成 `ai-blocked`。 |
+| 04:22 | 评审会话停在交付闸门：PR 上挂掉的那项检查，在 `main` 上也是挂的（闸门点名的是 `macos-compatibility`），合进去也解决不了问题。issue 被标成 `ai-blocked`。 |
 | 12:06 | 另一张同样由 Orbi 交付的票 [orbi#1552](https://github.com/orbi-build/orbi/issues/1552)，把 `main` 上那个挂掉的文档测试修好了。 |
-| 13:39 | 我把 #1554 放回队列，分支也接上了新的 `main`。 |
+| 13:39 | 我把 #1554 放回队列。 |
+| 13:42 | 分支接上了新的 `main`。 |
 | 13:58 | 评审通过，没有问题，runner 合并了 PR。 |
 
-Orbi 在 issue 上维护着一条不停更新的进度评论，角色是 runner 填的，其余来自 Pi 的会话文件：Pi 最后一次有输出是什么时候、会话 id、当前阶段。`phase: codemode` 表示会话正处在 Pi 1.0 Codemode 的工具调用里：模型写一小段脚本，一步串起好几次工具调用。
+Orbi 在 issue 上维护着一条不停更新的进度评论，角色是 runner 填的，其余来自 Pi 的会话文件：Pi 最后一次有输出是什么时候、会话 id、当前阶段。`phase: codemode` 是 runner 最近一次识别出的工具阶段，也就是 Pi 1.0 的 Codemode：模型写一小段脚本，一步串起好几次工具调用。
 
 <figure class="post-media">
 <img src="/img/blog-orbi-on-pi-progress.webp" alt="Orbi 在 orbi#1554 上的进度评论（英文界面）：PR #1555 已合并，review_rounds=1；role: review；测试 4034 个通过、11 个跳过，用时 7 分 38 秒；展开的 Run details 里有 run_id 598a0fb3、phase codemode、已用 16 分 57 秒、分支名和 Pi 会话 id。" width="1200" height="731">
@@ -107,7 +109,7 @@ Orbi 从 8 月的第一批提交起就在驱动 Pi，当初选它之前并没有
 Pi 对自己核心里不做什么说得很直白。它的首页除了已经内置的 MCP，还列了五样：子 agent、权限弹窗、plan 模式、待办、后台 bash，每一样都给了自己补的办法：扩展、第三方包、容器、写文件、tmux（2026 年 10 月 5 日查看）。Orbi 没有给 Pi 加上这些功能，而是在 runner 里，从交付的角度各做了一件对应的事。
 
 <figure class="post-media">
-<img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具（包括 Pi 1.0 的 Codemode），skill，会话写成 JSONL，白名单里的扩展。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个 base 冻结的 worktree，按角色起会话，合并闸门检查 base、CI 和评审结论，每 5 分钟调度并停掉卡住的会话，从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
+<img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具（包括 Pi 1.0 的 Codemode），skill，会话写成 JSONL，白名单里的扩展。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个 base 冻结的 worktree，按角色起会话，合并闸门检查 CI、评审结论和 base 是否最新，每 5 分钟调度并停掉卡住的会话，从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
 </figure>
 
 | Pi 核心里没有的 | Pi 建议的补法 | Orbi 的做法，以及边界 |
@@ -136,7 +138,7 @@ Pi 对自己核心里不做什么说得很直白。它的首页除了已经内�
 
 **一个插件，让会话在发出第一个请求之前就卡死。** 9 月 4 日晚上，run 开始在 Pi 发出任何模型请求之前就卡住。那一晚一个接一个，z.ai 和 Gemini 上都出现过，每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 `ai-blocked`。卡住的 `pi` 进程还活着，但几乎不动（两分半钟只用了 2 秒 CPU），没有任何连到模型 API 的 TCP 连接，唯一的 socket 是当前用户的 D-Bus。会话目录是空的，Pi 连会话文件都还没建。同样的配置，在 shell 里手动跑了 20 多次全部成功，只有 systemd 用户服务拉起来的 run 会卡。原因是一个用户级的 Pi 包 `pi-mcp-adapter`：它启动时通过 D-Bus 初始化系统钥匙串，在 systemd 环境里，这个调用偶尔永远不返回。把它从 `~/.pi/agent/settings.json` 里拿掉之后，同一个 run 15 秒就拿到了第一个模型响应（[排查见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。永久的修法是让交付会话不再继承用户的插件：实现和评审会话都以 `--no-extensions` 启动，只加载 Orbi 配置里声明的扩展（[orbi#249](https://github.com/orbi-build/orbi/issues/249)）。
 
-**一个跑错了模型的 runner。** 9 月 20 日，我们新配了一个 runner，本来要通过 Pi 用 GPT 模型。写的配置里有仓库，却漏了 `pi_provider` 和 `pi_model`，于是 Orbi 没传 `--provider` 和 `--model`，Pi 用的是账号 settings 里的 `defaultModel`。runner 的日志里打出来的是 `provider=LLAMA_INTRANET model=qwen3.8:27b`，一个本地模型，而我们一直以为它是 GPT runner。什么都没报错，这才是问题所在。现在我们会直接看 runner 实际要用的 provider 和模型（`orbi doctor` 会打印出来），不再读配置、靠推断。
+**一个跑错了模型的 runner。** 9 月 20 日，我们新配了一个 runner，本来要通过 Pi 用 GPT 模型。写的配置里有仓库，却漏了 `pi_provider` 和 `pi_model`，于是 Orbi 没传 `--provider` 和 `--model`，Pi 用的是账号 settings 里的 `defaultModel`。runner 的日志里打出来的是 `provider=LLAMA_INTRANET model=qwen3.8:27b`，一个本地模型，而我们一直以为它是 GPT runner。什么都没报错，这才是问题所在。现在每个 runner 的配置里都显式写上 provider 和模型（没写的话，`orbi doctor` 会报「未配置」），实际跑的是哪个模型，看日志里的启动那一行确认，不再读配置、靠推断。
 
 ## 如果你也想无人值守地跑 Pi
 
@@ -147,7 +149,7 @@ Pi 对自己核心里不做什么说得很直白。它的首页除了已经内�
 - **skill 按角色分，还要管住自动发现。** 评审会话要是加载了实现那一套流程 skill，它会去「交付」，而不是评审。`--skill` 是在 Pi 从用户目录和项目目录自动发现的 skill 之外再加；要让某个角色看不到某个 skill，还得加 `--no-skills` 或者保证 skill 目录干净。
 - **provider 和模型写在命令行上。** 不写的话，Pi 会用 settings 里的 `defaultModel`，无人值守的 runner 察觉不到。
 - **盯住长时间没输出的会话。** 卡住的会话不退出，上游也就永远看不到报错。要看会话文件最后一次变大是什么时候，而不只是进程还在不在。
-- **升级 Pi 时读一遍发布说明。** Pi 1.0 在 `models.json` 里支持环境变量展开，改变了我们该怎么做，#1554 就是这么来的。
+- **想绕开 Pi 的某个限制之前，先查你所用版本的文档。** 我们的代码为一个 Pi 文档里根本不存在的 `models.json` 限制做了绕行，还因此把 API key 写到了磁盘上。#1554 就是这么来的。
 
 ## 系列接下来写什么
 
