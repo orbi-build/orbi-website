@@ -1110,6 +1110,9 @@ function renderSeriesIndex(series, lang, posts) {
 
 // The guide body: CommonMark except the series markers, which become their
 // generated list; every other HTML comment is dropped before marked sees it.
+// The headings are then passed through the blog's renderPostHeadings
+// (Issue #835), so a guide gets the same Unicode-safe ids and TOC data as a
+// post — the page reuses the blog TOC instead of growing a second one.
 function renderGuideBody(guide, posts) {
   const html = guide.rawBody
     .split(/(<!--@series:[A-Za-z0-9_-]+-->)/)
@@ -1119,7 +1122,10 @@ function renderGuideBody(guide, posts) {
       return marked.parse(chunk.replace(/<!--[\s\S]*?-->/g, ""));
     })
     .join("\n");
-  return classifyInlineCode(addTableDataLabels(wrapRenderedTables(html)));
+  return renderPostHeadings(
+    classifyInlineCode(addTableDataLabels(wrapRenderedTables(html))),
+    `content/guides/${guide.source}`,
+  );
 }
 
 // A guide page: the shared content-page chrome (head meta, nav, breadcrumb,
@@ -1142,6 +1148,11 @@ function renderGuide(guide, template, posts, guidesData) {
   const breadcrumbNav = breadcrumb.replace(breadcrumbJson, "");
   const url = `https://orbi.build${guide.href}`;
   const mirrorHref = `https://orbi.build${pathToHref(guide.mirrorOutput)}`;
+  // The guide reuses the blog TOC (Issue #835): same five-heading threshold,
+  // same localized title, same layout and scroll-highlight script.
+  const { html: bodyHtml, headings } = renderGuideBody(guide, posts);
+  const toc = renderPostToc({ headings, lang: guide.lang });
+  const tocScript = headings.length >= 5 ? TOC_HIGHLIGHT_SCRIPT : "";
   const html = fill(template, {
     LANG_ATTR: guide.lang === "zh" ? "zh-CN" : "en",
     TITLE: escAttr(guide.title),
@@ -1158,13 +1169,15 @@ function renderGuide(guide, template, posts, guidesData) {
     BREADCRUMB: breadcrumbNav,
     HEADLINE: escAttr(guide.title),
     SUMMARY: escAttr(guide.summary),
-    BODY: renderGuideBody(guide, posts),
+    TOC: toc.desktop,
+    INLINE_TOC: toc.inline,
+    BODY: bodyHtml,
     RELATED_LINKS: renderRelated(page, guidesData),
     FOOTER: toLayout(renderFooter(page), "pretty"),
   });
   return html
     .replace("</head>", `${breadcrumbJson}</head>`)
-    .replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
 // A post's page: the rendered CommonMark body inside the post template, with
@@ -1192,6 +1205,11 @@ export function insertInlinePostCta(html, cta) {
   return `${html.slice(0, end)}${cta}${html.slice(end)}`;
 }
 
+// The On this page TOC's scroll-highlight, shared by blog posts and guides:
+// a guide TOC is the blog TOC (Issue #835). It marks the link whose heading is
+// the last one above 40% of the viewport.
+const TOC_HIGHLIGHT_SCRIPT = `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>`;
+
 // `seriesGuide` is the same-language guide page that renders this post's
 // series index; when set, the post carries a backlink to it (Issue #826).
 function renderPost(post, template, seriesGuide = null) {
@@ -1200,7 +1218,7 @@ function renderPost(post, template, seriesGuide = null) {
   const seriesLink = seriesGuide
     ? `          <p class="post-series">${post.lang === "zh" ? "系列：" : "Part of: "}<a href="${seriesGuide.href}">${escAttr(seriesGuide.title)}</a></p>`
     : "";
-  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
+  const tocScript = post.headings.length >= 5 ? TOC_HIGHLIGHT_SCRIPT : "";
   const page = {
     lang: post.lang,
     output: post.output,

@@ -34,7 +34,8 @@
 
   <style>
     /* Guide-only body layout: the shared .shell/.compare-hero rules stay unchanged. */
-    .guide-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 60px; }
+    .guide-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .guide-body { padding-top: 12px; padding-bottom: 60px; }
     .guide-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .guide-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
     .guide-body p { margin: 14px 0; }
@@ -51,6 +52,35 @@
     .guide-body .post-table-scroll { overflow-x: auto; }
     .guide-body .series-list { margin: 14px 0; padding-left: 22px; }
     .guide-body .series-list time { color: var(--ink-soft); font-size: 0.9rem; }
+
+    /* The On this page TOC is the blog TOC (Issue #835): the same rules as
+       post.html, scoped to the guide body, so the two stay one component. */
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .guide-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .guide-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    @media (min-width: 1200px) {
+      .guide-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .guide-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
   </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://orbi.build/zh/"},{"@type":"ListItem","position":2,"name":"指南","item":"https://orbi.build/zh/guides/"},{"@type":"ListItem","position":3,"name":"Orbi 怎么搭在 Pi coding agent 上","item":"https://orbi.build/zh/guides/pi-coding-agent/"}]}</script></head>
 <body>
@@ -85,9 +115,60 @@
       </section>
     </div>
 
-    <article class="guide-body">
+    <div class="guide-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#先说清这页用的几个词">先说清这页用的几个词</a></li>
+          <li><a class="post-toc-link" href="#生产上的数字">生产上的数字</a></li>
+          <li><a class="post-toc-link" href="#为什么-orbi-一直用-pi-coding-agent">为什么 Orbi 一直用 Pi coding agent</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎么启动-pi-coding-agent">Orbi 怎么启动 Pi coding agent</a></li>
+          <li><a class="post-toc-link" href="#orbi-在-pi-harness-外面补的几层">Orbi 在 Pi harness 外面补的几层</a>
+            <ol>
+              <li><a class="post-toc-link" href="#认领-issue">认领 issue</a></li>
+              <li><a class="post-toc-link" href="#从-commit-到-pr">从 commit 到 PR</a></li>
+              <li><a class="post-toc-link" href="#评审轮次">评审轮次</a></li>
+              <li><a class="post-toc-link" href="#合并闸门">合并闸门</a></li>
+              <li><a class="post-toc-link" href="#ops-票和发版">ops 票和发版</a></li>
+              <li><a class="post-toc-link" href="#标签一览">标签一览</a></li>
+              <li><a class="post-toc-link" href="#进度评论和-run-id">进度评论和 run_id</a></li>
+              <li><a class="post-toc-link" href="#会话没声音了">会话没声音了</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#agent-目录和模型">agent 目录和模型</a></li>
+          <li><a class="post-toc-link" href="#这些规则是怎么来的">这些规则是怎么来的</a></li>
+          <li><a class="post-toc-link" href="#系列文章">系列文章</a></li>
+          <li><a class="post-toc-link" href="#试一试">试一试</a></li>
+          <li><a class="post-toc-link" href="#更新记录">更新记录</a></li>
+          </ol>
+        </nav>
+      <article class="guide-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 10 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#先说清这页用的几个词">先说清这页用的几个词</a></li>
+          <li><a class="post-toc-link" href="#生产上的数字">生产上的数字</a></li>
+          <li><a class="post-toc-link" href="#为什么-orbi-一直用-pi-coding-agent">为什么 Orbi 一直用 Pi coding agent</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎么启动-pi-coding-agent">Orbi 怎么启动 Pi coding agent</a></li>
+          <li><a class="post-toc-link" href="#orbi-在-pi-harness-外面补的几层">Orbi 在 Pi harness 外面补的几层</a>
+            <ol>
+              <li><a class="post-toc-link" href="#认领-issue">认领 issue</a></li>
+              <li><a class="post-toc-link" href="#从-commit-到-pr">从 commit 到 PR</a></li>
+              <li><a class="post-toc-link" href="#评审轮次">评审轮次</a></li>
+              <li><a class="post-toc-link" href="#合并闸门">合并闸门</a></li>
+              <li><a class="post-toc-link" href="#ops-票和发版">ops 票和发版</a></li>
+              <li><a class="post-toc-link" href="#标签一览">标签一览</a></li>
+              <li><a class="post-toc-link" href="#进度评论和-run-id">进度评论和 run_id</a></li>
+              <li><a class="post-toc-link" href="#会话没声音了">会话没声音了</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#agent-目录和模型">agent 目录和模型</a></li>
+          <li><a class="post-toc-link" href="#这些规则是怎么来的">这些规则是怎么来的</a></li>
+          <li><a class="post-toc-link" href="#系列文章">系列文章</a></li>
+          <li><a class="post-toc-link" href="#试一试">试一试</a></li>
+          <li><a class="post-toc-link" href="#更新记录">更新记录</a></li>
+          </ol>
+        </details>
 <p>Orbi 是一个开源 runner：你给 GitHub issue 打上 <code class="post-code--single">ai-ready</code> 标签，它把这张 issue 做成评审过、合并了的 PR；另开一张发版 issue，就能把合并的工作打包成带 tag 的 release。可以装在自己机器上跑，也可以用托管版 Orbi Cloud。整条流水线里写代码的那一步，全部交给 <a href="https://pi.dev">Pi coding agent</a>。Pi 官网管自己叫「a minimal agent harness」，由 Earendil 开发，MIT 许可（<a href="https://github.com/earendil-works/pi">earendil-works/pi</a>）。Orbi 不是 Pi 官方项目。Orbi Cloud 的 runner 目前跑的是 Pi 1.0.0。</p>
-<h2>先说清这页用的几个词</h2>
+<h2 id="先说清这页用的几个词">先说清这页用的几个词</h2>
 <ul>
 <li><strong>交付</strong>：一张 issue 做到 PR 合并。</li>
 <li><strong>会话</strong>：为一个角色起的一个 Pi coding agent 进程。大多数交付用两个会话，一个写代码，一个评审。评审需要再起会话（发现问题后的下一轮，或者合并要等检查跑完时、合并前补的那次复查），或者卡住的会话被重启，会话数才会变多。</li>
@@ -95,12 +176,12 @@
 <li><strong>tick</strong>：runner 的一次扫描。runner 以多个实例运行，每个槽位（见下）一个实例，各有自己的 systemd timer（macOS 上是 launchd），每 5 分钟触发一次 tick。每次 tick 只把一个交付往前推一步：先找已经开了 PR 的，再找之前被打断的（续跑条件：只在没有其他槽位在忙时），最后才认领新的 <code class="post-code--single">ai-ready</code> issue。Pi 会话在启动它的那次 tick 里一直跑，直到自己结束，或者长时间静默后被 runner 结束（见下文）。</li>
 <li><strong>槽位</strong>：runner 能同时做的一张 issue 就是一个槽位，槽位数目是固定的。之所以需要槽位，是因为一次 tick 可能跟着它的会话跑上一个小时；同一个实例上一次 tick 没跑完时，它的 timer 不会再起新 tick，所以 tick 只在不同槽位之间重叠，后来的 tick 不会去动会话还在跑的 issue。CI 还没跑完这类 runner 管不了的事，不在 tick 里干等，留给下一次 tick 再看。</li>
 </ul>
-<h2>生产上的数字</h2>
+<h2 id="生产上的数字">生产上的数字</h2>
 <p>Orbi Cloud 会统计它跑的每次交付背后起了几个 Pi 会话。2026 年 9 月 21 日到 10 月 5 日，有这项统计、并且能对应到已合并 PR 的交付共 170 次：141 次在 Orbi 自己的仓库（<code class="post-code--single">orbi</code>、<code class="post-code--single">orbi-cloud</code>、<code class="post-code--single">orbi-website</code>），11 次在我们 fork 的开源项目和测试仓库，18 次在 Orbi Cloud 外部用户的 8 个仓库。更早的合并，以及 Orbi 自己的仓库迁到 Orbi Cloud 之前由自建 runner 做的合并，都不在这些数字里。</p>
 <p>下面说的都是这 170 次交付：Pi 会话文件里记录的模型都是 DeepSeek 的 <code class="post-code--single">deepseek-flash</code>，一共起了 375 个 Pi 会话，平均每次 2.21 个；其中 144 次（85%）正好两个会话：一个写代码，一个评审并给了 <code class="post-code--single">pass</code>。这些交付在合并闸门运行时已经没有待跑的检查，所以没有触发下文的复查。其中 169 次还有 token 数，按 DeepSeek 闲时公开价（它公布的几档价格里最低的一档）折算，每次交付的模型费用中位数大约 8 美分，这是下限，按其他价位只会更高；明细见<a href="/zh/blog/orbi-on-pi-coding-agent/">系列第一篇博文</a>。（数字截至 2026-10-05。本页数字随页面底部 Pi 系列的新文章一起更新。）</p>
-<h2>为什么 Orbi 一直用 Pi coding agent</h2>
+<h2 id="为什么-orbi-一直用-pi-coding-agent">为什么 Orbi 一直用 Pi coding agent</h2>
 <p>Pi 让 Orbi 可以通过一份 <code class="post-code--single">models.json</code> 格式的 provider 列表自己选模型；Orbi 交给会话的东西，系统提示词、skill、provider 和 model、工具开关、会话记录目录，Pi 都有原生参数对应，中间不需要转接层。Orbi 的 runner 只会发 Pi 的参数，所以我们试另外两个 coding agent 命令行工具（其中一个是 Claude Code）时，给它们各写了一个小转接层来翻译参数。两个转接层都悄悄把 skill 丢了，我们过了一阵才发现。更完整的回答见<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E7%9B%B4%E7%94%A8-pi">系列第一篇博文</a>。</p>
-<h2>Orbi 怎么启动 Pi coding agent</h2>
+<h2 id="orbi-怎么启动-pi-coding-agent">Orbi 怎么启动 Pi coding agent</h2>
 <p>每个会话都是一个非交互的 <code class="post-code--spaced">pi --print</code> 进程。每次运行在 worktree 里有一个会话目录 <code class="post-code--single">.pi-session/</code>（和 <code class="post-code--single">.orbi/</code> 一样被 git 排除，不算未提交的改动），这次运行里的每个 Pi 进程各在里面写一个自己的 JSONL 文件（<code class="post-code--single">ticket</code> 会话改用临时目录）。runner 的实时进度和失败报告读的都是这些文件。命令在 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">pi_command.py</code></a> 里拼。角色有三个：</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
@@ -139,12 +220,12 @@ review_pi_provider = &quot;deepseek&quot;            # 可选，不写就回退�
 review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退到 pi_model
 </code></pre>
 <p>现成的 provider 文件在 <a href="https://github.com/orbi-build/orbi/tree/main/templates/pi-providers"><code class="post-code--single">templates/pi-providers</code></a>。设了 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code> 的话，每个角色解析出的 provider 和 model 会以 <code class="post-code--single">--provider</code>、<code class="post-code--single">--model</code> 写在它的命令上（评审先用 <code class="post-code--single">review_</code> 开头的键，没设的键逐个回退）；不设的话，Pi 会悄悄退回用户设置里的默认模型（见下文那次事故）。没有 <code class="post-code--single">pi_providers</code> 文件时，这两个键指定的必须是 Pi 自己能解析的模型（Pi 内置的 provider，或者用户 <code class="post-code--single">~/.pi/agent/models.json</code> 里定义的）。<code class="post-code--spaced">orbi doctor</code> 在 provider 文件、<code class="post-code--single">pi_provider</code>、<code class="post-code--single">pi_model</code> 都设好、API 密钥也能解析时，会打印配置的 provider 和 model。没有 provider 文件时，它会把模型报成未配置，尽管 Pi 自己能解析的模型照样能跑。</p>
-<h2>Orbi 在 Pi harness 外面补的几层</h2>
+<h2 id="orbi-在-pi-harness-外面补的几层">Orbi 在 Pi harness 外面补的几层</h2>
 <p>一个 Pi 进程只知道自己这个会话。哪张 issue 该起会话、会话留下的 commit 怎么处理、会话没声音了怎么办，都由 runner 决定。</p>
-<h3>认领 issue</h3>
+<h3 id="认领-issue">认领 issue</h3>
 <p>tick 手上没有已开的 PR 或被打断的运行要接着做时，才按优先级扫描 <code class="post-code--single">ai-ready</code> 的 issue：先是带 <code class="post-code--single">p0</code> 标签的，再是 <code class="post-code--single">bug</code>，最后是其余的。已经在跑的、标着 <code class="post-code--single">ai-blocked</code> 的、还挂着未关闭「blocked by」关系的 issue 都跳过。设了 <code class="post-code--single">active_milestone</code>（仓库的 <code class="post-code--single">.github/orbi.toml</code> 里，或者 runner 自己的配置里作为兜底）时，只扫这个里程碑；这个里程碑关闭后，手上没有别的活要接着做的 tick 会切到版本号更高的下一个开放里程碑（设了 <code class="post-code--spaced">auto_next_milestone = false</code> 时改为发一条提醒、等你来改）；没有这样的里程碑，就去掉过滤，重新扫全部 <code class="post-code--single">ai-ready</code>。一个 runner 可以同时做好几张 issue，靠认领锁和按槽位的锁保证同一张不会被拿两次。</p>
 <p>认领下来的 issue 会得到一个 git worktree，分支名是 <code class="post-code--single">orbi/&lt;owner&gt;-&lt;repo&gt;-issue-&lt;N&gt;</code>。第一次认领时，分支从 base 分支当时的 commit 切出来。分支名里不带 run id，所以同一张 issue 再被认领时，会拉下已有的分支接着做，原来的 PR 还开着就继续用它。细节见<a href="https://docs.orbi.build/zh/workflow">工作流文档</a>。</p>
-<h3>从 commit 到 PR</h3>
+<h3 id="从-commit-到-pr">从 commit 到 PR</h3>
 <p><code class="post-code--single">implement</code> 会话停在 commit 上，剩下的事 runner 来做，按这个顺序：</p>
 <ol>
 <li>检查产出。这一步只看会话自己退出的情况（被 runner 结束的会话见下文「会话没声音了」）。对普通的 <code class="post-code--single">ai-ready</code> issue（不是下文的 ops 票）：如果会话留下了未提交的改动（不管有没有 commit），issue 保持 <code class="post-code--single">ai-in-progress</code>，之后某次 tick（按上文的续跑条件）接着做同一次运行；如果工作区是干净的、HEAD 仍等于本次运行开始时记下的 base 分支 commit，issue 直接进 <code class="post-code--single">ai-blocked</code>。复用的分支上已经有之前的 commit 时，不会落到这一条。</li>
@@ -152,7 +233,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <li>push。普通 push（不 force），再确认远端分支确实指向刚 push 的 commit，免得 push 悄悄失败了还接着开 PR。</li>
 <li>开 PR，正文写上 <code class="post-code--spaced">Fixes #N</code> 和 <code class="post-code--single">run_id</code>。</li>
 </ol>
-<h3>评审轮次</h3>
+<h3 id="评审轮次">评审轮次</h3>
 <p>评审总是在新起的 Pi 会话里做，所以 <code class="post-code--single">implement</code> 写的代码由一个没写过它的会话来查。评审可以直接修：Blocker 和 Major 级的问题在同一个会话里改掉，重跑测试，push 到任务分支。它给出的结论描述的是修完之后的 PR：</p>
 <ul>
 <li><code class="post-code--single">pass</code>：不剩 Blocker 和 Major。</li>
@@ -160,7 +241,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <li><code class="post-code--single">blocked_on_human_decision</code>：评审发现了只有人才能拍板的事。</li>
 </ul>
 <p>评审预算是五轮，数的是轮次，不是会话数。五轮用完，或者结论是 <code class="post-code--single">blocked_on_human_decision</code>，issue 进 <code class="post-code--single">ai-blocked</code>，等人来处理；人把它改回 <code class="post-code--single">ai-fix-needed</code>。只有用完了的预算才会重新回到五轮；因 <code class="post-code--single">blocked_on_human_decision</code> 停下的，剩几轮接着用几轮。PR 和不断前进的 base 分支冲突时，下一个评审会话负责合 base、解冲突，这类轮次算在另一份预算里，也是五轮；这份预算只在用完的评审预算被人恢复时，随之一起清零。</p>
-<h3>合并闸门</h3>
+<h3 id="合并闸门">合并闸门</h3>
 <p>合并前，runner 用一次调用读齐 PR 的状态、能否合并、head commit 和 CI 结果，避免拿新旧混杂的数据做判断。合并用的是 <code class="post-code--spaced">gh pr merge --match-head-commit &lt;sha&gt;</code>，中间有人 push 过，GitHub 会拒绝这次合并。正常情况下，这个 sha 是最近一次评审结论里写的 commit；每个评审会话（包括复查）都会写明自己最后停在哪个 commit。base 分支前进时，锁的是 runner 自己新合出的 commit；<code class="post-code--single">ai-awaiting-merge</code> 之后的重试，锁的是 PR 当前的 head。闸门会遇到这几种情况：</p>
 <ul>
 <li><strong>检查还在跑。</strong> 评审刚 push 完修改时可能出现这种情况。runner 不等；后来的 tick 跳过合并，等检查跑完，先起一个新的评审会话看最终 commit，再合并。被推迟的那次 <code class="post-code--single">pass</code> 和这次复查，合起来只算一轮。所以只要闸门运行时检查还在跑，评审自己的修改就会被再看一遍；检查已经跑完的，就不经复查直接合并。</li>
@@ -170,10 +251,10 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <li><strong>分支保护规则要求维护者介入。</strong> issue 进 <code class="post-code--single">ai-awaiting-merge</code>。之后的重试不再起 Pi 评审，而是拿 PR 当前的 head 重跑合并闸门。</li>
 </ul>
 <p>更多见 <a href="/zh/guides/ci-gates/">CI 门禁</a>和<a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a>。</p>
-<h3>ops 票和发版</h3>
+<h3 id="ops-票和发版">ops 票和发版</h3>
 <p>打了 <code class="post-code--single">ai-ops-only</code> 的 issue 起的是带 shell 的 <code class="post-code--single">implement</code> 会话，只是换成运维提示词，适合「查一下这个报错在日志里出现了几次，把查询和结果贴回来」这类活。会话自己把证据作为评论贴到 issue 上。没产生 commit、工作区也干净，runner 就关掉 issue，不开 PR；有 commit 就照常走 PR 流程。</p>
 <p>发版不经过 Pi：打了 <code class="post-code--single">ai-release</code> 的 issue 走一套固定流程，改版本号、打 tag、发布 GitHub Release（见<a href="/zh/guides/issue-to-release/">从 Issue 到 Release</a>）。</p>
-<h3>标签一览</h3>
+<h3 id="标签一览">标签一览</h3>
 <p>有三个标签和 <code class="post-code--single">ai-ready</code> 一起打，决定走哪条路：<code class="post-code--single">ai-content-only</code> 换成 <code class="post-code--single">ticket</code> 角色，<code class="post-code--single">ai-ops-only</code> 仍用 <code class="post-code--single">implement</code> 但换成运维提示词，<code class="post-code--single">ai-release</code> 不经过 Pi。记录 issue 走到哪一步的状态标签如下（评审通过、在等检查时，issue 保持原来的 <code class="post-code--single">ai-pr-opened</code> 或 <code class="post-code--single">ai-fix-needed</code>）：</p>
 <div class="post-table-scroll"><table>
 <thead>
@@ -211,15 +292,15 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <td>需要人处理，runner 不会再自己碰它</td>
 </tr>
 </tbody></table></div>
-<h3>进度评论和 run_id</h3>
+<h3 id="进度评论和-run-id">进度评论和 run_id</h3>
 <p>会话运行时，runner 每 15 秒读一次它的 JSONL 文件，更新 issue 上同一条评论：现在在哪个阶段、最后做了什么、最近一次测试结果。有变化就立即更新，没变化时大约每 30 秒刷新一次已用时间。运行彻底失败时，失败评论会附上会话的最后 20 条记录，只保留时间戳、记录类型、发送方、工具名和内容块的种类，不带消息正文；另外附上 Pi 的 stdout 和 stderr 各自的前 4000 个字符，以及测试日志的尾部，本机路径都会去掉。</p>
 <p><code class="post-code--single">run_id</code> 是这次运行每一行日志的前缀，也出现在进度评论、PR 正文和失败记录里，拿它去搜日志、搜 GitHub，找到的都是同一次运行。</p>
-<h3>会话没声音了</h3>
+<h3 id="会话没声音了">会话没声音了</h3>
 <p>Pi 会话卡住时不会退出，runner 收不到任何报错，所以它盯的是会话文件还在不在增长，并分两种情况处理：卡在工具上，和在等模型。</p>
 <p><strong>卡在工具上。</strong> 静默 5 分钟时 runner 记一条告警。大约 10 分钟时，找出告警之前就已启动、到现在还没退出的 Pi 子进程，比如一直不退出的测试或 dev server，给它们发 SIGTERM。这样那次工具调用会失败，模型拿到一个能处理的报错。还活着的子进程，在下一次轮询（大约 15 秒后）发 SIGKILL。套着自己 <code class="post-code--single">timeout</code> 命令在跑的进程不动，等到它自己的期限，从 runner 发现它起最多一小时。如果杀掉子进程后会话还是没动静，或者根本没有子进程可杀（卡住的是 Pi 自己），runner 继续计时，这条静默看门狗在静默大约 60 分钟时结束这个 Pi 会话，但有效的 <code class="post-code--single">timeout</code> 等待期间不会。等待期间静默时间照样累计，runner 只是暂不结束会话，所以等待一结束，已经过了这个点的会话很快就会被结束。</p>
 <p><strong>在等模型。</strong> 最后一条记录是工具结果、Pi 在等模型的下一个回复时，走单独的计时器：默认 30 分钟没有回应就结束会话。连的是 llama.cpp 服务时，runner 还可以探测它的 <code class="post-code--single">/slots</code> 接口，这个接口会报告服务是否在处理请求；如果 llama.cpp 服务自己的所有 slot（不是上面说的 runner 槽位）连续约一分钟都是空闲，说明请求被吞了，会话就在那时结束。下一节讲的 Pi 自己的空闲超时，会在单个请求静默 300 秒后结束它，但 Pi 默认还可能把失败的请求重试最多三次（<code class="post-code--single">retry.maxRetries</code>）；没设 <code class="post-code--single">pi_providers</code> 文件时，或者受信任项目的 <code class="post-code--single">.pi/settings.json</code> 里写了它，<code class="post-code--spaced">httpIdleTimeoutMs: 0</code>（等于关掉这个超时）的配置也可能还在。30 分钟的计时器只管最后一条记录还是工具结果时的静默。重试一旦留下一条 assistant 错误记录，之后的静默就交给上一段那条静默看门狗，约 60 分钟结束会话。</p>
 <p>接下来怎么走，看角色。<code class="post-code--single">implement</code> 会话卡住，issue 保持 <code class="post-code--single">ai-in-progress</code>；之后某次 tick，等没有其他槽位在忙时（就是上面说的续跑条件），在同一个 worktree、同一个 <code class="post-code--single">run_id</code> 下起一个新会话，并告诉它接着之前的工作做，而不是从头来。同样的失败重复出现，会更新 issue 上同一条恢复评论；连续三次之后，runner 再加一条健康告警。它不会封住 issue，也不会停止续跑，这条告警就是提醒人来接手的信号。<code class="post-code--single">review</code> 会话卡住，issue 进 <code class="post-code--single">ai-fix-needed</code>；评审连续三次出现同样的失败，issue 进 <code class="post-code--single">ai-blocked</code>。</p>
-<h2>agent 目录和模型</h2>
+<h2 id="agent-目录和模型">agent 目录和模型</h2>
 <p><code class="post-code--single">orbi.toml</code> 里设了 <code class="post-code--single">pi_providers</code> 时，每次运行在 worktree 下得到一个自己的 Pi agent 目录 <code class="post-code--single">.orbi/pi-agent/</code>（<code class="post-code--single">ticket</code> 会话的放在它的临时目录里），通过 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 交给 Pi，每次启动会话前按这个会话的角色重写一遍。<code class="post-code--single">.orbi/</code> 写在 worktree 本地的 git exclude 文件里，会话里普通的 <code class="post-code--spaced">git add</code> 不会把它带进提交。这个目录以跑 runner 的那个系统用户的 <code class="post-code--single">~/.pi/agent</code> 为底生成：</p>
 <ul>
 <li><code class="post-code--single">models.json</code>：把这个用户的 providers 和 Orbi 的配置合在一起，同一个 id 以配置为准。</li>
@@ -228,23 +309,24 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 </ul>
 <p>对 <code class="post-code--single">ticket</code> 角色来说，这决定了用户的哪些扩展会被加载：没设 <code class="post-code--single">pi_providers</code> 时，是这个用户 <code class="post-code--single">~/.pi/agent</code> 里装的全部扩展；设了时，自动发现改到生成的目录里进行，但用户 <code class="post-code--single">settings.json</code> 里声明的扩展和包（用绝对路径、<code class="post-code--single">~/</code> 路径或包的形式写的）仍可能加载。无论哪种情况，<code class="post-code--single">ticket</code> 都没有扩展白名单。</p>
 <p>没设 <code class="post-code--single">pi_providers</code> 时，Pi 直接用这个用户的 <code class="post-code--single">~/.pi/agent</code>，<code class="post-code--single">enabledModels</code> 锁定和 <code class="post-code--single">httpIdleTimeoutMs</code> 的清理这两条都不生效；<code class="post-code--single">--no-extensions</code>、命令行上的 <code class="post-code--single">--provider</code> 和 <code class="post-code--single">--model</code>（配了的话），以及上文的静默看门狗都不受影响。见 <a href="https://docs.orbi.build/zh/providers">providers</a> 和 <a href="https://docs.orbi.build/zh/configuration">configuration</a>。</p>
-<h2>这些规则是怎么来的</h2>
+<h2 id="这些规则是怎么来的">这些规则是怎么来的</h2>
 <p>这页里的 <code class="post-code--single">--no-extensions</code> 来自一次事故：用户装的一个 Pi 包里带的扩展，让部分运行在启动时卡死。另一次事故之后，我们自己运营的每台 Orbi runner 都显式设好 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code>，并用 <code class="post-code--spaced">orbi doctor</code> 检查：有一台没设这两项的 runner，曾经悄悄回退到本地模型，什么都没报错。两件事的经过，以及无人值守跑 Pi 的其余经验，见<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%A4%E6%AC%A1%E4%BA%8B%E6%95%85">系列第一篇博文</a>。</p>
-<h2>系列文章</h2>
+<h2 id="系列文章">系列文章</h2>
 
 <ul class="series-list">
   <li><a href="/zh/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分</a> <time datetime="2026-10-05">2026-10-05</time></li>
   <li><a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">给 Orbi 找 harness（下）：回归防护值不值它的 token</a> <time datetime="2026-09-30">2026-09-30</time></li>
   <li><a href="/zh/blog/searching-for-orbis-harness/">给 Orbi 找 harness（上）：我们的评审漏掉了什么</a> <time datetime="2026-09-29">2026-09-29</time></li>
 </ul>
-<h2>试一试</h2>
+<h2 id="试一试">试一试</h2>
 <p>Orbi 在 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> 开源：装好 runner，指向你的仓库和你的模型就能跑。<a href="/zh/cloud/?ref=seo-pi-coding-agent">Orbi Cloud</a> 替你跑同一套 runner、同样的 Pi 会话。和自己手动驱动 coding agent 比有什么不同，见 <a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>。</p>
-<h2>更新记录</h2>
+<h2 id="更新记录">更新记录</h2>
 <ul>
 <li>2026-10-05：第一版。Orbi Cloud runner 上的 Pi 版本是 1.0.0。</li>
 </ul>
 
-    </article>
+      </article>
+    </div>
 
 <section class="related-links shell" aria-labelledby="related-links-title"><h2 id="related-links-title">相关对比</h2><ul><li><a href="/zh/compare/claude-code/">Orbi vs claude code</a></li><li><a href="/zh/compare/codex/">Orbi vs codex</a></li></ul></section>
   </main>
@@ -315,7 +397,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 
   <script src="/demo.js" defer></script>
 
-<script>(()=>{
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
   const endpoint="/cloud/e", start=Date.now();
   let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
   const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
