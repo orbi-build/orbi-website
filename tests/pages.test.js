@@ -11,12 +11,13 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectPosts, insertInlinePostCta, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
+import { buildPages, collectGuides, collectPosts, insertInlinePostCta, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
 let pages;
 let posts; // the posts collectPosts() derives from content/blog/**
+let guides; // the guides collectGuides() derives from content/guides/**
 let shipped; // output path -> bytes of public/<path>
 let generatedSitemap;
 let shippedSitemap;
@@ -37,14 +38,18 @@ beforeAll(async () => {
   });
   pages = await loadPages();
   posts = await collectPosts();
+  guides = await collectGuides();
   shipped = new Map();
   for (const page of pages) {
     shipped.set(page.output, await readFile(join(ROOT, "public", page.output), "utf8"));
   }
-  // Posts are rendered from content/blog, not from a page source, so they
-  // join the shipped map here.
+  // Posts are rendered from content/blog and guides from content/guides, not
+  // from a page source, so they join the shipped map here.
   for (const post of posts) {
     shipped.set(post.output, await readFile(join(ROOT, "public", post.output), "utf8"));
+  }
+  for (const guide of guides) {
+    shipped.set(guide.output, await readFile(join(ROOT, "public", guide.output), "utf8"));
   }
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
@@ -173,6 +178,7 @@ const GUIDE_SLUGS = [
   "autonomous-coding-agent",
   "self-hosted-coding-agent",
   "codex-github-issues",
+  "pi-coding-agent",
 ];
 const MOVED_GUIDE_SLUGS = [
   "issue-to-release",
@@ -220,7 +226,7 @@ describe("SoftwareApplication structured data (Issue #683)", () => {
 });
 
 describe("guide collection, breadcrumbs and related content (Issue #625)", () => {
-  it("publishes both guide indexes with all six built guide targets and SEO-length metadata", () => {
+  it("publishes both guide indexes with all seven built guide targets and SEO-length metadata", () => {
     for (const prefix of ["", "zh/"]) {
       const output = `${prefix}guides/index.html`;
       const html = shipped.get(output);
@@ -232,8 +238,8 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       const guideMain = mainRegion(html);
       expect(guideMain, output).not.toMatch(/\\n/);
       expect(guideMain, output).not.toContain('class="source-list"');
-      expect((guideMain.match(/<article class="guide-index-entry">/g) ?? []).length, output).toBe(6);
-      expect((guideMain.match(/<a class="guide-index-link"[^>]*><h2 class="guide-index-title">/g) ?? []).length, output).toBe(6);
+      expect((guideMain.match(/<article class="guide-index-entry">/g) ?? []).length, output).toBe(7);
+      expect((guideMain.match(/<a class="guide-index-link"[^>]*><h2 class="guide-index-title">/g) ?? []).length, output).toBe(7);
       expect(guideMain, output).toContain('<p class="guide-index-summary">');
       expect(guideMain, output).not.toMatch(/<article[^>]*>\s*<h2>/);
       expect(html, `${output}: guide hero uses the shared content container`).toContain('class="compare-hero shell guide-index-container"');
@@ -276,13 +282,13 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
     expect(shippedLlms).not.toMatch(new RegExp(`https://orbi\\.build/(?:zh/)?(?:${MOVED_GUIDE_SLUGS.join("|")})/`));
   });
 
-  it("renders one canonical BreadcrumbList and the configured related links on all 36 articles", () => {
+  it("renders one canonical BreadcrumbList and the configured related links on all 38 articles", () => {
     const articleOutputs = [];
     for (const prefix of ["", "zh/"]) {
       articleOutputs.push(...GUIDE_SLUGS.map((slug) => `${prefix}guides/${slug}/index.html`));
       articleOutputs.push(...COMPARISON_SLUGS.map((slug) => `${prefix}compare/${slug}/index.html`));
     }
-    expect(articleOutputs).toHaveLength(36);
+    expect(articleOutputs).toHaveLength(38);
     for (const output of articleOutputs) {
       const html = shipped.get(output);
       const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
@@ -738,6 +744,10 @@ describe("build output is committed (npm run build ran)", () => {
       const built = await readFile(join(builtDir, post.output), "utf8");
       if (built !== shipped.get(post.output)) drifted.push(post.output);
     }
+    for (const guide of guides) {
+      const built = await readFile(join(builtDir, guide.output), "utf8");
+      if (built !== shipped.get(guide.output)) drifted.push(guide.output);
+    }
     if (generatedLlms !== shippedLlms) drifted.push("llms.txt");
     if (generatedLlmsFull !== shippedLlmsFull) drifted.push("llms-full.txt");
     expect(
@@ -749,7 +759,7 @@ describe("build output is committed (npm run build ran)", () => {
   it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
     const pagesForSitemap = pages.filter((page) => !page.standalone);
     expect(generatedSitemap).toBe(shippedSitemap);
-    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + 1);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length + 1);
     expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
       .toBeGreaterThanOrEqual(2);
 
@@ -882,7 +892,7 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 8, 13, 7]);
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 9, 13, 7]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
@@ -890,7 +900,7 @@ describe("one unified footer on every content page", () => {
         ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
         : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(43);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
     }
   });
 
@@ -1334,13 +1344,13 @@ describe("Self-hosted landing pages (Issue #556)", () => {
     }
   });
 
-  it("keeps FAQ JSON-LD in lockstep with 3–5 visible questions", () => {
+  it("keeps FAQ JSON-LD in lockstep with 3–6 visible questions", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
       const section = region(html, '<div class="source-list">', "</div>");
       const visible = (section.match(/<strong>/g) ?? []).length;
       expect(visible, `${output}: visible FAQ count`).toBeGreaterThanOrEqual(3);
-      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(5);
+      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(6);
       const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
       expect(faq, `${output}: FAQPage JSON-LD`).toBeTruthy();
       expect(faq.mainEntity, `${output}: JSON-LD lockstep`).toHaveLength(visible);

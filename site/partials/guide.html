@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="{{LANG_ATTR}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+  <link rel="alternate" hreflang="en" href="{{HREFLANG_EN}}">
+  <link rel="alternate" hreflang="zh-CN" href="{{HREFLANG_ZH}}">
+  <link rel="alternate" hreflang="x-default" href="{{HREFLANG_XDEFAULT}}">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Orbi">
+  <meta property="og:locale" content="{{OG_LOCALE}}">
+  <meta property="og:locale:alternate" content="{{OG_LOCALE_ALT}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{TITLE}}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@xqliu">
+  <meta name="twitter:creator" content="@xqliu">
+  <meta name="twitter:title" content="{{TITLE}}">
+  <meta name="twitter:description" content="{{DESCRIPTION}}">
+  <meta name="twitter:image" content="https://orbi.build/img/og.png">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Guide-only body layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .guide-body { max-width: 52rem; margin: 0 auto; padding: 12px 24px 60px; }
+    .guide-body h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .guide-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .guide-body p { margin: 14px 0; }
+    .guide-body ul, .guide-body ol { margin: 14px 0; padding-left: 22px; }
+    .guide-body li { margin: 6px 0; }
+    .guide-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .guide-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .guide-body code.post-code--spaced { white-space: normal; }
+    .guide-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .guide-body pre code, .guide-body pre code.post-code--spaced, .guide-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .guide-body table { width: 100%; border-collapse: collapse; }
+    .guide-body th, .guide-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .guide-body th { background: var(--paper-2); }
+    .guide-body .post-table-scroll { overflow-x: auto; }
+    .guide-body .series-list { margin: 14px 0; padding-left: 22px; }
+    .guide-body .series-list time { color: var(--ink-soft); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">{{SKIP_LABEL}}</a>
+
+{{NAV}}
+
+  <main id="main-content">
+    <div class="night">{{BREADCRUMB}}
+      <section class="compare-hero shell" aria-labelledby="guide-title">
+        <p class="eyebrow">{{EYEBROW}}</p>
+        <h1 id="guide-title">{{HEADLINE}}</h1>
+        <p class="hero-lede">{{SUMMARY}}</p>
+      </section>
+    </div>
+
+    <article class="guide-body">
+{{BODY}}
+    </article>
+
+{{RELATED_LINKS}}
+  </main>
+
+{{FOOTER}}
+
+  <script src="/demo.js" defer></script>
+
+</body>
+</html>
