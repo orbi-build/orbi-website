@@ -3,7 +3,7 @@
 // shipped bytes in public/ (the files the Worker deploys) and drive the real
 // collectors — never a re-implementation of the pipeline.
 
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -142,5 +142,117 @@ describe("guide front matter is validated (Issue #826)", () => {
     fixtureDirs.push(guidesDir, outDir);
     await writeFile(join(guidesDir, "broken.md"), "---\ntitle: Broken\nlang: en\nmirror: broken\nupdated: 2026-10-05\n---\n\nBody.\n");
     await expect(buildPages(outDir, { guidesDir })).rejects.toThrow(/content\/guides\/broken\.md/);
+  });
+});
+
+// Issue #835: a Markdown guide reuses the blog's On this page TOC — the same
+// heading ids, the same five-heading threshold, the same layout — so a reader
+// can jump to a layer (the merge gate, the silent-session watchdog) directly.
+describe("guide On this page TOC (Issue #835)", () => {
+  const guideBody = (html) => html.match(/<article class="guide-body">([\s\S]*?)<\/article>/)?.[1] ?? "";
+
+  it("gives every Markdown H2/H3 a unique id and a TOC entry that points at it", async () => {
+    for (const page of PAGES) {
+      const html = await shipped(page.output);
+      const body = guideBody(html);
+      const headings = [...body.matchAll(/<h([23]) id="([^"]+)">[\s\S]*?<\/h\1>/g)];
+      const ids = headings.map((match) => match[2]);
+      expect(ids.length, `${page.output}: guide body has enough headings for a TOC`).toBeGreaterThanOrEqual(5);
+      expect(ids, `${page.output}: every body H2/H3 carries an id`).toHaveLength((body.match(/<h[23]\b/g) ?? []).length);
+      expect(new Set(ids).size, `${page.output}: ids are unique`).toBe(ids.length);
+      if (page.lang === "zh") {
+        expect(ids.some((id) => /[\u4e00-\u9fff]/u.test(id)), `${page.output}: Chinese heading id`).toBe(true);
+      }
+
+      const nav = html.match(/<nav class="post-toc"[\s\S]*?<\/nav>/)?.[0] ?? "";
+      const inline = html.match(/<details class="post-toc-inline">[\s\S]*?<\/details>/)?.[0] ?? "";
+      const title = page.lang === "zh" ? "本页目录" : "On this page";
+      const h2Count = headings.filter((match) => match[1] === "2").length;
+
+      expect(nav, `${page.output}: desktop TOC`).not.toBe("");
+      expect(nav, `${page.output}: localized desktop label`).toContain(`aria-label="${title}"`);
+      expect(nav, `${page.output}: localized desktop title`).toContain(`<h2>${title}</h2>`);
+      expect(inline, `${page.output}: inline TOC`).not.toBe("");
+      expect(inline, `${page.output}: localized inline summary`).toContain(
+        `<summary>${title} · ${h2Count} ${page.lang === "zh" ? "节" : "sections"}</summary>`,
+      );
+
+      const navLinks = [...nav.matchAll(/class="post-toc-link" href="#([^"]+)"/g)].map((match) => match[1]);
+      expect(navLinks, `${page.output}: one desktop entry per body heading, in document order`).toEqual(ids);
+      expect((inline.match(/class="post-toc-link"/g) ?? []).length, `${page.output}: inline entry count`).toBe(ids.length);
+      for (const id of navLinks) {
+        expect(body, `${page.output}: href #${id} resolves to a body id`).toContain(`id="${id}"`);
+      }
+      expect(html, `${page.output}: scroll-highlight script`).toContain("post_toc_observer_failed");
+    }
+  });
+
+  it("keeps the blog's sticky desktop column and the narrow-screen inline TOC layout", async () => {
+    const html = await shipped(PAGES[0].output);
+    const style = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
+    expect(style).toMatch(/@media \(min-width: 1200px\)[\s\S]*?\.guide-grid \{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 52rem\) 200px;[^}]*column-gap: 56px;/);
+    expect(style).toMatch(/@media \(min-width: 1200px\)[\s\S]*?\.post-toc \{[^}]*grid-column: 2;[^}]*grid-row: 1;/);
+    expect(style).toMatch(/@media \(max-width: 1199px\)[\s\S]*?\.post-toc \{[^}]*display: none;/);
+    expect(style).toMatch(/@media \(max-width: 1199px\)[\s\S]*?\.post-toc-inline \{[^}]*display: block;/);
+    expect(style).toMatch(/\.post-toc \{[^}]*position: sticky;[^}]*top: 24px;/);
+  });
+
+  it("omits the TOC when a guide has fewer than five headings, like a post", async () => {
+    const guidesDir = await mkdtemp(join(tmpdir(), "orbi-guides-"));
+    const contentDir = await mkdtemp(join(tmpdir(), "orbi-blog-"));
+    const outDir = await mkdtemp(join(tmpdir(), "orbi-guides-build-"));
+    try {
+      const source = (title, lang, mirror) => `---
+title: ${title}
+summary: A short fixture guide.
+lang: ${lang}
+mirror: ${mirror}
+updated: 2026-10-05
+---
+
+## One
+
+First.
+
+## Two
+
+Second.
+
+### Three
+
+Third.
+`;
+      const postSource = (title, lang) => `---
+title: ${title}
+date: 2026-10-01
+summary: A fixture post next to the fixture guide.
+lang: ${lang}
+author: Orbi
+image: /img/fixture.png
+---
+
+Body of ${title}.
+`;
+      await writeFile(join(guidesDir, "tiny.md"), source("Tiny", "en", "tiny"));
+      await mkdir(join(guidesDir, "zh"), { recursive: true });
+      await writeFile(join(guidesDir, "zh", "tiny.md"), source("Tiny ZH", "zh", "tiny"));
+      // collectPosts requires at least one post; a non-series pair keeps the
+      // fixture focused on the guide without pulling the series check in.
+      await mkdir(join(contentDir, "zh"), { recursive: true });
+      await writeFile(join(contentDir, "fixture.md"), postSource("Fixture", "en"));
+      await writeFile(join(contentDir, "zh", "fixture.md"), postSource("Fixture ZH", "zh"));
+
+      await buildPages(outDir, { guidesDir, contentDir });
+
+      const html = await readFile(join(outDir, "guides", "tiny", "index.html"), "utf8");
+      const body = guideBody(html);
+      expect((body.match(/<h[23] id="/g) ?? []).length, "every fixture heading still gets its id").toBe(3);
+      expect(html, "no desktop TOC below the threshold").not.toMatch(/<nav class="post-toc"/);
+      expect(html, "no inline TOC below the threshold").not.toMatch(/<details class="post-toc-inline"/);
+      expect(html, "no TOC entry links below the threshold").not.toContain(`class="post-toc-link"`);
+      expect(html, "no scroll-highlight script below the threshold").not.toContain("post_toc_observer_failed");
+    } finally {
+      for (const dir of [guidesDir, contentDir, outDir]) await rm(dir, { recursive: true, force: true });
+    }
   });
 });
