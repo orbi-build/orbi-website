@@ -19,7 +19,7 @@ This is the first post in a series about Orbi and Pi. Instead of describing the 
 The issue is [orbi#1554](https://github.com/orbi-build/orbi/issues/1554), and it happens to be about Pi itself. Orbi writes a per-run copy of Pi's `models.json` into each worktree. Pi 0.84.3 couldn't read `$VAR` references in that file, so Orbi resolved API keys and wrote them out in plain text. Pi 1.0 interpolates `$NAME` and `${NAME}` itself, so the right fix was to keep the reference and stop writing the key. I filed it in the middle of the night, labelled it `ai-ready` and went to bed.
 
 <figure class="post-media">
-<img src="/img/diagrams/orbi-pi-flow.svg" alt="One issue through Orbi and Pi, in three lanes. GitHub: the issue is labelled ai-ready, CI checks run, and the issue ends as ai-merged. Orbi runner: claim with a worktree from a frozen base, push and open the PR, and a merge gate that checks base green, CI and the verdict. Pi sessions: an implement session (plan.md, code, tests, commit) and a review session that reviews, fixes and ends with REVIEW_VERDICT. A red dashed loop sends red CI back to a fix session, and a failed gate leads to ai-blocked, where a person decides." width="1050" height="470">
+<img src="/img/diagrams/orbi-pi-flow.svg" alt="One issue through Orbi and Pi, in three lanes. GitHub: the issue is labelled ai-ready, CI checks run, and the issue ends as ai-merged. Orbi runner: claim with a worktree from a frozen base, push and open the PR, and a merge gate that checks base green, CI and the verdict. Pi sessions: an implement session (plan.md, code, tests, commit) and a review session that reviews, fixes and ends with REVIEW_VERDICT. A red dashed loop sends red CI to a new review session that fixes it, and a failed gate leads to ai-blocked, where a person decides." width="1050" height="470">
 </figure>
 
 Here is what happened, from the issue's own timeline (UTC+8):
@@ -29,13 +29,13 @@ Here is what happened, from the issue's own timeline (UTC+8):
 | 03:21 | Issue filed and labelled `ai-ready`. |
 | 03:31 | The runner claimed it and started the first Pi session (run `598a0fb3`). |
 | 03:42 | The implementer committed the fix, `fix(pi): keep apiKey env-var references verbatim in per-run models.json`. The runner pushed and opened [PR #1555](https://github.com/orbi-build/orbi/pull/1555). |
-| 03:47, 04:08 | CI failed twice with the same fingerprint, in a docs test that was failing on `main` too. Each time the runner sent the PR back to a fix session. |
+| 03:47, 04:08 | CI failed twice with the same fingerprint, in a docs test that was failing on `main` too. Each time the runner started a new review session, which reads the CI log first and then fixes (the second CI run was on a docs commit that session pushed). |
 | 04:22 | The review session stopped at the delivery gate: `main` itself was already red on a check called `macos-compatibility`. The issue went to `ai-blocked`. |
 | 12:06 | A different issue, [orbi#1552](https://github.com/orbi-build/orbi/issues/1552), also delivered by Orbi, fixed the failing docs test on `main`. |
 | 13:39 | I moved #1554 back to the queue, and the branch picked up the new `main`. |
 | 13:58 | Review passed with no findings, and the runner merged the PR. |
 
-The comment Orbi keeps editing on the issue shows where the run is. Most of what it says comes from Pi's session file: which role is running, when Pi last produced output, the session id, and the phase. `phase: codemode` means the session was in a tool call through Pi 1.0's Codemode, where the model writes a short script that composes several tool calls in one step.
+The comment Orbi keeps editing on the issue shows where the run is. The runner fills in the role; the rest comes from Pi's session file: when Pi last produced output, the session id, and the phase. `phase: codemode` means the session was in a tool call through Pi 1.0's Codemode, where the model writes a short script that composes several tool calls in one step.
 
 <figure class="post-media">
 <img src="/img/blog-orbi-on-pi-progress.webp" alt="Orbi's progress comment on orbi#1554: PR #1555 merged with review_rounds=1; role: review; tests: 4034 passed, 11 skipped in 7 minutes 38 seconds; run details with run_id 598a0fb3, phase codemode, elapsed 16m 57s, the branch name and the Pi session id." width="1200" height="731">
@@ -49,7 +49,7 @@ When the gate stopped, it didn't guess. It posted why and left the decision to a
 <figcaption>The gate's message: the PR was fine, but the base it would merge into was red.</figcaption>
 </figure>
 
-Orbi Cloud's usage records add up the whole delivery: 4 Pi sessions, 3 of them resumes, 51 minutes of Pi runtime, 164 model requests, 108 thousand output tokens and 8.4 million cache-read tokens, all on `deepseek-flash`. Most of the wall-clock time between 04:22 and 13:39 was the issue waiting for me, not Pi working.
+Orbi Cloud's usage records add up the whole delivery: 4 Pi sessions (1 implementer, 3 reviewer), 51 minutes of Pi runtime, 164 model requests, 108 thousand output tokens and 8.4 million cache-read tokens, all on `deepseek-flash`. Most of the wall-clock time between 04:22 and 13:39 was the issue waiting for me, not Pi working.
 
 ## How Orbi calls Pi
 
@@ -69,7 +69,7 @@ There are three roles, and each gets its own flags:
 - **Reviewer.** A separate session on the pull request. Orbi doesn't pass it the `tdd-dev` and `review-fix-loop` skills, because its job is to review one diff and fix it, not to start another delivery. It can use a different model (`review_pi_provider` and `review_pi_model`), and it has to end with a single `REVIEW_VERDICT {...}` JSON line that Orbi parses.
 - **Ticket.** Answers on an issue without changing anything. It runs with `--no-tools`, Orbi passes it none of its extension flags, and its output is the text Orbi posts.
 
-`--session-dir` turned out to matter more than we expected. Each run gets its own directory, and Pi writes the session there as JSONL, one record per message and tool result. Orbi tails that file to post live progress on the issue ([orbi#24](https://github.com/orbi-build/orbi/issues/24)), and when a run fails it attaches the last 20 records to the failure comment. These are the last records of #1554's blocked review session, as Orbi summarised them:
+`--session-dir` turned out to matter more than we expected. Each run gets its own directory, and Pi writes the session there as JSONL, one record per message and tool result. Orbi tails that file to post live progress on the issue ([orbi#24](https://github.com/orbi-build/orbi/issues/24)), and when a run fails it attaches the last 20 records to the failure comment. Here are four of the last 20 records Orbi attached when #1554's review session was blocked:
 
 ```text
 2026-10-04T20:13:35.691Z message role=assistant content=thinking,toolCall:codemode
@@ -82,7 +82,7 @@ On Orbi Cloud, a thin wrapper around the real `pi` binary rereads the same files
 
 ## What Pi sessions cost, across 186 deliveries
 
-Those usage records cover 186 deliveries harvested so far, all on `deepseek-flash`. Across them there were 399 Pi sessions, 213 resumes and 24,285 model requests. Per delivery:
+As of 14:00 on 5 October (UTC+8), those usage records covered 186 deliveries, all on `deepseek-flash`. Across them there were 399 Pi sessions and 24,285 model requests. Per delivery:
 
 | | Median | 90th percentile |
 |---|---|---|
@@ -134,7 +134,7 @@ On 1 October, Earendil and the Pi community shipped Pi 1.0, and with it [Pi Dura
 
 ## Two incidents that shaped how we run Pi
 
-**A plugin that hung before the first request.** On 4 September, runs started hanging before Pi ever sent a model request. Run after run that evening, on z.ai and on Gemini, sat for 15 minutes until the idle timer killed it and marked the issue `ai-blocked`. The hung `pi` process was alive but idle (2 seconds of CPU in two and a half minutes), had no TCP connection to any model API, and its only socket was the user's D-Bus. Its session directory was empty: Pi hadn't even started the session file. The same configuration run by hand from a shell succeeded more than 20 times in a row; only runs started by the systemd user service hung. The cause was a user-level Pi package, `pi-mcp-adapter`, which initialised the system keyring over D-Bus at startup, and under systemd that call sometimes never returned. With the package removed from `~/.pi/agent/settings.json`, the same run got its first model response in 15 seconds ([diagnosis in orbi#311](https://github.com/orbi-build/orbi/issues/311)). The permanent fix was to stop inheriting the user's plugins at all: implementer and reviewer sessions now start with `--no-extensions` and load only the extensions declared in Orbi's config ([orbi#249](https://github.com/orbi-build/orbi/issues/249)).
+**A plugin that hung before the first request.** On 4 September, runs started hanging before Pi ever sent a model request. Run after run that evening, on z.ai and on Gemini, sat for 15 minutes until the idle timer killed it and marked the issue `ai-blocked`. The hung `pi` process was alive but idle (2 seconds of CPU in two and a half minutes), had no TCP connection to any model API, and its only socket was the user's D-Bus. Its session directory was empty: Pi hadn't even started the session file. The same configuration run by hand from a shell succeeded more than 20 times in a row; only runs started by the systemd user service hung. The cause was a user-level Pi package, `pi-mcp-adapter`, which initialised the system keyring over D-Bus at startup, and under systemd that call sometimes never returned. With the package removed from `~/.pi/agent/settings.json`, the same run got its first model response in 15 seconds ([diagnosis in orbi#311](https://github.com/orbi-build/orbi/issues/311)). The permanent fix was to stop the delivery sessions inheriting the user's plugins: implementer and reviewer sessions now start with `--no-extensions` and load only the extensions declared in Orbi's config ([orbi#249](https://github.com/orbi-build/orbi/issues/249)).
 
 **A runner on the wrong model.** On 20 September we set up a second runner meant to use a GPT model through Pi. The config we wrote set the repository but none of the `pi_provider` or `pi_model` keys, so Orbi passed no `--provider` or `--model`, and Pi used the `defaultModel` from the account's settings. The runner's journal showed `provider=LLAMA_INTRANET model=qwen3.8:27b`, a local model, on a runner we had described as a GPT runner. Nothing failed, which is the problem. We now check the provider and model a runner will launch with (`orbi doctor` prints them) instead of reading the config and assuming.
 
