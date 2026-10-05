@@ -100,7 +100,6 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
       "/guides/autonomous-coding-agent/",
       "/guides/self-hosted-coding-agent/",
       "/guides/codex-github-issues/",
-      "/guides/pi-coding-agent/",
       "https://aiready.sh/",
     ];
     const zhGuides = [
@@ -111,7 +110,6 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
       "/zh/guides/autonomous-coding-agent/",
       "/zh/guides/self-hosted-coding-agent/",
       "/zh/guides/codex-github-issues/",
-      "/zh/guides/pi-coding-agent/",
       "https://aiready.sh/zh/",
     ];
     const drift = [];
