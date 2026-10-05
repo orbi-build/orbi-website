@@ -240,7 +240,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
-    <lastmod>2026-10-01</lastmod>
+    <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -501,7 +501,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
-    <lastmod>2026-10-01</lastmod>
+    <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -790,6 +790,24 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/"/>
     <lastmod>2026-09-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/guides/pi-coding-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/pi-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/pi-coding-agent/"/>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/guides/pi-coding-agent/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/pi-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/pi-coding-agent/"/>
+    <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
