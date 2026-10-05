@@ -974,14 +974,36 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  // Issue #805: the three directory badges take their own bottom row, so they
-  // live in one wrapper that is the last child of footer-friends, after the
-  // text friends (the Friends label + the two text links).
-  it("keeps the three directory badges in their own wrapper after the text friends (Issue #805)", () => {
+  // Issue #832: toolradar.com grants the dofollow backlink — and the verified
+  // vendor mark — once the site carries this badge, so the maintainer-supplied
+  // embed is copied verbatim after the AI Agents Listing badge. Only width and
+  // height differ from the original: 280x80 scaled to 147x42 so the badge
+  // matches the 42px height of the other three. The link must stay crawlable
+  // (no nofollow) or Toolradar never verifies it.
+  it("carries the Toolradar badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
+    const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=dark&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
+    const listing = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Toolradar badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: Toolradar badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: Toolradar badge must follow AI Agents Listing`)
+        .toBeGreaterThan(footer.indexOf(listing));
+      expect(footer, `${page.output}: the Toolradar backlink must be crawlable`).not.toContain("nofollow");
+    }
+  });
+
+  // Issue #805: the directory badges take their own bottom row, so they live
+  // in one wrapper that is the last child of footer-friends, after the text
+  // friends (the Friends label + the two text links). Issue #832 appends the
+  // Toolradar badge to that row.
+  it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
       "https://aiagentsdirectory.com/agent/orbi",
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+      "https://toolradar.com/tools/orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
