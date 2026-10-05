@@ -30,6 +30,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGES_DIR = join(ROOT, "site", "pages");
 const PARTIALS_DIR = join(ROOT, "site", "partials");
 const CONTENT_DIR = join(ROOT, "content", "blog");
+const GUIDES_DIR = join(ROOT, "content", "guides");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
 
@@ -130,6 +131,12 @@ const GUIDES = [
     "/zh/guides/codex-github-issues/",
     "Codex on GitHub Issues",
     "Codex 处理 GitHub Issue",
+  ],
+  [
+    "/guides/pi-coding-agent/",
+    "/zh/guides/pi-coding-agent/",
+    "Orbi on the Pi coding agent",
+    "Orbi 怎么搭在 Pi 上",
   ],
   ["https://aiready.sh/", "https://aiready.sh/zh/", "ai-ready: 12 factors", "ai-ready 十二要素"],
 ];
@@ -848,6 +855,9 @@ export function postFromSource(displayName, source) {
     image: fields.image,
     video,
     related,
+    // Optional series membership (Issue #826): the guide page rendering
+    // <!--@series:<name>--> lists these posts and each post links back to it.
+    series: fields.series,
     html,
     headings,
   };
@@ -1015,6 +1025,161 @@ const POST_LANG = {
   },
 };
 
+// --- Markdown guides: files under content/guides (Issue #826) ---
+
+// One guide file -> one validated record. The five front-matter fields are
+// mandatory and the two language files must name each other, exactly like a
+// paired blog post (Issue #214). The raw body is kept for render time, when
+// the <!--@series:name--> markers become the generated post list.
+export function guideFromSource(displayName, source) {
+  const label = `content/guides/${displayName}`;
+  const lang = displayName.startsWith("zh/") ? "zh" : "en";
+  const { fields, body } = parseFrontMatter(label, source);
+  for (const field of ["title", "summary", "lang", "mirror", "updated"]) {
+    requiredField(label, fields, field);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.updated)) {
+    throw new Error(`${label}: front matter needs "updated" as YYYY-MM-DD, got "${fields.updated}"`);
+  }
+  if (fields.lang !== lang) {
+    throw new Error(`${label}: front matter says lang: ${fields.lang}, but its directory fixes lang: ${lang}`);
+  }
+  const slug = displayName.slice(displayName.lastIndexOf("/") + 1).replace(/\.md$/, "");
+  const output = lang === "en" ? `guides/${slug}/index.html` : `zh/guides/${slug}/index.html`;
+  return {
+    slug,
+    lang,
+    source: displayName,
+    output,
+    mirror: fields.mirror,
+    href: pathToHref(output),
+    title: fields.title,
+    summary: fields.summary,
+    updated: fields.updated,
+    series: [...body.matchAll(/<!--@series:([A-Za-z0-9_-]+)-->/g)].map((match) => match[1]),
+    rawBody: body,
+  };
+}
+
+// Every guide in the content directory, validated and paired: a `mirror:` that
+// names a missing file, or one the named file does not name back, fails the
+// build naming both files. No silent skip.
+export async function collectGuides(guidesDir = GUIDES_DIR) {
+  const readDir = async (rel) => {
+    try {
+      return (await readdir(join(guidesDir, rel), { withFileTypes: true }))
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+        .map((entry) => entry.name);
+    } catch {
+      return [];
+    }
+  };
+  const guides = [];
+  for (const [dir, names] of [[".", await readDir(".")], ["zh", await readDir("zh")]]) {
+    for (const name of names) {
+      const displayName = dir === "." ? name : `${dir}/${name}`;
+      guides.push(guideFromSource(displayName, await readFile(join(guidesDir, dir, name), "utf8")));
+    }
+  }
+  const label = (guide) => `content/guides/${guide.source}`;
+  const otherLang = (guide) => (guide.lang === "en" ? "zh" : "en");
+  const byKey = new Map(guides.map((guide) => [`${guide.lang}/${guide.slug}`, guide]));
+  for (const guide of guides) {
+    const counterpart = byKey.get(`${otherLang(guide)}/${guide.mirror}`);
+    if (!counterpart) {
+      throw new Error(`${label(guide)}: mirror: ${guide.mirror} names a file that does not exist: content/guides/${otherLang(guide)}/${guide.mirror}.md (Issue #826)`);
+    }
+    if (counterpart.mirror !== guide.slug) {
+      throw new Error(`${label(guide)} names ${label(counterpart)} as its mirror, but ${label(counterpart)} names ${counterpart.mirror} (Issue #826)`);
+    }
+    guide.mirrorOutput = counterpart.output;
+  }
+  return guides.sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+// The generated series index: every post whose front matter carries
+// `series: <name>`, in the guide's own language, newest first (collectPosts
+// already sorts). Each entry is the post title linked to the post plus its date.
+function renderSeriesIndex(series, lang, posts) {
+  const items = posts
+    .filter((post) => post.series === series && post.lang === lang)
+    .map((post) => `  <li><a href="${post.href}">${escAttr(post.headline)}</a> <time datetime="${post.date}">${post.date}</time></li>`)
+    .join("\n");
+  return `<ul class="series-list">\n${items}\n</ul>`;
+}
+
+// The guide body: CommonMark except the series markers, which become their
+// generated list; every other HTML comment is dropped before marked sees it.
+// The headings are then passed through the blog's renderPostHeadings
+// (Issue #835), so a guide gets the same Unicode-safe ids and TOC data as a
+// post — the page reuses the blog TOC instead of growing a second one.
+function renderGuideBody(guide, posts) {
+  const html = guide.rawBody
+    .split(/(<!--@series:[A-Za-z0-9_-]+-->)/)
+    .map((chunk) => {
+      const marker = chunk.match(/^<!--@series:([A-Za-z0-9_-]+)-->$/);
+      if (marker) return renderSeriesIndex(marker[1], guide.lang, posts);
+      return marked.parse(chunk.replace(/<!--[\s\S]*?-->/g, ""));
+    })
+    .join("\n");
+  return renderPostHeadings(
+    classifyInlineCode(addTableDataLabels(wrapRenderedTables(html))),
+    `content/guides/${guide.source}`,
+  );
+}
+
+// A guide page: the shared content-page chrome (head meta, nav, breadcrumb,
+// footer, related links) around the rendered Markdown body, matching the
+// hand-written guide pages the guide template mirrors.
+function renderGuide(guide, template, posts, guidesData) {
+  const page = {
+    lang: guide.lang,
+    output: guide.output,
+    mirror: guide.mirrorOutput,
+    nav: { ...POST_LANG[guide.lang].nav, langSwitchHref: pathToHref(guide.mirrorOutput) },
+  };
+  const breadcrumb = renderBreadcrumb({
+    output: guide.output,
+    lang: guide.lang,
+    source: `content/guides/${guide.source}`,
+    body: `<h1>${guide.title}</h1>`,
+  });
+  const breadcrumbJson = breadcrumb.match(/<script[\s\S]*?<\/script>/)?.[0] ?? "";
+  const breadcrumbNav = breadcrumb.replace(breadcrumbJson, "");
+  const url = `https://orbi.build${guide.href}`;
+  const mirrorHref = `https://orbi.build${pathToHref(guide.mirrorOutput)}`;
+  // The guide reuses the blog TOC (Issue #835): same five-heading threshold,
+  // same localized title, same layout and scroll-highlight script.
+  const { html: bodyHtml, headings } = renderGuideBody(guide, posts);
+  const toc = renderPostToc({ headings, lang: guide.lang });
+  const tocScript = headings.length >= 5 ? TOC_HIGHLIGHT_SCRIPT : "";
+  const html = fill(template, {
+    LANG_ATTR: guide.lang === "zh" ? "zh-CN" : "en",
+    TITLE: escAttr(guide.title),
+    DESCRIPTION: escAttr(guide.summary),
+    CANONICAL: url,
+    HREFLANG_EN: guide.lang === "en" ? url : mirrorHref,
+    HREFLANG_ZH: guide.lang === "zh" ? url : mirrorHref,
+    HREFLANG_XDEFAULT: guide.lang === "en" ? url : mirrorHref,
+    OG_LOCALE: guide.lang === "zh" ? "zh_CN" : "en_US",
+    OG_LOCALE_ALT: guide.lang === "zh" ? "en_US" : "zh_CN",
+    SKIP_LABEL: guide.lang === "zh" ? "跳到正文" : "Skip to content",
+    EYEBROW: guide.lang === "zh" ? "指南" : "Guide",
+    NAV: toLayout(renderNav(page), "pretty"),
+    BREADCRUMB: breadcrumbNav,
+    HEADLINE: escAttr(guide.title),
+    SUMMARY: escAttr(guide.summary),
+    TOC: toc.desktop,
+    INLINE_TOC: toc.inline,
+    BODY: bodyHtml,
+    RELATED_LINKS: renderRelated(page, guidesData),
+    FOOTER: toLayout(renderFooter(page), "pretty"),
+  });
+  return html
+    .replace("</head>", `${breadcrumbJson}</head>`)
+    .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
+}
+
 // A post's page: the rendered CommonMark body inside the post template, with
 // the shared nav and footer rendered exactly as for site/pages/**.
 function renderSubscribe(lang) {
@@ -1040,10 +1205,20 @@ export function insertInlinePostCta(html, cta) {
   return `${html.slice(0, end)}${cta}${html.slice(end)}`;
 }
 
-function renderPost(post, template) {
+// The On this page TOC's scroll-highlight, shared by blog posts and guides:
+// a guide TOC is the blog TOC (Issue #835). It marks the link whose heading is
+// the last one above 40% of the viewport.
+const TOC_HIGHLIGHT_SCRIPT = `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>`;
+
+// `seriesGuide` is the same-language guide page that renders this post's
+// series index; when set, the post carries a backlink to it (Issue #826).
+function renderPost(post, template, seriesGuide = null) {
   const t = POST_LANG[post.lang];
   const toc = renderPostToc(post);
-  const tocScript = post.headings.length >= 5 ? `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>` : "";
+  const seriesLink = seriesGuide
+    ? `          <p class="post-series">${post.lang === "zh" ? "系列：" : "Part of: "}<a href="${seriesGuide.href}">${escAttr(seriesGuide.title)}</a></p>`
+    : "";
+  const tocScript = post.headings.length >= 5 ? TOC_HIGHLIGHT_SCRIPT : "";
   const page = {
     lang: post.lang,
     output: post.output,
@@ -1089,6 +1264,7 @@ function renderPost(post, template) {
     SUMMARY: escAttr(post.summary),
     POST_TOC: toc.desktop,
     INLINE_TOC: toc.inline,
+    SERIES_LINK: seriesLink,
     RELATED_MARKER: "<!--orbi:related-posts-->",
     FOOTER: toLayout(renderFooter(page), "pretty"),
   }).replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
@@ -1153,7 +1329,7 @@ export function renderLlms(source, posts) {
   return source.replace(marker, () => list);
 }
 
-function renderSitemap(pages, posts = [], contentDir = CONTENT_DIR) {
+function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR } = {}) {
   const urls = pages.filter(({ page }) => !page.standalone).map(({ page, path }) => {
     const href = pathToHref(page.output);
     const mirror = pathToHref(page.mirror);
@@ -1177,6 +1353,21 @@ function renderSitemap(pages, posts = [], contentDir = CONTENT_DIR) {
     }
     const mirror = pathToHref(post.mirrorOutput);
     urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>${tail}`);
+  }
+  // Guides (Issue #826): always paired, so every entry carries the three
+  // hreflang alternates. The lastmod is the newer of the guide md's own commit
+  // and every series post the page's generated index lists: a new series post
+  // changes the page even though the guide md itself did not move.
+  for (const guide of guides) {
+    const base = "https://orbi.build";
+    const href = guide.href;
+    const mirror = pathToHref(guide.mirrorOutput);
+    const seriesPosts = posts.filter((post) => guide.series.includes(post.series));
+    const lastmod = [
+      lastCommitDate(join(guidesDir, guide.source)),
+      ...seriesPosts.map((post) => lastCommitDate(join(contentDir, post.source))),
+    ].sort().at(-1);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${guide.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   }
   urls.push(`  <url>\n    <loc>https://orbi.build/compare/matrix.csv</loc>\n    <lastmod>${lastCommitDate(join(ROOT, "site", "pages", "compare", "index.html"))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
@@ -1229,14 +1420,26 @@ function renderLlmsFull(template, renderedPages, matrixCsv) {
   return output.replace("<!--@comparison-matrix-->", matrixCsv.trim()).trimEnd() + "\n";
 }
 
-export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
+export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
   SUBSCRIBE_PARTIAL = await readFile(join(PARTIALS_DIR, "subscribe.html"), "utf8");
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
+  const GUIDE_TEMPLATE = await readFile(join(PARTIALS_DIR, "guide.html"), "utf8");
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
+  const guides = await collectGuides(guidesDir);
   const guidesData = JSON.parse(await readFile(GUIDES_DATA_PATH, "utf8"));
+  // Issue #826: a post that declares a series must have a same-language guide
+  // page rendering that series; otherwise its required backlink would 404.
+  const guideBySeries = new Map();
+  for (const guide of guides) {
+    for (const series of guide.series) guideBySeries.set(`${guide.lang}/${series}`, guide);
+  }
+  for (const post of posts) {
+    if (!post.series || guideBySeries.has(`${post.lang}/${post.series}`)) continue;
+    throw new Error(`content/blog/${post.source}: series: ${post.series} has no guide page rendering <!--@series:${post.series}--> (Issue #826)`);
+  }
   // Issue #226: the consent gate runs here, once, before anything renders —
   // a quote without recorded consent fails the build even if no page carried
   // the section marker.
@@ -1312,11 +1515,17 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
   for (const post of posts) {
     const out = join(outDir, post.output);
     await mkdir(dirname(out), { recursive: true });
-    await writeFile(out, renderPost(post, POST_TEMPLATE));
+    const seriesGuide = post.series ? guideBySeries.get(`${post.lang}/${post.series}`) : null;
+    await writeFile(out, renderPost(post, POST_TEMPLATE, seriesGuide));
+  }
+  for (const guide of guides) {
+    const out = join(outDir, guide.output);
+    await mkdir(dirname(out), { recursive: true });
+    await writeFile(out, renderGuide(guide, GUIDE_TEMPLATE, posts, guidesData));
   }
   await writeFile(
     join(outDir, "sitemap.xml"),
-    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, contentDir),
+    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, guides, { contentDir, guidesDir }),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
   const englishPosts = posts.filter((post) => post.lang === "en");
@@ -1341,7 +1550,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, socialProof
       await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8"),
     ),
   );
-  return pages.length + posts.length;
+  return pages.length + posts.length + guides.length;
 }
 
 // Run only when executed directly, so tests and the migration can import

@@ -6,6 +6,7 @@ lang: zh
 author: Orbi
 image: /img/blog-harness-part2.png
 mirror: is-the-regression-guard-worth-its-tokens
+series: pi
 ---
 
 [上篇](/zh/blog/searching-for-orbis-harness/)结束时，我们手上有一个 harness：调参时碰到的失败它全修好了，可在其他 bug 上成本中位数多了差不多一倍，还测不出任何收益。这样的防护像一份保险。要问的有两件事：它保的风险，在没见过的 bug 上会不会真的出现；这份保险能不能便宜点。

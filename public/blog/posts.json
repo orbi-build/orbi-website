@@ -1,5 +1,13 @@
 [
   {
+    "slug": "orbi-on-pi-coding-agent",
+    "title": "Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens",
+    "summary": "In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.",
+    "zhSlug": "orbi-on-pi-coding-agent",
+    "zhTitle": "Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分",
+    "related": []
+  },
+  {
     "slug": "run-claude-code-unattended",
     "title": "Run Claude Code unattended: headless mode is step one",
     "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.",
