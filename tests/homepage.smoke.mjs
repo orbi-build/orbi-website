@@ -66,10 +66,14 @@ const sharedAttributes = {
 // for that Worker, so it applies the same substitutions from the same single
 // source before a page reaches the browser.
 const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.meta.url), "utf8"));
-const localFoundingLogins = Array.from({ length: 11 }, (_, index) => `founder-${index + 1}`);
+// Issue #827: the local stand-in renders the same shape the Worker does —
+// the newest 18 faces plus one "+K" chip for the teams past the cap — so the
+// browser assertions exercise the layout that has to hold on a phone.
+const localFoundingLogins = Array.from({ length: 18 }, (_, index) => `founder-${index + 1}`);
 const localFoundingAvatars = localFoundingLogins
   .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
-  .join("");
+  .join("")
+  + '<span class="avatar-wall-more" title="1250 teams">+1232</span>';
 
 export function countServerRenderedAvatars(html) {
   return html.match(/<img\b[^>]*class=["'][^"']*\borbi-avatar-wall-list-img\b[^"']*["'][^>]*>/g)?.length ?? 0;
@@ -772,8 +776,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (process.env.BASE_URL && browserAvatarCount !== serverAvatarCount) {
     throw new Error(`${path}: browser rendered ${browserAvatarCount} avatars, server HTML rendered ${serverAvatarCount}`);
   }
-  if (!process.env.BASE_URL && browserAvatarCount !== 11) {
-    throw new Error(`${path}: expected 11 server-rendered avatars`);
+  if (!process.env.BASE_URL && browserAvatarCount !== 18) {
+    throw new Error(`${path}: expected 18 server-rendered avatars`);
   }
   const images = wall.locator("img");
   for (let index = 0; index < browserAvatarCount; index += 1) {
@@ -800,6 +804,42 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     const titles = await images.evaluateAll((items) => items.map((image) => image.title));
     if (titles.join("|") !== localFoundingLogins.join("|")) {
       throw new Error(`${path}: server-rendered avatar identities changed`);
+    }
+  }
+  // Issue #827: the wall is capped and wraps, so at every acceptance width
+  // each face (and the "+K" chip) stays inside the avatar list — nothing
+  // spills past the screen edge as it did at 390px.
+  const wallChildren = await wall.locator("[data-avatar-list]").evaluate((list) => {
+    const listRight = list.getBoundingClientRect().right;
+    return Array.from(list.children).map((child) => ({
+      tag: child.tagName,
+      right: child.getBoundingClientRect().right,
+      listRight,
+    }));
+  });
+  for (const child of wallChildren) {
+    if (child.right > child.listRight + 0.5) {
+      throw new Error(
+        `${path}: avatar wall ${child.tag} overflows its list at ${size.width}px: right ${child.right} > ${child.listRight}`,
+      );
+    }
+  }
+  // Issue #827: at desktop width the faces read as a stack — each neighbour
+  // overlaps the previous one by at least a quarter of a face.
+  if (size.width >= 1200) {
+    const overlaps = await wall.locator("[data-avatar-list]").evaluate((list) => {
+      const items = Array.from(list.children);
+      return items.slice(1).map((item, index) => ({
+        overlap: items[index].getBoundingClientRect().right - item.getBoundingClientRect().left,
+        width: item.getBoundingClientRect().width,
+      }));
+    });
+    for (const { overlap, width } of overlaps) {
+      if (!(overlap >= width / 4)) {
+        throw new Error(
+          `${path}: avatar stack overlap is ${overlap}px of ${width}px at ${size.width}px, expected at least a quarter`,
+        );
+      }
     }
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });

@@ -188,10 +188,22 @@ async function loadAllReleases(repo, token) {
   return releases;
 }
 
+// Issue #827: the avatar wall is capped. The row cannot grow with the
+// tenant list — a phone cannot fit an unbounded number of faces — so the
+// newest FOUNDING_AVATAR_LIMIT logins are shown and the rest are counted in
+// one "+K" chip. 18 faces plus that chip is one row at 390px.
+const FOUNDING_AVATAR_LIMIT = 18;
+const FOUNDING_AVATARS_SQL = `SELECT login FROM tenants WHERE login IS NOT NULL ORDER BY created_at DESC LIMIT ${FOUNDING_AVATAR_LIMIT}`;
+const FOUNDING_AVATARS_TOTAL_SQL = "SELECT COUNT(*) AS total FROM tenants WHERE login IS NOT NULL";
+
 async function loadFoundingAvatars(db) {
-  if (!db) return [];
-  const tenants = await db.prepare("SELECT login FROM tenants WHERE login IS NOT NULL").all();
-  return (tenants?.results || []).map((row) => row.login).filter(Boolean);
+  if (!db) return { logins: [], total: 0 };
+  const [newest, counted] = await Promise.all([
+    db.prepare(FOUNDING_AVATARS_SQL).all(),
+    db.prepare(FOUNDING_AVATARS_TOTAL_SQL).all(),
+  ]);
+  const logins = (newest?.results || []).map((row) => row.login).filter(Boolean);
+  return { logins, total: Number(counted?.results?.[0]?.total) || 0 };
 }
 
 async function loadStats(token) {
@@ -312,8 +324,8 @@ async function fetchAsset(request, assets) {
 // The price and quota token replacements above it are unconditional: those
 // values must read the same on every environment, in every carrier a crawler
 // reads.
-function foundingAvatarMarkup(logins) {
-  return logins.map((login) => {
+function foundingAvatarMarkup(logins, total = logins.length, zh = false) {
+  const faces = logins.map((login) => {
     const escaped = String(login).replace(/[&<>\"']/g, (character) => ({
       "&": "&amp;",
       "<": "&lt;",
@@ -323,6 +335,12 @@ function foundingAvatarMarkup(logins) {
     })[character]);
     return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80" loading="lazy" decoding="async">`;
   }).join("");
+  // Issue #827: the teams past the cap are counted, not rendered, so the row
+  // stays one line however many teams sign up.
+  const hidden = total - logins.length;
+  if (hidden <= 0) return faces;
+  const label = zh ? `${total} 个团队` : `${total} teams`;
+  return `${faces}<span class="avatar-wall-more" title="${label}">+${hidden}</span>`;
 }
 
 function escapeHtml(value) {
@@ -413,7 +431,7 @@ async function relatedPostsMarkup(request, env, slug, language) {
   return `<section class="related-links" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
 }
 
-async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], request, env) {
+async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [], total: 0 }, request, env) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -432,6 +450,7 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], r
     return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
   }
   const html = await asset.text();
+  const zh = Boolean(request?.url) && new URL(request.url).pathname.startsWith("/zh");
   let body = html;
   const blogMatch = request?.url && new URL(request.url).pathname.match(/^(\/zh)?\/blog\/([^/]+)\/?$/);
   if (blogMatch && body.includes("<!--orbi:related-posts-->")) {
@@ -470,8 +489,8 @@ async function assetResponse(asset, cloudLoginConfigured, foundingLogins = [], r
     .replaceAll(pricing.measuredLargeCodebaseDeliveriesToken, MEASURED_LARGE_CODEBASE_DELIVERIES)
     .replaceAll(pricing.measuredSoloLargeCodebaseDeliveriesToken, MEASURED_SOLO_LARGE_CODEBASE_DELIVERIES)
     .replaceAll(pricing.measuredSnapshotDeliveriesToken, MEASURED_SNAPSHOT_DELIVERIES)
-    .replaceAll("__FOUNDING_AVATARS_HIDDEN__", foundingLogins.length ? "" : "hidden")
-    .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(foundingLogins));
+    .replaceAll("__FOUNDING_AVATARS_HIDDEN__", founding.total ? "" : "hidden")
+    .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(founding.logins, founding.total, zh));
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
@@ -751,10 +770,10 @@ async function handleFetch(request, env, ctx) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
-    let foundingLogins = [];
+    let founding = { logins: [], total: 0 };
     if (route === "/" || route === "/zh") {
       try {
-        foundingLogins = await loadFoundingAvatars(env.CONTROL_PLANE_DB);
+        founding = await loadFoundingAvatars(env.CONTROL_PLANE_DB);
       } catch (err) {
         console.error("founding avatars failed:", err && err.message ? err.message : err);
       }
@@ -768,7 +787,7 @@ async function handleFetch(request, env, ctx) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), foundingLogins, request, env);
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), founding, request, env);
 }
 
 // Issue #541: the subscription endpoint answers JSON only — the form is

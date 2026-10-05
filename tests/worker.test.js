@@ -409,14 +409,26 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(Object.keys(stats)).toEqual(["repos"]);
   });
 
-  it("loads tenant logins only for server-rendered avatar markup", async () => {
+  it("loads the newest tenant logins plus the total for server-rendered avatar markup", async () => {
+    const queries = [];
     const db = {
       prepare(sql) {
-        expect(sql).toBe("SELECT login FROM tenants WHERE login IS NOT NULL");
+        queries.push(sql);
+        if (sql.includes("COUNT(*)")) {
+          return { all: async () => ({ results: [{ total: 30 }] }) };
+        }
         return { all: async () => ({ results: [{ login: "alice" }, { login: "bob&co" }] }) };
       },
     };
-    await expect(loadFoundingAvatars(db)).resolves.toEqual(["alice", "bob&co"]);
+    // Issue #827: the SELECT is capped so the avatar row cannot grow with the
+    // tenant list, and the count is what the "+K" chip reports.
+    await expect(loadFoundingAvatars(db)).resolves.toEqual({ logins: ["alice", "bob&co"], total: 30 });
+    expect(queries).toContain("SELECT login FROM tenants WHERE login IS NOT NULL ORDER BY created_at DESC LIMIT 18");
+    expect(queries).toContain("SELECT COUNT(*) AS total FROM tenants WHERE login IS NOT NULL");
+  });
+
+  it("returns an empty avatar wall without a database", async () => {
+    await expect(loadFoundingAvatars(null)).resolves.toEqual({ logins: [], total: 0 });
   });
 
   it("counts orbi-website's successful deploy workflow runs, its fourth metric in place of releases", async () => {
@@ -461,7 +473,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     const response = await assetResponse(
       new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }),
       true,
-      ["alice", "bob&co"],
+      { logins: ["alice", "bob&co"], total: 2 },
     );
     const body = await response.text();
     expect(body).toContain('title="alice"');
@@ -497,13 +509,68 @@ describe("per-repo GitHub stats (Issue #101)", () => {
       ASSETS: { fetch: async () => new Response('<div data-avatar-list>__FOUNDING_AVATARS__</div>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
       CONTROL_PLANE_DB: {
         prepare(sql) {
-          expect(sql).toBe("SELECT login FROM tenants WHERE login IS NOT NULL");
-          return { all: async () => ({ results: logins.map((login) => ({ login })) }) };
+          return { all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total: 11 }] }
+            : { results: logins.map((login) => ({ login })) }) };
         },
       },
     });
     const body = await response.text();
     expect((body.match(/avatars\.githubusercontent\.com/g) || [])).toHaveLength(11);
+    expect(body).not.toContain("avatar-wall-more");
+  });
+
+  // Issue #827: however many teams sign up, the visible row stays 18 faces
+  // plus one "+K" chip, so the wall cannot overflow a phone.
+  it("caps the rendered avatar wall at 18 faces and counts the rest in a +K chip", async () => {
+    const logins = Array.from({ length: 18 }, (_, index) => `user-${index}`);
+    const response = await handleFetch(new Request("https://orbi.build/"), {
+      ASSETS: { fetch: async () => new Response('<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: {
+        prepare(sql) {
+          return { all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total: 30 }] }
+            : { results: logins.map((login) => ({ login })) }) };
+        },
+      },
+    });
+    const body = await response.text();
+    expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(18);
+    expect(body).toContain('<span class="avatar-wall-more" title="30 teams">+12</span>');
+    expect(body).toContain('<section data-avatar-wall >');
+  });
+
+  it("omits the +K chip when every team is already visible", async () => {
+    const logins = Array.from({ length: 18 }, (_, index) => `user-${index}`);
+    const response = await handleFetch(new Request("https://orbi.build/zh/"), {
+      ASSETS: { fetch: async () => new Response('<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: {
+        prepare(sql) {
+          return { all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total: 18 }] }
+            : { results: logins.map((login) => ({ login })) }) };
+        },
+      },
+    });
+    const body = await response.text();
+    expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(18);
+    expect(body).not.toContain("avatar-wall-more");
+  });
+
+  it("labels the +K chip in the page's own language", async () => {
+    const logins = Array.from({ length: 18 }, (_, index) => `user-${index}`);
+    const response = await handleFetch(new Request("https://orbi.build/zh/"), {
+      ASSETS: { fetch: async () => new Response('<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: {
+        prepare(sql) {
+          return { all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total: 30 }] }
+            : { results: logins.map((login) => ({ login })) }) };
+        },
+      },
+    });
+    const body = await response.text();
+    expect(body).toContain('title="30 个团队">+12</span>');
   });
 
   it("serves a cache hit without calling GitHub again", async () => {
