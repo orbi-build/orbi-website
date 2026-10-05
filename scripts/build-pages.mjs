@@ -1532,7 +1532,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8"),
     ),
   );
-  return pages.length + posts.length;
+  return pages.length + posts.length + guides.length;
 }
 
 // Run only when executed directly, so tests and the migration can import
