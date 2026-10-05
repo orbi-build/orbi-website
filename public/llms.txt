@@ -187,9 +187,9 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- Orbi on Pi: what we built around the Pi coding agent (English):
+- Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/
-- Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么 (Chinese):
+- Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分 (Chinese):
   https://orbi.build/zh/blog/orbi-on-pi-coding-agent/
 - Run Claude Code unattended: headless mode is step one (English):
   https://orbi.build/blog/run-claude-code-unattended/

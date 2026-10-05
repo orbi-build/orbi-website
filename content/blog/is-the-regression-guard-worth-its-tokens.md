@@ -6,6 +6,7 @@ lang: en
 author: Orbi
 image: /img/blog-harness-part2.png
 mirror: is-the-regression-guard-worth-its-tokens
+series: pi
 ---
 
 [Part 1](/blog/searching-for-orbis-harness/) ended with a harness that fixed every failure it was tuned on but cost a median of about twice as much on other bugs, with no gain we could measure there. A guard like that is insurance. Two questions follow: does the risk it covers show up on bugs it has never seen, and can the premium come down?

@@ -6,6 +6,7 @@ lang: en
 author: Orbi
 image: /img/blog-harness-search.png
 mirror: searching-for-orbis-harness
+series: pi
 ---
 
 Orbi takes a GitHub issue and hands back a reviewed, merged pull request. One agent writes the fix, another reviews it, and the loop runs until the review passes. Around the models sits the harness: the prompts each role gets, the skills loaded next to them, the tools on the runner's `PATH`, and the rules for when a review may pass.
