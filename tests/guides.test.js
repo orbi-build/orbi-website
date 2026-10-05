@@ -117,6 +117,18 @@ describe("Markdown guide rendering (Issue #826)", () => {
   });
 });
 
+describe("series backlink legibility on the dark post hero (Issue #833)", () => {
+  it("renders .post-series in the dark-band secondary color with a 6px gap before the summary", async () => {
+    const pageHtml = await shipped("blog/orbi-on-pi-coding-agent/index.html");
+    const inline = pageHtml.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
+    const rule = inline.match(/\.post-series\s*\{([^}]*)\}/)?.[1];
+    expect(rule, "built page inline .post-series rule").toBeTruthy();
+    expect(rule).toMatch(/color:\s*#9aada9/);
+    expect(rule, "must not use the light-surface secondary ink on the dark hero").not.toMatch(/var\(--ink-soft\)/);
+    expect(rule).toMatch(/margin:\s*10px 0 6px/);
+  });
+});
+
 describe("guide front matter is validated (Issue #826)", () => {
   const fixtureDirs = [];
 
