@@ -9,11 +9,11 @@ mirror: orbi-on-pi-coding-agent
 series: pi
 ---
 
-Orbi 做的事是：你给 GitHub issue 打上 `ai-ready`，它还你一个评审过、已经合并的 PR。代码本身是 [Pi 编程 agent](https://pi.dev) 写的，Orbi 用命令行启动它，主要是两种角色：实现会话改代码，评审会话审 PR。Pi 进程之外的事都归 Orbi 的 runner 管。runner 是一个定时轮询 GitHub 的调度程序，负责挑 issue、让实现和评审各用各的会话、决定什么能合并、卡住了怎么救。Pi 是 Earendil 做的开源项目，MIT 协议（[earendil-works/pi](https://github.com/earendil-works/pi)），Orbi 跟 Earendil 没有关系。
+Orbi 做的事是：你给 GitHub issue 打上 `ai-ready`，它还你一个评审过、已经合并的 PR。代码平常由 [Pi 编程 agent](https://pi.dev) 来写，Orbi 用命令行启动它，主要是两种角色：实现会话改代码，评审会话审 PR。Pi 进程之外的事都归 Orbi 的 runner 管。runner 是一个定时轮询 GitHub 的调度程序，负责挑 issue、让实现和评审各用各的会话、决定什么能合并、卡住了怎么救。Pi 是 Earendil 做的开源项目，MIT 协议（[earendil-works/pi](https://github.com/earendil-works/pi)），Orbi 跟 Earendil 没有关系。
 
 我是 Lawrence Liu，Orbi 的维护者。Orbi 是开源的，Orbi Cloud 托管的是同一个 runner。Cloud 知道哪些 PR 被合并，靠的是 GitHub 的 webhook，不是 runner 上报，而且只限装了 Orbi GitHub App 的仓库。从 9 月 16 日第一条记录到 10 月 5 日 15:36（北京时间），Cloud 记下了 373 个合并的 PR。这不是 Orbi 合并的全部：我机器上的 runner 做的那些，只有一部分在里面。这 373 个里，20 个在 Cloud 用户的 9 个仓库里，剩下的几乎都在 Orbi 自己的仓库里，Orbi 的代码本来就是 Orbi 交付的。有 169 次交付在 Cloud 上有带 token 数的用量记录，都是在 Pi 会话里写的，本文的数字都来自它们。
 
-这是我们 Pi 系列里讲 Orbi 架构的第一篇（文末链接的两篇 harness 测评也属于这个系列）。先跟着一张 issue 把 Orbi 为它起的每个 Pi 会话走一遍，再讲命令行、169 次交付花了多少（按 DeepSeek 闲时公开价，每次 token 花费中位数 0.082 美元），以及 Pi 留给用户自己搭的部分。有三个词后面会反复出现：**Pi 会话**是一个 `pi --print` 进程；**run** 是 runner 为一张 issue 做的全部事情，有一个 `run_id`，issue 重新排队也不变，一个 run 里可以起好几个 Pi 会话；**交付**指最后由 Orbi 合并了 PR 的 issue。
+这是我们 Pi 系列里讲 Orbi 架构的第一篇（文末链接的两篇 harness 测评也属于这个系列）。先跟着一张 issue 把 Orbi 为它起的每个 Pi 会话走一遍，再讲命令行、169 次交付花了多少（按 DeepSeek 闲时公开价，每次 token 花费中位数 0.082 美元），以及 Pi 留给用户自己搭的部分。有三个词后面会反复出现：**Pi 会话**是一个 `pi --print` 进程；**run** 是 runner 对一张 issue 的一次尝试，有一个 `run_id`，里面可以起好几个 Pi 会话；恢复这次 run 时沿用同一个 `run_id`（#1554 被我重新排队后就是这样），重新尝试则换一个新的；**交付**指最后由 Orbi 合并了 PR 的 issue。
 
 ## 一张 issue 从头到尾
 
@@ -77,7 +77,7 @@ pi [--no-tools] [--no-extensions [--extension <白名单里的扩展>]] \
 <figcaption>orbi#1554 上的进度评论，2026 年 10 月 5 日截图。</figcaption>
 </figure>
 
-角色、PR 链接、测试结果和评审轮数是 runner 填的；最后活动时间、会话 id 和 `phase` 是从会话文件里读的。`phase` 看着像阶段，其实记的是最近一次工具调用；`codemode` 指 Pi 1.0 的 Codemode：模型写一小段脚本，一次串起好几个工具调用。一个 PR 最多评审 5 轮，用完 Orbi 就停下来找人。评审轮数不等于起过几个评审会话。一轮要留下轮次评论才算；前面那两个会话，一个结束时 CI 还在跑，一个停在了 `main` 已红的阻塞上，都没留下，所以 13:41 那次评审是第 1 轮。`elapsed` 是最后那个会话的用时，不是整张 issue 的。
+角色、PR 链接、测试结果和评审轮数是 runner 填的；最后活动时间、会话 id 和 `phase` 是从会话文件里读的。`phase` 看着像阶段，其实记的是最近一次工具调用；`codemode` 指 Pi 1.0 的 Codemode：模型写一小段脚本，一次串起好几个工具调用。一个 PR 最多评审 5 轮，用完 Orbi 就停下来找人。评审轮数不等于起过几个评审会话。runner 给一轮记下评审结果，这一轮才算数。前面那两个评审会话，一个结束时 CI 还在跑，另一个被 `main` 已红的阻塞拦下，都没被记下，所以 13:41 那次评审是第 1 轮。`elapsed` 是最后那个会话的用时，不是整张 issue 的。
 
 在 Orbi Cloud 上，真正的 `pi` 外面还套了一层很薄的包装，每个会话结束后重读一遍会话文件，累加 token 用量。下一节的数字就是这么来的。自己部署的 Orbi 没有这层包装，会话文件是一样的。
 
@@ -109,7 +109,7 @@ Orbi 8 月份第一批提交里就在调 Pi 了，当时没跟别的方案比过
 
 第一个是换模型只要改配置。Pi 自带很多 provider，Orbi 还能把自己的 provider 文件合进每个 run 的那份 `models.json`，借此接上任何 OpenAI 兼容的端点（[orbi#157](https://github.com/orbi-build/orbi/issues/157)）。生产上就是这么用的：Cloud 用量记录里的交付全跑在 `deepseek-flash` 上，迁到 Cloud 之前，我机器上的 runner 大多用同一条 Pi 命令跑两个 OpenAI 模型，`gpt-5.6-luna` 写代码，`gpt-5.6-sol` 审代码。再早一些，9 月份的 run 还走过 z.ai 和 Gemini。这几个模型和别的 agent 程序在同样任务上的对比，见 [harness 测评](/zh/blog/searching-for-orbis-harness/)。
 
-第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 `pi --print` 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash，测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，合并的 PR 不在那 373 个里。这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 `--skill` 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现、修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 `pi`，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。
+第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 `pi --print` 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash。测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，所以合并的 PR 不在那 373 个里。这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 `--skill` 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现、修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 `pi`，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。
 
 ## Pi 留给用户的那一层，Orbi 放在哪
 
@@ -178,9 +178,9 @@ ls -la "$WT/.pi-session/"
 下面几条只说 Pi 特有的。谁认领、谁评审、谁合并这类问题，写在[无人值守地跑 Claude Code](/zh/blog/run-claude-code-unattended/) 里，换成 Pi 也适用。
 
 - 每个 run 给一个单独的 `--session-dir`。agent 做过什么，完整记录都在里面，token 用量也在，出了事看最后几条，比报错信息清楚。
-- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。
+- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。扩展加回来以后，Codemode 这个工具仍然默认关着，要另外打开，比如在 Pi 的设置里写 `"defaultTools": ["+codemode"]`，Orbi Cloud 的 runner 就是这么设的。用 `--tools` 也行，但它会替换整个工具列表，默认的那几个工具要一起写上。
 - 某个角色一定不能看到某个 skill，就传 `--no-skills`，再把要用的 skill 逐个列出来。`--skill` 只是在 Pi 自动发现的 skill 之外再加：用户的 skill 目录总会被发现，仓库里的要等 Pi 信任这个项目之后。
-- provider 和模型写在命令行上，不写 Pi 就用设置文件里的 `defaultModel`。
+- provider 和模型写在命令行上。不写的话，Pi 会按设置和它能看到的模型自己挑一个；我们那次挑中的是保存的 `defaultModel`。
 - 盯住不出声的会话。卡住的会话不会退出，上游收不到报错。看会话文件最后一次变大是什么时候，也看启动一分钟后会话文件到底建出来没有。
 - 想绕开 Pi 的某个限制之前，先读你那个版本的文档。我们为一个 Pi 根本没有的限制写了绕行代码，结果把 API key 写到了磁盘上。
 
@@ -188,7 +188,7 @@ ls -la "$WT/.pi-session/"
 
 下一篇写为什么每张 issue 都在自己的 worktree 里单独起 Pi 会话，再往后写 Orbi 加载了哪些 Pi skill、为什么。模型对比在 harness 测评的[第一篇](/zh/blog/searching-for-orbis-harness/)和[第二篇](/zh/blog/is-the-regression-guard-worth-its-tokens/)里。
 
-Orbi 的代码在 [orbi-build/orbi](https://github.com/orbi-build/orbi)。[Orbi Cloud](https://orbi.build/zh/cloud/?ref=blog-pi) 跑的是同一个 runner、同样的 Pi 会话，接上你自己的仓库就能用。
+Orbi 的代码在 [orbi-build/orbi](https://github.com/orbi-build/orbi)。Orbi Cloud 跑的是同一个 runner、同样的 Pi 会话，接上你自己的仓库就能用。
 
 ## 相关
 
