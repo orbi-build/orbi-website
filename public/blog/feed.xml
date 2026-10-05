@@ -6,11 +6,11 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>Orbi on Pi: what we built around the Pi coding agent</title>
+      <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</title>
       <link>https://orbi.build/blog/orbi-on-pi-coding-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/orbi-on-pi-coding-agent/</guid>
       <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
-      <description>One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.</description>
+      <description>In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</description>
     </item>
     <item>
       <title>Run Claude Code unattended: headless mode is step one</title>

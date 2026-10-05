@@ -6,6 +6,7 @@ lang: zh
 author: Orbi
 image: /img/blog-harness-search.png
 mirror: searching-for-orbis-harness
+series: pi
 ---
 
 Orbi 接一个 GitHub issue，交出一个评审过、已合并的 PR。一个 agent 写修复，另一个 agent 评审，评审不过就接着改。包在模型外面的那一层叫 harness：每个角色拿到的 prompt、加载的 skill、runner `PATH` 里的工具，还有评审怎样才算通过的规矩。

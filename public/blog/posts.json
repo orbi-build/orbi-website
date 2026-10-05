@@ -1,10 +1,10 @@
 [
   {
     "slug": "orbi-on-pi-coding-agent",
-    "title": "Orbi on Pi: what we built around the Pi coding agent",
-    "summary": "One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.",
+    "title": "Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens",
+    "summary": "In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.",
     "zhSlug": "orbi-on-pi-coding-agent",
-    "zhTitle": "Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么",
+    "zhTitle": "Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分",
     "related": []
   },
   {
