@@ -892,7 +892,9 @@ describe("one unified footer on every content page", () => {
           : ["Product", "Resources", "Guides", "Compare", "Company"],
       );
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 9, 9, 13, 7]);
+      // Issue #845 moved the Pi hub from the Guides row to the Resources row:
+      // the Resources row gained one link and the Guides row lost one.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 10, 8, 13, 7]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
@@ -1681,6 +1683,7 @@ describe("six-link primary nav and relocated links (Issue #711)", () => {
       items: [
         ["/evidence/", "Orbi builds Orbi", "Public issues, PRs and releases on GitHub"],
         ["/benchmark/", "How we test the harness", "Delivery runs on open-source bugs, graded by maintainers' tests"],
+        ["/guides/pi-coding-agent/", "Pi series: how Orbi is built", "The runner around the Pi coding agent"],
         ["/cost/", "Cost per merged PR", "Measured on our own repos, with sample size and limits"],
         ["/aiready/", "ai-ready: 12 factors", "What makes an Issue safe to hand to an AI"],
         ["/compare/", "Orbi vs alternatives", "Claude Code, Codex, Devin and more, fact-checked"],
@@ -1692,6 +1695,7 @@ describe("six-link primary nav and relocated links (Issue #711)", () => {
       items: [
         ["/zh/evidence/", "Orbi 交付自己的记录", "公开的 Issue、PR 和发版，都在 GitHub 上"],
         ["/zh/benchmark/", "我们怎么测 harness", "在开源 bug 上跑交付，用维护者的测试打分"],
+        ["/zh/guides/pi-coding-agent/", "Pi 系列：Orbi 是怎么实现的", "Pi coding agent 外面那个 runner 是怎么运转的"],
         ["/zh/cost/", "每个 PR 花多少钱", "在自家仓库实测，附样本量和限制"],
         ["/aiready/zh/", "ai-ready 12 要素", "什么样的 Issue 能交给 AI 无人值守交付"],
         ["/zh/compare/", "与同类工具对比", "Claude Code、Codex、Devin 等，逐条核实"],
@@ -1734,7 +1738,7 @@ describe("six-link primary nav and relocated links (Issue #711)", () => {
     }
   });
 
-  it("uses all six resource labels in the footer without dropdown descriptions", () => {
+  it("uses all seven resource labels in the footer without dropdown descriptions", () => {
     const surfaces = [...pages.filter((p) => p.nav), ...posts];
     for (const page of surfaces) {
       const expected = RESOURCES[page.lang];
