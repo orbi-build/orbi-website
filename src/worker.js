@@ -75,6 +75,9 @@ const GUIDE_REDIRECTS = new Map([
 const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth", "section_view"]);
 const ENGAGEMENT_DETAIL = /^[a-z0-9-]{1,40}$/;
 const SCROLL_DEPTHS = new Set(["25", "50", "75", "100"]);
+// Issue #844: raw_query / raw_referrer are forwarded verbatim, only capped so
+// a hostile page cannot push an unbounded string through the visit report.
+const RAW_LANDING_MAX_LENGTH = 1024;
 
 function githubHeaders(token) {
   if (!token) {
@@ -878,6 +881,13 @@ async function engagementResponse(request, env, ctx) {
   const payload = { kind, path };
   if (kind === "visit") {
     payload.ref = visitRef(path, event.search, event.referrer, request.url);
+    // Issue #844: the raw landing evidence travels with the visit so cloud
+    // stores it verbatim (orbi-cloud#1831) — record is record, display is
+    // display. Cloud ignores fields it does not know, so either side can
+    // deploy first. Only length is capped; no lowercasing, parsing, or
+    // filtering, and the derived ref above stays the only normalized value.
+    payload.raw_query = event.search.slice(0, RAW_LANDING_MAX_LENGTH);
+    payload.raw_referrer = event.referrer.slice(0, RAW_LANDING_MAX_LENGTH);
   } else if (kind !== "engaged") {
     payload.detail = detail;
   }
