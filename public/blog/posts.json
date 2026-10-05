@@ -1,5 +1,13 @@
 [
   {
+    "slug": "orbi-on-pi-coding-agent",
+    "title": "Orbi on Pi: what we built around the Pi coding agent",
+    "summary": "Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.",
+    "zhSlug": "orbi-on-pi-coding-agent",
+    "zhTitle": "Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么",
+    "related": []
+  },
+  {
     "slug": "run-claude-code-unattended",
     "title": "Run Claude Code unattended: headless mode is step one",
     "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.",

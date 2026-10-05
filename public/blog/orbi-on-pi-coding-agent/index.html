@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi on Pi: what we built around the Pi coding agent | Orbi</title>
+  <meta name="description" content="Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.">
+  <link rel="canonical" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Orbi on Pi: what we built around the Pi coding agent">
+  <meta property="og:description" content="Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.">
+  <meta property="og:url" content="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
+  <meta property="og:image:alt" content="Orbi on Pi: what we built around the Pi coding agent">
+  <meta property="article:published_time" content="2026-10-05">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi on Pi: what we built around the Pi coding agent","datePublished":"2026-10-05","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"en","description":"Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.","url":"https://orbi.build/blog/orbi-on-pi-coding-agent/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog · 2026-10-05</p>
+          <h1 id="post-title">Orbi on Pi: what we built around the Pi coding agent</h1>
+          <p class="hero-lede">Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#how-orbi-calls-pi">How Orbi calls Pi</a></li>
+          <li><a class="post-toc-link" href="#why-pi">Why Pi</a></li>
+          <li><a class="post-toc-link" href="#what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</a>
+            <ol>
+              <li><a class="post-toc-link" href="#why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</a></li>
+          <li><a class="post-toc-link" href="#what-s-next-in-this-series">What's next in this series</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 6 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#how-orbi-calls-pi">How Orbi calls Pi</a></li>
+          <li><a class="post-toc-link" href="#why-pi">Why Pi</a></li>
+          <li><a class="post-toc-link" href="#what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</a>
+            <ol>
+              <li><a class="post-toc-link" href="#why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</a></li>
+          <li><a class="post-toc-link" href="#what-s-next-in-this-series">What's next in this series</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>Orbi uses the <a href="https://pi.dev">Pi coding agent</a> for all of its coding work. We call Pi from the command line, one session per job, and Orbi&#39;s own code handles the parts Pi deliberately leaves out of its core: approvals, sub-agents, planning, a task list and long-running jobs. Pi is MIT-licensed and made by Earendil. Orbi is not part of the Pi project.</p>
+<p>I&#39;m Lawrence Liu, and I maintain Orbi. Orbi takes a GitHub issue labelled <code class="post-code--single">ai-ready</code> and hands back a reviewed, merged pull request. A separate release issue turns merged work into a tagged release. On Orbi Cloud, the managed runners merged 365 pull requests between 16 September and 5 October 2026 (UTC+8). 345 of them were in 11 of our own repositories, because Orbi builds Orbi. The other 20 were in 9 repositories owned by other people. Every one of those deliveries ran through Pi sessions.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>This is the first post in a series on how Orbi is built. It starts with the command line we send to Pi, then the two reasons we chose it, then where we put the layer Pi leaves to you.</p>
+<h2 id="how-orbi-calls-pi">How Orbi calls Pi</h2>
+<p>Every Pi session Orbi starts is one <code class="post-code--spaced">pi --print</code> process. Stripped of the prompt text, the command has this shape (from <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">src/orbi/pi_command.py</code></a>):</p>
+<pre><code class="language-text">pi [--no-tools] --no-extensions [--extension &lt;allowlisted&gt;] \
+   --skill &lt;path&gt; ... \
+   --provider &lt;p&gt; --model &lt;m&gt; [--thinking &lt;level&gt;] \
+   --print --session-dir &lt;run dir&gt; \
+   --system-prompt &lt;role prompt&gt; &lt;issue context&gt;
+</code></pre>
+<p>There are three roles, and each gets its own flags:</p>
+<ul>
+<li><strong>Implementer.</strong> Gets tools, the delivery skills and the implementation model. It plans, writes the change and runs the tests in the issue&#39;s worktree, then stops at a commit.</li>
+<li><strong>Reviewer.</strong> A separate session on the pull request. It drops the <code class="post-code--single">tdd-dev</code> and <code class="post-code--single">review-fix-loop</code> skills, because its job is to review one diff and fix it, not to start another delivery. It can use a different model (<code class="post-code--single">review_pi_provider</code> and <code class="post-code--single">review_pi_model</code>), and it has to end with a single <code class="post-code--spaced">REVIEW_VERDICT {...}</code> JSON line that Orbi parses.</li>
+<li><strong>Ticket.</strong> Answers on an issue without changing anything. It runs with <code class="post-code--single">--no-tools</code> and no extensions, and its output is the text Orbi posts.</li>
+</ul>
+<p><code class="post-code--single">--session-dir</code> turned out to matter more than we expected. Each run gets its own directory, and Pi writes the session there as JSONL. Orbi tails that file to post live progress on the issue (<a href="https://github.com/orbi-build/orbi/issues/24">orbi#24</a>). On Orbi Cloud, a thin wrapper around the real <code class="post-code--single">pi</code> binary rereads the same files after each session to total the token usage. The per-delivery usage Cloud reports, and its monthly token cap, are built from those totals.</p>
+<h2 id="why-pi">Why Pi</h2>
+<p>Two reasons are on record.</p>
+<p><strong>You bring your own model.</strong> Pi supports a long list of providers out of the box, and it also takes a providers file in the shape of its <code class="post-code--single">models.json</code>, which lets Orbi point it at any OpenAI-compatible endpoint (<a href="https://github.com/orbi-build/orbi/issues/157">orbi#157</a>). Not being tied to one model vendor is one of the things that sets Orbi apart (<a href="https://github.com/orbi-build/orbi/issues/305">orbi#305</a>). In our harness benchmark, <code class="post-code--single">deepseek-flash</code>, <code class="post-code--single">gpt-5.6-luna</code> and <code class="post-code--single">gpt-5.6-sol</code> all ran through the same runner and the same Pi command line.</p>
+<p><strong>The command line is small enough to be a contract.</strong> Everything Orbi needs is a flag on one <code class="post-code--spaced">pi --print</code>. The same benchmark also tried Opus 5.5 through Claude Code and GLM 5.3 flash through zcode. To fit them in, we wrote bridges that imitate Pi&#39;s command line. Both bridges silently dropped skills until we found and fixed it (<a href="/blog/searching-for-orbis-harness/">part 1 of that series</a>). With Pi, <code class="post-code--single">--skill</code> is a native flag, so there&#39;s no bridge to drop it.</p>
+<h2 id="what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</h2>
+<p>Pi is upfront about what it doesn&#39;t put in its core. Its homepage lists sub-agents, permission popups, plan mode, to-dos and background bash. For each one it suggests a way to add it yourself: extensions, third-party packages, containers, files or tmux (checked on 5 October 2026). Orbi adds every one of them, but outside Pi, in the runner.</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>Pi leaves out</th>
+<th>What Pi suggests</th>
+<th>Where Orbi has it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="Pi leaves out">Permission popups</td>
+<td data-label="What Pi suggests">Run in a container, or build a confirmation flow as an extension</td>
+<td data-label="Where Orbi has it">Each issue gets its own git worktree, created from a frozen <code class="post-code--single">origin/main</code> commit. The implementer stops at a commit, and the runner pushes and opens the pull request. Only the reviewed head can merge, and no agent pushes a protected branch.</td>
+</tr>
+<tr>
+<td data-label="Pi leaves out">Sub-agents</td>
+<td data-label="What Pi suggests">Spawn Pi in tmux, or use an extension or package</td>
+<td data-label="Where Orbi has it">Separate Pi sessions per role, started by the runner: implementer, independent reviewer, ticket.</td>
+</tr>
+<tr>
+<td data-label="Pi leaves out">Plan mode</td>
+<td data-label="What Pi suggests">Write plans to files, or use an extension or package</td>
+<td data-label="Where Orbi has it">The implementer&#39;s first step is to write <code class="post-code--single">.orbi/plan.md</code>: goal, context, tasks, verification commands. The reviewer reads it.</td>
+</tr>
+<tr>
+<td data-label="Pi leaves out">To-dos</td>
+<td data-label="What Pi suggests">A <code class="post-code--single">TODO.md</code>, or an extension or package</td>
+<td data-label="Where Orbi has it">GitHub Issues are the queue. The <code class="post-code--single">ai-ready</code> label is how work gets in.</td>
+</tr>
+<tr>
+<td data-label="Pi leaves out">Background bash</td>
+<td data-label="What Pi suggests">tmux</td>
+<td data-label="Where Orbi has it">A systemd timer (launchd on macOS) ticks every 5 minutes. Sessions that stop producing output are detected and stopped (<a href="https://github.com/orbi-build/orbi/issues/94">orbi#94</a>).</td>
+</tr>
+</tbody></table></div>
+<p>Around all of that, one <code class="post-code--single">run_id</code> ties together the journal, the issue comments and the pull request, and a failure Orbi can&#39;t fix on its own marks the issue <code class="post-code--single">ai-blocked</code> for a person to decide.</p>
+<h3 id="why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</h3>
+<p>Pi would let us build most of this as extensions. We didn&#39;t, for three reasons.</p>
+<p><strong>The checks shouldn&#39;t live inside the thing being checked.</strong> If the merge gate and the reviewer were extensions loaded into the implementer&#39;s session, that session&#39;s configuration would decide whether they ran. In Orbi, the Pi sessions only produce commits and verdicts. The runner decides whether a pull request merges, and it reads the verdict from a session the implementer never touched.</p>
+<p><strong>Unattended sessions have to start from a known state.</strong> A Pi installation picks up whatever its user has installed. One user-level extension once hung our runs in systemd: it waited on a D-Bus call that never returned, and the session sat idle until the recovery timer killed it (<a href="https://github.com/orbi-build/orbi/issues/249">orbi#249</a>). Since then, every session starts with <code class="post-code--single">--no-extensions</code> and adds back only the extensions on an allowlist in Orbi&#39;s config.</p>
+<p><strong>The engine can change without losing the loop.</strong> Because the worktree, the review and the merge gate live in the runner, the Claude Code and zcode bridges in our benchmark ran under exactly the same gates as Pi. If we ever swap the agent, the controls stay where they are.</p>
+<p>We don&#39;t think Pi should put any of this in its core. A small core is what lets a runner drive it with one command line.</p>
+<h2 id="if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</h2>
+<p>These are the Pi-specific lessons from our runners. The general ones (who claims a task, who reviews, who merges, who releases) are in <a href="/blog/run-claude-code-unattended/">Run Claude Code unattended</a>, and they apply to Pi just as much.</p>
+<ul>
+<li><strong>Give every run its own <code class="post-code--single">--session-dir</code>.</strong> It&#39;s the only complete record of what the agent did, and it&#39;s where the token usage is.</li>
+<li><strong>Start from <code class="post-code--single">--no-extensions</code>.</strong> Then add extensions explicitly. Whatever is installed for your user account will otherwise load into a run nobody is watching.</li>
+<li><strong>Choose skills per role.</strong> A reviewer loaded with an implementer&#39;s workflow skills will try to deliver instead of review.</li>
+<li><strong>Pass provider and model on the command line.</strong> If you leave them out, Pi falls back to the default model in your settings without any warning. We once deployed a runner we thought was on one model, and the logs showed it was running the global default.</li>
+<li><strong>Watch for sessions that stop producing output.</strong> A hung session doesn&#39;t fail. It just sits there.</li>
+</ul>
+<h2 id="what-s-next-in-this-series">What&#39;s next in this series</h2>
+<p>Next we&#39;ll write about running Pi unattended in more depth (the stuck-session detection and the D-Bus hang), why every issue gets its own Pi session in its own worktree, and the Pi skills Orbi uses. The harness work is already up: <a href="/blog/searching-for-orbis-harness/">part 1</a> and <a href="/blog/is-the-regression-guard-worth-its-tokens/">part 2</a>.</p>
+<p>Orbi is open source at <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>. <a href="https://orbi.build/cloud/?ref=blog-pi">Orbi Cloud</a> runs the same runner and the same Pi sessions on your own repositories.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>Read the <a href="/compare/claude-code/">Claude Code comparison</a> and <a href="/cloud/">Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/orbi-on-pi-coding-agent/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+      </div>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

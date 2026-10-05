@@ -187,6 +187,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Orbi on Pi: what we built around the Pi coding agent (English):
+  https://orbi.build/blog/orbi-on-pi-coding-agent/
+- Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么 (Chinese):
+  https://orbi.build/zh/blog/orbi-on-pi-coding-agent/
 - Run Claude Code unattended: headless mode is step one (English):
   https://orbi.build/blog/run-claude-code-unattended/
 - Claude Code headless 模式是什么？自动化开发还差六件事 (Chinese):
