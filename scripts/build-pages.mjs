@@ -132,12 +132,6 @@ const GUIDES = [
     "Codex on GitHub Issues",
     "Codex 处理 GitHub Issue",
   ],
-  [
-    "/guides/pi-coding-agent/",
-    "/zh/guides/pi-coding-agent/",
-    "Orbi on the Pi coding agent",
-    "Orbi 怎么搭在 Pi 上",
-  ],
   ["https://aiready.sh/", "https://aiready.sh/zh/", "ai-ready: 12 factors", "ai-ready 十二要素"],
 ];
 
@@ -161,6 +155,7 @@ const LANG = {
     methodHref: "/aiready/",
     benchmarkLabel: "How we test the harness",
     benchmarkHref: "/benchmark/",
+    piSeriesLabel: "Pi series: how Orbi is built",
     selfHostedDocsLabel: "Self-hosted Docs",
     blogLabel: "Blog",
     costPerPrLabel: "Cost per merged PR",
@@ -217,6 +212,7 @@ const LANG = {
     methodHref: "/aiready/zh/",
     benchmarkLabel: "我们怎么测 harness",
     benchmarkHref: "/zh/benchmark/",
+    piSeriesLabel: "Pi 系列：Orbi 是怎么实现的",
     selfHostedDocsLabel: "自托管文档",
     blogLabel: "博客",
     costPerPrLabel: "每个 PR 花多少钱",
@@ -334,7 +330,9 @@ export function renderFooter(page) {
     PRODUCT_HEADING: t.productHeading,
     PRODUCT_LINKS: [`<li><a href="${base(`${t.langPrefix}/cloud/`)}">${t.cloudLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cloud/#pricing`)}">${t.costLabel}</a></li>`,`<li><a href="${base(page.nav.systemHref)}">${t.systemLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="https://github.com/orbi-build/orbi/releases">${t.releasesLabel}</a></li>`,`<li><a href="https://status.orbi.build">${t.statusLabel}</a></li>`].join(""),
     RESOURCES_HEADING: t.resourcesHeading,
-    RESOURCES_LINKS: [`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="${base(t.benchmarkHref)}">${t.benchmarkLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cost/`)}">${t.costPerPrLabel}</a></li>`,`<li><a href="${base(t.methodHref)}">${t.methodLabel}</a></li>`,`<li><a href="${base(page.nav.compareHref)}">${t.comparisonsLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/blog/`)}">${t.blogLabel}</a></li>`,`<li><a href="${t.docsHref}">${t.selfHostedDocsLabel}</a></li>`,`<li><a href="${t.cloudDocsHref}">${t.cloudDocsLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#faq`)}">${t.faqLabel}</a></li>`].join(""),
+    // Issue #845: the Pi hub is a series overview (how Orbi itself is built),
+    // not a user how-to, so it sits here next to the benchmark entry.
+    RESOURCES_LINKS: [`<li><a href="${base(`${t.langPrefix}/evidence/`)}">${t.evidenceLabel}</a></li>`,`<li><a href="${base(t.benchmarkHref)}">${t.benchmarkLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/guides/pi-coding-agent/`)}">${t.piSeriesLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/cost/`)}">${t.costPerPrLabel}</a></li>`,`<li><a href="${base(t.methodHref)}">${t.methodLabel}</a></li>`,`<li><a href="${base(page.nav.compareHref)}">${t.comparisonsLabel}</a></li>`,`<li><a href="${base(`${t.langPrefix}/blog/`)}">${t.blogLabel}</a></li>`,`<li><a href="${t.docsHref}">${t.selfHostedDocsLabel}</a></li>`,`<li><a href="${t.cloudDocsHref}">${t.cloudDocsLabel}</a></li>`,`<li><a href="${base(`${anchorPrefix}#faq`)}">${t.faqLabel}</a></li>`].join(""),
     GUIDES_HEADING: t.guidesHeading,
     GUIDES_LINKS: `<li><a href="${base(t.guidesHref)}">${t.guidesLabel}</a></li>${guideLinks.replaceAll("      ", "").replaceAll("\n", "").replaceAll("<a ", "<li><a ").replaceAll("</a>", "</a></li>")}`,
     COMPARE_HEADING: t.compareHeading,

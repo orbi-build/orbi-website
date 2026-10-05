@@ -96,13 +96,24 @@ describe("Markdown guide rendering (Issue #826)", () => {
     }
   });
 
-  it("links the hub from both guides indexes and the footer guides row", async () => {
+  // Issue #845: the hub is a series overview, not a user how-to, so its
+  // sitewide footer entry moved from the Guides row to the Resources row,
+  // directly after the benchmark entry.
+  it("links the hub from the footer Resources row, right after the benchmark entry", async () => {
     for (const page of PAGES) {
-      const indexHtml = await shipped(page.lang === "en" ? "guides/index.html" : "zh/guides/index.html");
-      expect(indexHtml, `${page.lang}: guides index`).toContain(`href="${page.href}"`);
       const homeHtml = await shipped(page.lang === "en" ? "index.html" : "zh/index.html");
       const footer = homeHtml.match(/<footer class="site-footer shell">[\s\S]*?<\/footer>/)?.[0] ?? "";
-      expect(footer, `${page.lang}: footer guides row`).toContain(`href="${page.href}"`);
+      const heading = page.lang === "en" ? "Resources" : "资源";
+      const resources = footer.match(new RegExp(`<h2>${heading}</h2>[\\s\\S]*?</div>`))?.[0] ?? "";
+      const items = [...resources.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(([, href, text]) => [href, text]);
+      const index = items.findIndex(([href]) => href === page.href);
+      expect(index, `${page.lang}: footer Resources row must carry the hub`).toBeGreaterThan(-1);
+      expect(items[index][1], `${page.lang}: hub label`).toBe(
+        page.lang === "en" ? "Pi series: how Orbi is built" : "Pi 系列：Orbi 是怎么实现的",
+      );
+      expect(items[index - 1][0], `${page.lang}: hub must follow the benchmark entry`).toBe(
+        page.lang === "en" ? "/benchmark/" : "/zh/benchmark/",
+      );
     }
   });
 

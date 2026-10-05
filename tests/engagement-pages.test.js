@@ -75,4 +75,18 @@ describe("Issue #409 engagement build contract", () => {
       for (const kind of ["visit", "engaged", "cta_click", "section_view", "scroll_depth"]) expect(html, file).toContain(kind);
     }
   });
+
+  // Issue #844: a visit now records the landing page's raw query string and the
+  // referring page's address, so the policy has to say so. Loose on purpose —
+  // Issue #540 removed the verbatim privacy-sentence pins.
+  it("tells both privacy pages that a visit records the query string and referrer", async () => {
+    const expectations = {
+      "public/privacy/index.html": ["query string", "referring page's address"],
+      "public/zh/privacy/index.html": ["查询参数", "来源页地址"],
+    };
+    for (const [file, phrases] of Object.entries(expectations)) {
+      const html = await read(file);
+      for (const phrase of phrases) expect(html, file).toContain(phrase);
+    }
+  });
 });
