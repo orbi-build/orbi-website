@@ -184,6 +184,10 @@ async function postCtaAt(route, width) {
 }
 
 describe("post registration CTA (Issue #732)", () => {
+  // Same 30s budget as the other browser tests (e8f46993, #838): page.goto
+  // alone may wait 25s, and the footer's third-party badges (Toolradar since
+  // #836) can hold the load event past vitest's 5s default. This `it` walks
+  // four routes, so that default timed it out on CI three times on 2026-10-05.
   it("preserves the homepage button treatment and readable night-surface link in both languages", async () => {
     for (const route of ["/blog/run-claude-code-unattended/", "/zh/blog/run-claude-code-unattended/"]) {
       const desktop = await postCtaAt(route, 1440);
@@ -194,7 +198,7 @@ describe("post registration CTA (Issue #732)", () => {
       const mobile = await postCtaAt(route, 390);
       expect(mobile.buttonWidth, `${route}: full-width mobile button`).toBeCloseTo(mobile.contentWidth, 0);
     }
-  });
+  }, 30_000);
 });
 
 describe("blog titles use the post entry width (Issue #401)", () => {
@@ -216,7 +220,7 @@ describe("blog titles use the post entry width (Issue #401)", () => {
         }
       }
     }
-  });
+  }, 30_000);
 
   it("wraps narrow titles without document overflow", async () => {
     for (const route of ["/blog/", "/zh/blog/"]) {
@@ -224,7 +228,7 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       expect(result.overflow, `${route} at mobile document overflow`).toBe(0);
       expect(result.entries.some((entry) => entry.titleHeight > entry.titleLineHeight + 1)).toBe(true);
     }
-  });
+  }, 30_000);
 
   it("keeps the recorded desktop heading widths on compare, cloud, pricing, FAQ, and closing", async () => {
     const cases = [
@@ -275,7 +279,7 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
     const desktop = await overflowAt("/blog/table-fixture/", 1440);
     expect(desktop.overflow, "table fixture at 1440px document overflow").toBe(0);
     expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
-  });
+  }, 30_000);
 
   it("keeps every existing post free of document overflow", async () => {
     for (const route of existingRoutes) {
