@@ -767,7 +767,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   // carried by the public /stats payload. Exercise the complete browser path:
   // the aggregate endpoint stays identity-free and every rendered image
   // finishes loading once scrolled to. Local mode additionally
-  // pins all 11 injected identities below.
+  // pins all 18 injected identities below.
   if (servedStats?.founding && Object.hasOwn(servedStats.founding, "github_logins")) {
     throw new Error(`${path}: /stats exposes founding GitHub logins`);
   }
