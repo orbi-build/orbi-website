@@ -9,11 +9,11 @@ mirror: orbi-on-pi-coding-agent
 series: pi
 ---
 
-Orbi takes a GitHub issue labelled `ai-ready` and hands back a reviewed, merged pull request. The code itself is written by the [Pi coding agent](https://pi.dev), which Orbi starts from the command line, mostly as an implementer that makes the change or as a reviewer that checks the pull request. Everything around those Pi processes belongs to Orbi's runner, a scheduler that polls GitHub: picking the issue, keeping the implementer and the reviewer in separate sessions, deciding what merges, and recovering when something hangs. Pi is MIT-licensed and made by Earendil ([earendil-works/pi](https://github.com/earendil-works/pi)). Orbi has no connection to Earendil.
+Orbi takes a GitHub issue labelled `ai-ready` and hands back a reviewed, merged pull request. The code itself is normally written by the [Pi coding agent](https://pi.dev), which Orbi starts from the command line, mostly as an implementer that makes the change or as a reviewer that checks the pull request. Everything around those Pi processes belongs to Orbi's runner, a scheduler that polls GitHub: picking the issue, keeping the implementer and the reviewer in separate sessions, deciding what merges, and recovering when something hangs. Pi is MIT-licensed and made by Earendil ([earendil-works/pi](https://github.com/earendil-works/pi)). Orbi has no connection to Earendil.
 
 I'm Lawrence Liu, and I maintain Orbi. Orbi is open source, and Orbi Cloud hosts the same runner. Cloud learns about merges from GitHub's webhooks, not from the runner, and only for repositories with the Orbi GitHub App installed. From its first record on 16 September to 15:36 on 5 October 2026 (UTC+8), it has 373 merged pull requests. That isn't every merge Orbi made: runs on my own machine are only partly in it. Of the 373, 20 were in 9 repositories that belong to Cloud users; almost all the rest are in Orbi's own repositories, because Orbi is built by Orbi. 169 deliveries have Cloud usage records with token counts, all written in Pi sessions, and those are the numbers in this post.
 
-This is the first post on Orbi's architecture in our Pi series (the two harness posts linked at the end belong to the same series). It follows one issue through every Pi session Orbi started for it, then covers the command line, what 169 deliveries cost (a median of $0.082 each in tokens, at DeepSeek's off-peak list prices), and the parts of the job Pi leaves to you. Three terms come up a lot. A **Pi session** is one `pi --print` process. A **run** is everything the runner does for one issue; it has one `run_id`, which stays the same if the issue goes back into the queue, and it can start several Pi sessions. A **delivery** is an issue that ended in a pull request Orbi merged.
+This is the first post on Orbi's architecture in our Pi series (the two harness posts linked at the end belong to the same series). It follows one issue through every Pi session Orbi started for it, then covers the command line, what 169 deliveries cost (a median of $0.082 each in tokens, at DeepSeek's off-peak list prices), and the parts of the job Pi leaves to you. Three terms come up a lot. A **Pi session** is one `pi --print` process. A **run** is one attempt by the runner at an issue; it has one `run_id`, it can start several Pi sessions, and resuming it keeps the same `run_id` (as #1554 did when I requeued it). A new attempt gets a new one. A **delivery** is an issue that ended in a pull request Orbi merged.
 
 ## One issue, start to finish
 
@@ -77,7 +77,7 @@ Every run gets its own session directory, `.pi-session/` in the worktree, and Pi
 <figcaption>The progress comment on orbi#1554, captured on 5 October 2026.</figcaption>
 </figure>
 
-The role, PR link, test result and review count come from the runner. The last-activity time, session id and `phase` come from the session file. Despite the name, `phase` records the last tool call; `codemode` is Pi 1.0's Codemode, where the model writes a short script that strings several tool calls together. A PR gets at most 5 review rounds before Orbi stops and asks a person. Review rounds aren't the number of reviewer sessions started. A round counts when it leaves a round comment; of the two earlier sessions, one ended while CI was still running and the other stopped at the red-`main` block, so neither left one and the 13:41 review was round 1. `elapsed` is the last session's time, not the issue's.
+The role, PR link, test result and review count come from the runner. The last-activity time, session id and `phase` come from the session file. Despite the name, `phase` records the last tool call; `codemode` is Pi 1.0's Codemode, where the model writes a short script that strings several tool calls together. A PR gets at most 5 review rounds before Orbi stops and asks a person. Review rounds aren't the number of reviewer sessions started. A round only counts once the runner records a review result for it. Of the two earlier reviewer sessions, one ended while CI was still running and the other was stopped by the red-`main` block, so neither was recorded and the 13:41 review was round 1. `elapsed` is the last session's time, not the issue's.
 
 On Orbi Cloud a thin wrapper around the real `pi` binary also rereads the session file after each session and adds up the token usage. That's where the next section's numbers come from. Self-hosted Orbi doesn't have the wrapper, but the session files are the same.
 
@@ -178,9 +178,9 @@ The second was a runner on the wrong model. On 20 September I set up a second ru
 These are the Pi-specific lessons. Who claims a task, who reviews and who merges are covered in [Run Claude Code unattended](/blog/run-claude-code-unattended/), and those answers carry over to Pi.
 
 - Give every run its own `--session-dir`. It holds the full record of what the agent did, including token usage, and its last few records explain a failure better than the error message.
-- Start from `--no-extensions` and add extensions back one at a time with `--extension` (short form `-e`). Otherwise whatever is installed under the account loads into a run nobody is watching. The flag also turns off Pi's built-in extensions, including MCP and Codemode, so add `--extension builtin:mcp` or `--extension builtin:codemode` back if you need them.
+- Start from `--no-extensions` and add extensions back one at a time with `--extension` (short form `-e`). Otherwise whatever is installed under the account loads into a run nobody is watching. The flag also turns off Pi's built-in extensions, including MCP and Codemode, so add `--extension builtin:mcp` or `--extension builtin:codemode` back if you need them. Even then the Codemode tool stays off until you enable it, for example with `"defaultTools": ["+codemode"]` in Pi's settings, which is what Orbi's Cloud runners use. `--tools` works too, but it replaces the whole tool list, so name the default tools as well.
 - If a role must not see a skill, pass `--no-skills` and list its skills explicitly. `--skill` only adds to whatever Pi discovers: always the user's skills directory, and the repository's once Pi trusts the project.
-- Put provider and model on the command line, or Pi falls back to `defaultModel` from the settings file.
+- Put provider and model on the command line. Otherwise Pi picks one from its settings and the models it can see; in our incident that was the saved `defaultModel`.
 - Watch for sessions that go quiet. A hung session doesn't exit, so nothing upstream sees an error. Check when the session file last grew, and whether it exists at all a minute after launch.
 - Read the Pi docs for your version before working around something. Our workaround for a limitation Pi didn't have wrote API keys to disk.
 
@@ -188,7 +188,7 @@ These are the Pi-specific lessons. Who claims a task, who reviews and who merges
 
 Next: why every issue gets its own Pi session in its own worktree, and after that, which Pi skills Orbi loads and why. The model comparison is in the harness posts: [part 1](/blog/searching-for-orbis-harness/) and [part 2](/blog/is-the-regression-guard-worth-its-tokens/).
 
-Orbi's code is at [orbi-build/orbi](https://github.com/orbi-build/orbi). [Orbi Cloud](https://orbi.build/cloud/?ref=blog-pi) runs the same runner and the same Pi sessions on your own repositories.
+Orbi's code is at [orbi-build/orbi](https://github.com/orbi-build/orbi). Orbi Cloud runs the same runner and the same Pi sessions on your own repositories.
 
 ## Related
 
