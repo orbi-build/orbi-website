@@ -1,7 +1,7 @@
 ---
 title: Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么
 date: 2026-10-05
-summary: Orbi 交付的每张 GitHub issue，写代码的都是 Pi 编程 agent。这篇讲我们怎么调用 Pi、为什么选它，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。
+summary: 跟着一张真实的 GitHub issue，看 Orbi 为它起了哪几个 Pi 会话、每一步发生了什么、花了多少，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。
 lang: zh
 author: Orbi
 image: /img/blog-orbi-on-pi-card.png
@@ -12,7 +12,44 @@ Orbi 里所有写代码的活都交给 [Pi 编程 agent](https://pi.dev)。我�
 
 我是 Lawrence Liu，Orbi 的维护者。Orbi 的用法是：给 GitHub issue 打上 `ai-ready` 标签，它交回一个评审过、已合并的 PR；另开一张发版票，它把合并的改动发成带 tag 的版本。从 2026 年 9 月 16 日到 10 月 5 日 11 点（北京时间），Orbi Cloud 的托管 runner 一共合并了 365 个 PR。其中 334 个在 Orbi 自己的三个仓库里（orbi、orbi-cloud、orbi-website），因为 Orbi 的开发本身就交给 Orbi；11 个在我们组织下别人开源项目的 fork 和一个测试仓库里；另外 20 个在别人的 9 个仓库里。这些交付全部跑在 Pi 会话上。
 
-这是讲 Orbi 架构的系列第一篇。先看我们给 Pi 传的命令行，再说为什么选它，最后讲 Pi 留给用户自己搭的那一层，我们放在了哪里。
+这是 Orbi 和 Pi 系列的第一篇。不空讲架构，先跟着一张真实的 issue 走一遍，看 Orbi 为它起了哪些 Pi 会话；再看命令行、全部交付的数据，以及 Pi 留给用户自己搭的那一层。
+
+## 一张 issue 从头到尾
+
+这张 issue 是 [orbi#1554](https://github.com/orbi-build/orbi/issues/1554)，正好和 Pi 本身有关。Orbi 会在每个 worktree 里写一份本次 run 专用的 Pi `models.json`。Pi 0.84.3 读不懂这个文件里的 `$VAR` 引用，所以 Orbi 只能先把 API key 解析出来，明文写进去。Pi 1.0 自己会展开 `$NAME` 和 `${NAME}`，正确的做法就变成：保留引用，不再写 key。我半夜开了这张票，打上 `ai-ready`，就去睡了。
+
+<figure class="post-media">
+<img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从冻结的 base 建 worktree，推送、开 PR，合并闸门检查 base 是否为绿、CI 和评审结论。Pi 会话：实现会话（plan.md、改代码、测试、commit）和评审会话（审、修、输出 REVIEW_VERDICT）。一条红色虚线表示 CI 红了回到修复会话；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
+</figure>
+
+下面是这张 issue 自己的时间线（北京时间）：
+
+| 时间 | 发生了什么 |
+|---|---|
+| 03:21 | 开票，打上 `ai-ready`。 |
+| 03:31 | runner 认领，起了第一个 Pi 会话（run `598a0fb3`）。 |
+| 03:42 | 实现会话提交了修复：`fix(pi): keep apiKey env-var references verbatim in per-run models.json`。runner 推送，开了 [PR #1555](https://github.com/orbi-build/orbi/pull/1555)。 |
+| 03:47、04:08 | CI 两次失败，失败指纹相同，挂在一个文档测试上，这个测试在 `main` 上也是红的。每次 runner 都把 PR 送回修复会话。 |
+| 04:22 | 评审会话停在交付闸门：`main` 本身在 `macos-compatibility` 这项检查上就是红的。issue 被标成 `ai-blocked`。 |
+| 12:06 | 另一张同样由 Orbi 交付的票 [orbi#1552](https://github.com/orbi-build/orbi/issues/1552)，把 `main` 上那个挂掉的文档测试修好了。 |
+| 13:39 | 我把 #1554 放回队列，分支也接上了新的 `main`。 |
+| 13:58 | 评审通过，没有问题，runner 合并了 PR。 |
+
+Orbi 在 issue 上维护着一条不停更新的进度评论，上面大部分信息来自 Pi 的会话文件：现在是哪个角色在跑、Pi 最后一次有输出是什么时候、会话 id、当前阶段。`phase: codemode` 表示会话正处在 Pi 1.0 Codemode 的工具调用里：模型写一小段脚本，一步串起好几次工具调用。
+
+<figure class="post-media">
+<img src="/img/blog-orbi-on-pi-progress.webp" alt="Orbi 在 orbi#1554 上的进度评论（英文界面）：PR #1555 已合并，review_rounds=1；role: review；测试 4034 个通过、11 个跳过，用时 7 分 38 秒；展开的 Run details 里有 run_id 598a0fb3、phase codemode、已用 16 分 57 秒、分支名和 Pi 会话 id。" width="1200" height="731">
+<figcaption>orbi#1554 上的进度评论，2026 年 10 月 5 日截图。</figcaption>
+</figure>
+
+闸门拦下来的时候没有硬闯，而是写明原因，把决定交给人：
+
+<figure class="post-media">
+<img src="/img/blog-orbi-on-pi-blocked.webp" alt="Orbi 在 orbi#1554 上的卡住评论（英文界面）：Orbi blocked，等待人来决定。原因：PR #1555 的独立评审失败，交付闸门发现 main 在 macos-compatibility 检查上已经是红的，要求先修 main。" width="1200" height="331">
+<figcaption>闸门的意思是：PR 本身没问题，但它要合进去的 base 是红的。</figcaption>
+</figure>
+
+Orbi Cloud 的用量记录把这次交付算了总账：4 个 Pi 会话，其中 3 次是续跑；Pi 一共跑了 51 分钟，164 次模型请求，输出 10.8 万 token，缓存读取 841 万 token，模型全是 `deepseek-flash`。04:22 到 13:39 这段时间，大部分是 issue 在等我，不是 Pi 在干活。
 
 ## Orbi 怎么调用 Pi
 
@@ -28,11 +65,34 @@ pi [--no-tools] [--no-extensions [--extension <白名单里的扩展>]] \
 
 会话分三种角色，参数各不相同：
 
-- **实现**：有工具，加载交付用的 skill，用实现模型。在这张 issue 的 worktree 里写计划、改代码、跑测试，最后停在一次 commit 上。
+- **实现**：有工具，加载交付用的 skill，用实现模型。动代码之前先写 `.orbi/plan.md`（目标、看过的上下文、仓库决策、任务、验证命令），然后在这张 issue 的 worktree 里改代码、跑测试，最后停在一次 commit 上。
 - **评审**：对着 PR 另起一个会话。Orbi 不给它传 `tdd-dev` 和 `review-fix-loop` 这两个 skill，因为它的活是审这一份 diff、把问题修掉，不是再走一遍交付。评审可以换一个模型（`review_pi_provider`、`review_pi_model`），最后必须输出一行 `REVIEW_VERDICT {...}` JSON，由 Orbi 解析。
 - **答复**：只在 issue 上作答，不改任何东西。带 `--no-tools`，Orbi 不给它传任何扩展参数，输出就是 Orbi 要贴到 issue 上的那段文字。
 
-`--session-dir` 比我们当初想的重要。每个 run 一个目录，Pi 把会话以 JSONL 写在里面。Orbi 一边读这个文件，一边把进度实时贴到 issue 上（[orbi#24](https://github.com/orbi-build/orbi/issues/24)）。在 Orbi Cloud 上，真正的 `pi` 外面套了一层很薄的包装，每个会话结束后重读这些文件、把 token 用量加起来；Cloud 上每次交付的用量就来自这些汇总，每月累计用到多少、有没有到套餐上限，也按它们来判断。
+`--session-dir` 比我们当初想的重要。每个 run 一个目录，Pi 把会话以 JSONL 写在里面，每条消息、每次工具结果一条记录。Orbi 一边读这个文件，一边把进度实时贴到 issue 上（[orbi#24](https://github.com/orbi-build/orbi/issues/24)）；run 失败时，再把最后 20 条记录附到失败评论里。下面是 #1554 那次被拦下的评审会话最后几条记录，经 Orbi 摘要后的样子：
+
+```text
+2026-10-04T20:13:35.691Z message role=assistant content=thinking,toolCall:codemode
+2026-10-04T20:13:35.899Z message role=toolResult tool=codemode content=text,text
+2026-10-04T20:13:37.044Z message role=assistant content=toolCall:codemode
+2026-10-04T20:13:37.175Z message role=toolResult tool=codemode content=text,text
+```
+
+在 Orbi Cloud 上，真正的 `pi` 外面套了一层很薄的包装，每个会话结束后重读这些文件、把 token 用量加起来。Cloud 上每次交付的用量就来自这些汇总，每月累计用到多少、有没有到套餐上限，也按它们来判断。
+
+## 186 次交付，Pi 会话花了多少
+
+这些用量记录目前覆盖了 186 次交付，模型全是 `deepseek-flash`。合起来是 399 个 Pi 会话、213 次续跑、24,285 次模型请求。按每次交付算：
+
+| | 中位数 | 90 分位 |
+|---|---|---|
+| Pi 运行时间 | 35 分钟 | 89 分钟 |
+| 模型请求 | 107 次 | 238 次 |
+| 输出 token | 69,502 | 188,228 |
+| 未命中缓存的输入 token | 133,413 | 318,496 |
+| 缓存读取 token | 676 万 | 1,920 万 |
+
+最后一行让我们有点意外。中位数那次交付里，97.7% 的输入 token 都是缓存读取。Pi 会话会反复带上一段很长、基本不变的上下文（系统提示词、issue、已经读过的文件），这部分大多直接从缓存里出。[一次合并交付在 Pi + DeepSeek 上花多少钱](/zh/blog/deepseek-coding-agent-cost-per-merged-pr/)，很大程度上就由这一点决定。
 
 ## 为什么一直用 Pi
 
@@ -44,17 +104,21 @@ Orbi 从 8 月的第一批提交起就在驱动 Pi，当初选它之前并没有
 
 ## Pi 留给用户的那一层，Orbi 放在哪
 
-Pi 对自己核心里不做什么说得很直白。它的首页除了已经内置的 MCP，还列了五样：子 agent、权限弹窗、plan 模式、待办、后台 bash，每一样都给了自己补的办法：扩展、第三方包、容器、写文件、tmux（2026 年 10 月 5 日查看）。Orbi 没有给 Pi 加上这些功能，而是在 runner 里，从交付的角度各做了一件对应的事。表格最后一列写的是每件事管到哪里为止。
+Pi 对自己核心里不做什么说得很直白。它的首页除了已经内置的 MCP，还列了五样：子 agent、权限弹窗、plan 模式、待办、后台 bash，每一样都给了自己补的办法：扩展、第三方包、容器、写文件、tmux（2026 年 10 月 5 日查看）。Orbi 没有给 Pi 加上这些功能，而是在 runner 里，从交付的角度各做了一件对应的事。
+
+<figure class="post-media">
+<img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具（包括 Pi 1.0 的 Codemode），skill，会话写成 JSONL，白名单里的扩展。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个 base 冻结的 worktree，按角色起会话，合并闸门检查 base、CI 和评审结论，每 5 分钟调度并停掉卡住的会话，从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
+</figure>
 
 | Pi 核心里没有的 | Pi 建议的补法 | Orbi 的做法，以及边界 |
 |---|---|---|
 | 权限弹窗 | 放进容器跑，或者用扩展做确认流程 | 每张 issue 一个独立的 git worktree，从 base 分支冻结的 commit 建出来。实现会话停在 commit，由 runner 推送、开 PR，再由 runner 合并评审通过的那个 head（如果 base 分支在这期间有了新提交、又能无冲突合并，runner 会先把 base 合进来，仓库配了 CI 的话等新 head 的 CI 通过再合，不会重新评审）。这管的是什么能合并，管不到一次工具调用能碰什么。后者 Pi 自己的[安全文档](https://pi.dev/docs/latest/security)建议靠容器和沙箱。在 Orbi Cloud 上，每个租户的 runner 是一个独立的系统用户，有自己的资源配额，这比 Pi 推荐的容器边界要窄。 |
 | 子 agent | 用 tmux 起多个 Pi，或用扩展、第三方包 | runner 按角色起独立的 Pi 会话：实现、评审、答复，各自单独一个会话。它们不是会话内部的子 agent。 |
-| plan 模式 | 把计划写进文件，或用扩展、第三方包 | 动代码之前，实现会话先写 `.orbi/plan.md`：目标、看过的上下文、仓库决策、任务、验证命令。会话的上下文被压缩之后，就靠它接上。 |
+| plan 模式 | 把计划写进文件，或用扩展、第三方包 | 实现会话动代码之前先写 `.orbi/plan.md`。会话的上下文被压缩之后，就靠它接上。 |
 | 待办 | 写 `TODO.md`，或者用扩展自己做 | 会话之间，GitHub Issues 就是任务队列，`ai-ready` 标签是入口。会话内部，agent 仍然没有待办工具。 |
 | 后台 bash | tmux | 在 Orbi 里，agent 同样没有后台 bash。在后台跑的是 runner：systemd 定时器（macOS 上是 launchd）每 5 分钟跑一次，长时间没有输出的会话会被发现并终止（[orbi#94](https://github.com/orbi-build/orbi/issues/94)）。 |
 
-在这些之外，同一个 `run_id` 把日志、issue 评论和 PR 串在一起；Orbi 自己修不了的失败，会把 issue 标成 `ai-blocked`，交给人决定下一步。
+在这些之外，同一个 `run_id` 把日志、issue 评论和 PR 串在一起；Orbi 自己修不了的失败，会把 issue 标成 `ai-blocked`，交给人决定下一步，#1554 就是这样。
 
 ### 为什么放在 Pi 外面，而不做成扩展
 
@@ -62,27 +126,32 @@ Pi 对自己核心里不做什么说得很直白。它的首页除了已经内�
 
 **合不合并，不能由被评判的会话自己决定。** 如果合并闸门是加载进实现会话的扩展，它跑不跑，就取决于这个会话自己的配置。在 Orbi 里，Pi 会话只产出 commit 和评审结论，什么能合并由 runner 决定。评审会话发现问题可以自己修、推到任务分支，修完之后判定没问题的也是它自己，所以评审和它自己的修改并不完全独立。合并是 runner 的步骤：评审的提示词要求它不要合并，合并由 runner 用 `gh pr merge --match-head-commit` 完成。这是职责分工，不是权限隔离，评审会话带着工具、和 runner 跑在同一个环境里。
 
-**无人值守的会话必须从已知状态起步。** Pi 会加载当前用户装过的所有东西。有一个用户级扩展就曾让我们的 run 在 systemd 下卡死：它启动时发起一个 D-Bus 调用，偶尔一直不返回，会话就一直空等，直到卡住检测把它停掉（[排查见 orbi#311](https://github.com/orbi-build/orbi/issues/311)，[修复见 orbi#249](https://github.com/orbi-build/orbi/issues/249)）。从那以后，实现和评审会话都以 `--no-extensions` 启动，只加回 Orbi 配置里白名单上的扩展。
+**无人值守的会话必须从已知状态起步。** 这就是下面第一个事故。
 
 **换 agent 的时候，这几道关不会跟着走。** worktree、评审、合并闸门都在 runner 里，所以测评里 Claude Code 和 zcode 的桥，跑在和 Pi 完全相同的闸门之下。哪天真要换 agent，这几道关也都还在原处。
 
 10 月 1 日，Earendil 和 Pi 社区发布了 Pi 1.0，一起发布的还有 [Pi Durable](https://earendil.com/posts/pi-durable/)：一个独立的、实验性的 TypeScript 框架，用来写长时间运行的 agent 应用，带后台任务、基于 checkpoint 的崩溃恢复，以及可以在上面搭审批的 hook。我们估计它不会改变上面的分工。Durable 管的是让一次运行活下来、能恢复；Orbi 的闸门管的是这次运行的产出能不能合并，我们希望它待在 agent 进程之外。Orbi 是 Python 写的，通过命令行驱动 Pi，Durable 我们还没有评估过。
 
-我们并不觉得 Pi 该把这些做进核心。正因为它核心小，我们用一条命令行就够了。
+## 两次事故，改变了我们跑 Pi 的方式
+
+**一个插件，让会话在发出第一个请求之前就卡死。** 9 月 4 日晚上，run 开始在 Pi 发出任何模型请求之前就卡住。那一晚一个接一个，z.ai 和 Gemini 上都出现过，每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 `ai-blocked`。卡住的 `pi` 进程还活着，但几乎不动（两分半钟只用了 2 秒 CPU），没有任何连到模型 API 的 TCP 连接，唯一的 socket 是当前用户的 D-Bus。会话目录是空的，Pi 连会话文件都还没建。同样的配置，在 shell 里手动跑了 20 多次全部成功，只有 systemd 用户服务拉起来的 run 会卡。原因是一个用户级的 Pi 包 `pi-mcp-adapter`：它启动时通过 D-Bus 初始化系统钥匙串，在 systemd 环境里，这个调用偶尔永远不返回。把它从 `~/.pi/agent/settings.json` 里拿掉之后，同一个 run 15 秒就拿到了第一个模型响应（[排查见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。永久的修法是干脆不再继承用户的插件：实现和评审会话都以 `--no-extensions` 启动，只加载 Orbi 配置里声明的扩展（[orbi#249](https://github.com/orbi-build/orbi/issues/249)）。
+
+**一个跑错了模型的 runner。** 9 月 20 日，我们新配了一个 runner，本来要通过 Pi 用 GPT 模型。写的配置里有仓库，却漏了 `pi_provider` 和 `pi_model`，于是 Orbi 没传 `--provider` 和 `--model`，Pi 用的是账号 settings 里的 `defaultModel`。runner 的日志里打出来的是 `provider=LLAMA_INTRANET model=qwen3.8:27b`，一个本地模型，而我们一直以为它是 GPT runner。什么都没报错，这才是问题所在。现在我们会直接看 runner 实际要用的 provider 和模型（`orbi doctor` 会打印出来），不再读配置、靠推断。
 
 ## 如果你也想无人值守地跑 Pi
 
 下面是我们 runner 上踩出来的、Pi 特有的几条。通用的那部分（谁认领任务、谁评审、谁合并、谁发版）在[无人值守地跑 Claude Code](/zh/blog/run-claude-code-unattended/) 里，对 Pi 一样适用。
 
-- **每个 run 一个独立的 `--session-dir`。** 只有它完整记录了 agent 做过什么，token 用量也在里面。
+- **每个 run 一个独立的 `--session-dir`。** 只有它完整记录了 agent 做过什么，token 用量也在里面，最后几条记录就是你能拿到的最好的失败报告。
 - **从 `--no-extensions` 起步。** 需要什么扩展再显式加。不然你自己账号下装的东西，会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP，用得到的话要加回 `-e builtin:mcp`。
-- **skill 按角色分，还要管住自动发现。** 评审会话要是加载了实现那一套流程 skill，它会去「交付」，而不是评审。注意 `--skill` 是在 Pi 从用户目录和项目目录自动发现的 skill 之外再加；要让某个角色看不到某个 skill，还得加 `--no-skills` 或者保证 skill 目录干净。
-- **provider 和模型写在命令行上。** 不写的话，Pi 会用 settings 里的 `defaultModel`，无人值守的 runner 察觉不到。我们就遇到过：以为 runner 跑的是某个模型，日志一看，跑的是全局默认。
-- **盯住长时间没输出的会话。** 卡住的会话不退出，上游也就永远看不到报错。
+- **skill 按角色分，还要管住自动发现。** 评审会话要是加载了实现那一套流程 skill，它会去「交付」，而不是评审。`--skill` 是在 Pi 从用户目录和项目目录自动发现的 skill 之外再加；要让某个角色看不到某个 skill，还得加 `--no-skills` 或者保证 skill 目录干净。
+- **provider 和模型写在命令行上。** 不写的话，Pi 会用 settings 里的 `defaultModel`，无人值守的 runner 察觉不到。
+- **盯住长时间没输出的会话。** 卡住的会话不退出，上游也就永远看不到报错。要看会话文件最后一次变大是什么时候，而不只是进程还在不在。
+- **升级 Pi 时读一遍发布说明。** Pi 1.0 在 `models.json` 里支持环境变量展开，改变了我们该怎么做，#1554 就是这么来的。
 
 ## 系列接下来写什么
 
-接下来会写：无人值守地跑 Pi 的细节（卡住检测，以及那次 D-Bus 卡死的完整排查）、为什么每张 issue 都在自己的 worktree 里单独起一个 Pi 会话、Orbi 用了哪些 Pi skill。harness 测评已经发了[第一篇](/zh/blog/searching-for-orbis-harness/)和[第二篇](/zh/blog/is-the-regression-guard-worth-its-tokens/)，每次合并交付在 Pi + DeepSeek 上花多少钱也写过：[每个合并 PR 的成本](/zh/blog/deepseek-coding-agent-cost-per-merged-pr/)。
+接下来会写：为什么每张 issue 都在自己的 worktree 里单独起一个 Pi 会话，以及 Orbi 加载了哪些 Pi skill、为什么。harness 测评已经发了[第一篇](/zh/blog/searching-for-orbis-harness/)和[第二篇](/zh/blog/is-the-regression-guard-worth-its-tokens/)。
 
 Orbi 开源在 [orbi-build/orbi](https://github.com/orbi-build/orbi)。[Orbi Cloud](https://orbi.build/zh/cloud/?ref=blog-pi) 用的是同一个 runner、同样的 Pi 会话，跑在你自己的仓库上。
 

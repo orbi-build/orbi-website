@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi on Pi: what we built around the Pi coding agent | Orbi</title>
-  <meta name="description" content="Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.">
+  <meta name="description" content="One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.">
   <link rel="canonical" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Orbi on Pi: what we built around the Pi coding agent">
-  <meta property="og:description" content="Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.">
+  <meta property="og:description" content="One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.">
   <meta property="og:url" content="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
   <meta property="og:image:alt" content="Orbi on Pi: what we built around the Pi coding agent">
   <meta property="article:published_time" content="2026-10-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi on Pi: what we built around the Pi coding agent","datePublished":"2026-10-05","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"en","description":"Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.","url":"https://orbi.build/blog/orbi-on-pi-coding-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi on Pi: what we built around the Pi coding agent","datePublished":"2026-10-05","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"en","description":"One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.","url":"https://orbi.build/blog/orbi-on-pi-coding-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -143,7 +143,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog · 2026-10-05</p>
           <h1 id="post-title">Orbi on Pi: what we built around the Pi coding agent</h1>
-          <p class="hero-lede">Orbi runs every GitHub issue it delivers through the Pi coding agent. How we call Pi, why we stay on it, and the layer Pi leaves to you that we built outside.</p>
+          <p class="hero-lede">One real GitHub issue followed through every Pi session Orbi ran for it, what those sessions cost, and the layer Pi leaves to you that we built outside it.</p>
         </section>
       </div>
     </div>
@@ -152,12 +152,15 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
+          <li><a class="post-toc-link" href="#one-issue-start-to-finish">One issue, start to finish</a></li>
           <li><a class="post-toc-link" href="#how-orbi-calls-pi">How Orbi calls Pi</a></li>
+          <li><a class="post-toc-link" href="#what-pi-sessions-cost-across-186-deliveries">What Pi sessions cost, across 186 deliveries</a></li>
           <li><a class="post-toc-link" href="#why-we-stay-on-pi">Why we stay on Pi</a></li>
           <li><a class="post-toc-link" href="#what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</a>
             <ol>
               <li><a class="post-toc-link" href="#why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</a></li>
             </ol></li>
+          <li><a class="post-toc-link" href="#two-incidents-that-shaped-how-we-run-pi">Two incidents that shaped how we run Pi</a></li>
           <li><a class="post-toc-link" href="#if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</a></li>
           <li><a class="post-toc-link" href="#what-s-next-in-this-series">What's next in this series</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -165,14 +168,17 @@
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>On this page · 6 sections</summary>
+          <summary>On this page · 9 sections</summary>
           <ol>
+          <li><a class="post-toc-link" href="#one-issue-start-to-finish">One issue, start to finish</a></li>
           <li><a class="post-toc-link" href="#how-orbi-calls-pi">How Orbi calls Pi</a></li>
+          <li><a class="post-toc-link" href="#what-pi-sessions-cost-across-186-deliveries">What Pi sessions cost, across 186 deliveries</a></li>
           <li><a class="post-toc-link" href="#why-we-stay-on-pi">Why we stay on Pi</a></li>
           <li><a class="post-toc-link" href="#what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</a>
             <ol>
               <li><a class="post-toc-link" href="#why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</a></li>
             </ol></li>
+          <li><a class="post-toc-link" href="#two-incidents-that-shaped-how-we-run-pi">Two incidents that shaped how we run Pi</a></li>
           <li><a class="post-toc-link" href="#if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</a></li>
           <li><a class="post-toc-link" href="#what-s-next-in-this-series">What's next in this series</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
@@ -180,7 +186,61 @@
         </details>
 <p>Orbi uses the <a href="https://pi.dev">Pi coding agent</a> for all of its coding work. We call Pi from the command line, one session per role for each issue, and Orbi&#39;s runner handles the delivery around those sessions: which issue to work on, keeping the implementer and the reviewer apart, deciding what merges, scheduling and recovery. Pi is MIT-licensed and made by Earendil (<a href="https://github.com/earendil-works/pi">earendil-works/pi</a>). Orbi is not part of the Pi project.</p>
 <p>I&#39;m Lawrence Liu, and I maintain Orbi. Orbi takes a GitHub issue labelled <code class="post-code--single">ai-ready</code> and hands back a reviewed, merged pull request. A separate release issue turns merged work into a tagged release. From 16 September to 11:00 on 5 October 2026 (UTC+8), Orbi Cloud&#39;s managed runners merged 365 pull requests. 334 were in Orbi&#39;s own three repositories (orbi, orbi-cloud and orbi-website), because Orbi builds Orbi. 11 were in forks of other open-source projects and a test repository in our organization, and 20 were in 9 repositories owned by other people. Every one of those deliveries ran through Pi sessions.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<p>This is the first post in a series on how Orbi is built. It starts with the command line we send to Pi, then the two reasons we chose it, then where we put the layer Pi leaves to you.</p>
+<p>This is the first post in a series about Orbi and Pi. Instead of describing the architecture in the abstract, it follows one real issue through every Pi session Orbi ran for it, then looks at the command line, the numbers across all deliveries, and the parts of the job Pi leaves to you.</p>
+<h2 id="one-issue-start-to-finish">One issue, start to finish</h2>
+<p>The issue is <a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a>, and it happens to be about Pi itself. Orbi writes a per-run copy of Pi&#39;s <code class="post-code--single">models.json</code> into each worktree. Pi 0.84.3 couldn&#39;t read <code class="post-code--single">$VAR</code> references in that file, so Orbi resolved API keys and wrote them out in plain text. Pi 1.0 interpolates <code class="post-code--single">$NAME</code> and <code class="post-code--single">${NAME}</code> itself, so the right fix was to keep the reference and stop writing the key. I filed it in the middle of the night, labelled it <code class="post-code--single">ai-ready</code> and went to bed.</p>
+<figure class="post-media">
+<img src="/img/diagrams/orbi-pi-flow.svg" alt="One issue through Orbi and Pi, in three lanes. GitHub: the issue is labelled ai-ready, CI checks run, and the issue ends as ai-merged. Orbi runner: claim with a worktree from a frozen base, push and open the PR, and a merge gate that checks base green, CI and the verdict. Pi sessions: an implement session (plan.md, code, tests, commit) and a review session that reviews, fixes and ends with REVIEW_VERDICT. A red dashed loop sends red CI back to a fix session, and a failed gate leads to ai-blocked, where a person decides." width="1050" height="470">
+</figure><p>Here is what happened, from the issue&#39;s own timeline (UTC+8):</p>
+<div class="post-table-scroll"><table>
+<thead>
+<tr>
+<th>Time</th>
+<th>What happened</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>03:21</td>
+<td>Issue filed and labelled <code class="post-code--single">ai-ready</code>.</td>
+</tr>
+<tr>
+<td>03:31</td>
+<td>The runner claimed it and started the first Pi session (run <code class="post-code--single">598a0fb3</code>).</td>
+</tr>
+<tr>
+<td>03:42</td>
+<td>The implementer committed the fix, <code class="post-code--spaced">fix(pi): keep apiKey env-var references verbatim in per-run models.json</code>. The runner pushed and opened <a href="https://github.com/orbi-build/orbi/pull/1555">PR #1555</a>.</td>
+</tr>
+<tr>
+<td>03:47, 04:08</td>
+<td>CI failed twice with the same fingerprint, in a docs test that was failing on <code class="post-code--single">main</code> too. Each time the runner sent the PR back to a fix session.</td>
+</tr>
+<tr>
+<td>04:22</td>
+<td>The review session stopped at the delivery gate: <code class="post-code--single">main</code> itself was already red on a check called <code class="post-code--single">macos-compatibility</code>. The issue went to <code class="post-code--single">ai-blocked</code>.</td>
+</tr>
+<tr>
+<td>12:06</td>
+<td>A different issue, <a href="https://github.com/orbi-build/orbi/issues/1552">orbi#1552</a>, also delivered by Orbi, fixed the failing docs test on <code class="post-code--single">main</code>.</td>
+</tr>
+<tr>
+<td>13:39</td>
+<td>I moved #1554 back to the queue, and the branch picked up the new <code class="post-code--single">main</code>.</td>
+</tr>
+<tr>
+<td>13:58</td>
+<td>Review passed with no findings, and the runner merged the PR.</td>
+</tr>
+</tbody></table></div>
+<p>The comment Orbi keeps editing on the issue shows where the run is. Most of what it says comes from Pi&#39;s session file: which role is running, when Pi last produced output, the session id, and the phase. <code class="post-code--spaced">phase: codemode</code> means the session was in a tool call through Pi 1.0&#39;s Codemode, where the model writes a short script that composes several tool calls in one step.</p>
+<figure class="post-media">
+<img src="/img/blog-orbi-on-pi-progress.webp" alt="Orbi's progress comment on orbi#1554: PR #1555 merged with review_rounds=1; role: review; tests: 4034 passed, 11 skipped in 7 minutes 38 seconds; run details with run_id 598a0fb3, phase codemode, elapsed 16m 57s, the branch name and the Pi session id." width="1200" height="731">
+<figcaption>The progress comment on orbi#1554, captured on 5 October 2026.</figcaption>
+</figure><p>When the gate stopped, it didn&#39;t guess. It posted why and left the decision to a person:</p>
+<figure class="post-media">
+<img src="/img/blog-orbi-on-pi-blocked.webp" alt="Orbi's blocked comment on orbi#1554: Orbi blocked, waiting on a human decision. Reason: the independent review of PR #1555 failed: delivery gate: main is already red on check macos-compatibility, fix main first." width="1200" height="331">
+<figcaption>The gate's message: the PR was fine, but the base it would merge into was red.</figcaption>
+</figure><p>Orbi Cloud&#39;s usage records add up the whole delivery: 4 Pi sessions, 3 of them resumes, 51 minutes of Pi runtime, 164 model requests, 108 thousand output tokens and 8.4 million cache-read tokens, all on <code class="post-code--single">deepseek-flash</code>. Most of the wall-clock time between 04:22 and 13:39 was the issue waiting for me, not Pi working.</p>
 <h2 id="how-orbi-calls-pi">How Orbi calls Pi</h2>
 <p>Every Pi session Orbi starts is one <code class="post-code--spaced">pi --print</code> process. Stripped of the prompt text, the command has this shape (from <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">src/orbi/pi_command.py</code></a>):</p>
 <pre><code class="language-text">pi [--no-tools] [--no-extensions [--extension &lt;allowlisted&gt;]] \
@@ -191,18 +251,63 @@
 </code></pre>
 <p>There are three roles, and each gets its own flags:</p>
 <ul>
-<li><strong>Implementer.</strong> Gets tools, the delivery skills and the implementation model. It plans, writes the change and runs the tests in the issue&#39;s worktree, then stops at a commit.</li>
+<li><strong>Implementer.</strong> Gets tools, the delivery skills and the implementation model. Before touching code it writes <code class="post-code--single">.orbi/plan.md</code> (goal, context, repository decision, tasks, verification commands), then changes the code and runs the tests in the issue&#39;s worktree, and stops at a commit.</li>
 <li><strong>Reviewer.</strong> A separate session on the pull request. Orbi doesn&#39;t pass it the <code class="post-code--single">tdd-dev</code> and <code class="post-code--single">review-fix-loop</code> skills, because its job is to review one diff and fix it, not to start another delivery. It can use a different model (<code class="post-code--single">review_pi_provider</code> and <code class="post-code--single">review_pi_model</code>), and it has to end with a single <code class="post-code--spaced">REVIEW_VERDICT {...}</code> JSON line that Orbi parses.</li>
 <li><strong>Ticket.</strong> Answers on an issue without changing anything. It runs with <code class="post-code--single">--no-tools</code>, Orbi passes it none of its extension flags, and its output is the text Orbi posts.</li>
 </ul>
-<p><code class="post-code--single">--session-dir</code> turned out to matter more than we expected. Each run gets its own directory, and Pi writes the session there as JSONL. Orbi tails that file to post live progress on the issue (<a href="https://github.com/orbi-build/orbi/issues/24">orbi#24</a>). On Orbi Cloud, a thin wrapper around the real <code class="post-code--single">pi</code> binary rereads the same files after each session to total the token usage. Cloud&#39;s per-delivery usage comes from those totals, and the monthly token cap is checked against them.</p>
+<p><code class="post-code--single">--session-dir</code> turned out to matter more than we expected. Each run gets its own directory, and Pi writes the session there as JSONL, one record per message and tool result. Orbi tails that file to post live progress on the issue (<a href="https://github.com/orbi-build/orbi/issues/24">orbi#24</a>), and when a run fails it attaches the last 20 records to the failure comment. These are the last records of #1554&#39;s blocked review session, as Orbi summarised them:</p>
+<pre><code class="language-text">2026-10-04T20:13:35.691Z message role=assistant content=thinking,toolCall:codemode
+2026-10-04T20:13:35.899Z message role=toolResult tool=codemode content=text,text
+2026-10-04T20:13:37.044Z message role=assistant content=toolCall:codemode
+2026-10-04T20:13:37.175Z message role=toolResult tool=codemode content=text,text
+</code></pre>
+<p>On Orbi Cloud, a thin wrapper around the real <code class="post-code--single">pi</code> binary rereads the same files after each session and totals the token usage. Cloud&#39;s per-delivery usage comes from those totals, and the monthly token cap is checked against them.</p>
+<h2 id="what-pi-sessions-cost-across-186-deliveries">What Pi sessions cost, across 186 deliveries</h2>
+<p>Those usage records cover 186 deliveries harvested so far, all on <code class="post-code--single">deepseek-flash</code>. Across them there were 399 Pi sessions, 213 resumes and 24,285 model requests. Per delivery:</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th></th>
+<th>Median</th>
+<th>90th percentile</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pi runtime</td>
+<td data-label="Median">35 minutes</td>
+<td data-label="90th percentile">89 minutes</td>
+</tr>
+<tr>
+<td>Model requests</td>
+<td data-label="Median">107</td>
+<td data-label="90th percentile">238</td>
+</tr>
+<tr>
+<td>Output tokens</td>
+<td data-label="Median">69,502</td>
+<td data-label="90th percentile">188,228</td>
+</tr>
+<tr>
+<td>Input tokens, not cached</td>
+<td data-label="Median">133,413</td>
+<td data-label="90th percentile">318,496</td>
+</tr>
+<tr>
+<td>Cache-read tokens</td>
+<td data-label="Median">6.76 million</td>
+<td data-label="90th percentile">19.2 million</td>
+</tr>
+</tbody></table></div>
+<p>The last row is the one that surprised us. In the median delivery, 97.7% of the input tokens were cache reads. A Pi session keeps resending a long, mostly unchanged context (the system prompt, the issue, the files it has already read), and the provider serves most of it from cache. That&#39;s a large part of why <a href="/blog/deepseek-coding-agent-cost-per-merged-pr/">a merged delivery on DeepSeek through Pi costs what it does</a>.</p>
 <h2 id="why-we-stay-on-pi">Why we stay on Pi</h2>
 <p>Orbi has driven Pi since its first commits in August, and we didn&#39;t write down a formal comparison before picking it. Looking back, two things keep us on it.</p>
 <p><strong>You bring your own model.</strong> Pi supports a long list of providers out of the box, and it also takes a providers file in the shape of its <code class="post-code--single">models.json</code>, which lets Orbi point it at any OpenAI-compatible endpoint (<a href="https://github.com/orbi-build/orbi/issues/157">orbi#157</a>). Not being tied to one model vendor is one of the things that sets Orbi apart (<a href="https://github.com/orbi-build/orbi/issues/305">orbi#305</a>). In our harness benchmark, <code class="post-code--single">deepseek-flash</code>, <code class="post-code--single">gpt-5.6-luna</code> and <code class="post-code--single">gpt-5.6-sol</code> all ran through the same runner and the same Pi command line.</p>
 <p><strong>Everything we need is a flag on one command.</strong> Skills, provider, model, thinking level, session directory and extensions all go on a single <code class="post-code--spaced">pi --print</code>. The same benchmark also tried Opus 5.5 through Claude Code and GLM 5.3 flash through zcode, and to fit them in we wrote bridges that translate that command line for the other agent. Both bridges silently dropped skills until we found and fixed it (<a href="/blog/searching-for-orbis-harness/">part 1 of that series</a>). That&#39;s the kind of bug a translation layer adds, and with Pi there isn&#39;t one.</p>
 <h2 id="what-pi-leaves-to-you-and-where-orbi-puts-it">What Pi leaves to you, and where Orbi puts it</h2>
-<p>Pi is upfront about what it doesn&#39;t put in its core. Besides MCP, which it now ships, its homepage lists sub-agents, permission popups, plan mode, to-dos and background bash, and suggests how to add each one yourself: extensions, third-party packages, containers, files or tmux (checked on 5 October 2026). Orbi doesn&#39;t add these features to Pi. What it has is a delivery-level counterpart to each, in the runner. The last column says where each one stops.</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p>Pi is upfront about what it doesn&#39;t put in its core. Besides MCP, which it now ships, its homepage lists sub-agents, permission popups, plan mode, to-dos and background bash, and suggests how to add each one yourself: extensions, third-party packages, containers, files or tmux (checked on 5 October 2026). Orbi doesn&#39;t add these features to Pi. What it has is a delivery-level counterpart to each, in the runner.</p>
+<figure class="post-media">
+<img src="/img/diagrams/orbi-pi-layers.svg" alt="Two panels. Pi, inside each session: calls the model you configure, tools including Pi 1.0 Codemode, skills, the session written as JSONL, and allowlisted extensions. Orbi runner, around the sessions: a queue of GitHub Issues labelled ai-ready, one worktree per issue from a frozen base, sessions per role, a merge gate on base, CI and the verdict, a tick every 5 minutes that stops stuck sessions, and token totals from the session files. Between them: one pi --print per role in one direction, and the session file, commit and verdict in the other." width="960" height="380">
+</figure><div class="post-table-scroll"><table class="table-stack">
 <thead>
 <tr>
 <th>Pi leaves out</th>
@@ -223,7 +328,7 @@
 <tr>
 <td data-label="Pi leaves out">Plan mode</td>
 <td data-label="What Pi suggests">Write plans to files, or use an extension or package</td>
-<td data-label="What Orbi does instead, and the limit">Before touching code, the implementer writes <code class="post-code--single">.orbi/plan.md</code>: goal, context, repository decision, tasks, verification commands. It&#39;s what a session falls back on if its context gets compacted.</td>
+<td data-label="What Orbi does instead, and the limit">The implementer writes <code class="post-code--single">.orbi/plan.md</code> before touching code. It&#39;s what a session falls back on if its context gets compacted.</td>
 </tr>
 <tr>
 <td data-label="Pi leaves out">To-dos</td>
@@ -236,25 +341,28 @@
 <td data-label="What Orbi does instead, and the limit">The agent doesn&#39;t get background bash in Orbi either. What runs in the background is the runner: a systemd timer (launchd on macOS) ticks every 5 minutes, and sessions that stop producing output are detected and stopped (<a href="https://github.com/orbi-build/orbi/issues/94">orbi#94</a>).</td>
 </tr>
 </tbody></table></div>
-<p>Around all of that, one <code class="post-code--single">run_id</code> ties together the journal, the issue comments and the pull request, and a failure Orbi can&#39;t fix on its own marks the issue <code class="post-code--single">ai-blocked</code> for a person to decide.</p>
+<p>Around all of that, one <code class="post-code--single">run_id</code> ties together the journal, the issue comments and the pull request, and a failure Orbi can&#39;t fix on its own marks the issue <code class="post-code--single">ai-blocked</code> for a person to decide, as #1554 showed.</p>
 <h3 id="why-outside-pi-not-as-extensions">Why outside Pi, not as extensions</h3>
 <p>Pi would let us build most of this as extensions. We didn&#39;t, and here is why.</p>
 <p><strong>The merge decision shouldn&#39;t live inside the session it judges.</strong> If the merge gate were an extension loaded into the implementer&#39;s session, that session&#39;s configuration would decide whether it ran. In Orbi, Pi sessions produce commits and a verdict; the runner decides what merges. The reviewer can fix what it finds and push to the task branch, and it&#39;s the same session that then declares the branch clean, so the review isn&#39;t fully independent of its own fixes. Merging is the runner&#39;s step. The reviewer&#39;s prompt tells it not to merge, and the runner merges with <code class="post-code--spaced">gh pr merge --match-head-commit</code>. That&#39;s a division of duties, not a permission boundary: the reviewer runs with tools in the same environment as the runner.</p>
-<p><strong>Unattended sessions have to start from a known state.</strong> A Pi installation picks up whatever its user has installed. One user-level extension once hung our runs in systemd: at startup it made a D-Bus call that sometimes never returned, and the session sat idle until stuck-session detection stopped it (<a href="https://github.com/orbi-build/orbi/issues/311">diagnosis in orbi#311</a>, <a href="https://github.com/orbi-build/orbi/issues/249">fix in orbi#249</a>). Since then, implementer and reviewer sessions start with <code class="post-code--single">--no-extensions</code> and add back only the extensions on an allowlist in Orbi&#39;s config.</p>
+<p><strong>Unattended sessions have to start from a known state.</strong> That&#39;s the first incident below.</p>
 <p><strong>Swapping the agent doesn&#39;t take the gates with it.</strong> Because the worktree, the review and the merge gate live in the runner, the Claude Code and zcode bridges in our benchmark ran under exactly the same gates as Pi. If we ever swap the agent, the controls stay where they are.</p>
 <p>On 1 October, Earendil and the Pi community shipped Pi 1.0, and with it <a href="https://earendil.com/posts/pi-durable/">Pi Durable</a>, a separate, experimental TypeScript framework for long-running agent applications, with background tasks, checkpoint-based crash recovery and hooks you can build approvals on. We don&#39;t expect it to change the split above. Durable is about keeping a run alive and resumable. Orbi&#39;s gates are about deciding whether that run&#39;s output merges, and we want them outside the agent&#39;s process. Orbi is Python and drives Pi through its CLI, and we haven&#39;t evaluated Durable yet.</p>
-<p>We don&#39;t think Pi should put any of this in its core. Its small core is the reason one command line is enough for us.</p>
+<h2 id="two-incidents-that-shaped-how-we-run-pi">Two incidents that shaped how we run Pi</h2>
+<p><strong>A plugin that hung before the first request.</strong> On 4 September, runs started hanging before Pi ever sent a model request. Run after run that evening, on z.ai and on Gemini, sat for 15 minutes until the idle timer killed it and marked the issue <code class="post-code--single">ai-blocked</code>. The hung <code class="post-code--single">pi</code> process was alive but idle (2 seconds of CPU in two and a half minutes), had no TCP connection to any model API, and its only socket was the user&#39;s D-Bus. Its session directory was empty: Pi hadn&#39;t even started the session file. The same configuration run by hand from a shell succeeded more than 20 times in a row; only runs started by the systemd user service hung. The cause was a user-level Pi package, <code class="post-code--single">pi-mcp-adapter</code>, which initialised the system keyring over D-Bus at startup, and under systemd that call sometimes never returned. With the package removed from <code class="post-code--single">~/.pi/agent/settings.json</code>, the same run got its first model response in 15 seconds (<a href="https://github.com/orbi-build/orbi/issues/311">diagnosis in orbi#311</a>). The permanent fix was to stop inheriting the user&#39;s plugins at all: implementer and reviewer sessions now start with <code class="post-code--single">--no-extensions</code> and load only the extensions declared in Orbi&#39;s config (<a href="https://github.com/orbi-build/orbi/issues/249">orbi#249</a>).</p>
+<p><strong>A runner on the wrong model.</strong> On 20 September we set up a second runner meant to use a GPT model through Pi. The config we wrote set the repository but none of the <code class="post-code--single">pi_provider</code> or <code class="post-code--single">pi_model</code> keys, so Orbi passed no <code class="post-code--single">--provider</code> or <code class="post-code--single">--model</code>, and Pi used the <code class="post-code--single">defaultModel</code> from the account&#39;s settings. The runner&#39;s journal showed <code class="post-code--spaced">provider=LLAMA_INTRANET model=qwen3.8:27b</code>, a local model, on a runner we had described as a GPT runner. Nothing failed, which is the problem. We now check the provider and model a runner will launch with (<code class="post-code--spaced">orbi doctor</code> prints them) instead of reading the config and assuming.</p>
 <h2 id="if-you-run-pi-unattended-yourself">If you run Pi unattended yourself</h2>
 <p>These are the Pi-specific lessons from our runners. The general ones (who claims a task, who reviews, who merges, who releases) are in <a href="/blog/run-claude-code-unattended/">Run Claude Code unattended</a>, and they apply to Pi just as much.</p>
 <ul>
-<li><strong>Give every run its own <code class="post-code--single">--session-dir</code>.</strong> It&#39;s the only complete record of what the agent did, and it&#39;s where the token usage is.</li>
+<li><strong>Give every run its own <code class="post-code--single">--session-dir</code>.</strong> It&#39;s the only complete record of what the agent did, it&#39;s where the token usage is, and its last records are the best failure report you&#39;ll get.</li>
 <li><strong>Start from <code class="post-code--single">--no-extensions</code>.</strong> Then add extensions explicitly. Whatever is installed for your user account will otherwise load into a run nobody is watching. The flag also turns off Pi&#39;s built-in extensions, including MCP, so add back <code class="post-code--spaced">-e builtin:mcp</code> if you use it.</li>
-<li><strong>Choose skills per role, and mind discovery.</strong> A reviewer loaded with an implementer&#39;s workflow skills will try to deliver instead of review. Note that <code class="post-code--single">--skill</code> adds to the skills Pi discovers from user and project directories; to keep a skill out of a role, you also need <code class="post-code--single">--no-skills</code> or a clean skills directory.</li>
-<li><strong>Pass provider and model on the command line.</strong> If you leave them out, Pi uses the <code class="post-code--single">defaultModel</code> from your settings, and an unattended runner won&#39;t notice. We once deployed a runner we thought was on one model, and the logs showed it was running the global default.</li>
-<li><strong>Watch for sessions that stop producing output.</strong> A hung session doesn&#39;t exit, so nothing upstream ever sees an error.</li>
+<li><strong>Choose skills per role, and mind discovery.</strong> A reviewer loaded with an implementer&#39;s workflow skills will try to deliver instead of review. <code class="post-code--single">--skill</code> adds to the skills Pi discovers from user and project directories; to keep a skill out of a role, you also need <code class="post-code--single">--no-skills</code> or a clean skills directory.</li>
+<li><strong>Pass provider and model on the command line.</strong> If you leave them out, Pi uses the <code class="post-code--single">defaultModel</code> from your settings, and an unattended runner won&#39;t notice.</li>
+<li><strong>Watch for sessions that stop producing output.</strong> A hung session doesn&#39;t exit, so nothing upstream ever sees an error. Look at when the session file last grew, not just whether the process is alive.</li>
+<li><strong>Read the Pi release notes when you upgrade.</strong> Pi 1.0&#39;s environment interpolation in <code class="post-code--single">models.json</code> changed what the right behaviour was for us, which is how #1554 came about.</li>
 </ul>
 <h2 id="what-s-next-in-this-series">What&#39;s next in this series</h2>
-<p>Next we&#39;ll write about running Pi unattended in more depth (the stuck-session detection and the D-Bus hang), why every issue gets its own Pi session in its own worktree, and the Pi skills Orbi uses. The harness work is already up: <a href="/blog/searching-for-orbis-harness/">part 1</a> and <a href="/blog/is-the-regression-guard-worth-its-tokens/">part 2</a>, and so is <a href="/blog/deepseek-coding-agent-cost-per-merged-pr/">what a merged delivery costs on DeepSeek through Pi</a>.</p>
+<p>Next: why every issue gets its own Pi session in its own worktree, and the Pi skills Orbi loads and why. The harness work is already up: <a href="/blog/searching-for-orbis-harness/">part 1</a> and <a href="/blog/is-the-regression-guard-worth-its-tokens/">part 2</a>.</p>
 <p>Orbi is open source at <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>. <a href="https://orbi.build/cloud/?ref=blog-pi">Orbi Cloud</a> runs the same runner and the same Pi sessions on your own repositories.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
