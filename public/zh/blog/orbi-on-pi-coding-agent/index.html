@@ -188,9 +188,9 @@
 <p>我是 Lawrence Liu，Orbi 的维护者。Orbi 的用法是：给 GitHub issue 打上 <code class="post-code--single">ai-ready</code> 标签，它交回一个评审过、已合并的 PR；另开一张发版票，它把合并的改动发成带 tag 的版本。从 2026 年 9 月 16 日到 10 月 5 日 11 点（北京时间），Orbi Cloud 的托管 runner 一共合并了 365 个 PR。其中 334 个在 Orbi 自己的三个仓库里（orbi、orbi-cloud、orbi-website），因为 Orbi 的开发本身就交给 Orbi；11 个在我们组织下别人开源项目的 fork 和一个测试仓库里；另外 20 个在别人的 9 个仓库里。这些交付全部跑在 Pi 会话上。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <p>这是 Orbi 和 Pi 系列的第一篇。不空讲架构，先跟着一张真实的 issue 走一遍，看 Orbi 为它起了哪些 Pi 会话；再看命令行、全部交付的数据，以及 Pi 留给用户自己搭的那一层。</p>
 <h2 id="一张-issue-从头到尾">一张 issue 从头到尾</h2>
-<p>这张 issue 是 <a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a>，正好和 Pi 本身有关。Orbi 会在每个 worktree 里写一份本次 run 专用的 Pi <code class="post-code--single">models.json</code>。Pi 0.84.3 读不懂这个文件里的 <code class="post-code--single">$VAR</code> 引用，所以 Orbi 只能先把 API key 解析出来，明文写进去。Pi 1.0 自己会展开 <code class="post-code--single">$NAME</code> 和 <code class="post-code--single">${NAME}</code>，正确的做法就变成：保留引用，不再写 key。我半夜开了这张票，打上 <code class="post-code--single">ai-ready</code>，就去睡了。</p>
+<p>这张 issue 是 <a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a>，正好和 Pi 本身有关。Orbi 会在每个 worktree 里写一份本次 run 专用的 Pi <code class="post-code--single">models.json</code>，之前它会先把 <code class="post-code--single">$VAR</code> 形式的 API key 引用解析出来，再把 key 明文写进去。我们代码里的注释说，这是因为 Pi 0.84.3 不会展开这种引用。可 Pi 0.84.3 自己的文档写得清清楚楚：<code class="post-code--single">apiKey</code> 支持 <code class="post-code--single">$ENV_VAR</code> 和 <code class="post-code--single">${ENV_VAR}</code>。我们一直在绕一个并不存在的限制。修法就是保留引用，交给 Pi 去展开。我半夜开了这张票，打上 <code class="post-code--single">ai-ready</code>，就去睡了。</p>
 <figure class="post-media">
-<img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从冻结的 base 建 worktree，推送、开 PR，合并闸门检查 base 是否为绿、CI 和评审结论。Pi 会话：实现会话（plan.md、改代码、测试、commit）和评审会话（审、修、输出 REVIEW_VERDICT）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
+<img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从冻结的 base 建 worktree，推送、开 PR，合并闸门检查 CI、评审结论，以及 base 是否最新。Pi 会话：实现会话（plan.md、改代码、测试、commit）和评审会话（审、修、输出 REVIEW_VERDICT）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
 </figure><p>下面是这张 issue 自己的时间线（北京时间）：</p>
 <div class="post-table-scroll"><table>
 <thead>
@@ -209,7 +209,11 @@
 </tr>
 <tr>
 <td>03:42</td>
-<td>实现会话提交了修复：<code class="post-code--spaced">fix(pi): keep apiKey env-var references verbatim in per-run models.json</code>。runner 推送，开了 <a href="https://github.com/orbi-build/orbi/pull/1555">PR #1555</a>。</td>
+<td>实现会话提交了修复：<code class="post-code--spaced">fix(pi): keep apiKey env-var references verbatim in per-run models.json</code>。</td>
+</tr>
+<tr>
+<td>03:43</td>
+<td>runner 推送，开了 <a href="https://github.com/orbi-build/orbi/pull/1555">PR #1555</a>。</td>
 </tr>
 <tr>
 <td>03:47、04:08</td>
@@ -217,7 +221,7 @@
 </tr>
 <tr>
 <td>04:22</td>
-<td>评审会话停在交付闸门：<code class="post-code--single">main</code> 本身在 <code class="post-code--single">macos-compatibility</code> 这项检查上就是红的。issue 被标成 <code class="post-code--single">ai-blocked</code>。</td>
+<td>评审会话停在交付闸门：PR 上挂掉的那项检查，在 <code class="post-code--single">main</code> 上也是挂的（闸门点名的是 <code class="post-code--single">macos-compatibility</code>），合进去也解决不了问题。issue 被标成 <code class="post-code--single">ai-blocked</code>。</td>
 </tr>
 <tr>
 <td>12:06</td>
@@ -225,14 +229,18 @@
 </tr>
 <tr>
 <td>13:39</td>
-<td>我把 #1554 放回队列，分支也接上了新的 <code class="post-code--single">main</code>。</td>
+<td>我把 #1554 放回队列。</td>
+</tr>
+<tr>
+<td>13:42</td>
+<td>分支接上了新的 <code class="post-code--single">main</code>。</td>
 </tr>
 <tr>
 <td>13:58</td>
 <td>评审通过，没有问题，runner 合并了 PR。</td>
 </tr>
 </tbody></table></div>
-<p>Orbi 在 issue 上维护着一条不停更新的进度评论，角色是 runner 填的，其余来自 Pi 的会话文件：Pi 最后一次有输出是什么时候、会话 id、当前阶段。<code class="post-code--spaced">phase: codemode</code> 表示会话正处在 Pi 1.0 Codemode 的工具调用里：模型写一小段脚本，一步串起好几次工具调用。</p>
+<p>Orbi 在 issue 上维护着一条不停更新的进度评论，角色是 runner 填的，其余来自 Pi 的会话文件：Pi 最后一次有输出是什么时候、会话 id、当前阶段。<code class="post-code--spaced">phase: codemode</code> 是 runner 最近一次识别出的工具阶段，也就是 Pi 1.0 的 Codemode：模型写一小段脚本，一步串起好几次工具调用。</p>
 <figure class="post-media">
 <img src="/img/blog-orbi-on-pi-progress.webp" alt="Orbi 在 orbi#1554 上的进度评论（英文界面）：PR #1555 已合并，review_rounds=1；role: review；测试 4034 个通过、11 个跳过，用时 7 分 38 秒；展开的 Run details 里有 run_id 598a0fb3、phase codemode、已用 16 分 57 秒、分支名和 Pi 会话 id。" width="1200" height="731">
 <figcaption>orbi#1554 上的进度评论，2026 年 10 月 5 日截图。</figcaption>
@@ -306,7 +314,7 @@
 <h2 id="pi-留给用户的那一层-orbi-放在哪">Pi 留给用户的那一层，Orbi 放在哪</h2>
 <p>Pi 对自己核心里不做什么说得很直白。它的首页除了已经内置的 MCP，还列了五样：子 agent、权限弹窗、plan 模式、待办、后台 bash，每一样都给了自己补的办法：扩展、第三方包、容器、写文件、tmux（2026 年 10 月 5 日查看）。Orbi 没有给 Pi 加上这些功能，而是在 runner 里，从交付的角度各做了一件对应的事。</p>
 <figure class="post-media">
-<img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具（包括 Pi 1.0 的 Codemode），skill，会话写成 JSONL，白名单里的扩展。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个 base 冻结的 worktree，按角色起会话，合并闸门检查 base、CI 和评审结论，每 5 分钟调度并停掉卡住的会话，从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
+<img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具（包括 Pi 1.0 的 Codemode），skill，会话写成 JSONL，白名单里的扩展。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个 base 冻结的 worktree，按角色起会话，合并闸门检查 CI、评审结论和 base 是否最新，每 5 分钟调度并停掉卡住的会话，从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
 </figure><div class="post-table-scroll"><table class="table-stack">
 <thead>
 <tr>
@@ -350,7 +358,7 @@
 <p>10 月 1 日，Earendil 和 Pi 社区发布了 Pi 1.0，一起发布的还有 <a href="https://earendil.com/posts/pi-durable/">Pi Durable</a>：一个独立的、实验性的 TypeScript 框架，用来写长时间运行的 agent 应用，带后台任务、基于 checkpoint 的崩溃恢复，以及可以在上面搭审批的 hook。我们估计它不会改变上面的分工。Durable 管的是让一次运行活下来、能恢复；Orbi 的闸门管的是这次运行的产出能不能合并，我们希望它待在 agent 进程之外。Orbi 是 Python 写的，通过命令行驱动 Pi，Durable 我们还没有评估过。</p>
 <h2 id="两次事故-改变了我们跑-pi-的方式">两次事故，改变了我们跑 Pi 的方式</h2>
 <p><strong>一个插件，让会话在发出第一个请求之前就卡死。</strong> 9 月 4 日晚上，run 开始在 Pi 发出任何模型请求之前就卡住。那一晚一个接一个，z.ai 和 Gemini 上都出现过，每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 <code class="post-code--single">ai-blocked</code>。卡住的 <code class="post-code--single">pi</code> 进程还活着，但几乎不动（两分半钟只用了 2 秒 CPU），没有任何连到模型 API 的 TCP 连接，唯一的 socket 是当前用户的 D-Bus。会话目录是空的，Pi 连会话文件都还没建。同样的配置，在 shell 里手动跑了 20 多次全部成功，只有 systemd 用户服务拉起来的 run 会卡。原因是一个用户级的 Pi 包 <code class="post-code--single">pi-mcp-adapter</code>：它启动时通过 D-Bus 初始化系统钥匙串，在 systemd 环境里，这个调用偶尔永远不返回。把它从 <code class="post-code--single">~/.pi/agent/settings.json</code> 里拿掉之后，同一个 run 15 秒就拿到了第一个模型响应（<a href="https://github.com/orbi-build/orbi/issues/311">排查见 orbi#311</a>）。永久的修法是让交付会话不再继承用户的插件：实现和评审会话都以 <code class="post-code--single">--no-extensions</code> 启动，只加载 Orbi 配置里声明的扩展（<a href="https://github.com/orbi-build/orbi/issues/249">orbi#249</a>）。</p>
-<p><strong>一个跑错了模型的 runner。</strong> 9 月 20 日，我们新配了一个 runner，本来要通过 Pi 用 GPT 模型。写的配置里有仓库，却漏了 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code>，于是 Orbi 没传 <code class="post-code--single">--provider</code> 和 <code class="post-code--single">--model</code>，Pi 用的是账号 settings 里的 <code class="post-code--single">defaultModel</code>。runner 的日志里打出来的是 <code class="post-code--spaced">provider=LLAMA_INTRANET model=qwen3.8:27b</code>，一个本地模型，而我们一直以为它是 GPT runner。什么都没报错，这才是问题所在。现在我们会直接看 runner 实际要用的 provider 和模型（<code class="post-code--spaced">orbi doctor</code> 会打印出来），不再读配置、靠推断。</p>
+<p><strong>一个跑错了模型的 runner。</strong> 9 月 20 日，我们新配了一个 runner，本来要通过 Pi 用 GPT 模型。写的配置里有仓库，却漏了 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code>，于是 Orbi 没传 <code class="post-code--single">--provider</code> 和 <code class="post-code--single">--model</code>，Pi 用的是账号 settings 里的 <code class="post-code--single">defaultModel</code>。runner 的日志里打出来的是 <code class="post-code--spaced">provider=LLAMA_INTRANET model=qwen3.8:27b</code>，一个本地模型，而我们一直以为它是 GPT runner。什么都没报错，这才是问题所在。现在每个 runner 的配置里都显式写上 provider 和模型（没写的话，<code class="post-code--spaced">orbi doctor</code> 会报「未配置」），实际跑的是哪个模型，看日志里的启动那一行确认，不再读配置、靠推断。</p>
 <h2 id="如果你也想无人值守地跑-pi">如果你也想无人值守地跑 Pi</h2>
 <p>下面是我们 runner 上踩出来的、Pi 特有的几条。通用的那部分（谁认领任务、谁评审、谁合并、谁发版）在<a href="/zh/blog/run-claude-code-unattended/">无人值守地跑 Claude Code</a> 里，对 Pi 一样适用。</p>
 <ul>
@@ -359,7 +367,7 @@
 <li><strong>skill 按角色分，还要管住自动发现。</strong> 评审会话要是加载了实现那一套流程 skill，它会去「交付」，而不是评审。<code class="post-code--single">--skill</code> 是在 Pi 从用户目录和项目目录自动发现的 skill 之外再加；要让某个角色看不到某个 skill，还得加 <code class="post-code--single">--no-skills</code> 或者保证 skill 目录干净。</li>
 <li><strong>provider 和模型写在命令行上。</strong> 不写的话，Pi 会用 settings 里的 <code class="post-code--single">defaultModel</code>，无人值守的 runner 察觉不到。</li>
 <li><strong>盯住长时间没输出的会话。</strong> 卡住的会话不退出，上游也就永远看不到报错。要看会话文件最后一次变大是什么时候，而不只是进程还在不在。</li>
-<li><strong>升级 Pi 时读一遍发布说明。</strong> Pi 1.0 在 <code class="post-code--single">models.json</code> 里支持环境变量展开，改变了我们该怎么做，#1554 就是这么来的。</li>
+<li><strong>想绕开 Pi 的某个限制之前，先查你所用版本的文档。</strong> 我们的代码为一个 Pi 文档里根本不存在的 <code class="post-code--single">models.json</code> 限制做了绕行，还因此把 API key 写到了磁盘上。#1554 就是这么来的。</li>
 </ul>
 <h2 id="系列接下来写什么">系列接下来写什么</h2>
 <p>接下来会写：为什么每张 issue 都在自己的 worktree 里单独起一个 Pi 会话，以及 Orbi 加载了哪些 Pi skill、为什么。harness 测评已经发了<a href="/zh/blog/searching-for-orbis-harness/">第一篇</a>和<a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">第二篇</a>。</p>
