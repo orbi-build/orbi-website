@@ -370,9 +370,20 @@ img {
 }
 .avatar-wall { display: flex; align-items: center; gap: 20px; padding: 10px 0 28px; }
 .avatar-wall-label { margin: 0; color: #a9bbb8; font: 500 .72rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
-.avatar-wall-list { display: flex; }
-.avatar-wall-list .orbi-avatar-wall-list-img { width: 36px; height: 36px; margin-left: -6px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
-.avatar-wall-list .orbi-avatar-wall-list-img:first-child { margin-left: 0; }
+.avatar-wall-list { display: flex; flex-wrap: wrap; row-gap: 6px; padding-left: 12px; }
+.avatar-wall-list .orbi-avatar-wall-list-img,
+.avatar-wall-list .orbi-avatar-wall-list-img:first-child,
+.avatar-wall-list .avatar-wall-more { flex: none; margin-left: -12px; }
+.avatar-wall-list .orbi-avatar-wall-list-img { width: 36px; height: 36px; border: 2px solid var(--night); border-radius: 50%; object-fit: cover; }
+/* Issue #827: the chip's surface/text literals are the values the Issue
+   measured on production; the design system has no token for this chip yet. */
+.avatar-wall-more { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 36px; height: 36px; border: 2px solid var(--night); border-radius: 50%; background: #1f3533; color: #cfe0dc; font: 600 .62rem/1 var(--mono); letter-spacing: -.02em; }
+@media (max-width: 760px) {
+  .avatar-wall-list { padding-left: 14px; }
+  .avatar-wall-list .orbi-avatar-wall-list-img,
+  .avatar-wall-list .orbi-avatar-wall-list-img:first-child,
+  .avatar-wall-list .avatar-wall-more { width: 32px; height: 32px; margin-left: -14px; }
+}
 .founding-offer { margin: 28px 0 0; padding: 14px 18px; border: 2px solid var(--signal); border-radius: var(--radius-card); background: var(--paper-2); font-size: 1.05rem; font-weight: 600; }
 .founding-offer .founding-price { color: var(--run-on-light); font-size: 1.5rem; }
 .founding-availability { color: var(--run-on-light); font: 500 .9rem/1.4 var(--mono); }
