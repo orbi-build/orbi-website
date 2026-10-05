@@ -173,7 +173,7 @@ describe("footer and subscription layout stay within the viewport (Issues #337, 
 
 describe("footer directory badges get their own bottom row (Issue #805)", () => {
   for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
-    it(name + " drops the three badges onto one row below the text friends", async () => {
+    it(name + " drops the four badges onto one row below the text friends", async () => {
       const page = await browser.newPage();
       try {
         await page.setViewportSize({ width: 1440, height: 900 });
@@ -198,8 +198,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        expect(result.badgeTops, path + ": the three badges share one row").toHaveLength(3);
-        expect(new Set(result.badgeTops).size, path + ": the three badges share one row").toBe(1);
+        expect(result.badgeTops, path + ": the four badges share one row").toHaveLength(4);
+        expect(new Set(result.badgeTops).size, path + ": the four badges share one row").toBe(1);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
