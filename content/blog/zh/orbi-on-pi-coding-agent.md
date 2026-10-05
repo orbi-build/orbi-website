@@ -77,7 +77,7 @@ pi [--no-tools] [--no-extensions [--extension <白名单里的扩展>]] \
 <figcaption>orbi#1554 上的进度评论，2026 年 10 月 5 日截图。</figcaption>
 </figure>
 
-角色、PR 链接、测试结果和评审轮数是 runner 填的；最后活动时间、会话 id 和 `phase` 是从会话文件里读的。`phase` 看着像阶段，其实记的是最近一次工具调用；`codemode` 指 Pi 1.0 的 Codemode：模型写一小段脚本，一次串起好几个工具调用。一个 PR 最多评审 5 轮，用完 Orbi 就停下来找人。评审轮数不等于起过几个评审会话。runner 给一轮记下评审结果，这一轮才算数。前面那两个评审会话，一个结束时 CI 还在跑，另一个被 `main` 已红的阻塞拦下，都没被记下，所以 13:41 那次评审是第 1 轮。`elapsed` 是最后那个会话的用时，不是整张 issue 的。
+角色、PR 链接、测试结果和评审轮数是 runner 填的；最后活动时间、会话 id 和 `phase` 是从会话文件里读的。`phase` 看着像阶段，其实记的是最近一次工具调用；`codemode` 指 Pi 1.0 的 Codemode：模型写一小段脚本，一次串起好几个工具调用。一个 PR 最多评审 5 轮，用完 Orbi 就停下来找人。评审轮数不等于起过几个评审会话。runner 给一轮记下评审结果，这一轮才算数。前面那两个评审会话，一个结束时 CI 还在跑；另一个判了通过，但在 runner 记下这一轮之前，合并闸门就被 `main` 已红拦住了。所以 13:41 那次评审是第 1 轮。`elapsed` 是最后那个会话的用时，不是整张 issue 的。
 
 在 Orbi Cloud 上，真正的 `pi` 外面还套了一层很薄的包装，每个会话结束后重读一遍会话文件，累加 token 用量。下一节的数字就是这么来的。自己部署的 Orbi 没有这层包装，会话文件是一样的。
 
@@ -178,7 +178,7 @@ ls -la "$WT/.pi-session/"
 下面几条只说 Pi 特有的。谁认领、谁评审、谁合并这类问题，写在[无人值守地跑 Claude Code](/zh/blog/run-claude-code-unattended/) 里，换成 Pi 也适用。
 
 - 每个 run 给一个单独的 `--session-dir`。agent 做过什么，完整记录都在里面，token 用量也在，出了事看最后几条，比报错信息清楚。
-- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。扩展加回来以后，Codemode 这个工具仍然默认关着，要另外打开，比如在 Pi 的设置里写 `"defaultTools": ["+codemode"]`，Orbi Cloud 的 runner 就是这么设的。用 `--tools` 也行，但它会替换整个工具列表，默认的那几个工具要一起写上。
+- 从 `--no-extensions` 开始，用 `--extension`（简写 `-e`）一个一个加回来。不然账号下装的东西会被带进一个没人盯着的 run。这个参数也会关掉 Pi 的内置扩展，包括 MCP 和 Codemode，需要的话用 `--extension builtin:mcp` 或 `--extension builtin:codemode` 加回来。扩展加回来以后，Codemode 这个工具仍然默认关着，要有东西把它打开：设成 Codemode 暴露方式的 MCP server 连上时会打开它，你也可以自己在 Pi 的设置里写 `"defaultTools": ["+codemode"]`，Orbi Cloud 的 runner 就是这么设的。用 `--tools` 也行，但它会替换整个工具列表，默认的那几个工具要一起写上。
 - 某个角色一定不能看到某个 skill，就传 `--no-skills`，再把要用的 skill 逐个列出来。`--skill` 只是在 Pi 自动发现的 skill 之外再加：用户的 skill 目录总会被发现，仓库里的要等 Pi 信任这个项目之后。
 - provider 和模型写在命令行上。不写的话，Pi 会按设置和它能看到的模型自己挑一个；我们那次挑中的是保存的 `defaultModel`。
 - 盯住不出声的会话。卡住的会话不会退出，上游收不到报错。看会话文件最后一次变大是什么时候，也看启动一分钟后会话文件到底建出来没有。
