@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Orbi on Pi: what we built around the Pi coding agent</title>
+      <link>https://orbi.build/blog/orbi-on-pi-coding-agent/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/orbi-on-pi-coding-agent/</guid>
+      <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Orbi hands every GitHub issue to the Pi coding agent. How we call Pi, why we picked it, and the parts Pi leaves to its users that we built outside it.</description>
+    </item>
+    <item>
       <title>Run Claude Code unattended: headless mode is step one</title>
       <link>https://orbi.build/blog/run-claude-code-unattended/</link>
       <guid isPermaLink="true">https://orbi.build/blog/run-claude-code-unattended/</guid>

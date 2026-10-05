@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么 | Orbi</title>
+  <meta name="description" content="Orbi 交付的每张 GitHub issue，写代码的都是 Pi 编程 agent。这篇讲我们怎么调用 Pi、为什么选它，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么">
+  <meta property="og:description" content="Orbi 交付的每张 GitHub issue，写代码的都是 Pi 编程 agent。这篇讲我们怎么调用 Pi、为什么选它，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
+  <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
+  <meta property="og:image:alt" content="Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么">
+  <meta property="article:published_time" content="2026-10-05">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么","datePublished":"2026-10-05","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"zh-CN","description":"Orbi 交付的每张 GitHub issue，写代码的都是 Pi 编程 agent。这篇讲我们怎么调用 Pi、为什么选它，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。","url":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">登录</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">免费开始</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-10-05</p>
+          <h1 id="post-title">Orbi 跑在 Pi 上：我们在 Pi 编程 agent 外面搭了什么</h1>
+          <p class="hero-lede">Orbi 交付的每张 GitHub issue，写代码的都是 Pi 编程 agent。这篇讲我们怎么调用 Pi、为什么选它，以及 Pi 留给用户自己搭的那一层，我们放在了哪里。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#orbi-怎么调用-pi">Orbi 怎么调用 Pi</a></li>
+          <li><a class="post-toc-link" href="#为什么是-pi">为什么是 Pi</a></li>
+          <li><a class="post-toc-link" href="#pi-留给用户的那一层-orbi-放在哪">Pi 留给用户的那一层，Orbi 放在哪</a>
+            <ol>
+              <li><a class="post-toc-link" href="#为什么放在-pi-外面-而不做成扩展">为什么放在 Pi 外面，而不做成扩展</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#如果你也想无人值守地跑-pi">如果你也想无人值守地跑 Pi</a></li>
+          <li><a class="post-toc-link" href="#系列接下来写什么">系列接下来写什么</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 6 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#orbi-怎么调用-pi">Orbi 怎么调用 Pi</a></li>
+          <li><a class="post-toc-link" href="#为什么是-pi">为什么是 Pi</a></li>
+          <li><a class="post-toc-link" href="#pi-留给用户的那一层-orbi-放在哪">Pi 留给用户的那一层，Orbi 放在哪</a>
+            <ol>
+              <li><a class="post-toc-link" href="#为什么放在-pi-外面-而不做成扩展">为什么放在 Pi 外面，而不做成扩展</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#如果你也想无人值守地跑-pi">如果你也想无人值守地跑 Pi</a></li>
+          <li><a class="post-toc-link" href="#系列接下来写什么">系列接下来写什么</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Orbi 里所有写代码的活都交给 <a href="https://pi.dev">Pi 编程 agent</a>。我们通过命令行调用 Pi，一件活起一个会话。Pi 刻意没放进核心的那些东西，比如审批、子 agent、计划、任务列表、长时间运行的任务，由 Orbi 自己的代码负责。Pi 是 Earendil 做的开源项目，MIT 协议；Orbi 不是 Pi 官方项目。</p>
+<p>我是 Lawrence Liu，Orbi 的维护者。Orbi 的用法是：给 GitHub issue 打上 <code class="post-code--single">ai-ready</code> 标签，它交回一个评审过、已合并的 PR；另开一张发版票，它把合并的改动发成带 tag 的版本。2026 年 9 月 16 日到 10 月 5 日（北京时间），Orbi Cloud 的托管 runner 一共合并了 365 个 PR。其中 345 个在我们自己的 11 个仓库里，Orbi 的代码大部分是 Orbi 自己交付的；另外 20 个在别人的 9 个仓库里。这些交付全部跑在 Pi 会话上。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>这是讲 Orbi 架构的系列第一篇。先看我们给 Pi 传的命令行，再说为什么选它，最后讲 Pi 留给用户自己搭的那一层，我们放在了哪里。</p>
+<h2 id="orbi-怎么调用-pi">Orbi 怎么调用 Pi</h2>
+<p>Orbi 起的每个 Pi 会话都是一个 <code class="post-code--spaced">pi --print</code> 进程。去掉提示词正文，命令行长这样（出自 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">src/orbi/pi_command.py</code></a>）：</p>
+<pre><code class="language-text">pi [--no-tools] --no-extensions [--extension &lt;白名单里的扩展&gt;] \
+   --skill &lt;路径&gt; ... \
+   --provider &lt;p&gt; --model &lt;m&gt; [--thinking &lt;级别&gt;] \
+   --print --session-dir &lt;本次 run 的目录&gt; \
+   --system-prompt &lt;角色提示词&gt; &lt;issue 上下文&gt;
+</code></pre>
+<p>会话分三种角色，参数各不相同：</p>
+<ul>
+<li><strong>实现</strong>：有工具，加载交付用的 skill，用实现模型。在这张 issue 的 worktree 里写计划、改代码、跑测试，最后停在一次 commit 上。</li>
+<li><strong>评审</strong>：对着 PR 另起一个会话。它不加载 <code class="post-code--single">tdd-dev</code> 和 <code class="post-code--single">review-fix-loop</code> 这两个 skill，因为它的活是审这一份 diff、把问题修掉，不是再走一遍交付。评审可以换一个模型（<code class="post-code--single">review_pi_provider</code>、<code class="post-code--single">review_pi_model</code>），最后必须输出一行 <code class="post-code--spaced">REVIEW_VERDICT {...}</code> JSON，由 Orbi 解析。</li>
+<li><strong>开票</strong>：只在 issue 上回答问题，不改任何东西。带 <code class="post-code--single">--no-tools</code>、不加载扩展，输出就是 Orbi 要贴到 issue 上的那段文字。</li>
+</ul>
+<p><code class="post-code--single">--session-dir</code> 比我们当初想的重要。每个 run 一个目录，Pi 把会话以 JSONL 写在里面。Orbi 一边读这个文件，一边把进度实时贴到 issue 上（<a href="https://github.com/orbi-build/orbi/issues/24">orbi#24</a>）。在 Orbi Cloud 上，真正的 <code class="post-code--single">pi</code> 外面套了一层很薄的包装，每个会话结束后重读这些文件、把 token 用量加起来；Cloud 上每次交付的用量和每月的 token 上限，都从这里来。</p>
+<h2 id="为什么是-pi">为什么是 Pi</h2>
+<p>有记录可查的理由有两条。</p>
+<p><strong>模型自己带。</strong> Pi 内置了很多家 provider，还接受一个照它 <code class="post-code--single">models.json</code> 格式写的 provider 文件，Orbi 靠这个就能接任意 OpenAI 兼容的端点（<a href="https://github.com/orbi-build/orbi/issues/157">orbi#157</a>）。不绑死某一家模型厂商，是 Orbi 和同类产品的一个重要区别（<a href="https://github.com/orbi-build/orbi/issues/305">orbi#305</a>）。在我们的 harness 测评里，<code class="post-code--single">deepseek-flash</code>、<code class="post-code--single">gpt-5.6-luna</code>、<code class="post-code--single">gpt-5.6-sol</code> 用的是同一个 runner、同一条 Pi 命令行。</p>
+<p><strong>命令行小到可以当接口用。</strong> Orbi 需要的东西，全都是一条 <code class="post-code--spaced">pi --print</code> 上的参数。同一轮测评里，我们还试过 Claude Code 跑 Opus 5.5、zcode 跑 GLM 5.3 flash。要把它们接进来，得各写一个&quot;模仿 Pi 命令行&quot;的桥。结果两座桥都悄悄把 skill 丢了，排查后才修好（见 harness 系列<a href="/zh/blog/searching-for-orbis-harness/">第一篇</a>）。Pi 的 <code class="post-code--single">--skill</code> 是原生参数，不存在丢不丢的问题。</p>
+<h2 id="pi-留给用户的那一层-orbi-放在哪">Pi 留给用户的那一层，Orbi 放在哪</h2>
+<p>Pi 对自己核心里不做什么说得很直白。它的首页列了五样：子 agent、权限弹窗、plan 模式、待办、后台 bash，每一样都给了自己补的办法：扩展、第三方包、容器、写文件、tmux（2026 年 10 月 5 日查看）。这五样 Orbi 都补上了，只是放在 Pi 外面，放在 runner 里。</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>Pi 核心里没有的</th>
+<th>Pi 建议的补法</th>
+<th>Orbi 放在哪</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="Pi 核心里没有的">权限弹窗</td>
+<td data-label="Pi 建议的补法">放进容器跑，或者用扩展做确认流程</td>
+<td data-label="Orbi 放在哪">每张 issue 一个独立的 git worktree，从冻结的 <code class="post-code--single">origin/main</code> commit 建出来。实现会话停在 commit，由 runner 推送、开 PR。只有评审过的那个 head 能合并，任何 agent 都不推保护分支。</td>
+</tr>
+<tr>
+<td data-label="Pi 核心里没有的">子 agent</td>
+<td data-label="Pi 建议的补法">用 tmux 起多个 Pi，或用扩展、第三方包</td>
+<td data-label="Orbi 放在哪">runner 按角色起独立的 Pi 会话：实现、独立评审、开票。</td>
+</tr>
+<tr>
+<td data-label="Pi 核心里没有的">plan 模式</td>
+<td data-label="Pi 建议的补法">把计划写进文件，或用扩展、第三方包</td>
+<td data-label="Orbi 放在哪">实现会话第一步写 <code class="post-code--single">.orbi/plan.md</code>：目标、看过的上下文、任务、验证命令。评审会去读它。</td>
+</tr>
+<tr>
+<td data-label="Pi 核心里没有的">待办</td>
+<td data-label="Pi 建议的补法">写 <code class="post-code--single">TODO.md</code>，或用扩展、第三方包</td>
+<td data-label="Orbi 放在哪">GitHub Issues 就是任务队列，<code class="post-code--single">ai-ready</code> 标签是入口。</td>
+</tr>
+<tr>
+<td data-label="Pi 核心里没有的">后台 bash</td>
+<td data-label="Pi 建议的补法">tmux</td>
+<td data-label="Orbi 放在哪">systemd 定时器（macOS 上是 launchd）每 5 分钟跑一次。长时间没有输出的会话会被发现并终止（<a href="https://github.com/orbi-build/orbi/issues/94">orbi#94</a>）。</td>
+</tr>
+</tbody></table></div>
+<p>在这些之外，同一个 <code class="post-code--single">run_id</code> 把日志、issue 评论和 PR 串在一起；Orbi 自己修不了的失败，会把 issue 标成 <code class="post-code--single">ai-blocked</code>，交给人决定下一步。</p>
+<h3 id="为什么放在-pi-外面-而不做成扩展">为什么放在 Pi 外面，而不做成扩展</h3>
+<p>这些东西大部分都能做成 Pi 扩展，我们没这么做，原因有三条。</p>
+<p><strong>检查不能长在被检查的东西里面。</strong> 如果合并闸门和评审是加载进实现会话的扩展，它们跑不跑，就取决于这个会话自己的配置。在 Orbi 里，Pi 会话只产出 commit 和评审结论；PR 合不合，由 runner 决定，而它读的结论来自一个实现会话碰不到的独立会话。</p>
+<p><strong>无人值守的会话必须从已知状态起步。</strong> Pi 会加载当前用户装过的所有东西。有一个用户级扩展就曾让我们的 run 在 systemd 下卡死：它启动时发起一个 D-Bus 调用，偶尔一直不返回，会话就一直空等，直到空转检测把它判死（<a href="https://github.com/orbi-build/orbi/issues/249">orbi#249</a>）。从那以后，每个会话都以 <code class="post-code--single">--no-extensions</code> 启动，只加回 Orbi 配置里白名单上的扩展。</p>
+<p><strong>换引擎，流程不丢。</strong> worktree、评审、合并闸门都在 runner 里，所以测评里 Claude Code 和 zcode 的桥，跑在和 Pi 完全相同的闸门之下。哪天真要换 agent，这些控制也都还在原处。</p>
+<p>我们并不觉得 Pi 该把这些做进核心。它的核心小，我们的 runner 才能用一条命令行把它驱动起来。</p>
+<h2 id="如果你也想无人值守地跑-pi">如果你也想无人值守地跑 Pi</h2>
+<p>下面是我们 runner 上踩出来的、Pi 特有的几条。通用的那部分（谁认领任务、谁评审、谁合并、谁发版）在<a href="/zh/blog/run-claude-code-unattended/">无人值守地跑 Claude Code</a> 里，对 Pi 一样适用。</p>
+<ul>
+<li><strong>每个 run 一个独立的 <code class="post-code--single">--session-dir</code>。</strong> 只有它完整记录了 agent 做过什么，token 用量也在里面。</li>
+<li><strong>从 <code class="post-code--single">--no-extensions</code> 起步。</strong> 需要什么扩展再显式加。不然你自己账号下装的东西，会被带进一个没人盯着的 run。</li>
+<li><strong>skill 按角色分。</strong> 评审会话要是加载了实现那一套流程 skill，它会去&quot;交付&quot;，而不是评审。</li>
+<li><strong>provider 和模型写在命令行上。</strong> 不写的话，Pi 会悄悄退回到 settings 里的默认模型，不报错。我们就遇到过：以为 runner 跑的是某个模型，日志一看，跑的是全局默认。</li>
+<li><strong>盯住长时间没输出的会话。</strong> 卡住的会话不会失败，只会一直挂着。</li>
+</ul>
+<h2 id="系列接下来写什么">系列接下来写什么</h2>
+<p>接下来会写：无人值守地跑 Pi 的细节（卡住检测，以及那次 D-Bus 卡死的完整排查）、为什么每张 issue 都在自己的 worktree 里单独起一个 Pi 会话、Orbi 用了哪些 Pi skill。harness 测评已经发了<a href="/zh/blog/searching-for-orbis-harness/">第一篇</a>和<a href="/zh/blog/is-the-regression-guard-worth-its-tokens/">第二篇</a>。</p>
+<p>Orbi 开源在 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>。<a href="https://orbi.build/zh/cloud/?ref=blog-pi">Orbi Cloud</a> 用的是同一个 runner、同样的 Pi 会话，跑在你自己的仓库上。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>看看<a href="/zh/compare/claude-code/">和 Claude Code 的对比</a>和 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/orbi-on-pi-coding-agent/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+      </div>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
