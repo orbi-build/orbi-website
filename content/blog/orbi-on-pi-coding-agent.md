@@ -20,7 +20,7 @@ Every Pi session Orbi starts is one `pi --print` process. Stripped of the prompt
 
 ```text
 pi [--no-tools] [--no-extensions [--extension <allowlisted>]] \
-   --skill <path> ... \
+   [--skill <path> ...] \
    [--provider <p>] [--model <m>] [--thinking <level>] \
    --print --session-dir <run dir> \
    --system-prompt <role prompt> <issue context>
@@ -48,7 +48,7 @@ Pi is upfront about what it doesn't put in its core. Besides MCP, which it now s
 
 | Pi leaves out | What Pi suggests | What Orbi does instead, and the limit |
 |---|---|---|
-| Permission popups | Run in a container, or build a confirmation flow as an extension | Each issue gets its own git worktree from a frozen commit of the base branch. The implementer stops at a commit, the runner pushes and opens the pull request, and the runner merges the head the reviewer passed (if the base branch has moved on and merges cleanly, it first merges the base in and waits for CI on that new head, without another review). That controls what merges, not what a tool call can touch. For that, Pi's own [security docs](https://pi.dev/docs/latest/security) point to containers and sandboxes. On Orbi Cloud each tenant's runner is a separate OS user with its own resource limits, which is a narrower boundary than the container Pi recommends. |
+| Permission popups | Run in a container, or build a confirmation flow as an extension | Each issue gets its own git worktree from a frozen commit of the base branch. The implementer stops at a commit, the runner pushes and opens the pull request, and the runner merges the head the reviewer passed (if the base branch has moved on and merges cleanly, it first merges the base in and, if the repository has CI checks, waits for them on that new head, without another review). That controls what merges, not what a tool call can touch. For that, Pi's own [security docs](https://pi.dev/docs/latest/security) point to containers and sandboxes. On Orbi Cloud each tenant's runner is a separate OS user with its own resource limits, which is a narrower boundary than the container Pi recommends. |
 | Sub-agents | Spawn Pi in tmux, or use an extension or package | Separate Pi sessions per role, started by the runner: implementer, separate reviewer, ticket. They aren't sub-agents inside a session. |
 | Plan mode | Write plans to files, or use an extension or package | Before touching code, the implementer writes `.orbi/plan.md`: goal, context, repository decision, tasks, verification commands. It's what a session falls back on if its context gets compacted. |
 | To-dos | A `TODO.md`, or build one as an extension | Between sessions, GitHub Issues are the queue and the `ai-ready` label is how work gets in. Inside a session the agent still has no to-do tool. |
@@ -62,11 +62,11 @@ Pi would let us build most of this as extensions. We didn't, and here is why.
 
 **The merge decision shouldn't live inside the session it judges.** If the merge gate were an extension loaded into the implementer's session, that session's configuration would decide whether it ran. In Orbi, Pi sessions produce commits and a verdict; the runner decides what merges. The reviewer can fix what it finds and push to the task branch, and it's the same session that then declares the branch clean, so the review isn't fully independent of its own fixes. Merging is the runner's step. The reviewer's prompt tells it not to merge, and the runner merges with `gh pr merge --match-head-commit`. That's a division of duties, not a permission boundary: the reviewer runs with tools in the same environment as the runner.
 
-**Unattended sessions have to start from a known state.** A Pi installation picks up whatever its user has installed. One user-level extension once hung our runs in systemd: at startup it made a D-Bus call that sometimes never returned, and the session sat idle until stuck-session detection stopped it ([diagnosis in orbi#311](https://github.com/orbi-build/orbi/issues/311), [fix in orbi#249](https://github.com/orbi-build/orbi/issues/249)). Since then, implementer and reviewer sessions start with `--no-extensions` and add back only the extensions on an allowlist in Orbi's config. The ticket role, which runs without tools, doesn't pass that flag yet.
+**Unattended sessions have to start from a known state.** A Pi installation picks up whatever its user has installed. One user-level extension once hung our runs in systemd: at startup it made a D-Bus call that sometimes never returned, and the session sat idle until stuck-session detection stopped it ([diagnosis in orbi#311](https://github.com/orbi-build/orbi/issues/311), [fix in orbi#249](https://github.com/orbi-build/orbi/issues/249)). Since then, implementer and reviewer sessions start with `--no-extensions` and add back only the extensions on an allowlist in Orbi's config.
 
 **Swapping the agent doesn't take the gates with it.** Because the worktree, the review and the merge gate live in the runner, the Claude Code and zcode bridges in our benchmark ran under exactly the same gates as Pi. If we ever swap the agent, the controls stay where they are.
 
-On 1 October, Earendil and the Pi community shipped Pi 1.0, and with it [Pi Durable](https://earendil.com/posts/pi-durable/), a separate, experimental TypeScript framework for long-running agent applications, with sub-agents, background tasks, checkpoint-based crash recovery and approval hooks. We don't expect it to change the split above. Durable is about keeping a run alive and resumable. Orbi's gates are about deciding whether that run's output merges, and we want them outside the agent's process. Orbi is Python and drives Pi through its CLI, and we haven't evaluated Durable yet.
+On 1 October, Earendil and the Pi community shipped Pi 1.0, and with it [Pi Durable](https://earendil.com/posts/pi-durable/), a separate, experimental TypeScript framework for long-running agent applications, with background tasks, checkpoint-based crash recovery and hooks you can build approvals on. We don't expect it to change the split above. Durable is about keeping a run alive and resumable. Orbi's gates are about deciding whether that run's output merges, and we want them outside the agent's process. Orbi is Python and drives Pi through its CLI, and we haven't evaluated Durable yet.
 
 We don't think Pi should put any of this in its core. Its small core is the reason one command line is enough for us.
 
@@ -76,7 +76,7 @@ These are the Pi-specific lessons from our runners. The general ones (who claims
 
 - **Give every run its own `--session-dir`.** It's the only complete record of what the agent did, and it's where the token usage is.
 - **Start from `--no-extensions`.** Then add extensions explicitly. Whatever is installed for your user account will otherwise load into a run nobody is watching. The flag also turns off Pi's built-in extensions, including MCP, so add back `-e builtin:mcp` if you use it.
-- **Choose skills per role, and mind discovery.** A reviewer loaded with an implementer's workflow skills will try to deliver instead of review. Note that `--skill` adds to the skills Pi discovers from user and project directories; to keep a skill out of a role, you also need `--no-skills` or a clean skills directory. Orbi only filters what it passes explicitly today.
+- **Choose skills per role, and mind discovery.** A reviewer loaded with an implementer's workflow skills will try to deliver instead of review. Note that `--skill` adds to the skills Pi discovers from user and project directories; to keep a skill out of a role, you also need `--no-skills` or a clean skills directory.
 - **Pass provider and model on the command line.** If you leave them out, Pi uses the `defaultModel` from your settings, and an unattended runner won't notice. We once deployed a runner we thought was on one model, and the logs showed it was running the global default.
 - **Watch for sessions that stop producing output.** A hung session doesn't exit, so nothing upstream ever sees an error.
 
