@@ -281,12 +281,11 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
     expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
   }, 30_000);
 
-  it("keeps every existing post free of document overflow", async () => {
-    for (const route of existingRoutes) {
-      for (const width of widths) {
-        const result = await overflowAt(route, width);
-        expect(result.overflow, `${route} at ${width}px document overflow`).toBe(0);
-      }
+  // One test per route: 11 routes x 2 widths in a single 30s budget timed out on CI.
+  it.each(existingRoutes)("keeps %s free of document overflow", async (route) => {
+    for (const width of widths) {
+      const result = await overflowAt(route, width);
+      expect(result.overflow, `${route} at ${width}px document overflow`).toBe(0);
     }
   }, 30_000);
 });
