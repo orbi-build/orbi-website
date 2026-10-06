@@ -449,30 +449,42 @@ describe("Cloud delivery range stays consistent (Issue #277)", () => {
   });
 });
 
-// Issue #146: llms.txt is the one claim file written for AI crawlers that has
-// no site/pages/ source and no placeholder substitution (text/plain passes
-// through the Worker untouched), and it told every LLM that Managed Cloud was
-// "not available", "not yet purchasable", that no pricing structure should be
-// attributed to Orbi — while /cloud/ sold a US$79 Offer. These gates read the
-// shipped bytes so the file can never contradict the cloud pages again.
-describe("llms.txt states Cloud accurately (Issue #146)", () => {
-  const LLMS = `${PUBLIC_DIR}llms.txt`;
+// Issue #146 / #874: llms.txt is the one claim file written for AI crawlers
+// that has no site/pages/ source. It now ships the pricing tokens
+// (text/plain is substituted by the Worker like text/html), so a drifted
+// literal can never ship again — and these gates read both the tokens in the
+// shipped bytes and the concrete values the Worker serves.
+describe("llms.txt ships pricing tokens, never drifted literals (Issues #146, #874)", () => {
+  const LLMS = PUBLIC_DIR + "llms.txt";
+  const LLMS_FULL = PUBLIC_DIR + "llms-full.txt";
 
-  it("prices every Cloud plan exactly as pricing.json, never as a drifted literal", async () => {
+  it("prices every Cloud plan with pricing.json's token, never a literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    const expected = new Set([SOLO_USD, SOLO_ANNUAL_USD, USD, PRO_ANNUAL_USD].map((value) => `US$${value}`));
-    const usdLiterals = [...raw.matchAll(/US\$\d+(?:\.\d+)?/g)].map((match) => match[0]);
-    expect(new Set(usdLiterals), "llms.txt should state all Cloud prices").toEqual(expected);
-    for (const value of expected) {
-      expect(raw.match(barePrice(value.slice(3))), `bare ${value.slice(2)} without the US prefix`).toBeNull();
+    for (const token of [pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken]) {
+      expect(raw, "llms.txt should carry " + token).toContain(token);
+    }
+    expect([...raw.matchAll(/US\$\d+(?:\.\d+)?/g)], "llms.txt must carry no literal US$ price").toEqual([]);
+    for (const value of [SOLO_USD, SOLO_ANNUAL_USD, USD, PRO_ANNUAL_USD]) {
+      expect(raw.match(barePrice(value)), "bare $" + value + " without the US prefix").toBeNull();
     }
   });
 
-  it("states both included quotas exactly as pricing.json, never as a drifted literal", async () => {
+  it("states both included quotas as tokens, never as a drifted literal", async () => {
     const raw = await readFile(LLMS, "utf8");
-    const expected = new Set([`${pricing.soloIncludedTokensLabel} tokens`, `${TOKENS_LABEL} tokens`]);
-    const quotas = quotaLiterals(raw);
-    expect(new Set(quotas.map(({ literal }) => literal.replace(/\s+/g, " "))), "llms.txt should state both plan quotas").toEqual(expected);
+    for (const token of [pricing.soloIncludedTokensToken, pricing.includedTokensToken]) {
+      expect(raw, "llms.txt should carry " + token).toContain(token);
+    }
+    expect(quotaLiterals(raw), "llms.txt must carry no quota literal").toEqual([]);
+  });
+
+  it("states the trial, founding places and repository counts as tokens in both llms files", async () => {
+    for (const path of [LLMS, LLMS_FULL]) {
+      const raw = await readFile(path, "utf8");
+      for (const token of [
+        pricing.freeDeliveriesToken, pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
+        pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
+      ]) expect(raw, path + ": " + token).toContain(token);
+    }
   });
 });
 
