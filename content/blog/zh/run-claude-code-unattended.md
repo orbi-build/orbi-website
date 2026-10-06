@@ -3,7 +3,7 @@ title: Claude Code headless 模式是什么？自动化开发还差六件事
 date: 2026-10-01
 summary: Claude Code 的 headless 模式就是 claude -p 非交互模式，跑完一个提示词就退出。做自动化开发，认领、运行用户、评审、合并、续跑和发版还得自己搭。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-headless-card.png
 mirror: run-claude-code-unattended
 ---
