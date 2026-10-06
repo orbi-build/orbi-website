@@ -544,6 +544,72 @@ describe("comparison capability matrix (Issue #201)", () => {
   });
 });
 
+
+// Issue #870: /compare/codex/ targets the "codex alternatives" query. The EN
+// page carries the term in its title and h1 (keeping the Orbi-vs comparison
+// intent), gains a #codex-alternatives section that links the six existing
+// comparison pages, and dates every newly cited source; the /compare/ overview
+// points its Codex row at that section. The Issue scopes this to English pages,
+// so the ZH mirror is deliberately untouched.
+describe("Codex alternatives (Issue #870)", () => {
+  const alternatives = [
+    "/compare/claude-code/",
+    "/compare/jules/",
+    "/compare/github-copilot-coding-agent/",
+    "/compare/openhands/",
+    "/compare/devin/",
+    "/compare/cursor/",
+  ];
+  const newSources = [
+    "https://code.claude.com/docs/en/github-actions",
+    "https://jules.google/docs/running-tasks/",
+    "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent",
+    "https://github.com/All-Hands-AI/OpenHands",
+    "https://docs.openhands.dev/openhands/usage",
+    "https://docs.devin.ai/get-started/devin-intro",
+    "https://cursor.com/docs/cloud-agent",
+  ];
+
+  it("carries 'Codex alternatives' in the title and h1 without losing the comparison", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+    expect(title, "title must carry the search term").toContain("Codex alternatives");
+    expect(title, "title must keep the comparison intent").toContain("Orbi vs");
+    expect(h1, "h1 must carry the search term").toContain("Codex alternatives");
+    expect(h1, "h1 must keep the comparison intent").toContain("Orbi vs");
+  });
+
+  it("anchors the alternatives section and links the six comparison pages", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const start = html.indexOf('id="codex-alternatives"');
+    expect(start, "missing the #codex-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = html.slice(start, html.indexOf("</section>", start));
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of alternatives) {
+      expect(hrefs, `${href} must be linked from the alternatives section`).toContain(href);
+    }
+  });
+
+  it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const list = html.match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, `${href} must appear in Sources and verification dates`).toBeTruthy();
+      expect(item, `${href}: source must carry a verification date`).toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("points the /compare/ Codex row at the alternatives section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/codex/#codex-alternatives">Codex alternatives</a>',
+    );
+  });
+});
+
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   it("keeps exactly one H1 on every sitemap HTML page", () => {
     const violations = [];
