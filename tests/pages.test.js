@@ -937,6 +937,24 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #854: agentic.ai drives the most signups of any external directory —
+  // Orbi ranks #1 on its free coding agents list — so it gets a text friend
+  // link back, right after ez背单词 and before the badge row. The link points
+  // at the free list (not the homepage) and must stay crawlable (no nofollow,
+  // no ref parameter).
+  it("links Agentic.ai from the footer without nofollow on every footer page", () => {
+    const anchor = '<a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Agentic.ai footer anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: the Agentic.ai backlink must be crawlable`).not.toContain("nofollow");
+      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must follow ez背单词`)
+        .toBeGreaterThan(footer.indexOf('<a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>'));
+      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must precede the badge row`)
+        .toBeLessThan(footer.indexOf('<div class="footer-badges">'));
+    }
+  });
+
   // Issue #798: LaunchNest (launchnest.io) grants the dofollow backlink only
   // once the site carries this badge. The maintainer's embed is copied
   // verbatim — LaunchNest checks the anchor and img attributes on review — so
@@ -1001,7 +1019,7 @@ describe("one unified footer on every content page", () => {
 
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
-  // friends (the Friends label + the two text links). Issue #832 appends the
+  // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
