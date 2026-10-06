@@ -197,3 +197,49 @@ describe("shared hero layout (Issue #355)", () => {
     expect(css).toContain("@media (max-width: 699px) {\n  .hero.homepage-hero h1 {\n    font-size: 42px;\n  }\n}");
   });
 });
+
+// Issue #860: on blog posts and guides the hero (h1, .hero-lede) must share the
+// body text column's edges, or the heading reads narrower than the article it
+// introduces. The nine shared-hero pages above keep their own 48rem source.
+const articlePages = [
+  "/blog/pi-agent-harness/",
+  "/zh/blog/pi-agent-harness/",
+  "/guides/pi-coding-agent/",
+  "/zh/guides/pi-coding-agent/",
+];
+const articleViewports = [390, 1280, 1440, 1920, 2560];
+
+describe("article hero alignment (Issue #860)", () => {
+  it("puts the h1 and lede on the body text edges at every acceptance viewport", async () => {
+    const page = await browser.newPage();
+    try {
+      for (const path of articlePages) {
+        for (const width of articleViewports) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+          await page.evaluate(() => document.fonts.ready);
+          const metrics = await page.evaluate(() => {
+            const edges = (element) => {
+              const rect = element.getBoundingClientRect();
+              return { left: rect.left, right: rect.right };
+            };
+            const body = document.querySelector(".post-body, .guide-body");
+            return {
+              body: edges(body.querySelector("p")),
+              heading: edges(document.querySelector("h1")),
+              lede: edges(document.querySelector(".hero-lede")),
+            };
+          });
+          const context = `${path} at ${width}px`;
+          for (const [name, rect] of [["h1", metrics.heading], [".hero-lede", metrics.lede]]) {
+            expect(Math.abs(rect.left - metrics.body.left), `${context} ${name} left edge`).toBeLessThanOrEqual(1);
+            expect(Math.abs(rect.right - metrics.body.right), `${context} ${name} right edge`).toBeLessThanOrEqual(1);
+          }
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 90_000);
+});
+
