@@ -187,6 +187,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 (English):
+  https://orbi.build/blog/pi-agent-harness/
+- Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):
+  https://orbi.build/zh/blog/pi-agent-harness/
 - Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/
 - Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分 (Chinese):

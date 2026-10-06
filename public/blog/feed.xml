@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</title>
+      <link>https://orbi.build/blog/pi-agent-harness/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/pi-agent-harness/</guid>
+      <pubDate>Tue, 06 Oct 2026 00:00:00 GMT</pubDate>
+      <description>I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.</description>
+    </item>
+    <item>
       <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</title>
       <link>https://orbi.build/blog/orbi-on-pi-coding-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/orbi-on-pi-coding-agent/</guid>

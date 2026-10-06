@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pi agent harness 三种跑法：kill -9 之后谁能接上 | Orbi</title>
+  <meta name="description" content="同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/pi-agent-harness/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-agent-harness/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-agent-harness/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-agent-harness/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Pi agent harness 三种跑法：kill -9 之后谁能接上">
+  <meta property="og:description" content="同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/pi-agent-harness/">
+  <meta property="og:image" content="https://orbi.build/img/blog-pi-agent-harness-card.png">
+  <meta property="og:image:alt" content="Pi agent harness 三种跑法：kill -9 之后谁能接上">
+  <meta property="article:published_time" content="2026-10-06">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi agent harness 三种跑法：kill -9 之后谁能接上","datePublished":"2026-10-06","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-pi-agent-harness-card.png","inLanguage":"zh-CN","description":"同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。","url":"https://orbi.build/zh/blog/pi-agent-harness/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta property="og:image" content="https://orbi.build/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">登录</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">免费开始</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客 · 2026-10-06</p>
+          <h1 id="post-title">Pi agent harness 三种跑法：kill -9 之后谁能接上</h1>
+          <p class="post-series">系列：<a href="/zh/guides/pi-coding-agent/">Orbi 怎么搭在 Pi coding agent 上</a></p>
+          <p class="hero-lede">同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#pi-agent-harness-是什么">Pi agent harness 是什么</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</a></li>
+          <li><a class="post-toc-link" href="#用-pi-print-无头运行-pi">用 pi --print 无头运行 Pi</a>
+            <ol>
+              <li><a class="post-toc-link" href="#stdin-不关-无头-pi-会一直等">stdin 不关，无头 Pi 会一直等</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#通过-vercel-ai-sdk-把-pi-嵌进-node-程序">通过 Vercel AI SDK 把 Pi 嵌进 Node 程序</a></li>
+          <li><a class="post-toc-link" href="#cloudflare-上的-pi-durable-piharness">Cloudflare 上的 Pi Durable：PiHarness</a></li>
+          <li><a class="post-toc-link" href="#无人值守选哪种">无人值守选哪种</a>
+            <ol>
+              <li><a class="post-toc-link" href="#在-docker-或沙箱里跑-pi-agent-harness">在 Docker 或沙箱里跑 Pi agent harness</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#三种都不替你管的事">三种都不替你管的事</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 8 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#pi-agent-harness-是什么">Pi agent harness 是什么</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</a></li>
+          <li><a class="post-toc-link" href="#用-pi-print-无头运行-pi">用 pi --print 无头运行 Pi</a>
+            <ol>
+              <li><a class="post-toc-link" href="#stdin-不关-无头-pi-会一直等">stdin 不关，无头 Pi 会一直等</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#通过-vercel-ai-sdk-把-pi-嵌进-node-程序">通过 Vercel AI SDK 把 Pi 嵌进 Node 程序</a></li>
+          <li><a class="post-toc-link" href="#cloudflare-上的-pi-durable-piharness">Cloudflare 上的 Pi Durable：PiHarness</a></li>
+          <li><a class="post-toc-link" href="#无人值守选哪种">无人值守选哪种</a>
+            <ol>
+              <li><a class="post-toc-link" href="#在-docker-或沙箱里跑-pi-agent-harness">在 Docker 或沙箱里跑 Pi agent harness</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#三种都不替你管的事">三种都不替你管的事</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Pi agent harness 指的是 <a href="https://pi.dev">Pi</a> 里驱动模型的那个循环。Pi 是 Earendil 团队做的开源编程 agent，它的 harness 做的事是：把提示词发给模型，执行模型要的工具调用，把每一步记进会话文件，如此往复，直到模型不再要工具。2026 年 10 月 1 日，Earendil 发布 Pi 1.0，同时发了一个实验性的第二套 harness：Pi Durable。它给每一步存检查点，跑它的进程死了，任务还能接着跑。</p>
+<p>我是 Lawrence Liu，Orbi 的维护者。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在<a href="/zh/blog/orbi-on-pi-coding-agent/">本系列第一篇</a>里；Pi 外面那层 runner 写在 <a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>里。这篇比较三种「没人坐在键盘前」跑 Pi 的方式，对每一种做同一件事：起一个任务，跑到一半杀掉进程，看还剩下什么。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<h2 id="pi-agent-harness-是什么">Pi agent harness 是什么</h2>
+<p>harness 指模型外面那层程序：拼请求、执行工具、保存对话、判断一次运行什么时候结束。模型本身只产出文字和工具调用。Pi 有意把这层做得很小：系统提示词很短，默认只给模型四个工具，<code class="post-code--single">read</code>、<code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code>（见 Pi 的 <a href="https://pi.dev/docs/latest/cli">CLI 文档</a>）。一个会话是一个 JSONL 文件，一行一条记录：消息、工具结果，还有换模型这类配置变化。对话类的记录都记着自己的父记录是哪一条，所以可以从任意一步分叉出去，整个会话是一棵树。扩展是加载进 Pi 进程的 TypeScript 模块，skill 是模型需要时才加载的说明，子 agent、权限确认这类功能都留给它们去做。Pi 故意不做哪些事、Orbi 在那些位置补了什么，见<a href="/zh/blog/orbi-on-pi-coding-agent/">第一篇</a>。</p>
+<p>Pi 的命令行有四种模式：交互式终端、print、JSON，以及走 stdin 和 stdout 的 RPC；另外还有一个 SDK，可以把它嵌进 Node 程序。Pi 的文档说这些接口用的是同一套 agent 和会话机制，所以 RPC 和 SDK 存的会话文件和命令行一样。RPC 我没有测；下文的 AI SDK 适配器底下用的是 Pi 的 SDK，但会话文件存在哪由它自己决定。</p>
+<h3 id="pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</h3>
+<p>从 10 月 1 日起，「pi harness」可能指同一个团队的两样东西。按 Earendil 的定位，Pi 编程 agent（<code class="post-code--single">@earendil-works/pi-coding-agent</code>，也就是 <code class="post-code--single">pi</code> 命令）是给一个人在终端前用的 harness。Earendil 在 <a href="https://earendil.com/posts/pi-durable/">Pi Durable 的发布文</a>里这样描述 <code class="post-code--single">pi</code> 命令的进程死掉以后的情形：你看看发生了什么，再让它继续。Pi Durable（<code class="post-code--single">@earendil-works/pi-durable</code>）是另一个库，用来搭能自己一直跑下去的 agent。在它里面，每次模型调用、每次工具调用都是一个任务，往下走之前先存检查点，新进程打开同一份存储就能接着跑。它和 Pi 共用模型层 <code class="post-code--single">pi-ai</code>，但它不是 <code class="post-code--single">pi</code> 命令。它也带着那四个写代码用的工具，但得先给它们接一个执行环境，也就是真正去读文件、跑命令的地方，工具才能用；Pi Durable 自带一个 Node 的执行环境，但它在 Cloudflare Worker 里用不了。</p>
+<h2 id="三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</h2>
+<p>表里的 Durable Object，是 Cloudflare 上一种带自己存储、按名字寻址的 Worker 实例。</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th></th>
+<th><code class="post-code--spaced">pi --print</code></th>
+<th>AI SDK <code class="post-code--single">HarnessAgent</code></th>
+<th>Cloudflare <code class="post-code--single">PiHarness</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>跑的是什么</td>
+<td data-label="pi --print">Pi 1.0.0，作为子进程</td>
+<td data-label="AI SDK HarnessAgent">Pi 编程 agent 0.85.1，跑在你的 Node 进程里，经由 <code class="post-code--single">@ai-sdk/harness-pi</code> 1.0.141</td>
+<td data-label="Cloudflare PiHarness">Pi Durable 1.0.4，跑在 Durable Object 里，经由 Cloudflare Agents SDK（npm 包 <code class="post-code--single">agents</code>）0.26.0</td>
+</tr>
+<tr>
+<td>状态</td>
+<td data-label="pi --print">稳定版</td>
+<td data-label="AI SDK HarnessAgent">实验性</td>
+<td data-label="Cloudflare PiHarness">Pi Durable 是实验性，<code class="post-code--single">PiHarness</code> 标 beta</td>
+</tr>
+<tr>
+<td>测试用的工具</td>
+<td data-label="pi --print">Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code></td>
+<td data-label="AI SDK HarnessAgent">Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code>，在沙箱里执行</td>
+<td data-label="Cloudflare PiHarness">我写的两个工具：<code class="post-code--single">sleep</code>，以及往 SQLite 存一行的 <code class="post-code--single">write_file</code></td>
+</tr>
+<tr>
+<td>kill 了几次，结果</td>
+<td data-label="pi --print"><code class="post-code--single">SIGKILL</code> 两次，用 <code class="post-code--single">--continue</code> 重新拉起，两次都跑完</td>
+<td data-label="AI SDK HarnessAgent"><code class="post-code--single">SIGKILL</code> 两次：两次的对话都恢复不了（宿主机临时目录里还留着一份，但没有 API 读它）。<code class="post-code--single">SIGTERM</code> 七次，处理函数里调了 <code class="post-code--single">session.stop()</code>：每次都接上并跑完。其中三次查了会话文件：两次信号打断了命令，都被记成成功；另一次没有命令被打断</td>
+<td data-label="Cloudflare PiHarness"><code class="post-code--single">SIGKILL</code> 三次。我重启本地运行时后，对象没收到任何请求就自己起来，三次都跑完</td>
+</tr>
+<tr>
+<td>会话记录在哪</td>
+<td data-label="pi --print"><code class="post-code--single">--session-dir</code> 里的 JSONL 文件，一行一条记录</td>
+<td data-label="AI SDK HarnessAgent">一轮进行中放在宿主机的临时目录，只有 stop、detach、suspend 时才拷进沙箱</td>
+<td data-label="Cloudflare PiHarness">Durable Object 的 SQLite 里以 <code class="post-code--single">pi_</code> 开头的表</td>
+</tr>
+<tr>
+<td>扩展和 key</td>
+<td data-label="pi --print">OS 用户装的、受信任的仓库里带的，都会加载，除非传 <code class="post-code--single">--no-extensions</code>、<code class="post-code--single">--no-skills</code>。key 来自这个用户的环境变量或 <code class="post-code--single">auth.json</code></td>
+<td data-label="AI SDK HarnessAgent">不自动发现扩展，只跑你在代码里传的工厂函数。key 来自 <code class="post-code--single">auth</code> 参数、你自己的凭据存储或宿主机的环境变量，留在宿主机</td>
+<td data-label="Cloudflare PiHarness">扩展是 Worker 代码里装进 registry 的对象，key 是 Worker secret</td>
+</tr>
+<tr>
+<td>进程死了谁拉起</td>
+<td data-label="pi --print">你的监督程序，<code class="post-code--single">pi</code> 留下的工具进程也得由它清：<code class="post-code--single">SIGKILL</code> 之后还在跑的命令，以及放到后台的东西</td>
+<td data-label="AI SDK HarnessAgent">你的代码，从之前 <code class="post-code--single">stop()</code>、<code class="post-code--single">detach()</code> 或 <code class="post-code--single">suspendTurn()</code> 存下的状态接着跑</td>
+<td data-label="Cloudflare PiHarness">按 Cloudflare 文档，是任务没做完时每 30 秒一次的心跳 alarm。本地实测在重启后 1 到 10 秒内恢复，和任务开始后约第 30 秒到期的第一次 alarm 对得上，具体是哪一次 alarm 响的没确认</td>
+</tr>
+<tr>
+<td>卡住了谁发现</td>
+<td data-label="pi --print">你的监督程序</td>
+<td data-label="AI SDK HarnessAgent">你的代码：<code class="post-code--single">stream()</code> 接受 abort signal</td>
+<td data-label="Cloudflare PiHarness">你的代码，通过 <code class="post-code--single">abort()</code>；没有内置机制，忽略 abort signal 的工具会让会话一直占着</td>
+</tr>
+<tr>
+<td>要自己运维什么</td>
+<td data-label="pi --print">一台机器，加一个监督程序</td>
+<td data-label="AI SDK HarnessAgent">一个 Node 服务，加一个沙箱</td>
+<td data-label="Cloudflare PiHarness">不用自己的服务器；部署需要 Cloudflare 账号，写代码用的工具要你自己提供执行环境</td>
+</tr>
+</tbody></table></div>
+<p>每次给模型的指令都一样：按顺序建 <code class="post-code--single">step1.txt</code> 到 <code class="post-code--single">step5.txt</code>，每建一个文件之前先调一次 8 秒的 sleep，全部建完回复 <code class="post-code--spaced">ALL DONE</code>。实际发出去的提示词如下（Cloudflare 那边把「在 bash 里跑 <code class="post-code--spaced">sleep 8</code>」换成了「调用 sleep 工具，seconds=8」，也去掉了「in the current directory」）：</p>
+<pre><code class="language-text">Create files step1.txt through step5.txt in the current directory, one at a time, in order. Before creating each file, run `sleep 8` in bash as a separate tool call. Each file contains its step number. When all five exist, reply ALL DONE.
+</code></pre>
+<p>不打断的话，一次大约 50 秒。模型都是 DeepSeek API 上的 <code class="post-code--single">deepseek-flash</code>。在第 19 到 33 秒之间，我用 <code class="post-code--single">SIGKILL</code>（也就是 <code class="post-code--spaced">kill -9</code>）杀进程。进程接不住这个信号，Linux 内存不够时 OOM killer 发的也是它。AI SDK 那条我还试了进程接得住的 <code class="post-code--single">SIGTERM</code>，结果 AI SDK 只有在这种情况下才恢复得了。所有测试都在 2026 年 10 月 6 日、在我自己的机器上跑。</p>
+<p>表里也看得出来，这不是严格对等的评测：三边跑的代码不一样，Cloudflare 那边因为 Worker 里没有 shell 和文件系统，用的是我自己写的两个工具。我只比一件事：硬杀之后还剩下什么，谁得出手。</p>
+<h2 id="用-pi-print-无头运行-pi">用 <code class="post-code--spaced">pi --print</code> 无头运行 Pi</h2>
+<p>无头跑 Pi 就是 <code class="post-code--spaced">pi --print</code>（简写 <code class="post-code--single">-p</code>）：执行提示词，打印最终回答，正常退出码是 0，出错是 1（比如 provider 不认这个模型名）。加 <code class="post-code--spaced">--mode json</code> 则把每个事件按行输出成 JSON，但这时要自己查事件里有没有错误：同样是被拒的模型名，JSON 模式退出码是 0，输出里留着 <code class="post-code--single">&quot;stopReason&quot;:&quot;error&quot;</code>。我用的命令如下，<code class="post-code--single">--no-context-files</code> 是不读 <code class="post-code--single">AGENTS.md</code> 这类文件，另外两个开关是不加载任何自动发现的扩展和 skill，我机器上的和仓库里的都算：</p>
+<pre><code class="language-bash">pi --print --mode json \
+   --no-extensions --no-skills --no-context-files \
+   --provider deepseek --model deepseek-flash \
+   --session-dir ./sess &quot;&lt;任务&gt;&quot; &lt; /dev/null
+</code></pre>
+<p>print 模式下 Pi 没法问你信不信任这个项目。如果没有 <code class="post-code--single">--approve</code> 这类参数，没有能替你回答信任确认的扩展，也没有为这个目录存过决定，<code class="post-code--single">defaultProjectTrust</code> 默认的 <code class="post-code--single">&quot;ask&quot;</code> 会让它悄悄跳过仓库自己的 <code class="post-code--single">.pi</code> 设置、扩展和 skill（见 <a href="https://pi.dev/docs/latest/security">security 文档</a>）。要在命令行上定下来，就传 <code class="post-code--single">--approve</code> 或 <code class="post-code--single">--no-approve</code>。</p>
+<p>杀了两次。第一次，模型刚写完 <code class="post-code--single">step3.txt</code>、正在想下一步，会话文件最后一行是那次写文件的结果。第二次，kill 落在第四次 <code class="post-code--spaced">sleep 8</code> 刚开始的时候，最后一行是模型发出的 <code class="post-code--single">bash</code> 调用，后面没有结果。两次留下的会话文件都是合法的 JSONL，kill 之前的内容一条没少。</p>
+<p>不过 <code class="post-code--single">SIGKILL</code> 并没有把东西全停掉。Pi 跑每条 <code class="post-code--single">bash</code> 命令时都让它脱离出去，自成一个进程组（Pi <code class="post-code--single">bash.js</code> 里的 <code class="post-code--spaced">detached: true</code>）。命令一返回，Pi 就不再跟踪它的进程组；收到 <code class="post-code--single">SIGTERM</code> 或 <code class="post-code--single">SIGHUP</code> 时，它会杀掉还在跑的那些（<code class="post-code--single">print-mode.js</code>）。<code class="post-code--single">SIGKILL</code> 连这个机会都不给它。我让 Pi 跑 <code class="post-code--spaced">sleep 97</code>，用 <code class="post-code--spaced">timeout -s KILL 15s</code> 杀掉它，一秒后 <code class="post-code--spaced">sleep 97</code> 还在跑；同样的测试换成发 <code class="post-code--single">SIGTERM</code> 的普通 <code class="post-code--spaced">timeout 15s</code>，什么都没留下。<code class="post-code--single">SIGKILL</code> 留下的要是卡住的测试，它会继续占着端口、继续写文件，下一次尝试就在旁边开跑了。命令放到后台的东西，比如 <code class="post-code--spaced">npm run dev &amp;</code>，不管 Pi 怎么退出都会留下来，因为命令一返回 Pi 就不再跟踪它了。</p>
+<p>得有 Pi 之外的程序发现进程没了，再把它拉起来。恢复只要一条命令：</p>
+<pre><code class="language-bash">pi --print --continue --session-dir ./sess \
+   --no-extensions --no-skills --no-context-files \
+   --provider deepseek --model deepseek-flash \
+   &quot;You were interrupted. Continue the original task from where you left off.&quot; &lt; /dev/null
+</code></pre>
+<p><code class="post-code--single">--continue</code> 会重新打开 <code class="post-code--single">--session-dir</code> 目录里、从同一个工作目录启动的最近一个会话，所以每个任务给一个单独的会话目录。目录是空的话，它就开一个新会话。两次都建齐了五个文件、回了 <code class="post-code--spaced">ALL DONE</code>，分别用了 21 秒和 22 秒，基本都是剩下那两次 sleep 的时间。在两步之间被切断的那次，模型直接从第 4 步接着做，什么都没查；在 sleep 刚开始时被切断的那次，它先跑了一句 <code class="post-code--spaced">ls step*.txt</code>，看到三个文件，再接着做。</p>
+<p>被打断的那次 <code class="post-code--single">bash</code> 调用，恢复前后都没有在会话文件里补上结果。聊天类模型 API 要求每个工具调用都有结果，所以 Pi 的模型层每次拼请求时自己补一条：<code class="post-code--single">pi-ai</code> 给这种孤立的调用插一条合成结果，内容是 <code class="post-code--spaced">No result provided</code>，标记为错误（<code class="post-code--single">@earendil-works/pi-ai</code> 的 <code class="post-code--single">transform-messages.js</code>）。模型看到的是一次失败的调用，文件里却没有这条记录。回放或审计会话文件时，会遇到没有结果的工具调用。</p>
+<p>监督程序可以短到这样。每次尝试都限时，到点时 <code class="post-code--single">timeout</code> 先发 <code class="post-code--single">SIGTERM</code>，让 Pi 把还在跑的工具命令杀掉，Pi 卡住不退的话 30 秒后再补 <code class="post-code--single">SIGKILL</code>。<code class="post-code--single">pi</code> 退出码非 0，就接着同一个会话再跑，连第一次在内最多三次。存成 <code class="post-code--single">pi-task.sh</code>，用 bash 执行：</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# Usage: pi-task.sh &lt;session dir&gt; &lt;task prompt&gt;
+set -u
+dir=$1 task=$2 prompt=$2
+limit=${PI_TIME_LIMIT:-30m}
+mkdir -p &quot;$dir&quot;
+flags=(--print --no-extensions --no-skills --no-context-files
+       --provider deepseek --model deepseek-flash --session-dir &quot;$dir&quot;)
+for attempt in 1 2 3; do
+  # SIGTERM at the limit lets pi kill tool commands still running; SIGKILL 30 s later if it hangs
+  timeout -k 30s &quot;$limit&quot; pi &quot;${flags[@]}&quot; &quot;$prompt&quot; &lt; /dev/null
+  code=$?
+  [ &quot;$code&quot; -eq 0 ] &amp;&amp; exit 0
+  echo &quot;attempt $attempt: pi exited with $code&quot; &gt;&amp;2
+  [ &quot;$attempt&quot; -eq 1 ] &amp;&amp; flags+=(--continue)
+  prompt=&quot;You were interrupted. Continue this task from where you left off: $task&quot;
+done
+exit 1
+</code></pre>
+<p>我按四种情况跑了一遍。设 <code class="post-code--single">PI_TIME_LIMIT=25s</code> 跑 step 任务，超时两次（exit 124），第三次跑完，始终是同一个会话文件，也没有残留的 <code class="post-code--single">sleep</code>。限时 15 秒跑 <code class="post-code--spaced">sleep 97</code> 那个任务，三次都超时，结束后没有任何进程留下。换成 DeepSeek 不认的模型名，三次都是 exit 1，脚本退出 1。给一句简单的提示词，答完退出 0。重试的提示词里带着原任务，所以第一次尝试就算在 Pi 存下任何东西之前就死了，重试也不会两眼一抹黑。脚本没传 <code class="post-code--single">--approve</code> 也没传 <code class="post-code--single">--no-approve</code>，任务要用仓库自己的 <code class="post-code--single">.pi</code> 设置的话，就加上 <code class="post-code--single">--approve</code>；仓库里的扩展和 skill 因为 <code class="post-code--single">--no-extensions</code>、<code class="post-code--single">--no-skills</code> 照样不加载。退出 0 只说明 Pi 跑完了这一次，任务做没做完要另外查，比如看五个文件在不在。</p>
+<p>如果 <code class="post-code--single">pi</code> 最后还是死于 <code class="post-code--single">SIGKILL</code>（OOM killer，或者那 30 秒后的补刀），还在跑的工具命令会留下来；命令放到后台的东西，不管 Pi 怎么退出都会留下。在 Linux 上可以用 <code class="post-code--spaced">systemd-run --user --scope</code> 启动每次尝试，结束后停掉这个 scope，把它们也收掉，这需要 systemd 用户会话；也可以把每次尝试放进单独的容器。</p>
+<p>Orbi 用 <code class="post-code--spaced">pi --print</code> 跑过有记录的 169 次交付（按 DeepSeek 闲时公开价，每次 token 花费中位数 0.082 美元，见<a href="/zh/blog/orbi-on-pi-coding-agent/">第一篇</a>），它的恢复方式不一样：它不用 <code class="post-code--single">--continue</code>，而是起一个新会话，附一段关于没做完的工作的简短说明。会话卡住时，它的看门狗也会把这个会话启动的工具进程一起杀掉，详见<a href="/zh/guides/pi-coding-agent/">专题页</a>。</p>
+<h3 id="stdin-不关-无头-pi-会一直等">stdin 不关，无头 Pi 会一直等</h3>
+<p>Pi 的 <a href="https://pi.dev/docs/latest/cli">CLI 文档</a>写了，管道传进来的 stdin 会拼到第一条提示词前面：</p>
+<pre><code class="language-bash">echo &quot;the secret word is BANANA&quot; | pi --print &quot;reply with only the secret word&quot;
+# BANANA
+</code></pre>
+<p>文档没写的是，Pi 会一直读 stdin，直到它关闭（Pi <code class="post-code--single">main.js</code> 里的 <code class="post-code--single">readPipedStdin</code> 等的是流的 <code class="post-code--single">end</code> 事件）。如果 stdin 是一根没人关的管道，Pi 就一直等，不输出，也不报错：</p>
+<pre><code class="language-bash">sleep 40 | timeout 20 pi --print &quot;reply with only PONG&quot;            # pi 在 20 秒时被杀（exit 124），什么都没打印
+sleep 40 | timeout 20 pi --print &quot;reply with only PONG&quot; &lt; /dev/null # 1 秒左右打印出 PONG
+</code></pre>
+<p>两行都要等 <code class="post-code--spaced">sleep 40</code> 结束才返回，因为 shell 要等整条管道跑完。这两行要在 bash 里跑。zsh 的 MULTIOS 选项会把管道和文件同时喂给命令，第二行在 zsh 里一样会卡住。只有同一条命令既接管道又写 <code class="post-code--spaced">&lt; /dev/null</code> 时才这样；前面没有管道的命令加 <code class="post-code--spaced">&lt; /dev/null</code>，在哪个 shell 里都管用。</p>
+<p>在终端里不接管道、直接敲 <code class="post-code--spaced">pi --print &quot;...&quot;</code> 没问题，那时 stdin 是 TTY，Pi 不读它。systemd 和 launchd 给服务的 stdin 是 <code class="post-code--single">/dev/null</code>，定时器拉起的进程只要自己不往 <code class="post-code--single">pi</code> 塞管道，就碰不到这个坑。但如果某个程序启动 <code class="post-code--single">pi</code>、让它继承了一根开着的管道，就会中招。你自己启动 <code class="post-code--single">pi</code> 的话，Python 传 <code class="post-code--single">stdin=subprocess.DEVNULL</code>，Node 用 <code class="post-code--spaced">stdio: [&#39;ignore&#39;, ...]</code>，shell 里加 <code class="post-code--spaced">&lt; /dev/null</code>。</p>
+<p>Orbi 自己的 runner 代码里有这个漏洞，只是目前的部署方式碰不到。它用 <code class="post-code--single">subprocess.Popen</code> 启动 Pi，没设 <code class="post-code--single">stdin</code>。我把这段调用原样抄进脚本，在 stdin 接一根开着的管道跑，20 秒没有任何输出；改成 <code class="post-code--single">stdin=subprocess.DEVNULL</code> 后不到一秒就有了回答。Orbi 的 runner 跑在 systemd、launchd 下，或者在不加 <code class="post-code--single">-i</code> 的 Docker 里，这几种情况 stdin 都是 <code class="post-code--single">/dev/null</code>，不会触发这个等待。</p>
+<h2 id="通过-vercel-ai-sdk-把-pi-嵌进-node-程序">通过 Vercel AI SDK 把 Pi 嵌进 Node 程序</h2>
+<p><a href="https://ai-sdk.dev/providers/ai-sdk-harnesses/pi"><code class="post-code--single">@ai-sdk/harness-pi</code></a> 让 Pi 跑在宿主 Node 进程里，读写文件、执行命令都交给沙箱。按 Vercel 的说法，Pi 把沙箱当成远程的文件系统和 shell。沙箱可以是 Vercel Sandbox，也可以是 <code class="post-code--single">just-bash</code>，一个跑在进程内、带虚拟文件系统的 bash。我用的是挂在真实目录上的 <code class="post-code--single">just-bash</code>，这样进程被杀后文件还在。动手前先看一眼版本：1.0.141 版的适配器依赖 <code class="post-code--single">@earendil-works/pi-coding-agent</code> <code class="post-code--single">^0.85.1</code>，npm 装下来是 0.85.1，所以这条路现在跑的还不是 Pi 1.0。用 Pi 自带的 SDK 也能把 Pi 1.0 直接嵌进 Node；我测这个适配器，是因为它多了一层沙箱隔离，Pi 自带的 SDK 被杀之后怎样，我没测。</p>
+<p>完整脚本如下，去掉了日志。一轮结束、流里没报错时退出 0（任务做没做完还得另查），流里报了错退出 1，被 <code class="post-code--single">SIGTERM</code> 停下、<code class="post-code--single">stop()</code> 返回了恢复状态时退出 143，监督程序能分清这三种情况。<code class="post-code--single">state.json</code> 和 session id 都是写死的，所以每个任务用单独的目录，和 <code class="post-code--single">pi-task.sh</code> 一样。需要 Node 22.19 或更高（内置的 Pi 有这个要求），存成 <code class="post-code--single">run.mjs</code>，装上我用的版本，设好 <code class="post-code--single">DEEPSEEK_API_KEY</code> 再跑：</p>
+<pre><code class="language-bash">npm i @ai-sdk/harness@1.0.139 @ai-sdk/harness-pi@1.0.141 @ai-sdk/sandbox-just-bash@1.0.139 just-bash@2.14.5
+DEEPSEEK_API_KEY=... node run.mjs   # run it again after a SIGTERM to resume
+</code></pre>
+<p>脚本：</p>
+<pre><code class="language-js">import { HarnessAgent } from &#39;@ai-sdk/harness/agent&#39;;
+import { createPi } from &#39;@ai-sdk/harness-pi&#39;;
+import { createJustBashNetworkSandboxSessionFromNativeSandbox } from &#39;@ai-sdk/sandbox-just-bash&#39;;
+import { Sandbox, ReadWriteFs } from &#39;just-bash&#39;;
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from &#39;node:fs&#39;;
+
+const loadSavedState = () =&gt; existsSync(&#39;state.json&#39;) ? JSON.parse(readFileSync(&#39;state.json&#39;, &#39;utf8&#39;)) : undefined;
+const saveState = (state) =&gt; writeFileSync(&#39;state.json&#39;, JSON.stringify(state));
+const prompt = &#39;Create files step1.txt through step5.txt in the current directory, one at a time, in order. &#39;
+  + &#39;Before creating each file, run `sleep 8` in bash as a separate tool call. &#39;
+  + &#39;Each file contains its step number. When all five exist, reply ALL DONE.&#39;;
+
+const harness = createPi({
+  auth: { DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL: &#39;https://api.deepseek.com&#39; },
+  providers: { deepseek: { api: &#39;openai-completions&#39;, models: [{
+    id: &#39;deepseek-flash&#39;, name: &#39;deepseek-flash&#39;, reasoning: false, input: [&#39;text&#39;],
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 16384,
+  }] } },
+});
+const agent = new HarnessAgent({ harness, model: &#39;deepseek/deepseek-flash&#39; });
+mkdirSync(&#39;./box&#39;, { recursive: true });
+const sandbox = createJustBashNetworkSandboxSessionFromNativeSandbox(
+  await Sandbox.create({ fs: new ReadWriteFs({ root: &#39;./box&#39; }), cwd: &#39;/work&#39; }),
+);
+
+const resumeFrom = loadSavedState();  // 第一次运行时为 undefined
+const session = await agent.createSession({ sessionId: &#39;demo&#39;, sandboxSession: sandbox, ...(resumeFrom &amp;&amp; { resumeFrom }) });
+let stopping = false;
+process.on(&#39;SIGTERM&#39;, async () =&gt; { stopping = true; saveState(await session.stop()); process.exit(143); });  // 143: stopped, resume state written
+
+const result = session.hasUnfinishedTurn()
+  ? await agent.continueStream({ session })
+  : await agent.stream({ session, prompt });
+let failed = false;
+for await (const part of result.stream) {
+  if (part.type === &#39;text-delta&#39;) process.stdout.write(part.text);
+  if (part.type === &#39;error&#39;) { failed = true; console.error(part.error); }
+}
+if (!stopping) { saveState(await session.detach()); process.exit(failed ? 1 : 0); }  // else the SIGTERM handler saves and exits
+</code></pre>
+<p>不打断的话大约 50 秒跑完，文件落在 <code class="post-code--single">./box/work/pi-demo/</code> 下。我在大约 33 秒时 <code class="post-code--single">SIGKILL</code> 了两次，两次都是已经写好的文件还在沙箱里，对话却回不去了。一轮进行中（这次整个任务就是一轮，因为只有一条提示词），适配器把 Pi 的会话写在宿主机的临时目录 <code class="post-code--spaced">$TMPDIR/ai-sdk-harness/pi/&lt;session id&gt;/</code>，只有在 <code class="post-code--single">session.stop()</code>、<code class="post-code--single">detach()</code> 或 <code class="post-code--single">suspendTurn()</code> 里才拷进沙箱。这三个都会返回一份恢复用的状态：<code class="post-code--single">stop()</code> 和 <code class="post-code--single">detach()</code> 的传给 <code class="post-code--spaced">createSession({ sessionId, resumeFrom })</code>，<code class="post-code--single">suspendTurn()</code> 的传给 <code class="post-code--spaced">createSession({ sessionId, continueFrom })</code>。被杀的进程一个都来不及调。</p>
+<p>临时目录里那份事后还在磁盘上，但没有哪个 API 会读它，我也没试着手工拼回去。两次我都用同一个 session id 起了个新进程，提示词和上文手动 <code class="post-code--single">--continue</code> 恢复命令里那句一样，是 &quot;You were interrupted. Continue the original task from where you left off.&quot;。这句故意不带原任务，为的是看对话历史还在不在（照上面的 JS 脚本跑，发出去的会是完整任务）。没有历史，模型两次都是看了看现有文件，只补了下一个就停：第一次被杀时已有 3 个文件，补了 <code class="post-code--single">step4.txt</code>；第二次也是在约 33 秒时杀的，却只有 2 个（那次各步的时间我没记，说不清为什么慢了一步），补了 <code class="post-code--single">step3.txt</code>。两次都没做完五个。第二次它还说明，找不到原始指令的任何记录，是根据文件名推测着往下做的。</p>
+<p>换成 <code class="post-code--single">SIGTERM</code>，我试的七次都接上并跑完，因为处理函数跑了；其中五次留了日志，另外两次只记了结果。<code class="post-code--single">session.stop()</code> 中止当前这一轮，把会话拷进沙箱，返回一个带着未完成那一轮的恢复状态。新进程把它当 <code class="post-code--single">resumeFrom</code> 传进去，<code class="post-code--single">hasUnfinishedTurn()</code> 为真，调 <code class="post-code--single">continueStream()</code>。适配器源码里有一点要注意：这次拷贝是尽力而为的。拷贝失败时，<code class="post-code--single">stop()</code> 会吞掉错误、照样返回恢复状态（<code class="post-code--single">pi-session.ts</code>）。下一个进程就会从沙箱里之前某次存下的旧副本（在沙箱主目录的 <code class="post-code--single">.ai-sdk/harness-pi/</code> 下）接着跑，一份都没有的话就从空对话开始。所以退出 143 也好、<code class="post-code--single">state.json</code> 写出来了也好，都证明不了最新的进度已经存下；要打开那个目录下的会话 JSONL，看最后几条记录是不是停在你预期的地方。</p>
+<p>其中三次我查了会话文件。有两次，第 4 次 <code class="post-code--spaced">sleep 8</code> 只跑了约 2.1 秒和 0.6 秒就被 <code class="post-code--single">stop()</code> 打断，会话文件却都记成 <code class="post-code--spaced">(exit 0)</code>。本来应该还剩两次 sleep（重跑第 4 次，再加第 5 次），模型却以为第 4 次已经做完，只跑了第 5 次，两次恢复各用了 12 秒。另一次信号来的时候第 3 次 sleep 已经跑完、<code class="post-code--single">step3.txt</code> 还没写，没有东西被打断，还剩两次 sleep，恢复用了 22 秒。<code class="post-code--single">just-bash</code> 的 <code class="post-code--single">sleep</code> 被中止时会报成功，别的沙箱我没测。</p>
+<p>在 Linux 上，<code class="post-code--spaced">docker stop</code> 和 <code class="post-code--spaced">systemctl stop</code> 都是先发 <code class="post-code--single">SIGTERM</code>，默认分别等 10 秒和 90 秒才发 <code class="post-code--single">SIGKILL</code>，所以只要 <code class="post-code--single">stop()</code> 在这段时间里做完，这种处理函数就管得住计划内的停机。崩溃和 OOM killer 它管不了。</p>
+<p>适配器有个 <code class="post-code--single">reattachInProcess</code> 选项（默认开），听名字像是能救场，其实不能：它只是让暂停的一轮在同一个进程里复用活着的 Pi 会话。进程没了，也就没有东西可以复用。</p>
+<h2 id="cloudflare-上的-pi-durable-piharness">Cloudflare 上的 Pi Durable：<code class="post-code--single">PiHarness</code></h2>
+<p><a href="https://developers.cloudflare.com/agents/harnesses/pi/"><code class="post-code--single">PiHarness</code></a> 是 Agents SDK 在 <a href="https://developers.cloudflare.com/changelog/post/2026-10-02-pi-harness/">10 月 2 日</a>加进来的。在这条路上，Pi Durable 把对话记录、待处理的提示词队列和任务都存在 Durable Object 的 SQLite 里。按 Cloudflare 文档的说法，只要还有没做完的任务，<code class="post-code--single">PiHarness</code> 就排着一个每 30 秒触发一次的 alarm（Durable Object 的定时器）；对象在跑到一半时死掉，下一次 alarm 会把它拉起来，Pi Durable 从上一个检查点接着跑。</p>
+<p>接线代码如下。Cloudflare 的示例用的是 Workers AI 绑定，我换成了通过 <code class="post-code--single">pi-ai</code> 接 DeepSeek：</p>
+<pre><code class="language-ts">import { DurableObject } from &quot;cloudflare:workers&quot;;
+import { Type } from &quot;@earendil-works/pi-ai&quot;;
+import { createModels } from &quot;@earendil-works/pi-ai/models&quot;;
+import { deepseekProvider } from &quot;@earendil-works/pi-ai/providers/deepseek&quot;;
+import { createRegistry, defineExtension, defineTool, Harness } from &quot;@earendil-works/pi-durable&quot;;
+import { PiHarness } from &quot;agents/harness/pi&quot;;
+import { Lifecycle } from &quot;agents/lifecycle&quot;;
+
+const TASK = &quot;Create files step1.txt through step5.txt, one at a time, in order. &quot;
+  + &quot;Before creating each file, call the sleep tool with seconds=8 as a separate tool call. &quot;
+  + &quot;Each file contains its step number. When all five exist, reply ALL DONE.&quot;;
+
+export class Assistant extends DurableObject&lt;Env&gt; {
+  models = (() =&gt; {
+    const m = createModels({ authContext: { env: async (k) =&gt; (this.env as any)[k], fileExists: async () =&gt; false } });
+    m.setProvider(deepseekProvider());
+    return m;
+  })();
+  registry = (() =&gt; {
+    const r = createRegistry();
+    const sql = this.ctx.storage.sql;
+    sql.exec(&quot;CREATE TABLE IF NOT EXISTS files (name TEXT PRIMARY KEY, content TEXT)&quot;);
+    r.install(defineExtension({ name: &quot;steps&quot;, tools: [
+      defineTool({ name: &quot;sleep&quot;, description: &quot;Wait for the given number of seconds.&quot;,
+        parameters: Type.Object({ seconds: Type.Number() }),
+        execute: async ({ seconds }) =&gt; { await new Promise((ok) =&gt; setTimeout(ok, seconds * 1000));
+          return { content: [{ type: &quot;text&quot;, text: &quot;slept&quot; }] }; } }),
+      defineTool({ name: &quot;write_file&quot;, description: &quot;Create or overwrite a file.&quot;,
+        parameters: Type.Object({ name: Type.String(), content: Type.String() }),
+        replay: &quot;safe&quot;,
+        execute: async ({ name, content }) =&gt; { sql.exec(&quot;INSERT OR REPLACE INTO files VALUES (?, ?)&quot;, name, content);
+          return { content: [{ type: &quot;text&quot;, text: `wrote ${name}` }] }; } }),
+    ] }));
+    return r;
+  })();
+  harness = new PiHarness({
+    harness: ({ storage, context }) =&gt; Harness.open(storage, { models: this.models, registry: this.registry }, context),
+    defaults: { model: this.models.getModel(&quot;deepseek&quot;, &quot;deepseek-flash&quot;)!, thinkingLevel: &quot;off&quot; },
+  });
+  lifecycle = Lifecycle.install(this).use(this.harness);
+
+  submit(task: string) { return this.harness.submit(task, { operationId: &quot;steps-1&quot; }); }
+  wait() { return this.harness.wait(&quot;steps-1&quot;); }
+}
+
+export default {
+  async fetch(request: Request, env: Env) {
+    const agent = env.Assistant.getByName(&quot;demo&quot;);
+    const path = new URL(request.url).pathname;
+    if (path === &quot;/submit&quot;) return Response.json(await agent.submit(TASK));
+    if (path === &quot;/wait&quot;) return Response.json(await agent.wait());
+    return new Response(&quot;not found&quot;, { status: 404 });
+  },
+};
+</code></pre>
+<p>我用的 Wrangler 配置如下，就是 Cloudflare 指南里那份去掉 <code class="post-code--single">ai</code> 绑定。key 写在 <code class="post-code--single">.dev.vars</code> 里，变量名 <code class="post-code--single">DEEPSEEK_API_KEY</code>；<code class="post-code--single">Env</code> 类型用 <code class="post-code--spaced">wrangler types</code> 生成：</p>
+<pre><code class="language-jsonc">// wrangler.jsonc
+{
+  &quot;name&quot;: &quot;pi-agent&quot;,
+  &quot;main&quot;: &quot;src/index.ts&quot;,
+  &quot;compatibility_date&quot;: &quot;2026-10-06&quot;,
+  &quot;compatibility_flags&quot;: [&quot;nodejs_compat&quot;],
+  &quot;durable_objects&quot;: { &quot;bindings&quot;: [{ &quot;name&quot;: &quot;Assistant&quot;, &quot;class_name&quot;: &quot;Assistant&quot; }] },
+  &quot;migrations&quot;: [{ &quot;tag&quot;: &quot;v1&quot;, &quot;new_sqlite_classes&quot;: [&quot;Assistant&quot;] }]
+}
+</code></pre>
+<p><code class="post-code--single">replay</code> 是 Pi Durable 的工具用来声明自己能不能跑两次的字段。<code class="post-code--single">write_file</code> 标了 <code class="post-code--single">&quot;safe&quot;</code>，因为它按文件名覆盖那一行；<code class="post-code--single">sleep</code> 保持默认，也就是被打断后不重跑。<code class="post-code--single">operationId</code> 让提交变成幂等的：同一个 id 再提交一次，拿回的还是原来那次操作。</p>
+<p>我用 <code class="post-code--spaced">wrangler dev</code>（wrangler 4.147.0）在自己机器上跑，全程不涉及 Cloudflare 账号。不打断的话 48 秒跑完。kill 测试的做法是：提交任务，第 19 到 30 秒用 <code class="post-code--single">SIGKILL</code> 杀掉 <code class="post-code--single">wrangler</code> 和它的 <code class="post-code--single">workerd</code> 运行时，两秒后在同一份本地状态上重新起 <code class="post-code--spaced">wrangler dev</code>，在它恢复之前不发任何请求。重启 <code class="post-code--spaced">wrangler dev</code> 相当于 Cloudflare 把运行时重新拉起来，这个测试说明的是：运行时回来之后，对象会自己接着跑。日志也显示，恢复之前没有请求碰过它：第一次，工具调用恢复之前没有任何请求记录；后两次我在对象的构造函数里加了一行日志，它出现时前面同样没有请求。三次都在我重启 <code class="post-code--spaced">wrangler dev</code> 之后 1 到 10 秒内恢复，五步全部做完。这和文档里 30 秒的 alarm 对得上：任务开始时设下的 alarm 大约在第 30 秒到期，要么刚好落在重启之后，要么运行时回来时已经过期、马上就响。具体是哪一次 alarm 响的，我没去确认。</p>
+<p>三次里有两次是在 <code class="post-code--single">sleep</code> 进行中被杀的，重启后模型都重新调了一次 <code class="post-code--single">sleep</code>。我存下来的第一次的对话记录说明了原因：这个工具没标可安全重跑，Pi Durable 没有重跑被打断的那次调用，而是给它写了一条结果，标记为错误：</p>
+<pre><code class="language-text">&lt;harness&gt;
+[error] Tool sleep was interrupted and may have partially run
+&lt;/harness&gt;
+</code></pre>
+<p>模型回了一句 &quot;The sleep was interrupted. Let me retry the sleep before creating step4&quot;（sleep 被打断了，建 step4 之前我再 sleep 一次），重新调用，然后继续。第三次 kill 正好落在第二次 sleep 结束的时候，它的结果已经存下来了，重启后模型直接去写 <code class="post-code--single">step2.txt</code>。<code class="post-code--single">write_file</code> 这种覆盖写，被打断后重跑也无害，只是这三次都没碰上。部署、扣款这类工具保持默认，至少 Pi Durable 不会悄悄重跑，模型拿到的是一条错误。但这挡不住模型自己再调一次，上面两次它对 <code class="post-code--single">sleep</code> 就是这么做的，所以绝不能跑两次的工具还得自己带防护，比如幂等键。对比上面 AI SDK 那两次：被中止的 <code class="post-code--single">sleep</code> 报的是成功，模型就直接往下走了。</p>
+<p>这些都是本地跑的。Cloudflare 文档说线上的恢复机制一样，但我没部署。文档还列了几条限制，对长时间无人值守的任务有影响：</p>
+<ul>
+<li>Pi Durable 目前没有工具调用的审批环节。</li>
+<li>单次模型请求流式输出超过 15 分钟，可能被截断。</li>
+<li><code class="post-code--single">abort()</code> 会一直等，直到忽略 abort signal 的工具自己返回。</li>
+</ul>
+<h2 id="无人值守选哪种">无人值守选哪种</h2>
+<p>如果 agent 要在 git 检出目录里用真正的 shell 干活，你手上又有机器和调度它的东西，用 <code class="post-code--spaced">pi --print</code>。它跑的是 Pi 1.0，会话文件两次硬杀都完好，恢复只要一条命令。监督程序得你自己写：上面那个脚本，再加一个定时器或 cron 来启动它。不用这个脚本、自己写启动代码的话，记得关 stdin，停它时用 <code class="post-code--single">SIGTERM</code> 而不是 <code class="post-code--single">SIGKILL</code>，这样还在跑的工具命令会跟着走。放到后台的命令怎么停都会留下，要靠 systemd scope 或容器来收。</p>
+<p>如果 Pi 只是一个 Node 产品里的一项功能，每个用户一个沙箱，AI SDK harness 合适。把 <code class="post-code--single">SIGTERM</code> 接到 <code class="post-code--single">session.stop()</code>，把恢复状态存到持久的地方，同时接受它目前跑的是 Pi 0.85、API 还是实验性的。进程崩溃时，上一次存档之后的东西都会丢；我那个一条提示词的测试里什么都没存过，丢的就是整段对话。另外，被 <code class="post-code--single">stop()</code> 打断的命令可能记成成功，而 <code class="post-code--single">continueStream()</code> 又带不了新的提示词，所以恢复之后要自己核对结果，或者把任务写成每一步先检查上一步。上面的脚本在没有存档时本来就会重发完整任务，别把它换成「继续」这种不带原任务的提示词。</p>
+<p>如果任务必须在没有自己的监督程序的情况下扛过崩溃，而你的工具是 API 调用、不是 shell 命令，可以看 Cloudflare 上的 Pi Durable。我本地测试时，重启运行时之后，它不需要任何请求就接着干活。线上按 Cloudflare 文档，是心跳 alarm 把对象重新拉起来，但我没部署验证。它也是三者里最新的，<code class="post-code--single">PiHarness</code> 10 月 2 日才加进来。Pi Durable 是实验性，<code class="post-code--single">PiHarness</code> 标 beta。Earendil 的发布文里还演示了在普通 Node 上跑 Pi Durable：SQLite 存储，配一个 Node 执行环境给写代码的工具用。这个组合我没测。</p>
+<h3 id="在-docker-或沙箱里跑-pi-agent-harness">在 Docker 或沙箱里跑 Pi agent harness</h3>
+<p>三种跑法的沙箱边界划在不同地方。AI SDK 只把文件和 shell 放进沙箱，Pi 和它的 API key 留在宿主机：适配器在沙箱里执行命令时，不会把宿主机的环境变量传进去。Worker 里没有 shell，每个工具能做的就是它代码里写的那些事。CLI 默认什么都不隔离，除非你自己把整个 <code class="post-code--single">pi</code> 进程放进容器或沙箱。Pi 的<a href="https://pi.dev/docs/latest/containerization">容器化文档</a>讲了纯 Docker、Docker Sandboxes 和 OpenShell，这三种把整个 Pi 进程连同扩展一起隔离；还有 Gondolin 扩展，它只把内置工具放进微虚拟机，Pi 本身留在宿主机。</p>
+<h2 id="三种都不替你管的事">三种都不替你管的事</h2>
+<p>下一个跑哪个任务、怎么保证只有一个 worker 认领它、谁来评审、能不能合并、什么时候发版，这三种跑法都不管。我在 <a href="/zh/blog/run-claude-code-unattended/">Claude Code 无人值守运行</a>里拿 Claude Code 把这几个问题过了一遍，它们跟用哪个 harness 无关。Orbi 就是我在 <code class="post-code--spaced">pi --print</code> 之上为这些问题搭的那一层：按标签认领 issue，每个 PR 用单独的 Pi 会话评审，只通过合并闸门合并，你开一张发版 issue 它就发版。<a href="/zh/cloud/">Orbi Cloud</a> 把它跑在你自己的仓库上。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>延伸阅读：<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 的对比</a>、<a href="/zh/cloud/">Orbi Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/pi-agent-harness/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
