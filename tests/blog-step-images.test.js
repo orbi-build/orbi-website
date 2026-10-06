@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 
 const routes = ["/blog/watch-the-six-steps/", "/zh/blog/watch-the-six-steps/"];
 const types = { ".html": "text/html", ".css": "text/css", ".png": "image/png", ".svg": "image/svg+xml", ".webp": "image/webp" };
@@ -32,17 +33,19 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 describe("seven-step blog images (Issue #356)", () => {
   for (const route of routes) {
     for (const width of [390, 1440]) {
       for (const dpr of [1, 2]) {
-        // Same 30s budget as the other browser tests: page.goto alone may
-        // wait 25s, and the footer's third-party badges (Toolradar since
-        // #836) can hold the load event past vitest's 5s default.
+        // Same 30s budget as the other browser tests: each case walks a
+        // full page load, so vitest's 5s default is too tight. The
+        // third-party badges that used to decide that budget are answered
+        // locally by the guard in browser-network.mjs (Issue #871).
         it(`${route} serves every image without distortion at ${width}px and DPR ${dpr}`, async () => {
-          const page = await browser.newPage({ deviceScaleFactor: dpr, viewport: { width, height: 900 } });
+          const page = await guardedPage(browser, origin, { deviceScaleFactor: dpr, viewport: { width, height: 900 } });
           try {
             await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
             const images = page.locator("img[src*='/img/step-']");

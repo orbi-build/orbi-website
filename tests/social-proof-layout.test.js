@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
 
 const annualPricingReplacements = {
@@ -64,6 +65,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 function gridMetrics(section) {
@@ -82,7 +84,7 @@ function gridMetrics(section) {
 describe("social-proof grid layout (Issue #407)", () => {
   for (const [name, path, selector] of pages) {
     it(`${name} uses balanced desktop rows and full-width mobile cards`, async () => {
-      const page = await browser.newPage();
+      const page = await guardedPage(browser, baseUrl);
       try {
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 900 });

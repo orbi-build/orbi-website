@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
 
 const pricingReplacements = {
@@ -97,12 +98,13 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 describe("footer and subscription layout stay within the viewport (Issues #337, #665)", () => {
   for (const [name, path, successText] of pages) {
     it(`${name} keeps the subscription aligned and has no horizontal overflow`, async () => {
-      const page = await browser.newPage();
+      const page = await guardedPage(browser, baseUrl);
       try {
         await page.setViewportSize({ width: widths[0], height: 900 });
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
@@ -174,7 +176,7 @@ describe("footer and subscription layout stay within the viewport (Issues #337, 
 describe("footer directory badges get their own bottom row (Issue #805)", () => {
   for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
     it(name + " keeps the badges in their own block below the text friends", async () => {
-      const page = await browser.newPage();
+      const page = await guardedPage(browser, baseUrl);
       try {
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
@@ -198,9 +200,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on four third-party
-        // images loading (LaunchNest's has no height attribute), which ties CI
-        // to their servers; only the structure is asserted here.
+        // Whether the badges line up on one row depends on the four badge
+        // boxes: LaunchNest's image declares only width="240", so its height
+        // comes from the placeholder ratio the guard serves (Issue #871).
+        // Only the structure is asserted here.
         expect(result.badgeCount, path + ": the footer badges").toBe(4);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });

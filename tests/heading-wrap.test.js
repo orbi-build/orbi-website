@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -73,6 +74,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 // Measure the rendered h1 line by line: each distinct glyph top is one line,
@@ -109,7 +111,7 @@ function headingLines(page) {
 
 describe("h1 wrapping (Issue #861)", () => {
   it("keeps every wrapped heading line at least a third of the longest line", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of pages) {
         for (const width of widths) {
@@ -136,7 +138,7 @@ describe("h1 wrapping (Issue #861)", () => {
   }, 120_000);
 
   it("keeps the homepage hero headline at two lines from 1280 to 2560", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of ["/", "/zh/"]) {
         for (const width of widths) {
