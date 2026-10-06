@@ -621,6 +621,105 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   });
 });
 
+// Issue #873: the homepage's "Orbi builds Orbi" counters ship as literals so a
+// reader that runs no JavaScript (an AI assistant fetching the page live, an
+// AI search index crawler) reads the real totals, not 0. The browser path is
+// unchanged — demo.js still fetches /stats and animates the same number.
+describe("server-rendered homepage stats (Issue #873)", () => {
+  const realCaches = globalThis.caches;
+  afterEach(() => {
+    globalThis.caches = realCaches;
+  });
+
+  const fakeStats = {
+    repos: {
+      orbi: { started: "2026-08-24T16:08:33Z", issues_closed: 853, prs_merged: 615, releases: 87, stars: 195 },
+      "orbi-website": { started: "2026-08-31T13:04:14Z", issues_closed: 383, prs_merged: 476, releases: 0, deploys: 458 },
+      "orbi-cloud": { started: "2026-09-01T01:32:51Z", issues_closed: 1054, prs_merged: 738, releases: 122, stars: 1 },
+    },
+  };
+
+  // The cache holds the same JSON /stats serves; undefined models a miss.
+  function serveCachedStats(stats) {
+    globalThis.caches = {
+      default: {
+        match: async () => (stats === undefined ? undefined : new Response(JSON.stringify(stats))),
+        put: async () => {},
+      },
+    };
+  }
+
+  async function homepageEnvironment() {
+    const pages = new Map([
+      ["/", await readFile(new URL("../public/index.html", import.meta.url), "utf8")],
+      ["/zh/", await readFile(new URL("../public/zh/index.html", import.meta.url), "utf8")],
+    ]);
+    return {
+      ASSETS: {
+        fetch: async (request) => {
+          const html = pages.get(new URL(request.url).pathname);
+          return html === undefined
+            ? new Response("missing", { status: 404 })
+            : new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        },
+      },
+    };
+  }
+
+  const statText = (html, repo, stat) => html.match(
+    new RegExp('<strong[^>]*data-repo="' + repo + '"[^>]*data-stat="' + stat + '"[^>]*>([^<]*)</strong>'),
+  )?.[1];
+  const starText = (html) => html.match(new RegExp('<b[^>]*data-star-total[^>]*>([^<]*)</b>'))?.[1];
+  const daysSince = (iso) => String(Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 86400000)));
+
+  it("writes the cached stats into the served HTML for / and /zh/", async () => {
+    serveCachedStats(fakeStats);
+    const env = await homepageEnvironment();
+    for (const path of ["/", "/zh/"]) {
+      const response = await handleFetch(new Request("https://orbi.build" + path), env);
+      expect(response.status).toBe(200);
+      const html = await response.text();
+      expect(statText(html, "orbi", "prs")).toBe("615");
+      expect(statText(html, "orbi", "issues")).toBe("853");
+      expect(statText(html, "orbi", "releases")).toBe("87");
+      expect(statText(html, "orbi", "days")).toBe(daysSince(fakeStats.repos.orbi.started));
+      expect(statText(html, "orbi-website", "prs")).toBe("476");
+      expect(statText(html, "orbi-website", "deploys")).toBe("458");
+      expect(statText(html, "orbi-cloud", "prs")).toBe("738");
+      expect(starText(html)).toBe("195");
+      const rendered = [...html.matchAll(/data-stat="[^"]+"[^>]*>([^<]*)</g)].map((match) => match[1]);
+      expect(rendered).not.toContain("0");
+    }
+  });
+
+  it("falls back to each element's data-floor on a cache miss and warms /stats once", async () => {
+    serveCachedStats(undefined);
+    const warmed = [];
+    const ctx = { waitUntil: (promise) => warmed.push(promise) };
+    const response = await handleFetch(new Request("https://orbi.build/"), await homepageEnvironment(), ctx);
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(statText(html, "orbi", "prs")).toBe("600");
+    expect(statText(html, "orbi", "issues")).toBe("800");
+    expect(statText(html, "orbi", "releases")).toBe("80");
+    expect(statText(html, "orbi-website", "deploys")).toBe("400");
+    expect(statText(html, "orbi-cloud", "issues")).toBe("1000");
+    expect(starText(html)).toBe("190");
+    expect(warmed).toHaveLength(1);
+    await Promise.all(warmed);
+  });
+
+  it("degrades only the missing repo's elements to their floors", async () => {
+    serveCachedStats({ repos: { ...fakeStats.repos, "orbi-cloud": null } });
+    const response = await handleFetch(new Request("https://orbi.build/"), await homepageEnvironment(), { waitUntil: () => {} });
+    const html = await response.text();
+    expect(statText(html, "orbi", "prs")).toBe("615");
+    expect(statText(html, "orbi-cloud", "prs")).toBe("700");
+    expect(statText(html, "orbi-cloud", "issues")).toBe("1000");
+    expect(statText(html, "orbi-cloud", "days")).toBe("30");
+  });
+});
+
 // Issue #173: curl orbi.build/status prints the real delivery counts as
 // pasteable plaintext. Data still comes from loadStats(); this is only a
 // terminal rendering of that existing payload.
