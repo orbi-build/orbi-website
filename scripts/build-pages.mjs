@@ -945,12 +945,22 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
 function renderPostMeta(post) {
   const url = `https://orbi.build${post.href}`;
   const image = `https://orbi.build${post.image}`;
+  // Issue #862: the author names the real author. The site's own "Orbi" byline
+  // stays an Organization; a named person's byline becomes a Person, so search
+  // and AI answers can attribute the first-person posts.
   const article = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.headline,
     datePublished: post.date,
-    author: { "@type": "Organization", name: post.author },
+    author: { "@type": post.author === "Orbi" ? "Organization" : "Person", name: post.author },
+    publisher: {
+      "@type": "Organization",
+      name: "Orbi",
+      url: "https://orbi.build/",
+      logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+    },
+    mainEntityOfPage: url,
     image,
     inLanguage: post.lang === "zh" ? "zh-CN" : "en",
     description: post.summary,

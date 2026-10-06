@@ -3,7 +3,7 @@ title: Pi agent harness 三种跑法：kill -9 之后谁能接上
 date: 2026-10-06
 summary: 同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-pi-agent-harness-card.png
 mirror: pi-agent-harness
 series: pi

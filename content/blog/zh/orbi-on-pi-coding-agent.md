@@ -3,7 +3,7 @@ title: Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–1
 date: 2026-10-05
 summary: 只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-orbi-on-pi-card.png
 mirror: orbi-on-pi-coding-agent
 series: pi
