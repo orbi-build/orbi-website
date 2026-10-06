@@ -3,7 +3,7 @@ title: Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9
 date: 2026-10-06
 summary: I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-pi-agent-harness-card.png
 mirror: pi-agent-harness
 series: pi

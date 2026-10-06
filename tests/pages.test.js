@@ -204,6 +204,8 @@ const COMPARISON_SLUGS = [
 const jsonLdObjects = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
   .map((match) => JSON.parse(match[1]));
 
+const articleOf = (html) => jsonLdObjects(html).find((entry) => entry["@type"] === "Article");
+
 const jsonLdNodes = (value) => {
   if (Array.isArray(value)) return value.flatMap(jsonLdNodes);
   if (!value || typeof value !== "object") return [];
@@ -2421,12 +2423,60 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(post.output);
       expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
       expect(html).toContain(`\"@type\":\"Article\"`);
-      expect(html).toContain(`\"author\":{\"@type\":\"Organization\",\"name\":\"Orbi\"}`);
+      expect(articleOf(html).author, post.output).toEqual(
+        post.author === "Orbi"
+          ? { "@type": "Organization", name: "Orbi" }
+          : { "@type": "Person", name: post.author },
+      );
       expect(html).toContain(`https://orbi.build${post.image}`);
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
     expect(watch).toContain('"@type":"VideoObject"');
     expectUniquePostImages(posts);
+  });
+
+  // Issue #862: the Article author must name the real author — the first-person
+  // posts are written by a person, the rest by Orbi — and every post carries a
+  // publisher and mainEntityOfPage so search and AI answers can attribute it.
+  it("names first-person posts' author as a Person with publisher and mainEntityOfPage (Issue #862)", () => {
+    const firstPerson = [
+      ["blog/pi-agent-harness/index.html", "https://orbi.build/blog/pi-agent-harness/"],
+      ["zh/blog/pi-agent-harness/index.html", "https://orbi.build/zh/blog/pi-agent-harness/"],
+      ["blog/orbi-on-pi-coding-agent/index.html", "https://orbi.build/blog/orbi-on-pi-coding-agent/"],
+      ["zh/blog/orbi-on-pi-coding-agent/index.html", "https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"],
+      ["blog/run-claude-code-unattended/index.html", "https://orbi.build/blog/run-claude-code-unattended/"],
+      ["zh/blog/run-claude-code-unattended/index.html", "https://orbi.build/zh/blog/run-claude-code-unattended/"],
+    ];
+    for (const [output, canonical] of firstPerson) {
+      const html = shipped.get(output);
+      expect(html, `${output}: missing output`).toBeTruthy();
+      const article = articleOf(html);
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.publisher, output).toEqual({
+        "@type": "Organization",
+        name: "Orbi",
+        url: "https://orbi.build/",
+        logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+      });
+      expect(html, output).toContain(`<link rel="canonical" href="${canonical}">`);
+      expect(article.mainEntityOfPage, output).toBe(canonical);
+    }
+  });
+
+  it("keeps the Organization author for Orbi posts, with the same publisher (Issue #862)", () => {
+    const orgPosts = posts.filter((post) => post.author === "Orbi");
+    expect(orgPosts.length, "the corpus must still contain organization posts").toBeGreaterThan(0);
+    for (const post of orgPosts) {
+      const article = articleOf(shipped.get(post.output));
+      expect(article.author, post.output).toEqual({ "@type": "Organization", name: "Orbi" });
+      expect(article.publisher, post.output).toEqual({
+        "@type": "Organization",
+        name: "Orbi",
+        url: "https://orbi.build/",
+        logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+      });
+      expect(article.mainEntityOfPage, post.output).toBe(`https://orbi.build${post.href}`);
+    }
   });
 
   it("rejects shared images between articles but permits an EN/ZH mirror pair", () => {
