@@ -149,13 +149,13 @@ describe("homepage section order (Issue #712)", () => {
 describe("homepage hero proof bar (Issue #710)", () => {
   const expected = {
     "index.html": [
-      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>PRs merged by Orbi on its own repo</span>',
-      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>releases shipped</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="600">0</strong><span>PRs merged by Orbi on its own repo</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="80">0</strong><span>releases shipped</span>',
       '<strong>Open source</strong><span>AGPL-3.0, self-host free</span>',
     ],
     "zh/index.html": [
-      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
-      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="600">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="80">0</strong><span>个版本已发布</span>',
       '<strong>开源</strong><span>AGPL-3.0，自托管免费</span>',
     ],
   };
