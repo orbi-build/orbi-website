@@ -29,6 +29,7 @@ const BROWSER_SUITES = [
   "tests/film-dialog.test.js",
   "tests/footer-overflow.test.js",
   "tests/heading-wrap.test.js",
+  "tests/hero-counter.test.js",
   "tests/hero-layout.test.js",
   "tests/homepage-heading.test.js",
   "tests/homepage.smoke.test.js",
