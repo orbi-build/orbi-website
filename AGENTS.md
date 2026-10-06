@@ -122,10 +122,13 @@ belongs to decides where you edit it.
   `site/partials/post.html` — the shared navigation, footer and post template,
   rendered into every page that needs them.
 - `site/llms.txt` — the hand-written llms.txt prose (every section except its
-  Blog post list). The build replaces the `<!--@llms-blog-->` marker with the
-  Blog section's post list, generated from `content/blog/**` one entry per
-  post per language, newest first (Issue #215). A source without the marker
-  fails the build.
+  two generated lists). The build replaces the `<!--@llms-blog-->` marker with
+  the Blog section's post list, generated from `content/blog/**` one entry per
+  post per language, newest first (Issue #215), and the
+  `<!--@llms-guides-->` marker with the Guides section's list, generated from
+  `site/data/guides.json` — one entry per guide per language with its title,
+  URL and summary, the same data /guides/ renders (Issue #874). A source
+  missing either marker fails the build.
 
 The build also writes `sitemap.xml`, `blog/feed.xml` and `llms.txt` into
 `public/`; all are generated files like the HTML, never hand-edited.

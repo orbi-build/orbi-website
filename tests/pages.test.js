@@ -2237,15 +2237,28 @@ describe("llms.txt Blog section is generated (Issue #215)", () => {
     }
   });
 
-  it("replaces only the marker: the prose around it survives byte-for-byte", () => {
-    const source = "## Blog\n\nIntro prose.\n\n<!--@llms-blog-->\n\n## Links\n";
-    const out = renderLlms(source, [{ lang: "en", title: "Fixture", href: "/blog/fixture/" }]);
-    expect(out).toBe("## Blog\n\nIntro prose.\n\n- Fixture (English):\n  https://orbi.build/blog/fixture/\n\n## Links\n");
+  it("replaces each marker: the prose around them survives byte-for-byte", () => {
+    const source = "## Blog\n\nIntro prose.\n\n<!--@llms-blog-->\n\n## Guides\n\n<!--@llms-guides-->\n\n## Links\n";
+    const out = renderLlms(
+      source,
+      [{ lang: "en", title: "Fixture", href: "/blog/fixture/" }],
+      [{ slug: "fixture-guide", en: { title: "Guide", summary: "Summary." }, zh: { title: "指南", summary: "摘要。" } }],
+    );
+    expect(out).toBe(
+      "## Blog\n\nIntro prose.\n\n- Fixture (English):\n  https://orbi.build/blog/fixture/\n\n## Guides\n\n"
+      + "- Guide (English):\n  https://orbi.build/guides/fixture-guide/\n  Summary.\n"
+      + "- 指南 (Chinese):\n  https://orbi.build/zh/guides/fixture-guide/\n  摘要。\n\n## Links\n",
+    );
   });
 
   it("fails the build when the source lost the Blog marker", () => {
     expect(() => renderLlms("## Blog\n\nno marker here\n", []))
       .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-blog-->/);
+  });
+
+  it("fails the build when the source lost the Guides marker", () => {
+    expect(() => renderLlms("## Blog\n\n<!--@llms-blog-->\n\n## Guides\n\nno marker here\n", []))
+      .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-guides-->/);
   });
 });
 
