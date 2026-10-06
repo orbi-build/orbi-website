@@ -437,6 +437,9 @@ h1 {
   margin-bottom: 24px;
   max-width: var(--hero-copy-width);
   line-height: 1.08;
+  /* Long headings wrap at wide viewports; balance keeps the last line from
+     dropping to one or two glyphs (Issue #861). */
+  text-wrap: balance;
 }
 
 .hero.homepage-hero h1 {
