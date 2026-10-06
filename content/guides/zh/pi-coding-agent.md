@@ -1,12 +1,20 @@
 ---
 title: Orbi 怎么搭在 Pi coding agent 上
-summary: Orbi 把打了标签的 GitHub issue 变成合并的 PR 和 release，其中的代码改动由 Pi coding agent 来写。这一页讲 Pi 外面那个 runner 是怎么运转的。
+summary: Orbi 把打了标签的 GitHub issue 变成合并的 PR 和 release，代码由 Pi coding agent 来写。这页是 Pi 系列的目录，后面讲 Pi 外面的 runner 怎么运转。
 lang: zh
 mirror: pi-coding-agent
-updated: 2026-10-05
+updated: 2026-10-06
 ---
 
 Orbi 是一个开源 runner：你给 GitHub issue 打上 `ai-ready` 标签，它把这张 issue 做成评审过、合并了的 PR；另开一张发版 issue，就能把合并的工作打包成带 tag 的 release。可以装在自己机器上跑，也可以用托管版 Orbi Cloud。整条流水线里写代码的那一步，全部交给 [Pi coding agent](https://pi.dev)。Pi 官网管自己叫「a minimal agent harness」，由 Earendil 开发，MIT 许可（[earendil-works/pi](https://github.com/earendil-works/pi)）。Orbi 不是 Pi 官方项目。Orbi Cloud 的 runner 目前跑的是 Pi 1.0.0。
+
+## 系列文章
+
+第一次读，从 10 月 5 日的[《Pi + DeepSeek Flash 写的 169 个已合并 PR》](/zh/blog/orbi-on-pi-coding-agent/)读起。
+
+<!--@series:pi-->
+
+169 个 PR 那篇的标题讲的是成本，正文还跟着一张真实 issue，把 Orbi 起的每个 Pi 会话走了一遍，也讲了为什么一直用 Pi 和两次事故；本页其余部分是同一套机制的完整参考。10 月 6 日那篇用同一个 kill -9 测试比了三种跑 Pi 的方式：`pi --print`、通过 Vercel AI SDK 的适配器调 Pi、在 Cloudflare 上通过 Agents SDK 的 `PiHarness` 跑 Pi Durable。「给 Orbi 找 harness」上下两篇是更早的测评，标题里的 harness 指 Orbi 套在模型外面的提示词和评审规则，不是 Pi 这类 agent 工具；两篇讲我们怎么改这些规则、怎么比较不同模型，测评数据不在下文的生产数字里。
 
 ## 先说清这页用的几个词
 
@@ -18,13 +26,13 @@ Orbi 是一个开源 runner：你给 GitHub issue 打上 `ai-ready` 标签，它
 
 ## 生产上的数字
 
-Orbi Cloud 会统计它跑的每次交付背后起了几个 Pi 会话。2026 年 9 月 21 日到 10 月 5 日，有这项统计、并且能对应到已合并 PR 的交付共 170 次：141 次在 Orbi 自己的仓库（`orbi`、`orbi-cloud`、`orbi-website`），11 次在我们 fork 的开源项目和测试仓库，18 次在 Orbi Cloud 外部用户的 8 个仓库。更早的合并，以及 Orbi 自己的仓库迁到 Orbi Cloud 之前由自建 runner 做的合并，都不在这些数字里。
+Orbi Cloud 会统计它跑的每次交付背后起了几个 Pi 会话。2026 年 9 月 21 日到 10 月 5 日，有这项统计、并且能对应到已合并 PR 的交付共 170 次：141 次在 Orbi 自己的仓库（`orbi`、`orbi-cloud`、`orbi-website`），11 次在我们 fork 出来的开源项目仓库和测试仓库，18 次在 Orbi Cloud 外部用户的 8 个仓库。更早的合并，以及 Orbi 自己的仓库迁到 Orbi Cloud 之前由自建 runner 做的合并，都不在这些数字里。
 
-下面说的都是这 170 次交付：Pi 会话文件里记录的模型都是 DeepSeek 的 `deepseek-flash`，一共起了 375 个 Pi 会话，平均每次 2.21 个；其中 144 次（85%）正好两个会话：一个写代码，一个评审并给了 `pass`。这些交付在合并闸门运行时已经没有待跑的检查，所以没有触发下文的复查。其中 169 次还有 token 数，按 DeepSeek 闲时公开价（它公布的几档价格里最低的一档）折算，每次交付的模型费用中位数大约 8 美分，这是下限，按其他价位只会更高；明细见[系列第一篇博文](/zh/blog/orbi-on-pi-coding-agent/)。（数字截至 2026-10-05。本页数字随页面底部 Pi 系列的新文章一起更新。）
+下面说的都是这 170 次交付：Pi 会话文件里记录的模型都是 DeepSeek 的 `deepseek-flash`，一共起了 375 个 Pi 会话，平均每次 2.21 个；其中 144 次（85%）正好两个会话：一个写代码，一个评审并给了 `pass`（评审会话可以自己修掉问题再给 `pass`，见下文「评审轮次」）。这些交付到合并那一步时 CI 已经跑完，所以不用再起会话复查最终的 commit（见下文「合并闸门」）。其中 169 次还有 token 数，就是[《Pi + DeepSeek Flash 写的 169 个已合并 PR》](/zh/blog/orbi-on-pi-coding-agent/)统计的那 169 个 PR。只算记下来的 token、按 DeepSeek 闲时公开价折算，每次交付的模型费用中位数大约 8 美分；高峰时段价格翻倍，全按高峰价算约 16 美分。记下来的这部分，实际花费在两者之间；169 次里有 7 次前面还试过一次，其中 4 次那一回没记下 token 数，费用里没算进去，算上的话只会更多。明细见那篇博文。（数字截至 2026-10-05。）
 
 ## 为什么 Orbi 一直用 Pi coding agent
 
-Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选模型；Orbi 交给会话的东西，系统提示词、skill、provider 和 model、工具开关、会话记录目录，Pi 都有原生参数对应，中间不需要转接层。Orbi 的 runner 只会发 Pi 的参数，所以我们试另外两个 coding agent 命令行工具（其中一个是 Claude Code）时，给它们各写了一个小转接层来翻译参数。两个转接层都悄悄把 skill 丢了，我们过了一阵才发现。更完整的回答见[系列第一篇博文](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)。
+Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选模型；Orbi 交给会话的东西，系统提示词、skill、provider 和 model、工具开关、会话记录目录，Pi 都有原生参数对应，中间不需要转接层。Orbi 的 runner 只会发 Pi 的参数，所以我们试另外两个 coding agent 命令行工具（Claude Code 和 zcode）时，给它们各写了一个小转接层来翻译参数。结果我们写的两个转接层都在翻译参数时把 `--skill` 列表弄丢了，那些会话一直没带 Orbi 的 skill 在跑，过了一阵才发现。毛病出在转接层，不在那两个工具；用 Pi 就不需要这一层。更完整的回答在 169 个 PR 那篇博文的[「为什么一直用 Pi」](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)一节。
 
 ## Orbi 怎么启动 Pi coding agent
 
@@ -142,11 +150,7 @@ Pi 会话卡住时不会退出，runner 收不到任何报错，所以它盯的�
 
 ## 这些规则是怎么来的
 
-这页里的 `--no-extensions` 来自一次事故：用户装的一个 Pi 包里带的扩展，让部分运行在启动时卡死。另一次事故之后，我们自己运营的每台 Orbi runner 都显式设好 `pi_provider` 和 `pi_model`，并用 `orbi doctor` 检查：有一台没设这两项的 runner，曾经悄悄回退到本地模型，什么都没报错。两件事的经过，以及无人值守跑 Pi 的其余经验，见[系列第一篇博文](/zh/blog/orbi-on-pi-coding-agent/#两次事故)。
-
-## 系列文章
-
-<!--@series:pi-->
+这页里的 `--no-extensions` 来自一次事故：跑 runner 的那个系统用户在 `~/.pi/agent` 里装过一个 Pi 包，包里带的扩展让部分运行在启动时卡死。另一次事故之后，我们自己运营的每台 Orbi runner 都显式设好 `pi_provider` 和 `pi_model`，并用 `orbi doctor` 检查：有一台没设这两项的 runner，曾经悄悄回退到本地模型，什么都没报错。两件事的经过见 169 个 PR 那篇博文的[「两次事故」](/zh/blog/orbi-on-pi-coding-agent/#两次事故)一节。
 
 ## 试一试
 
@@ -154,4 +158,5 @@ Orbi 在 [orbi-build/orbi](https://github.com/orbi-build/orbi) 开源：装好 r
 
 ## 更新记录
 
+- 2026-10-06：系列文章列表挪到页首，加了从哪篇读起的提示；模型费用改写成 8–16 美分的区间，并注明只算记下来的 token。
 - 2026-10-05：第一版。Orbi Cloud runner 上的 Pi 版本是 1.0.0。

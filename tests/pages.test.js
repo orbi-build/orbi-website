@@ -927,13 +927,32 @@ describe("one unified footer on every content page", () => {
     }
   });
 
-  it("links ez背单词 from the footer without nofollow, on en and zh", () => {
-    for (const output of ["index.html", "zh/index.html"]) {
-      const footer = footerRegion(shipped.get(output));
-      expect(footer, `${output}: ez背单词 footer anchor drifted`).toContain(
-        '<a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>',
-      );
-      expect(footer, `${output}: the ez背单词 backlink must be crawlable`).not.toContain("nofollow");
+  // Issue #856: the maintainer removed the ez背单词 (ezbdc.dashu.ai) friend
+  // link from the shared footer, so no page that renders a footer may carry
+  // the domain again.
+  it("carries no ez背单词 link on any footer page (Issue #856)", () => {
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: footer still carries ezbdc.dashu.ai`)
+        .not.toContain("ezbdc.dashu.ai");
+    }
+  });
+
+  // Issue #854: agentic.ai drives the most signups of any external directory —
+  // Orbi ranks #1 on its free coding agents list — so it gets a text friend
+  // link back, right after Open Source Alternatives and before the badge row.
+  // The link points at the free list (not the homepage) and must stay
+  // crawlable (no nofollow, no ref parameter).
+  it("links Agentic.ai from the footer without nofollow on every footer page", () => {
+    const anchor = '<a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Agentic.ai footer anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: the Agentic.ai backlink must be crawlable`).not.toContain("nofollow");
+      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must follow Open Source Alternatives`)
+        .toBeGreaterThan(footer.indexOf('<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>'));
+      expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must precede the badge row`)
+        .toBeLessThan(footer.indexOf('<div class="footer-badges">'));
     }
   });
 
@@ -1001,7 +1020,7 @@ describe("one unified footer on every content page", () => {
 
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
-  // friends (the Friends label + the two text links). Issue #832 appends the
+  // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
@@ -1019,7 +1038,7 @@ describe("one unified footer on every content page", () => {
         .toEqual(badgeHrefs);
       // The text friends stay above the wrapper, never inside it.
       expect(wrapper, `${page.output}: text friends leaked into the badge row`)
-        .not.toMatch(/Open Source Alternatives|ez背单词/);
+        .not.toMatch(/Open Source Alternatives|Agentic\.ai/);
       // Nothing but whitespace and the closing tag follows the wrapper, so it
       // is the last child of footer-friends.
       const after = nav.slice(nav.indexOf(wrapper) + wrapper.length);

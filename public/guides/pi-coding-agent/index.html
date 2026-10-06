@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How Orbi is built on the Pi coding agent</title>
-  <meta name="description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. How the runner around Pi works.">
+  <meta name="description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
   <link rel="canonical" href="https://orbi.build/guides/pi-coding-agent/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/guides/pi-coding-agent/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/">
@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/guides/pi-coding-agent/">
   <meta property="og:title" content="How Orbi is built on the Pi coding agent">
-  <meta property="og:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. How the runner around Pi works.">
+  <meta property="og:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="How Orbi is built on the Pi coding agent">
-  <meta name="twitter:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. How the runner around Pi works.">
+  <meta name="twitter:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -111,7 +111,7 @@
       <section class="compare-hero shell" aria-labelledby="guide-title">
         <p class="eyebrow">Guide</p>
         <h1 id="guide-title">How Orbi is built on the Pi coding agent</h1>
-        <p class="hero-lede">Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. How the runner around Pi works.</p>
+        <p class="hero-lede">Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.</p>
       </section>
     </div>
 
@@ -119,6 +119,7 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
+          <li><a class="post-toc-link" href="#the-series">The series</a></li>
           <li><a class="post-toc-link" href="#words-used-on-this-page">Words used on this page</a></li>
           <li><a class="post-toc-link" href="#in-production">In production</a></li>
           <li><a class="post-toc-link" href="#why-orbi-stays-on-the-pi-coding-agent">Why Orbi stays on the Pi coding agent</a></li>
@@ -136,7 +137,6 @@
             </ol></li>
           <li><a class="post-toc-link" href="#the-agent-directory-and-models">The agent directory and models</a></li>
           <li><a class="post-toc-link" href="#where-these-rules-came-from">Where these rules came from</a></li>
-          <li><a class="post-toc-link" href="#the-series">The series</a></li>
           <li><a class="post-toc-link" href="#try-it">Try it</a></li>
           <li><a class="post-toc-link" href="#update-log">Update log</a></li>
           </ol>
@@ -145,6 +145,7 @@
         <details class="post-toc-inline">
           <summary>On this page · 10 sections</summary>
           <ol>
+          <li><a class="post-toc-link" href="#the-series">The series</a></li>
           <li><a class="post-toc-link" href="#words-used-on-this-page">Words used on this page</a></li>
           <li><a class="post-toc-link" href="#in-production">In production</a></li>
           <li><a class="post-toc-link" href="#why-orbi-stays-on-the-pi-coding-agent">Why Orbi stays on the Pi coding agent</a></li>
@@ -162,12 +163,21 @@
             </ol></li>
           <li><a class="post-toc-link" href="#the-agent-directory-and-models">The agent directory and models</a></li>
           <li><a class="post-toc-link" href="#where-these-rules-came-from">Where these rules came from</a></li>
-          <li><a class="post-toc-link" href="#the-series">The series</a></li>
           <li><a class="post-toc-link" href="#try-it">Try it</a></li>
           <li><a class="post-toc-link" href="#update-log">Update log</a></li>
           </ol>
         </details>
 <p>Orbi is an open-source runner that takes a GitHub issue labelled <code class="post-code--single">ai-ready</code>, delivers it as a reviewed and merged pull request, and, when you open a release issue, ships the merged work in a tagged release. It runs on your machine, or hosted as Orbi Cloud. All of the coding inside it is done by the <a href="https://pi.dev">Pi coding agent</a>, which Pi&#39;s own site calls &quot;a minimal agent harness&quot;. Pi is MIT-licensed and made by Earendil (<a href="https://github.com/earendil-works/pi">earendil-works/pi</a>); Orbi is not part of the Pi project. Orbi Cloud runners currently run Pi 1.0.0.</p>
+<h2 id="the-series">The series</h2>
+<p>If you are new here, start with <a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs</a> from 5 October.</p>
+
+<ul class="series-list">
+  <li><a href="/blog/pi-agent-harness/">Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</a> <time datetime="2026-10-06">2026-10-06</time></li>
+  <li><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</a> <time datetime="2026-10-05">2026-10-05</time></li>
+  <li><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</a> <time datetime="2026-09-30">2026-09-30</time></li>
+  <li><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: what our reviewer missed</a> <time datetime="2026-09-29">2026-09-29</time></li>
+</ul>
+<p>The title of the 169-PR post is about cost, but it also follows one real issue through every Pi session Orbi started for it, and covers why we stay on Pi and the two incidents that shaped how we run it. The rest of this page is the reference for the same machinery. The 6 October post puts three ways of running Pi through the same kill -9 test: <code class="post-code--spaced">pi --print</code>, Pi through the adapter for Vercel&#39;s AI SDK, and Pi Durable run on Cloudflare through the Agents SDK&#39;s <code class="post-code--single">PiHarness</code>. The two &quot;Searching for Orbi&#39;s harness&quot; posts are earlier benchmarks. There the harness means the prompts and review rules Orbi wraps around the model, not an agent tool like Pi; the posts cover how we changed those rules and compared models, and their data is not part of the production numbers below.</p>
 <h2 id="words-used-on-this-page">Words used on this page</h2>
 <ul>
 <li>A <strong>delivery</strong> is one issue taken to a merged pull request.</li>
@@ -178,9 +188,9 @@
 </ul>
 <h2 id="in-production">In production</h2>
 <p>Orbi Cloud counts the Pi sessions behind every delivery it runs. Between 21 September and 5 October 2026, 170 deliveries have such a count and match a merged pull request: 141 in Orbi&#39;s own repositories (<code class="post-code--single">orbi</code>, <code class="post-code--single">orbi-cloud</code> and <code class="post-code--single">orbi-website</code>), 11 in our forks of open-source projects and our test repositories, and 18 in 8 repositories of outside Orbi Cloud users. Merges from before then, and those made by our self-hosted runner before Orbi&#39;s own repositories moved to Orbi Cloud, are not in these numbers.</p>
-<p>For these 170 deliveries: the model recorded in their Pi session files is DeepSeek&#39;s <code class="post-code--single">deepseek-flash</code> for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it. In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts. Pricing those tokens at DeepSeek&#39;s off-peak list price, the lowest of its published rates, the median delivery cost about 8 cents in model usage, so treat that as a floor; the breakdown is in <a href="/blog/orbi-on-pi-coding-agent/">the first post of this series</a>. (Figures as of 5 October 2026. The numbers on this page are refreshed with each new post in the Pi series listed at the bottom.)</p>
+<p>For these 170 deliveries: the model recorded in their Pi session files is DeepSeek&#39;s <code class="post-code--single">deepseek-flash</code> for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it (the reviewer may fix problems itself before passing; see review rounds below). In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts: these are the 169 PRs in <a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs</a>. Counting recorded token usage only, at DeepSeek&#39;s off-peak list price, the median delivery cost about 8 cents in model usage. Peak-hour prices are double, so at peak prices throughout it would be about 16 cents, and the recorded usage cost somewhere between the two. Seven of the 169 had an earlier attempt; four of those attempts left no token record, so they are not counted, and counting them could only raise the cost. The breakdown is in that post. (Figures as of 5 October 2026.)</p>
 <h2 id="why-orbi-stays-on-the-pi-coding-agent">Why Orbi stays on the Pi coding agent</h2>
-<p>Pi lets Orbi bring its own model through a <code class="post-code--single">models.json</code> of providers, and everything Orbi hands a session (system prompt, skills, provider and model, the tools switch, the session directory) has a native Pi flag, so no bridge sits in between. Orbi&#39;s runner speaks Pi&#39;s flags, so when we tried two other coding-agent CLIs, Claude Code among them, we wrote a small adapter for each to translate those flags. Both adapters silently dropped the skills, and we only noticed later. The longer answer is in <a href="/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi">the first post of this series</a>.</p>
+<p>Pi lets Orbi bring its own model through a <code class="post-code--single">models.json</code> of providers, and everything Orbi hands a session (system prompt, skills, provider and model, the tools switch, the session directory) has a native Pi flag, so no bridge sits in between. Orbi&#39;s runner speaks Pi&#39;s flags, so when we tried two other coding-agent CLIs, Claude Code and zcode, we wrote a small adapter for each to translate those flags. Both of our adapters lost the <code class="post-code--single">--skill</code> list while translating, so those sessions ran without Orbi&#39;s skills, and we only noticed later. The bug was in the adapters, not in those tools, and with Pi there is no adapter to get wrong. The longer answer is in the 169-PR post, under <a href="/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi">why we stay on Pi</a>.</p>
 <h2 id="how-orbi-starts-the-pi-coding-agent">How Orbi starts the Pi coding agent</h2>
 <p>Every session is a non-interactive <code class="post-code--spaced">pi --print</code> process. Each run has one session directory, <code class="post-code--single">.pi-session/</code> in its worktree (excluded from git, like <code class="post-code--single">.orbi/</code>, so it never counts as an uncommitted change), and every Pi process in the run writes its own JSONL file there (a <code class="post-code--single">ticket</code> session uses a temporary directory instead). Those files are what the runner reads for live progress and for failure reports. The command is built in <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">pi_command.py</code></a>. There are three roles:</p>
 <div class="post-table-scroll"><table class="table-stack">
@@ -310,18 +320,12 @@ review_pi_model = &quot;deepseek-flash&quot;         # optional; falls back to p
 <p>For the <code class="post-code--single">ticket</code> role this decides which user extensions can load: without <code class="post-code--single">pi_providers</code>, everything installed in the user&#39;s <code class="post-code--single">~/.pi/agent</code>; with it, automatic discovery moves to the generated directory, but extensions and packages the user&#39;s <code class="post-code--single">settings.json</code> declares (by absolute or <code class="post-code--single">~/</code> path, or as packages) can still load. Either way, <code class="post-code--single">ticket</code> has no allowlist.</p>
 <p>Without <code class="post-code--single">pi_providers</code>, Pi uses that user&#39;s <code class="post-code--single">~/.pi/agent</code> directly, and neither the <code class="post-code--single">enabledModels</code> lock nor the <code class="post-code--single">httpIdleTimeoutMs</code> cleanup happens. <code class="post-code--single">--no-extensions</code>, <code class="post-code--single">--provider</code> and <code class="post-code--single">--model</code> on the command line (when configured), and the silence watchdog above are unaffected. See <a href="https://docs.orbi.build/providers">providers</a> and <a href="https://docs.orbi.build/configuration">configuration</a>.</p>
 <h2 id="where-these-rules-came-from">Where these rules came from</h2>
-<p><code class="post-code--single">--no-extensions</code> on this page came out of an incident: an extension from a user-installed Pi package intermittently hung runs at startup. A second incident is why every Orbi runner we operate sets <code class="post-code--single">pi_provider</code> and <code class="post-code--single">pi_model</code> explicitly and gets checked with <code class="post-code--spaced">orbi doctor</code>: one runner without them once fell back to a local model without any error. Both are written up, with the rest of our notes on running Pi unattended, in <a href="/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi">the first post of this series</a>.</p>
-<h2 id="the-series">The series</h2>
-
-<ul class="series-list">
-  <li><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</a> <time datetime="2026-10-05">2026-10-05</time></li>
-  <li><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</a> <time datetime="2026-09-30">2026-09-30</time></li>
-  <li><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: what our reviewer missed</a> <time datetime="2026-09-29">2026-09-29</time></li>
-</ul>
+<p><code class="post-code--single">--no-extensions</code> on this page came out of an incident: an extension from a Pi package in the <code class="post-code--single">~/.pi/agent</code> of the runner&#39;s OS user intermittently hung runs at startup. A second incident is why every Orbi runner we operate sets <code class="post-code--single">pi_provider</code> and <code class="post-code--single">pi_model</code> explicitly and gets checked with <code class="post-code--spaced">orbi doctor</code>: one runner without them once fell back to a local model without any error. Both are written up in the 169-PR post, under <a href="/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi">two incidents</a>.</p>
 <h2 id="try-it">Try it</h2>
 <p>Orbi is open source at <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>: install the runner and point it at your repository and your model. <a href="/cloud/?ref=seo-pi-coding-agent">Orbi Cloud</a> runs the same runner and the same Pi sessions for you. How that compares with driving a coding agent by hand is in <a href="/compare/claude-code/">Orbi vs Claude Code</a>.</p>
 <h2 id="update-log">Update log</h2>
 <ul>
+<li>2026-10-06: Moved the series list to the top and added a pointer to where to start. The model cost is now given as an 8–16 cent range, counting recorded tokens only.</li>
 <li>2026-10-05: First version. Pi version on Orbi Cloud runners: 1.0.0.</li>
 </ul>
 
@@ -377,7 +381,7 @@ review_pi_model = &quot;deepseek-flash&quot;         # optional; falls back to p
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
-      <a href="https://ezbdc.dashu.ai/" rel="noopener">ez背单词</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
       <div class="footer-badges">
         <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
           <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
