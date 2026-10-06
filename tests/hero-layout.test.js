@@ -182,7 +182,7 @@ describe("shared hero layout (Issue #355)", () => {
         await expect.poll(
           () => page.locator(".hero-proof-bar [data-stat]").allTextContents(),
           { message: `${path}: proof bar fallback values` },
-        ).toEqual(["150", "8"]);
+        ).toEqual(["600", "80"]);
       }
     } finally {
       await page.close();

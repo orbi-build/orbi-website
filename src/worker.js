@@ -434,7 +434,84 @@ async function relatedPostsMarkup(request, env, slug, language) {
   return `<section class="related-links" aria-labelledby="related-posts-title"><h2 id="related-posts-title">${heading}</h2><ul>${links}</ul></section>`;
 }
 
-async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [], total: 0 }, request, env) {
+// Issue #873: the homepage's "Orbi builds Orbi" counters ship as literals in
+// the served HTML so a reader that runs no JavaScript (an AI assistant
+// fetching the page live, an AI search index crawler) reads the real totals
+// instead of 0. This is the initial value of the same number demo.js animates,
+// not a no-JS fallback: the browser still fetches /stats, animates, and
+// refreshes exactly as before.
+//
+// Values come from the same STATS_CACHE_KEY entry /stats serves — no second
+// GitHub path. A miss writes each element's data-floor and warms the cache
+// through ctx.waitUntil, so the homepage response never waits on GitHub.
+const HOMEPAGE_STAT_FIELDS = {
+  issues: "issues_closed",
+  prs: "prs_merged",
+  releases: "releases",
+  deploys: "deploys",
+};
+
+function homepageStatValue(stat, repo, now) {
+  if (!repo) {
+    return null;
+  }
+  if (stat === "days") {
+    const started = Date.parse(repo.started);
+    return Number.isFinite(started) ? Math.max(0, Math.floor((now - started) / 86400000)) : null;
+  }
+  const field = HOMEPAGE_STAT_FIELDS[stat];
+  return field ? repo[field] : null;
+}
+
+// The floor rides the element's own data-floor attribute, so the fallback
+// value lives next to the markup it guards.
+function elementFloor(attrs) {
+  return attrs.match(/\bdata-floor="([^"]*)"/)?.[1];
+}
+
+function fillHomepageStats(body, stats, now = Date.now()) {
+  const repos = stats?.repos || {};
+  body = body.replace(
+    /<(strong|b)((?=[^>]*\bdata-repo="([^"]+)")(?=[^>]*\bdata-stat="([^"]+)")[^>]*)>([^<]*)<\/\1>/g,
+    (match, tag, attrs, repoName, stat, original) => {
+      const value = homepageStatValue(stat, repos[repoName], now);
+      const text = Number.isFinite(value) ? String(value) : (elementFloor(attrs) ?? original);
+      return '<' + tag + attrs + '>' + text + '</' + tag + '>';
+    },
+  );
+  return body.replace(
+    /<b((?=[^>]*\bdata-star-total\b)[^>]*)>([^<]*)<\/b>/g,
+    (match, attrs, original) => {
+      const stars = repos.orbi?.stars;
+      const text = Number.isFinite(stars) ? String(stars) : (elementFloor(attrs) ?? original);
+      return '<b' + attrs + '>' + text + '</b>';
+    },
+  );
+}
+
+async function homepageStats(env, ctx) {
+  const cache = typeof caches === "undefined" ? undefined : caches.default;
+  if (!cache) {
+    return null;
+  }
+  let stats = null;
+  try {
+    const cached = await cache.match(STATS_CACHE_KEY);
+    if (cached) {
+      stats = await cached.json();
+    }
+  } catch (err) {
+    console.error("homepage_stats_cache_failed:", err && err.message ? err.message : err);
+  }
+  if (!stats && ctx?.waitUntil) {
+    ctx.waitUntil(statsResponse(new Request(STATS_CACHE_KEY), env?.GITHUB_TOKEN).catch((err) => {
+      console.error("homepage_stats_warm_failed:", err && err.message ? err.message : err);
+    }));
+  }
+  return stats;
+}
+
+async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [], total: 0 }, request, env, ctx) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -454,6 +531,9 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
   }
   const html = await asset.text();
   const zh = Boolean(request?.url) && new URL(request.url).pathname.startsWith("/zh");
+  const pathname = request?.url ? new URL(request.url).pathname : "";
+  // Issue #873: only the homepage carries the live stat elements.
+  const homepage = pathname === "/" || pathname === "/zh/";
   let body = html;
   const blogMatch = request?.url && new URL(request.url).pathname.match(/^(\/zh)?\/blog\/([^/]+)\/?$/);
   if (blogMatch && body.includes("<!--orbi:related-posts-->")) {
@@ -494,6 +574,9 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
     .replaceAll(pricing.measuredSnapshotDeliveriesToken, MEASURED_SNAPSHOT_DELIVERIES)
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", founding.total ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(founding.logins, founding.total, zh));
+  if (homepage) {
+    body = fillHomepageStats(body, await homepageStats(env, ctx));
+  }
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
@@ -790,7 +873,7 @@ async function handleFetch(request, env, ctx) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), founding, request, env);
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), founding, request, env, ctx);
 }
 
 // Issue #541: the subscription endpoint answers JSON only — the form is
