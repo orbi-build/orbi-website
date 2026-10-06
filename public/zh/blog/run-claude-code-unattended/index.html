@@ -16,11 +16,10 @@
   <meta property="og:image" content="https://orbi.build/img/blog-headless-card.png">
   <meta property="og:image:alt" content="Claude Code headless 模式是什么？自动化开发还差六件事">
   <meta property="article:published_time" content="2026-10-01">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code headless 模式是什么？自动化开发还差六件事","datePublished":"2026-10-01","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"zh-CN","description":"Claude Code 的 headless 模式就是 claude -p 非交互模式，跑完一个提示词就退出。做自动化开发，认领、运行用户、评审、合并、续跑和发版还得自己搭。","url":"https://orbi.build/zh/blog/run-claude-code-unattended/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code headless 模式是什么？自动化开发还差六件事","datePublished":"2026-10-01","author":{"@type":"Person","name":"Lawrence Liu"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/run-claude-code-unattended/","image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"zh-CN","description":"Claude Code 的 headless 模式就是 claude -p 非交互模式，跑完一个提示词就退出。做自动化开发，认领、运行用户、评审、合并、续跑和发版还得自己搭。","url":"https://orbi.build/zh/blog/run-claude-code-unattended/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
-  <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -29,6 +28,9 @@
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
@@ -247,7 +249,8 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <p><img src="/img/headless-1504-bug.webp" alt="GitHub 上的 Issue #1504（截图里的时间是 UTC）：维护者打上 ai-blocked 71 秒后 PR 仍被合并的时间线，以及原因：merge_gate 从不重读 Issue 标签"></p>
 <p>Orbi 在我开票一分钟后认领，开了 <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>，独立评审一轮没发现问题，认领后 45 分钟合并。现在合并前会最后读一次标签，Issue 上有 <code class="post-code--single">ai-blocked</code> 就不合。</p>
 <p><img src="/img/headless-1504-merged.webp" alt="#1504 时间线的后半段：Orbi 开了 PR #1505，一轮评审后合并，标签从 ai-pr-opened 换成 ai-merged"></p>
-<p>你的循环如果最后一步是 <code class="post-code--spaced">gh pr merge</code>，同样有这个漏洞。立即合并的情况下，在它前面加几行就能补上。这几行要存成 bash 脚本再运行；直接贴进交互终端的话，缺了 SHA 也拦不住后面那几行。<code class="post-code--single">:</code> 那一行要求 Issue、PR 和评审通过的 SHA 都必须给出；<code class="post-code--single">labels=</code> 那一行读不到标签就直接退出，免得查询失败反而放行；<code class="post-code--single">grep</code> 那一行在 Issue 被拦下时以非零码退出，这样循环不会把它当成成功；<code class="post-code--single">--match-head-commit</code> 保证合进去的正是评审过的那个提交。如果目标分支要求 merge queue，检查没通过时 <code class="post-code--spaced">gh pr merge</code> 会开启自动合并，通过时会把 PR 排进队列，之后再加的阻止标签这段脚本管不到：</p>
+<p>你的循环如果最后一步是 <code class="post-code--spaced">gh pr merge</code>，同样有这个漏洞。立即合并的情况下，在它前面加几行就能补上。这几行要存成 bash 脚本再运行；直接贴进交互终端的话，缺了 SHA 也拦不住后面那几行。</p>
+<p><code class="post-code--single">:</code> 那一行要求 Issue、PR 和评审通过的 SHA 都必须给出；<code class="post-code--single">labels=</code> 那一行读不到标签就直接退出，免得查询失败反而放行；<code class="post-code--single">grep</code> 那一行在 Issue 被拦下时以非零码退出，这样循环不会把它当成成功；<code class="post-code--single">--match-head-commit</code> 保证合进去的正是评审过的那个提交。如果目标分支要求 merge queue，检查没通过时 <code class="post-code--spaced">gh pr merge</code> 会开启自动合并，通过时会把 PR 排进队列，之后再加的阻止标签这段脚本管不到：</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
 : &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?缺少评审通过的 SHA}&quot;
 labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1

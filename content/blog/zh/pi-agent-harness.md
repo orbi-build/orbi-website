@@ -3,7 +3,7 @@ title: Pi agent harness 三种跑法：kill -9 之后谁能接上
 date: 2026-10-06
 summary: 同一个任务，分别用 pi --print、AI SDK 的 HarnessAgent、Cloudflare 的 PiHarness 跑，跑到一半 kill -9。哪种能自己接上，哪种得你写监督程序，会话记录各自存在哪。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-pi-agent-harness-card.png
 mirror: pi-agent-harness
 series: pi
@@ -21,7 +21,9 @@ Pi 的命令行有四种模式：交互式终端、print、JSON，以及走 stdi
 
 ### pi harness 还是 Pi Durable
 
-从 10 月 1 日起，「pi harness」可能指同一个团队的两样东西。按 Earendil 的定位，Pi 编程 agent（`@earendil-works/pi-coding-agent`，也就是 `pi` 命令）是给一个人在终端前用的 harness。Earendil 在 [Pi Durable 的发布文](https://earendil.com/posts/pi-durable/)里这样描述 `pi` 命令的进程死掉以后的情形：你看看发生了什么，再让它继续。Pi Durable（`@earendil-works/pi-durable`）是另一个库，用来搭能自己一直跑下去的 agent。在它里面，每次模型调用、每次工具调用都是一个任务，往下走之前先存检查点，新进程打开同一份存储就能接着跑。它和 Pi 共用模型层 `pi-ai`，但它不是 `pi` 命令。它也带着那四个写代码用的工具，但得先给它们接一个执行环境，也就是真正去读文件、跑命令的地方，工具才能用；Pi Durable 自带一个 Node 的执行环境，但它在 Cloudflare Worker 里用不了。
+从 10 月 1 日起，「pi harness」可能指同一个团队的两样东西。按 Earendil 的定位，Pi 编程 agent（`@earendil-works/pi-coding-agent`，也就是 `pi` 命令）是给一个人在终端前用的 harness。Earendil 在 [Pi Durable 的发布文](https://earendil.com/posts/pi-durable/)里这样描述 `pi` 命令的进程死掉以后的情形：你看看发生了什么，再让它继续。Pi Durable（`@earendil-works/pi-durable`）是另一个库，用来搭能自己一直跑下去的 agent。
+
+在它里面，每次模型调用、每次工具调用都是一个任务，往下走之前先存检查点，新进程打开同一份存储就能接着跑。它和 Pi 共用模型层 `pi-ai`，但它不是 `pi` 命令。它也带着那四个写代码用的工具，但得先给它们接一个执行环境，也就是真正去读文件、跑命令的地方，工具才能用；Pi Durable 自带一个 Node 的执行环境，但它在 Cloudflare Worker 里用不了。
 
 ## 三种无人值守的跑法，同一个测试
 
@@ -102,7 +104,9 @@ done
 exit 1
 ```
 
-我按四种情况跑了一遍。设 `PI_TIME_LIMIT=25s` 跑 step 任务，超时两次（exit 124），第三次跑完，始终是同一个会话文件，也没有残留的 `sleep`。限时 15 秒跑 `sleep 97` 那个任务，三次都超时，结束后没有任何进程留下。换成 DeepSeek 不认的模型名，三次都是 exit 1，脚本退出 1。给一句简单的提示词，答完退出 0。重试的提示词里带着原任务，所以第一次尝试就算在 Pi 存下任何东西之前就死了，重试也不会两眼一抹黑。脚本没传 `--approve` 也没传 `--no-approve`，任务要用仓库自己的 `.pi` 设置的话，就加上 `--approve`；仓库里的扩展和 skill 因为 `--no-extensions`、`--no-skills` 照样不加载。退出 0 只说明 Pi 跑完了这一次，任务做没做完要另外查，比如看五个文件在不在。
+我按四种情况跑了一遍。设 `PI_TIME_LIMIT=25s` 跑 step 任务，超时两次（exit 124），第三次跑完，始终是同一个会话文件，也没有残留的 `sleep`。限时 15 秒跑 `sleep 97` 那个任务，三次都超时，结束后没有任何进程留下。换成 DeepSeek 不认的模型名，三次都是 exit 1，脚本退出 1。给一句简单的提示词，答完退出 0。
+
+重试的提示词里带着原任务，所以第一次尝试就算在 Pi 存下任何东西之前就死了，重试也不会两眼一抹黑。脚本没传 `--approve` 也没传 `--no-approve`，任务要用仓库自己的 `.pi` 设置的话，就加上 `--approve`；仓库里的扩展和 skill 因为 `--no-extensions`、`--no-skills` 照样不加载。退出 0 只说明 Pi 跑完了这一次，任务做没做完要另外查，比如看五个文件在不在。
 
 如果 `pi` 最后还是死于 `SIGKILL`（OOM killer，或者那 30 秒后的补刀），还在跑的工具命令会留下来；命令放到后台的东西，不管 Pi 怎么退出都会留下。在 Linux 上可以用 `systemd-run --user --scope` 启动每次尝试，结束后停掉这个 scope，把它们也收掉，这需要 systemd 用户会话；也可以把每次尝试放进单独的容器。
 
@@ -187,9 +191,13 @@ if (!stopping) { saveState(await session.detach()); process.exit(failed ? 1 : 0)
 
 不打断的话大约 50 秒跑完，文件落在 `./box/work/pi-demo/` 下。我在大约 33 秒时 `SIGKILL` 了两次，两次都是已经写好的文件还在沙箱里，对话却回不去了。一轮进行中（这次整个任务就是一轮，因为只有一条提示词），适配器把 Pi 的会话写在宿主机的临时目录 `$TMPDIR/ai-sdk-harness/pi/<session id>/`，只有在 `session.stop()`、`detach()` 或 `suspendTurn()` 里才拷进沙箱。这三个都会返回一份恢复用的状态：`stop()` 和 `detach()` 的传给 `createSession({ sessionId, resumeFrom })`，`suspendTurn()` 的传给 `createSession({ sessionId, continueFrom })`。被杀的进程一个都来不及调。
 
-临时目录里那份事后还在磁盘上，但没有哪个 API 会读它，我也没试着手工拼回去。两次我都用同一个 session id 起了个新进程，提示词和上文手动 `--continue` 恢复命令里那句一样，是 "You were interrupted. Continue the original task from where you left off."。这句故意不带原任务，为的是看对话历史还在不在（照上面的 JS 脚本跑，发出去的会是完整任务）。没有历史，模型两次都是看了看现有文件，只补了下一个就停：第一次被杀时已有 3 个文件，补了 `step4.txt`；第二次也是在约 33 秒时杀的，却只有 2 个（那次各步的时间我没记，说不清为什么慢了一步），补了 `step3.txt`。两次都没做完五个。第二次它还说明，找不到原始指令的任何记录，是根据文件名推测着往下做的。
+临时目录里那份事后还在磁盘上，但没有哪个 API 会读它，我也没试着手工拼回去。两次我都用同一个 session id 起了个新进程，提示词和上文手动 `--continue` 恢复命令里那句一样，是 "You were interrupted. Continue the original task from where you left off."。这句故意不带原任务，为的是看对话历史还在不在（照上面的 JS 脚本跑，发出去的会是完整任务）。
 
-换成 `SIGTERM`，我试的七次都接上并跑完，因为处理函数跑了；其中五次留了日志，另外两次只记了结果。`session.stop()` 中止当前这一轮，把会话拷进沙箱，返回一个带着未完成那一轮的恢复状态。新进程把它当 `resumeFrom` 传进去，`hasUnfinishedTurn()` 为真，调 `continueStream()`。适配器源码里有一点要注意：这次拷贝是尽力而为的。拷贝失败时，`stop()` 会吞掉错误、照样返回恢复状态（`pi-session.ts`）。下一个进程就会从沙箱里之前某次存下的旧副本（在沙箱主目录的 `.ai-sdk/harness-pi/` 下）接着跑，一份都没有的话就从空对话开始。所以退出 143 也好、`state.json` 写出来了也好，都证明不了最新的进度已经存下；要打开那个目录下的会话 JSONL，看最后几条记录是不是停在你预期的地方。
+没有历史，模型两次都是看了看现有文件，只补了下一个就停：第一次被杀时已有 3 个文件，补了 `step4.txt`；第二次也是在约 33 秒时杀的，却只有 2 个（那次各步的时间我没记，说不清为什么慢了一步），补了 `step3.txt`。两次都没做完五个。第二次它还说明，找不到原始指令的任何记录，是根据文件名推测着往下做的。
+
+换成 `SIGTERM`，我试的七次都接上并跑完，因为处理函数跑了；其中五次留了日志，另外两次只记了结果。`session.stop()` 中止当前这一轮，把会话拷进沙箱，返回一个带着未完成那一轮的恢复状态。新进程把它当 `resumeFrom` 传进去，`hasUnfinishedTurn()` 为真，调 `continueStream()`。
+
+适配器源码里有一点要注意：这次拷贝是尽力而为的。拷贝失败时，`stop()` 会吞掉错误、照样返回恢复状态（`pi-session.ts`）。下一个进程就会从沙箱里之前某次存下的旧副本（在沙箱主目录的 `.ai-sdk/harness-pi/` 下）接着跑，一份都没有的话就从空对话开始。所以退出 143 也好、`state.json` 写出来了也好，都证明不了最新的进度已经存下；要打开那个目录下的会话 JSONL，看最后几条记录是不是停在你预期的地方。
 
 其中三次我查了会话文件。有两次，第 4 次 `sleep 8` 只跑了约 2.1 秒和 0.6 秒就被 `stop()` 打断，会话文件却都记成 `(exit 0)`。本来应该还剩两次 sleep（重跑第 4 次，再加第 5 次），模型却以为第 4 次已经做完，只跑了第 5 次，两次恢复各用了 12 秒。另一次信号来的时候第 3 次 sleep 已经跑完、`step3.txt` 还没写，没有东西被打断，还剩两次 sleep，恢复用了 22 秒。`just-bash` 的 `sleep` 被中止时会报成功，别的沙箱我没测。
 
@@ -276,7 +284,9 @@ export default {
 
 `replay` 是 Pi Durable 的工具用来声明自己能不能跑两次的字段。`write_file` 标了 `"safe"`，因为它按文件名覆盖那一行；`sleep` 保持默认，也就是被打断后不重跑。`operationId` 让提交变成幂等的：同一个 id 再提交一次，拿回的还是原来那次操作。
 
-我用 `wrangler dev`（wrangler 4.147.0）在自己机器上跑，全程不涉及 Cloudflare 账号。不打断的话 48 秒跑完。kill 测试的做法是：提交任务，第 19 到 30 秒用 `SIGKILL` 杀掉 `wrangler` 和它的 `workerd` 运行时，两秒后在同一份本地状态上重新起 `wrangler dev`，在它恢复之前不发任何请求。重启 `wrangler dev` 相当于 Cloudflare 把运行时重新拉起来，这个测试说明的是：运行时回来之后，对象会自己接着跑。日志也显示，恢复之前没有请求碰过它：第一次，工具调用恢复之前没有任何请求记录；后两次我在对象的构造函数里加了一行日志，它出现时前面同样没有请求。三次都在我重启 `wrangler dev` 之后 1 到 10 秒内恢复，五步全部做完。这和文档里 30 秒的 alarm 对得上：任务开始时设下的 alarm 大约在第 30 秒到期，要么刚好落在重启之后，要么运行时回来时已经过期、马上就响。具体是哪一次 alarm 响的，我没去确认。
+我用 `wrangler dev`（wrangler 4.147.0）在自己机器上跑，全程不涉及 Cloudflare 账号。不打断的话 48 秒跑完。kill 测试的做法是：提交任务，第 19 到 30 秒用 `SIGKILL` 杀掉 `wrangler` 和它的 `workerd` 运行时，两秒后在同一份本地状态上重新起 `wrangler dev`，在它恢复之前不发任何请求。重启 `wrangler dev` 相当于 Cloudflare 把运行时重新拉起来，这个测试说明的是：运行时回来之后，对象会自己接着跑。日志也显示，恢复之前没有请求碰过它：第一次，工具调用恢复之前没有任何请求记录；后两次我在对象的构造函数里加了一行日志，它出现时前面同样没有请求。
+
+三次都在我重启 `wrangler dev` 之后 1 到 10 秒内恢复，五步全部做完。这和文档里 30 秒的 alarm 对得上：任务开始时设下的 alarm 大约在第 30 秒到期，要么刚好落在重启之后，要么运行时回来时已经过期、马上就响。具体是哪一次 alarm 响的，我没去确认。
 
 三次里有两次是在 `sleep` 进行中被杀的，重启后模型都重新调了一次 `sleep`。我存下来的第一次的对话记录说明了原因：这个工具没标可安全重跑，Pi Durable 没有重跑被打断的那次调用，而是给它写了一条结果，标记为错误：
 

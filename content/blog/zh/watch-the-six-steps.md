@@ -17,7 +17,7 @@ Orbi Cloud 的上手流程拍成了视频：[Orbi Cloud: from zero to a tagged r
 
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud 七步上手流程：从登录到订阅" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>观看完整的七步 Orbi Cloud 上手流程。</figcaption></figure>
 
-### 七步流程里的七个关键画面
+## 七步流程里的七个关键画面
 
 <figure class="post-media">
 <img src="/img/step-1-sign-in.png" alt="Orbi Cloud 登录页面" width="2560" height="1440" srcset="/img/step-1-sign-in-1600.webp 1600w, /img/step-1-sign-in-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">

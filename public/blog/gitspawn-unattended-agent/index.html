@@ -16,11 +16,10 @@
   <meta property="og:image" content="https://orbi.build/img/blog-gitspawn.png">
   <meta property="og:image:alt" content="GitSpawn and the agent that never asks">
   <meta property="article:published_time" content="2026-09-26">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"GitSpawn and the agent that never asks","datePublished":"2026-09-26","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-gitspawn.png","inLanguage":"en","description":"A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.","url":"https://orbi.build/blog/gitspawn-unattended-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"GitSpawn and the agent that never asks","datePublished":"2026-09-26","author":{"@type":"Organization","name":"Orbi"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/gitspawn-unattended-agent/","image":"https://orbi.build/img/blog-gitspawn.png","inLanguage":"en","description":"A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.","url":"https://orbi.build/blog/gitspawn-unattended-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
-  <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -29,6 +28,9 @@
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }

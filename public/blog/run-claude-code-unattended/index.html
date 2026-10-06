@@ -16,11 +16,10 @@
   <meta property="og:image" content="https://orbi.build/img/blog-headless-card.png">
   <meta property="og:image:alt" content="Run Claude Code unattended: headless mode is step one">
   <meta property="article:published_time" content="2026-10-01">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Run Claude Code unattended: headless mode is step one","datePublished":"2026-10-01","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"en","description":"Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.","url":"https://orbi.build/blog/run-claude-code-unattended/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Run Claude Code unattended: headless mode is step one","datePublished":"2026-10-01","author":{"@type":"Person","name":"Lawrence Liu"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/run-claude-code-unattended/","image":"https://orbi.build/img/blog-headless-card.png","inLanguage":"en","description":"Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.","url":"https://orbi.build/blog/run-claude-code-unattended/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
-  <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -29,6 +28,9 @@
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
@@ -247,7 +249,8 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <p><img src="/img/headless-1504-bug.webp" alt="Issue #1504 on GitHub: the timeline of a merge that happened 71 seconds after a maintainer labelled the Issue ai-blocked, and the cause, merge_gate never re-reading the Issue&#39;s labels"></p>
 <p>Orbi claimed it a minute after I filed it, opened <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>, passed the independent review with no findings and merged 45 minutes after the claim. The gate now reads the labels one last time, and an <code class="post-code--single">ai-blocked</code> Issue stops the merge.</p>
 <p><img src="/img/headless-1504-merged.webp" alt="The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged"></p>
-<p>If your loop ends in <code class="post-code--spaced">gh pr merge</code>, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn&#39;t stop the lines after it. The <code class="post-code--single">:</code> line refuses to run without the Issue, the PR and the SHA your review approved; the <code class="post-code--single">labels=</code> line exits if the labels can&#39;t be read, so a failed lookup never turns into a merge, the <code class="post-code--single">grep</code> line exits non-zero when the Issue is blocked so your loop doesn&#39;t count it as a success, and <code class="post-code--single">--match-head-commit</code> makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, <code class="post-code--spaced">gh pr merge</code> enables auto-merge when checks haven&#39;t passed and queues the PR when they have, and a blocking label added after that isn&#39;t checked by this script:</p>
+<p>If your loop ends in <code class="post-code--spaced">gh pr merge</code>, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn&#39;t stop the lines after it.</p>
+<p>The <code class="post-code--single">:</code> line refuses to run without the Issue, the PR and the SHA your review approved; the <code class="post-code--single">labels=</code> line exits if the labels can&#39;t be read, so a failed lookup never turns into a merge, the <code class="post-code--single">grep</code> line exits non-zero when the Issue is blocked so your loop doesn&#39;t count it as a success, and <code class="post-code--single">--match-head-commit</code> makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, <code class="post-code--spaced">gh pr merge</code> enables auto-merge when checks haven&#39;t passed and queues the PR when they have, and a blocking label added after that isn&#39;t checked by this script:</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
 : &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?missing the SHA the review approved}&quot;
 labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1

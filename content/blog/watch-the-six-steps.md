@@ -17,7 +17,7 @@ The full setup is now on video: [Orbi Cloud: from zero to a tagged release in se
 
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/_OEaBwrLvvs" title="Orbi Cloud setup from zero to subscription in seven steps" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Watch the complete seven-step Orbi Cloud setup.</figcaption></figure>
 
-### Seven key screens from the seven-step flow
+## Seven key screens from the seven-step flow
 
 <figure class="post-media">
 <img src="/img/step-1-sign-in.png" alt="Orbi Cloud sign-in screen" width="2560" height="1440" srcset="/img/step-1-sign-in-1600.webp 1600w, /img/step-1-sign-in-2400.webp 2400w" sizes="(min-width: 900px) 784px, 100vw" loading="eager">

@@ -4,6 +4,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { tmpdir } from "node:os";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import { buildPages } from "../scripts/build-pages.mjs";
 
 const existingRoutes = [
@@ -75,10 +76,11 @@ afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
   if (fixtureRoot) await rm(join(fixtureRoot, ".."), { recursive: true, force: true });
+  assertNoExternalRequests();
 });
 
 async function overflowAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => {
@@ -98,7 +100,7 @@ async function overflowAt(route, width) {
 }
 
 async function inlineCodeLayoutAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => ({
@@ -115,7 +117,7 @@ async function inlineCodeLayoutAt(route, width) {
 }
 
 async function blogLayoutAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => ({
@@ -139,7 +141,7 @@ async function blogLayoutAt(route, width) {
 }
 
 async function constrainedHeadingAt(route, selector, ch) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.locator(selector).first().evaluate((heading, expectedCh) => {
@@ -161,7 +163,7 @@ async function constrainedHeadingAt(route, selector, ch) {
 }
 
 async function postCtaAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.locator(".post-cta").evaluate((cta) => {
@@ -184,10 +186,10 @@ async function postCtaAt(route, width) {
 }
 
 describe("post registration CTA (Issue #732)", () => {
-  // Same 30s budget as the other browser tests (e8f46993, #838): page.goto
-  // alone may wait 25s, and the footer's third-party badges (Toolradar since
-  // #836) can hold the load event past vitest's 5s default. This `it` walks
-  // four routes, so that default timed it out on CI three times on 2026-10-05.
+  // Same 30s budget as the other browser tests (e8f46993, #838): this `it`
+  // walks four routes, so vitest's 5s default timed it out on CI three times
+  // on 2026-10-05. The third-party badges that used to decide that budget are
+  // answered locally by the guard in browser-network.mjs (Issue #871).
   it("preserves the homepage button treatment and readable night-surface link in both languages", async () => {
     for (const route of ["/blog/run-claude-code-unattended/", "/zh/blog/run-claude-code-unattended/"]) {
       const desktop = await postCtaAt(route, 1440);
@@ -281,12 +283,11 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
     expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
   }, 30_000);
 
-  it("keeps every existing post free of document overflow", async () => {
-    for (const route of existingRoutes) {
-      for (const width of widths) {
-        const result = await overflowAt(route, width);
-        expect(result.overflow, `${route} at ${width}px document overflow`).toBe(0);
-      }
+  // One test per route: 11 routes x 2 widths in a single 30s budget timed out on CI.
+  it.each(existingRoutes)("keeps %s free of document overflow", async (route) => {
+    for (const width of widths) {
+      const result = await overflowAt(route, width);
+      expect(result.overflow, `${route} at ${width}px document overflow`).toBe(0);
     }
   }, 30_000);
 });

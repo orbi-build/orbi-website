@@ -945,12 +945,22 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
 function renderPostMeta(post) {
   const url = `https://orbi.build${post.href}`;
   const image = `https://orbi.build${post.image}`;
+  // Issue #862: the author names the real author. The site's own "Orbi" byline
+  // stays an Organization; a named person's byline becomes a Person, so search
+  // and AI answers can attribute the first-person posts.
   const article = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.headline,
     datePublished: post.date,
-    author: { "@type": "Organization", name: post.author },
+    author: { "@type": post.author === "Orbi" ? "Organization" : "Person", name: post.author },
+    publisher: {
+      "@type": "Organization",
+      name: "Orbi",
+      url: "https://orbi.build/",
+      logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+    },
+    mainEntityOfPage: url,
     image,
     inLanguage: post.lang === "zh" ? "zh-CN" : "en",
     description: post.summary,
@@ -1309,22 +1319,34 @@ ${items}
 `;
 }
 
-// llms.txt (Issue #215): the hand-written prose lives in site/llms.txt, next
-// to the other page sources, and stays editable there. The build generates
-// only the Blog section's post list — one entry per post per language,
-// newest first, in the format the hand-maintained file used — by replacing
-// the <!--@llms-blog--> marker. A source without the marker fails the build
-// instead of silently shipping a stale Blog section.
-export function renderLlms(source, posts) {
-  const marker = "<!--@llms-blog-->";
-  if (!source.includes(marker)) {
+// llms.txt (Issues #215, #874): the hand-written prose lives in site/llms.txt,
+// next to the other page sources, and stays editable there. The build generates
+// two lists by replacing markers — the Blog section's post list (one entry per
+// post per language, newest first) and the Guides section's guide list (one
+// entry per guide per language from site/data/guides.json, with title, URL and
+// summary, the same data /guides/ renders). A source without either marker
+// fails the build instead of silently shipping a stale section.
+export function renderLlms(source, posts, guides = []) {
+  const blogMarker = "<!--@llms-blog-->";
+  const guidesMarker = "<!--@llms-guides-->";
+  if (!source.includes(blogMarker)) {
     throw new Error("site/llms.txt: missing the <!--@llms-blog--> marker for the generated Blog section");
   }
+  if (!source.includes(guidesMarker)) {
+    throw new Error("site/llms.txt: missing the <!--@llms-guides--> marker for the generated Guides section");
+  }
   const label = { en: "English", zh: "Chinese" };
-  const list = posts
+  const postList = posts
     .map((post) => `- ${post.title} (${label[post.lang]}):\n  https://orbi.build${post.href}`)
     .join("\n");
-  return source.replace(marker, () => list);
+  const guideList = guides
+    .flatMap((guide) => ["en", "zh"].map((lang) => {
+      const copy = guide[lang];
+      const href = `https://orbi.build${lang === "zh" ? "/zh" : ""}/guides/${guide.slug}/`;
+      return `- ${copy.title} (${label[lang]}):\n  ${href}\n  ${copy.summary}`;
+    }))
+    .join("\n");
+  return source.replace(blogMarker, () => postList).replace(guidesMarker, () => guideList);
 }
 
 function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR } = {}) {
@@ -1539,7 +1561,9 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     };
   }), null, 2) + "\n");
   await writeFile(join(outDir, "blog", "feed.xml"), renderFeed(englishPosts));
-  await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts));
+  // Issue #874: the Guides list comes from the same site/data/guides.json the
+  // /guides/ index renders, so it never drifts from the set of guides.
+  await writeFile(join(outDir, "llms.txt"), renderLlms(await readFile(join(ROOT, "site", "llms.txt"), "utf8"), posts, guidesData.guides));
   await writeFile(
     join(outDir, "llms-full.txt"),
     renderLlmsFull(

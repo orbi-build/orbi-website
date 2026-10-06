@@ -16,11 +16,10 @@
   <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
   <meta property="og:image:alt" content="Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分">
   <meta property="article:published_time" content="2026-10-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分","datePublished":"2026-10-05","author":{"@type":"Organization","name":"Orbi"},"image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"zh-CN","description":"只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。","url":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分","datePublished":"2026-10-05","author":{"@type":"Person","name":"Lawrence Liu"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/","image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"zh-CN","description":"只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。","url":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
-  <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -29,6 +28,9 @@
     /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
     .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
     .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
     .post-body { padding-top: 12px; padding-bottom: 30px; }
     .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
     .post-body .related-links { margin: 0; }
@@ -192,7 +194,8 @@
 <p>我是 Lawrence Liu，Orbi 的维护者。Orbi 是开源的，Orbi Cloud 托管的是同一个 runner。Cloud 知道哪些 PR 被合并，靠的是 GitHub 的 webhook，不是 runner 上报，而且只限装了 Orbi GitHub App 的仓库。从 9 月 16 日第一条记录到 10 月 5 日 15:36（北京时间），Cloud 记下了 373 个合并的 PR。这不是 Orbi 合并的全部：我机器上的 runner 做的那些，只有一部分在里面。这 373 个里，20 个在 Cloud 用户的 9 个仓库里，剩下的几乎都在 Orbi 自己的仓库里，Orbi 的代码本来就是 Orbi 交付的。有 169 次交付在 Cloud 上有带 token 数的用量记录，都是在 Pi 会话里写的，本文的数字都来自它们。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <p>这是我们 Pi 系列里讲 Orbi 架构的第一篇（文末链接的两篇 harness 测评也属于这个系列）。先跟着一张 issue 把 Orbi 为它起的每个 Pi 会话走一遍，再讲命令行、169 次交付花了多少（按 DeepSeek 闲时公开价，每次 token 花费中位数 0.082 美元），以及 Pi 留给用户自己搭的部分。有三个词后面会反复出现：<strong>Pi 会话</strong>是一个 <code class="post-code--spaced">pi --print</code> 进程；<strong>run</strong> 是 runner 对一张 issue 的一次尝试，有一个 <code class="post-code--single">run_id</code>，里面可以起好几个 Pi 会话；恢复这次 run 时沿用同一个 <code class="post-code--single">run_id</code>（#1554 被我重新排队后就是这样），重新尝试则换一个新的；<strong>交付</strong>指最后由 Orbi 合并了 PR 的 issue。</p>
 <h2 id="一张-issue-从头到尾">一张 issue 从头到尾</h2>
-<p>挑的是 <a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a>，因为这个 bug 就出在 Orbi 跟 Pi 打交道的地方。Pi 从一个叫 <code class="post-code--single">models.json</code> 的文件里读模型和 API key。Orbi 每次 run 都往 worktree 的 <code class="post-code--single">.orbi/pi-agent/</code> 下写一份自己的副本，这样每个 run 可以用不同的 provider 配置，又不动机器上 Pi 本身的配置。以前 Orbi 会先把 <code class="post-code--single">$VAR</code> 形式的 key 引用解析掉，把真 key 写进这份副本。这个目录在 gitignore 里，key 从没进过提交，但每个 worktree 里都躺着明文 key。代码里有条注释，是 9 月 4 日我们用 Pi 0.84.4 时写的，说 Pi 不会展开这种引用。可早一个版本的 Pi 0.84.3，文档就写得清清楚楚：<code class="post-code--single">apiKey</code> 支持 <code class="post-code--single">$ENV_VAR</code> 和 <code class="post-code--single">${ENV_VAR}</code>。修法很简单，引用原样保留，让 Pi 自己展开。我 03:21 开的票，打上 <code class="post-code--single">ai-ready</code> 就去睡了。</p>
+<p>挑的是 <a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a>，因为这个 bug 就出在 Orbi 跟 Pi 打交道的地方。Pi 从一个叫 <code class="post-code--single">models.json</code> 的文件里读模型和 API key。Orbi 每次 run 都往 worktree 的 <code class="post-code--single">.orbi/pi-agent/</code> 下写一份自己的副本，这样每个 run 可以用不同的 provider 配置，又不动机器上 Pi 本身的配置。</p>
+<p>以前 Orbi 会先把 <code class="post-code--single">$VAR</code> 形式的 key 引用解析掉，把真 key 写进这份副本。这个目录在 gitignore 里，key 从没进过提交，但每个 worktree 里都躺着明文 key。代码里有条注释，是 9 月 4 日我们用 Pi 0.84.4 时写的，说 Pi 不会展开这种引用。可早一个版本的 Pi 0.84.3，文档就写得清清楚楚：<code class="post-code--single">apiKey</code> 支持 <code class="post-code--single">$ENV_VAR</code> 和 <code class="post-code--single">${ENV_VAR}</code>。修法很简单，引用原样保留，让 Pi 自己展开。我 03:21 开的票，打上 <code class="post-code--single">ai-ready</code> 就去睡了。</p>
 <figure class="post-media">
 <img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从认领时记下的 base 提交建 worktree，推送、开 PR，合并闸门检查 CI、评审结论，以及 base 是否最新。Pi 会话：实现会话（计划、改代码、测试、commit）和评审会话（审、修、最后输出一行结论）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
 </figure><p>issue 上的时间线（北京时间，都在 10 月 5 日，周一）。注意第一行：我开 #1554 之前，<code class="post-code--single">main</code> 就已经红了。</p>
@@ -336,7 +339,8 @@
 <h2 id="为什么一直用-pi">为什么一直用 Pi</h2>
 <p>Orbi 8 月份第一批提交里就在调 Pi 了，当时没跟别的方案比过。回头看，没换掉它主要是两个原因。</p>
 <p>第一个是换模型只要改配置。Pi 自带很多 provider，Orbi 还能把自己的 provider 文件合进每个 run 的那份 <code class="post-code--single">models.json</code>，借此接上任何 OpenAI 兼容的端点（<a href="https://github.com/orbi-build/orbi/issues/157">orbi#157</a>）。生产上就是这么用的：Cloud 用量记录里的交付全跑在 <code class="post-code--single">deepseek-flash</code> 上，迁到 Cloud 之前，我机器上的 runner 大多用同一条 Pi 命令跑两个 OpenAI 模型，<code class="post-code--single">gpt-5.6-luna</code> 写代码，<code class="post-code--single">gpt-5.6-sol</code> 审代码。再早一些，9 月份的 run 还走过 z.ai 和 Gemini。这几个模型和别的 agent 程序在同样任务上的对比，见 <a href="/zh/blog/searching-for-orbis-harness/">harness 测评</a>。</p>
-<p>第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 <code class="post-code--spaced">pi --print</code> 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash。测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，所以合并的 PR 不在那 373 个里。这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 <code class="post-code--single">--skill</code> 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现，9 月 29 日修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 <code class="post-code--single">pi</code>，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。它们都跑在我机器上，不在 Cloud 的用量记录里。</p>
+<p>第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 <code class="post-code--spaced">pi --print</code> 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash。测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，所以合并的 PR 不在那 373 个里。</p>
+<p>这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 <code class="post-code--single">--skill</code> 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现，9 月 29 日修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 <code class="post-code--single">pi</code>，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。它们都跑在我机器上，不在 Cloud 的用量记录里。</p>
 <h2 id="pi-留给用户的那一层-orbi-放在哪">Pi 留给用户的那一层，Orbi 放在哪</h2>
 <p>Pi 首页（2026 年 10 月 5 日看的）列了五样核心里不做的东西：子 agent、权限弹窗、plan 模式、待办、后台 bash。MCP 原本也在这张单子上，现在已经内置了。每一样 Pi 都给了自己补的办法：扩展、第三方包、容器、写文件或 tmux。这五样 Orbi 一样都没往 Pi 里加，其中三样有近似的做法。</p>
 <figure class="post-media">
@@ -384,7 +388,8 @@
 <p>闸门不在 Pi 里，Orbi 才能让每个实现和评审会话都带 <code class="post-code--single">--no-extensions</code> 启动，又不会把闸门一起关掉。这个参数为什么要紧，看下面第一个事故。</p>
 <p>将来要是换 agent，要动的只有命令行那一层，但上次丢 skill 的正是这一层。Claude Code 和 zcode 那两层桥，走的也是跟 Pi 同一套 worktree、评审和合并闸门。</p>
 <h2 id="两次事故">两次事故</h2>
-<p>第一次是扩展惹的祸。9 月 4 日晚上，run 开始卡住，卡在 Pi 发出第一个模型请求之前，z.ai 上有，Gemini 上也有。每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 <code class="post-code--single">ai-blocked</code>。卡住的 <code class="post-code--single">pi</code> 进程活着，但几乎不动，两分半钟只用了 2 秒 CPU；没有任何连到模型 API 的 TCP 连接，唯一的 socket 连着当前用户的 D-Bus；会话目录是空的，Pi 连会话文件都还没建。同样的配置在 shell 里手动跑，连续 20 多次都正常。systemd 用户服务拉起来的 run 不是每个都卡，但卡住的都是它拉起来的。在 Linux 上碰到类似症状，可以把下面这段存成 <code class="post-code--single">pi-hang.sh</code>，用运行 pi 的那个用户执行，传入 pi 进程的 pid 和任务 worktree 来确认。在 Cloud 上，pi 进程是 Orbi 日志里 <code class="post-code--single">process_spawned</code> 那一行所记 pid 的子进程。</p>
+<p>第一次是扩展惹的祸。9 月 4 日晚上，run 开始卡住，卡在 Pi 发出第一个模型请求之前，z.ai 上有，Gemini 上也有。每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 <code class="post-code--single">ai-blocked</code>。卡住的 <code class="post-code--single">pi</code> 进程活着，但几乎不动，两分半钟只用了 2 秒 CPU；没有任何连到模型 API 的 TCP 连接，唯一的 socket 连着当前用户的 D-Bus；会话目录是空的，Pi 连会话文件都还没建。</p>
+<p>同样的配置在 shell 里手动跑，连续 20 多次都正常。systemd 用户服务拉起来的 run 不是每个都卡，但卡住的都是它拉起来的。在 Linux 上碰到类似症状，可以把下面这段存成 <code class="post-code--single">pi-hang.sh</code>，用运行 pi 的那个用户执行，传入 pi 进程的 pid 和任务 worktree 来确认。在 Cloud 上，pi 进程是 Orbi 日志里 <code class="post-code--single">process_spawned</code> 那一行所记 pid 的子进程。</p>
 <pre><code class="language-bash"># 用法：bash pi-hang.sh &lt;pi 进程的 pid&gt; &lt;任务 worktree&gt;
 PID=$1 WT=$2
 [ &quot;$(ps -o comm= -p &quot;$PID&quot; 2&gt;/dev/null)&quot; = pi ] || { echo &quot;$PID 不是正在运行的 pi 进程&quot;; exit 1; }

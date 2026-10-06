@@ -10,10 +10,26 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { renderLlms } from "../scripts/build-pages.mjs";
+import { handleFetch } from "../src/worker.js";
+import pricing from "../src/pricing.json";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const llms = await readFile(join(ROOT, "public", "llms.txt"), "utf8");
 const llmsFull = await readFile(join(ROOT, "public", "llms-full.txt"), "utf8");
+const guidesData = JSON.parse(await readFile(join(ROOT, "site", "data", "guides.json"), "utf8"));
+
+// The real serving path for the llms text assets (Issue #874 acceptance 3):
+// the Worker replaces the pricing tokens for text/plain exactly as it does
+// for text/html.
+function serveText(raw, path) {
+  return handleFetch(new Request("https://orbi.build" + path), {
+    CLOUD_LOGIN_URL: "https://beta.orbi.build/api/login",
+    ASSETS: {
+      fetch: () => Promise.resolve(new Response(raw, { headers: { "Content-Type": "text/plain; charset=utf-8" } })),
+    },
+  });
+}
 const matrixCsv = await readFile(join(ROOT, "public", "compare", "matrix.csv"), "utf8");
 const sitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
 const articleEn = await readFile(join(ROOT, "public", "blog", "watch-the-six-steps", "index.html"), "utf8");
@@ -61,7 +77,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       "",
       "Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
       "",
-      "Key numbers: Cloud has Free (3 merged deliveries), Solo (US$29/month or US$290/year, 400M tokens, 1 repository), and Pro (US$79/month or US$790/year, 1.2B tokens, 5 repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, limited to 6 places; about 96 large-codebase deliveries per Pro allowance; the 2026-09-12 n=46 snapshot averaged 4,742,066 tokens, about 253 deliveries per Pro's 1.2B.",
+      "Key numbers: Cloud has Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, failed deliveries don't count; founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged pull request (n=20, measured 2026-09-24) the median was $0.125 off-peak and $0.249 at peak; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
     ]);
   });
 
@@ -113,6 +129,7 @@ describe("llms.txt keeps the existing positioning sections (Issue #154 acceptanc
     expect(headings).toEqual([
       "Licence — state this accurately",
       "What it does today (shipping)",
+      "Guides",
       "Managed Cloud",
       "Connect a repository to Cloud",
       "What is not shipping yet",
@@ -137,12 +154,24 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
     expect(section).toContain("https://orbi.build/cloud/"); // step 1: sign-in entry
     expect(section).toContain("Start Cloud with GitHub");
     expect(section).toContain("Installed GitHub Apps"); // step 2: per-repo App scope
-    expect(section).toContain("/api/checkout"); // step 3: subscribe
-    expect(section).toContain("/api/connect"); // step 4: connect repo + base branch
-    expect(section).toContain("/api/model-config"); // step 5: provider + key
-    expect(section).toContain("`ai-ready`"); // step 6: dispatch label
+    expect(section).toContain("/api/connect"); // step 3: connect repo + base branch
+    expect(section).toContain("/api/model-config"); // step 4: provider + key
+    expect(section).toContain("`ai-ready`"); // step 5: dispatch label
+    expect(section).toContain("/api/checkout"); // step 6: subscribe (optional, after the trial)
     expect(section).toContain("50% off forever"); // Founding partner offer
-    expect(section).toContain("US$79");
+    // The trial comes first: connect the repository and dispatch a delivery
+    // before any checkout link appears (Issue #874).
+    expect(section.indexOf("/api/connect"), "connect before dispatch").toBeLessThan(section.indexOf("`ai-ready`"));
+    expect(section.indexOf("`ai-ready`"), "dispatch before subscribe").toBeLessThan(section.indexOf("/api/checkout"));
+  });
+
+  it("leads with the free trial, not a subscription (Issue #874)", () => {
+    expect(section).toContain("no credit card");
+    expect(section).toContain("no subscription");
+    expect(section).toContain("__FREE_DELIVERIES__");
+    // The checkout step is explicitly optional and comes after the trial.
+    expect(section).toContain("Subscribe — optional");
+    expect(section.indexOf("__FREE_DELIVERIES__"), "trial before checkout").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
   it("gives every step an explicit done-check (the issue's per-step completion bar)", () => {
@@ -178,5 +207,106 @@ describe("llms.txt failure diagnosis (Issue #154 acceptance 2)", () => {
   it("diagnoses a stuck provisioning state with its literal status text", () => {
     expect(section).toContain("「正在开通」");
     expect(section).toContain("「开通失败」");
+  });
+});
+
+// Issue #874: the Guides list is generated from site/data/guides.json by
+// renderLlms, exactly like the Blog list is generated from content/blog —
+// adding a guide never needs a second hand edit, and a source that loses the
+// marker fails the build instead of shipping a stale list.
+describe("llms.txt Guides section is generated (Issue #874)", () => {
+  it("lists every guide from guides.json, English and Chinese, with title and summary", async () => {
+    const source = await readFile(join(ROOT, "site", "llms.txt"), "utf8");
+    const out = renderLlms(source, [], guidesData.guides);
+    for (const guide of guidesData.guides) {
+      for (const lang of ["en", "zh"]) {
+        const copy = guide[lang];
+        const language = lang === "zh" ? "Chinese" : "English";
+        const href = "https://orbi.build" + (lang === "zh" ? "/zh" : "") + "/guides/" + guide.slug + "/";
+        expect(out, guide.slug + " " + lang + " title").toContain("- " + copy.title + " (" + language + "):");
+        expect(out, guide.slug + " " + lang + " url").toContain(href);
+        expect(out, guide.slug + " " + lang + " summary").toContain(copy.summary);
+      }
+    }
+  });
+
+  it("ships the generated list in public/llms.txt and no marker", () => {
+    const start = llms.indexOf("## Guides");
+    const end = llms.indexOf("## Managed Cloud");
+    expect(start, "Guides section missing").toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const section = llms.slice(start, end);
+    for (const guide of guidesData.guides) {
+      expect(section, guide.slug + " en").toContain("https://orbi.build/guides/" + guide.slug + "/");
+      expect(section, guide.slug + " zh").toContain("https://orbi.build/zh/guides/" + guide.slug + "/");
+      expect(section, guide.slug + " summary").toContain(guide.en.summary);
+    }
+    expect(llms).not.toContain("<!--@llms-guides-->");
+  });
+
+  it("keeps the hand-written prose in the source, with the marker and no hand-listed guides", async () => {
+    const source = await readFile(join(ROOT, "site", "llms.txt"), "utf8");
+    const section = source.slice(source.indexOf("## Guides"), source.indexOf("## Managed Cloud"));
+    expect(section, "site/llms.txt: guides index link missing").toContain("https://orbi.build/guides/");
+    expect(section, "site/llms.txt: zh guides index link missing").toContain("https://orbi.build/zh/guides/");
+    expect(section, "site/llms.txt: missing the <!--@llms-guides--> marker").toContain("<!--@llms-guides-->");
+    expect([...section.matchAll(/^- /gm)], "site/llms.txt must not hand-list guides").toEqual([]);
+  });
+
+  it("fails the build when the source lost the Guides marker", async () => {
+    const source = (await readFile(join(ROOT, "site", "llms.txt"), "utf8")).replace("<!--@llms-guides-->", "");
+    expect(() => renderLlms(source, [], guidesData.guides))
+      .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-guides-->/);
+  });
+
+  it("does not repeat the guide links in the Links section", () => {
+    const links = llms.slice(llms.indexOf("## Links"));
+    expect(links).not.toContain("/guides/ci-gates/");
+    expect(links).not.toContain("/guides/auto-merge-ai-prs/");
+    expect(links).not.toContain("/guides/issue-to-release/");
+  });
+});
+
+// Issue #874: the pricing values an agent reads must be tokens in the source
+// (filled by the Worker) and concrete values in the served bytes.
+describe("llms pricing tokens (Issue #874)", () => {
+  it("carries the pricing tokens in the Managed Cloud section of public/llms.txt", () => {
+    const section = llms.slice(llms.indexOf("## Managed Cloud"), llms.indexOf("## Connect a repository to Cloud"));
+    for (const token of [
+      pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
+      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
+      pricing.freeDeliveriesToken, pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
+    ]) expect(section, token).toContain(token);
+  });
+
+  it("carries the pricing tokens on llms-full.txt's key-numbers line", () => {
+    const line = llmsFull.split("\n")[4];
+    for (const token of [
+      pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
+      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.freeDeliveriesToken,
+      pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
+    ]) expect(line, token).toContain(token);
+  });
+
+  it("serves /llms.txt with the concrete pricing.json values, not the tokens", async () => {
+    const body = await (await serveText(llms, "/llms.txt")).text();
+    expect(body).toContain("US$" + pricing.soloMonthlyUsd + "/month");
+    expect(body).toContain("US$" + pricing.cloudMonthlyUsd + "/month");
+    expect(body).toContain("US$" + pricing.soloAnnualUsd + "/year");
+    expect(body).toContain("US$" + pricing.proAnnualUsd + "/year");
+    expect(body).toContain(pricing.soloIncludedTokensLabel + " tokens");
+    expect(body).toContain(pricing.includedTokensLabel + " tokens");
+    expect(body).toContain(pricing.foundingPartnerRemaining + " of " + pricing.foundingPartnerLimit);
+    expect(body).not.toMatch(/__[A-Z_]+__/);
+  });
+
+  it("serves /llms-full.txt with the concrete pricing.json values too", async () => {
+    const body = await (await serveText(llmsFull, "/llms-full.txt")).text();
+    const line = body.split("\n")[4];
+    expect(line).toContain("US$" + pricing.soloMonthlyUsd + "/month");
+    expect(line).toContain("US$" + pricing.cloudMonthlyUsd + "/month");
+    expect(line).toContain(pricing.soloIncludedTokensLabel + " tokens");
+    expect(line).toContain(pricing.includedTokensLabel + " tokens");
+    expect(line).not.toMatch(/__[A-Z_]+__/);
   });
 });

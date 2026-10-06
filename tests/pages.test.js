@@ -149,13 +149,13 @@ describe("homepage section order (Issue #712)", () => {
 describe("homepage hero proof bar (Issue #710)", () => {
   const expected = {
     "index.html": [
-      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>PRs merged by Orbi on its own repo</span>',
-      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>releases shipped</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="600">0</strong><span>PRs merged by Orbi on its own repo</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="80">0</strong><span>releases shipped</span>',
       '<strong>Open source</strong><span>AGPL-3.0, self-host free</span>',
     ],
     "zh/index.html": [
-      '<strong data-repo="orbi" data-stat="prs" data-floor="150">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
-      '<strong data-repo="orbi" data-stat="releases" data-floor="8">0</strong><span>个版本已发布</span>',
+      '<strong data-repo="orbi" data-stat="prs" data-floor="600">0</strong><span>Orbi 在自己仓库合并的 PR</span>',
+      '<strong data-repo="orbi" data-stat="releases" data-floor="80">0</strong><span>个版本已发布</span>',
       '<strong>开源</strong><span>AGPL-3.0，自托管免费</span>',
     ],
   };
@@ -203,6 +203,8 @@ const COMPARISON_SLUGS = [
 
 const jsonLdObjects = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
   .map((match) => JSON.parse(match[1]));
+
+const articleOf = (html) => jsonLdObjects(html).find((entry) => entry["@type"] === "Article");
 
 const jsonLdNodes = (value) => {
   if (Array.isArray(value)) return value.flatMap(jsonLdNodes);
@@ -316,9 +318,16 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       articleOutputs.push(...GUIDE_SLUGS.map((slug) => `${prefix}guides/${slug}/index.html`));
       articleOutputs.push(...COMPARISON_SLUGS.map((slug) => `${prefix}compare/${slug}/index.html`));
     }
+    // The content-template guides carry the hero inside .guide-grid beside the
+    // body column (Issue #860); every other article page keeps the hero as the
+    // .compare-hero band.
+    const templateGuideOutputs = new Set(guides.map((guide) => guide.output));
     for (const output of articleOutputs) {
       const html = shipped.get(output);
-      expect(html, `${output}: breadcrumb in hero`).toMatch(/<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<section class="compare-hero shell"/);
+      const heroMarkup = templateGuideOutputs.has(output)
+        ? /<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<div class="guide-grid">\s*<section class="guide-hero"/
+        : /<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<section class="compare-hero shell"/;
+      expect(html, `${output}: breadcrumb in hero`).toMatch(heroMarkup);
       expect(html, `${output}: breadcrumb not main child`).not.toMatch(/<main id="main-content"><nav class="breadcrumbs/);
       expect(html, `${output}: separator spacing`).toContain('> › <');
     }
@@ -532,6 +541,138 @@ describe("comparison capability matrix (Issue #201)", () => {
 
   it("lists the CSV asset in the sitemap", () => {
     expect(shippedSitemap).toContain("https://orbi.build/compare/matrix.csv");
+  });
+});
+
+
+// Issue #870: /compare/codex/ targets the "codex alternatives" query. The EN
+// page carries the term in its title and h1 (keeping the Orbi-vs comparison
+// intent), gains a #codex-alternatives section that links the six existing
+// comparison pages, and dates every newly cited source; the /compare/ overview
+// points its Codex row at that section. The Issue scopes this to English pages,
+// so the ZH mirror is deliberately untouched.
+describe("Codex alternatives (Issue #870)", () => {
+  const alternatives = [
+    "/compare/claude-code/",
+    "/compare/jules/",
+    "/compare/github-copilot-coding-agent/",
+    "/compare/openhands/",
+    "/compare/devin/",
+    "/compare/cursor/",
+  ];
+  const newSources = [
+    "https://code.claude.com/docs/en/github-actions",
+    "https://jules.google/docs/running-tasks/",
+    "https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent",
+    "https://github.com/All-Hands-AI/OpenHands",
+    "https://docs.openhands.dev/openhands/usage",
+    "https://docs.devin.ai/get-started/devin-intro",
+    "https://cursor.com/docs/cloud-agent",
+  ];
+
+  it("carries 'Codex alternatives' in the title and h1 without losing the comparison", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+    expect(title, "title must carry the search term").toContain("Codex alternatives");
+    expect(title, "title must keep the comparison intent").toContain("Orbi vs");
+    expect(h1, "h1 must carry the search term").toContain("Codex alternatives");
+    expect(h1, "h1 must keep the comparison intent").toContain("Orbi vs");
+  });
+
+  it("anchors the alternatives section and links the six comparison pages", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const start = html.indexOf('id="codex-alternatives"');
+    expect(start, "missing the #codex-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = html.slice(start, html.indexOf("</section>", start));
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of alternatives) {
+      expect(hrefs, `${href} must be linked from the alternatives section`).toContain(href);
+    }
+  });
+
+  it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
+    const html = shipped.get("compare/codex/index.html");
+    const list = html.match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, `${href} must appear in Sources and verification dates`).toBeTruthy();
+      expect(item, `${href}: source must carry a verification date`).toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("points the /compare/ Codex row at the alternatives section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/codex/#codex-alternatives">Codex alternatives</a>',
+    );
+  });
+});
+
+// Issue #869: /compare/claude-code/ targets the "claude code alternatives"
+// query while keeping the Orbi-vs-Claude-Code comparison. The EN page carries
+// both phrases in its title, gains a #claude-code-alternatives section that
+// names the seven terminal/IDE agents (Pi links its guide) and links the three
+// Orbi-wraps-Claude-Code comparisons, dates every newly cited source, and the
+// /compare/ overview points its Claude Code row at that section. The Issue
+// scopes this to English pages, so the ZH mirror is deliberately untouched.
+describe("Claude Code alternatives (Issue #869)", () => {
+  const tools = ["Codex CLI", "Cursor", "Aider", "Cline", "OpenCode", "Gemini CLI", "Pi"];
+  const sectionLinks = [
+    "/guides/pi-coding-agent/",
+    "/compare/codex/",
+    "/compare/openhands/",
+    "/compare/github-copilot-coding-agent/",
+  ];
+  const newSources = [
+    "https://developers.openai.com/codex/cli/",
+    "https://cursor.com/docs/agent/overview",
+    "https://aider.chat/docs/",
+    "https://docs.cline.bot/cline-overview",
+    "https://opencode.ai/docs/",
+    "https://github.com/google-gemini/gemini-cli",
+    "https://pi.dev/",
+  ];
+
+  it("carries 'Claude Code alternatives' in the title without losing the comparison", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    expect(title, "title must carry the search term").toContain("Claude Code alternatives");
+    expect(title, "title must keep the comparison intent").toContain("Orbi vs Claude Code");
+  });
+
+  it("anchors the alternatives section, names the seven tools and links the four targets", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const start = html.indexOf('id="claude-code-alternatives"');
+    expect(start, "missing the #claude-code-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = html.slice(start, html.indexOf("</section>", start));
+    for (const tool of tools) {
+      expect(section, `${tool} must be named in the alternatives section`).toContain(`>${tool}</strong>`);
+    }
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of sectionLinks) {
+      expect(hrefs, `${href} must be linked from the alternatives section`).toContain(href);
+    }
+    expect(section, "the section must say Orbi is open source").toMatch(/open source/i);
+  });
+
+  it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const list = html.match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, `${href} must appear in Sources and verification dates`).toBeTruthy();
+      expect(item, `${href}: source must carry a verification date`).toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("points the /compare/ Claude Code row at the alternatives section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/claude-code/#claude-code-alternatives">Claude Code alternatives</a>',
+    );
   });
 });
 
@@ -1999,6 +2140,34 @@ describe("blog (Issue #212)", () => {
     }
   });
 
+  // Issue #863: the post template used to hard-code the site default
+  // og.png on top of the per-post card renderPostMeta() derives from front
+  // matter, so every post page shipped two og:image tags and a crawler could
+  // pick the generic one. The per-post card must be the only one.
+  it("ships exactly one og:image per post page, taken from that post's front matter (Issue #863)", async () => {
+    const expected = new Map(posts.map((post) => [post.output, `https://orbi.build${post.image}`]));
+    expect(expected.size, "the blog must ship at least one post").toBeGreaterThan(0);
+
+    // The gate reads the shipped public/ tree, so a post directory that the
+    // content list does not know about cannot hide a duplicate here.
+    const outputs = [];
+    for (const dir of ["blog", "zh/blog"]) {
+      const entries = await readdir(join(ROOT, "public", dir), { withFileTypes: true });
+      const slugs = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+      expect(slugs.length, `public/${dir}`).toBeGreaterThan(0);
+      outputs.push(...slugs.map((slug) => `${dir}/${slug}/index.html`));
+    }
+    expect(outputs.sort(), "every post directory must come from content/blog/**").toEqual([...expected.keys()].sort());
+
+    for (const output of outputs) {
+      const html = shipped.get(output);
+      const tags = [...html.matchAll(/<meta\s+property=["']og:image["'][^>]*>/gi)].map((match) => match[0]);
+      expect(tags, `${output}: og:image count`).toHaveLength(1);
+      expect(tags[0], `${output}: og:image must be this post's card`)
+        .toContain(`content="${expected.get(output)}"`);
+    }
+  });
+
   it("renders one compact localized CTA after the second paragraph on posts with three paragraphs", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
@@ -2200,15 +2369,28 @@ describe("llms.txt Blog section is generated (Issue #215)", () => {
     }
   });
 
-  it("replaces only the marker: the prose around it survives byte-for-byte", () => {
-    const source = "## Blog\n\nIntro prose.\n\n<!--@llms-blog-->\n\n## Links\n";
-    const out = renderLlms(source, [{ lang: "en", title: "Fixture", href: "/blog/fixture/" }]);
-    expect(out).toBe("## Blog\n\nIntro prose.\n\n- Fixture (English):\n  https://orbi.build/blog/fixture/\n\n## Links\n");
+  it("replaces each marker: the prose around them survives byte-for-byte", () => {
+    const source = "## Blog\n\nIntro prose.\n\n<!--@llms-blog-->\n\n## Guides\n\n<!--@llms-guides-->\n\n## Links\n";
+    const out = renderLlms(
+      source,
+      [{ lang: "en", title: "Fixture", href: "/blog/fixture/" }],
+      [{ slug: "fixture-guide", en: { title: "Guide", summary: "Summary." }, zh: { title: "指南", summary: "摘要。" } }],
+    );
+    expect(out).toBe(
+      "## Blog\n\nIntro prose.\n\n- Fixture (English):\n  https://orbi.build/blog/fixture/\n\n## Guides\n\n"
+      + "- Guide (English):\n  https://orbi.build/guides/fixture-guide/\n  Summary.\n"
+      + "- 指南 (Chinese):\n  https://orbi.build/zh/guides/fixture-guide/\n  摘要。\n\n## Links\n",
+    );
   });
 
   it("fails the build when the source lost the Blog marker", () => {
     expect(() => renderLlms("## Blog\n\nno marker here\n", []))
       .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-blog-->/);
+  });
+
+  it("fails the build when the source lost the Guides marker", () => {
+    expect(() => renderLlms("## Blog\n\n<!--@llms-blog-->\n\n## Guides\n\nno marker here\n", []))
+      .toThrow(/site\/llms\.txt[\s\S]*<!--@llms-guides-->/);
   });
 });
 
@@ -2393,12 +2575,60 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(post.output);
       expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
       expect(html).toContain(`\"@type\":\"Article\"`);
-      expect(html).toContain(`\"author\":{\"@type\":\"Organization\",\"name\":\"Orbi\"}`);
+      expect(articleOf(html).author, post.output).toEqual(
+        post.author === "Orbi"
+          ? { "@type": "Organization", name: "Orbi" }
+          : { "@type": "Person", name: post.author },
+      );
       expect(html).toContain(`https://orbi.build${post.image}`);
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
     expect(watch).toContain('"@type":"VideoObject"');
     expectUniquePostImages(posts);
+  });
+
+  // Issue #862: the Article author must name the real author — the first-person
+  // posts are written by a person, the rest by Orbi — and every post carries a
+  // publisher and mainEntityOfPage so search and AI answers can attribute it.
+  it("names first-person posts' author as a Person with publisher and mainEntityOfPage (Issue #862)", () => {
+    const firstPerson = [
+      ["blog/pi-agent-harness/index.html", "https://orbi.build/blog/pi-agent-harness/"],
+      ["zh/blog/pi-agent-harness/index.html", "https://orbi.build/zh/blog/pi-agent-harness/"],
+      ["blog/orbi-on-pi-coding-agent/index.html", "https://orbi.build/blog/orbi-on-pi-coding-agent/"],
+      ["zh/blog/orbi-on-pi-coding-agent/index.html", "https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"],
+      ["blog/run-claude-code-unattended/index.html", "https://orbi.build/blog/run-claude-code-unattended/"],
+      ["zh/blog/run-claude-code-unattended/index.html", "https://orbi.build/zh/blog/run-claude-code-unattended/"],
+    ];
+    for (const [output, canonical] of firstPerson) {
+      const html = shipped.get(output);
+      expect(html, `${output}: missing output`).toBeTruthy();
+      const article = articleOf(html);
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.publisher, output).toEqual({
+        "@type": "Organization",
+        name: "Orbi",
+        url: "https://orbi.build/",
+        logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+      });
+      expect(html, output).toContain(`<link rel="canonical" href="${canonical}">`);
+      expect(article.mainEntityOfPage, output).toBe(canonical);
+    }
+  });
+
+  it("keeps the Organization author for Orbi posts, with the same publisher (Issue #862)", () => {
+    const orgPosts = posts.filter((post) => post.author === "Orbi");
+    expect(orgPosts.length, "the corpus must still contain organization posts").toBeGreaterThan(0);
+    for (const post of orgPosts) {
+      const article = articleOf(shipped.get(post.output));
+      expect(article.author, post.output).toEqual({ "@type": "Organization", name: "Orbi" });
+      expect(article.publisher, post.output).toEqual({
+        "@type": "Organization",
+        name: "Orbi",
+        url: "https://orbi.build/",
+        logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+      });
+      expect(article.mainEntityOfPage, post.output).toBe(`https://orbi.build${post.href}`);
+    }
   });
 
   it("rejects shared images between articles but permits an EN/ZH mirror pair", () => {

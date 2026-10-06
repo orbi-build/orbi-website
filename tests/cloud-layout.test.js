@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import pricing from "../src/pricing.json";
 
 const pricingReplacements = {
@@ -78,12 +79,13 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 describe("Cloud onboarding cards fit every supported width (Issue #354)", () => {
   for (const [name, path] of pages) {
     it(`${name} has no page or footer overflow and keeps readable card rows`, async () => {
-      const page = await browser.newPage();
+      const page = await guardedPage(browser, baseUrl);
       try {
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
         await page.evaluate((replacements) => {
@@ -132,7 +134,7 @@ describe("Cloud onboarding cards fit every supported width (Issue #354)", () => 
 describe("Cloud pricing hierarchy (Issue #667)", () => {
   for (const [name, path] of pages) {
     it(`${name} attaches savings to Yearly and keeps paid prices prominent`, async () => {
-      const page = await browser.newPage();
+      const page = await guardedPage(browser, baseUrl);
       try {
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
         await page.evaluate((replacements) => {

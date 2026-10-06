@@ -3,7 +3,7 @@ title: Run Claude Code unattended: headless mode is step one
 date: 2026-10-01
 summary: Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-headless-card.png
 mirror: run-claude-code-unattended
 ---
@@ -90,7 +90,9 @@ Orbi claimed it a minute after I filed it, opened [PR #1505](https://github.com/
 
 ![The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged](/img/headless-1504-merged.webp)
 
-If your loop ends in `gh pr merge`, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn't stop the lines after it. The `:` line refuses to run without the Issue, the PR and the SHA your review approved; the `labels=` line exits if the labels can't be read, so a failed lookup never turns into a merge, the `grep` line exits non-zero when the Issue is blocked so your loop doesn't count it as a success, and `--match-head-commit` makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, `gh pr merge` enables auto-merge when checks haven't passed and queues the PR when they have, and a blocking label added after that isn't checked by this script:
+If your loop ends in `gh pr merge`, it has the same hole. A few lines in front of it close it for an immediate merge. Save them as a bash script and run that; pasted into an interactive terminal, a missing SHA doesn't stop the lines after it.
+
+The `:` line refuses to run without the Issue, the PR and the SHA your review approved; the `labels=` line exits if the labels can't be read, so a failed lookup never turns into a merge, the `grep` line exits non-zero when the Issue is blocked so your loop doesn't count it as a success, and `--match-head-commit` makes sure the commit you merge is the one that was reviewed. If the branch requires a merge queue, `gh pr merge` enables auto-merge when checks haven't passed and queues the PR when they have, and a blocking label added after that isn't checked by this script:
 
 ```bash
 #!/usr/bin/env bash
