@@ -316,9 +316,16 @@ describe("guide collection, breadcrumbs and related content (Issue #625)", () =>
       articleOutputs.push(...GUIDE_SLUGS.map((slug) => `${prefix}guides/${slug}/index.html`));
       articleOutputs.push(...COMPARISON_SLUGS.map((slug) => `${prefix}compare/${slug}/index.html`));
     }
+    // The content-template guides carry the hero inside .guide-grid beside the
+    // body column (Issue #860); every other article page keeps the hero as the
+    // .compare-hero band.
+    const templateGuideOutputs = new Set(guides.map((guide) => guide.output));
     for (const output of articleOutputs) {
       const html = shipped.get(output);
-      expect(html, `${output}: breadcrumb in hero`).toMatch(/<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<section class="compare-hero shell"/);
+      const heroMarkup = templateGuideOutputs.has(output)
+        ? /<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<div class="guide-grid">\s*<section class="guide-hero"/
+        : /<div class="night">\s*<nav class="breadcrumbs compare-hero shell"[\s\S]*?<\/nav>\s*<section class="compare-hero shell"/;
+      expect(html, `${output}: breadcrumb in hero`).toMatch(heroMarkup);
       expect(html, `${output}: breadcrumb not main child`).not.toMatch(/<main id="main-content"><nav class="breadcrumbs/);
       expect(html, `${output}: separator spacing`).toContain('> › <');
     }
