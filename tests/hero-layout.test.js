@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -67,6 +68,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 function heroMetrics(page) {
@@ -105,7 +107,7 @@ function heroMetrics(page) {
 
 describe("shared hero layout (Issue #355)", () => {
   it("meets the nine-page heading geometry contract at every acceptance viewport", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of pages) {
         const fontSizes = [];
@@ -151,7 +153,7 @@ describe("shared hero layout (Issue #355)", () => {
   }, 60_000);
 
   it("stacks the secondary self-host link below the closing CTA", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of ["/", "/zh/"]) {
         for (const width of [390, 1440]) {
@@ -173,7 +175,7 @@ describe("shared hero layout (Issue #355)", () => {
   });
 
   it("keeps conservative proof values when live stats are unavailable", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of ["/", "/zh/"]) {
         await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
@@ -211,7 +213,7 @@ const articleViewports = [390, 1280, 1440, 1920, 2560];
 
 describe("article hero alignment (Issue #860)", () => {
   it("puts the h1 and lede on the body text edges at every acceptance viewport", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of articlePages) {
         for (const width of articleViewports) {

@@ -1696,10 +1696,11 @@ export async function assertHomeCloudFlow(
   size,
   screenshot,
   selector = "[data-primary-nav] .nav-apply",
-  { flowTargetURL = targetURL, requestGet } = {},
+  { flowTargetURL = targetURL, requestGet, onContext } = {},
 ) {
   const context = await browser.newContext({ viewport: size });
   try {
+    await onContext?.(context);
     const page = await context.newPage();
     await page.goto(`${flowTargetURL}${path}`, { waitUntil: "load" });
     const entry = page.locator(selector);

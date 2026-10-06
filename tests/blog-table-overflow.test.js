@@ -4,6 +4,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { tmpdir } from "node:os";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 import { buildPages } from "../scripts/build-pages.mjs";
 
 const existingRoutes = [
@@ -75,10 +76,11 @@ afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
   if (fixtureRoot) await rm(join(fixtureRoot, ".."), { recursive: true, force: true });
+  assertNoExternalRequests();
 });
 
 async function overflowAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => {
@@ -98,7 +100,7 @@ async function overflowAt(route, width) {
 }
 
 async function inlineCodeLayoutAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => ({
@@ -115,7 +117,7 @@ async function inlineCodeLayoutAt(route, width) {
 }
 
 async function blogLayoutAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.evaluate(() => ({
@@ -139,7 +141,7 @@ async function blogLayoutAt(route, width) {
 }
 
 async function constrainedHeadingAt(route, selector, ch) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.locator(selector).first().evaluate((heading, expectedCh) => {
@@ -161,7 +163,7 @@ async function constrainedHeadingAt(route, selector, ch) {
 }
 
 async function postCtaAt(route, width) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
+  const page = await guardedPage(browser, origin, { viewport: { width, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.locator(".post-cta").evaluate((cta) => {

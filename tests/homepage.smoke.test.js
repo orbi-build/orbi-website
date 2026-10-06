@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { chromium } from "@playwright/test";
@@ -11,6 +11,7 @@ import {
   statsMatchServedStats,
   isDisposedRequestContextError,
 } from "./homepage.smoke.mjs";
+import { assertNoExternalRequests, guardBrowserRequests } from "./browser-network.mjs";
 
 const port = 4173;
 const processes = [];
@@ -83,6 +84,10 @@ afterEach(() => {
   for (const child of processes.splice(0)) {
     if (child.exitCode === null) child.kill("SIGKILL");
   }
+});
+
+afterAll(() => {
+  assertNoExternalRequests();
 });
 
 describe("disposed request context classification (Issue #324)", () => {
@@ -295,6 +300,10 @@ describe("homepage cloud-start landing contract (Issue #720)", () => {
           selector,
           {
             flowTargetURL: base,
+            // The stub page carries no third-party subresources; guarding its
+            // context keeps this file on the same contract as the layout suites
+            // (Issue #871).
+            onContext: (context) => guardBrowserRequests(context, base),
             requestGet: async (url) => {
               requestGetCalls += 1;
               let next = url;

@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { assertNoExternalRequests, guardedPage } from "./browser-network.mjs";
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -44,6 +45,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   await new Promise((resolve) => server?.close(resolve));
+  assertNoExternalRequests();
 });
 
 function headingMetrics(page) {
@@ -70,7 +72,7 @@ function headingMetrics(page) {
 
 describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
   it("keeps section heading sizes unchanged when the homepage hero is enlarged", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const language of ["", "zh/"]) {
         await page.goto(`${baseUrl}/${language}`, { waitUntil: "load", timeout: 25_000 });
@@ -96,7 +98,7 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
   }, 30_000);
 
   it("keeps distinct heading line boxes at every supported width in English and Chinese", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       for (const language of ["", "zh/"]) {
         await page.goto(`${baseUrl}/${language}`, { waitUntil: "load", timeout: 25_000 });
@@ -116,7 +118,7 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
   }, 30_000);
 
   it("keeps the English heading to at most two lines at 390px", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       await page.goto(baseUrl, { waitUntil: "load", timeout: 25_000 });
       await page.setViewportSize({ width: 390, height: 900 });
@@ -127,7 +129,7 @@ describe("Homepage heading keeps readable line boxes (Issue #366)", () => {
   }, 30_000);
 
   it("keeps the Chinese heading to at most two lines at 761px and 1440px", async () => {
-    const page = await browser.newPage();
+    const page = await guardedPage(browser, baseUrl);
     try {
       await page.goto(`${baseUrl}/zh/`, { waitUntil: "load", timeout: 25_000 });
       for (const width of [761, 1440]) {
