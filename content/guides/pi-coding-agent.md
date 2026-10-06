@@ -1,12 +1,20 @@
 ---
 title: How Orbi is built on the Pi coding agent
-summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. How the runner around Pi works.
+summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.
 lang: en
 mirror: pi-coding-agent
-updated: 2026-10-05
+updated: 2026-10-06
 ---
 
 Orbi is an open-source runner that takes a GitHub issue labelled `ai-ready`, delivers it as a reviewed and merged pull request, and, when you open a release issue, ships the merged work in a tagged release. It runs on your machine, or hosted as Orbi Cloud. All of the coding inside it is done by the [Pi coding agent](https://pi.dev), which Pi's own site calls "a minimal agent harness". Pi is MIT-licensed and made by Earendil ([earendil-works/pi](https://github.com/earendil-works/pi)); Orbi is not part of the Pi project. Orbi Cloud runners currently run Pi 1.0.0.
+
+## The series
+
+If you are new here, start with [Pi + DeepSeek Flash, 169 merged PRs](/blog/orbi-on-pi-coding-agent/) from 5 October.
+
+<!--@series:pi-->
+
+The title of the 169-PR post is about cost, but it also follows one real issue through every Pi session Orbi started for it, and covers why we stay on Pi and the two incidents that shaped how we run it. The rest of this page is the reference for the same machinery. The 6 October post puts three ways of running Pi through the same kill -9 test: `pi --print`, Pi through the adapter for Vercel's AI SDK, and Pi Durable run on Cloudflare through the Agents SDK's `PiHarness`. The two "Searching for Orbi's harness" posts are earlier benchmarks. There the harness means the prompts and review rules Orbi wraps around the model, not an agent tool like Pi; the posts cover how we changed those rules and compared models, and their data is not part of the production numbers below.
 
 ## Words used on this page
 
@@ -20,11 +28,11 @@ Orbi is an open-source runner that takes a GitHub issue labelled `ai-ready`, del
 
 Orbi Cloud counts the Pi sessions behind every delivery it runs. Between 21 September and 5 October 2026, 170 deliveries have such a count and match a merged pull request: 141 in Orbi's own repositories (`orbi`, `orbi-cloud` and `orbi-website`), 11 in our forks of open-source projects and our test repositories, and 18 in 8 repositories of outside Orbi Cloud users. Merges from before then, and those made by our self-hosted runner before Orbi's own repositories moved to Orbi Cloud, are not in these numbers.
 
-For these 170 deliveries: the model recorded in their Pi session files is DeepSeek's `deepseek-flash` for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it. In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts. Pricing those tokens at DeepSeek's off-peak list price, the lowest of its published rates, the median delivery cost about 8 cents in model usage, so treat that as a floor; the breakdown is in [the first post of this series](/blog/orbi-on-pi-coding-agent/). (Figures as of 5 October 2026. The numbers on this page are refreshed with each new post in the Pi series listed at the bottom.)
+For these 170 deliveries: the model recorded in their Pi session files is DeepSeek's `deepseek-flash` for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it (the reviewer may fix problems itself before passing; see review rounds below). In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts: these are the 169 PRs in [Pi + DeepSeek Flash, 169 merged PRs](/blog/orbi-on-pi-coding-agent/). Counting recorded token usage only, at DeepSeek's off-peak list price, the median delivery cost about 8 cents in model usage. Peak-hour prices are double, so at peak prices throughout it would be about 16 cents, and the recorded usage cost somewhere between the two. Seven of the 169 had an earlier attempt; four of those attempts left no token record, so they are not counted, and counting them could only raise the cost. The breakdown is in that post. (Figures as of 5 October 2026.)
 
 ## Why Orbi stays on the Pi coding agent
 
-Pi lets Orbi bring its own model through a `models.json` of providers, and everything Orbi hands a session (system prompt, skills, provider and model, the tools switch, the session directory) has a native Pi flag, so no bridge sits in between. Orbi's runner speaks Pi's flags, so when we tried two other coding-agent CLIs, Claude Code among them, we wrote a small adapter for each to translate those flags. Both adapters silently dropped the skills, and we only noticed later. The longer answer is in [the first post of this series](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi).
+Pi lets Orbi bring its own model through a `models.json` of providers, and everything Orbi hands a session (system prompt, skills, provider and model, the tools switch, the session directory) has a native Pi flag, so no bridge sits in between. Orbi's runner speaks Pi's flags, so when we tried two other coding-agent CLIs, Claude Code and zcode, we wrote a small adapter for each to translate those flags. Both of our adapters lost the `--skill` list while translating, so those sessions ran without Orbi's skills, and we only noticed later. The bug was in the adapters, not in those tools, and with Pi there is no adapter to get wrong. The longer answer is in the 169-PR post, under [why we stay on Pi](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi).
 
 ## How Orbi starts the Pi coding agent
 
@@ -143,11 +151,7 @@ Without `pi_providers`, Pi uses that user's `~/.pi/agent` directly, and neither 
 
 ## Where these rules came from
 
-`--no-extensions` on this page came out of an incident: an extension from a user-installed Pi package intermittently hung runs at startup. A second incident is why every Orbi runner we operate sets `pi_provider` and `pi_model` explicitly and gets checked with `orbi doctor`: one runner without them once fell back to a local model without any error. Both are written up, with the rest of our notes on running Pi unattended, in [the first post of this series](/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi).
-
-## The series
-
-<!--@series:pi-->
+`--no-extensions` on this page came out of an incident: an extension from a Pi package in the `~/.pi/agent` of the runner's OS user intermittently hung runs at startup. A second incident is why every Orbi runner we operate sets `pi_provider` and `pi_model` explicitly and gets checked with `orbi doctor`: one runner without them once fell back to a local model without any error. Both are written up in the 169-PR post, under [two incidents](/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi).
 
 ## Try it
 
@@ -155,4 +159,5 @@ Orbi is open source at [orbi-build/orbi](https://github.com/orbi-build/orbi): in
 
 ## Update log
 
+- 2026-10-06: Moved the series list to the top and added a pointer to where to start. The model cost is now given as an 8–16 cent range, counting recorded tokens only.
 - 2026-10-05: First version. Pi version on Orbi Cloud runners: 1.0.0.
