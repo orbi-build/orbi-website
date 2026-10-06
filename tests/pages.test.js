@@ -610,6 +610,72 @@ describe("Codex alternatives (Issue #870)", () => {
   });
 });
 
+// Issue #869: /compare/claude-code/ targets the "claude code alternatives"
+// query while keeping the Orbi-vs-Claude-Code comparison. The EN page carries
+// both phrases in its title, gains a #claude-code-alternatives section that
+// names the seven terminal/IDE agents (Pi links its guide) and links the three
+// Orbi-wraps-Claude-Code comparisons, dates every newly cited source, and the
+// /compare/ overview points its Claude Code row at that section. The Issue
+// scopes this to English pages, so the ZH mirror is deliberately untouched.
+describe("Claude Code alternatives (Issue #869)", () => {
+  const tools = ["Codex CLI", "Cursor", "Aider", "Cline", "OpenCode", "Gemini CLI", "Pi"];
+  const sectionLinks = [
+    "/guides/pi-coding-agent/",
+    "/compare/codex/",
+    "/compare/openhands/",
+    "/compare/github-copilot-coding-agent/",
+  ];
+  const newSources = [
+    "https://developers.openai.com/codex/cli/",
+    "https://cursor.com/docs/agent/overview",
+    "https://aider.chat/docs/",
+    "https://docs.cline.bot/cline-overview",
+    "https://opencode.ai/docs/",
+    "https://github.com/google-gemini/gemini-cli",
+    "https://pi.dev/",
+  ];
+
+  it("carries 'Claude Code alternatives' in the title without losing the comparison", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    expect(title, "title must carry the search term").toContain("Claude Code alternatives");
+    expect(title, "title must keep the comparison intent").toContain("Orbi vs Claude Code");
+  });
+
+  it("anchors the alternatives section, names the seven tools and links the four targets", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const start = html.indexOf('id="claude-code-alternatives"');
+    expect(start, "missing the #claude-code-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = html.slice(start, html.indexOf("</section>", start));
+    for (const tool of tools) {
+      expect(section, `${tool} must be named in the alternatives section`).toContain(`>${tool}</strong>`);
+    }
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of sectionLinks) {
+      expect(hrefs, `${href} must be linked from the alternatives section`).toContain(href);
+    }
+    expect(section, "the section must say Orbi is open source").toMatch(/open source/i);
+  });
+
+  it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const list = html.match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, `${href} must appear in Sources and verification dates`).toBeTruthy();
+      expect(item, `${href}: source must carry a verification date`).toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("points the /compare/ Claude Code row at the alternatives section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/claude-code/#claude-code-alternatives">Claude Code alternatives</a>',
+    );
+  });
+});
+
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   it("keeps exactly one H1 on every sitemap HTML page", () => {
     const violations = [];
