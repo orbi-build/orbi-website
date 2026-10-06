@@ -200,9 +200,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on four third-party
-        // images loading (LaunchNest's has no height attribute), which ties CI
-        // to their servers; only the structure is asserted here.
+        // Whether the badges line up on one row depends on the four badge
+        // boxes: LaunchNest's image declares only width="240", so its height
+        // comes from the placeholder ratio the guard serves (Issue #871).
+        // Only the structure is asserted here.
         expect(result.badgeCount, path + ": the footer badges").toBe(4);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });

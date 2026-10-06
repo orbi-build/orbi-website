@@ -186,10 +186,10 @@ async function postCtaAt(route, width) {
 }
 
 describe("post registration CTA (Issue #732)", () => {
-  // Same 30s budget as the other browser tests (e8f46993, #838): page.goto
-  // alone may wait 25s, and the footer's third-party badges (Toolradar since
-  // #836) can hold the load event past vitest's 5s default. This `it` walks
-  // four routes, so that default timed it out on CI three times on 2026-10-05.
+  // Same 30s budget as the other browser tests (e8f46993, #838): this `it`
+  // walks four routes, so vitest's 5s default timed it out on CI three times
+  // on 2026-10-05. The third-party badges that used to decide that budget are
+  // answered locally by the guard in browser-network.mjs (Issue #871).
   it("preserves the homepage button treatment and readable night-surface link in both languages", async () => {
     for (const route of ["/blog/run-claude-code-unattended/", "/zh/blog/run-claude-code-unattended/"]) {
       const desktop = await postCtaAt(route, 1440);

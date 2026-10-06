@@ -40,9 +40,10 @@ describe("seven-step blog images (Issue #356)", () => {
   for (const route of routes) {
     for (const width of [390, 1440]) {
       for (const dpr of [1, 2]) {
-        // Same 30s budget as the other browser tests: page.goto alone may
-        // wait 25s, and the footer's third-party badges (Toolradar since
-        // #836) can hold the load event past vitest's 5s default.
+        // Same 30s budget as the other browser tests: each case walks a
+        // full page load, so vitest's 5s default is too tight. The
+        // third-party badges that used to decide that budget are answered
+        // locally by the guard in browser-network.mjs (Issue #871).
         it(`${route} serves every image without distortion at ${width}px and DPR ${dpr}`, async () => {
           const page = await guardedPage(browser, origin, { deviceScaleFactor: dpr, viewport: { width, height: 900 } });
           try {
