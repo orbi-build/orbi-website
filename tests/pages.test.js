@@ -1999,6 +1999,34 @@ describe("blog (Issue #212)", () => {
     }
   });
 
+  // Issue #863: the post template used to hard-code the site default
+  // og.png on top of the per-post card renderPostMeta() derives from front
+  // matter, so every post page shipped two og:image tags and a crawler could
+  // pick the generic one. The per-post card must be the only one.
+  it("ships exactly one og:image per post page, taken from that post's front matter (Issue #863)", async () => {
+    const expected = new Map(posts.map((post) => [post.output, `https://orbi.build${post.image}`]));
+    expect(expected.size, "the blog must ship at least one post").toBeGreaterThan(0);
+
+    // The gate reads the shipped public/ tree, so a post directory that the
+    // content list does not know about cannot hide a duplicate here.
+    const outputs = [];
+    for (const dir of ["blog", "zh/blog"]) {
+      const entries = await readdir(join(ROOT, "public", dir), { withFileTypes: true });
+      const slugs = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+      expect(slugs.length, `public/${dir}`).toBeGreaterThan(0);
+      outputs.push(...slugs.map((slug) => `${dir}/${slug}/index.html`));
+    }
+    expect(outputs.sort(), "every post directory must come from content/blog/**").toEqual([...expected.keys()].sort());
+
+    for (const output of outputs) {
+      const html = shipped.get(output);
+      const tags = [...html.matchAll(/<meta\s+property=["']og:image["'][^>]*>/gi)].map((match) => match[0]);
+      expect(tags, `${output}: og:image count`).toHaveLength(1);
+      expect(tags[0], `${output}: og:image must be this post's card`)
+        .toContain(`content="${expected.get(output)}"`);
+    }
+  });
+
   it("renders one compact localized CTA after the second paragraph on posts with three paragraphs", () => {
     for (const post of posts) {
       const html = shipped.get(post.output);
