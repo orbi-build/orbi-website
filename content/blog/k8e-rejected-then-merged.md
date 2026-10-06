@@ -12,7 +12,7 @@ mirror: k8e-rejected-then-merged
 
 At 10:28 (UTC+8) he added the `ai-ready` label. The times and numbers below come from the public PR, its reviews and the issue's label history, except the runner crash count, which comes from the runner's log.
 
-### The first version was rejected
+## The first version was rejected
 
 Orbi opened [PR #613](https://github.com/xiaods/k8e/pull/613) at 11:37 with phase one only: 10 new files, 2,483 lines. It had an operation history recorder, a recovery oracle, a SIGKILL test that kills a child process mid-write, a WAL corruption test and a quota test.
 
@@ -39,7 +39,7 @@ The review also said the PR body's `Fixes #612` would close a four-phase issue a
 
 None of the three was about style. Each meant the suite could report "recovered correctly" when the data had not recovered. A test suite that does that gives you confidence you haven't earned, which is worse than having no suite at all.
 
-### Orbi's own mistakes on the same PR
+## Orbi's own mistakes on the same PR
 
 Orbi's engine also reported three failures of its own, each in a PR comment:
 
@@ -49,7 +49,7 @@ Orbi's engine also reported three failures of its own, each in a PR comment:
 
 Orbi never cleared the third one, and the failure spread beyond the ticket: it crashed the whole runner process serving his repository, 84 times between 15:19 and 22:10 by the runner's own log, and his entire queue stalled. The public write-up, [orbi#1219](https://github.com/orbi-build/orbi/issues/1219), was filed partway through and counts 77. At 19:59 the maintainer commented on the issue, 继续修复吧 ("go ahead and keep fixing"). Nothing happened after that. The rule that every PR body must say `Fixes` works for a single-shot issue and is wrong for a phased one; the engine enforced it anyway, and the human reviewer was right.
 
-### The fix
+## The fix
 
 At 15:05 one commit, `f8e9dd9c`, addressed all three findings. An unknown CAS whose expected revision is older than the key's last acknowledged revision is now dropped. The child process only hosts the etcd member, while the parent runs the client and the recorder, so the recorder survives the kill. Every put and CAS payload is hashed, including the empty string.
 
@@ -57,17 +57,17 @@ New tests cover R1 and R3 in both directions. The PR body now reads "Part of #61
 
 At 22:12 the second review came back **APPROVED**. It traced each fix and set two conditions. The first was to run the race tests independently. The second was to drop a stale `Fixes #612` from Orbi's first commit message; the review called that one optional, because it believed only the PR body closes issues. It also listed the remaining gaps, which the design doc already disclosed. The maintainer merged it himself at 22:13, 38 seconds later, and the record doesn't show either condition being carried out first. CI on the merged head: 801 tests, 49 new, 0 failing.
 
-### The issue closed anyway
+## The issue closed anyway
 
 The review was wrong about that commit message. GitHub also closes an issue when a closing keyword in a merged commit message points at it. One second after the merge, #612 closed as *completed*, closed by Orbi's first commit, with one phase of four landed. The first review had warned about exactly this outcome, and it came through the one place nobody had fixed.
 
 That was Orbi's fourth mistake on this ticket, and the one with the biggest consequence. Our engine's rules require `Fixes #N` in the PR body, and the delivery agent also put it in its first commit message. Both reviews flagged the keyword, the first in the PR body and the second in the commit. As of this writing, #612 is still closed.
 
-### The second PR: 3 hours 12 minutes from open to merge
+## The second PR: 3 hours 12 minutes from open to merge
 
 The next day brought [#614](https://github.com/xiaods/k8e/issues/614), rqlite compatibility for the M0 gate. The maintainer labelled it at 15:21. [PR #615](https://github.com/xiaods/k8e/pull/615) added 3,294 lines across 11 files. It opened at 16:49 and was waiting for approval from 17:33. A LoopX review was posted from the maintainer's account, he approved at 20:00:52, and Orbi merged 29 seconds later.
 
-### Looking back
+## Looking back
 
 Orbi did not get this right the first time. The maintainer had to unblock the issue and put it back in the queue, ask Orbi to keep going when it stalled, and finally merge past one of Orbi's rules that was wrong for his ticket. The four-phase issue still closed after phase one.
 

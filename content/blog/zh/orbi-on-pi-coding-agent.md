@@ -17,7 +17,9 @@ Orbi 做的事是：你给 GitHub issue 打上 `ai-ready`，它还你一个评�
 
 ## 一张 issue 从头到尾
 
-挑的是 [orbi#1554](https://github.com/orbi-build/orbi/issues/1554)，因为这个 bug 就出在 Orbi 跟 Pi 打交道的地方。Pi 从一个叫 `models.json` 的文件里读模型和 API key。Orbi 每次 run 都往 worktree 的 `.orbi/pi-agent/` 下写一份自己的副本，这样每个 run 可以用不同的 provider 配置，又不动机器上 Pi 本身的配置。以前 Orbi 会先把 `$VAR` 形式的 key 引用解析掉，把真 key 写进这份副本。这个目录在 gitignore 里，key 从没进过提交，但每个 worktree 里都躺着明文 key。代码里有条注释，是 9 月 4 日我们用 Pi 0.84.4 时写的，说 Pi 不会展开这种引用。可早一个版本的 Pi 0.84.3，文档就写得清清楚楚：`apiKey` 支持 `$ENV_VAR` 和 `${ENV_VAR}`。修法很简单，引用原样保留，让 Pi 自己展开。我 03:21 开的票，打上 `ai-ready` 就去睡了。
+挑的是 [orbi#1554](https://github.com/orbi-build/orbi/issues/1554)，因为这个 bug 就出在 Orbi 跟 Pi 打交道的地方。Pi 从一个叫 `models.json` 的文件里读模型和 API key。Orbi 每次 run 都往 worktree 的 `.orbi/pi-agent/` 下写一份自己的副本，这样每个 run 可以用不同的 provider 配置，又不动机器上 Pi 本身的配置。
+
+以前 Orbi 会先把 `$VAR` 形式的 key 引用解析掉，把真 key 写进这份副本。这个目录在 gitignore 里，key 从没进过提交，但每个 worktree 里都躺着明文 key。代码里有条注释，是 9 月 4 日我们用 Pi 0.84.4 时写的，说 Pi 不会展开这种引用。可早一个版本的 Pi 0.84.3，文档就写得清清楚楚：`apiKey` 支持 `$ENV_VAR` 和 `${ENV_VAR}`。修法很简单，引用原样保留，让 Pi 自己展开。我 03:21 开的票，打上 `ai-ready` 就去睡了。
 
 <figure class="post-media">
 <img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从认领时记下的 base 提交建 worktree，推送、开 PR，合并闸门检查 CI、评审结论，以及 base 是否最新。Pi 会话：实现会话（计划、改代码、测试、commit）和评审会话（审、修、最后输出一行结论）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
@@ -115,7 +117,9 @@ Orbi 8 月份第一批提交里就在调 Pi 了，当时没跟别的方案比过
 
 第一个是换模型只要改配置。Pi 自带很多 provider，Orbi 还能把自己的 provider 文件合进每个 run 的那份 `models.json`，借此接上任何 OpenAI 兼容的端点（[orbi#157](https://github.com/orbi-build/orbi/issues/157)）。生产上就是这么用的：Cloud 用量记录里的交付全跑在 `deepseek-flash` 上，迁到 Cloud 之前，我机器上的 runner 大多用同一条 Pi 命令跑两个 OpenAI 模型，`gpt-5.6-luna` 写代码，`gpt-5.6-sol` 审代码。再早一些，9 月份的 run 还走过 z.ai 和 Gemini。这几个模型和别的 agent 程序在同样任务上的对比，见 [harness 测评](/zh/blog/searching-for-orbis-harness/)。
 
-第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 `pi --print` 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash。测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，所以合并的 PR 不在那 373 个里。这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 `--skill` 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现，9 月 29 日修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 `pi`，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。它们都跑在我机器上，不在 Cloud 的用量记录里。
+第二个是换起来麻烦。Orbi 是照着 Pi 的命令行搭起来的，一个会话要的东西，skill、模型、扩展、会话目录，一条 `pi --print` 全装下。同一轮测评里，我们还用 Claude Code 跑了 Opus 5.5、用 zcode（一个自带命令行的编程 agent）跑了 GLM 5.3 flash。测评跑在我个人账号下的私有仓库里，没装 Orbi GitHub App，所以合并的 PR 不在那 373 个里。
+
+这两个 agent 都得写一层桥，把 Pi 的参数对到对方提供的参数上。结果两层桥都在半路把 `--skill` 列表弄丢了，那些会话一直是不带 Orbi 的 skill 在跑，后来才发现，9 月 29 日修好。harness 那篇标出了哪些结果是这样跑出来的。zcode 这层桥还跑过真实交付：9 月里有些时候，比如 25 日到 28 日的大部分时间，我机器上有的 runner 用它顶替了 `pi`，那几天的交付是 zcode 加 GLM 5.3 flash 写的，也没带 Orbi 的 skill。它们都跑在我机器上，不在 Cloud 的用量记录里。
 
 ## Pi 留给用户的那一层，Orbi 放在哪
 
@@ -151,7 +155,9 @@ runner 做的这些事，大多能写成 Pi 扩展，我还是放在了 runner �
 
 ## 两次事故
 
-第一次是扩展惹的祸。9 月 4 日晚上，run 开始卡住，卡在 Pi 发出第一个模型请求之前，z.ai 上有，Gemini 上也有。每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 `ai-blocked`。卡住的 `pi` 进程活着，但几乎不动，两分半钟只用了 2 秒 CPU；没有任何连到模型 API 的 TCP 连接，唯一的 socket 连着当前用户的 D-Bus；会话目录是空的，Pi 连会话文件都还没建。同样的配置在 shell 里手动跑，连续 20 多次都正常。systemd 用户服务拉起来的 run 不是每个都卡，但卡住的都是它拉起来的。在 Linux 上碰到类似症状，可以把下面这段存成 `pi-hang.sh`，用运行 pi 的那个用户执行，传入 pi 进程的 pid 和任务 worktree 来确认。在 Cloud 上，pi 进程是 Orbi 日志里 `process_spawned` 那一行所记 pid 的子进程。
+第一次是扩展惹的祸。9 月 4 日晚上，run 开始卡住，卡在 Pi 发出第一个模型请求之前，z.ai 上有，Gemini 上也有。每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 `ai-blocked`。卡住的 `pi` 进程活着，但几乎不动，两分半钟只用了 2 秒 CPU；没有任何连到模型 API 的 TCP 连接，唯一的 socket 连着当前用户的 D-Bus；会话目录是空的，Pi 连会话文件都还没建。
+
+同样的配置在 shell 里手动跑，连续 20 多次都正常。systemd 用户服务拉起来的 run 不是每个都卡，但卡住的都是它拉起来的。在 Linux 上碰到类似症状，可以把下面这段存成 `pi-hang.sh`，用运行 pi 的那个用户执行，传入 pi 进程的 pid 和任务 worktree 来确认。在 Cloud 上，pi 进程是 Orbi 日志里 `process_spawned` 那一行所记 pid 的子进程。
 
 ```bash
 # 用法：bash pi-hang.sh <pi 进程的 pid> <任务 worktree>
