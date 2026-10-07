@@ -148,6 +148,17 @@
     return "since " + date.getUTCDate() + " " + months[date.getUTCMonth()] + " " + date.getUTCFullYear();
   }
 
+  /* Count from where the number already is, never from 0 (Issue #882).
+   *
+   * The Worker writes the live totals — or the element's data-floor on a
+   * cache miss (Issue #873) — into the served HTML. Animating from 0 blanked
+   * that number to "0 PRs merged" for about a second after load, which is what
+   * a screenshot taken in that window showed. So the animation starts at the
+   * number the element shows; only a text that is not a number falls back to
+   * data-floor, and only when neither exists does it start at 0. A target at
+   * or below the current value is written directly: a counter never counts
+   * down.
+   */
   function countUp(element, target, duration) {
     const end = Number(target);
     if (!element || !Number.isFinite(end)) {
@@ -158,11 +169,21 @@
       return;
     }
 
+    const shown = Number.parseInt(element.textContent, 10);
+    const floor = Number.parseInt(element.getAttribute("data-floor"), 10);
+    const from = Number.isFinite(shown) ? shown : (Number.isFinite(floor) ? floor : 0);
+    if (end <= from) {
+      element.textContent = String(end);
+      return;
+    }
+
     const start = performance.now();
     function frame(now) {
-      const progress = Math.min(1, (now - start) / duration);
+      // rAF's timestamp can precede the performance.now() that opened the
+      // animation; a negative progress would push the count below its start.
+      const progress = Math.min(1, Math.max(0, (now - start) / duration));
       const eased = 1 - Math.pow(1 - progress, 3);
-      element.textContent = String(Math.round(end * eased));
+      element.textContent = String(Math.round(from + (end - from) * eased));
       if (progress < 1) {
         window.requestAnimationFrame(frame);
       }
