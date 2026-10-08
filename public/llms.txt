@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Write a request: Orbi Cloud drafts your GitHub Issue (English):
+  https://orbi.build/blog/write-a-request/
+- 写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue (Chinese):
+  https://orbi.build/zh/blog/write-a-request/
 - Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 (English):
   https://orbi.build/blog/pi-agent-harness/
 - Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):

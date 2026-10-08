@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Write a request: Orbi Cloud drafts your GitHub Issue | Orbi</title>
+  <meta name="description" content="Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.">
+  <link rel="canonical" href="https://orbi.build/blog/write-a-request/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/write-a-request/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/write-a-request/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/write-a-request/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Write a request: Orbi Cloud drafts your GitHub Issue">
+  <meta property="og:description" content="Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.">
+  <meta property="og:url" content="https://orbi.build/blog/write-a-request/">
+  <meta property="og:image" content="https://orbi.build/img/blog-write-request-card.png">
+  <meta property="og:image:alt" content="Write a request: Orbi Cloud drafts your GitHub Issue">
+  <meta property="article:published_time" content="2026-10-09">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Write a request: Orbi Cloud drafts your GitHub Issue","datePublished":"2026-10-09","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/write-a-request/","image":"https://orbi.build/img/blog-write-request-card.png","inLanguage":"en","description":"Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.","url":"https://orbi.build/blog/write-a-request/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">Sign in</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Write a request: Orbi Cloud drafts your GitHub Issue</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-09">2026-10-09</time></p>
+
+          <p class="hero-lede">Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#why-let-orbi-write-the-issue">Why let Orbi write the Issue</a></li>
+          <li><a class="post-toc-link" href="#where-to-write-a-request">Where to write a request</a></li>
+          <li><a class="post-toc-link" href="#while-orbi-reads-your-code">While Orbi reads your code</a></li>
+          <li><a class="post-toc-link" href="#request-1-nothing-needed-to-change">Request 1: nothing needed to change</a></li>
+          <li><a class="post-toc-link" href="#request-2-what-a-draft-looks-like">Request 2: what a draft looks like</a></li>
+          <li><a class="post-toc-link" href="#when-orbi-isn-t-sure-it-asks">When Orbi isn't sure, it asks</a></li>
+          <li><a class="post-toc-link" href="#before-you-hand-it-off">Before you hand it off</a></li>
+          <li><a class="post-toc-link" href="#after-you-hand-it-off">After you hand it off</a></li>
+          <li><a class="post-toc-link" href="#request-3-when-a-task-gets-stuck">Request 3: when a task gets stuck</a></li>
+          <li><a class="post-toc-link" href="#what-it-costs">What it costs</a></li>
+          <li><a class="post-toc-link" href="#when-to-write-the-issue-yourself">When to write the Issue yourself</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 12 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#why-let-orbi-write-the-issue">Why let Orbi write the Issue</a></li>
+          <li><a class="post-toc-link" href="#where-to-write-a-request">Where to write a request</a></li>
+          <li><a class="post-toc-link" href="#while-orbi-reads-your-code">While Orbi reads your code</a></li>
+          <li><a class="post-toc-link" href="#request-1-nothing-needed-to-change">Request 1: nothing needed to change</a></li>
+          <li><a class="post-toc-link" href="#request-2-what-a-draft-looks-like">Request 2: what a draft looks like</a></li>
+          <li><a class="post-toc-link" href="#when-orbi-isn-t-sure-it-asks">When Orbi isn't sure, it asks</a></li>
+          <li><a class="post-toc-link" href="#before-you-hand-it-off">Before you hand it off</a></li>
+          <li><a class="post-toc-link" href="#after-you-hand-it-off">After you hand it off</a></li>
+          <li><a class="post-toc-link" href="#request-3-when-a-task-gets-stuck">Request 3: when a task gets stuck</a></li>
+          <li><a class="post-toc-link" href="#what-it-costs">What it costs</a></li>
+          <li><a class="post-toc-link" href="#when-to-write-the-issue-yourself">When to write the Issue yourself</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>Orbi is an AI coding agent for GitHub. You give it an Issue by adding the <code class="post-code--single">ai-ready</code> label; it writes the code in an isolated workspace, opens a pull request, has the pull request reviewed by a separate AI session (not a person) that did not write the code, and merges. Orbi Cloud runs that for you on machines we operate. Unless the branch the task merges into requires an approving review, Orbi merges on its own once your CI and its review pass; more on that below. The new <strong>Write a request</strong> feature, part of Orbi Cloud, changes how a task starts.</p>
+<p>Instead of writing the Issue yourself, you describe the change in a sentence or two. Orbi reads your repository, drafts the Issue, and turns the open choices it spots into questions for you. Nothing is created on GitHub until you read the draft and hand it off.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Lawrence Liu, and I maintain Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The <a href="https://cloud-docs.orbi.build/write-a-requirement">Write a request docs page</a> is the short reference.</p>
+<h2 id="why-let-orbi-write-the-issue">Why let Orbi write the Issue</h2>
+<p>Orbi does what the Issue says. A one-line Issue leaves Orbi to guess which file to change, what behavior you want, and what counts as done. A wrong guess means a pull request you read and close, or, if nothing requires approval, a merged change you have to revert.</p>
+<p>Writing a better Issue usually means knowing the code. With Write a request, Orbi reads the code first, so the draft cites real file paths, line numbers and the tests that will run, and the open choices it spots come back to you as questions before any code is written. Choices it doesn&#39;t ask about are written into the reply as assumptions.</p>
+<h2 id="where-to-write-a-request">Where to write a request</h2>
+<p>After you sign in with GitHub and connect a repository, you land on the status page, which lists your repositories and Orbi&#39;s tasks. It has a <strong>Write a request</strong> button. Each connected repository is a project; if you connected more than one, pick one with <strong>Switch project</strong>. The page works like a chat: you send a message, Orbi answers, and you can keep going.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-entry.webp" alt="The Write a request page: a text box under What would you like to change?, a Draft the request button, example requests, and at the top a Last request line with a View result button." width="1200" height="989">
+<figcaption>The entry page, captured after the second request below had merged; the line at the top shows it.</figcaption>
+</figure><p>Write what you want in plain words. One sentence is enough. Orbi writes the Issue in the language you write in, unless the repository&#39;s AGENTS.md or CONTRIBUTING.md asks for a different one. Two exceptions for now: the Issue&#39;s first line, which says who submitted it, is always in Chinese, and section headings sometimes come out in English.</p>
+<h2 id="while-orbi-reads-your-code">While Orbi reads your code</h2>
+<p>Click <strong>Draft the request</strong> and the page shows two stages with a timer. In <strong>Understanding your project</strong>, it lists the files Orbi has read and the one it is reading. In <strong>Checking against what you said</strong>, Orbi reads its own draft again against your sentence.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-working.webp" alt="Writing the draft, 0:45 elapsed. Under Understanding your project: Read CONTRIBUTING.md, Read tests/test_repository_content.py, Reading tests/test_stripe_payments.py." width="1200" height="965">
+<figcaption>45 seconds into request 1, the README one.</figcaption>
+</figure><p>A draft usually takes one to two minutes. You can close the page; the draft is kept for 7 days after your last change, and <strong>Write a request</strong> on the status page, then <strong>Open draft</strong>, brings you back to it. Each project holds one draft at a time, so a new request replaces it.</p>
+<h2 id="request-1-nothing-needed-to-change">Request 1: nothing needed to change</h2>
+<p>The first request asked for a README section on running the repository&#39;s checks locally. Orbi read the repository and answered that the README already covers it in three places, with line numbers, plus a line in CONTRIBUTING.md. It did not write an Issue.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-no-change.webp" alt="Orbi's reply: Nothing needs to change in the README for this: it already explains how to run the content checks locally, in three places. A list under What is already there cites README.md:40, README.md:30, README.md:107 and CONTRIBUTING.md." width="1200" height="989">
+<figcaption>Orbi's reply to request 1.</figcaption>
+</figure><h2 id="request-2-what-a-draft-looks-like">Request 2: what a draft looks like</h2>
+<p>The next message, typed in the box under that reply, asked for something else: a bug report Issue template that asks for steps to reproduce, the expected result and the actual result. The draft that came back covers only the template.</p>
+<p>First comes a reply. Its opening sentence says in plain words what changes for people using the repository. Technical notes and the assumptions Orbi made follow it, which is where you check how it read your request.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-reply.webp" alt="Orbi's reply to the bug report request. First sentence: GitHub's new-Issue page will offer a Bug report form beside the existing User outcome one. Below it, the first technical notes behind the draft." width="1200" height="468">
+<figcaption>The reply's first sentence is for anyone; the technical notes start right below it. "User outcome" is the name of the template the repository already had. "Form" is loose wording here: the draft names a Markdown template, `.github/ISSUE_TEMPLATE/bug-report.md`, and that is what merged.</figcaption>
+</figure><p>Then comes the draft itself, the text that becomes the Issue. It starts with your request in your own words and the outcome users should see, then lists acceptance criteria as WHEN / THEN statements. One of them covers a failure GitHub won&#39;t report: if the template&#39;s front matter is missing or malformed, GitHub silently leaves the template out of the chooser, so the draft says to check for that and how to repair it. Further down, out of view here, are the evidence a reviewer should check and the related work Orbi left out on purpose, such as a <code class="post-code--single">bug</code> label or a README mention. <strong>Show the full draft</strong> expands the rest.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-draft.webp" alt="The request draft card: title Add a bug report Issue template, then Request, User outcome and Acceptance sections. The acceptance list has three WHEN / THEN items, the last a failure path: when the front matter is missing or malformed, GitHub does not list the template." width="1200" height="989">
+<figcaption>The draft. Once handed off, this is the Issue Orbi works from.</figcaption>
+</figure><h2 id="when-orbi-isn-t-sure-it-asks">When Orbi isn&#39;t sure, it asks</h2>
+<p>Below the draft, under <strong>Orbi chose these for you</strong>, are the open choices it found. Each question has two to four options plus a free-text <strong>Other (write your own)</strong>, and Orbi has already picked the one it recommends. The draft above is written with those picks, so if they are right you can hand off without changing anything. When a request is too vague to draft at all, Orbi asks first and writes the draft after you answer.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-questions.webp" alt="Orbi chose these for you. Question: Which language should the new bug report template use for its headings and prompts? English, like the existing one, is selected; Chinese and Bilingual are the other options, plus Other (write your own). A second question asks whether to keep the existing template and add the new one alongside." width="1200" height="989">
+<figcaption>The recommended answer is preselected.</figcaption>
+</figure><p>A third question, further down, asked whether the new template should keep the repository&#39;s priority line, and Orbi recommended Include it. This run switched only the language answer, to Bilingual. The page then asks you to <strong>Rewrite the draft</strong> and greys out <strong>Hand off to Orbi</strong> until the rewrite finishes. <strong>Undo your changes</strong> puts the old answers back and clears anything you typed but haven&#39;t sent.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-changed.webp" alt="After switching an answer to Bilingual: a Rewrite the draft button with the note Takes about a minute. Changed your mind? Click undo your changes. Hand off to Orbi is greyed out with the message You changed an option." width="1200" height="989">
+<figcaption>After switching to Bilingual: hand-off waits for the rewrite.</figcaption>
+</figure><p>For anything the options don&#39;t cover, use the box under the draft (<strong>Anything to add or change?</strong>). Orbi rewrites with the whole conversation in view.</p>
+<p>Read the rewritten draft before you hand it off. In this run, the rewrite dropped the priority line even though that question was still on its recommended answer, Include it; the Issue Orbi worked from has no priority section. At the time, the page sent only the answers you changed, not the ones you left on Orbi&#39;s recommendation. Orbi Cloud v0.7.19, released October 9, fixes this: a rewrite now sends every answer and marks the ones you kept.</p>
+<h2 id="before-you-hand-it-off">Before you hand it off</h2>
+<p>Under <strong>Hand off to Orbi</strong>, the page says what happens next. The middle sentences depend on branch protection on the branch the task merges into. You pick that branch when you connect the repository; usually it is the default branch. This test repository has none, so it reads: &quot;Once its checks pass, Orbi merges right away. To review changes first, set your repository to require 1 approval before merging.&quot; When that branch requires an approving review, it says Orbi will wait for you to approve the pull request on GitHub, and when the page can&#39;t read the setting, it doesn&#39;t claim either way. &quot;Its checks&quot; means your CI plus Orbi&#39;s review session.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-handoff.webp" alt="The rewritten draft now asks for headings in English and Chinese. Under the Hand off to Orbi button: This creates an Issue in your GitHub repository, and Orbi works from it. Once its checks pass, Orbi merges right away. To review changes first, set your repository to require 1 approval before merging (how to set it up)." width="1200" height="989">
+<figcaption>The rewritten bilingual draft, and the note that says whether Orbi will merge on its own.</figcaption>
+</figure><p>Orbi&#39;s review session reads the diff and asks for fixes; it is not a GitHub approval. Orbi never approves its own pull requests, so when one approving review is required, the task shows <strong>Awaiting approval</strong> and Orbi merges after you approve. The <strong>how to set it up</strong> link opens GitHub&#39;s guide to branch protection rules.</p>
+<h2 id="after-you-hand-it-off">After you hand it off</h2>
+<p>Handing off creates an ordinary Issue in your repository: a first line saying you submitted it through Orbi, then the draft exactly as you approved it. You stay on the same page, and the draft turns into a task card that updates on its own.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-handed-off.webp" alt="Handed off to Orbi. Add a bilingual bug report Issue template. Status: Usually starts within a minute. Buttons: View on GitHub (Issue #75) and Write another request." width="1200" height="748">
+<figcaption>Right after handing off: Issue #75 exists, and the card follows it.</figcaption>
+</figure><p>The status starts at <strong>Usually starts within a minute</strong>, then moves through <strong>Queued</strong>, <strong>In progress</strong> and <strong>PR under review</strong> to <strong>Done</strong>. For this request, hand-off to merge took about seven minutes on October 9: <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/75">Issue #75</a> handed off at 00:20, <a href="https://github.com/xqliu/orbi-e2e-2609260042/pull/76">pull request #76</a> opened at 00:24, merged at 00:27 (UTC+8). The pull request added one 19-line file, <code class="post-code--single">.github/ISSUE_TEMPLATE/bug-report.md</code>.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-done.webp" alt="Done. Add a bilingual bug report Issue template. Merged into your project. When it takes effect depends on how your project is released or deployed. Buttons: View the change (PR #76) and Write another request." width="1200" height="660">
+<figcaption>Done, with a link to the merged pull request.</figcaption>
+</figure><p>If you leave and come back, the top of the Write a request page shows your last request and its status, as in the first screenshot; <strong>View result</strong> opens this card again. Every task is also listed on the status page.</p>
+<h2 id="request-3-when-a-task-gets-stuck">Request 3: when a task gets stuck</h2>
+<p>The third request, which actually ran first, on the evening of October 8, was written in Chinese and set up to fail. It asked for a CI step that runs a Stripe charge check on every push and pull request, reads the Stripe key from a repository secret and the payment method from repository variables, and fails when the key is missing. The test repository has none of them.</p>
+<p>The new check did what the Issue asked: with no key configured it failed, so CI stayed red, and Orbi does not merge on red CI. The draft listed the secret and variables the check needs, but it didn&#39;t ask whether they were configured; Write a request doesn&#39;t check whether the secrets or variables a task needs actually exist. Orbi&#39;s review stopped the task for a human decision, labeled the Issue <code class="post-code--single">ai-blocked</code>, and left the failing check in place.</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. This doesn't use a free run. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
+<figcaption>The stuck task. Its title is Chinese because the request was written in Chinese; the page is in English.</figcaption>
+</figure><p>The card only says Orbi needs a decision from you. <strong>See Orbi&#39;s note</strong> opens <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853">the comment Orbi left on the Issue</a>, which has the actual reason: the Stripe key is missing. It offered two ways forward: add the Stripe key the Issue requires as a repository secret, plus the payment method as repository variables; or change the Issue&#39;s rule that a missing secret must fail CI. Either way, a stuck task doesn&#39;t restart on its own: re-running CI, removing the <code class="post-code--single">ai-blocked</code> label or commenting won&#39;t move it. Fix the cause, then swap the label on the Issue, which has to be open. If its pull request is still open, replace <code class="post-code--single">ai-blocked</code> with <code class="post-code--single">ai-fix-needed</code>, and Orbi continues on that pull request and its branch. If there is no pull request yet, replace it with <code class="post-code--single">ai-ready</code>. We didn&#39;t recover this one: it was a staged failure, so after the test we closed <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71">Issue #71</a> and its pull request.</p>
+<h2 id="what-it-costs">What it costs</h2>
+<p>On the free trial you get __FREE_DELIVERIES__ free deliveries (the page calls them free runs). A task that fails, gets stuck like request 3, or ends without a merge doesn&#39;t use one, so only merged deliveries count. Drafts never use a free delivery, and you can keep drafting after the free deliveries are gone.</p>
+<p>If you hand one off then, the Issue is still created right away, but Orbi removes its <code class="post-code--single">ai-ready</code> label at once and leaves a comment saying why. After you subscribe, click <strong>Try →</strong> next to that Issue on the status page; it adds <code class="post-code--single">ai-ready</code>, and that is when Orbi starts. The status page lists that button only when no other task is running; if one is, wait for it to finish, or add <code class="post-code--single">ai-ready</code> to the Issue on GitHub yourself.</p>
+<p>Paying monthly, Solo is US$__SOLO_MONTHLY_USD__ (__SOLO_INCLUDED_TOKENS__ tokens of model usage a month) and Pro is US$__CLOUD_MONTHLY_USD__ (__INCLUDED_TOKENS__ tokens). Once a month&#39;s usage runs out, new drafts pause along with deliveries until the 1st (months are counted in UTC); there is no overage charge, and accounts that bring their own model API key aren&#39;t paused this way. Details are on the <a href="/cloud/?ref=blog-write-request">Orbi Cloud page</a>.</p>
+<h2 id="when-to-write-the-issue-yourself">When to write the Issue yourself</h2>
+<p>If you already know exactly what should change and how to check it, creating the Issue on GitHub and adding the <code class="post-code--single">ai-ready</code> label is quicker. Write a request helps most when you know the problem but not where it lives in the code, or when you want the open questions laid out before work starts.</p>
+<p>Some things that make drafts better:</p>
+<ul>
+<li>Lead with the outcome. &quot;Bug reports should ask for steps to reproduce&quot; lets Orbi pick the change that fits your repository. If you already know the file or a constraint, add it too.</li>
+<li>Keep one request to one change. Orbi checks an Issue before it starts, and when it asks for several unrelated things, Orbi comments asking you to split it and pauses the task. Once you&#39;ve split or clarified it, add <code class="post-code--single">ai-ready</code> again.</li>
+<li>Read the assumptions in the reply before you hand off. A misreading is cheapest to fix there.</li>
+</ul>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<ul>
+<li><a href="https://cloud-docs.orbi.build/write-a-requirement">Write a request</a>, the reference page in the Cloud docs</li>
+<li><a href="/aiready/">ai-ready: 12 factors for unattended software delivery</a>, on what makes an Issue deliverable</li>
+<li><a href="/guides/issue-to-release/">From GitHub Issue to merged PR and release</a>, the guide to the whole delivery line</li>
+<li><a href="/compare/">Orbi compared with other coding agents</a></li>
+<li><a href="/cloud/">Orbi Cloud plans</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/write-a-request/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

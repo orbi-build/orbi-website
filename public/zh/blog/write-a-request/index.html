@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue | Orbi</title>
+  <meta name="description" content="在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/write-a-request/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/write-a-request/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/write-a-request/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/write-a-request/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue">
+  <meta property="og:description" content="在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/write-a-request/">
+  <meta property="og:image" content="https://orbi.build/img/blog-write-request-card.png">
+  <meta property="og:image:alt" content="写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue">
+  <meta property="article:published_time" content="2026-10-09">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue","datePublished":"2026-10-09","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/write-a-request/","image":"https://orbi.build/img/blog-write-request-card.png","inLanguage":"zh-CN","description":"在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。","url":"https://orbi.build/zh/blog/write-a-request/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a data-cta="nav-signin" href="/api/login">登录</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">免费开始</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-09">2026-10-09</time></p>
+
+          <p class="hero-lede">在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</a></li>
+          <li><a class="post-toc-link" href="#在哪里写需求">在哪里写需求</a></li>
+          <li><a class="post-toc-link" href="#orbi-读代码的时候">Orbi 读代码的时候</a></li>
+          <li><a class="post-toc-link" href="#它先告诉你代码里已经有什么">它先告诉你代码里已经有什么</a></li>
+          <li><a class="post-toc-link" href="#草稿长什么样">草稿长什么样</a></li>
+          <li><a class="post-toc-link" href="#拿不准的地方-它会问">拿不准的地方，它会问</a></li>
+          <li><a class="post-toc-link" href="#交给-orbi-之前看清楚">交给 Orbi 之前看清楚</a></li>
+          <li><a class="post-toc-link" href="#交给-orbi-以后">交给 Orbi 以后</a></li>
+          <li><a class="post-toc-link" href="#卡住的时候">卡住的时候</a></li>
+          <li><a class="post-toc-link" href="#要花多少">要花多少</a></li>
+          <li><a class="post-toc-link" href="#什么时候自己写-issue-更快">什么时候自己写 Issue 更快</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 12 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</a></li>
+          <li><a class="post-toc-link" href="#在哪里写需求">在哪里写需求</a></li>
+          <li><a class="post-toc-link" href="#orbi-读代码的时候">Orbi 读代码的时候</a></li>
+          <li><a class="post-toc-link" href="#它先告诉你代码里已经有什么">它先告诉你代码里已经有什么</a></li>
+          <li><a class="post-toc-link" href="#草稿长什么样">草稿长什么样</a></li>
+          <li><a class="post-toc-link" href="#拿不准的地方-它会问">拿不准的地方，它会问</a></li>
+          <li><a class="post-toc-link" href="#交给-orbi-之前看清楚">交给 Orbi 之前看清楚</a></li>
+          <li><a class="post-toc-link" href="#交给-orbi-以后">交给 Orbi 以后</a></li>
+          <li><a class="post-toc-link" href="#卡住的时候">卡住的时候</a></li>
+          <li><a class="post-toc-link" href="#要花多少">要花多少</a></li>
+          <li><a class="post-toc-link" href="#什么时候自己写-issue-更快">什么时候自己写 Issue 更快</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会出现东西。</p>
+<p>Orbi 是一个接 GitHub Issue 干活的 AI 编程 agent。你给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签，它就在隔离的工作区里写代码、开 PR，再由另一个没参与写代码的 AI 会话来评审。Orbi Cloud 是我们替你托管运行的版本。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Lawrence Liu，Orbi 的维护者。这篇的截图都来自 10 月 8 日和 9 日在测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里的真实操作，截图在 beta.orbi.build 上拍，功能在 orbi.build 上也已上线。中文截图来自几个不同的需求，图注写了各自来源。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
+<h2 id="为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</h2>
+<p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了，要么收到一个读完只能关掉的 PR，要么改动已经合并，你得回滚。无论哪种，都得先把需求补清楚；已经合并的改动还可能要回滚。</p>
+<p>把 Issue 写清楚，通常得先看懂代码。写需求让 Orbi 先读代码再动笔，所以草稿里写的是真实的文件路径、行号和会跑的测试。它发现的分叉会在写代码之前做成选择题问你。没问到的判断，作为假设写在回复里。</p>
+<h2 id="在哪里写需求">在哪里写需求</h2>
+<p>用 GitHub 登录、连接仓库之后，你会进到状态页，上面列着你连接的仓库和 Orbi 手上的任务，有一个「写需求」按钮。每个连接的仓库算一个项目，连了好几个的话，用「切换项目」选一个。这一页像聊天：你说一句，Orbi 回一段，可以接着往下聊。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-entry.webp" alt="写需求页：「说说你想改什么」下面是输入框、「让 Orbi 写草稿」按钮和三个例子；最上面一行写着上一个需求和它的状态，右侧是「查看结果」按钮。" width="1200" height="989">
+<figcaption>写需求入口。最上面那一行是这个项目上一个交给 Orbi 的需求，这里是英文版里那个 bug 模板需求，所以标题是英文。</figcaption>
+</figure><p>想改什么就直接写：加功能、修 bug、改文字都行，一句话就够。你用中文写，Issue 就用中文写，除非仓库的 AGENTS.md 或 CONTRIBUTING.md 另有语言要求。有两处例外：Issue 第一行写明谁提交的，这一行固定是中文，仓库要求 Issue 用英文也不变；小节标题偶尔会是英文。</p>
+<h2 id="orbi-读代码的时候">Orbi 读代码的时候</h2>
+<p>点「让 Orbi 写草稿」之后，页面上有两个阶段，旁边有计时。「看懂你的项目」下面会列出 Orbi 看过的文件和正在看的文件；「对照你的原话检查」是 Orbi 拿写好的草稿回头和你那句话对一遍，看有没有跑偏。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-working.webp" alt="Orbi 正在写草稿，已写 0:48。「看懂你的项目」下面：看过 CHANGELOG.md，正在看 .gitignore。" width="1200" height="916">
+<figcaption>第 48 秒。这个需求交出去后成了 Issue #77，加了一个「功能建议」Issue 模板，下文 README 那个需求提到的就是它。</figcaption>
+</figure><p>一份草稿一般要 1 到 2 分钟。页面可以关掉，草稿从最后一次修改起保留 7 天。回来时从状态页点「写需求」，再点「打开草稿」就能接着看。每个项目同时只有一份草稿，写新的需求会替换它。</p>
+<h2 id="它先告诉你代码里已经有什么">它先告诉你代码里已经有什么</h2>
+<p>这次的需求是：在 README 的「如何贡献」里补一句，提功能建议请用新的「功能建议」模板。Orbi 读完仓库，先把现状说清楚：这句话其实已经写在「如何贡献」第 2 条的末尾（第 26 到 28 行），模板文件也已经在了，只是这句提示埋在讲另一个模板的段落里，不容易看到。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-reply.webp" alt="Orbi 的回复：第一句说这份改动会让 README 的「如何贡献」里出现一条独立、一眼可见的提示；接着列出它在确认现状时发现的两点，包括这句话已经在第 26 到 28 行；最后写明它的假设。" width="1200" height="989">
+<figcaption>回复的第一句用大白话说改完会有什么不同，后面是它查到的现状和它做的假设。</figcaption>
+</figure><p>所以草稿只是把已有的那句提出来单列一条，下面的选择题里也有「不改」。</p>
+<h2 id="草稿长什么样">草稿长什么样</h2>
+<p>回复下面是草稿本身，交给 Orbi 之后它就是那张 Issue 的正文。开头是你的原话，接着是「当前状态」：哪个文件、第几行、现在写的是什么、哪些测试覆盖相关文件（这里是两条检查模板内容的测试），都写成能直接核对的样子。再往下是用户能看到的结果、验收条件、评审要看的证据，以及 Orbi 有意不做的相关改动。草稿长的话先折叠，点「展开全文」看全部。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-draft.webp" alt="需求草稿卡片：标题「README「如何贡献」：把「功能建议」模板提示单列一句」，下面是「需求」原话和「当前状态」，当前状态里引用了「如何贡献」一节第 16 到 29 行、那句提示所在的第 26 到 28 行、模板文件路径和两个内容检查的测试名。" width="1200" height="989">
+<figcaption>草稿开头的「需求」和「当前状态」。</figcaption>
+</figure><h2 id="拿不准的地方-它会问">拿不准的地方，它会问</h2>
+<p>草稿下面，「Orbi 先替你选好了下面几项」列着它发现、需要你决定的地方。每道题 2 到 4 个选项，外加一个可以自己写的「其他（自己写）」；Orbi 已经替你选好了推荐项，草稿也是按推荐项写的。推荐项没问题，就什么都不用动，直接交给 Orbi。如果一句话太含糊、连草稿都没法写，Orbi 会先只提问，你选完再点「按选项写草稿」。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-questions.webp" alt="选择题「处理方式」：README 第 2 条末尾其实已经写了这句，你希望怎么处理？选项有「提为独立一条（推荐）」「保持现状，不改 README」「改到 CONTRIBUTING.md」和「其他（自己写）」。第二道题问原来那段说明怎么处理。" width="1200" height="989">
+<figcaption>推荐项排在第一个，草稿就是按它写的。</figcaption>
+</figure><p>选项不合适就换一个。改了选项之后，按钮会变成「按选项重写草稿」，重写完成之前，「交给 Orbi 开始做」是灰的。改了又后悔，点「恢复原来的选择」，输入框里还没发出的话也会一起清掉。</p>
+<p>草稿本身不能直接手改；选项里没有的要求，写在草稿下方的输入框里（「要补充或修改，写在这里」），Orbi 重写时会带着你在输入框里说过的所有话。</p>
+<h2 id="交给-orbi-之前看清楚">交给 Orbi 之前看清楚</h2>
+<p>「交给 Orbi 开始做」按钮下面有几行字，说明交出去以后会发生什么。其中讲合并的那句，写成什么样取决于任务要合入的分支是否要求合并前至少 1 个批准。这个分支是连接仓库时设的，一般就是默认分支。</p>
+<ul>
+<li>没要求批准（测试仓库就是这样）：「Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准」。</li>
+<li>要求批准：自检通过后，等你在 GitHub 批准 PR 再合并。</li>
+<li>页面读不到设置：只写「改好后 Orbi 先自己检查，通过才合并到项目」，不说会不会等你批准。</li>
+</ul>
+<p>「自检」指你仓库的 CI 加上 Orbi 自己的评审。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-handoff.webp" alt="「交给 Orbi 开始做」按钮下面：会在你的 GitHub 仓库里建一个 Issue，Orbi 照它去做。Orbi 自检通过后会直接合并。想先看再合并，可以在 GitHub 给仓库设置合并前需要 1 个批准（怎么设置）。再下面一行说明免费次数已经用完。" width="1200" height="989">
+<figcaption>这张还是上面 README 那个需求。截图时测试账户的免费次数刚好用完，所以最后多了一行：现在交给 Orbi 也行，Issue 会先建好，订阅后才能开工。这个需求我们没有交出去。</figcaption>
+</figure><p>Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批准。Orbi 不会批准自己的 PR，所以要求 1 个批准的仓库里，任务会停在「等你批准」，你批准后它才合并。「怎么设置」链到 GitHub 讲分支保护规则的官方文档。</p>
+<h2 id="交给-orbi-以后">交给 Orbi 以后</h2>
+<p>交给 Orbi 会在你的仓库里建一张普通的 Issue：第一行写明是你通过 Orbi 提交的，后面就是你认可的那份草稿，一字不改。页面不跳走，草稿那一块变成一张任务卡片，会自己更新。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-handed-off.webp" alt="已交给 Orbi：接入 Stripe 付款并在 CI 里验证一笔真实扣款。状态：一般 1 分钟内开始。按钮：在 GitHub 查看（Issue #69）、再写一个需求。" width="1200" height="717">
+<figcaption>刚交给 Orbi 的样子，Issue #69。它在现有的 CI workflow 里加了一个只在手动触发时才跑的 job 来做真实扣款，平常的 CI 不跑这一步，所以是绿的，后来顺利合并了。测试仓库没配密钥，从没真扣过钱。</figcaption>
+</figure><p>顺利的话，状态先显示「一般 1 分钟内开始」，然后依次是「排队中」「进行中」「Orbi 检查中」，最后「已完成」。要求批准的仓库中间会多一步「等你批准」，出了问题会变成「卡住了」（见下一节）。<a href="/blog/write-a-request/">英文版</a>里那个例子是新增一个 bug 反馈 Issue 模板，从交出到合并大约 7 分钟。10 月 9 日 00:20 交出，00:24 开出 PR，00:27 合并（北京时间），改动是一个 19 行的模板文件。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-done.webp" alt="已完成：README：新增一行联系方式「邮箱：support@orbi.build」。已合并到项目。什么时候生效，取决于你的项目怎么发布或部署。按钮：查看改动（PR #60）、再写一个需求。" width="1200" height="666">
+<figcaption>已完成的样子，PR #60：README 里加一行联系方式。可以直接点去看合并的 PR。</figcaption>
+</figure><p>离开再回来，写需求页最上面那一行会显示上一个需求和它现在的状态，点「查看结果」就能重新打开这张卡片。所有任务也都能在状态页上看到。</p>
+<h2 id="卡住的时候">卡住的时候</h2>
+<p>下面这个任务（Issue #71）和 #69 一样涉及 Stripe，但扣款验证放进了每次 CI，是故意造来失败的：要求 CI 每次 push 和 PR 都跑一次 Stripe 扣款验证，密钥从仓库 secret 里读、付款方式从仓库变量里读，缺密钥就让 CI 失败。测试仓库里这些都没有。</p>
+<p>新加的检查照 Issue 的要求做了：没配密钥就失败，CI 一直是红的，而 Orbi 不会在 CI 红的时候合并。草稿里列出了这项检查需要的 secret 和变量，但写需求不会替你核对它们配好没有。检查失败后，Orbi 的评审把任务停下来等人决定，Issue 被打上 <code class="post-code--single">ai-blocked</code> 标签。Orbi 没有为了让 CI 变绿去删检查或改测试，PR 里它们都原样留着。</p>
+<figure class="post-media">
+<img src="/img/blog-write-request-zh-blocked.webp" alt="卡住了：CI 在 push 和 PR 上执行 Stripe 扣款验证，密钥取自仓库 secret STRIPE_SECRET_KEY，缺密钥时直接失败。Orbi 已停下：有件事需要你拿主意。改动没有合并到项目。不算免费次数。联系我们：Telegram 群、support@orbi.build。按钮：查看 Orbi 的说明、再写一个需求。" width="1200" height="721">
+<figcaption>卡住的任务，主按钮直达 Orbi 的说明。</figcaption>
+</figure><p>卡片上没写具体原因，点「查看 Orbi 的说明」会打开 Orbi 在 Issue 里写的<a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71#issuecomment-6063352853">那条评论</a>，原因在那里：缺 Stripe 密钥。这次它给了两条路：按 Issue 的要求，把 Stripe 密钥配成仓库 secret、付款方式配成仓库变量；或者改掉 Issue 里「缺密钥就必须让 CI 失败」这条决定。不管选哪条，卡住的任务都不会自己接着做：重跑 CI、只摘掉 <code class="post-code--single">ai-blocked</code> 标签或者留评论都没用。</p>
+<p>先把原因修好，再在 Issue 上换标签（Issue 得是打开的）：PR 还开着的，把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-fix-needed</code>，Orbi 在原来的 PR 和分支上接着改；还没有 PR 的，换成 <code class="post-code--single">ai-ready</code>。</p>
+<p>这个任务我们没有恢复：它是故意造的失败，测完就把 <a href="https://github.com/xqliu/orbi-e2e-2609260042/issues/71">Issue #71</a> 和它的 PR 关掉了。</p>
+<h2 id="要花多少">要花多少</h2>
+<p>免费试用有 __FREE_DELIVERIES__ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占交付次数。</p>
+<p>免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 <code class="post-code--single">ai-ready</code> 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 <code class="post-code--single">ai-ready</code>，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 <code class="post-code--single">ai-ready</code>。</p>
+<p>按月付费的话，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ tokens 模型用量），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ tokens）。当月用量用完后，写草稿和交付都会暂停，下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制（Cloud 页面里有说明）。详情看 <a href="/zh/cloud/?ref=blog-write-request">Orbi Cloud 页面</a>。</p>
+<h2 id="什么时候自己写-issue-更快">什么时候自己写 Issue 更快</h2>
+<p>你已经清楚要改什么、也知道怎么验收，那直接在 GitHub 上建 Issue、打上 <code class="post-code--single">ai-ready</code> 标签更快。你知道要解决什么问题、但不知道它落在代码哪里，或者想在动工前先让 Orbi 把需要你决定的问题列出来，这时用写需求。</p>
+<p>三个让草稿更好用的习惯：</p>
+<ul>
+<li>先说你想要的结果。「提建议的人要写清楚想解决什么问题」能让 Orbi 自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。</li>
+<li>一次只提一件事。Orbi 动工前会先检查 Issue，一张票里塞了几件不相干的事，它会在 Issue 里留言让你拆开，任务先停着；拆清或补清后，重新打上 <code class="post-code--single">ai-ready</code>。</li>
+<li>交给 Orbi 之前，读一读回复里写的假设。读偏了，在输入框里补一句就行。</li>
+</ul>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<ul>
+<li><a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>：Cloud 文档里的用法说明</li>
+<li><a href="/aiready/">ai-ready: 12 factors for unattended software delivery</a>（英文）：什么样的 Issue 能被可靠交付</li>
+<li><a href="/zh/guides/issue-to-release/">AI agent：从 GitHub Issue 到合并与发版</a>：整条交付流程的专题</li>
+<li><a href="/zh/compare/">Orbi 和其他编程 agent 的对比</a></li>
+<li><a href="/zh/cloud/">Orbi Cloud 套餐</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/write-a-request/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
