@@ -33,17 +33,21 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #704: the hero uses the approved short lede and keeps one pricing
-// CTA as its only link.
+// Issue #899: the hero opens with two short sentences — open source, and the
+// two places it can run — a Cloud-named button, and one small line whose text
+// link goes to the self-host repository. The registered licence detail lives
+// in the How-it-works trust line and the FAQ, not in the first sentence.
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: ["Orbi is an open-source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases."],
+    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on Orbi Cloud or your own machine.",
+    button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: ["Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。"],
+    lede: "开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。",
+    button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
 };
@@ -730,17 +734,54 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
   }
-  const lede = await hero.locator(".hero-lede").textContent();
-  for (const segment of claim.lede) {
-    if (!lede.includes(segment)) {
-      throw new Error(`${path}: hero lede is missing the segment ${JSON.stringify(segment)}: ${JSON.stringify(lede)}`);
+  const lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  if (lede !== claim.lede) {
+    throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected ${JSON.stringify(claim.lede)}`);
+  }
+  // Issue #899: the button says where the click goes, and the one small line
+  // under it shows the numeric trial (the Worker substitutes
+  // __FREE_DELIVERIES__ before the bytes leave) plus its self-host text link.
+  const heroButtonText = (await hero.locator('[data-cta="cloud-start"]').textContent()).trim();
+  if (heroButtonText !== claim.button) {
+    throw new Error(`${path}: hero CTA label is ${JSON.stringify(heroButtonText)}, expected ${JSON.stringify(claim.button)}`);
+  }
+  const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
+  const expectedHeroNote = path === "/"
+    ? `${pricing.freeDeliveries} deliveries free, no credit card · or self-host it from GitHub`
+    : `免费 ${pricing.freeDeliveries} 次，不用绑卡 · 或者从 GitHub 自己部署`;
+  if (heroNote !== expectedHeroNote) {
+    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
+  }
+  const heroGithub = hero.locator('[data-cta="hero-github"]');
+  if (await heroGithub.count() !== 1
+    || await heroGithub.getAttribute("href") !== "https://github.com/orbi-build/orbi") {
+    throw new Error(`${path}: the hero note must carry exactly one hero-github text link to the repository`);
+  }
+  if (await hero.getByText(/only sees the repos you pick|只授权你选的仓库/).count()) {
+    throw new Error(`${path}: the removed repo-authorisation reassurance is still on the first screen`);
+  }
+  // Issue #899: the label names Orbi Cloud; at the phone acceptance widths it
+  // must still be a single line. A wrapped label doubles the text height and
+  // pushes the note out of the first screen, so the line boxes are measured.
+  if (size.width <= 420) {
+    const labelLines = await hero.locator('[data-cta="cloud-start"]').evaluate((button) => {
+      const range = document.createRange();
+      range.selectNodeContents(button);
+      return range.getClientRects().length;
+    });
+    if (labelLines !== 1) {
+      throw new Error(`${path}: hero CTA label renders ${labelLines} lines at ${size.width}px, expected 1`);
     }
   }
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  if (await hero.locator("a").count() !== 1 || await hero.locator('[data-cta="cloud-start"]').count() !== 1) {
-    throw new Error(`${path}: hero must contain exactly one cloud-start link`);
+  // Issue #899: the hero's links are the Cloud CTA and the note's self-host
+  // text link — two, each with its own reported data-cta.
+  if (await hero.locator("a").count() !== 2
+    || await hero.locator('[data-cta="cloud-start"]').count() !== 1
+    || await hero.locator('[data-cta="hero-github"]').count() !== 1) {
+    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links`);
   }
   if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
     throw new Error(`${path}: removed film control remains in the hero`);
@@ -1107,11 +1148,15 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayCta = page.locator('[data-cta="midway-cloud"]');
-  const heroCta = page.locator('[data-cta="cloud-start"]');
   const midwayText = (await midwayCta.textContent()).trim();
-  const heroText = (await heroCta.textContent()).trim();
-  if (midwayText !== heroText) {
-    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected hero text ${JSON.stringify(heroText)}`);
+  // Issue #899: the hero button names Orbi Cloud for the first screen; the
+  // midway CTA under the proof keeps the numeric trial promise. Both land on
+  // the same handoff, which is what the two share now.
+  const expectedMidwayText = path.startsWith("/zh/")
+    ? `免费试 ${pricing.freeDeliveries} 次 →`
+    : `Try ${pricing.freeDeliveries} deliveries free →`;
+  if (midwayText !== expectedMidwayText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected ${JSON.stringify(expectedMidwayText)}`);
   }
   const midwayHref = await midwayCta.getAttribute("href");
   const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";

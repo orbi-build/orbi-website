@@ -1629,12 +1629,16 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       tag: "MANAGED CLOUD",
       title: "Try it on your own repository",
       description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
+      // Issue #899 names Cloud in the hero button only; the closing CTA keeps
+      // the free-deliveries promise, on the hero's own handoff.
+      trial: "Try __FREE_DELIVERIES__ deliveries free →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
     },
     "zh/index.html": {
       tag: "托管 Cloud",
       title: "在你自己的仓库上试一试",
       description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
+      trial: "免费试 __FREE_DELIVERIES__ 次 →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
     },
   };
@@ -1651,9 +1655,11 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
       expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
       expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
-      expect(cta(closing, "closing-start"), `${output}: closing CTA matches the hero`).toEqual(
-        cta(html, "cloud-start"),
-      );
+      const heroCta = cta(html, "cloud-start");
+      expect(cta(closing, "closing-start"), `${output}: closing CTA keeps the hero's handoff`).toEqual({
+        ...heroCta,
+        text: contract.trial,
+      });
       expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
       expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
     });
@@ -3242,13 +3248,14 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 
 // Issue #890: a first-time visitor — and an AI answer engine quoting the page —
 // must be able to read what Orbi is in the homepage body, not only in the
-// <head> metadata. Both homes carry the definition sentence under the H1:
-// EN starts with "Orbi is an open-source", ZH with "Orbi 是开源".
-describe("homepage body carries an Orbi definition sentence (Issue #890)", () => {
+// <head> metadata. Both homes carry the definition under the H1. Issue #899
+// replaced the long AGPL-first sentence with the approved two-sentence lede
+// (open source + where it runs); the assertion follows the new copy.
+describe("homepage body carries an Orbi definition sentence (Issues #890, #899)", () => {
   const body = (html) => html.slice(html.indexOf("<body"));
   const homes = {
-    "index.html": /Orbi is an open-source \(AGPL-3\.0\) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases\./,
-    "zh/index.html": /Orbi 是开源（AGPL-3\.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。/,
+    "index.html": /An open-source AI agent that takes your GitHub Issues all the way to a release\. Run it on Orbi Cloud or your own machine\./,
+    "zh/index.html": /开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。/,
   };
 
   for (const [output, definition] of Object.entries(homes)) {
