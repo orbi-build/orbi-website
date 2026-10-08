@@ -1,7 +1,7 @@
 ---
-title: Searching for Orbi's harness, part 2: is the regression guard worth its tokens?
+title: Searching for Orbi's harness, part 2: guard cost
 date: 2026-09-30
-summary: On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.
+summary: On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. Five designs to cut the cost of the fix.
 lang: en
 author: Orbi
 image: /img/blog-harness-part2.png

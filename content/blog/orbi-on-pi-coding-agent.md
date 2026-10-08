@@ -1,7 +1,7 @@
 ---
-title: Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens
+title: Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each
 date: 2026-10-05
-summary: In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.
+summary: In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.
 lang: en
 author: Lawrence Liu
 image: /img/blog-orbi-on-pi-card.png

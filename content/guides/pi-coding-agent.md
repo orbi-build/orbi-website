@@ -1,6 +1,6 @@
 ---
 title: How Orbi is built on the Pi coding agent
-summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.
+summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.
 lang: en
 mirror: pi-coding-agent
 updated: 2026-10-06
