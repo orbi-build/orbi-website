@@ -191,6 +191,7 @@
 <li><strong>$0.125</strong> median and <strong>$0.417</strong> maximum outside peak hours.</li>
 <li><strong>$0.249</strong> median and <strong>$0.834</strong> maximum during peak hours.</li>
 </ul>
+<p>Those figures are an earlier sample: the same 20 merged PRs, from 2026-09-22 to 2026-09-24. The current measurement is 169 merged deliveries recorded by Orbi Cloud, a median of <strong>$0.082</strong> off-peak — see the <a href="/cost/">cost page</a>.</p>
 <p>The figures use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">official pricing</a>. Peak prices are double the off-peak rates during weekdays 01:00–04:00 and 06:00–10:00 UTC. For an unattended coding agent, scheduling around those windows is a practical cost control. The <a href="/guides/auto-merge-ai-prs/">auto-merge AI PR guide</a> explains the delivery loop; this post puts a price on its merged-PR unit.</p>
 <h2 id="why-the-number-stays-low">Why the number stays low</h2>
 <p>Of the tokens in these runs, <strong>97.1% were cache reads</strong>. A cache hit costs $0.003 per one million tokens; a cache miss costs $0.15 per one million. That is <strong>1/50</strong> of the uncached price. Orbi&#39;s session structure repeatedly reuses the same context, so the context needed for an independent review and its fixes is not paid for as a fresh read each time.</p>

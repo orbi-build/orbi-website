@@ -1524,16 +1524,20 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // identical across the two.
 // Issue #118: the older delivery dataset is a snapshot as of a stated date
 // (the sample moves as worktrees are cleaned up), so its section retains the
-// date, n=46, and re-derivation recipe. Issue #512 adds the dated n=20 merged-PR
-// sample; the smoke reads the hero n each rendered page shows and asserts the
-// two languages agree.
+// date, n=46, and re-derivation recipe. Issue #512 added the dated n=20
+// merged-PR sample; Issue #886 moved it below the page as the labelled earlier
+// sample and promoted the n=169 Cloud sample to the headline. The smoke reads
+// the hero n each rendered page shows and asserts the two languages agree.
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
     h1: "What an AI coding agent costs per merged pull request",
+    earlier: "Earlier sample",
     text: [
-      // merged-PR measurement date, sample size, and median costs
-      "measured 2026-09-24", "n=20", "$0.125", "$0.249", "10,612,802",
+      // the headline sample: date, size, and median/p90/mean cost
+      "measured 2026-10-05 15:36 UTC+8", "n=169", "$0.082", "$0.22", "$0.12", "$18.45",
+      // the retired n=20 sample stays published, labelled as earlier
+      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       // older per-delivery snapshot remains available
       "2026-09-12", "n=46",
       "n is a snapshot as of the stated date, not a permanent fact",
@@ -1560,8 +1564,10 @@ const costPages = {
   "/zh/cost/": {
     zh: "/cost/",
     h1: "AI 编程 agent 每合并一个 PR 花多少钱",
+    earlier: "早期样本",
     text: [
-      "截至 2026-09-24 实测", "n=20", "$0.125", "$0.249", "10,612,802",
+      "截至 2026-10-05 15:36（UTC+8）实测", "n=169", "$0.082", "$0.22", "$0.12", "$18.45",
+      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       "2026-09-12", "n=46",
       "n 是截至标注日期的快照,不是永久事实",
       ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
@@ -1606,6 +1612,20 @@ async function assertCostPage(browser, path, size, screenshot) {
     if (!text.includes(needle)) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
+  }
+  // Issue #886: the first screen is the hero — the headline sample (169 merged
+  // deliveries, median $0.082) must be what the visitor lands on.
+  const hero = (await page.locator("section.compare-hero").textContent()).replace(/\s+/g, " ");
+  for (const needle of ["$0.082", "169"]) {
+    if (!hero.includes(needle)) throw new Error(`${path}: hero is missing ${JSON.stringify(needle)}`);
+  }
+  if (hero.includes("$0.125")) throw new Error(`${path}: hero still leads with the retired $0.125 median`);
+  // Issue #886: the retired median survives only inside the earlier sample,
+  // which sits below the current sections — page position, not just a label.
+  const earlierAt = text.indexOf(claim.earlier);
+  if (earlierAt < 0) throw new Error(`${path}: no ${JSON.stringify(claim.earlier)} section`);
+  for (let at = text.indexOf("$0.125"); at !== -1; at = text.indexOf("$0.125", at + 1)) {
+    if (at < earlierAt) throw new Error(`${path}: $0.125 appears before the earlier sample`);
   }
   // Issue #118: the sample size each rendered page actually shows — the main
   // text, not a pinned constant — so the two languages can be compared.
