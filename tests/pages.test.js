@@ -697,6 +697,116 @@ describe("Claude Code alternatives (Issue #869)", () => {
   });
 });
 
+// Issue #907: /compare/github-copilot-coding-agent/ targets the "github
+// copilot alternatives" query. The EN page carries the term in its title
+// while keeping the Orbi-vs-Copilot comparison h1, gains a
+// #github-copilot-alternatives section naming four IDE-side swaps and Orbi
+// (linking three comparison pages), dates every newly cited source, and the
+// /compare/ capability matrix points its Copilot row at that section. The
+// Issue scopes this to English pages, so the ZH mirror is deliberately
+// untouched.
+//
+// The maintainer's content-quality gate (2026-10-08) adds three demands on
+// the same section: a comparison table as its figure, Orbi's own public
+// delivery record as first-hand material, and no template copy — its 8-gram
+// overlap with the sibling alternatives sections stays under 10%.
+describe("GitHub Copilot alternatives (Issue #907)", () => {
+  const editorTools = ["Cursor", "Windsurf", "Cline", "Tabnine"];
+  const sectionLinks = ["/compare/claude-code/", "/compare/codex/", "/compare/openhands/"];
+  const newSources = [
+    "https://cursor.com/docs/agent/overview",
+    "https://docs.devin.ai/desktop/devin-desktop-faq",
+    "https://docs.cline.bot/cline-overview",
+    "https://docs.tabnine.com/main",
+  ];
+  const page = () => shipped.get("compare/github-copilot-coding-agent/index.html");
+  const alternativesSection = (html) => {
+    const start = html.indexOf('id="github-copilot-alternatives"');
+    return start < 0 ? "" : html.slice(start, html.indexOf("</section>", start));
+  };
+  const words = (html) =>
+    (html.replace(/<[^>]+>/g, " ").replace(/&#?\w+;/g, " ").toLowerCase().match(/[a-z0-9]+/g) ?? []);
+  const eightGrams = (list) => {
+    const grams = new Set();
+    for (let i = 0; i + 8 <= list.length; i += 1) grams.add(list.slice(i, i + 8).join(" "));
+    return grams;
+  };
+
+  it("carries 'GitHub Copilot alternatives' in the title without losing the comparison", () => {
+    const html = page();
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+    expect(title, "title must carry the search term").toContain("GitHub Copilot alternatives");
+    expect(title, "title must keep the comparison intent").toContain("Orbi vs");
+    expect([...title].length, "title must stay within the search-result limit").toBeLessThanOrEqual(60);
+    expect(h1, "h1 must not change").toBe("Orbi vs GitHub Copilot cloud agent");
+  });
+
+  it("anchors the alternatives section, names the editor tools and Orbi, and links the three comparisons", () => {
+    const html = page();
+    const start = html.indexOf('id="github-copilot-alternatives"');
+    expect(start, "missing the #github-copilot-alternatives h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = alternativesSection(html);
+    for (const tool of editorTools) {
+      expect(section, tool + " must be named in the alternatives section").toContain(">" + tool);
+    }
+    expect(section, "Windsurf's rename to Devin Desktop must be stated").toContain("Devin Desktop");
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of sectionLinks) {
+      expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
+    }
+  });
+
+  it("lists every newly cited source in the Sources section with a date", () => {
+    const html = page();
+    const list = html.match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, href + " must appear in Sources").toBeTruthy();
+      expect(item, href + ": source must carry a verification date").toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("points the /compare/ Copilot capability-matrix row at the alternatives section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/github-copilot-coding-agent/#github-copilot-alternatives">GitHub Copilot alternatives</a>',
+    );
+  });
+
+  it("carries a comparison table as its figure", () => {
+    const section = alternativesSection(page());
+    expect(section, "the alternatives section must carry a comparison table").toContain('<table class="compare-table');
+    const rows = section.match(/<tr>/g) ?? [];
+    expect(rows.length, "one header row plus one row per editor tool").toBeGreaterThanOrEqual(5);
+  });
+
+  it("cites Orbi's own public delivery record as first-hand material", () => {
+    const section = alternativesSection(page());
+    expect(section, "a real orbi-build delivery record must be linked").toMatch(/github\.com\/orbi-build\/orbi-website\/pull\/\d+/);
+    expect(section, "the evidence page must be linked").toContain('href="/evidence/"');
+  });
+
+  it("keeps 8-gram overlap with the sibling alternatives sections under 10%", () => {
+    const mine = [...eightGrams(words(alternativesSection(page())))];
+    expect(mine.length, "the section must be long enough to measure").toBeGreaterThan(40);
+    const siblings = new Set();
+    for (const [output, id] of [
+      ["compare/claude-code/index.html", "claude-code-alternatives"],
+      ["compare/codex/index.html", "codex-alternatives"],
+    ]) {
+      const html = shipped.get(output);
+      const start = html.indexOf('id="' + id + '"');
+      const section = html.slice(start, html.indexOf("</section>", start));
+      for (const gram of eightGrams(words(section))) siblings.add(gram);
+    }
+    const shared = mine.filter((gram) => siblings.has(gram));
+    const ratio = shared.length / mine.length;
+    expect(ratio, 'overlapping 8-grams: ' + shared.join(' | ')).toBeLessThan(0.1);
+  });
+});
+
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   it("keeps exactly one H1 on every sitemap HTML page", () => {
     const violations = [];
@@ -2279,7 +2389,7 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "compare/devin/index.html": ["2026-09-07", "2026-09-24"],
     "zh/compare/devin/index.html": ["2026-09-07", "2026-09-24"],
-    "compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-10-08"],
     "zh/compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
     "compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
     "zh/compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
