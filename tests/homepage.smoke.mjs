@@ -1466,13 +1466,13 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const hero = page.locator(".compare-hero");
   const expectedHero = path === "/cloud/"
     ? {
-      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
       button: `Try ${pricing.freeDeliveries} deliveries free →`,
       note: "No credit card required · Orbi only sees the repos you pick",
       href: "/cloud/login",
     }
     : {
-      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
       button: `免费试 ${pricing.freeDeliveries} 次 →`,
       note: "不用绑定信用卡 · 只授权你选的仓库",
       href: "/zh/cloud/login",
