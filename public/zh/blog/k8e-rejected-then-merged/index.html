@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-k8e.png">
   <meta property="og:image:alt" content="Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了">
   <meta property="article:published_time" content="2026-09-23">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了","datePublished":"2026-09-23","author":{"@type":"Organization","name":"Orbi"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/k8e-rejected-then-merged/","image":"https://orbi.build/img/blog-k8e.png","inLanguage":"zh-CN","description":"Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。","url":"https://orbi.build/zh/blog/k8e-rejected-then-merged/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了","datePublished":"2026-09-23","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/k8e-rejected-then-merged/","image":"https://orbi.build/img/blog-k8e.png","inLanguage":"zh-CN","description":"Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。","url":"https://orbi.build/zh/blog/k8e-rejected-then-merged/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -82,6 +82,12 @@
     /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
     .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
     .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -146,8 +152,9 @@
     <div class="night">
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">博客 · 2026-09-23</p>
+          <p class="eyebrow">博客</p>
           <h1 id="post-title">Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-09-23">2026-09-23</time></p>
 
           <p class="hero-lede">Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。</p>
         </section>

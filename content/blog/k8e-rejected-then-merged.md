@@ -3,7 +3,7 @@ title: The k8e etcd ticket that closed too early
 date: 2026-09-23
 summary: Orbi wrote an etcd test suite for k8e, a 497-star Kubernetes distro. It was rejected, fixed and merged, and the four-phase issue closed after phase one.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-k8e.png
 mirror: k8e-rejected-then-merged
 ---

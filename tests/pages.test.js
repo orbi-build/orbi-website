@@ -1442,11 +1442,16 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
 // primary nav (the /cloud/ PRICING section), not the measured-cost essay.
 describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
   it("keeps the unsupported per-PR claim off every page that does not measure cost", () => {
+    // Index pages list every post's published headline, so the cost post's own
+    // title ("... cost per merged PR") appears on them without making a price
+    // claim: the blog index, and since Issue #887 the author page that lists
+    // the same posts.
     const measuredCostOutputs = new Set([
       "cost/index.html",
       "zh/cost/index.html",
       "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
       "blog/index.html",
+      "about/lawrence-liu/index.html",
     ]);
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
@@ -2736,11 +2741,10 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(post.output);
       expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
       expect(html).toContain(`\"@type\":\"Article\"`);
-      expect(articleOf(html).author, post.output).toEqual(
-        post.author === "Orbi"
-          ? { "@type": "Organization", name: "Orbi" }
-          : { "@type": "Person", name: post.author },
-      );
+      // Issue #887: every post names the same Person, with the author page
+      // (see tests/blog-author.test.js for the full contract).
+      expect(articleOf(html).author["@type"], post.output).toBe("Person");
+      expect(articleOf(html).author.name, post.output).toBe(post.author);
       expect(html).toContain(`https://orbi.build${post.image}`);
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
@@ -2748,10 +2752,11 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expectUniquePostImages(posts);
   });
 
-  // Issue #862: the Article author must name the real author — the first-person
-  // posts are written by a person, the rest by Orbi — and every post carries a
-  // publisher and mainEntityOfPage so search and AI answers can attribute it.
-  it("names first-person posts' author as a Person with publisher and mainEntityOfPage (Issue #862)", () => {
+  // Issue #862: the Article author must name the real author, and every post
+  // carries a publisher and mainEntityOfPage so search and AI answers can
+  // attribute it. Issue #887 gives that Person the author page URL and both
+  // profiles; tests/blog-author.test.js pins the full object for all posts.
+  it("names each post's author as a Person with publisher and mainEntityOfPage (Issues #862, #887)", () => {
     const firstPerson = [
       ["blog/pi-agent-harness/index.html", "https://orbi.build/blog/pi-agent-harness/"],
       ["zh/blog/pi-agent-harness/index.html", "https://orbi.build/zh/blog/pi-agent-harness/"],
@@ -2764,7 +2769,8 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(output);
       expect(html, `${output}: missing output`).toBeTruthy();
       const article = articleOf(html);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.author["@type"], output).toBe("Person");
+      expect(article.author.name, output).toBe("Lawrence Liu");
       expect(article.publisher, output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -2776,12 +2782,13 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
   });
 
-  it("keeps the Organization author for Orbi posts, with the same publisher (Issue #862)", () => {
-    const orgPosts = posts.filter((post) => post.author === "Orbi");
-    expect(orgPosts.length, "the corpus must still contain organization posts").toBeGreaterThan(0);
-    for (const post of orgPosts) {
+  it("names the publisher and mainEntityOfPage on every post, never an Organization author (Issue #887)", () => {
+    // Issue #887 retired the per-post Organization author: the k8e post (and
+    // every other) now attributes a Person, so the corpus cannot drift back.
+    expect(posts.length).toBeGreaterThan(0);
+    for (const post of posts) {
       const article = articleOf(shipped.get(post.output));
-      expect(article.author, post.output).toEqual({ "@type": "Organization", name: "Orbi" });
+      expect(article.author, post.output).not.toEqual({ "@type": "Organization", name: "Orbi" });
       expect(article.publisher, post.output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -2960,7 +2967,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 
@@ -3103,7 +3110,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 

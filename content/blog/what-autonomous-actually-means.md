@@ -3,7 +3,7 @@ title: What an autonomous coding agent does when it says no
 date: 2026-09-20
 summary: Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain inspectable.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-autonomous-card.png
 ---
 

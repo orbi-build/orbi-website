@@ -3,7 +3,7 @@ title: 给 Orbi 找 harness（下）：回归防护值不值它的 token
 date: 2026-09-30
 summary: 八个 Orbi 没见过的 bug，issue 都只给一个窄例子，原版 harness 三次里挂一次。我们试了五种 harness，想保住修复，又不让每次交付的成本翻倍。这篇讲哪些管用、哪些不管用，以及最后为什么选了最简单的那个。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-harness-part2.png
 mirror: is-the-regression-guard-worth-its-tokens
 series: pi

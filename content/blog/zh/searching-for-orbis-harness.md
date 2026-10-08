@@ -3,7 +3,7 @@ title: 给 Orbi 找 harness（上）：我们的评审漏掉了什么
 date: 2026-09-29
 summary: Orbi 的评审放过了两个修复，它们各自改坏了别的东西。我们一条规则一条规则地重写 harness，在 Orbi 翻过车的 issue 和十二个它没见过的 issue 上重跑完整交付流程，得出十条结论，数据都在文里。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-harness-search.png
 mirror: searching-for-orbis-harness
 series: pi

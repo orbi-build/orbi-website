@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://orbi.build/about/lawrence-liu/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/lawrence-liu/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/lawrence-liu/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/about/lawrence-liu/"/>
+    <lastmod>2026-10-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/benchmark/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
@@ -258,6 +267,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/terms/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
+    <lastmod>2026-10-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/about/lawrence-liu/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/about/lawrence-liu/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/about/lawrence-liu/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/about/lawrence-liu/"/>
     <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -591,7 +609,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/"/>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -609,7 +627,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/searching-for-orbis-harness/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/searching-for-orbis-harness/"/>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -627,7 +645,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/gitspawn-unattended-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/gitspawn-unattended-agent/"/>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -645,7 +663,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -654,7 +672,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -663,7 +681,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-is-open-source-again/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-is-open-source-again/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -672,7 +690,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/k8e-rejected-then-merged/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/k8e-rejected-then-merged/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/k8e-rejected-then-merged/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -681,7 +699,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/k8e-rejected-then-merged/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/k8e-rejected-then-merged/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/k8e-rejected-then-merged/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -690,7 +708,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/designing-a-slash-command/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/designing-a-slash-command/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/designing-a-slash-command/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -708,7 +726,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/designing-a-slash-command/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/designing-a-slash-command/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/designing-a-slash-command/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -717,7 +735,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/waiting-for-someone-who-cannot-answer/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/waiting-for-someone-who-cannot-answer/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -726,7 +744,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/watch-the-six-steps/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/watch-the-six-steps/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/watch-the-six-steps/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -735,7 +753,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/watch-the-six-steps/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/watch-the-six-steps/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/watch-the-six-steps/"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -753,7 +771,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/what-autonomous-actually-means/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/what-autonomous-actually-means/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/what-autonomous-actually-means/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -762,7 +780,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-github-actions-who-merges/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-github-actions-who-merges/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -771,7 +789,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-github-actions-who-merges/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-github-actions-who-merges/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-github-actions-who-merges/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -789,7 +807,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/docker-image-third-try/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/docker-image-third-try/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/docker-image-third-try/"/>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

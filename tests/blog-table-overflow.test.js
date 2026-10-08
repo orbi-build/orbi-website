@@ -46,7 +46,7 @@ beforeAll(async () => {
   await cp(join("content", "blog"), contentDir, { recursive: true });
   const row = `| ${"unbreakable".repeat(12)} | ${"wide".repeat(30)} |`;
   const table = `| Column A | Column B |\n| --- | --- |\n${row}`;
-  await writeFile(join(contentDir, "table-fixture.md"), `---\ntitle: Table fixture\ndate: 2026-09-22\nsummary: Five deliberately wide tables\nlang: en\nauthor: Orbi\nimage: /img/og.png\n---\n\n${Array(5).fill(table).join("\n\n")}\n`);
+  await writeFile(join(contentDir, "table-fixture.md"), `---\ntitle: Table fixture\ndate: 2026-09-22\nsummary: Five deliberately wide tables\nlang: en\nauthor: Lawrence Liu\nimage: /img/og.png\n---\n\n${Array(5).fill(table).join("\n\n")}\n`);
   await buildPages(fixtureRoot, { contentDir });
   await cp(join("public", "styles.css"), join(fixtureRoot, "styles.css"));
   // Issue #585: pages load their webfont from the self-hosted /fonts/fonts.css
