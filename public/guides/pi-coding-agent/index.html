@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How Orbi is built on the Pi coding agent</title>
-  <meta name="description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
+  <meta name="description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.">
   <link rel="canonical" href="https://orbi.build/guides/pi-coding-agent/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/guides/pi-coding-agent/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/">
@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/guides/pi-coding-agent/">
   <meta property="og:title" content="How Orbi is built on the Pi coding agent">
-  <meta property="og:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
+  <meta property="og:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="How Orbi is built on the Pi coding agent">
-  <meta name="twitter:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.">
+  <meta name="twitter:description" content="Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.">
   <meta name="twitter:image" content="https://orbi.build/img/og.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -125,7 +125,7 @@
         <section class="guide-hero" aria-labelledby="guide-title">
           <p class="eyebrow">Guide</p>
           <h1 id="guide-title">How Orbi is built on the Pi coding agent</h1>
-          <p class="hero-lede">Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. The Pi series index, then how the runner works.</p>
+          <p class="hero-lede">Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.</p>
         </section>
       </div>
     </div>
@@ -188,9 +188,9 @@
 
 <ul class="series-list">
   <li><a href="/blog/pi-agent-harness/">Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</a> <time datetime="2026-10-06">2026-10-06</time></li>
-  <li><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</a> <time datetime="2026-10-05">2026-10-05</time></li>
-  <li><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</a> <time datetime="2026-09-30">2026-09-30</time></li>
-  <li><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: what our reviewer missed</a> <time datetime="2026-09-29">2026-09-29</time></li>
+  <li><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each</a> <time datetime="2026-10-05">2026-10-05</time></li>
+  <li><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: guard cost</a> <time datetime="2026-09-30">2026-09-30</time></li>
+  <li><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: review gaps</a> <time datetime="2026-09-29">2026-09-29</time></li>
 </ul>
 <p>The title of the 169-PR post is about cost, but it also follows one real issue through every Pi session Orbi started for it, and covers why we stay on Pi and the two incidents that shaped how we run it. The rest of this page is the reference for the same machinery. The 6 October post puts three ways of running Pi through the same kill -9 test: <code class="post-code--spaced">pi --print</code>, Pi through the adapter for Vercel&#39;s AI SDK, and Pi Durable run on Cloudflare through the Agents SDK&#39;s <code class="post-code--single">PiHarness</code>. The two &quot;Searching for Orbi&#39;s harness&quot; posts are earlier benchmarks. There the harness means the prompts and review rules Orbi wraps around the model, not an agent tool like Pi; the posts cover how we changed those rules and compared models, and their data is not part of the production numbers below.</p>
 <h2 id="words-used-on-this-page">Words used on this page</h2>

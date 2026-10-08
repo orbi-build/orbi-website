@@ -256,7 +256,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/pi-agent-harness/
 - Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):
   https://orbi.build/zh/blog/pi-agent-harness/
-- Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens (English):
+- Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/
 - Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分 (Chinese):
   https://orbi.build/zh/blog/orbi-on-pi-coding-agent/
@@ -264,11 +264,11 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/run-claude-code-unattended/
 - Claude Code headless 模式是什么？自动化开发还差六件事 (Chinese):
   https://orbi.build/zh/blog/run-claude-code-unattended/
-- Searching for Orbi's harness, part 2: is the regression guard worth its tokens? (English):
+- Searching for Orbi's harness, part 2: guard cost (English):
   https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/
 - 给 Orbi 找 harness（下）：回归防护值不值它的 token (Chinese):
   https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/
-- Searching for Orbi's harness, part 1: what our reviewer missed (English):
+- Searching for Orbi's harness, part 1: review gaps (English):
   https://orbi.build/blog/searching-for-orbis-harness/
 - 给 Orbi 找 harness（上）：我们的评审漏掉了什么 (Chinese):
   https://orbi.build/zh/blog/searching-for-orbis-harness/
