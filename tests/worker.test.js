@@ -475,7 +475,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     }
   });
 
-  // Issue #917: GitHub is pulled once every 5 minutes by the cron trigger and
+  // Issue #917: GitHub is pulled once an hour by the cron trigger and
   // written to KV; caches.default only fronts that snapshot, and /stats never
   // pulls GitHub while KV has a value. A repo that fails a pull keeps the
   // value already in KV instead of becoming a null in the global snapshot.
@@ -512,7 +512,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   it("writes every repo to KV when the cron pull succeeds", async () => {
     mockGitHub();
     const env = { GITHUB_TOKEN: "token", STATS_KV: fakeStatsKv() };
-    await worker.scheduled({ cron: "*/5 * * * *" }, env);
+    await worker.scheduled({ cron: "0 * * * *" }, env);
     const stored = await env.STATS_KV.read();
     for (const name of ["orbi", "orbi-website", "orbi-cloud"]) {
       expect(stored.repos[name]).toMatchObject({
