@@ -495,6 +495,21 @@ describe("ai-ready methodology pages (Issue #195)", () => {
     }
   });
 
+  // Issue #888: both aiready pages live on aiready.sh (their canonical), so
+  // every hreflang alternate — x-default included — points there too, never
+  // back at orbi.build or at the page itself.
+  it("points every aiready hreflang alternate at aiready.sh (Issue #888)", () => {
+    for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
+      const alternates = [...shipped.get(output).matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map(([, lang, href]) => [lang, href]);
+      expect(alternates, `${output}: hreflang alternates`).toEqual([
+        ["en", "https://aiready.sh/"],
+        ["zh-CN", "https://aiready.sh/zh/"],
+        ["x-default", "https://aiready.sh/"],
+      ]);
+    }
+  });
+
   it("keeps the Cloudflare Web Analytics beacon on every page whose source ships one (Issue #608)", async () => {
     // The beacon is not site-wide: standalone pages (aiready.sh) and pages
     // like privacy never carried one, so presence is pinned per source, not
@@ -539,8 +554,14 @@ describe("comparison capability matrix (Issue #201)", () => {
     }
   });
 
-  it("lists the CSV asset in the sitemap", () => {
-    expect(shippedSitemap).toContain("https://orbi.build/compare/matrix.csv");
+  // Issue #888: the sitemap lists indexable HTML pages only. The CSV is a
+  // downloadable asset, not a page — it stays out of the sitemap while the
+  // compare page keeps linking it.
+  it("keeps the CSV asset out of the sitemap while the compare page links it", () => {
+    expect(shippedSitemap).not.toContain("https://orbi.build/compare/matrix.csv");
+    for (const output of ["compare/index.html", "zh/compare/index.html"]) {
+      expect(shipped.get(output), `${output}: CSV download link`).toContain('href="/compare/matrix.csv"');
+    }
   });
 });
 
@@ -898,9 +919,15 @@ describe("build output is committed (npm run build ran)", () => {
   });
 
   it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
-    const pagesForSitemap = pages.filter((page) => !page.standalone);
+    // Issue #888: a page is listed only when it is indexable HTML at its own
+    // orbi.build URL — its canonical. The two aiready pages canonically live
+    // on aiready.sh and /compare/matrix.csv is not a page, so none of the
+    // three is listed.
+    const pagesForSitemap = pages.filter((page) =>
+      page.body.includes(`<link rel="canonical" href="https://orbi.build${pathToHref(page.output)}">`),
+    );
     expect(generatedSitemap).toBe(shippedSitemap);
-    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length + 1);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length);
     expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
       .toBeGreaterThanOrEqual(2);
 
@@ -915,6 +942,29 @@ describe("build output is committed (npm run build ran)", () => {
     const expectedDate = dirty ? new Date().toISOString().slice(0, 10) : new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
     const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
+  });
+
+  // Issue #888: every URL in the sitemap must be an indexable HTML page that
+  // declares itself canonical. A URL that is not HTML (the CSV) or whose
+  // canonical points at another host (the two aiready pages, canonical
+  // aiready.sh) has no business in the sitemap — GSC reports exactly that as
+  // "Discovered — currently not indexed".
+  it("lists only HTML pages whose canonical is the listed URL", () => {
+    const locs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)].map((match) => match[1]);
+    expect(locs.length).toBeGreaterThan(0);
+    const failures = [];
+    for (const href of locs) {
+      const output = href === "/" ? "index.html" : `${href.slice(1)}index.html`;
+      const html = shipped.get(output);
+      if (!html) {
+        failures.push(`${href}: no HTML build output at ${output}`);
+        continue;
+      }
+      if (!/^<!DOCTYPE html>/i.test(html.trimStart())) failures.push(`${href}: build output is not HTML`);
+      const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      if (canonical !== `https://orbi.build${href}`) failures.push(`${href}: canonical is ${canonical ?? "missing"}`);
+    }
+    expect(failures, failures.join("\n")).toEqual([]);
   });
 
   // Issue #279: the build runs before the commit, so a source with
