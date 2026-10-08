@@ -1,7 +1,7 @@
 ---
-title: Searching for Orbi's harness, part 1: what our reviewer missed
+title: Searching for Orbi's harness, part 1: review gaps
 date: 2026-09-29
-summary: Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.
+summary: Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the loop on failed and unseen issues.
 lang: en
 author: Orbi
 image: /img/blog-harness-search.png

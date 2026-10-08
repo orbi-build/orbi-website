@@ -9,8 +9,8 @@
   },
   {
     "slug": "orbi-on-pi-coding-agent",
-    "title": "Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens",
-    "summary": "In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.",
+    "title": "Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each",
+    "summary": "In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.",
     "zhSlug": "orbi-on-pi-coding-agent",
     "zhTitle": "Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分",
     "related": []
@@ -18,23 +18,23 @@
   {
     "slug": "run-claude-code-unattended",
     "title": "Run Claude Code unattended: headless mode is step one",
-    "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.",
+    "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.",
     "zhSlug": "run-claude-code-unattended",
     "zhTitle": "Claude Code headless 模式是什么？自动化开发还差六件事",
     "related": []
   },
   {
     "slug": "is-the-regression-guard-worth-its-tokens",
-    "title": "Searching for Orbi's harness, part 2: is the regression guard worth its tokens?",
-    "summary": "On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.",
+    "title": "Searching for Orbi's harness, part 2: guard cost",
+    "summary": "On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. Five designs to cut the cost of the fix.",
     "zhSlug": "is-the-regression-guard-worth-its-tokens",
     "zhTitle": "给 Orbi 找 harness（下）：回归防护值不值它的 token",
     "related": []
   },
   {
     "slug": "searching-for-orbis-harness",
-    "title": "Searching for Orbi's harness, part 1: what our reviewer missed",
-    "summary": "Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.",
+    "title": "Searching for Orbi's harness, part 1: review gaps",
+    "summary": "Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the loop on failed and unseen issues.",
     "zhSlug": "searching-for-orbis-harness",
     "zhTitle": "给 Orbi 找 harness（上）：我们的评审漏掉了什么",
     "related": []
@@ -42,7 +42,7 @@
   {
     "slug": "gitspawn-unattended-agent",
     "title": "GitSpawn and the agent that never asks",
-    "summary": "A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.",
+    "summary": "A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who runs git, and reverted it.",
     "zhSlug": "gitspawn-unattended-agent",
     "zhTitle": "GitSpawn 绕开的是审批，我们的 agent 本来就不审批",
     "related": []
@@ -50,7 +50,7 @@
   {
     "slug": "deepseek-coding-agent-cost-per-merged-pr",
     "title": "DeepSeek coding agent cost per merged PR",
-    "summary": "See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.",
+    "summary": "See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key.",
     "zhSlug": "deepseek-coding-agent-cost-per-merged-pr",
     "zhTitle": "用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花多少钱",
     "related": []
@@ -82,7 +82,7 @@
   {
     "slug": "waiting-for-someone-who-cannot-answer",
     "title": "The engine waited for an answer users could not give",
-    "summary": "Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.",
+    "summary": "Our engine paused for a human decision, then asked tenants to use a command they did not have. Three versions of the same mistake in one afternoon.",
     "zhSlug": "waiting-for-someone-who-cannot-answer",
     "zhTitle": "引擎等来的答案，托管用户给不了：三个交互缺口记录",
     "related": []
@@ -98,7 +98,7 @@
   {
     "slug": "what-autonomous-actually-means",
     "title": "What an autonomous coding agent does when it says no",
-    "summary": "Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.",
+    "summary": "Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain inspectable.",
     "zhSlug": "what-autonomous-actually-means",
     "zhTitle": "AI 编码 agent 说不之后，交付会怎样？",
     "related": []
@@ -114,7 +114,7 @@
   {
     "slug": "docker-image-third-try",
     "title": "The Docker image made it out on try three",
-    "summary": "The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.",
+    "summary": "The orbi image reached GHCR and Docker Hub on its third run. The first two failures were build context and Dockerfile paths; the last an invalid tag.",
     "zhSlug": "docker-image-third-try",
     "zhTitle": "Docker 镜像到第三次才发布成功：三次失败记录",
     "related": []

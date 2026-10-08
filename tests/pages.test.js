@@ -1278,6 +1278,29 @@ describe("per-page head parameters (title / description / canonical)", () => {
       expect(description, `${page.output}: description is missing`).toBeTruthy();
     }
   });
+
+  // Issue #891: a search result truncates a title or description that runs
+  // past the words that fit, so the missing words never reach the user. The
+  // shipped bytes every indexable page carries — hand-written pages, blog
+  // posts and guides alike — keep <title> within 60 characters and
+  // <meta name="description"> within 155, counted in characters (one CJK
+  // character is one character). The message names the page, its count and
+  // its text, so the author knows exactly which source to shorten.
+  it("keeps every indexable title within 60 and description within 155 characters", () => {
+    const decode = (value) => value
+      .replaceAll("&amp;", "&")
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&quot;", '"');
+    const over = [];
+    for (const [output, html] of shipped) {
+      const title = decode(html.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "");
+      const description = decode(html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "");
+      if ([...title].length > 60) over.push(`${output}: title ${[...title].length} chars - "${title}"`);
+      if ([...description].length > 155) over.push(`${output}: description ${[...description].length} chars - "${description}"`);
+    }
+    expect(over, `metadata over the search-result limit:\n${over.join("\n")}`).toEqual([]);
+  });
 });
 
 describe("Cloud hero single CTA (Issue #741)", () => {
