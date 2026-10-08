@@ -3,6 +3,7 @@ title: Orbi 怎么搭在 Pi coding agent 上
 summary: Orbi 把打了标签的 GitHub issue 变成合并的 PR 和 release，代码由 Pi coding agent 来写。这页是 Pi 系列的目录，后面讲 Pi 外面的 runner 怎么运转。
 lang: zh
 mirror: pi-coding-agent
+published: 2026-10-05
 updated: 2026-10-06
 ---
 
