@@ -50,7 +50,15 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATUS_CACHE_KEY = "https://orbi.build/__status";
+// Issue #915: a GitHub outage must not become the cached answer. The last
+// fully-live payload is kept under its own key past the served TTL, so a
+// rate-limited request reuses the previous numbers; a payload that still
+// carries a null repo (no snapshot yet) is cached only briefly, so the next
+// request retries GitHub soon instead of pinning the null for five minutes.
+const STATS_LAST_GOOD_CACHE_KEY = "https://orbi.build/__stats-last-good";
 const STATS_TTL_MS = 300000;
+const STATS_DEGRADED_TTL_MS = 60000;
+const STATS_LAST_GOOD_TTL_MS = 3600000;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
 // (orbi-cloud discussion 120 §2 C2), so a website route under any of them
@@ -209,8 +217,19 @@ async function loadFoundingAvatars(db) {
   return { logins, total: Number(counted?.results?.[0]?.total) || 0 };
 }
 
+// Issue #915: a failing repo answers null, but it must not do so silently —
+// one log line names the repo so the outage is visible in the Worker log. The
+// GitHub response body is never echoed: ghJson's message carries it, so only
+// the repo name is logged.
 async function loadStats(token) {
-  const groups = await Promise.all(STAT_REPOS.map((name) => loadRepoStats(name, token).catch(() => null)));
+  const groups = await Promise.all(STAT_REPOS.map(async (name) => {
+    try {
+      return await loadRepoStats(name, token);
+    } catch {
+      console.error(`stats repo failed: ${name}`);
+      return null;
+    }
+  }));
   return {
     repos: Object.fromEntries(STAT_REPOS.map((name, index) => [name, groups[index]])),
   };
@@ -223,6 +242,18 @@ async function statsResponse(request, token) {
     return cached;
   }
   const stats = await loadStats(token);
+  // Issue #915: fill each repo that just failed from the last fully-live
+  // payload, so an outage degrades the answer no further than it has to.
+  if (STAT_REPOS.some((name) => !stats.repos[name])) {
+    const lastGood = await cache.match(STATS_LAST_GOOD_CACHE_KEY);
+    const previous = lastGood ? await lastGood.json().catch(() => null) : null;
+    for (const name of STAT_REPOS) {
+      if (!stats.repos[name] && previous?.repos?.[name]) {
+        stats.repos[name] = previous.repos[name];
+      }
+    }
+  }
+  const complete = STAT_REPOS.every((name) => stats.repos[name]);
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -231,8 +262,15 @@ async function statsResponse(request, token) {
     },
   });
   const toStore = response.clone();
-  toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
+  toStore.headers.set("Cache-Control", `public, max-age=${(complete ? STATS_TTL_MS : STATS_DEGRADED_TTL_MS) / 1000}`);
   await cache.put(STATS_CACHE_KEY, toStore);
+  // Only a complete payload becomes the outage fallback; a null-bearing one
+  // must never be resurrected as if it were real data.
+  if (complete) {
+    const snapshot = response.clone();
+    snapshot.headers.set("Cache-Control", `public, max-age=${STATS_LAST_GOOD_TTL_MS / 1000}`);
+    await cache.put(STATS_LAST_GOOD_CACHE_KEY, snapshot);
+  }
   return response;
 }
 
