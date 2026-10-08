@@ -697,6 +697,107 @@ describe("Claude Code alternatives (Issue #869)", () => {
   });
 });
 
+// Issue #908: /compare/devin/ answers the "devin vs claude code" query with a
+// dedicated section while keeping the page's "open-source Devin alternative"
+// title and H1, and /compare/claude-code/ links into that section from its
+// "finish the delivery line" paragraph. The Issue scopes this to English
+// pages, so the ZH mirrors are deliberately untouched.
+describe("Devin vs Claude Code section (Issue #908)", () => {
+  const newSources = [
+    "https://code.claude.com/docs/en/overview",
+    "https://code.claude.com/docs/en/costs",
+  ];
+
+  it("keeps the Devin title and H1 while naming the comparison in the description", () => {
+    const html = shipped.get("compare/devin/index.html");
+    expect(html).toContain("<title>Open-source Devin alternative, self-hosted | Orbi</title>");
+    expect(html).toContain('<h1 id="compare-title">Open-source Devin alternative: Orbi vs Devin</h1>');
+    const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+    expect(description, "description must name the comparison").toContain("Devin vs Claude Code");
+    expect([...description].length, "description is " + [...description].length + " chars").toBeLessThanOrEqual(155);
+  });
+
+  it("anchors a #devin-vs-claude-code section that links the Claude Code comparison", () => {
+    const html = shipped.get("compare/devin/index.html");
+    const start = html.indexOf('id="devin-vs-claude-code"');
+    expect(start, "missing the #devin-vs-claude-code h2").toBeGreaterThan(-1);
+    expect(html.slice(start - 60, start)).toContain("<h2");
+    const section = html.slice(start, html.indexOf("</section>", start));
+    expect(section, "the section must link /compare/claude-code/").toContain('href="/compare/claude-code/"');
+  });
+
+  it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
+    const list = shipped.get("compare/devin/index.html").match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of newSources) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, href + " must appear in Sources and verification dates").toBeTruthy();
+      expect(item, href + ": source must carry a verification date").toMatch(/class="source-date">[^<]*verified 20\d\d-\d\d-\d\d/);
+    }
+  });
+
+  it("links the new section from the Claude Code delivery-line paragraph, not the terminal list", () => {
+    const html = shipped.get("compare/claude-code/index.html");
+    const sectionStart = html.indexOf('id="claude-code-alternatives"');
+    const deliveryLine = html.indexOf("IF YOU WANT CLAUDE CODE TO FINISH THE DELIVERY LINE");
+    expect(deliveryLine, "missing the delivery-line paragraph").toBeGreaterThan(sectionStart);
+    const delivery = html.slice(deliveryLine, html.indexOf("</section>", deliveryLine));
+    expect(delivery, "the delivery-line paragraph must link the Devin section").toContain('href="/compare/devin/#devin-vs-claude-code"');
+    expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the terminal/IDE list").not.toContain("/compare/devin/#devin-vs-claude-code");
+  });
+
+  it("carries first-hand Orbi material, not only a description", () => {
+    const html = shipped.get("compare/devin/index.html");
+    const start = html.indexOf('id="devin-vs-claude-code"');
+    const section = html.slice(start, html.indexOf("</section>", start));
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    const firstHand = hrefs.filter(
+      (href) => /^https:\/\/github\.com\/orbi-build\/orbi\/(issues|pull)\/\d+$/.test(href) || href.startsWith("/proof/") || href === "/evidence/",
+    );
+    expect(firstHand, "a real delivery to link: " + hrefs.join(", ")).not.toHaveLength(0);
+  });
+
+  it("shares under 10% of its 8-grams with the other comparison pages", () => {
+    // The content-quality gate forbids shipping this section as a copy of the
+    // sibling alternatives sections. Compare the section's word 8-grams against
+    // every other /compare/ page's body text, English and Chinese.
+    const gramsOf = (list, size) => {
+      const grams = new Set();
+      for (let index = 0; index + size <= list.length; index += 1) {
+        grams.add(list.slice(index, index + size).join(" "));
+      }
+      return grams;
+    };
+    const wordsOf = (html) =>
+      html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&(?:nbsp|mdash|ndash|amp|#39|rsquo|quot);/g, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+        .trim()
+        .split(" ")
+        .filter(Boolean);
+
+    const devin = shipped.get("compare/devin/index.html");
+    const start = devin.indexOf('id="devin-vs-claude-code"');
+    const mine = gramsOf(wordsOf(devin.slice(start, devin.indexOf("</section>", start))), 8);
+    expect(mine.size, "the section must be long enough for an 8-gram comparison").toBeGreaterThan(50);
+
+    for (const output of shipped.keys()) {
+      if (output === "compare/devin/index.html") continue;
+      if (!/^(zh\/)?compare\/[^/]+\/index\.html$/.test(output)) continue;
+      const theirs = gramsOf(wordsOf(shipped.get(output)), 8);
+      const shared = [...mine].filter((gram) => theirs.has(gram));
+      const ratio = shared.length / mine.size;
+      expect(
+        ratio,
+        output + " shares " + (ratio * 100).toFixed(1) + "% of the 8-grams, e.g. " + shared.slice(0, 2).join(" / "),
+      ).toBeLessThan(0.1);
+    }
+  });
+});
+
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
   it("keeps exactly one H1 on every sitemap HTML page", () => {
     const violations = [];
@@ -2277,7 +2378,7 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/compare/codex/index.html": ["2026-09-07", "2026-09-07"],
     "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
-    "compare/devin/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/devin/index.html": ["2026-09-07", "2026-10-08"],
     "zh/compare/devin/index.html": ["2026-09-07", "2026-09-24"],
     "compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
     "zh/compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
