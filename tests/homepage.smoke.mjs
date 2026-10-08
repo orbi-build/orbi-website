@@ -70,10 +70,14 @@ const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.
 // the newest 18 faces plus one "+K" chip for the teams past the cap — so the
 // browser assertions exercise the layout that has to hold on a phone.
 const localFoundingLogins = Array.from({ length: 18 }, (_, index) => `founder-${index + 1}`);
-const localFoundingAvatars = localFoundingLogins
-  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
-  .join("")
-  + '<span class="avatar-wall-more" title="1250 teams">+1232</span>';
+// Issue #892: the Worker names each contributor in the page's language, so
+// the stand-in renders the same alt for the same path.
+function localFoundingAvatarMarkup(zh) {
+  return localFoundingLogins
+    .map((login) => `<img class="orbi-avatar-wall-list-img" alt="${zh ? "GitHub 贡献者" : "GitHub contributor"} ${login}" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
+    .join("")
+    + '<span class="avatar-wall-more" title="1250 teams">+1232</span>';
+}
 
 export function countServerRenderedAvatars(html) {
   return html.match(/<img\b[^>]*class=["'][^"']*\borbi-avatar-wall-list-img\b[^"']*["'][^>]*>/g)?.length ?? 0;
@@ -173,7 +177,7 @@ function startServer() {
                 String(pricing.measuredSoloLargeCodebaseDeliveries),
               )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
-              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
+              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatarMarkup(pathname.startsWith("/zh"))),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -789,9 +793,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: expected 18 server-rendered avatars`);
   }
   const images = wall.locator("img");
+  // Issue #892: every rendered face must be announced by login in the page's
+  // own language, not left as an empty alt.
+  const altPrefix = path.startsWith("/zh") ? "GitHub 贡献者 " : "GitHub contributor ";
   for (let index = 0; index < browserAvatarCount; index += 1) {
     const image = images.nth(index);
     await image.waitFor({ state: "visible" });
+    const alt = await image.getAttribute("alt");
+    const login = await image.getAttribute("title");
+    if (!alt || !login || alt !== `${altPrefix}${login}`) {
+      throw new Error(`${path}: avatar ${index + 1} alt ${JSON.stringify(alt)} does not name its contributor ${JSON.stringify(login)}`);
+    }
     // Issue #586: the avatars are lazy, so visibility no longer implies a
     // started download. Scroll each one to the viewport, wait out its load
     // (the error event fails fast instead of hanging), then assert it.

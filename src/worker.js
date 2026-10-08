@@ -336,7 +336,10 @@ function foundingAvatarMarkup(logins, total = logins.length, zh = false) {
       '\"': "&quot;",
       "'": "&#39;",
     })[character]);
-    return `<img class="orbi-avatar-wall-list-img" alt="" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80" loading="lazy" decoding="async">`;
+    // Issue #892: an empty alt hides every face from screen readers and
+    // image search; name the contributor in the page's own language.
+    const alt = zh ? `GitHub 贡献者 ${escaped}` : `GitHub contributor ${escaped}`;
+    return `<img class="orbi-avatar-wall-list-img" alt="${alt}" title="${escaped}" src="https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=80" loading="lazy" decoding="async">`;
   }).join("");
   // Issue #827: the teams past the cap are counted, not rendered, so the row
   // stays one line however many teams sign up.
