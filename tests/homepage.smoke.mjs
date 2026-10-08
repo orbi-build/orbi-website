@@ -734,7 +734,16 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
   }
-  const lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  let lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  // Right after a deploy the edge can still serve the previous build for a
+  // few seconds; on 2026-10-08 the beta smoke read the old lede and failed a
+  // deploy whose page was already correct (run 37744201241). Against a real
+  // deployment, reload for up to 60s before treating a stale lede as wrong.
+  for (let tries = 0; process.env.BASE_URL && lede !== claim.lede && tries < 12; tries += 1) {
+    await page.waitForTimeout(5_000);
+    await page.reload({ waitUntil: "load" });
+    lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  }
   if (lede !== claim.lede) {
     throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected ${JSON.stringify(claim.lede)}`);
   }
