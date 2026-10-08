@@ -19,10 +19,10 @@ const cases = [
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
     h1: "提个 Issue，<br><span>收个版本</span>",
-    lede: "开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。",
+    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。",
     href: "/zh/cloud/login",
     button: "免费试用 Orbi Cloud →",
-    note: '<span class="hero-cta-note-first">免费 __FREE_DELIVERIES__ 次，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">或者从 GitHub 自己部署</a></span>',
+    note: '<span class="hero-cta-note-first">前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">源码在 GitHub</a></span>',
   },
 ];
 
