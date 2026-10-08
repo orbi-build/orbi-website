@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Open-source Devin alternative, self-hosted | Orbi</title>
-  <meta name="description" content="Open-source (AGPL-3.0) Orbi is a self-hosted Devin alternative that takes GitHub Issues to reviewed pull requests and releases, with a price comparison.">
+  <meta name="description" content="Open-source Devin alternative: Orbi is self-hosted and takes GitHub Issues to reviewed pull requests and releases. Compare Devin vs Claude Code.">
   <link rel="canonical" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/compare/devin/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/">
@@ -48,7 +48,7 @@
   },
   "about": { "@id": "https://orbi.build/#software" },
   "datePublished": "2026-09-07",
-  "dateModified": "2026-09-24",
+  "dateModified": "2026-10-08",
   "author": { "@type": "Person", "name": "Lawrence Liu" },
   "publisher": { "@type": "Organization", "name": "Orbi", "url": "https://orbi.build/", "logo": { "@type": "ImageObject", "url": "https://orbi.build/logo-mark.svg" } }
 }
@@ -210,6 +210,29 @@
       <p class="src-note">Orbi column per <a class="orbi-src-note-a" href="https://docs.orbi.build">docs.orbi.build</a> and the <a class="orbi-src-note-a" href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository; Devin column per <a class="orbi-src-note-a" href="https://cognition.com" rel="noopener">cognition.com</a> and <a class="orbi-src-note-a" href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a> (billing pages) — verified 2026-09-07.</p>
     </section>
 
+    <section class="compare-section compare-section-tint" aria-labelledby="devin-vs-claude-code">
+      <div class="shell">
+        <p class="section-tag">DEVIN VS CLAUDE CODE</p>
+        <h2 class="orbi-compare-section-h2" id="devin-vs-claude-code">Devin vs Claude Code</h2>
+        <p class="section-lede"><strong>One is a managed agent you hand a task to; the other is a coding agent you drive.</strong> Devin is Cognition's autonomous engineer: you delegate from chat or the web, it works in Cognition's cloud on Cognition's in-house models, and you pay a plan quota plus on-demand credits — the ACU unit survives only in enterprise order forms, as the billing section above shows. Claude Code is Anthropic's agentic coding tool: it reads your codebase, edits files and runs commands on your own surfaces, and you pay Anthropic by API token consumption or through a Claude subscription. Pick Devin when you want the machine, the models and the meter to be the vendor's problem; pick Claude Code when you want the session on your own surfaces, billed through your existing Anthropic subscription or API key. Neither one carries the task past the pull request by itself, so the finish on both is yours to operate.</p>
+        <div class="compare-table-wrap">
+          <table class="compare-table table-stack">
+            <thead>
+              <tr><th scope="col">Dimension</th><th scope="col">Devin</th><th scope="col">Claude Code</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">What it is</th><td data-label="Devin">A managed autonomous agent — delegate a task and it plans, codes and tests in Cognition's cloud, then returns pull requests.</td><td data-label="Claude Code">Anthropic's coding agent you drive in your terminal, with IDE, desktop and web surfaces documented too.</td></tr>
+              <tr><th scope="row">Where the work runs</th><td data-label="Devin">Cognition's cloud workspace, on Cognition's models; no bring-your-own-key option.</td><td data-label="Claude Code">Your own machine on the terminal, IDE and desktop surfaces; the GitHub Actions path runs on GitHub's infrastructure.</td></tr>
+              <tr><th scope="row">How a task starts</th><td data-label="Devin">A Slack or Teams tag, the web app, Linear/Jira, or a CLI handoff.</td><td data-label="Claude Code">You start the session, or wire it into GitHub Actions to turn Issues into pull requests.</td></tr>
+              <tr><th scope="row">How you pay</th><td data-label="Devin">Plan quota first, then on-demand credits that roll over; ACUs only under enterprise contracts.</td><td data-label="Claude Code">API token consumption, or a Claude Pro, Max, Team or Enterprise subscription with usage included.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-note">Sources: <a class="orbi-src-note-a" href="https://cognition.com" rel="noopener">cognition.com</a> and <a class="orbi-src-note-a" href="https://docs.devin.ai" rel="noopener">docs.devin.ai</a> (managed cloud, in-house models); <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">Devin — self-serve plans</a> and <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/usage" rel="noopener">usage metering</a> (quota, credits, enterprise ACUs) — verified 2026-09-07. Claude Code: <a class="orbi-src-note-a" href="https://code.claude.com/docs/en/overview" rel="noopener">overview</a> and <a class="orbi-src-note-a" href="https://code.claude.com/docs/en/costs" rel="noopener">costs</a> — verified 2026-10-08.</p>
+        <p>Want the Devin shape — a task that runs itself to a pull request and on to a merged, tagged release — while keeping Claude Code as the agent? Wrap it in Orbi. Orbi is open source (AGPL-3.0), defaults to Pi, and can drive Claude Code through an adapter, with the adapter's caveat written down in the <a class="orbi-src-note-a" href="/guides/pi-coding-agent/">Pi coding agent guide</a>. Orbi claims an <code>ai-ready</code> Issue, runs the coding session, reviews the frozen head, merges it and publishes the tag; the boundary it adds is compared against Claude Code on its own in <a class="orbi-src-note-a" href="/compare/claude-code/">Orbi vs Claude Code</a>.</p>
+      </div>
+    </section>
+
     <section class="compare-section compare-section-tint compare-choice" aria-labelledby="choice-title">
       <div class="shell">
         <p class="section-tag">AN HONEST READ</p>
@@ -256,7 +279,7 @@
     <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
       <p class="section-tag">PROVENANCE</p>
       <h2 class="orbi-compare-section-h2" id="sources-title">Sources and verification dates</h2>
-      <p class="section-lede">Every factual claim on this page maps to a dated source below. The product and documentation sources were checked on 2026-09-07; Devin's pricing page was fetched on 2026-09-24. This page is a snapshot, so re-check the sources before you bet architecture on them.</p>
+      <p class="section-lede">Every factual claim on this page maps to a dated source below. The product and documentation sources were checked on 2026-09-07; Devin's pricing page was fetched on 2026-09-24; Claude Code's overview and cost pages were checked on 2026-10-08. This page is a snapshot, so re-check the sources before you bet architecture on them.</p>
       <ul class="source-list">
         <li class="orbi-source-list-li">
           <strong ><a class="orbi-source-list-a" href="https://devin.ai/pricing" rel="noopener">Devin official pricing</a> — Free, Pro, Max, Teams, and Enterprise plans; message-based usage wording; dedicated deployment option</strong>
@@ -287,6 +310,16 @@
           <strong ><a class="orbi-source-list-a" href="https://docs.orbi.build">Orbi documentation</a> and the <a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository — the Orbi column of the comparison</strong>
           <span class="source-date">verified 2026-09-07</span>
           <small>docs.orbi.build · github.com/orbi-build/orbi</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://code.claude.com/docs/en/overview" rel="noopener">Claude Code documentation — overview</a> — the terminal, IDE, desktop and web surfaces, and the Claude subscription or Anthropic Console account they require</strong>
+          <span class="source-date">verified 2026-10-08</span>
+          <small>code.claude.com/docs/en/overview</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://code.claude.com/docs/en/costs" rel="noopener">Claude Code documentation — costs</a> — API token consumption, subscription plans, and included subscriber usage</strong>
+          <span class="source-date">verified 2026-10-08</span>
+          <small>code.claude.com/docs/en/costs</small>
         </li>
       </ul>
     </section>
