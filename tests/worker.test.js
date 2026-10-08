@@ -1,7 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
 import pricing from "../src/pricing.json";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
+
+// Issue #917: the Worker reads its stats snapshot from the STATS_KV binding;
+// only the 5-minute cron (or, while KV is still empty, a single request)
+// writes it. This double models that binding without a real namespace.
+function fakeStatsKv(initial) {
+  const store = new Map();
+  if (initial !== undefined) store.set(STATS_KV_KEY, JSON.stringify(initial));
+  return {
+    store,
+    get: async (key) => store.get(key),
+    put: async (key, value) => { store.set(key, value); },
+    read: async () => JSON.parse(await store.get(STATS_KV_KEY)),
+  };
+}
 
 describe("Worker request helpers", () => {
   it("renders the homepage pricing summary from pricing.json in both languages", async () => {
@@ -449,11 +463,133 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   });
 
   it("degrades only the failing repo to null; the other two groups stay live", async () => {
-    mockGitHub({ fail: ["orbi-cloud"] });
-    const stats = await loadStats("token");
-    expect(stats.repos["orbi-cloud"]).toBeNull();
-    expect(stats.repos.orbi.issues_closed).toBe(372);
-    expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi-cloud"] });
+      const stats = await loadStats("token");
+      expect(stats.repos["orbi-cloud"]).toBeNull();
+      expect(stats.repos.orbi.issues_closed).toBe(372);
+      expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  // Issue #917: GitHub is pulled once every 5 minutes by the cron trigger and
+  // written to KV; caches.default only fronts that snapshot, and /stats never
+  // pulls GitHub while KV has a value. A repo that fails a pull keeps the
+  // value already in KV instead of becoming a null in the global snapshot.
+  const STATS_KEY = "https://orbi.build/__stats";
+  const LAST_GOOD = {
+    repos: {
+      orbi: { started: "2026-08-24T16:08:33Z", issues_closed: 800, prs_merged: 600, releases: 80, stars: 190, star_history: [] },
+      "orbi-website": { started: "2026-08-31T13:04:14Z", issues_closed: 380, prs_merged: 470, releases: 0, deploys: 450, star_history: [] },
+      "orbi-cloud": { started: "2026-09-01T01:32:51Z", issues_closed: 1050, prs_merged: 730, releases: 120, stars: 1, star_history: [] },
+    },
+  };
+
+  // Cache double: the KV front answers per key and records every put.
+  function keyedCache(entries = {}) {
+    const store = new Map(Object.entries(entries));
+    const puts = [];
+    return {
+      puts,
+      cache: {
+        default: {
+          match: (key) => {
+            const body = store.get(String(key));
+            return Promise.resolve(body === undefined ? undefined : new Response(body));
+          },
+          put: async (key, response) => {
+            puts.push({ key: String(key), cacheControl: response.headers.get("Cache-Control"), body: await response.clone().text() });
+            store.set(String(key), await response.text());
+          },
+        },
+      },
+    };
+  }
+
+  it("writes every repo to KV when the cron pull succeeds", async () => {
+    mockGitHub();
+    const env = { GITHUB_TOKEN: "token", STATS_KV: fakeStatsKv() };
+    await worker.scheduled({ cron: "*/5 * * * *" }, env);
+    const stored = await env.STATS_KV.read();
+    for (const name of ["orbi", "orbi-website", "orbi-cloud"]) {
+      expect(stored.repos[name]).toMatchObject({
+        started: "2026-08-24T16:08:33Z",
+        issues_closed: 372,
+        prs_merged: 296,
+        releases: 3,
+        stars: 95,
+      });
+    }
+  });
+
+  it("keeps the previous KV value for the failing repo and updates the other two", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi-cloud"] });
+      const env = { GITHUB_TOKEN: "token", STATS_KV: fakeStatsKv(LAST_GOOD) };
+      await worker.scheduled({}, env);
+      const stored = await env.STATS_KV.read();
+      expect(stored.repos["orbi-cloud"]).toEqual(LAST_GOOD.repos["orbi-cloud"]);
+      expect(stored.repos.orbi.issues_closed).toBe(372);
+      expect(stored.repos["orbi-website"].prs_merged).toBe(296);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("answers /stats from KV without calling GitHub", async () => {
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls += 1;
+      throw new Error("GitHub must not be called for a KV snapshot");
+    };
+    const { cache, puts } = keyedCache();
+    globalThis.caches = cache;
+    const env = {
+      GITHUB_TOKEN: "token",
+      STATS_KV: fakeStatsKv(LAST_GOOD),
+      ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
+    };
+    const response = await handleFetch(new Request("https://orbi.build/stats"), env);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(LAST_GOOD);
+    expect(calls).toBe(0);
+    // KV data is cached in front of it for the full TTL, not the 60s the
+    // browser is told.
+    const served = puts.find((put) => put.key === STATS_KEY);
+    expect(served.cacheControl).toBe(`public, max-age=${300}`);
+  });
+
+  it("ghJson failures name the HTTP status and path, never the body", async () => {
+    globalThis.fetch = async () => new Response("API rate limit exceeded for token scope", { status: 403 });
+    const failure = await ghJson("/search/issues?q=repo%3Aorbi-build%2Forbi", "token").catch((err) => err);
+    expect(failure).toBeInstanceOf(Error);
+    expect(failure.message).toBe("github 403 /search/issues");
+  });
+
+  it("logs the HTTP status and path per failing repo, never GitHub's body", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      globalThis.fetch = async (url) => {
+        if (new URL(url).pathname === "/search/issues") {
+          return new Response("API rate limit exceeded for token scope", { status: 403 });
+        }
+        return jsonResponse({});
+      };
+      const stats = await loadStats("token");
+      expect(stats.repos).toEqual({ orbi: null, "orbi-website": null, "orbi-cloud": null });
+      const logged = error.mock.calls.map((call) => call.join(" ")).join("\n");
+      for (const name of ["orbi", "orbi-website", "orbi-cloud"]) {
+        expect(logged).toContain(`stats repo failed: ${name}: github 403 /search/issues`);
+      }
+      expect(logged).not.toContain("API rate limit exceeded");
+      expect(logged).not.toContain("token scope");
+    } finally {
+      error.mockRestore();
+    }
   });
 
   it("replaces the homepage offer token with the configured free-delivery count", async () => {
@@ -613,12 +749,12 @@ describe("per-repo GitHub stats (Issue #101)", () => {
         },
       },
     };
-    const request = new Request("https://orbi.build/stats");
-    const first = await statsResponse(request, "token");
+    const env = { GITHUB_TOKEN: "token", STATS_KV: fakeStatsKv() };
+    const first = await statsResponse(env);
     const firstPayload = await first.json();
     const callsAfterFirst = calls.length;
     expect(callsAfterFirst).toBeGreaterThan(0);
-    const second = await statsResponse(request, "token");
+    const second = await statsResponse(env);
     expect(calls).toHaveLength(callsAfterFirst);
     expect(await second.json()).toEqual(firstPayload);
   });
@@ -635,6 +771,7 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     };
     const env = {
       GITHUB_TOKEN: "token",
+      STATS_KV: fakeStatsKv(),
       ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
     };
     const bare = await handleFetch(new Request("https://orbi.build/stats"), env);
@@ -650,8 +787,10 @@ describe("per-repo GitHub stats (Issue #101)", () => {
 // AI search index crawler) reads the real totals, not 0. The browser path is
 // unchanged — demo.js still fetches /stats and animates the same number.
 describe("server-rendered homepage stats (Issue #873)", () => {
+  const realFetch = globalThis.fetch;
   const realCaches = globalThis.caches;
   afterEach(() => {
+    globalThis.fetch = realFetch;
     globalThis.caches = realCaches;
   });
 
@@ -733,6 +872,52 @@ describe("server-rendered homepage stats (Issue #873)", () => {
     await Promise.all(warmed);
   });
 
+  // Issue #917: the homepage warms the colo cache in front of KV, so /stats
+  // must answer from that entry with the headers its own route sets — the
+  // entry is the served payload, not a second, thinner response.
+  it("keeps the /stats security headers on the cache entry the homepage warms", async () => {
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: async (key) => {
+          const entry = store.get(String(key));
+          return entry === undefined ? undefined : new Response(entry.body, { headers: entry.headers });
+        },
+        put: async (key, response) => {
+          store.set(String(key), { body: await response.text(), headers: response.headers });
+        },
+      },
+    };
+    const env = await homepageEnvironment();
+    env.STATS_KV = fakeStatsKv(fakeStats);
+    await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    const response = await handleFetch(new Request("https://orbi.build/stats"), env);
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(response.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(await response.json()).toEqual(fakeStats);
+  });
+
+  // Issue #917: a colo whose 60s cache expired reads the global KV snapshot
+  // instead of dropping to the floors; it never pulls GitHub itself.
+  it("fills the homepage from the global KV snapshot when the cache is empty", async () => {
+    serveCachedStats(undefined);
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls += 1;
+      throw new Error("GitHub must not be called for a KV snapshot");
+    };
+    const env = await homepageEnvironment();
+    env.STATS_KV = fakeStatsKv(fakeStats);
+    const response = await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    const html = await response.text();
+    expect(statText(html, "orbi", "prs")).toBe("615");
+    expect(statText(html, "orbi-website", "deploys")).toBe("458");
+    expect(statText(html, "orbi-cloud", "issues")).toBe("1054");
+    expect(starText(html)).toBe("195");
+    expect(calls).toBe(0);
+  });
+
   it("degrades only the missing repo's elements to their floors", async () => {
     serveCachedStats({ repos: { ...fakeStats.repos, "orbi-cloud": null } });
     const response = await handleFetch(new Request("https://orbi.build/"), await homepageEnvironment(), { waitUntil: () => {} });
@@ -745,8 +930,8 @@ describe("server-rendered homepage stats (Issue #873)", () => {
 });
 
 // Issue #173: curl orbi.build/status prints the real delivery counts as
-// pasteable plaintext. Data still comes from loadStats(); this is only a
-// terminal rendering of that existing payload.
+// pasteable plaintext. Issue #917: the data comes from the global KV snapshot
+// the cron writes; this is only a terminal rendering of that payload.
 describe("plaintext /status (Issue #173)", () => {
   const realFetch = globalThis.fetch;
   const realCaches = globalThis.caches;
@@ -807,6 +992,7 @@ describe("plaintext /status (Issue #173)", () => {
   function statusEnv() {
     return {
       GITHUB_TOKEN: "token",
+      STATS_KV: fakeStatsKv(),
       ASSETS: { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) },
     };
   }
@@ -839,6 +1025,32 @@ describe("plaintext /status (Issue #173)", () => {
     expect(body).toContain("orbi-cloud");
     expect(body).toContain("curl -fsSL aiready.sh | sh");
     expect(body).toContain("https://docs.orbi.build");
+  });
+
+  // Issue #917: /status reads the same global KV snapshot /stats does.
+  it("renders /status from the KV snapshot without calling GitHub", async () => {
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls += 1;
+      throw new Error("GitHub must not be called for a KV snapshot");
+    };
+    emptyCache();
+    const env = statusEnv();
+    env.STATS_KV = fakeStatsKv({
+      repos: {
+        orbi: { started: "2026-08-24T16:08:33Z", issues_closed: 800, prs_merged: 600, releases: 80, stars: 190 },
+        "orbi-website": { started: "2026-08-31T13:04:14Z", issues_closed: 380, prs_merged: 470, releases: 0, deploys: 450 },
+        "orbi-cloud": { started: "2026-09-01T01:32:51Z", issues_closed: 1050, prs_merged: 730, releases: 120, stars: 1 },
+      },
+    });
+    const response = await handleFetch(
+      new Request("https://orbi.build/status", { headers: { Accept: "*/*" } }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toMatch(/orbi\s+issues closed\s+800/);
+    expect(calls).toBe(0);
   });
 
   it("serves /status/ identically to /status", async () => {

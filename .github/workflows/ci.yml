@@ -58,8 +58,10 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
         run: timeout 300s npm ci
-      - name: Install Chromium system dependencies
-        run: timeout 300s npx playwright install-deps chromium
+      # No apt step: the ubuntu-24.04 runner image already carries Chromium's system
+      # libraries (it ships Google Chrome). `playwright install-deps` re-ran apt-get
+      # update on every job and hung on the Azure Ubuntu mirror until the 300s
+      # timeout (2026-10-08: two Deploy beta attempts and PR #913).
       - name: Install Chromium for browser smoke tests
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: timeout 300s npx playwright install chromium

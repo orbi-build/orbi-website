@@ -811,6 +811,26 @@ class LandingTests(unittest.TestCase):
             ["orbi.build", "www.orbi.build", "aiready.sh"],
         )
 
+    def test_stats_kv_and_cron_are_declared_for_both_environments(self) -> None:
+        """Issue #917: GitHub is pulled by the 5-minute cron into STATS_KV in
+        both the production and the beta Worker, so a colo with no snapshot of
+        its own never falls back to pulling GitHub per request."""
+        import tomllib
+
+        with open(ROOT / "wrangler.toml", "rb") as handle:
+            config = tomllib.load(handle)
+        production_kv = {
+            entry["binding"]: entry["id"] for entry in config["kv_namespaces"]
+        }
+        self.assertEqual(
+            production_kv["STATS_KV"], "f467445ad7184ab8b510bde8c2c0fd7b"
+        )
+        self.assertEqual(config["triggers"]["crons"], ["*/5 * * * *"])
+        beta = config["env"]["beta"]
+        beta_kv = {entry["binding"]: entry["id"] for entry in beta["kv_namespaces"]}
+        self.assertEqual(beta_kv["STATS_KV"], "56f62f9181db4fc9898556bbee18b40c")
+        self.assertEqual(beta["triggers"]["crons"], ["*/5 * * * *"])
+
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
         self.assertIn("workflows:\n      - CI", workflow)
@@ -846,6 +866,14 @@ class LandingTests(unittest.TestCase):
         self.assertIn('check_page "https://beta.orbi.build/cloud"', workflow)
         self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
         self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
+        # Issue #917: the deploy warms the stats KV snapshot before it smokes
+        # the site, so the smoke cannot race a KV namespace the cron has not
+        # filled yet.
+        self.assertIn("Warm the beta stats snapshot before the smoke test", workflow)
+        self.assertLess(
+            workflow.index("Warm the beta stats snapshot"),
+            workflow.index("Smoke-test beta deployment"),
+        )
         # Issue #74: the browser smoke's login contract is injected per
         # environment; Issue #570: beta's is the 302 chain from the handoff
         # through /api/login into GitHub's OAuth sign-in authorization
@@ -902,6 +930,14 @@ class LandingTests(unittest.TestCase):
         self.assertIn(
             'check_page "https://orbi.build/cloud" "public/cloud/index.html"', workflow,
         )
+        # Issue #917: the deploy warms the stats KV snapshot before it smokes
+        # the site, so the smoke cannot race a KV namespace the cron has not
+        # filled yet.
+        self.assertIn("Warm the production stats snapshot before the smoke test", workflow)
+        self.assertLess(
+            workflow.index("Warm the production stats snapshot"),
+            workflow.index("Smoke-test production deployment"),
+        )
         # rollback: smoke failure triggers wrangler rollback to the recorded
         # pre-deploy version, and both version IDs land in the log
         self.assertIn("rollback", workflow)
@@ -931,12 +967,13 @@ class LandingTests(unittest.TestCase):
             self.assertIn("path: ~/.cache/ms-playwright", workflow)
             self.assertIn("hashFiles('package-lock.json')", workflow)
             self.assertIn("id: playwright-cache", workflow)
-            self.assertIn("npx playwright install-deps chromium", workflow)
+            # The apt step (`playwright install-deps`) was dropped on 2026-10-08:
+            # the runner image already has Chromium's libraries, and apt hung on
+            # the Ubuntu mirror until the step timed out.
             self.assertIn("npx playwright install chromium", workflow)
             self.assertIn("steps.playwright-cache.outputs.cache-hit != 'true'", workflow)
             self.assertLess(workflow.index("actions/cache@v4"), workflow.index("npm ci"))
-            self.assertLess(workflow.index("npm ci"), workflow.index("install-deps chromium"))
-            self.assertLess(workflow.index("install-deps chromium"), workflow.index("install chromium"))
+            self.assertLess(workflow.index("npm ci"), workflow.index("npx playwright install chromium"))
 
     def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")

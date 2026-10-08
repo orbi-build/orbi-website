@@ -81,8 +81,13 @@ jobs:
       - name: Run landing and deployment contract tests
         run: timeout 300s python3 -m unittest tests.test_landing -v
 
-      - name: Install Chromium system dependencies
-        run: timeout 300s npx playwright install-deps chromium
+      # No apt step: the ubuntu-24.04 runner image already carries Chromium's system
+
+      # libraries (it ships Google Chrome). `playwright install-deps` re-ran apt-get
+
+      # update on every job and hung on the Azure Ubuntu mirror until the 300s
+
+      # timeout (2026-10-08: two Deploy beta attempts and PR #913).
 
       - name: Install Chromium for browser smoke tests
         if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -125,6 +130,28 @@ jobs:
             exit 1
           fi
           printf '%s' "$ORBI_GITHUB_TOKEN" | timeout 120s npx wrangler@4.34.0 secret put GITHUB_TOKEN --env beta
+
+      - name: Warm the beta stats snapshot before the smoke test
+        # Issue #917: /stats reads a KV snapshot the 5-minute cron writes, so a
+        # fresh deploy can reach the smoke with KV still empty. One request to
+        # /stats pulls GitHub and fills KV; poll until every repo is non-null,
+        # so the smoke never races an empty snapshot. GitHub can be briefly
+        # rate-limited, so a snapshot that stays incomplete warns instead of
+        # reddening the deploy — the pages themselves are still up.
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://beta.orbi.build/stats"
+          for attempt in $(seq 1 12); do
+            body="$(timeout 60s curl --fail --silent --show-error "$url" || true)"
+            if [[ -n "$body" ]] && ! jq -e '[.repos[] | select(. == null)] | length > 0' <<<"$body" >/dev/null 2>&1; then
+              echo "stats snapshot complete (attempt ${attempt})"
+              exit 0
+            fi
+            echo "attempt ${attempt}: stats snapshot not ready; retrying in 10s"
+            sleep 10
+          done
+          echo "::warning::stats snapshot was not ready within 120s; the homepage may render fallback numbers until the next cron run"
 
       - name: Smoke-test beta deployment
         shell: bash
