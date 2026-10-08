@@ -2120,6 +2120,88 @@ describe("Google Jules comparison contract (Issue #200)", () => {
   });
 });
 
+// Issue #889: the dated comparison, benchmark and guide pages state a real
+// publish and update date in their Article JSON-LD, so a search engine reads
+// the same freshness a reader sees instead of a missing-date default.
+// dateModified is the newest verification or update date the page visibly
+// states; the current dates are pinned here, and each one must still appear in
+// the page outside its JSON-LD, so a guessed date cannot ship.
+describe("Article publish and update dates (Issue #889)", () => {
+  const DATED_PAGES = {
+    "compare/claude-code/index.html": ["2026-09-17", "2026-10-06"],
+    "zh/compare/claude-code/index.html": ["2026-09-17", "2026-09-17"],
+    "compare/codex/index.html": ["2026-09-07", "2026-10-06"],
+    "zh/compare/codex/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
+    "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
+    "compare/devin/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/devin/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/jules/index.html": ["2026-09-17", "2026-09-17"],
+    "zh/compare/jules/index.html": ["2026-09-17", "2026-09-17"],
+    "compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
+    "zh/compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
+    "compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/orca/index.html": ["2026-09-12", "2026-09-12"],
+    "zh/compare/orca/index.html": ["2026-09-12", "2026-09-12"],
+    "benchmark/index.html": ["2026-09-30", "2026-09-30"],
+    "zh/benchmark/index.html": ["2026-09-30", "2026-09-30"],
+    "guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
+    "zh/guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
+    "guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
+    "zh/guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
+  };
+  const PUBLISHER = {
+    "@type": "Organization",
+    name: "Orbi",
+    url: "https://orbi.build/",
+    logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+  };
+
+  // Dates inside the JSON-LD do not count as visible: the structured data must
+  // agree with a date the reader can see, not only with itself.
+  const visibleDates = (html) => [...html
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "")
+    .matchAll(/\b\d{4}-\d{2}-\d{2}\b/g)].map((match) => match[0]);
+
+  it("carries datePublished, dateModified, a Person author and a publisher", () => {
+    for (const [output, [published, modified]] of Object.entries(DATED_PAGES)) {
+      const html = shipped.get(output);
+      expect(html, `${output}: missing output`).toBeTruthy();
+      const article = articleOf(html);
+      expect(article, `${output}: missing Article`).toBeTruthy();
+      expect(article.datePublished, `${output}: datePublished`).toBe(published);
+      expect(article.dateModified, `${output}: dateModified`).toBe(modified);
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.publisher, output).toEqual(PUBLISHER);
+    }
+  });
+
+  it("keeps dateModified equal to the newest date the page visibly states", () => {
+    for (const [output, [, modified]] of Object.entries(DATED_PAGES)) {
+      const visible = visibleDates(shipped.get(output));
+      expect(visible, `${output}: the page states no date outside its JSON-LD`).toContain(modified);
+      expect(visible.slice().sort().at(-1), `${output}: newest visible date`).toBe(modified);
+    }
+  });
+
+  it("gives the Pi hub an Article next to its breadcrumb", () => {
+    for (const output of ["guides/pi-coding-agent/index.html", "zh/guides/pi-coding-agent/index.html"]) {
+      const html = shipped.get(output);
+      expect(articleOf(html), `${output}: Article`).toBeTruthy();
+      expect(jsonLdObjects(html).some((entry) => entry["@type"] === "BreadcrumbList"), `${output}: breadcrumb`).toBe(true);
+    }
+  });
+});
+
 // Issue #212: /blog/ on the root domain. Posts are Markdown files under
 // content/blog/ (en) and content/blog/zh/ (zh); the build renders them through
 // the shared chrome, derives both language indexes from the content directory
