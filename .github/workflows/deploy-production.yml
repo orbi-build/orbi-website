@@ -153,6 +153,28 @@ jobs:
           echo "::error::the edge did not serve the deployed build within 300s"
           exit 1
 
+      - name: Warm the production stats snapshot before the smoke test
+        # Issue #917: /stats reads a KV snapshot the 5-minute cron writes, so a
+        # fresh deploy can reach the smoke with KV still empty. One request to
+        # /stats pulls GitHub and fills KV; poll until every repo is non-null,
+        # so the smoke never races an empty snapshot. GitHub can be briefly
+        # rate-limited, so a snapshot that stays incomplete warns instead of
+        # triggering the rollback below — the pages themselves are still up.
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://orbi.build/stats"
+          for attempt in $(seq 1 12); do
+            body="$(timeout 60s curl --fail --silent --show-error "$url" || true)"
+            if [[ -n "$body" ]] && ! jq -e '[.repos[] | select(. == null)] | length > 0' <<<"$body" >/dev/null 2>&1; then
+              echo "stats snapshot complete (attempt ${attempt})"
+              exit 0
+            fi
+            echo "attempt ${attempt}: stats snapshot not ready; retrying in 10s"
+            sleep 10
+          done
+          echo "::warning::stats snapshot was not ready within 120s; the homepage may render fallback numbers until the next cron run"
+
       - name: Smoke-test production deployment
         shell: bash
         run: |

@@ -40,6 +40,16 @@ vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "ht
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
 ai = { binding = "AI" }
 
+# Issue #917: GitHub is pulled once every 5 minutes by the cron trigger below
+# and the snapshot is written here; every colo reads the same KV value instead
+# of each pulling GitHub (6 search calls per pull against a 30/minute limit).
+[[kv_namespaces]]
+binding = "STATS_KV"
+id = "f467445ad7184ab8b510bde8c2c0fd7b"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
 # Worker-to-Worker transport for the visit report (Issue #231): a plain
 # fetch() of our own zone is routed to the origin server past every Worker,
 # so the report never reached the control plane. Must stay AFTER every
@@ -101,6 +111,15 @@ vars = { CLOUD_LOGIN_URL = "https://beta.orbi.build/api/login", CLOUD_VISIT_URL 
 # existing beta Custom Domain, without managing that domain or its DNS.
 workers_dev = false
 ai = { binding = "AI" }
+# Issue #917: beta has its own stats namespace and cron trigger, so the beta
+# deploy never writes production's snapshot (and vice versa).
+[[env.beta.kv_namespaces]]
+binding = "STATS_KV"
+id = "56f62f9181db4fc9898556bbee18b40c"
+
+[env.beta.triggers]
+crons = ["*/5 * * * *"]
+
 # Route through the existing proxied DNS record without asking Wrangler to
 # create/manage a Custom Domain (which would conflict with that record).
 # Beta binds the e2e control plane (the Worker on beta.orbi.build/api*).
