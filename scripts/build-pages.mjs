@@ -1349,8 +1349,21 @@ export function renderLlms(source, posts, guides = []) {
   return source.replace(blogMarker, () => postList).replace(guidesMarker, () => guideList);
 }
 
+// Issue #888: the sitemap lists indexable HTML pages only. A page is
+// indexable at its orbi.build URL when its own canonical is exactly that URL:
+// the two aiready pages canonically live on aiready.sh (they are served here
+// but owned there), so they must not be listed again under orbi.build — GSC
+// reported them as "discovered — currently not indexed". A non-page asset
+// like /compare/matrix.csv has no canonical at all and stays out for the same
+// reason. The rule is read from the page's own data, not from a per-page
+// exception list.
+function isIndexableAtOwnUrl(page) {
+  const canonical = page.body.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+  return canonical === `https://orbi.build${pathToHref(page.output)}`;
+}
+
 function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR } = {}) {
-  const urls = pages.filter(({ page }) => !page.standalone).map(({ page, path }) => {
+  const urls = pages.filter(({ page }) => !page.standalone && isIndexableAtOwnUrl(page)).map(({ page, path }) => {
     const href = pathToHref(page.output);
     const mirror = pathToHref(page.mirror);
     const base = "https://orbi.build";
@@ -1389,7 +1402,6 @@ function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DI
     ].sort().at(-1);
     urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${guide.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   }
-  urls.push(`  <url>\n    <loc>https://orbi.build/compare/matrix.csv</loc>\n    <lastmod>${lastCommitDate(join(ROOT, "site", "pages", "compare", "index.html"))}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
 }
 

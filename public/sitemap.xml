@@ -2,24 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://orbi.build/aiready/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/aiready/"/>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/aiready/zh/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/aiready/"/>
-    <lastmod>2026-10-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://orbi.build/aiready/zh/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/aiready/"/>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/aiready/zh/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/aiready/"/>
-    <lastmod>2026-10-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://orbi.build/benchmark/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/benchmark/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/benchmark/"/>
@@ -825,12 +807,6 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/pi-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/pi-coding-agent/"/>
-    <lastmod>2026-10-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://orbi.build/compare/matrix.csv</loc>
     <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
