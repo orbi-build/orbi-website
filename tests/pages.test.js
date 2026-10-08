@@ -1567,13 +1567,13 @@ describe("per-page head parameters (title / description / canonical)", () => {
 describe("Cloud hero single CTA (Issue #741)", () => {
   const expectations = {
     "cloud/index.html": {
-      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate.",
+      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
       href: "/cloud/login",
       button: "Try __FREE_DELIVERIES__ deliveries free →",
       note: "No credit card required · Orbi only sees the repos you pick",
     },
     "zh/cloud/index.html": {
-      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。",
+      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
       href: "/zh/cloud/login",
       button: "免费试 __FREE_DELIVERIES__ 次 →",
       note: "不用绑定信用卡 · 只授权你选的仓库",
@@ -3547,8 +3547,8 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 describe("homepage body carries an Orbi definition sentence (Issues #890, #899)", () => {
   const body = (html) => html.slice(html.indexOf("<body"));
   const homes = {
-    "index.html": /An open-source AI agent that takes your GitHub Issues all the way to a release\. Run it on Orbi Cloud or your own machine\./,
-    "zh/index.html": /开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。/,
+    "index.html": /An open-source AI agent that takes your GitHub Issues all the way to a release\. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start\./,
+    "zh/index.html": /开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。/,
   };
 
   for (const [output, definition] of Object.entries(homes)) {

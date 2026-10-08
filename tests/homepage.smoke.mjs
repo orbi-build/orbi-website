@@ -40,13 +40,13 @@ const deepDives = [
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on Orbi Cloud or your own machine.",
+    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
     button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。",
+    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。",
     button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
@@ -1424,8 +1424,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
   const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
   for (const needle of path === "/cloud/"
-    ? ["Label one Issue ai-ready", "<repo>/issues/new?labels=ai-ready", "within 5 minutes", "comments on the Issue"]
-    : ["给一个 Issue 加上 ai-ready 标签", "<repo>/issues/new?labels=ai-ready", "5 分钟内认领", "Issue 下留言"]) {
+    ? ["Write your first request", "Drafting doesn't use a free delivery", "Label one ai-ready instead", "How writing a request works"]
+    : ["写下第一个需求", "写草稿不占免费次数", "打上 ai-ready 标签也行", "写需求怎么用"]) {
     if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
   }
   const stepBoxes = await steps.evaluateAll((elements) => elements.map((element) => {
