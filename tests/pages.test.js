@@ -3337,7 +3337,7 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899)"
   const body = (html) => html.slice(html.indexOf("<body"));
   const homes = {
     "index.html": /An open-source AI agent that takes your GitHub Issues all the way to a release\. Run it on Orbi Cloud or your own machine\./,
-    "zh/index.html": /开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。/,
+    "zh/index.html": /开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。/,
   };
 
   for (const [output, definition] of Object.entries(homes)) {

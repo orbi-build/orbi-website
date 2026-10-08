@@ -46,7 +46,7 @@ const releaseClaims = {
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: "开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。",
+    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。",
     button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
@@ -757,7 +757,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
   const expectedHeroNote = path === "/"
     ? `${pricing.freeDeliveries} deliveries free, no credit card · or self-host it from GitHub`
-    : `免费 ${pricing.freeDeliveries} 次，不用绑卡 · 或者从 GitHub 自己部署`;
+    : `前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 源码在 GitHub`;
   if (heroNote !== expectedHeroNote) {
     throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
   }
