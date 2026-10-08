@@ -77,7 +77,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       "",
       "Orbi is an open source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
       "",
-      "Key numbers: Cloud has Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, failed deliveries don't count; founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged pull request (n=20, measured 2026-09-24) the median was $0.125 off-peak and $0.249 at peak; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
+      "Key numbers: Cloud has Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, failed deliveries don't count; founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged delivery (n=169, measured 2026-10-05) the median was $0.082 off-peak, the 90th percentile $0.22, and peak prices double every figure; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
     ]);
   });
 
@@ -91,7 +91,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
 
   it("contains the complete cost and evidence bodies, not summaries", () => {
     for (const text of [
-      "20 merged pull requests, measured on our own repository",
+      "169 merged deliveries, measured on Orbi Cloud",
       "Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices",
       "Three things this page does not claim",
       "Competitors quote quotas. We quote tokens and prices.",
@@ -308,5 +308,27 @@ describe("llms pricing tokens (Issue #874)", () => {
     expect(line).toContain(pricing.soloIncludedTokensLabel + " tokens");
     expect(line).toContain(pricing.includedTokensLabel + " tokens");
     expect(line).not.toMatch(/__[A-Z_]+__/);
+  });
+});
+
+// Issue #886: llms.txt is the claim file AI crawlers read, so its cost numbers
+// have to be the /cost/ headline — 169 merged deliveries at a median of $0.082 —
+// and the retired 20-PR / $0.125 median must not return as the current figure.
+describe("llms cost numbers match the /cost/ headline (Issue #886)", () => {
+  it("states the 169-delivery median, p90 and peak caveat in both llms files", () => {
+    for (const [name, raw] of [["llms.txt", llms], ["llms-full.txt", llmsFull]]) {
+      const text = raw.replace(/\s+/g, " ");
+      expect(text, name).toContain("169 merged deliveries");
+      expect(text, `${name}: median`).toContain("$0.082");
+      expect(text, `${name}: p90`).toContain("$0.22");
+    }
+  });
+
+  it("keeps the retired $0.125 median out of the cost claim itself", () => {
+    const keyNumbers = llmsFull.split("\n").slice(0, 6).join(" ");
+    expect(keyNumbers, "llms-full key numbers").not.toContain("$0.125");
+    const costSection = llms.slice(llms.indexOf("**What does it cost?**"), llms.indexOf("## Blog"));
+    expect(costSection, "llms.txt cost answer").not.toContain("$0.125");
+    expect(costSection, "llms.txt cost answer").toContain("$0.082");
   });
 });
