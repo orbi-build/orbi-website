@@ -40,7 +40,8 @@ vars = { CLOUD_LOGIN_URL = "https://orbi.build/api/login", CLOUD_VISIT_URL = "ht
 assets = { directory = "./public/", binding = "ASSETS", run_worker_first = true }
 ai = { binding = "AI" }
 
-# Issue #917: GitHub is pulled once every 5 minutes by the cron trigger below
+# Issue #917: GitHub is pulled once an hour by the cron trigger below (every 5
+# minutes until 2026-10-08; the maintainer judged hourly fresh enough)
 # and the snapshot is written here; every colo reads the same KV value instead
 # of each pulling GitHub (6 search calls per pull against a 30/minute limit).
 [[kv_namespaces]]
@@ -48,7 +49,7 @@ binding = "STATS_KV"
 id = "f467445ad7184ab8b510bde8c2c0fd7b"
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["0 * * * *"]
 
 # Worker-to-Worker transport for the visit report (Issue #231): a plain
 # fetch() of our own zone is routed to the origin server past every Worker,
@@ -118,7 +119,7 @@ binding = "STATS_KV"
 id = "56f62f9181db4fc9898556bbee18b40c"
 
 [env.beta.triggers]
-crons = ["*/5 * * * *"]
+crons = ["0 * * * *"]
 
 # Route through the existing proxied DNS record without asking Wrangler to
 # create/manage a Custom Domain (which would conflict with that record).
