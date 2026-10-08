@@ -1492,6 +1492,22 @@ describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
     }
   });
 
+  it("states a mean its own 169-delivery total supports, not the Pi post's single-delivery $0.12", () => {
+    for (const { output, meanLabel, totalLabel, n } of [
+      { output: "cost/index.html", meanLabel: "Mean cost per merged delivery", totalLabel: "All 169 deliveries together", n: 169 },
+      { output: "zh/cost/index.html", meanLabel: "每次合并交付平均成本", totalLabel: "169 次合计", n: 169 },
+    ]) {
+      const html = shipped.get(output);
+      const cell = (label) => html.match(new RegExp(`<th scope="row">${label}</th><td>\\$([\\d.]+)</td>`))?.[1];
+      const mean = Number(cell(meanLabel));
+      expect(Number.isFinite(mean), `${output}: mean row`).toBe(true);
+      // Issue #886: the page must publish mean = total / n. The Pi post's
+      // $0.12 belongs to one delivery (#1554), not to the sample; its
+      // published average for these 169 is $0.113, which rounds to $0.11.
+      expect(mean, `${output}: mean is not the 169-delivery average`).toBeCloseTo(Number(cell(totalLabel)) / n, 2);
+    }
+  });
+
   it("describes the 169-delivery dataset in parseable JSON-LD", () => {
     for (const { output, datasetUrl } of COST_PAGES) {
       const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];

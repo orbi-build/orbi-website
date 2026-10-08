@@ -1544,7 +1544,7 @@ const costPages = {
     earlier: "Earlier sample",
     text: [
       // the headline sample: date, size, and median/p90/mean cost
-      "measured 2026-10-05 15:36 UTC+8", "n=169", "$0.082", "$0.22", "$0.12", "$18.45",
+      "measured 2026-10-05 15:36 UTC+8", "n=169", "$0.082", "$0.22", "mean $0.11", "$18.45",
       // the retired n=20 sample stays published, labelled as earlier
       "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       // older per-delivery snapshot remains available
@@ -1575,7 +1575,7 @@ const costPages = {
     h1: "AI 编程 agent 每合并一个 PR 花多少钱",
     earlier: "早期样本",
     text: [
-      "截至 2026-10-05 15:36（UTC+8）实测", "n=169", "$0.082", "$0.22", "$0.12", "$18.45",
+      "截至 2026-10-05 15:36（UTC+8）实测", "n=169", "$0.082", "$0.22", "均值 $0.11", "$18.45",
       "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       "2026-09-12", "n=46",
       "n 是截至标注日期的快照,不是永久事实",
