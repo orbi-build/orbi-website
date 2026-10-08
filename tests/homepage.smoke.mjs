@@ -38,12 +38,12 @@ const deepDives = [
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: ["An AI agent that takes your Issues all the way to a release."],
+    lede: ["Orbi is an open-source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases."],
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: ["AI 把你的 Issue 一路做到发版。"],
+    lede: ["Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。"],
     title: "提个 Issue，收个版本",
   },
 };
@@ -675,8 +675,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   const hero = page.locator(".hero");
+  // Issue #890: the hero lede is the Orbi definition sentence, so the
+  // first-screen contract is now the hero copy itself — H1, definition, CTA
+  // and CTA note must fit the viewport. The proof bar keeps its own
+  // first-screen contract where the layout has room for it (desktop widths);
+  // on a short phone it follows the taller hero copy below the fold.
+  const heroCopyBox = await page.locator(".hero-copy").boundingBox();
+  if (!heroCopyBox || heroCopyBox.y < 0 || heroCopyBox.y + heroCopyBox.height > size.height) {
+    throw new Error(`${path}: hero copy is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroCopyBox)}`);
+  }
   const heroProofBox = await page.locator(".hero-proof-bar").boundingBox();
-  if (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height) {
+  if (size.width >= 1000 && (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height)) {
     throw new Error(`${path}: hero proof bar is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroProofBox)}`);
   }
   const ctaNoteLayout = await hero.evaluate((heroElement) => {

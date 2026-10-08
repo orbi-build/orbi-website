@@ -3100,3 +3100,23 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
     }
   });
 });
+
+// Issue #890: a first-time visitor — and an AI answer engine quoting the page —
+// must be able to read what Orbi is in the homepage body, not only in the
+// <head> metadata. Both homes carry the definition sentence under the H1:
+// EN starts with "Orbi is an open-source", ZH with "Orbi 是开源".
+describe("homepage body carries an Orbi definition sentence (Issue #890)", () => {
+  const body = (html) => html.slice(html.indexOf("<body"));
+  const homes = {
+    "index.html": /Orbi is an open-source \(AGPL-3\.0\) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases\./,
+    "zh/index.html": /Orbi 是开源（AGPL-3\.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。/,
+  };
+
+  for (const [output, definition] of Object.entries(homes)) {
+    it(`${output} states the definition in the rendered body`, () => {
+      const html = shipped.get(output);
+      expect(body(html), `${output}: body definition sentence`).toMatch(definition);
+      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toMatch(definition);
+    });
+  }
+});
