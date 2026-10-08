@@ -84,34 +84,34 @@
       <p class="post-entry-summary">I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</a></h2>
+      <h2 class="post-entry-title"><a href="/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-05">2026-10-05</time></p>
-      <p class="post-entry-summary">In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</p>
+      <p class="post-entry-summary">In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/run-claude-code-unattended/">Run Claude Code unattended: headless mode is step one</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-01">2026-10-01</time></p>
-      <p class="post-entry-summary">Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</p>
+      <p class="post-entry-summary">Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</a></h2>
+      <h2 class="post-entry-title"><a href="/blog/is-the-regression-guard-worth-its-tokens/">Searching for Orbi's harness, part 2: guard cost</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-30">2026-09-30</time></p>
-      <p class="post-entry-summary">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</p>
+      <p class="post-entry-summary">On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. Five designs to cut the cost of the fix.</p>
     </article>
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: what our reviewer missed</a></h2>
+      <h2 class="post-entry-title"><a href="/blog/searching-for-orbis-harness/">Searching for Orbi's harness, part 1: review gaps</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-29">2026-09-29</time></p>
-      <p class="post-entry-summary">Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.</p>
+      <p class="post-entry-summary">Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the loop on failed and unseen issues.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/gitspawn-unattended-agent/">GitSpawn and the agent that never asks</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-26">2026-09-26</time></p>
-      <p class="post-entry-summary">A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.</p>
+      <p class="post-entry-summary">A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who runs git, and reverted it.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/deepseek-coding-agent-cost-per-merged-pr/">DeepSeek coding agent cost per merged PR</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-24">2026-09-24</time></p>
-      <p class="post-entry-summary">See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</p>
+      <p class="post-entry-summary">See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/orbi-is-open-source-again/">Why Orbi is open source again</a></h2>
@@ -131,7 +131,7 @@
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/waiting-for-someone-who-cannot-answer/">The engine waited for an answer users could not give</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-22">2026-09-22</time></p>
-      <p class="post-entry-summary">Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.</p>
+      <p class="post-entry-summary">Our engine paused for a human decision, then asked tenants to use a command they did not have. Three versions of the same mistake in one afternoon.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/watch-the-six-steps/">Seven steps of an Orbi Cloud setup, on video</a></h2>
@@ -141,7 +141,7 @@
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/what-autonomous-actually-means/">What an autonomous coding agent does when it says no</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-20">2026-09-20</time></p>
-      <p class="post-entry-summary">Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.</p>
+      <p class="post-entry-summary">Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain inspectable.</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/claude-code-github-actions-who-merges/">Claude Code in Actions: who presses merge?</a></h2>
@@ -151,7 +151,7 @@
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/blog/docker-image-third-try/">The Docker image made it out on try three</a></h2>
       <p class="post-entry-meta"><time datetime="2026-09-18">2026-09-18</time></p>
-      <p class="post-entry-summary">The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.</p>
+      <p class="post-entry-summary">The orbi image reached GHCR and Docker Hub on its third run. The first two failures were build context and Dockerfile paths; the last an invalid tag.</p>
     </article>
       </div>
       <p class="src-note">Reading by feed? The RSS 2.0 feed of the English posts lives at <a class="orbi-src-note-a" href="/blog/feed.xml">/blog/feed.xml</a>.</p>

@@ -238,12 +238,13 @@ US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens,
 __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or
 US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens,
 __PRO_REPOSITORIES__ repositories). What the model usage itself costs is
-measured, not estimated, and published in two units. Per merged pull request
-(the /cost/ page's headline): 20 merged PRs measured 2026-09-24, median $0.125
-off-peak and $0.249 at peak. Per delivery including unmerged work: the
-2026-09-12 n=46 snapshot had a median of 2,220,637 and a mean of 4,742,066
-totalTokens — roughly $0.06–0.12 per delivery at DeepSeek V4.1 Flash list
-prices. Both samples move as worktrees are cleaned up; treat
+measured, not estimated, and published in two units. Per merged delivery
+(the /cost/ page's headline): 169 merged deliveries recorded by Orbi Cloud,
+measured 2026-10-05, median $0.082 off-peak (peak prices double, so that is
+the floor) and a 90th percentile of $0.22. Per delivery including unmerged
+work: the 2026-09-12 n=46 snapshot had a median of 2,220,637 and a mean of
+4,742,066 totalTokens — roughly $0.06–0.12 per delivery at DeepSeek V4.1
+Flash list prices. Every sample moves as records change; treat
 https://orbi.build/cost/ as authoritative.
 
 ## Blog
@@ -256,7 +257,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/pi-agent-harness/
 - Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):
   https://orbi.build/zh/blog/pi-agent-harness/
-- Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens (English):
+- Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/
 - Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分 (Chinese):
   https://orbi.build/zh/blog/orbi-on-pi-coding-agent/
@@ -264,11 +265,11 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/run-claude-code-unattended/
 - Claude Code headless 模式是什么？自动化开发还差六件事 (Chinese):
   https://orbi.build/zh/blog/run-claude-code-unattended/
-- Searching for Orbi's harness, part 2: is the regression guard worth its tokens? (English):
+- Searching for Orbi's harness, part 2: guard cost (English):
   https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/
 - 给 Orbi 找 harness（下）：回归防护值不值它的 token (Chinese):
   https://orbi.build/zh/blog/is-the-regression-guard-worth-its-tokens/
-- Searching for Orbi's harness, part 1: what our reviewer missed (English):
+- Searching for Orbi's harness, part 1: review gaps (English):
   https://orbi.build/blog/searching-for-orbis-harness/
 - 给 Orbi 找 harness（上）：我们的评审漏掉了什么 (Chinese):
   https://orbi.build/zh/blog/searching-for-orbis-harness/

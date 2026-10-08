@@ -3,7 +3,7 @@ title: GitSpawn 绕开的是审批，我们的 agent 本来就不审批
 date: 2026-09-26
 summary: GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-gitspawn.png
 mirror: gitspawn-unattended-agent
 ---

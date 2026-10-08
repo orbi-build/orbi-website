@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
   <meta property="og:image:alt" content="Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分">
   <meta property="article:published_time" content="2026-10-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分","datePublished":"2026-10-05","author":{"@type":"Person","name":"Lawrence Liu"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/","image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"zh-CN","description":"只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。","url":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分","datePublished":"2026-10-05","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/","image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"zh-CN","description":"只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。","url":"https://orbi.build/zh/blog/orbi-on-pi-coding-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -82,6 +82,12 @@
     /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
     .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
     .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -146,8 +152,9 @@
     <div class="night">
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">博客 · 2026-10-05</p>
+          <p class="eyebrow">博客</p>
           <h1 id="post-title">Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-05">2026-10-05</time></p>
           <p class="post-series">系列：<a href="/zh/guides/pi-coding-agent/">Orbi 怎么搭在 Pi coding agent 上</a></p>
           <p class="hero-lede">只算模型 token、按 DeepSeek 闲时公开价，169 次以合并收尾的交付，每次花费中位数 0.082 美元。再跟一张真实 issue 走完 4 个 Pi 会话，看 Pi 留给用户自己搭的那一层 Orbi 怎么补。</p>
         </section>
@@ -333,7 +340,7 @@
 </tr>
 </tbody></table></div>
 <p>一般的交付是两个会话，通常就是一个实现加一个评审。#1554 的 4 个会话超过了 90% 位置的值，运行时间和请求数没有超过。</p>
-<p>花费按 DeepSeek <a href="https://api-docs.deepseek.com/quick_start/pricing">公布的 <code class="post-code--single">deepseek-flash</code> 价格</a>算，我们的<a href="/zh/cost/">成本页</a>上也列着：缓存命中每百万 token 0.003 美元，未命中 0.15 美元，输出 0.60 美元。工作日（中国法定节假日除外）北京时间 09:00–12:00 和 14:00–18:00（UTC 01:00–04:00 和 06:00–10:00）价格翻倍。169 次交付按闲时价合计 18.45 美元。（成本页上那个 0.125 美元的中位数是更早的一组样本：9 月 22 日到 24 日 orbi 仓库的 20 个 PR。）用量记录里每次交付只有一个总数，没有每次请求的时间，分不出高峰和闲时，所以这些记下的部分，实际花费在 18.45 美元到它的两倍之间，中位数在 0.082 到 0.163 美元之间。</p>
+<p>花费按 DeepSeek <a href="https://api-docs.deepseek.com/quick_start/pricing">公布的 <code class="post-code--single">deepseek-flash</code> 价格</a>算，我们的<a href="/zh/cost/">成本页</a>上也列着：缓存命中每百万 token 0.003 美元，未命中 0.15 美元，输出 0.60 美元。工作日（中国法定节假日除外）北京时间 09:00–12:00 和 14:00–18:00（UTC 01:00–04:00 和 06:00–10:00）价格翻倍。169 次交付按闲时价合计 18.45 美元。（<a href="/zh/cost/">成本页</a>现在的 0.082 美元中位数就是这一组：9 月 16 日到 10 月 5 日 Cloud 记录的 169 次交付。它原先主推的 0.125 美元是更早的一组样本：9 月 22 日到 24 日 orbi 仓库的 20 个 PR。）用量记录里每次交付只有一个总数，没有每次请求的时间，分不出高峰和闲时，所以这些记下的部分，实际花费在 18.45 美元到它的两倍之间，中位数在 0.082 到 0.163 美元之间。</p>
 <p>这 18.45 美元只算了每次交付的最后一次尝试。把其中有 token 数的 3 次更早尝试加回来，169 次合并交付按闲时价一共 19.04 美元，平均每次 0.113 美元，比中位数高，是几次大交付把平均拉上去了。另外还有 16 个带 token 数、但没有由 Orbi 合并收尾的 issue（还开着、放弃了，或者最后由人接手），它们记下的所有尝试合计 2.73 美元。把没合并的也算进去，Cloud 记下的一共 21.77 美元，摊到 169 次合并上，按闲时价每次 0.129 美元，高峰价最多翻倍。</p>
 <p>输入绝大部分是缓存读取。每次交付单独算缓存读取占输入的比例，中位数是 97.8%。Pi 会话里相邻的模型请求，开头大部分是一样的：系统提示词、issue、到目前为止的对话，直到 Pi 压缩上下文为止。provider 认得这段重复的开头（前缀），直接从缓存里拿。同样这 169 次记下的交付，要是全按未命中计费，闲时价也要 253 美元，而不是 18.45 美元。有了缓存之后，输出占了账单的一半左右：18.45 美元里有 9.46 美元。</p>
 <h2 id="为什么一直用-pi">为什么一直用 Pi</h2>

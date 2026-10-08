@@ -3,7 +3,7 @@ title: How one slash command got its shape
 date: 2026-09-22
 summary: A close look at the name, syntax, regex anchor, and registry behind one in-ticket command, compared with Prow and bors-ng and checked against their source.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-slash-command.png
 mirror: designing-a-slash-command
 ---

@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens | Orbi</title>
-  <meta name="description" content="In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.">
+  <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each | Orbi</title>
+  <meta name="description" content="In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.">
   <link rel="canonical" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/orbi-on-pi-coding-agent/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens">
-  <meta property="og:description" content="In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.">
+  <meta property="og:title" content="Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each">
+  <meta property="og:description" content="In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.">
   <meta property="og:url" content="https://orbi.build/blog/orbi-on-pi-coding-agent/">
   <meta property="og:image" content="https://orbi.build/img/blog-orbi-on-pi-card.png">
-  <meta property="og:image:alt" content="Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens">
+  <meta property="og:image:alt" content="Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each">
   <meta property="article:published_time" content="2026-10-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens","datePublished":"2026-10-05","author":{"@type":"Person","name":"Lawrence Liu"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/orbi-on-pi-coding-agent/","image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"en","description":"In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.","url":"https://orbi.build/blog/orbi-on-pi-coding-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each","datePublished":"2026-10-05","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/orbi-on-pi-coding-agent/","image":"https://orbi.build/img/blog-orbi-on-pi-card.png","inLanguage":"en","description":"In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.","url":"https://orbi.build/blog/orbi-on-pi-coding-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -82,6 +82,12 @@
     /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
     .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
     .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -146,10 +152,11 @@
     <div class="night">
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">Blog · 2026-10-05</p>
-          <h1 id="post-title">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</h1>
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-05">2026-10-05</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</p>
+          <p class="hero-lede">In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</p>
         </section>
       </div>
     </div>
@@ -333,7 +340,7 @@
 </tr>
 </tbody></table></div>
 <p>The typical delivery took two sessions, usually one implementer and one reviewer. #1554&#39;s four sessions put it above the 90th percentile; its runtime and requests weren&#39;t.</p>
-<p>Costs use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">published <code class="post-code--single">deepseek-flash</code> prices</a>, as listed on our <a href="/cost/">cost page</a>: $0.003 per million tokens for a cache hit, $0.15 for a cache miss and $0.60 for output. On weekdays other than Chinese public holidays, 09:00–12:00 and 14:00–18:00 UTC+8 (01:00–04:00 and 06:00–10:00 UTC), prices double. All 169 deliveries together came to $18.45 at off-peak prices. (The $0.125 median on the cost page is an older sample: 20 PRs in the orbi repository from 22 to 24 September.) The usage records hold one total per delivery, with no timestamps per request, so I can&#39;t split peak from off-peak. The real cost of these recorded rows was somewhere between $18.45 and twice that, and the median between $0.082 and $0.163.</p>
+<p>Costs use DeepSeek&#39;s <a href="https://api-docs.deepseek.com/quick_start/pricing">published <code class="post-code--single">deepseek-flash</code> prices</a>, as listed on our <a href="/cost/">cost page</a>: $0.003 per million tokens for a cache hit, $0.15 for a cache miss and $0.60 for output. On weekdays other than Chinese public holidays, 09:00–12:00 and 14:00–18:00 UTC+8 (01:00–04:00 and 06:00–10:00 UTC), prices double. All 169 deliveries together came to $18.45 at off-peak prices. (The $0.082 median now on the <a href="/cost/">cost page</a> is this same sample: the 169 deliveries Cloud recorded between 16 September and 5 October. The $0.125 figure it used to lead with is an earlier sample — 20 PRs in the orbi repository from 22 to 24 September.) The usage records hold one total per delivery, with no timestamps per request, so I can&#39;t split peak from off-peak. The real cost of these recorded rows was somewhere between $18.45 and twice that, and the median between $0.082 and $0.163.</p>
 <p>That $18.45 counts only the last attempt of each delivery. With the three earlier attempts that have token counts added back, the 169 merged deliveries cost $19.04 at off-peak prices, an average of $0.113, above the median because a few large deliveries pull it up. There were also 16 issues with token counts that didn&#39;t end in a merge by Orbi (still open, abandoned, or finished by hand); all their recorded attempts together cost $2.73. Counting the ones that didn&#39;t merge too, everything Cloud recorded comes to $21.77; spread over the 169 merges, that&#39;s $0.129 each at off-peak prices, and up to twice that at peak.</p>
 <p>Most of the input is cache reads. Per delivery, the median share of input tokens read from cache was 97.8%. Consecutive model requests in a Pi session resend mostly the same prefix, the system prompt, the issue and the conversation so far, until Pi compacts the context, and the provider serves that repeated prefix from its cache. Billed as cache misses, the same 169 recorded deliveries would have cost $253 at off-peak prices instead of $18.45. With the cache, output is about half the bill: $9.46 of the $18.45.</p>
 <h2 id="why-we-stay-on-pi">Why we stay on Pi</h2>

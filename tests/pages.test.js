@@ -495,6 +495,21 @@ describe("ai-ready methodology pages (Issue #195)", () => {
     }
   });
 
+  // Issue #888: both aiready pages live on aiready.sh (their canonical), so
+  // every hreflang alternate — x-default included — points there too, never
+  // back at orbi.build or at the page itself.
+  it("points every aiready hreflang alternate at aiready.sh (Issue #888)", () => {
+    for (const output of ["aiready/index.html", "aiready/zh/index.html"]) {
+      const alternates = [...shipped.get(output).matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)]
+        .map(([, lang, href]) => [lang, href]);
+      expect(alternates, `${output}: hreflang alternates`).toEqual([
+        ["en", "https://aiready.sh/"],
+        ["zh-CN", "https://aiready.sh/zh/"],
+        ["x-default", "https://aiready.sh/"],
+      ]);
+    }
+  });
+
   it("keeps the Cloudflare Web Analytics beacon on every page whose source ships one (Issue #608)", async () => {
     // The beacon is not site-wide: standalone pages (aiready.sh) and pages
     // like privacy never carried one, so presence is pinned per source, not
@@ -539,8 +554,14 @@ describe("comparison capability matrix (Issue #201)", () => {
     }
   });
 
-  it("lists the CSV asset in the sitemap", () => {
-    expect(shippedSitemap).toContain("https://orbi.build/compare/matrix.csv");
+  // Issue #888: the sitemap lists indexable HTML pages only. The CSV is a
+  // downloadable asset, not a page — it stays out of the sitemap while the
+  // compare page keeps linking it.
+  it("keeps the CSV asset out of the sitemap while the compare page links it", () => {
+    expect(shippedSitemap).not.toContain("https://orbi.build/compare/matrix.csv");
+    for (const output of ["compare/index.html", "zh/compare/index.html"]) {
+      expect(shipped.get(output), `${output}: CSV download link`).toContain('href="/compare/matrix.csv"');
+    }
   });
 });
 
@@ -898,9 +919,15 @@ describe("build output is committed (npm run build ran)", () => {
   });
 
   it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
-    const pagesForSitemap = pages.filter((page) => !page.standalone);
+    // Issue #888: a page is listed only when it is indexable HTML at its own
+    // orbi.build URL — its canonical. The two aiready pages canonically live
+    // on aiready.sh and /compare/matrix.csv is not a page, so none of the
+    // three is listed.
+    const pagesForSitemap = pages.filter((page) =>
+      page.body.includes(`<link rel="canonical" href="https://orbi.build${pathToHref(page.output)}">`),
+    );
     expect(generatedSitemap).toBe(shippedSitemap);
-    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length + 1);
+    expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length);
     expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
       .toBeGreaterThanOrEqual(2);
 
@@ -915,6 +942,29 @@ describe("build output is committed (npm run build ran)", () => {
     const expectedDate = dirty ? new Date().toISOString().slice(0, 10) : new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
     const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
     expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
+  });
+
+  // Issue #888: every URL in the sitemap must be an indexable HTML page that
+  // declares itself canonical. A URL that is not HTML (the CSV) or whose
+  // canonical points at another host (the two aiready pages, canonical
+  // aiready.sh) has no business in the sitemap — GSC reports exactly that as
+  // "Discovered — currently not indexed".
+  it("lists only HTML pages whose canonical is the listed URL", () => {
+    const locs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)].map((match) => match[1]);
+    expect(locs.length).toBeGreaterThan(0);
+    const failures = [];
+    for (const href of locs) {
+      const output = href === "/" ? "index.html" : `${href.slice(1)}index.html`;
+      const html = shipped.get(output);
+      if (!html) {
+        failures.push(`${href}: no HTML build output at ${output}`);
+        continue;
+      }
+      if (!/^<!DOCTYPE html>/i.test(html.trimStart())) failures.push(`${href}: build output is not HTML`);
+      const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+      if (canonical !== `https://orbi.build${href}`) failures.push(`${href}: canonical is ${canonical ?? "missing"}`);
+    }
+    expect(failures, failures.join("\n")).toEqual([]);
   });
 
   // Issue #279: the build runs before the commit, so a source with
@@ -1278,6 +1328,29 @@ describe("per-page head parameters (title / description / canonical)", () => {
       expect(description, `${page.output}: description is missing`).toBeTruthy();
     }
   });
+
+  // Issue #891: a search result truncates a title or description that runs
+  // past the words that fit, so the missing words never reach the user. The
+  // shipped bytes every indexable page carries — hand-written pages, blog
+  // posts and guides alike — keep <title> within 60 characters and
+  // <meta name="description"> within 155, counted in characters (one CJK
+  // character is one character). The message names the page, its count and
+  // its text, so the author knows exactly which source to shorten.
+  it("keeps every indexable title within 60 and description within 155 characters", () => {
+    const decode = (value) => value
+      .replaceAll("&amp;", "&")
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&quot;", '"');
+    const over = [];
+    for (const [output, html] of shipped) {
+      const title = decode(html.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "");
+      const description = decode(html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "");
+      if ([...title].length > 60) over.push(`${output}: title ${[...title].length} chars - "${title}"`);
+      if ([...description].length > 155) over.push(`${output}: description ${[...description].length} chars - "${description}"`);
+    }
+    expect(over, `metadata over the search-result limit:\n${over.join("\n")}`).toEqual([]);
+  });
 });
 
 describe("Cloud hero single CTA (Issue #741)", () => {
@@ -1369,11 +1442,16 @@ describe("anchor prefixes (home-relative only on the homes)", () => {
 // primary nav (the /cloud/ PRICING section), not the measured-cost essay.
 describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
   it("keeps the unsupported per-PR claim off every page that does not measure cost", () => {
+    // Index pages list every post's published headline, so the cost post's own
+    // title ("... cost per merged PR") appears on them without making a price
+    // claim: the blog index, and since Issue #887 the author page that lists
+    // the same posts.
     const measuredCostOutputs = new Set([
       "cost/index.html",
       "zh/cost/index.html",
       "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
       "blog/index.html",
+      "about/lawrence-liu/index.html",
     ]);
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
@@ -1383,6 +1461,88 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
         expect(pageBody, output).not.toContain("per merged PR");
         expect(pageBody, output).not.toContain("每个合并 PR 约");
       }
+    }
+  });
+});
+
+// Issue #886: /cost/ has one headline cost figure — the 169 merged deliveries
+// Orbi Cloud recorded (median $0.082 off-peak). The 20-PR / $0.125 sample stays
+// published, but only as the labelled earlier sample, and the Dataset JSON-LD
+// describes the 169-delivery dataset.
+describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
+  const COST_PAGES = [
+    { output: "cost/index.html", earlier: "Earlier sample", datasetUrl: "https://orbi.build/cost/" },
+    { output: "zh/cost/index.html", earlier: "早期样本", datasetUrl: "https://orbi.build/zh/cost/" },
+  ];
+
+  it("shows $0.082 and n=169 in the hero, and $0.125 only inside the earlier sample", () => {
+    for (const { output, earlier } of COST_PAGES) {
+      const html = shipped.get(output);
+      const heroRegion = html.match(/<section class="compare-hero shell"[\s\S]*?<\/section>/)?.[0];
+      expect(heroRegion, `${output}: hero region`).toBeTruthy();
+      expect(heroRegion, `${output}: hero median`).toContain("$0.082");
+      expect(heroRegion, `${output}: hero sample size`).toContain("169");
+      expect(heroRegion, `${output}: hero must not lead with the old median`).not.toContain("$0.125");
+      const earlierAt = html.indexOf(earlier);
+      expect(earlierAt, `${output}: earlier-sample section`).toBeGreaterThan(-1);
+      for (let at = html.indexOf("$0.125"); at !== -1; at = html.indexOf("$0.125", at + 1)) {
+        expect(at, `${output}: $0.125 before the earlier sample`).toBeGreaterThan(earlierAt);
+      }
+      expect(html.slice(earlierAt), `${output}: earlier sample keeps $0.125`).toContain("$0.125");
+    }
+  });
+
+  it("states a mean its own 169-delivery total supports, not the Pi post's single-delivery $0.12", () => {
+    for (const { output, meanLabel, totalLabel, n } of [
+      { output: "cost/index.html", meanLabel: "Mean cost per merged delivery", totalLabel: "All 169 deliveries together", n: 169 },
+      { output: "zh/cost/index.html", meanLabel: "每次合并交付平均成本", totalLabel: "169 次合计", n: 169 },
+    ]) {
+      const html = shipped.get(output);
+      const cell = (label) => html.match(new RegExp(`<th scope="row">${label}</th><td>\\$([\\d.]+)</td>`))?.[1];
+      const mean = Number(cell(meanLabel));
+      expect(Number.isFinite(mean), `${output}: mean row`).toBe(true);
+      // Issue #886: the page must publish mean = total / n. The Pi post's
+      // $0.12 belongs to one delivery (#1554), not to the sample; its
+      // published average for these 169 is $0.113, which rounds to $0.11.
+      expect(mean, `${output}: mean is not the 169-delivery average`).toBeCloseTo(Number(cell(totalLabel)) / n, 2);
+    }
+  });
+
+  it("describes the 169-delivery dataset in parseable JSON-LD", () => {
+    for (const { output, datasetUrl } of COST_PAGES) {
+      const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+      const dataset = JSON.parse(raw)["@graph"].find((entry) => entry["@type"] === "Dataset");
+      expect(dataset, `${output}: Dataset entry`).toBeTruthy();
+      expect(dataset.url, `${output}: Dataset url`).toBe(datasetUrl);
+      expect(dataset.temporalCoverage, `${output}: temporalCoverage`).toBe("2026-09-16/2026-10-05");
+      expect(JSON.stringify(dataset), `${output}: Dataset must describe 169 samples`).toContain("169");
+    }
+  });
+
+  it("points the DeepSeek cost post at /cost/ for the current figure, in both languages", () => {
+    for (const { output, href, earlier } of [
+      { output: "blog/deepseek-coding-agent-cost-per-merged-pr/index.html", href: 'href="/cost/"', earlier: "earlier sample" },
+      { output: "zh/blog/deepseek-coding-agent-cost-per-merged-pr/index.html", href: 'href="/zh/cost/"', earlier: "更早的一组样本" },
+    ]) {
+      const html = shipped.get(output);
+      expect(html, `${output}: cost page link`).toContain(href);
+      const body = stripTags(html.slice(html.indexOf("<main"), html.indexOf("</main>")));
+      expect(body, `${output}: earlier-sample note`).toContain(earlier);
+      expect(body, `${output}: current median`).toContain("$0.082");
+    }
+  });
+
+  it("keeps the retired $0.125 headline off the guide pages that quote the cost", () => {
+    for (const output of [
+      "guides/autonomous-coding-agent/index.html",
+      "zh/guides/autonomous-coding-agent/index.html",
+      "guides/self-hosted-coding-agent/index.html",
+      "zh/guides/self-hosted-coding-agent/index.html",
+      "guides/codex-github-issues/index.html",
+      "zh/guides/codex-github-issues/index.html",
+    ]) {
+      expect(shipped.get(output), output).not.toContain("$0.125");
+      expect(shipped.get(output), output).toContain("$0.082");
     }
   });
 });
@@ -1551,12 +1711,16 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       tag: "MANAGED CLOUD",
       title: "Try it on your own repository",
       description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
+      // Issue #899 names Cloud in the hero button only; the closing CTA keeps
+      // the free-deliveries promise, on the hero's own handoff.
+      trial: "Try __FREE_DELIVERIES__ deliveries free →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
     },
     "zh/index.html": {
       tag: "托管 Cloud",
       title: "在你自己的仓库上试一试",
       description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
+      trial: "免费试 __FREE_DELIVERIES__ 次 →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
     },
   };
@@ -1573,9 +1737,11 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
       expect(closing, `${output}: Cloud context`).toContain(`<p class="section-tag">${contract.tag}</p>`);
       expect(closing, `${output}: closing section`).toContain(`<h2 class="orbi-closing-h2" id="closing-title">${contract.title}`);
       expect(closing, `${output}: free trial description`).toContain(`<p>${contract.description}</p>`);
-      expect(cta(closing, "closing-start"), `${output}: closing CTA matches the hero`).toEqual(
-        cta(html, "cloud-start"),
-      );
+      const heroCta = cta(html, "cloud-start");
+      expect(cta(closing, "closing-start"), `${output}: closing CTA keeps the hero's handoff`).toEqual({
+        ...heroCta,
+        text: contract.trial,
+      });
       expect(closing, `${output}: self-host link`).toContain(contract.selfHost);
       expect(closing.match(/<a /g) ?? [], `${output}: only Cloud CTA and self-host link`).toHaveLength(2);
     });
@@ -2097,6 +2263,88 @@ describe("Google Jules comparison contract (Issue #200)", () => {
   });
 });
 
+// Issue #889: the dated comparison, benchmark and guide pages state a real
+// publish and update date in their Article JSON-LD, so a search engine reads
+// the same freshness a reader sees instead of a missing-date default.
+// dateModified is the newest verification or update date the page visibly
+// states; the current dates are pinned here, and each one must still appear in
+// the page outside its JSON-LD, so a guessed date cannot ship.
+describe("Article publish and update dates (Issue #889)", () => {
+  const DATED_PAGES = {
+    "compare/claude-code/index.html": ["2026-09-17", "2026-10-06"],
+    "zh/compare/claude-code/index.html": ["2026-09-17", "2026-09-17"],
+    "compare/codex/index.html": ["2026-09-07", "2026-10-06"],
+    "zh/compare/codex/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
+    "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
+    "compare/devin/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/devin/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/github-copilot-coding-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "zh/compare/hermes-agent/index.html": ["2026-09-07", "2026-09-24"],
+    "compare/jules/index.html": ["2026-09-17", "2026-09-17"],
+    "zh/compare/jules/index.html": ["2026-09-17", "2026-09-17"],
+    "compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
+    "zh/compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
+    "compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
+    "zh/compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/orca/index.html": ["2026-09-12", "2026-09-12"],
+    "zh/compare/orca/index.html": ["2026-09-12", "2026-09-12"],
+    "benchmark/index.html": ["2026-09-30", "2026-09-30"],
+    "zh/benchmark/index.html": ["2026-09-30", "2026-09-30"],
+    "guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
+    "zh/guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
+    "guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
+    "zh/guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
+  };
+  const PUBLISHER = {
+    "@type": "Organization",
+    name: "Orbi",
+    url: "https://orbi.build/",
+    logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+  };
+
+  // Dates inside the JSON-LD do not count as visible: the structured data must
+  // agree with a date the reader can see, not only with itself.
+  const visibleDates = (html) => [...html
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "")
+    .matchAll(/\b\d{4}-\d{2}-\d{2}\b/g)].map((match) => match[0]);
+
+  it("carries datePublished, dateModified, a Person author and a publisher", () => {
+    for (const [output, [published, modified]] of Object.entries(DATED_PAGES)) {
+      const html = shipped.get(output);
+      expect(html, `${output}: missing output`).toBeTruthy();
+      const article = articleOf(html);
+      expect(article, `${output}: missing Article`).toBeTruthy();
+      expect(article.datePublished, `${output}: datePublished`).toBe(published);
+      expect(article.dateModified, `${output}: dateModified`).toBe(modified);
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.publisher, output).toEqual(PUBLISHER);
+    }
+  });
+
+  it("keeps dateModified equal to the newest date the page visibly states", () => {
+    for (const [output, [, modified]] of Object.entries(DATED_PAGES)) {
+      const visible = visibleDates(shipped.get(output));
+      expect(visible, `${output}: the page states no date outside its JSON-LD`).toContain(modified);
+      expect(visible.slice().sort().at(-1), `${output}: newest visible date`).toBe(modified);
+    }
+  });
+
+  it("gives the Pi hub an Article next to its breadcrumb", () => {
+    for (const output of ["guides/pi-coding-agent/index.html", "zh/guides/pi-coding-agent/index.html"]) {
+      const html = shipped.get(output);
+      expect(articleOf(html), `${output}: Article`).toBeTruthy();
+      expect(jsonLdObjects(html).some((entry) => entry["@type"] === "BreadcrumbList"), `${output}: breadcrumb`).toBe(true);
+    }
+  });
+});
+
 // Issue #212: /blog/ on the root domain. Posts are Markdown files under
 // content/blog/ (en) and content/blog/zh/ (zh); the build renders them through
 // the shared chrome, derives both language indexes from the content directory
@@ -2575,11 +2823,10 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(post.output);
       expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(post.video ? 2 : 1);
       expect(html).toContain(`\"@type\":\"Article\"`);
-      expect(articleOf(html).author, post.output).toEqual(
-        post.author === "Orbi"
-          ? { "@type": "Organization", name: "Orbi" }
-          : { "@type": "Person", name: post.author },
-      );
+      // Issue #887: every post names the same Person, with the author page
+      // (see tests/blog-author.test.js for the full contract).
+      expect(articleOf(html).author["@type"], post.output).toBe("Person");
+      expect(articleOf(html).author.name, post.output).toBe(post.author);
       expect(html).toContain(`https://orbi.build${post.image}`);
     }
     const watch = shipped.get("blog/watch-the-six-steps/index.html");
@@ -2587,10 +2834,11 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     expectUniquePostImages(posts);
   });
 
-  // Issue #862: the Article author must name the real author — the first-person
-  // posts are written by a person, the rest by Orbi — and every post carries a
-  // publisher and mainEntityOfPage so search and AI answers can attribute it.
-  it("names first-person posts' author as a Person with publisher and mainEntityOfPage (Issue #862)", () => {
+  // Issue #862: the Article author must name the real author, and every post
+  // carries a publisher and mainEntityOfPage so search and AI answers can
+  // attribute it. Issue #887 gives that Person the author page URL and both
+  // profiles; tests/blog-author.test.js pins the full object for all posts.
+  it("names each post's author as a Person with publisher and mainEntityOfPage (Issues #862, #887)", () => {
     const firstPerson = [
       ["blog/pi-agent-harness/index.html", "https://orbi.build/blog/pi-agent-harness/"],
       ["zh/blog/pi-agent-harness/index.html", "https://orbi.build/zh/blog/pi-agent-harness/"],
@@ -2603,7 +2851,8 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       const html = shipped.get(output);
       expect(html, `${output}: missing output`).toBeTruthy();
       const article = articleOf(html);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.author["@type"], output).toBe("Person");
+      expect(article.author.name, output).toBe("Lawrence Liu");
       expect(article.publisher, output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -2615,12 +2864,13 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
     }
   });
 
-  it("keeps the Organization author for Orbi posts, with the same publisher (Issue #862)", () => {
-    const orgPosts = posts.filter((post) => post.author === "Orbi");
-    expect(orgPosts.length, "the corpus must still contain organization posts").toBeGreaterThan(0);
-    for (const post of orgPosts) {
+  it("names the publisher and mainEntityOfPage on every post, never an Organization author (Issue #887)", () => {
+    // Issue #887 retired the per-post Organization author: the k8e post (and
+    // every other) now attributes a Person, so the corpus cannot drift back.
+    expect(posts.length).toBeGreaterThan(0);
+    for (const post of posts) {
       const article = articleOf(shipped.get(post.output));
-      expect(article.author, post.output).toEqual({ "@type": "Organization", name: "Orbi" });
+      expect(article.author, post.output).not.toEqual({ "@type": "Organization", name: "Orbi" });
       expect(article.publisher, post.output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -2799,7 +3049,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 
@@ -2942,7 +3192,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 
@@ -3076,4 +3326,25 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
       }
     }
   });
+});
+
+// Issue #890: a first-time visitor — and an AI answer engine quoting the page —
+// must be able to read what Orbi is in the homepage body, not only in the
+// <head> metadata. Both homes carry the definition under the H1. Issue #899
+// replaced the long AGPL-first sentence with the approved two-sentence lede
+// (open source + where it runs); the assertion follows the new copy.
+describe("homepage body carries an Orbi definition sentence (Issues #890, #899)", () => {
+  const body = (html) => html.slice(html.indexOf("<body"));
+  const homes = {
+    "index.html": /An open-source AI agent that takes your GitHub Issues all the way to a release\. Run it on Orbi Cloud or your own machine\./,
+    "zh/index.html": /开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。/,
+  };
+
+  for (const [output, definition] of Object.entries(homes)) {
+    it(`${output} states the definition in the rendered body`, () => {
+      const html = shipped.get(output);
+      expect(body(html), `${output}: body definition sentence`).toMatch(definition);
+      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toMatch(definition);
+    });
+  }
 });

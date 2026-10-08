@@ -1,7 +1,7 @@
 ---
 title: Run Claude Code unattended: headless mode is step one
 date: 2026-10-01
-summary: Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.
+summary: Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.
 lang: en
 author: Lawrence Liu
 image: /img/blog-headless-card.png

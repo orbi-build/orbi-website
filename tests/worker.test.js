@@ -480,11 +480,16 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     expect(body).toContain('title="bob&amp;co"');
     expect(body).toContain("avatars.githubusercontent.com/bob%26co?s=80");
     expect(body.match(/class="orbi-avatar-wall-list-img"/g)).toHaveLength(2);
+    // Issue #892: screen readers and image search must hear who each face is,
+    // so the alt names the contributor and keeps title="<login>" alongside.
+    expect(body).toContain('alt="GitHub contributor alice"');
+    expect(body).toContain('alt="GitHub contributor bob&amp;co"');
     // Issue #586: the wall sits thousands of pixels below the fold, so every
     // avatar defers its download instead of competing with the hero.
     for (const img of body.match(/<img class="orbi-avatar-wall-list-img"[^>]*>/g) ?? []) {
       expect(img).toContain('loading="lazy"');
       expect(img).toContain('decoding="async"');
+      expect(img).not.toContain('alt=""');
     }
     expect(body).not.toContain("__FOUNDING_AVATARS__");
     expect(body).not.toContain("__FOUNDING_AVATARS_HIDDEN__");
@@ -571,6 +576,25 @@ describe("per-repo GitHub stats (Issue #101)", () => {
     });
     const body = await response.text();
     expect(body).toContain('title="30 个团队">+12</span>');
+  });
+
+  // Issue #892: the ZH homepage names the contributor in Chinese.
+  it("labels every ZH avatar alt in Chinese", async () => {
+    const logins = Array.from({ length: 2 }, (_, index) => `user-${index}`);
+    const response = await handleFetch(new Request("https://orbi.build/zh/"), {
+      ASSETS: { fetch: async () => new Response('<section data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>', { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: {
+        prepare(sql) {
+          return { all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total: 2 }] }
+            : { results: logins.map((login) => ({ login })) }) };
+        },
+      },
+    });
+    const body = await response.text();
+    expect(body).toContain('alt="GitHub 贡献者 user-0"');
+    expect(body).toContain('alt="GitHub 贡献者 user-1"');
+    expect(body).not.toContain('alt="GitHub contributor');
   });
 
   it("serves a cache hit without calling GitHub again", async () => {

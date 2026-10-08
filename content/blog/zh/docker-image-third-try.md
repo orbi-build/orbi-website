@@ -3,7 +3,7 @@ title: Docker 镜像到第三次才发布成功：三次失败记录
 date: 2026-09-18
 summary: orbi 镜像到第三次发布才到达 GHCR 和 Docker Hub。前两次是构建上下文和 Dockerfile 路径，最后一次则是非法 tag。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-docker-image-card.png
 ---
 

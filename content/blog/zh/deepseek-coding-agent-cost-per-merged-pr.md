@@ -3,7 +3,7 @@ title: 用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花�
 date: 2026-09-24
 summary: 看 Orbi 如何用 DeepSeek 无人值守地完成编程、独立评审、修复、合并和发版，以及每个合并 PR 的成本、缓存命中率和接入方法，附配置。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-deepseek.png
 mirror: deepseek-coding-agent-cost-per-merged-pr
 ---
@@ -18,6 +18,8 @@ Orbi 把 GitHub Issue 交付成经过独立评审、已合并的 PR，再打 tag
 
 - 非高峰时段中位数 **$0.125**，最高 **$0.417**。
 - 高峰时段中位数 **$0.249**，最高 **$0.834**。
+
+这组数字是更早的一组样本：同样是这 20 个合并 PR，时间是 2026-09-22 至 2026-09-24。最新数据是 Orbi Cloud 记录的 169 次合并交付，非高峰中位 **$0.082** —— 见[成本页](/zh/cost/)。
 
 价格依据 [DeepSeek 官方价目表](https://api-docs.deepseek.com/quick_start/pricing)。高峰价格翻倍，时段是工作日 UTC 01:00–04:00 和 06:00–10:00。无人值守任务如果能避开这两个时间段，就能少付一部分钱。[自动合并 AI PR 指南](/zh/guides/auto-merge-ai-prs/)讲的是流程，这篇只给这条合并 PR 的流程标上价格。
 

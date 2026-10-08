@@ -1,9 +1,9 @@
 ---
 title: The engine waited for an answer users could not give
 date: 2026-09-22
-summary: Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.
+summary: Our engine paused for a human decision, then asked tenants to use a command they did not have. Three versions of the same mistake in one afternoon.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-waiting.png
 mirror: waiting-for-someone-who-cannot-answer
 ---

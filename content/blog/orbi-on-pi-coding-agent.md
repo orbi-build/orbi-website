@@ -1,7 +1,7 @@
 ---
-title: Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens
+title: Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each
 date: 2026-10-05
-summary: In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.
+summary: In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.
 lang: en
 author: Lawrence Liu
 image: /img/blog-orbi-on-pi-card.png
@@ -105,7 +105,7 @@ Each row of the table is calculated on its own, so the median column isn't one p
 
 The typical delivery took two sessions, usually one implementer and one reviewer. #1554's four sessions put it above the 90th percentile; its runtime and requests weren't.
 
-Costs use DeepSeek's [published `deepseek-flash` prices](https://api-docs.deepseek.com/quick_start/pricing), as listed on our [cost page](/cost/): $0.003 per million tokens for a cache hit, $0.15 for a cache miss and $0.60 for output. On weekdays other than Chinese public holidays, 09:00–12:00 and 14:00–18:00 UTC+8 (01:00–04:00 and 06:00–10:00 UTC), prices double. All 169 deliveries together came to $18.45 at off-peak prices. (The $0.125 median on the cost page is an older sample: 20 PRs in the orbi repository from 22 to 24 September.) The usage records hold one total per delivery, with no timestamps per request, so I can't split peak from off-peak. The real cost of these recorded rows was somewhere between $18.45 and twice that, and the median between $0.082 and $0.163.
+Costs use DeepSeek's [published `deepseek-flash` prices](https://api-docs.deepseek.com/quick_start/pricing), as listed on our [cost page](/cost/): $0.003 per million tokens for a cache hit, $0.15 for a cache miss and $0.60 for output. On weekdays other than Chinese public holidays, 09:00–12:00 and 14:00–18:00 UTC+8 (01:00–04:00 and 06:00–10:00 UTC), prices double. All 169 deliveries together came to $18.45 at off-peak prices. (The $0.082 median now on the [cost page](/cost/) is this same sample: the 169 deliveries Cloud recorded between 16 September and 5 October. The $0.125 figure it used to lead with is an earlier sample — 20 PRs in the orbi repository from 22 to 24 September.) The usage records hold one total per delivery, with no timestamps per request, so I can't split peak from off-peak. The real cost of these recorded rows was somewhere between $18.45 and twice that, and the median between $0.082 and $0.163.
 
 That $18.45 counts only the last attempt of each delivery. With the three earlier attempts that have token counts added back, the 169 merged deliveries cost $19.04 at off-peak prices, an average of $0.113, above the median because a few large deliveries pull it up. There were also 16 issues with token counts that didn't end in a merge by Orbi (still open, abandoned, or finished by hand); all their recorded attempts together cost $2.73. Counting the ones that didn't merge too, everything Cloud recorded comes to $21.77; spread over the 169 merges, that's $0.129 each at off-peak prices, and up to twice that at peak.
 

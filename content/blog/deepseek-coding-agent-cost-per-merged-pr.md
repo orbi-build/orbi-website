@@ -1,9 +1,9 @@
 ---
 title: DeepSeek coding agent cost per merged PR
 date: 2026-09-24
-summary: See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.
+summary: See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-deepseek.png
 mirror: deepseek-coding-agent-cost-per-merged-pr
 ---
@@ -18,6 +18,8 @@ Across those runs, the median was **10.6M tokens** per merged PR. At DeepSeek's 
 
 - **$0.125** median and **$0.417** maximum outside peak hours.
 - **$0.249** median and **$0.834** maximum during peak hours.
+
+Those figures are an earlier sample: the same 20 merged PRs, from 2026-09-22 to 2026-09-24. The current measurement is 169 merged deliveries recorded by Orbi Cloud, a median of **$0.082** off-peak — see the [cost page](/cost/).
 
 The figures use DeepSeek's [official pricing](https://api-docs.deepseek.com/quick_start/pricing). Peak prices are double the off-peak rates during weekdays 01:00–04:00 and 06:00–10:00 UTC. For an unattended coding agent, scheduling around those windows is a practical cost control. The [auto-merge AI PR guide](/guides/auto-merge-ai-prs/) explains the delivery loop; this post puts a price on its merged-PR unit.
 

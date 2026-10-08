@@ -10,7 +10,7 @@
 // `guardBrowserRequests` answers each third-party request inside Chromium:
 // images get a transparent placeholder at the size the page declares, scripts
 // get an empty 200, anything else is aborted. It also records the third-party
-// requests that reached the network without being intercepted, so a suite can
+// requests that got a response without being intercepted, so a suite can
 // assert none did with `assertNoExternalRequests`.
 //
 // The counters are module state, and Vitest isolates test files, so a counter
@@ -47,7 +47,13 @@ function placeholderSvg(url) {
 export function guardBrowserRequests(context, origin) {
   const localOrigin = new URL(origin).origin;
 
-  context.on("request", (request) => {
+  // Count a third-party request only once a response for it arrives. A lazy
+  // footer badge can start loading while the page is closing: the "request"
+  // event fires, the page is gone before the route handler runs, and the
+  // request is cancelled without touching the network. Counting it on
+  // "request" made that teardown race a guard failure (PR #893, run 37728049058).
+  context.on("response", (response) => {
+    const request = response.request();
     const url = new URL(request.url());
     if (!isNetworkUrl(url) || url.origin === localOrigin) return;
     blockedRequests.add(request);

@@ -33,17 +33,21 @@ const deepDives = [
   ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
 ];
 
-// Issue #704: the hero uses the approved short lede and keeps one pricing
-// CTA as its only link.
+// Issue #899: the hero opens with two short sentences — open source, and the
+// two places it can run — a Cloud-named button, and one small line whose text
+// link goes to the self-host repository. The registered licence detail lives
+// in the How-it-works trust line and the FAQ, not in the first sentence.
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: ["An AI agent that takes your Issues all the way to a release."],
+    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on Orbi Cloud or your own machine.",
+    button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: ["AI 把你的 Issue 一路做到发版。"],
+    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以交给 Orbi Cloud 托管，也可以部署在自己的机器上。",
+    button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
 };
@@ -70,10 +74,14 @@ const pricing = JSON.parse(await readFile(new URL("../src/pricing.json", import.
 // the newest 18 faces plus one "+K" chip for the teams past the cap — so the
 // browser assertions exercise the layout that has to hold on a phone.
 const localFoundingLogins = Array.from({ length: 18 }, (_, index) => `founder-${index + 1}`);
-const localFoundingAvatars = localFoundingLogins
-  .map((login) => `<img class="orbi-avatar-wall-list-img" alt="" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
-  .join("")
-  + '<span class="avatar-wall-more" title="1250 teams">+1232</span>';
+// Issue #892: the Worker names each contributor in the page's language, so
+// the stand-in renders the same alt for the same path.
+function localFoundingAvatarMarkup(zh) {
+  return localFoundingLogins
+    .map((login) => `<img class="orbi-avatar-wall-list-img" alt="${zh ? "GitHub 贡献者" : "GitHub contributor"} ${login}" title="${login}" src="https://avatars.githubusercontent.com/${login}?s=80" loading="lazy" decoding="async">`)
+    .join("")
+    + '<span class="avatar-wall-more" title="1250 teams">+1232</span>';
+}
 
 export function countServerRenderedAvatars(html) {
   return html.match(/<img\b[^>]*class=["'][^"']*\borbi-avatar-wall-list-img\b[^"']*["'][^>]*>/g)?.length ?? 0;
@@ -173,7 +181,7 @@ function startServer() {
                 String(pricing.measuredSoloLargeCodebaseDeliveries),
               )
               .replaceAll("__FOUNDING_AVATARS_HIDDEN__", localFoundingLogins.length ? "" : "hidden")
-              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatars),
+              .replaceAll("__FOUNDING_AVATARS__", localFoundingAvatarMarkup(pathname.startsWith("/zh"))),
           )
         : file.body;
       response.writeHead(200, { "content-type": type });
@@ -675,8 +683,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     }
   }
   const hero = page.locator(".hero");
+  // Issue #890: the hero lede is the Orbi definition sentence, so the
+  // first-screen contract is now the hero copy itself — H1, definition, CTA
+  // and CTA note must fit the viewport. The proof bar keeps its own
+  // first-screen contract where the layout has room for it (desktop widths);
+  // on a short phone it follows the taller hero copy below the fold.
+  const heroCopyBox = await page.locator(".hero-copy").boundingBox();
+  if (!heroCopyBox || heroCopyBox.y < 0 || heroCopyBox.y + heroCopyBox.height > size.height) {
+    throw new Error(`${path}: hero copy is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroCopyBox)}`);
+  }
   const heroProofBox = await page.locator(".hero-proof-bar").boundingBox();
-  if (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height) {
+  if (size.width >= 1000 && (!heroProofBox || heroProofBox.y < 0 || heroProofBox.y + heroProofBox.height > size.height)) {
     throw new Error(`${path}: hero proof bar is outside the first ${size.width}x${size.height} viewport: ${JSON.stringify(heroProofBox)}`);
   }
   const ctaNoteLayout = await hero.evaluate((heroElement) => {
@@ -717,17 +734,63 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
   }
-  const lede = await hero.locator(".hero-lede").textContent();
-  for (const segment of claim.lede) {
-    if (!lede.includes(segment)) {
-      throw new Error(`${path}: hero lede is missing the segment ${JSON.stringify(segment)}: ${JSON.stringify(lede)}`);
+  let lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  // Right after a deploy the edge can still serve the previous build for a
+  // few seconds; on 2026-10-08 the beta smoke read the old lede and failed a
+  // deploy whose page was already correct (run 37744201241). Against a real
+  // deployment, reload for up to 60s before treating a stale lede as wrong.
+  for (let tries = 0; process.env.BASE_URL && lede !== claim.lede && tries < 12; tries += 1) {
+    await page.waitForTimeout(5_000);
+    await page.reload({ waitUntil: "load" });
+    lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  }
+  if (lede !== claim.lede) {
+    throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected ${JSON.stringify(claim.lede)}`);
+  }
+  // Issue #899: the button says where the click goes, and the one small line
+  // under it shows the numeric trial (the Worker substitutes
+  // __FREE_DELIVERIES__ before the bytes leave) plus its self-host text link.
+  const heroButtonText = (await hero.locator('[data-cta="cloud-start"]').textContent()).trim();
+  if (heroButtonText !== claim.button) {
+    throw new Error(`${path}: hero CTA label is ${JSON.stringify(heroButtonText)}, expected ${JSON.stringify(claim.button)}`);
+  }
+  const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
+  const expectedHeroNote = path === "/"
+    ? `${pricing.freeDeliveries} deliveries free, no credit card · or self-host it from GitHub`
+    : `前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 源码在 GitHub`;
+  if (heroNote !== expectedHeroNote) {
+    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
+  }
+  const heroGithub = hero.locator('[data-cta="hero-github"]');
+  if (await heroGithub.count() !== 1
+    || await heroGithub.getAttribute("href") !== "https://github.com/orbi-build/orbi") {
+    throw new Error(`${path}: the hero note must carry exactly one hero-github text link to the repository`);
+  }
+  if (await hero.getByText(/only sees the repos you pick|只授权你选的仓库/).count()) {
+    throw new Error(`${path}: the removed repo-authorisation reassurance is still on the first screen`);
+  }
+  // Issue #899: the label names Orbi Cloud; at the phone acceptance widths it
+  // must still be a single line. A wrapped label doubles the text height and
+  // pushes the note out of the first screen, so the line boxes are measured.
+  if (size.width <= 420) {
+    const labelLines = await hero.locator('[data-cta="cloud-start"]').evaluate((button) => {
+      const range = document.createRange();
+      range.selectNodeContents(button);
+      return range.getClientRects().length;
+    });
+    if (labelLines !== 1) {
+      throw new Error(`${path}: hero CTA label renders ${labelLines} lines at ${size.width}px, expected 1`);
     }
   }
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  if (await hero.locator("a").count() !== 1 || await hero.locator('[data-cta="cloud-start"]').count() !== 1) {
-    throw new Error(`${path}: hero must contain exactly one cloud-start link`);
+  // Issue #899: the hero's links are the Cloud CTA and the note's self-host
+  // text link — two, each with its own reported data-cta.
+  if (await hero.locator("a").count() !== 2
+    || await hero.locator('[data-cta="cloud-start"]').count() !== 1
+    || await hero.locator('[data-cta="hero-github"]').count() !== 1) {
+    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links`);
   }
   if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
     throw new Error(`${path}: removed film control remains in the hero`);
@@ -780,9 +843,17 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: expected 18 server-rendered avatars`);
   }
   const images = wall.locator("img");
+  // Issue #892: every rendered face must be announced by login in the page's
+  // own language, not left as an empty alt.
+  const altPrefix = path.startsWith("/zh") ? "GitHub 贡献者 " : "GitHub contributor ";
   for (let index = 0; index < browserAvatarCount; index += 1) {
     const image = images.nth(index);
     await image.waitFor({ state: "visible" });
+    const alt = await image.getAttribute("alt");
+    const login = await image.getAttribute("title");
+    if (!alt || !login || alt !== `${altPrefix}${login}`) {
+      throw new Error(`${path}: avatar ${index + 1} alt ${JSON.stringify(alt)} does not name its contributor ${JSON.stringify(login)}`);
+    }
     // Issue #586: the avatars are lazy, so visibility no longer implies a
     // started download. Scroll each one to the viewport, wait out its load
     // (the error event fails fast instead of hanging), then assert it.
@@ -1086,11 +1157,15 @@ async function assertProofLoop(browser, path, size, screenshot) {
     throw new Error(`${view}: figcaption links are ${JSON.stringify(captionLinks)}, expected ${JSON.stringify(expectedCaption)}`);
   }
   const midwayCta = page.locator('[data-cta="midway-cloud"]');
-  const heroCta = page.locator('[data-cta="cloud-start"]');
   const midwayText = (await midwayCta.textContent()).trim();
-  const heroText = (await heroCta.textContent()).trim();
-  if (midwayText !== heroText) {
-    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected hero text ${JSON.stringify(heroText)}`);
+  // Issue #899: the hero button names Orbi Cloud for the first screen; the
+  // midway CTA under the proof keeps the numeric trial promise. Both land on
+  // the same handoff, which is what the two share now.
+  const expectedMidwayText = path.startsWith("/zh/")
+    ? `免费试 ${pricing.freeDeliveries} 次 →`
+    : `Try ${pricing.freeDeliveries} deliveries free →`;
+  if (midwayText !== expectedMidwayText) {
+    throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected ${JSON.stringify(expectedMidwayText)}`);
   }
   const midwayHref = await midwayCta.getAttribute("href");
   const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
@@ -1458,16 +1533,20 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // identical across the two.
 // Issue #118: the older delivery dataset is a snapshot as of a stated date
 // (the sample moves as worktrees are cleaned up), so its section retains the
-// date, n=46, and re-derivation recipe. Issue #512 adds the dated n=20 merged-PR
-// sample; the smoke reads the hero n each rendered page shows and asserts the
-// two languages agree.
+// date, n=46, and re-derivation recipe. Issue #512 added the dated n=20
+// merged-PR sample; Issue #886 moved it below the page as the labelled earlier
+// sample and promoted the n=169 Cloud sample to the headline. The smoke reads
+// the hero n each rendered page shows and asserts the two languages agree.
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
     h1: "What an AI coding agent costs per merged pull request",
+    earlier: "Earlier sample",
     text: [
-      // merged-PR measurement date, sample size, and median costs
-      "measured 2026-09-24", "n=20", "$0.125", "$0.249", "10,612,802",
+      // the headline sample: date, size, and median/p90/mean cost
+      "measured 2026-10-05 15:36 UTC+8", "n=169", "$0.082", "$0.22", "mean $0.11", "$18.45",
+      // the retired n=20 sample stays published, labelled as earlier
+      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       // older per-delivery snapshot remains available
       "2026-09-12", "n=46",
       "n is a snapshot as of the stated date, not a permanent fact",
@@ -1494,8 +1573,10 @@ const costPages = {
   "/zh/cost/": {
     zh: "/cost/",
     h1: "AI 编程 agent 每合并一个 PR 花多少钱",
+    earlier: "早期样本",
     text: [
-      "截至 2026-09-24 实测", "n=20", "$0.125", "$0.249", "10,612,802",
+      "截至 2026-10-05 15:36（UTC+8）实测", "n=169", "$0.082", "$0.22", "均值 $0.11", "$18.45",
+      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
       "2026-09-12", "n=46",
       "n 是截至标注日期的快照,不是永久事实",
       ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
@@ -1540,6 +1621,20 @@ async function assertCostPage(browser, path, size, screenshot) {
     if (!text.includes(needle)) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
+  }
+  // Issue #886: the first screen is the hero — the headline sample (169 merged
+  // deliveries, median $0.082) must be what the visitor lands on.
+  const hero = (await page.locator("section.compare-hero").textContent()).replace(/\s+/g, " ");
+  for (const needle of ["$0.082", "169"]) {
+    if (!hero.includes(needle)) throw new Error(`${path}: hero is missing ${JSON.stringify(needle)}`);
+  }
+  if (hero.includes("$0.125")) throw new Error(`${path}: hero still leads with the retired $0.125 median`);
+  // Issue #886: the retired median survives only inside the earlier sample,
+  // which sits below the current sections — page position, not just a label.
+  const earlierAt = text.indexOf(claim.earlier);
+  if (earlierAt < 0) throw new Error(`${path}: no ${JSON.stringify(claim.earlier)} section`);
+  for (let at = text.indexOf("$0.125"); at !== -1; at = text.indexOf("$0.125", at + 1)) {
+    if (at < earlierAt) throw new Error(`${path}: $0.125 appears before the earlier sample`);
   }
   // Issue #118: the sample size each rendered page actually shows — the main
   // text, not a pinned constant — so the two languages can be compared.

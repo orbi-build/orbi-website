@@ -13,46 +13,46 @@
       <description>I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.</description>
     </item>
     <item>
-      <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ median in tokens</title>
+      <title>Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each</title>
       <link>https://orbi.build/blog/orbi-on-pi-coding-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/orbi-on-pi-coding-agent/</guid>
       <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
-      <description>In model tokens at DeepSeek off-peak list prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</description>
+      <description>In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</description>
     </item>
     <item>
       <title>Run Claude Code unattended: headless mode is step one</title>
       <link>https://orbi.build/blog/run-claude-code-unattended/</link>
       <guid isPermaLink="true">https://orbi.build/blog/run-claude-code-unattended/</guid>
       <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
-      <description>Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review, merge and release are on you.</description>
+      <description>Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.</description>
     </item>
     <item>
-      <title>Searching for Orbi's harness, part 2: is the regression guard worth its tokens?</title>
+      <title>Searching for Orbi's harness, part 2: guard cost</title>
       <link>https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</link>
       <guid isPermaLink="true">https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/</guid>
       <pubDate>Wed, 30 Sep 2026 00:00:00 GMT</pubDate>
-      <description>On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. We tested five harness designs to keep the fix without doubling the cost of every delivery. Here's what worked, what didn't, and why we picked the simplest one.</description>
+      <description>On eight unseen bugs whose Issue shows only a narrow example, Orbi's original harness failed a third of its runs. Five designs to cut the cost of the fix.</description>
     </item>
     <item>
-      <title>Searching for Orbi's harness, part 1: what our reviewer missed</title>
+      <title>Searching for Orbi's harness, part 1: review gaps</title>
       <link>https://orbi.build/blog/searching-for-orbis-harness/</link>
       <guid isPermaLink="true">https://orbi.build/blog/searching-for-orbis-harness/</guid>
       <pubDate>Tue, 29 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the full delivery loop on issues Orbi had failed and on twelve it had never seen. Ten things we learned, with the data.</description>
+      <description>Orbi's review passed two fixes that each broke something. We rebuilt the harness one rule at a time and reran the loop on failed and unseen issues.</description>
     </item>
     <item>
       <title>GitSpawn and the agent that never asks</title>
       <link>https://orbi.build/blog/gitspawn-unattended-agent/</link>
       <guid isPermaLink="true">https://orbi.build/blog/gitspawn-unattended-agent/</guid>
       <pubDate>Sat, 26 Sep 2026 00:00:00 GMT</pubDate>
-      <description>A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.</description>
+      <description>A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who runs git, and reverted it.</description>
     </item>
     <item>
       <title>DeepSeek coding agent cost per merged PR</title>
       <link>https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</link>
       <guid isPermaLink="true">https://orbi.build/blog/deepseek-coding-agent-cost-per-merged-pr/</guid>
       <pubDate>Thu, 24 Sep 2026 00:00:00 GMT</pubDate>
-      <description>See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key in practice.</description>
+      <description>See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key.</description>
     </item>
     <item>
       <title>Why Orbi is open source again</title>
@@ -80,7 +80,7 @@
       <link>https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</link>
       <guid isPermaLink="true">https://orbi.build/blog/waiting-for-someone-who-cannot-answer/</guid>
       <pubDate>Tue, 22 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Our engine paused for a human decision, then asked tenants to use a command they did not have. We found three versions of the same mistake in one afternoon.</description>
+      <description>Our engine paused for a human decision, then asked tenants to use a command they did not have. Three versions of the same mistake in one afternoon.</description>
     </item>
     <item>
       <title>Seven steps of an Orbi Cloud setup, on video</title>
@@ -94,7 +94,7 @@
       <link>https://orbi.build/blog/what-autonomous-actually-means/</link>
       <guid isPermaLink="true">https://orbi.build/blog/what-autonomous-actually-means/</guid>
       <pubDate>Sun, 20 Sep 2026 00:00:00 GMT</pubDate>
-      <description>Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain available to inspect.</description>
+      <description>Most autonomous coding agents stop at a pull request. Here, a second model rejected the diff twice, while the commits and release remain inspectable.</description>
     </item>
     <item>
       <title>Claude Code in Actions: who presses merge?</title>
@@ -108,7 +108,7 @@
       <link>https://orbi.build/blog/docker-image-third-try/</link>
       <guid isPermaLink="true">https://orbi.build/blog/docker-image-third-try/</guid>
       <pubDate>Fri, 18 Sep 2026 00:00:00 GMT</pubDate>
-      <description>The orbi image reached GHCR and Docker Hub on its third run. The first two failures involved build context and Dockerfile paths; the last was an invalid tag.</description>
+      <description>The orbi image reached GHCR and Docker Hub on its third run. The first two failures were build context and Dockerfile paths; the last an invalid tag.</description>
     </item>
   </channel>
 </rss>

@@ -151,7 +151,7 @@ describe("guide front matter is validated (Issue #826)", () => {
     const guidesDir = await mkdtemp(join(tmpdir(), "orbi-guides-"));
     const outDir = await mkdtemp(join(tmpdir(), "orbi-guides-build-"));
     fixtureDirs.push(guidesDir, outDir);
-    await writeFile(join(guidesDir, "broken.md"), "---\ntitle: Broken\nlang: en\nmirror: broken\nupdated: 2026-10-05\n---\n\nBody.\n");
+    await writeFile(join(guidesDir, "broken.md"), "---\ntitle: Broken\nlang: en\nmirror: broken\npublished: 2026-10-05\nupdated: 2026-10-05\n---\n\nBody.\n");
     await expect(buildPages(outDir, { guidesDir })).rejects.toThrow(/content\/guides\/broken\.md/);
   });
 });
@@ -218,6 +218,7 @@ title: ${title}
 summary: A short fixture guide.
 lang: ${lang}
 mirror: ${mirror}
+published: 2026-10-05
 updated: 2026-10-05
 ---
 
@@ -238,7 +239,7 @@ title: ${title}
 date: 2026-10-01
 summary: A fixture post next to the fixture guide.
 lang: ${lang}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 

@@ -1,9 +1,9 @@
 ---
 title: GitSpawn and the agent that never asks
 date: 2026-09-26
-summary: A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who really runs git, and reverted it.
+summary: A git flaw hit seven coding agents by skipping their approval prompts. Orbi has none to skip, so we shipped a fix, checked who runs git, and reverted it.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-gitspawn.png
 mirror: gitspawn-unattended-agent
 ---
