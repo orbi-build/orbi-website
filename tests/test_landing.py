@@ -825,11 +825,11 @@ class LandingTests(unittest.TestCase):
         self.assertEqual(
             production_kv["STATS_KV"], "f467445ad7184ab8b510bde8c2c0fd7b"
         )
-        self.assertEqual(config["triggers"]["crons"], ["*/5 * * * *"])
+        self.assertEqual(config["triggers"]["crons"], ["0 * * * *"])
         beta = config["env"]["beta"]
         beta_kv = {entry["binding"]: entry["id"] for entry in beta["kv_namespaces"]}
         self.assertEqual(beta_kv["STATS_KV"], "56f62f9181db4fc9898556bbee18b40c")
-        self.assertEqual(beta["triggers"]["crons"], ["*/5 * * * *"])
+        self.assertEqual(beta["triggers"]["crons"], ["0 * * * *"])
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")

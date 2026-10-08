@@ -50,7 +50,7 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATUS_CACHE_KEY = "https://orbi.build/__status";
-// Issue #917: GitHub is pulled once every five minutes by this Worker's cron
+// Issue #917: GitHub is pulled once an hour by this Worker's cron
 // trigger and the result is written to the global STATS_KV namespace. Every
 // colo reads that one snapshot; caches.default only fronts it. The old design
 // let each colo pull on its own after its cache expired — 6 search calls per
