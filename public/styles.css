@@ -1875,6 +1875,13 @@ h2 {
   font-size: 0.78rem;
 }
 .site-footer .footer-friends span { color: var(--ink); font-weight: 600; }
+/* The legal entity behind orbi.build, so the site and the company can be matched. */
+.site-footer .footer-legal {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
 /* Issue #805: the three directory badges get their own last row, clear of the
    20px-tall text links above them. */
 .site-footer .footer-badges {
@@ -2145,7 +2152,8 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
-  .site-footer .footer-friends { grid-column: 1; }
+  .site-footer .footer-friends,
+  .site-footer .footer-legal { grid-column: 1; }
   .site-footer nav li + li { margin-top: 6px; }
 }
 
