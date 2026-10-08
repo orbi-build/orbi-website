@@ -745,6 +745,57 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
     expect(delivery, "the delivery-line paragraph must link the Devin section").toContain('href="/compare/devin/#devin-vs-claude-code"');
     expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the terminal/IDE list").not.toContain("/compare/devin/#devin-vs-claude-code");
   });
+
+  it("carries first-hand Orbi material, not only a description", () => {
+    const html = shipped.get("compare/devin/index.html");
+    const start = html.indexOf('id="devin-vs-claude-code"');
+    const section = html.slice(start, html.indexOf("</section>", start));
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    const firstHand = hrefs.filter(
+      (href) => /^https:\/\/github\.com\/orbi-build\/orbi\/(issues|pull)\/\d+$/.test(href) || href.startsWith("/proof/") || href === "/evidence/",
+    );
+    expect(firstHand, "a real delivery to link: " + hrefs.join(", ")).not.toHaveLength(0);
+  });
+
+  it("shares under 10% of its 8-grams with the other comparison pages", () => {
+    // The content-quality gate forbids shipping this section as a copy of the
+    // sibling alternatives sections. Compare the section's word 8-grams against
+    // every other /compare/ page's body text, English and Chinese.
+    const gramsOf = (list, size) => {
+      const grams = new Set();
+      for (let index = 0; index + size <= list.length; index += 1) {
+        grams.add(list.slice(index, index + size).join(" "));
+      }
+      return grams;
+    };
+    const wordsOf = (html) =>
+      html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&(?:nbsp|mdash|ndash|amp|#39|rsquo|quot);/g, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+        .trim()
+        .split(" ")
+        .filter(Boolean);
+
+    const devin = shipped.get("compare/devin/index.html");
+    const start = devin.indexOf('id="devin-vs-claude-code"');
+    const mine = gramsOf(wordsOf(devin.slice(start, devin.indexOf("</section>", start))), 8);
+    expect(mine.size, "the section must be long enough for an 8-gram comparison").toBeGreaterThan(50);
+
+    for (const output of shipped.keys()) {
+      if (output === "compare/devin/index.html") continue;
+      if (!/^(zh\/)?compare\/[^/]+\/index\.html$/.test(output)) continue;
+      const theirs = gramsOf(wordsOf(shipped.get(output)), 8);
+      const shared = [...mine].filter((gram) => theirs.has(gram));
+      const ratio = shared.length / mine.size;
+      expect(
+        ratio,
+        output + " shares " + (ratio * 100).toFixed(1) + "% of the 8-grams, e.g. " + shared.slice(0, 2).join(" / "),
+      ).toBeLessThan(0.1);
+    }
+  });
 });
 
 describe("SEO metadata is descriptive (Issue #405, #413)", () => {
