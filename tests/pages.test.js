@@ -709,7 +709,7 @@ describe("Claude Code alternatives (Issue #869)", () => {
 // The maintainer's content-quality gate (2026-10-08) adds three demands on
 // the same section: a comparison table as its figure, Orbi's own public
 // delivery record as first-hand material, and no template copy — its 8-gram
-// overlap with the sibling alternatives sections stays under 10%.
+// overlap with the other comparison pages stays under 10%.
 describe("GitHub Copilot alternatives (Issue #907)", () => {
   const editorTools = ["Cursor", "Windsurf", "Cline", "Tabnine"];
   const sectionLinks = ["/compare/claude-code/", "/compare/codex/", "/compare/openhands/"];
@@ -788,22 +788,22 @@ describe("GitHub Copilot alternatives (Issue #907)", () => {
     expect(section, "the evidence page must be linked").toContain('href="/evidence/"');
   });
 
-  it("keeps 8-gram overlap with the sibling alternatives sections under 10%", () => {
+  it("keeps 8-gram overlap with the other comparison pages under 10%", () => {
+    // The gate is measured against the other comparison pages' body text, not
+    // only their alternatives sections (Issue #907's wording).
     const mine = [...eightGrams(words(alternativesSection(page())))];
     expect(mine.length, "the section must be long enough to measure").toBeGreaterThan(40);
-    const siblings = new Set();
-    for (const [output, id] of [
-      ["compare/claude-code/index.html", "claude-code-alternatives"],
-      ["compare/codex/index.html", "codex-alternatives"],
-    ]) {
-      const html = shipped.get(output);
-      const start = html.indexOf('id="' + id + '"');
-      const section = html.slice(start, html.indexOf("</section>", start));
-      for (const gram of eightGrams(words(section))) siblings.add(gram);
+    for (const output of shipped.keys()) {
+      if (output === "compare/github-copilot-coding-agent/index.html") continue;
+      if (!/^(zh\/)?compare\/[^/]+\/index\.html$/.test(output)) continue;
+      const theirs = eightGrams(words(shipped.get(output)));
+      const shared = mine.filter((gram) => theirs.has(gram));
+      const ratio = shared.length / mine.length;
+      expect(
+        ratio,
+        output + " shares " + (ratio * 100).toFixed(1) + "% of the 8-grams, e.g. " + shared.slice(0, 2).join(" / "),
+      ).toBeLessThan(0.1);
     }
-    const shared = mine.filter((gram) => siblings.has(gram));
-    const ratio = shared.length / mine.length;
-    expect(ratio, 'overlapping 8-grams: ' + shared.join(' | ')).toBeLessThan(0.1);
   });
 });
 
