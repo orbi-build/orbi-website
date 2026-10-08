@@ -1043,11 +1043,17 @@ export function guideFromSource(displayName, source) {
   const label = `content/guides/${displayName}`;
   const lang = displayName.startsWith("zh/") ? "zh" : "en";
   const { fields, body } = parseFrontMatter(label, source);
-  for (const field of ["title", "summary", "lang", "mirror", "updated"]) {
+  for (const field of ["title", "summary", "lang", "mirror", "published", "updated"]) {
     requiredField(label, fields, field);
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.updated)) {
-    throw new Error(`${label}: front matter needs "updated" as YYYY-MM-DD, got "${fields.updated}"`);
+  // Issue #889: the guide's Article carries a real publish and update date.
+  // `published` is the day the guide first shipped, `updated` the newest day
+  // its Update log records; both are pinned as YYYY-MM-DD so the emitted
+  // JSON-LD cannot drift into a guessed date.
+  for (const field of ["published", "updated"]) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fields[field])) {
+      throw new Error(`${label}: front matter needs "${field}" as YYYY-MM-DD, got "${fields[field]}"`);
+    }
   }
   if (fields.lang !== lang) {
     throw new Error(`${label}: front matter says lang: ${fields.lang}, but its directory fixes lang: ${lang}`);
@@ -1063,6 +1069,7 @@ export function guideFromSource(displayName, source) {
     href: pathToHref(output),
     title: fields.title,
     summary: fields.summary,
+    published: fields.published,
     updated: fields.updated,
     series: [...body.matchAll(/<!--@series:([A-Za-z0-9_-]+)-->/g)].map((match) => match[1]),
     rawBody: body,
@@ -1156,6 +1163,29 @@ function renderGuide(guide, template, posts, guidesData) {
   const breadcrumbNav = breadcrumb.replace(breadcrumbJson, "");
   const url = `https://orbi.build${guide.href}`;
   const mirrorHref = `https://orbi.build${pathToHref(guide.mirrorOutput)}`;
+  // Issue #889: the hub carries an Article with its real dates. dateModified is
+  // the newest day the page's own Update log records (the guide front matter's
+  // `updated`); datePublished is the day the guide first shipped. Both come
+  // from the validated front matter, so the JSON-LD cannot invent a date.
+  const articleJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title,
+    description: guide.summary,
+    inLanguage: guide.lang === "zh" ? "zh-CN" : "en",
+    url,
+    datePublished: guide.published,
+    dateModified: guide.updated,
+    author: { "@type": "Person", name: "Lawrence Liu" },
+    publisher: {
+      "@type": "Organization",
+      name: "Orbi",
+      url: "https://orbi.build/",
+      logo: { "@type": "ImageObject", url: "https://orbi.build/logo-mark.svg" },
+    },
+    isPartOf: { "@type": "WebSite", name: "Orbi", url: "https://orbi.build/" },
+    about: { "@id": "https://orbi.build/#software" },
+  }).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e").replaceAll("&", "\\u0026");
   // The guide reuses the blog TOC (Issue #835): same five-heading threshold,
   // same localized title, same layout and scroll-highlight script.
   const { html: bodyHtml, headings } = renderGuideBody(guide, posts);
@@ -1184,7 +1214,7 @@ function renderGuide(guide, template, posts, guidesData) {
     FOOTER: toLayout(renderFooter(page), "pretty"),
   });
   return html
-    .replace("</head>", `${breadcrumbJson}</head>`)
+    .replace("</head>", `<script type="application/ld+json">${articleJson}</script>${breadcrumbJson}</head>`)
     .replace("</body>", `${tocScript}${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
 }
 
