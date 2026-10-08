@@ -3,7 +3,7 @@ title: Orbi 给 k8e 写 etcd 测试：先被打回，合并后票又关错了
 date: 2026-09-23
 summary: Orbi 给 497 星的 k8s 发行版 k8e 写了一套 etcd 测试。第一版被评审打回，改完合并了，分四期的票却在第一期后就被关掉。这篇按记录逐条复盘。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-k8e.png
 mirror: k8e-rejected-then-merged
 ---

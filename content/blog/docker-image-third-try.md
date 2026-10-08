@@ -3,7 +3,7 @@ title: The Docker image made it out on try three
 date: 2026-09-18
 summary: The orbi image reached GHCR and Docker Hub on its third run. The first two failures were build context and Dockerfile paths; the last an invalid tag.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-docker-image-card.png
 ---
 

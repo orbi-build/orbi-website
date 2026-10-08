@@ -33,6 +33,10 @@ const CONTENT_DIR = join(ROOT, "content", "blog");
 const GUIDES_DIR = join(ROOT, "content", "guides");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
+// Issue #887: the author record every byline, Article author and homepage
+// founder points at. One record: the site publishes one author page per
+// language, and a post whose front matter names anyone else fails the build.
+const AUTHORS_DATA_PATH = join(ROOT, "site", "data", "authors.json");
 
 // Inline, first-party engagement telemetry. It sends only event metadata and
 // uses Beacon so page exits do not block navigation or rendering.
@@ -458,6 +462,32 @@ function escAttr(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+// Issue #887: the author page a language's posts link to. The record in
+// site/data/authors.json carries the slug, so the byline, the Article JSON-LD
+// and the pages' own output all derive from one value.
+function authorHref(author, lang) {
+  return `${lang === "zh" ? "/zh" : ""}/about/${author.slug}/`;
+}
+
+// The author record the build renders bylines and structured data from. Every
+// field is required: a missing one would ship a byline without a target.
+export async function loadAuthor(path = AUTHORS_DATA_PATH) {
+  const label = relative(ROOT, path).split("\\").join("/");
+  const author = JSON.parse(await readFile(path, "utf8"));
+  for (const field of ["name", "slug"]) {
+    if (typeof author[field] !== "string" || author[field].trim() === "") {
+      throw new Error(`${label}: missing "${field}"`);
+    }
+  }
+  if (!Array.isArray(author.sameAs) || author.sameAs.length === 0) {
+    throw new Error(`${label}: missing "sameAs"`);
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(author.slug)) {
+    throw new Error(`${label}: "slug" is not URL-safe: ${author.slug}`);
+  }
+  return author;
 }
 
 // --- Blog posts: Markdown files under content/blog (Issue #212) ---
@@ -942,18 +972,22 @@ export async function collectPosts(contentDir = CONTENT_DIR) {
 
 // The canonical + article og block the build derives from the post front
 // matter, so the meta cannot drift from the title/summary/date the post ships.
-function renderPostMeta(post) {
+function renderPostMeta(post, author) {
   const url = `https://orbi.build${post.href}`;
   const image = `https://orbi.build${post.image}`;
-  // Issue #862: the author names the real author. The site's own "Orbi" byline
-  // stays an Organization; a named person's byline becomes a Person, so search
-  // and AI answers can attribute the first-person posts.
+  // Issue #887: every post is attributed to the Person the byline links to —
+  // the author page URL plus the two profiles that identify them.
   const article = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.headline,
     datePublished: post.date,
-    author: { "@type": post.author === "Orbi" ? "Organization" : "Person", name: post.author },
+    author: {
+      "@type": "Person",
+      name: post.author,
+      url: `https://orbi.build${authorHref(author, post.lang)}`,
+      sameAs: [...author.sameAs],
+    },
     publisher: {
       "@type": "Organization",
       name: "Orbi",
@@ -1250,7 +1284,7 @@ const TOC_HIGHLIGHT_SCRIPT = `<script>(()=>{try{const links=[...document.querySe
 
 // `seriesGuide` is the same-language guide page that renders this post's
 // series index; when set, the post carries a backlink to it (Issue #826).
-function renderPost(post, template, seriesGuide = null) {
+function renderPost(post, template, seriesGuide, author) {
   const t = POST_LANG[post.lang];
   const toc = renderPostToc(post);
   const seriesLink = seriesGuide
@@ -1292,12 +1326,14 @@ function renderPost(post, template, seriesGuide = null) {
     LANG_ATTR: t.htmlLang,
     TITLE: escAttr(`${post.title} | Orbi`),
     DESCRIPTION: escAttr(post.summary),
-    POST_META: renderPostMeta(post),
+    POST_META: renderPostMeta(post, author),
     FONT_LINK: t.fontLink,
     SKIP_LABEL: t.skipLabel,
     NAV: toLayout(renderNav(page), "pretty"),
     EYEBROW: t.eyebrow,
     DATE: post.date,
+    AUTHOR_NAME: escAttr(post.author),
+    AUTHOR_HREF: escAttr(authorHref(author, post.lang)),
     HEADLINE: escAttr(post.title),
     SUMMARY: escAttr(post.summary),
     POST_TOC: toc.desktop,
@@ -1492,6 +1528,14 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   const posts = await collectPosts(contentDir);
   const guides = await collectGuides(guidesDir);
   const guidesData = JSON.parse(await readFile(GUIDES_DATA_PATH, "utf8"));
+  const author = await loadAuthor();
+  // Issue #887: every byline links to the author page, so a post naming an
+  // author the site has no page for is a build error, never an unlinked
+  // byline that ships.
+  for (const post of posts) {
+    if (post.author === author.name) continue;
+    throw new Error(`content/blog/${post.source}: author "${post.author}" has no author page; site/data/authors.json publishes "${author.name}" at ${authorHref(author, post.lang)}`);
+  }
   // Issue #826: a post that declares a series must have a same-language guide
   // page rendering that series; otherwise its required backlink would 404.
   const guideBySeries = new Map();
@@ -1556,6 +1600,11 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       if (!html.includes("<!--@posts-->")) {
         throw new Error(`${page.source}: blog index is missing the <!--@posts--> marker`);
       }
+    }
+    // Issue #887: the author page carries the same derived list — the marker
+    // fills with the posts of the page's own language on any page that asks
+    // for it, so the list never becomes a second hand-maintained copy.
+    if (html.includes("<!--@posts-->")) {
       html = html.replace("<!--@posts-->", () => renderPostList(postsFor(page.source)));
     }
     const socialVariant = SOCIAL_PROOF_VARIANTS[page.source];
@@ -1578,7 +1627,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     const out = join(outDir, post.output);
     await mkdir(dirname(out), { recursive: true });
     const seriesGuide = post.series ? guideBySeries.get(`${post.lang}/${post.series}`) : null;
-    await writeFile(out, renderPost(post, POST_TEMPLATE, seriesGuide));
+    await writeFile(out, renderPost(post, POST_TEMPLATE, seriesGuide, author));
   }
   for (const guide of guides) {
     const out = join(outDir, guide.output);

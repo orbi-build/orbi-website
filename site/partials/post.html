@@ -71,6 +71,12 @@
     /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
     .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
     .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -117,8 +123,9 @@
     <div class="night">
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">{{EYEBROW}} · {{DATE}}</p>
+          <p class="eyebrow">{{EYEBROW}}</p>
           <h1 id="post-title">{{HEADLINE}}</h1>
+          <p class="post-byline"><a href="{{AUTHOR_HREF}}">{{AUTHOR_NAME}}</a> · <time datetime="{{DATE}}">{{DATE}}</time></p>
 {{SERIES_LINK}}
           <p class="hero-lede">{{SUMMARY}}</p>
         </section>

@@ -3,7 +3,7 @@ title: DeepSeek coding agent cost per merged PR
 date: 2026-09-24
 summary: See how Orbi uses DeepSeek as an unattended coding agent, what each merged PR costs, why cache reads matter, and how to connect your own API key.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-deepseek.png
 mirror: deepseek-coding-agent-cost-per-merged-pr
 ---

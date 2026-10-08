@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-gitspawn.png">
   <meta property="og:image:alt" content="GitSpawn 绕开的是审批，我们的 agent 本来就不审批">
   <meta property="article:published_time" content="2026-09-26">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"GitSpawn 绕开的是审批，我们的 agent 本来就不审批","datePublished":"2026-09-26","author":{"@type":"Organization","name":"Orbi"},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/gitspawn-unattended-agent/","image":"https://orbi.build/img/blog-gitspawn.png","inLanguage":"zh-CN","description":"GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。","url":"https://orbi.build/zh/blog/gitspawn-unattended-agent/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"GitSpawn 绕开的是审批，我们的 agent 本来就不审批","datePublished":"2026-09-26","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/gitspawn-unattended-agent/","image":"https://orbi.build/img/blog-gitspawn.png","inLanguage":"zh-CN","description":"GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。","url":"https://orbi.build/zh/blog/gitspawn-unattended-agent/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -82,6 +82,12 @@
     /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
     .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
     .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -146,8 +152,9 @@
     <div class="night">
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
-          <p class="eyebrow">博客 · 2026-09-26</p>
+          <p class="eyebrow">博客</p>
           <h1 id="post-title">GitSpawn 绕开的是审批，我们的 agent 本来就不审批</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-09-26">2026-09-26</time></p>
 
           <p class="hero-lede">GitSpawn 让七个编程 agent 在审批弹窗之前就执行了程序。Orbi 没有审批这一步，我们写了修复，查清是谁在跑 git，当天又撤了。</p>
         </section>

@@ -3,7 +3,7 @@ title: AI 编码 agent 说不之后，交付会怎样？
 date: 2026-09-20
 summary: 大部分无人值守 agent 停在 PR。本文记录一次真实交付：另一个模型两次拒绝代码，随后修复、合并并发布；commit 和 Release 都能点开查看。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-autonomous-card.png
 ---
 

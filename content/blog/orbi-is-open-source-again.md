@@ -3,7 +3,7 @@ title: Why Orbi is open source again
 date: 2026-09-24
 summary: Orbi began on Apache-2.0 and switched to the Sustainable Use License on Sep 4. From v0.5.44 it is AGPL-3.0, or the SUL if AGPL is ruled out. Here is why.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-agpl.png
 mirror: orbi-is-open-source-again
 ---
