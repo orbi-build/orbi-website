@@ -239,7 +239,7 @@ title: ${title}
 date: 2026-10-01
 summary: A fixture post next to the fixture guide.
 lang: ${lang}
-author: Orbi
+author: Lawrence Liu
 image: /img/fixture.png
 ---
 

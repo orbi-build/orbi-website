@@ -3,7 +3,7 @@ title: Claude Code in Actions: who presses merge?
 date: 2026-09-19
 summary: Claude Code Action can implement and review pull requests in your runner. It stops before merge and release. Here is the evidence-backed layer for both.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-claude-actions-card.png
 ---
 

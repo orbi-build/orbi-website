@@ -3,7 +3,7 @@ title: Orbi 为什么又改回开源：从 Apache 到 AGPL-3.0
 date: 2026-09-24
 summary: Orbi 从 Apache-2.0 换到 SUL，v0.5.44 起又改为 AGPL-3.0，也可选 SUL。这篇讲每次换许可证的原因和对用户的影响。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-agpl.png
 mirror: orbi-is-open-source-again
 ---

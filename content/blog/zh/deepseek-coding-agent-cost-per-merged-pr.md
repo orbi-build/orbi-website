@@ -3,7 +3,7 @@ title: 用 DeepSeek 当无人值守的编程智能体：每合并一个 PR 花�
 date: 2026-09-24
 summary: 看 Orbi 如何用 DeepSeek 无人值守地完成编程、独立评审、修复、合并和发版，以及每个合并 PR 的成本、缓存命中率和接入方法，附配置。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-deepseek.png
 mirror: deepseek-coding-agent-cost-per-merged-pr
 ---

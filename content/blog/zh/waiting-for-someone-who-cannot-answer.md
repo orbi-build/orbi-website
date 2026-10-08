@@ -3,7 +3,7 @@ title: 引擎等来的答案，托管用户给不了：三个交互缺口记录
 date: 2026-09-22
 summary: 引擎为人的决定而暂停，却要求托管租户执行一条没有的命令。本文复盘这个交互缺口的三种形态，以及一个下午找到的命令输出、数据库证据和具体修复结果。
 lang: zh
-author: Orbi
+author: Lawrence Liu
 image: /img/blog-waiting.png
 mirror: waiting-for-someone-who-cannot-answer
 ---

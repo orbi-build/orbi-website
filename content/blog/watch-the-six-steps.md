@@ -3,7 +3,7 @@ title: Seven steps of an Orbi Cloud setup, on video
 date: 2026-09-21
 summary: An 83-second video follows the Orbi Cloud setup from GitHub sign-in to a tagged release and subscription. The final step starts paid Cloud delivery here.
 lang: en
-author: Orbi
+author: Lawrence Liu
 image: /img/og-watch-the-six-steps.png
 video_name: Orbi Cloud setup from zero to a tagged release in seven steps
 video_description: An 83-second walkthrough of the seven-step Orbi Cloud setup from GitHub sign-in through subscription.
