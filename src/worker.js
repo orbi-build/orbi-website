@@ -284,6 +284,21 @@ function refreshStatsOnce(env) {
   return statsRefreshInFlight;
 }
 
+// Issue #917: /stats, /status and the server-rendered homepage all read the
+// one cache entry in front of KV, so every writer builds that entry the same
+// way — same JSON body and the same headers the served response carries,
+// security headers included. A second, thinner payload would serve /stats
+// from the homepage's write without them.
+function statsCacheEntry(stats) {
+  return new Response(JSON.stringify(stats), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": `public, max-age=${STATS_TTL_MS / 1000}`,
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
 async function statsResponse(env) {
   const cache = typeof caches === "undefined" ? undefined : caches.default;
   if (cache) {
@@ -306,9 +321,7 @@ async function statsResponse(env) {
     },
   });
   if (cache) {
-    const toStore = response.clone();
-    toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
-    await cache.put(STATS_CACHE_KEY, toStore);
+    await cache.put(STATS_CACHE_KEY, statsCacheEntry(stats));
   }
   return response;
 }
@@ -597,12 +610,7 @@ async function homepageStats(env, ctx) {
     try {
       stats = await readStatsFromKv(env);
       if (stats) {
-        await cache.put(STATS_CACHE_KEY, new Response(JSON.stringify(stats), {
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Cache-Control": `public, max-age=${STATS_TTL_MS / 1000}`,
-          },
-        }));
+        await cache.put(STATS_CACHE_KEY, statsCacheEntry(stats));
       }
     } catch (err) {
       console.error("homepage_stats_kv_failed:", err && err.message ? err.message : err);
@@ -1323,7 +1331,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, refreshStats, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: the visit attribution report rides

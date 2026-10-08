@@ -872,6 +872,32 @@ describe("server-rendered homepage stats (Issue #873)", () => {
     await Promise.all(warmed);
   });
 
+  // Issue #917: the homepage warms the colo cache in front of KV, so /stats
+  // must answer from that entry with the headers its own route sets — the
+  // entry is the served payload, not a second, thinner response.
+  it("keeps the /stats security headers on the cache entry the homepage warms", async () => {
+    const store = new Map();
+    globalThis.caches = {
+      default: {
+        match: async (key) => {
+          const entry = store.get(String(key));
+          return entry === undefined ? undefined : new Response(entry.body, { headers: entry.headers });
+        },
+        put: async (key, response) => {
+          store.set(String(key), { body: await response.text(), headers: response.headers });
+        },
+      },
+    };
+    const env = await homepageEnvironment();
+    env.STATS_KV = fakeStatsKv(fakeStats);
+    await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    const response = await handleFetch(new Request("https://orbi.build/stats"), env);
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(response.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(await response.json()).toEqual(fakeStats);
+  });
+
   // Issue #917: a colo whose 60s cache expired reads the global KV snapshot
   // instead of dropping to the floors; it never pulls GitHub itself.
   it("fills the homepage from the global KV snapshot when the cache is empty", async () => {
