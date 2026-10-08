@@ -1,5 +1,13 @@
 [
   {
+    "slug": "write-a-request",
+    "title": "Write a request: Orbi Cloud drafts your GitHub Issue",
+    "summary": "Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.",
+    "zhSlug": "write-a-request",
+    "zhTitle": "写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue",
+    "related": []
+  },
+  {
     "slug": "pi-agent-harness",
     "title": "Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9",
     "summary": "I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.",

@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Write a request: Orbi Cloud drafts your GitHub Issue</title>
+      <link>https://orbi.build/blog/write-a-request/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/write-a-request/</guid>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.</description>
+    </item>
+    <item>
       <title>Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</title>
       <link>https://orbi.build/blog/pi-agent-harness/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-agent-harness/</guid>
