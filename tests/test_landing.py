@@ -931,12 +931,13 @@ class LandingTests(unittest.TestCase):
             self.assertIn("path: ~/.cache/ms-playwright", workflow)
             self.assertIn("hashFiles('package-lock.json')", workflow)
             self.assertIn("id: playwright-cache", workflow)
-            self.assertIn("npx playwright install-deps chromium", workflow)
+            # The apt step (`playwright install-deps`) was dropped on 2026-10-08:
+            # the runner image already has Chromium's libraries, and apt hung on
+            # the Ubuntu mirror until the step timed out.
             self.assertIn("npx playwright install chromium", workflow)
             self.assertIn("steps.playwright-cache.outputs.cache-hit != 'true'", workflow)
             self.assertLess(workflow.index("actions/cache@v4"), workflow.index("npm ci"))
-            self.assertLess(workflow.index("npm ci"), workflow.index("install-deps chromium"))
-            self.assertLess(workflow.index("install-deps chromium"), workflow.index("install chromium"))
+            self.assertLess(workflow.index("npm ci"), workflow.index("npx playwright install chromium"))
 
     def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
