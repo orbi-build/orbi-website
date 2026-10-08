@@ -10,19 +10,19 @@ const cases = [
     source: "site/pages/index.html",
     built: "public/index.html",
     h1: "File an Issue.<br> <span>Get a release.</span>",
-    lede: "Orbi is an open-source (AGPL-3.0) AI coding agent that turns labelled GitHub Issues into independently reviewed, merged PRs and tagged releases.",
+    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on Orbi Cloud or your own machine.",
     href: "/cloud/login",
-    button: "Try __FREE_DELIVERIES__ deliveries free →",
-    note: '<span class="hero-cta-note-first">No credit card required</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span>Orbi only sees the repos you pick</span>',
+    button: "Try Orbi Cloud free →",
+    note: '<span class="hero-cta-note-first">__FREE_DELIVERIES__ deliveries free, no credit card</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">or self-host it from GitHub</a></span>',
   },
   {
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
     h1: "提个 Issue，<br><span>收个版本</span>",
-    lede: "Orbi 是开源（AGPL-3.0）的 AI 编程 agent，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。",
+    lede: "开源的 AI agent，把你的 GitHub Issue 一路做到发版。用 Orbi Cloud 跑，或者跑在你自己的机器上。",
     href: "/zh/cloud/login",
-    button: "免费试 __FREE_DELIVERIES__ 次 →",
-    note: '<span class="hero-cta-note-first">不用绑定信用卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span>只授权你选的仓库</span>',
+    button: "免费试用 Orbi Cloud →",
+    note: '<span class="hero-cta-note-first">免费 __FREE_DELIVERIES__ 次，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">或者从 GitHub 自己部署</a></span>',
   },
 ];
 
@@ -40,14 +40,38 @@ function expectedCopy(item) {
 
 const normalizeIndent = (value) => value.split("\n").map((line) => line.trim()).join("\n");
 
-describe("homepage hero CTA (Issue #704)", () => {
+describe("homepage hero CTA (Issues #704, #899)", () => {
   it("renders exactly the four requested hero-copy elements in both languages", async () => {
     for (const item of cases) {
       for (const path of [item.source, item.built]) {
         const html = await read(path);
         expect(normalizeIndent(heroCopy(html)), path).toBe(expectedCopy(item));
-        expect(hero(html).match(/<a\b/g), `${path}: hero links`).toHaveLength(1);
+        // Issue #899: the note's self-host text link is the hero's second link;
+        // the two data-cta values are what the cta_click beacon reports apart.
+        const ctas = [...hero(html).matchAll(/data-cta="([^"]+)"/g)].map((match) => match[1]);
+        expect(ctas, `${path}: hero CTAs`).toEqual(["cloud-start", "hero-github"]);
+        expect(hero(html).match(/<a\b/g), `${path}: hero links`).toHaveLength(2);
         expect(hero(html), `${path}: film entry removed`).not.toContain('data-cta="film-play"');
+      }
+    }
+  });
+
+  it("drops the repo-authorisation reassurance from the homepage first screen", async () => {
+    for (const item of cases) {
+      for (const path of [item.source, item.built]) {
+        const html = await read(path);
+        expect(hero(html), `${path}: removed reassurance`).not.toMatch(/only sees the repos you pick|只授权你选的仓库/);
+      }
+    }
+  });
+
+  it("points the note's text link at the public repository", async () => {
+    for (const item of cases) {
+      for (const path of [item.source, item.built]) {
+        const html = await read(path);
+        expect(hero(html), `${path}: self-host link`).toContain(
+          '<a href="https://github.com/orbi-build/orbi" data-cta="hero-github">',
+        );
       }
     }
   });
