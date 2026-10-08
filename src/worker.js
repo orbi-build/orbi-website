@@ -50,15 +50,14 @@ const SECURITY_HEADERS = {
 const GH = "https://api.github.com";
 const STATS_CACHE_KEY = "https://orbi.build/__stats";
 const STATUS_CACHE_KEY = "https://orbi.build/__status";
-// Issue #915: a GitHub outage must not become the cached answer. The last
-// fully-live payload is kept under its own key past the served TTL, so a
-// rate-limited request reuses the previous numbers; a payload that still
-// carries a null repo (no snapshot yet) is cached only briefly, so the next
-// request retries GitHub soon instead of pinning the null for five minutes.
-const STATS_LAST_GOOD_CACHE_KEY = "https://orbi.build/__stats-last-good";
+// Issue #917: GitHub is pulled once every five minutes by this Worker's cron
+// trigger and the result is written to the global STATS_KV namespace. Every
+// colo reads that one snapshot; caches.default only fronts it. The old design
+// let each colo pull on its own after its cache expired — 6 search calls per
+// pull against a 30/minute token limit — so a rate-limited colo had no
+// snapshot of its own and answered all nulls.
+const STATS_KV_KEY = "stats";
 const STATS_TTL_MS = 300000;
-const STATS_DEGRADED_TTL_MS = 60000;
-const STATS_LAST_GOOD_TTL_MS = 3600000;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
 // (orbi-cloud discussion 120 §2 C2), so a website route under any of them
@@ -103,8 +102,10 @@ async function ghJson(path, token, extraHeaders) {
     headers: { ...githubHeaders(token), ...(extraHeaders || {}) },
   });
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`github ${response.status} ${path}: ${body.slice(0, 200)}`);
+    // Issue #917: the status and the path are what make the log actionable
+    // (403 rate limit vs 404 missing). The response body can carry rate-limit
+    // and token-scope text, so it is never read or echoed.
+    throw new Error(`github ${response.status} ${path.split("?")[0]}`);
   }
   return response.json();
 }
@@ -217,16 +218,16 @@ async function loadFoundingAvatars(db) {
   return { logins, total: Number(counted?.results?.[0]?.total) || 0 };
 }
 
-// Issue #915: a failing repo answers null, but it must not do so silently —
-// one log line names the repo so the outage is visible in the Worker log. The
-// GitHub response body is never echoed: ghJson's message carries it, so only
-// the repo name is logged.
+// Issue #915/#917: a failing repo answers null, but it must not do so
+// silently — one log line names the repo and carries ghJson's
+// `github <status> <path>` so the cause (403 rate limit vs 404) is visible in
+// the Worker log. GitHub's response body is never echoed.
 async function loadStats(token) {
   const groups = await Promise.all(STAT_REPOS.map(async (name) => {
     try {
       return await loadRepoStats(name, token);
-    } catch {
-      console.error(`stats repo failed: ${name}`);
+    } catch (err) {
+      console.error(`stats repo failed: ${name}: ${err && err.message ? err.message : "unknown"}`);
       return null;
     }
   }));
@@ -235,25 +236,83 @@ async function loadStats(token) {
   };
 }
 
-async function statsResponse(request, token) {
-  const cache = caches.default;
-  const cached = await cache.match(STATS_CACHE_KEY);
-  if (cached) {
-    return cached;
+// Issue #917: the global snapshot the cron writes, in the same JSON shape
+// /stats serves. A malformed value is treated as absent so the next request
+// repairs it instead of serving garbage.
+async function readStatsFromKv(env) {
+  const raw = await env?.STATS_KV?.get(STATS_KV_KEY);
+  if (!raw) {
+    return null;
   }
-  const stats = await loadStats(token);
-  // Issue #915: fill each repo that just failed from the last fully-live
-  // payload, so an outage degrades the answer no further than it has to.
-  if (STAT_REPOS.some((name) => !stats.repos[name])) {
-    const lastGood = await cache.match(STATS_LAST_GOOD_CACHE_KEY);
-    const previous = lastGood ? await lastGood.json().catch(() => null) : null;
-    for (const name of STAT_REPOS) {
-      if (!stats.repos[name] && previous?.repos?.[name]) {
-        stats.repos[name] = previous.repos[name];
-      }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error("stats kv parse failed:", err && err.message ? err.message : err);
+    return null;
+  }
+}
+
+// One GitHub pull for the whole deployment. A repo that failed keeps the
+// value already in KV; a repo that succeeded overwrites its own group, so a
+// partial outage never blanks numbers a colo already had (Issue #917).
+async function refreshStats(env) {
+  if (!env?.STATS_KV) {
+    throw new Error("STATS_KV binding is not configured");
+  }
+  const fresh = await loadStats(env.GITHUB_TOKEN);
+  const previous = await readStatsFromKv(env);
+  const repos = {};
+  for (const name of STAT_REPOS) {
+    repos[name] = fresh.repos[name] ?? previous?.repos?.[name] ?? null;
+  }
+  const stats = { repos };
+  await env.STATS_KV.put(STATS_KV_KEY, JSON.stringify(stats));
+  return stats;
+}
+
+// Before the first cron run (a fresh deploy) KV is empty and a request may
+// pull once. This single in-isolate promise keeps a burst of requests from
+// each pulling GitHub; the cron shares it too (Issue #917).
+let statsRefreshInFlight = null;
+
+function refreshStatsOnce(env) {
+  if (!statsRefreshInFlight) {
+    statsRefreshInFlight = refreshStats(env).finally(() => {
+      statsRefreshInFlight = null;
+    });
+  }
+  return statsRefreshInFlight;
+}
+
+// Issue #917: /stats, /status and the server-rendered homepage all read the
+// one cache entry in front of KV, so every writer builds that entry the same
+// way — same JSON body and the same headers the served response carries,
+// security headers included. A second, thinner payload would serve /stats
+// from the homepage's write without them.
+function statsCacheEntry(stats) {
+  return new Response(JSON.stringify(stats), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": `public, max-age=${STATS_TTL_MS / 1000}`,
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
+async function statsResponse(env) {
+  const cache = typeof caches === "undefined" ? undefined : caches.default;
+  if (cache) {
+    const cached = await cache.match(STATS_CACHE_KEY);
+    if (cached) {
+      return cached;
     }
   }
-  const complete = STAT_REPOS.every((name) => stats.repos[name]);
+  // Issue #917: caches.default only fronts KV now. /stats pulls GitHub itself
+  // only while KV is still empty — a fresh deploy, before the first cron.
+  let stats = await readStatsFromKv(env);
+  if (!stats) {
+    stats = await refreshStatsOnce(env);
+  }
   const response = new Response(JSON.stringify(stats), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
@@ -261,15 +320,8 @@ async function statsResponse(request, token) {
       ...SECURITY_HEADERS,
     },
   });
-  const toStore = response.clone();
-  toStore.headers.set("Cache-Control", `public, max-age=${(complete ? STATS_TTL_MS : STATS_DEGRADED_TTL_MS) / 1000}`);
-  await cache.put(STATS_CACHE_KEY, toStore);
-  // Only a complete payload becomes the outage fallback; a null-bearing one
-  // must never be resurrected as if it were real data.
-  if (complete) {
-    const snapshot = response.clone();
-    snapshot.headers.set("Cache-Control", `public, max-age=${STATS_LAST_GOOD_TTL_MS / 1000}`);
-    await cache.put(STATS_LAST_GOOD_CACHE_KEY, snapshot);
+  if (cache) {
+    await cache.put(STATS_CACHE_KEY, statsCacheEntry(stats));
   }
   return response;
 }
@@ -317,13 +369,19 @@ function formatStatusText(stats) {
   return lines.join("\n");
 }
 
-async function statusResponse(request, token) {
-  const cache = caches.default;
-  const cached = await cache.match(STATUS_CACHE_KEY);
-  if (cached) {
-    return cached;
+async function statusResponse(env) {
+  const cache = typeof caches === "undefined" ? undefined : caches.default;
+  if (cache) {
+    const cached = await cache.match(STATUS_CACHE_KEY);
+    if (cached) {
+      return cached;
+    }
   }
-  const stats = await loadStats(token);
+  // Issue #917: /status reads the same global snapshot /stats does.
+  let stats = await readStatsFromKv(env);
+  if (!stats) {
+    stats = await refreshStatsOnce(env);
+  }
   const anyLive = STAT_REPOS.some((name) => stats.repos[name]);
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
@@ -339,9 +397,11 @@ async function statusResponse(request, token) {
   if (!anyLive) {
     return response;
   }
-  const toStore = response.clone();
-  toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
-  await cache.put(STATUS_CACHE_KEY, toStore);
+  if (cache) {
+    const toStore = response.clone();
+    toStore.headers.set("Cache-Control", `public, max-age=${STATS_TTL_MS / 1000}`);
+    await cache.put(STATUS_CACHE_KEY, toStore);
+  }
   return response;
 }
 
@@ -544,8 +604,20 @@ async function homepageStats(env, ctx) {
   } catch (err) {
     console.error("homepage_stats_cache_failed:", err && err.message ? err.message : err);
   }
+  if (!stats) {
+    // Issue #917: fall back to the global KV snapshot so a colo whose cache
+    // expired still renders real numbers instead of the HTML floors.
+    try {
+      stats = await readStatsFromKv(env);
+      if (stats) {
+        await cache.put(STATS_CACHE_KEY, statsCacheEntry(stats));
+      }
+    } catch (err) {
+      console.error("homepage_stats_kv_failed:", err && err.message ? err.message : err);
+    }
+  }
   if (!stats && ctx?.waitUntil) {
-    ctx.waitUntil(statsResponse(new Request(STATS_CACHE_KEY), env?.GITHUB_TOKEN).catch((err) => {
+    ctx.waitUntil(statsResponse(env).catch((err) => {
       console.error("homepage_stats_warm_failed:", err && err.message ? err.message : err);
     }));
   }
@@ -830,7 +902,7 @@ async function handleFetch(request, env, ctx) {
 
     if (route === "/stats") {
       try {
-        return await statsResponse(request, env.GITHUB_TOKEN);
+        return await statsResponse(env);
       } catch (err) {
         // Detail stays in the Worker log; the response must not echo GitHub's
         // body, which can carry rate-limit and token-scope text.
@@ -850,7 +922,7 @@ async function handleFetch(request, env, ctx) {
     // /status/ page is not hijacked; curl's default */* gets text/plain.
     if (route === "/status" && !(request.headers.get("accept") || "").includes("text/html")) {
       try {
-        return await statusResponse(request, env.GITHUB_TOKEN);
+        return await statusResponse(env);
       } catch (err) {
         console.error("status failed:", err && err.message ? err.message : err);
         return new Response("upstream unavailable\n", {
@@ -1259,7 +1331,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, statsResponse, subscribeResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: the visit attribution report rides
@@ -1273,5 +1345,15 @@ export default {
     const stamped = new Response(attributed.body, attributed);
     stamped.headers.set("X-Robots-Tag", TEST_NOINDEX);
     return stamped;
+  },
+  // Issue #917: the 5-minute Cron Trigger pulls GitHub once and writes the
+  // global KV snapshot every colo then reads. Event detail (cron,
+  // scheduledTime) is not needed — the pull is the same every time.
+  scheduled: async (event, env) => {
+    try {
+      await refreshStatsOnce(env);
+    } catch (err) {
+      console.error("stats cron failed:", err && err.message ? err.message : err);
+    }
   },
 };
