@@ -1465,6 +1465,88 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
   });
 });
 
+// Issue #886: /cost/ has one headline cost figure — the 169 merged deliveries
+// Orbi Cloud recorded (median $0.082 off-peak). The 20-PR / $0.125 sample stays
+// published, but only as the labelled earlier sample, and the Dataset JSON-LD
+// describes the 169-delivery dataset.
+describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
+  const COST_PAGES = [
+    { output: "cost/index.html", earlier: "Earlier sample", datasetUrl: "https://orbi.build/cost/" },
+    { output: "zh/cost/index.html", earlier: "早期样本", datasetUrl: "https://orbi.build/zh/cost/" },
+  ];
+
+  it("shows $0.082 and n=169 in the hero, and $0.125 only inside the earlier sample", () => {
+    for (const { output, earlier } of COST_PAGES) {
+      const html = shipped.get(output);
+      const heroRegion = html.match(/<section class="compare-hero shell"[\s\S]*?<\/section>/)?.[0];
+      expect(heroRegion, `${output}: hero region`).toBeTruthy();
+      expect(heroRegion, `${output}: hero median`).toContain("$0.082");
+      expect(heroRegion, `${output}: hero sample size`).toContain("169");
+      expect(heroRegion, `${output}: hero must not lead with the old median`).not.toContain("$0.125");
+      const earlierAt = html.indexOf(earlier);
+      expect(earlierAt, `${output}: earlier-sample section`).toBeGreaterThan(-1);
+      for (let at = html.indexOf("$0.125"); at !== -1; at = html.indexOf("$0.125", at + 1)) {
+        expect(at, `${output}: $0.125 before the earlier sample`).toBeGreaterThan(earlierAt);
+      }
+      expect(html.slice(earlierAt), `${output}: earlier sample keeps $0.125`).toContain("$0.125");
+    }
+  });
+
+  it("states a mean its own 169-delivery total supports, not the Pi post's single-delivery $0.12", () => {
+    for (const { output, meanLabel, totalLabel, n } of [
+      { output: "cost/index.html", meanLabel: "Mean cost per merged delivery", totalLabel: "All 169 deliveries together", n: 169 },
+      { output: "zh/cost/index.html", meanLabel: "每次合并交付平均成本", totalLabel: "169 次合计", n: 169 },
+    ]) {
+      const html = shipped.get(output);
+      const cell = (label) => html.match(new RegExp(`<th scope="row">${label}</th><td>\\$([\\d.]+)</td>`))?.[1];
+      const mean = Number(cell(meanLabel));
+      expect(Number.isFinite(mean), `${output}: mean row`).toBe(true);
+      // Issue #886: the page must publish mean = total / n. The Pi post's
+      // $0.12 belongs to one delivery (#1554), not to the sample; its
+      // published average for these 169 is $0.113, which rounds to $0.11.
+      expect(mean, `${output}: mean is not the 169-delivery average`).toBeCloseTo(Number(cell(totalLabel)) / n, 2);
+    }
+  });
+
+  it("describes the 169-delivery dataset in parseable JSON-LD", () => {
+    for (const { output, datasetUrl } of COST_PAGES) {
+      const raw = shipped.get(output).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+      const dataset = JSON.parse(raw)["@graph"].find((entry) => entry["@type"] === "Dataset");
+      expect(dataset, `${output}: Dataset entry`).toBeTruthy();
+      expect(dataset.url, `${output}: Dataset url`).toBe(datasetUrl);
+      expect(dataset.temporalCoverage, `${output}: temporalCoverage`).toBe("2026-09-16/2026-10-05");
+      expect(JSON.stringify(dataset), `${output}: Dataset must describe 169 samples`).toContain("169");
+    }
+  });
+
+  it("points the DeepSeek cost post at /cost/ for the current figure, in both languages", () => {
+    for (const { output, href, earlier } of [
+      { output: "blog/deepseek-coding-agent-cost-per-merged-pr/index.html", href: 'href="/cost/"', earlier: "earlier sample" },
+      { output: "zh/blog/deepseek-coding-agent-cost-per-merged-pr/index.html", href: 'href="/zh/cost/"', earlier: "更早的一组样本" },
+    ]) {
+      const html = shipped.get(output);
+      expect(html, `${output}: cost page link`).toContain(href);
+      const body = stripTags(html.slice(html.indexOf("<main"), html.indexOf("</main>")));
+      expect(body, `${output}: earlier-sample note`).toContain(earlier);
+      expect(body, `${output}: current median`).toContain("$0.082");
+    }
+  });
+
+  it("keeps the retired $0.125 headline off the guide pages that quote the cost", () => {
+    for (const output of [
+      "guides/autonomous-coding-agent/index.html",
+      "zh/guides/autonomous-coding-agent/index.html",
+      "guides/self-hosted-coding-agent/index.html",
+      "zh/guides/self-hosted-coding-agent/index.html",
+      "guides/codex-github-issues/index.html",
+      "zh/guides/codex-github-issues/index.html",
+    ]) {
+      expect(shipped.get(output), output).not.toContain("$0.125");
+      expect(shipped.get(output), output).toContain("$0.082");
+    }
+  });
+});
+
 describe("pricing nav entry (Issue #165)", () => {
   it("anchors the PRICING section on both Cloud pages", () => {
     for (const output of ["cloud/index.html", "zh/cloud/index.html"]) {
