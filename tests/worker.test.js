@@ -449,11 +449,138 @@ describe("per-repo GitHub stats (Issue #101)", () => {
   });
 
   it("degrades only the failing repo to null; the other two groups stay live", async () => {
-    mockGitHub({ fail: ["orbi-cloud"] });
-    const stats = await loadStats("token");
-    expect(stats.repos["orbi-cloud"]).toBeNull();
-    expect(stats.repos.orbi.issues_closed).toBe(372);
-    expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi-cloud"] });
+      const stats = await loadStats("token");
+      expect(stats.repos["orbi-cloud"]).toBeNull();
+      expect(stats.repos.orbi.issues_closed).toBe(372);
+      expect(stats.repos["orbi-website"].prs_merged).toBe(296);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  // Issue #915: GitHub rate-limits (403 on every search call) used to become
+  // the payload itself — .catch(() => null) per repo, cached under
+  // STATS_CACHE_KEY for the full TTL, so one colo served all nulls for five
+  // minutes. A null is now treated as a failure: the last fully-live payload
+  // is kept past the served TTL and reused, and a still-null-bearing payload
+  // is only cached briefly so the next request retries GitHub soon.
+  const STATS_KEY = "https://orbi.build/__stats";
+  const LAST_GOOD_KEY = "https://orbi.build/__stats-last-good";
+  const LAST_GOOD = {
+    repos: {
+      orbi: { started: "2026-08-24T16:08:33Z", issues_closed: 800, prs_merged: 600, releases: 80, stars: 190, star_history: [] },
+      "orbi-website": { started: "2026-08-31T13:04:14Z", issues_closed: 380, prs_merged: 470, releases: 0, deploys: 450, star_history: [] },
+      "orbi-cloud": { started: "2026-09-01T01:32:51Z", issues_closed: 1050, prs_merged: 730, releases: 120, stars: 1, star_history: [] },
+    },
+  };
+
+  // Keyed cache double: the outage fallback lives under its own key, so the
+  // store has to answer per key, and every put is recorded with its
+  // Cache-Control so a test can read the TTL the Worker chose.
+  function keyedCache(entries = {}) {
+    const store = new Map(Object.entries(entries));
+    const puts = [];
+    return {
+      puts,
+      cache: {
+        default: {
+          match: (key) => {
+            const body = store.get(String(key));
+            return Promise.resolve(body === undefined ? undefined : new Response(body));
+          },
+          put: async (key, response) => {
+            puts.push({ key: String(key), cacheControl: response.headers.get("Cache-Control"), body: await response.clone().text() });
+            store.set(String(key), await response.text());
+          },
+        },
+      },
+    };
+  }
+
+  it("serves the last good payload when every repo fails and never caches the all-null result", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi", "orbi-website", "orbi-cloud"] });
+      const { cache, puts } = keyedCache({ [LAST_GOOD_KEY]: JSON.stringify(LAST_GOOD) });
+      globalThis.caches = cache;
+
+      const response = await statsResponse(new Request(STATS_KEY), "token");
+      expect(await response.json()).toEqual(LAST_GOOD);
+      expect(puts.length).toBeGreaterThan(0);
+      for (const put of puts) {
+        const stored = JSON.parse(put.body);
+        for (const repo of ["orbi", "orbi-website", "orbi-cloud"]) {
+          expect(stored.repos[repo]).not.toBeNull();
+        }
+      }
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("reuses the last good value for the one failing repo and keeps the full TTL once complete", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi-cloud"] });
+      const { cache, puts } = keyedCache({ [LAST_GOOD_KEY]: JSON.stringify(LAST_GOOD) });
+      globalThis.caches = cache;
+
+      const response = await statsResponse(new Request(STATS_KEY), "token");
+      const payload = await response.json();
+      expect(payload.repos["orbi-cloud"]).toEqual(LAST_GOOD.repos["orbi-cloud"]);
+      expect(payload.repos.orbi.issues_closed).toBe(372);
+      expect(payload.repos["orbi-website"].prs_merged).toBe(296);
+
+      const served = puts.find((put) => put.key === STATS_KEY);
+      expect(served.cacheControl).toBe(`public, max-age=${300}`);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("caches a still-null-bearing payload on a TTL shorter than STATS_TTL_MS", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi-cloud"] });
+      const { cache, puts } = keyedCache();
+      globalThis.caches = cache;
+
+      const response = await statsResponse(new Request(STATS_KEY), "token");
+      const payload = await response.json();
+      expect(payload.repos["orbi-cloud"]).toBeNull();
+      expect(payload.repos.orbi.issues_closed).toBe(372);
+      expect(payload.repos["orbi-website"].prs_merged).toBe(296);
+
+      const served = puts.find((put) => put.key === STATS_KEY);
+      expect(served.cacheControl).toBe("public, max-age=60");
+      expect(Number(/max-age=(\d+)/.exec(served.cacheControl)[1])).toBeLessThan(300);
+      // A null-bearing payload must not become the outage fallback.
+      expect(puts.some((put) => put.key === LAST_GOOD_KEY)).toBe(false);
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("logs one line per failing repo, naming it and never echoing GitHub's body", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      mockGitHub({ fail: ["orbi", "orbi-website", "orbi-cloud"] });
+      const { cache } = keyedCache();
+      globalThis.caches = cache;
+
+      await statsResponse(new Request(STATS_KEY), "token");
+      const logged = error.mock.calls.map((call) => call.join(" ")).join("\n");
+      for (const name of ["orbi", "orbi-website", "orbi-cloud"]) {
+        expect(logged).toContain(`stats repo failed: ${name}`);
+      }
+      expect(logged).not.toContain("rate limited");
+      expect(logged).not.toContain("not found");
+    } finally {
+      error.mockRestore();
+    }
   });
 
   it("replaces the homepage offer token with the configured free-delivery count", async () => {
