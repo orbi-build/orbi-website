@@ -25,7 +25,7 @@
   },
   {
     "slug": "run-claude-code-unattended",
-    "title": "Run Claude Code unattended: headless mode is step one",
+    "title": "Claude Code headless mode: run it unattended",
     "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.",
     "zhSlug": "run-claude-code-unattended",
     "zhTitle": "Claude Code headless 模式是什么？自动化开发还差六件事",
