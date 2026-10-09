@@ -17,7 +17,7 @@ claude -p "修复 tests/test_auth.py 里失败的测试" \
   --permission-mode auto --permission-prompts none
 ```
 
-这条命令本身不做任何检查。放进 cron 之前，不管用哪种模式，都要查 `permission_denials`，完整脚本见下文。
+这条命令单独跑，有操作被拒也看不出来：要加 `--output-format json`，再查 `permission_denials`，不管用哪种模式都一样。完整脚本见下文。
 
 `--permission-prompts none` 可加可不加。cron 和 CI 里本来就没人回答授权提示，加了它，Claude 被拒之后不会再重试，也不会去调 AskUserQuestion 这类要人回答的工具。它要 Claude Code v2.1.259 以上，旧版本去掉就行。
 
@@ -102,7 +102,7 @@ export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && "$HOME/bin/claude-nightly.sh" >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-脚本靠环境文件里设的 `PATH` 找到 `claude`，所以环境文件里的 `PATH` 要包含 `which claude` 打印出来的目录。每次失败都会在日志里留下一行说明；`cd` 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。不管用哪种模式，`permission_denials` 那项检查都不能删：换成 `auto` 后，一旦 `auto` 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。
+脚本靠环境文件里设的 `PATH` 找到 `claude`，所以这个 `PATH` 要包含 `which claude` 打印出来的目录。每次失败都会在日志里留下一行说明；`cd` 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。`permission_denials` 那项检查不能删：换成 `auto` 后，一旦 `auto` 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。
 
 如果你只需要这样一个定时任务，到这里就够了。
 

@@ -15,7 +15,7 @@ claude -p "Fix the failing test in tests/test_auth.py" \
   --permission-mode auto --permission-prompts none
 ```
 
-That command checks nothing on its own. Before it goes into cron, whatever mode you use, check `permission_denials`; the full script is below.
+Run on its own, that command won't tell you a call was denied: add `--output-format json` and check `permission_denials`, whatever mode you use. The full script is below.
 
 `--permission-prompts none` is optional. In cron or CI nobody can answer a prompt anyway; what the flag adds is that Claude stops retrying denied actions and drops tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.
 
@@ -98,7 +98,7 @@ Save the check script from "What a headless run returns" above as `$HOME/bin/cla
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && "$HOME/bin/claude-nightly.sh" >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-The script finds `claude` through the `PATH` set in the env file, so make sure the env file's `PATH` includes the directory `which claude` prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad `cd`, won't show up in it. Look in cron's mail or the system log for those. Whatever mode you use, don't drop the `permission_denials` check. If you switch to `auto` and it isn't available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.
+The script finds `claude` through the `PATH` set in the env file, so make sure that `PATH` includes the directory `which claude` prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad `cd`, won't show up in it. Look in cron's mail or the system log for those. Don't drop the `permission_denials` check. If you switch to `auto` and it isn't available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.
 
 If one scheduled job like that is all you need, you're done.
 

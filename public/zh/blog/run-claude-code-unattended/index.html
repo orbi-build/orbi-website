@@ -213,7 +213,7 @@
 <pre><code class="language-bash">claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
   --permission-mode auto --permission-prompts none
 </code></pre>
-<p>这条命令本身不做任何检查。放进 cron 之前，不管用哪种模式，都要查 <code class="post-code--single">permission_denials</code>，完整脚本见下文。</p>
+<p>这条命令单独跑，有操作被拒也看不出来：要加 <code class="post-code--spaced">--output-format json</code>，再查 <code class="post-code--single">permission_denials</code>，不管用哪种模式都一样。完整脚本见下文。</p>
 <p><code class="post-code--spaced">--permission-prompts none</code> 可加可不加。cron 和 CI 里本来就没人回答授权提示，加了它，Claude 被拒之后不会再重试，也不会去调 AskUserQuestion 这类要人回答的工具。它要 Claude Code v2.1.259 以上，旧版本去掉就行。</p>
 <p><code class="post-code--single">auto</code> 也不是总能用。模型不支持、设置里关掉了、Anthropic 在服务端关掉，会话都会改从 Manual 模式（即 <code class="post-code--spaced">--permission-mode default</code>）启动，没预先放行的写入都会被拒。所以夜间任务我用 <code class="post-code--single">dontAsk</code> 加白名单，它不依赖 <code class="post-code--single">auto</code> 能不能用，下文的检查脚本就是这么配的。在 headless 下，<code class="post-code--single">dontAsk</code> 放行的范围和 <code class="post-code--single">default</code> 加同一份白名单一样；区别是<a href="https://code.claude.com/docs/zh-CN/permission-modes">官方文档</a>把它定位成 CI 用的锁定模式，连显式的 <code class="post-code--single">ask</code> 规则和 AskUserQuestion 都直接拒，会话从不等人输入。</p>
 <p>我是 Lawrence Liu，Orbi 的创始人。Orbi 会把 GitHub Issue 一路做到合并和发版。Orbi 用的 agent 是开源的 Pi，不是 Claude Code，但后半篇讲的认领、评审、合并，用 Claude Code 搭循环一样绕不开。</p>
@@ -271,7 +271,7 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <pre><code class="language-bash"># crontab -e：每天凌晨 3 点
 0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; &quot;$HOME/bin/claude-nightly.sh&quot; &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
 </code></pre>
-<p>脚本靠环境文件里设的 <code class="post-code--single">PATH</code> 找到 <code class="post-code--single">claude</code>，所以环境文件里的 <code class="post-code--single">PATH</code> 要包含 <code class="post-code--spaced">which claude</code> 打印出来的目录。每次失败都会在日志里留下一行说明；<code class="post-code--single">cd</code> 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。不管用哪种模式，<code class="post-code--single">permission_denials</code> 那项检查都不能删：换成 <code class="post-code--single">auto</code> 后，一旦 <code class="post-code--single">auto</code> 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。</p>
+<p>脚本靠环境文件里设的 <code class="post-code--single">PATH</code> 找到 <code class="post-code--single">claude</code>，所以这个 <code class="post-code--single">PATH</code> 要包含 <code class="post-code--spaced">which claude</code> 打印出来的目录。每次失败都会在日志里留下一行说明；<code class="post-code--single">cd</code> 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。<code class="post-code--single">permission_denials</code> 那项检查不能删：换成 <code class="post-code--single">auto</code> 后，一旦 <code class="post-code--single">auto</code> 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。</p>
 <p>如果你只需要这样一个定时任务，到这里就够了。</p>
 <h2 id="claude-p-外面还缺的六件事">claude -p 外面还缺的六件事</h2>
 <p>Orbi 从 8 月下旬开始交付自己仓库的 Issue，平时写代码、评审、合并都不用人动手；人负责打标签、拍板（包括下文那两次回滚），以及上生产前看一眼页面。截至 10 月 1 日发文时，<a href="https://github.com/orbi-build/orbi">仓库</a>里有 599 个 Issue 带着 <code class="post-code--single">ai-merged</code> 标签，最近一次发版是 9 月 30 日的 v0.5.58。想让 Issue 自动走到合并、发版，只在 <code class="post-code--spaced">claude -p</code> 外面套个循环是不够的，下面六件事大多得你自己补。合并前的检查和隔离加固这两件，我是先做错了才改对的。下文的 runner，指的是围着 agent 转的那个循环进程：挑 Issue、起会话、收结果。</p>
