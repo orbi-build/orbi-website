@@ -27,11 +27,11 @@
       <description>In model tokens at DeepSeek off-peak prices, 169 merged deliveries cost a median of $0.082 each. One issue through four Pi sessions; what Pi leaves out.</description>
     </item>
     <item>
-      <title>Claude Code headless mode: run it unattended</title>
+      <title>Claude Code headless mode exits 0 despite denials</title>
       <link>https://orbi.build/blog/run-claude-code-unattended/</link>
       <guid isPermaLink="true">https://orbi.build/blog/run-claude-code-unattended/</guid>
       <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
-      <description>Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.</description>
+      <description>In Claude Code headless mode, a claude -p run with denied tool calls still exits 0. Use --output-format json and check permission_denials to catch it.</description>
     </item>
     <item>
       <title>Searching for Orbi's harness, part 2: guard cost</title>
