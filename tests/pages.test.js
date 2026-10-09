@@ -3548,7 +3548,7 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899)"
   const body = (html) => html.slice(html.indexOf("<body"));
   const homes = {
     "index.html": /An open-source lights-out software factory for the agent era: AI coding agents inside it take your GitHub Issues all the way to a release\. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start\./,
-    "zh/index.html": /agent 时代的开源软件黑灯工厂：AI 编程 agent 在里面干活，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。/,
+    "zh/index.html": /Orbi 是 agent 时代的软件黑灯工厂，代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。/,
   };
 
   for (const [output, definition] of Object.entries(homes)) {

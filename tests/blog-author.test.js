@@ -87,7 +87,7 @@ describe("author pages (Issue #887)", () => {
       expect(h1, `${output}: h1 is the author name`).toBe(AUTHOR.name);
       expect(html, `${output}: GitHub profile link`).toContain('href="https://github.com/xqliu"');
       expect(html, `${output}: X profile link`).toContain('href="https://x.com/xqliu"');
-      expect(html, `${output}: bio`).toMatch(lang === "zh" ? /维护 Orbi/ : /Maintains Orbi/);
+      expect(html, `${output}: bio`).toMatch(lang === "zh" ? /Orbi 创始人/ : /Creator of Orbi/);
       // The page declares the same Person the posts' `author.url` resolves to:
       // name, its own URL and both profiles, so the entity graph closes.
       const person = jsonLdObjects(html).find((entry) => entry["@type"] === "Person");

@@ -11,7 +11,7 @@ series: pi
 
 Pi agent harness 指的是 [Pi](https://pi.dev) 里驱动模型的那个循环。Pi 是 Earendil 团队做的开源编程 agent，它的 harness 做的事是：把提示词发给模型，执行模型要的工具调用，把每一步记进会话文件，如此往复，直到模型不再要工具。2026 年 10 月 1 日，Earendil 发布 Pi 1.0，同时发了一个实验性的第二套 harness：Pi Durable。它给每一步存检查点，跑它的进程死了，任务还能接着跑。
 
-我是 Lawrence Liu，Orbi 的维护者。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。这篇比较三种「没人坐在键盘前」跑 Pi 的方式，对每一种做同一件事：起一个任务，跑到一半杀掉进程，看还剩下什么。
+我是 Lawrence Liu，Orbi 的创始人。Orbi 在没人盯着的情况下跑 Pi：给它一张 GitHub issue，顺利的话拿回一个评审过、已合并的 PR。Orbi 怎么启动 Pi，写在[本系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)里；Pi 外面那层 runner 写在 [Pi 专题页](/zh/guides/pi-coding-agent/)里。这篇比较三种「没人坐在键盘前」跑 Pi 的方式，对每一种做同一件事：起一个任务，跑到一半杀掉进程，看还剩下什么。
 
 ## Pi agent harness 是什么
 

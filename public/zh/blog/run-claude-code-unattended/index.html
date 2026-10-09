@@ -214,7 +214,7 @@
   --permission-mode auto --permission-prompts none
 </code></pre>
 <p><code class="post-code--spaced">--permission-prompts none</code> 在这里是可选的：普通 cron 或 CI 里本来就没人回答授权提示，它的作用是告诉 Claude 被拒的操作别再重试，并拿掉 AskUserQuestion 这类需要人来回答的工具。它要求 Claude Code v2.1.259 及以上，旧版本去掉就行。<code class="post-code--single">auto</code> 也不一定可用：模型不支持、设置里关掉了，或者 Anthropic 临时停用，会话都会改从 Manual 模式（也就是 <code class="post-code--spaced">--permission-mode default</code>）启动，这时没有预先放行的写入都会被拒，运行却仍可能以 0 退出、报成功。放进 cron 之前，配上后面「headless 跑完返回什么」一节的检查脚本。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<p>我是 Lawrence Liu，Orbi 的维护者。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。</p>
+<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。</p>
 <h2 id="headless-非交互-模式怎么用-参数-返回值-认证和-cron">headless（非交互）模式怎么用：参数、返回值、认证和 cron</h2>
 <p>headless 模式给你的是一个没人看着也能跑完的会话。放进 cron 或 CI 之后，有几个参数要知道：</p>
 <ul>

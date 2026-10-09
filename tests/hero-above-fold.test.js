@@ -19,7 +19,7 @@ const cases = [
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
     h1: "提个 Issue，<br><span>收个版本</span>",
-    lede: "agent 时代的开源软件黑灯工厂：AI 编程 agent 在里面干活，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。",
+    lede: "Orbi 是 agent 时代的软件黑灯工厂，代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
     href: "/zh/cloud/login",
     button: "免费试用 Orbi Cloud →",
     note: '<span class="hero-cta-note-first">前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">源码在 GitHub</a></span>',
