@@ -8,7 +8,7 @@ image: /img/blog-write-request-card.png
 mirror: write-a-request
 ---
 
-Orbi is an AI coding agent for GitHub. You give it an Issue by adding the `ai-ready` label; it writes the code in an isolated workspace, opens a pull request, has the pull request reviewed by a separate AI session (not a person) that did not write the code, and merges. Orbi Cloud runs that for you on machines we operate. Unless the branch the task merges into requires an approving review, Orbi merges on its own once your CI and its review pass; more on that below. The new **Write a request** feature, part of Orbi Cloud, changes how a task starts.
+Orbi is a lights-out software factory for the agent era: GitHub Issues go in, and reviewed, merged, released changes come out, with nobody watching the line. A coding agent works one station, writing the code in an isolated workspace. A separate AI session that did not write the code reviews the pull request. Orbi runs the whole line, from picking up an Issue labeled `ai-ready` to merging and releasing. Orbi Cloud is that factory, run for you on machines we operate. Unless the branch the task merges into requires an approving review, Orbi merges on its own once your CI and its review pass; more on that below. The new **Write a request** feature, part of Orbi Cloud, changes how a task starts.
 
 Instead of writing the Issue yourself, you describe the change in a sentence or two. Orbi reads your repository, drafts the Issue, and turns the open choices it spots into questions for you. Nothing is created on GitHub until you read the draft and hand it off.
 
@@ -79,7 +79,7 @@ Below the draft, under **Orbi chose these for you**, are the open choices it fou
 <figcaption>The recommended answer is preselected.</figcaption>
 </figure>
 
-A third question, further down, asked whether the new template should keep the repository's priority line, and Orbi recommended Include it. This run switched only the language answer, to Bilingual. The page then asks you to **Rewrite the draft** and greys out **Hand off to Orbi** until the rewrite finishes. **Undo your changes** puts the old answers back and clears anything you typed but haven't sent.
+A third question, further down, asked whether the new template should keep the repository's priority line, and Orbi recommended Include it. This run switched only the language answer, to Bilingual. The page then asks you to **Rewrite the draft** and greys out **Hand off to Orbi** until the rewrite finishes. **Undo your changes** puts Orbi's recommended answers back and clears anything you typed but haven't sent.
 
 <figure class="post-media">
 <img src="/img/blog-write-request-changed.webp" alt="After switching an answer to Bilingual: a Rewrite the draft button with the note Takes about a minute. Changed your mind? Click undo your changes. Hand off to Orbi is greyed out with the message You changed an option." width="1200" height="989">
@@ -123,7 +123,7 @@ If you leave and come back, the top of the Write a request page shows your last 
 
 The third request, which actually ran first, on the evening of October 8, was written in Chinese and set up to fail. It asked for a CI step that runs a Stripe charge check on every push and pull request, reads the Stripe key from a repository secret and the payment method from repository variables, and fails when the key is missing. The test repository has none of them.
 
-The new check did what the Issue asked: with no key configured it failed, so CI stayed red, and Orbi does not merge on red CI. The draft listed the secret and variables the check needs, but it didn't ask whether they were configured; Write a request doesn't check whether the secrets or variables a task needs actually exist. Orbi's review stopped the task for a human decision, labeled the Issue `ai-blocked`, and left the failing check in place.
+The new check did what the Issue asked: with no key configured it failed, so CI stayed red, and Orbi does not merge on red CI. The draft listed the secret and variables the check needs, but it didn't ask whether they were configured; Write a request doesn't check whether the secrets or variables a task needs actually exist. Orbi's review stopped the task for a human decision, labeled the Issue `ai-blocked`, and left the failing check in its pull request, unmerged.
 
 <figure class="post-media">
 <img src="/img/blog-write-request-blocked.webp" alt="Blocked. Orbi stopped: you need to make a call on something. The change was not merged into your project. This doesn't use a free run. Contact us: Telegram group, support@orbi.build. Buttons: See Orbi's note and Write another request." width="1200" height="751">
@@ -136,9 +136,9 @@ The card only says Orbi needs a decision from you. **See Orbi's note** opens [th
 
 On the free trial you get \_\_FREE\_DELIVERIES\_\_ free deliveries (the page calls them free runs). A task that fails, gets stuck like request 3, or ends without a merge doesn't use one, so only merged deliveries count. Drafts never use a free delivery, and you can keep drafting after the free deliveries are gone.
 
-If you hand one off then, the Issue is still created right away, but Orbi removes its `ai-ready` label at once and leaves a comment saying why. After you subscribe, click **Try →** next to that Issue on the status page; it adds `ai-ready`, and that is when Orbi starts. The status page lists that button only when no other task is running; if one is, wait for it to finish, or add `ai-ready` to the Issue on GitHub yourself.
+If you hand one off after the free deliveries are gone, the Issue is still created right away, but Orbi removes its `ai-ready` label at once and leaves a comment saying why. After you subscribe, click **Try →** next to that Issue on the status page; it adds `ai-ready`, and that is when Orbi starts. The status page lists that button only when no other task is running; if one is, wait for it to finish, or add `ai-ready` to the Issue on GitHub yourself.
 
-Paying monthly, Solo is US$\_\_SOLO\_MONTHLY\_USD\_\_ (\_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens of model usage a month) and Pro is US$\_\_CLOUD\_MONTHLY\_USD\_\_ (\_\_INCLUDED\_TOKENS\_\_ tokens). Once a month's usage runs out, new drafts pause along with deliveries until the 1st (months are counted in UTC); there is no overage charge, and accounts that bring their own model API key aren't paused this way. Details are on the [Orbi Cloud page](/cloud/?ref=blog-write-request).
+Paying monthly, Solo is US$\_\_SOLO\_MONTHLY\_USD\_\_ (\_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens of model usage a month) and Pro is US$\_\_CLOUD\_MONTHLY\_USD\_\_ (\_\_INCLUDED\_TOKENS\_\_ tokens). Drafts count toward that monthly usage, the same as deliveries. Once the month's usage runs out, new drafts and new deliveries pause (running ones finish) until the 1st (months are counted in UTC); there is no overage charge, and accounts that bring their own model API key aren't paused this way. Details are on the [Orbi Cloud page](/cloud/?ref=blog-write-request).
 
 ## When to write the Issue yourself
 
@@ -147,7 +147,7 @@ If you already know exactly what should change and how to check it, creating the
 Some things that make drafts better:
 
 - Lead with the outcome. "Bug reports should ask for steps to reproduce" lets Orbi pick the change that fits your repository. If you already know the file or a constraint, add it too.
-- Keep one request to one change. Orbi checks an Issue before it starts, and when it asks for several unrelated things, Orbi comments asking you to split it and pauses the task. Once you've split or clarified it, add `ai-ready` again.
+- Keep one request to one change. Orbi checks an Issue before it starts, and when it judges that an Issue asks for several unrelated things, it comments asking you to split it and pauses the task. The check is a model's judgment, so don't count on it to catch every mixed request. Once you've split or clarified it, add `ai-ready` again.
 - Read the assumptions in the reply before you hand off. A misreading is cheapest to fix there.
 
 ## Related
@@ -155,5 +155,5 @@ Some things that make drafts better:
 - [Write a request](https://cloud-docs.orbi.build/write-a-requirement), the reference page in the Cloud docs
 - [ai-ready: 12 factors for unattended software delivery](/aiready/), on what makes an Issue deliverable
 - [From GitHub Issue to merged PR and release](/guides/issue-to-release/), the guide to the whole delivery line
-- [Orbi compared with other coding agents](/compare/)
+- [How Orbi compares with coding agents](/compare/)
 - [Orbi Cloud plans](/cloud/)

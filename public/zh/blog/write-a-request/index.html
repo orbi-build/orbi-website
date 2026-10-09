@@ -197,18 +197,18 @@
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会出现东西。</p>
-<p>Orbi 是一个接 GitHub Issue 干活的 AI 编程 agent。你给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签，它就在隔离的工作区里写代码、开 PR，再由另一个没参与写代码的 AI 会话来评审。Orbi Cloud 是我们替你托管运行的版本。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<p>我是 Lawrence Liu，Orbi 的维护者。这篇的截图都来自 10 月 8 日和 9 日在测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里的真实操作，截图在 beta.orbi.build 上拍，功能在 orbi.build 上也已上线。中文截图来自几个不同的需求，图注写了各自来源。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
+<p>Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会建出 Issue。</p>
+<p>Orbi 是 agent 时代的软件黑灯工厂：GitHub Issue 进去，评审过、合并、发了版的改动出来，产线上不用人盯着。写代码的编程 agent 只是其中一个工位，在隔离的工作区里干活；另一个没参与写代码的 AI 会话负责评审 PR；从认领打了 <code class="post-code--single">ai-ready</code> 标签的 Issue，到合并、发版，整条产线由 Orbi 来管。Orbi Cloud 就是我们替你运营的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Lawrence Liu，Orbi 的维护者。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
 <h2 id="为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</h2>
-<p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了，要么收到一个读完只能关掉的 PR，要么改动已经合并，你得回滚。无论哪种，都得先把需求补清楚；已经合并的改动还可能要回滚。</p>
+<p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了，就得先把需求补清楚：还没合并的 PR 可以接着改，已经合并的改动可能要回滚。</p>
 <p>把 Issue 写清楚，通常得先看懂代码。写需求让 Orbi 先读代码再动笔，所以草稿里写的是真实的文件路径、行号和会跑的测试。它发现的分叉会在写代码之前做成选择题问你。没问到的判断，作为假设写在回复里。</p>
 <h2 id="在哪里写需求">在哪里写需求</h2>
 <p>用 GitHub 登录、连接仓库之后，你会进到状态页，上面列着你连接的仓库和 Orbi 手上的任务，有一个「写需求」按钮。每个连接的仓库算一个项目，连了好几个的话，用「切换项目」选一个。这一页像聊天：你说一句，Orbi 回一段，可以接着往下聊。</p>
 <figure class="post-media">
 <img src="/img/blog-write-request-zh-entry.webp" alt="写需求页：「说说你想改什么」下面是输入框、「让 Orbi 写草稿」按钮和三个例子；最上面一行写着上一个需求和它的状态，右侧是「查看结果」按钮。" width="1200" height="989">
-<figcaption>写需求入口。最上面那一行是这个项目上一个交给 Orbi 的需求，这里是英文版里那个 bug 模板需求，所以标题是英文。</figcaption>
-</figure><p>想改什么就直接写：加功能、修 bug、改文字都行，一句话就够。你用中文写，Issue 就用中文写，除非仓库的 AGENTS.md 或 CONTRIBUTING.md 另有语言要求。有两处例外：Issue 第一行写明谁提交的，这一行固定是中文，仓库要求 Issue 用英文也不变；小节标题偶尔会是英文。</p>
+<figcaption>写需求入口。最上面那一行是这个项目上一个交给 Orbi 的需求：新增 bug 反馈 Issue 模板（英文版里的例子），所以标题是英文。</figcaption>
+</figure><p>想改什么就直接写：加功能、修 bug、改文字都行，一句话就够。你用中文写，Issue 就用中文写，除非仓库的 AGENTS.md 或 CONTRIBUTING.md 另有语言要求。有两处例外：Issue 第一行写明谁提交的，这一行是程序固定写进去的，目前不管你用什么语言写都是中文；小节标题偶尔会是英文。</p>
 <h2 id="orbi-读代码的时候">Orbi 读代码的时候</h2>
 <p>点「让 Orbi 写草稿」之后，页面上有两个阶段，旁边有计时。「看懂你的项目」下面会列出 Orbi 看过的文件和正在看的文件；「对照你的原话检查」是 Orbi 拿写好的草稿回头和你那句话对一遍，看有没有跑偏。</p>
 <figure class="post-media">
@@ -249,7 +249,7 @@
 <p>交给 Orbi 会在你的仓库里建一张普通的 Issue：第一行写明是你通过 Orbi 提交的，后面就是你认可的那份草稿，一字不改。页面不跳走，草稿那一块变成一张任务卡片，会自己更新。</p>
 <figure class="post-media">
 <img src="/img/blog-write-request-zh-handed-off.webp" alt="已交给 Orbi：接入 Stripe 付款并在 CI 里验证一笔真实扣款。状态：一般 1 分钟内开始。按钮：在 GitHub 查看（Issue #69）、再写一个需求。" width="1200" height="717">
-<figcaption>刚交给 Orbi 的样子，Issue #69。它在现有的 CI workflow 里加了一个只在手动触发时才跑的 job 来做真实扣款，平常的 CI 不跑这一步，所以是绿的，后来顺利合并了。测试仓库没配密钥，从没真扣过钱。</figcaption>
+<figcaption>刚交给 Orbi 的样子，Issue #69。按 Issue 里写明的要求，它在现有的 CI workflow 里加了一个只在手动触发时才跑的 job 来做真实扣款，平常的 CI 不跑这一步，所以是绿的，后来顺利合并了。测试仓库没配密钥，从没真扣过钱。</figcaption>
 </figure><p>顺利的话，状态先显示「一般 1 分钟内开始」，然后依次是「排队中」「进行中」「Orbi 检查中」，最后「已完成」。要求批准的仓库中间会多一步「等你批准」，出了问题会变成「卡住了」（见下一节）。<a href="/blog/write-a-request/">英文版</a>里那个例子是新增一个 bug 反馈 Issue 模板，从交出到合并大约 7 分钟。10 月 9 日 00:20 交出，00:24 开出 PR，00:27 合并（北京时间），改动是一个 19 行的模板文件。</p>
 <figure class="post-media">
 <img src="/img/blog-write-request-zh-done.webp" alt="已完成：README：新增一行联系方式「邮箱：support@orbi.build」。已合并到项目。什么时候生效，取决于你的项目怎么发布或部署。按钮：查看改动（PR #60）、再写一个需求。" width="1200" height="666">
@@ -267,13 +267,13 @@
 <h2 id="要花多少">要花多少</h2>
 <p>免费试用有 __FREE_DELIVERIES__ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占交付次数。</p>
 <p>免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 <code class="post-code--single">ai-ready</code> 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 <code class="post-code--single">ai-ready</code>，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 <code class="post-code--single">ai-ready</code>。</p>
-<p>按月付费的话，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ tokens 模型用量），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ tokens）。当月用量用完后，写草稿和交付都会暂停，下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制（Cloud 页面里有说明）。详情看 <a href="/zh/cloud/?ref=blog-write-request">Orbi Cloud 页面</a>。</p>
+<p>按月付费的话，Solo 每月 US$__SOLO_MONTHLY_USD__（含 __SOLO_INCLUDED_TOKENS__ tokens 模型用量），Pro 每月 US$__CLOUD_MONTHLY_USD__（含 __INCLUDED_TOKENS__ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制（Cloud 页面里有说明）。详情看 <a href="/zh/cloud/?ref=blog-write-request">Orbi Cloud 页面</a>。</p>
 <h2 id="什么时候自己写-issue-更快">什么时候自己写 Issue 更快</h2>
 <p>你已经清楚要改什么、也知道怎么验收，那直接在 GitHub 上建 Issue、打上 <code class="post-code--single">ai-ready</code> 标签更快。你知道要解决什么问题、但不知道它落在代码哪里，或者想在动工前先让 Orbi 把需要你决定的问题列出来，这时用写需求。</p>
 <p>三个让草稿更好用的习惯：</p>
 <ul>
 <li>先说你想要的结果。「提建议的人要写清楚想解决什么问题」能让 Orbi 自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。</li>
-<li>一次只提一件事。Orbi 动工前会先检查 Issue，一张票里塞了几件不相干的事，它会在 Issue 里留言让你拆开，任务先停着；拆清或补清后，重新打上 <code class="post-code--single">ai-ready</code>。</li>
+<li>一次只提一件事。Orbi 动工前会先检查 Issue，它判断一张票里塞了几件不相干的事时，会在 Issue 里留言让你拆开，任务先停着；拆开后重新打上 <code class="post-code--single">ai-ready</code>。这一步是模型的判断，不保证每次都能拦下。</li>
 <li>交给 Orbi 之前，读一读回复里写的假设。读偏了，在输入框里补一句就行。</li>
 </ul>
 <aside class="post-cta">
@@ -286,7 +286,7 @@
 <li><a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>：Cloud 文档里的用法说明</li>
 <li><a href="/aiready/">ai-ready: 12 factors for unattended software delivery</a>（英文）：什么样的 Issue 能被可靠交付</li>
 <li><a href="/zh/guides/issue-to-release/">AI agent：从 GitHub Issue 到合并与发版</a>：整条交付流程的专题</li>
-<li><a href="/zh/compare/">Orbi 和其他编程 agent 的对比</a></li>
+<li><a href="/zh/compare/">Orbi 和编程 agent 的对比</a></li>
 <li><a href="/zh/cloud/">Orbi Cloud 套餐</a></li>
 </ul>
 
