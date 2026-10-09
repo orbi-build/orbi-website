@@ -17,6 +17,7 @@
   <meta property="og:image:alt" content="写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue">
   <meta property="article:published_time" content="2026-10-09">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue","datePublished":"2026-10-09","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/write-a-request/","image":"https://orbi.build/img/blog-write-request-card.png","inLanguage":"zh-CN","description":"在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。","url":"https://orbi.build/zh/blog/write-a-request/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"Orbi 写需求：描述一个问题，15 分钟后合进代码","description":"65 秒中文解说：在一个待办清单仓库里只说「刷新一下页面，待办就全没了」，Orbi 读代码、先问两个问题、写成 Issue。从说出那句话到 PR 合并约 15 分钟，其中写草稿和答题约 4 分钟。","thumbnailUrl":"https://orbi.build/img/blog-write-request-video-zh.jpg","uploadDate":"2026-10-09","duration":"PT1M5S","embedUrl":"https://www.youtube.com/embed/R1fiDGdcz_o"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -198,9 +199,10 @@
         </details>
 <p>Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会建出 Issue。</p>
 <p>Orbi 是 agent 时代的软件黑灯工厂。给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签送进去，出来的是评审过、已经合并的改动，中间没人守着。编程 agent 只占其中一个工位，在隔离的工作区里写代码；评审交给另一个没碰过这段代码的 AI 会话；认领、开 PR、合并这一整条线归 Orbi 管。要发版，另开一张发版票，Orbi 会把已合并的改动打成带 tag 的版本。Orbi Cloud 就是我们替你开着的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<p>我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
-<h2 id="为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</h2>
-<p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了，就得先把需求补清楚：还没合并的 PR 可以接着改，已经合并的改动可能要回滚。</p>
+<p>我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。除了下面的视频，<a href="/blog/write-a-request/">英文版</a>里还有一个从一句话走到合并的例子（新增 bug 反馈模板）。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
+<p>下面这段 65 秒的视频讲的是另一个需求，不是截图里那几个。10 月 9 日晚上，我在正式站 orbi.build 上用另一个测试仓库 <code class="post-code--single">orbi-build/orbi-e2e-prod</code>（一个小的待办清单网页），只写了一句「刷新一下页面，待办就全没了」，没说改哪个文件。Orbi 读了代码，看出待办只存在内存里，然后问了我两道选择题：筛选和排序要不要一起记住；浏览器读不到本地存储、或者存下的数据坏了，页面该怎么办。两题我都留着推荐项：只保存待办内容，读不到时直接以空列表启动、不报错，然后交了出去。写草稿加答题约 4 分钟，交出后约 11 分钟合并，从写下那句话算起一共约 15 分钟。视频里的界面按那次运行存下的草稿、问题和时间戳重新渲染，文字照原样，等待的部分快进了。这个测试仓库是私有的，所以没法附上 Issue 链接。</p>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/R1fiDGdcz_o" title="Orbi 写需求：描述一个问题，15 分钟后合进代码" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>65 秒，中文解说。界面按那次运行的记录重新渲染，等待部分快进。</figcaption></figure><h2 id="为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</h2>
+<p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了就得返工：PR 还没合并，可以接着改；已经合并了，可能要回滚。</p>
 <p>把 Issue 写清楚，通常得先看懂代码。写需求让 Orbi 先读代码再动笔，所以草稿里写的是真实的文件路径、行号和会跑的测试。它发现的分叉会在写代码之前做成选择题问你。没问到的判断，作为假设写在回复里。</p>
 <h2 id="在哪里写需求">在哪里写需求</h2>
 <p>用 GitHub 登录、连接仓库之后，你会进到状态页，上面列着你连接的仓库和 Orbi 手上的任务，有一个「写需求」按钮。每个连接的仓库算一个项目，连了好几个的话，用「切换项目」选一个。这一页像聊天：你说一句，Orbi 回一段，可以接着往下聊。</p>
@@ -215,7 +217,7 @@
 <figcaption>第 48 秒。这个需求交出去后成了 Issue #77，加了一个「功能建议」Issue 模板，下文 README 那个需求提到的就是它。</figcaption>
 </figure><p>一份草稿一般要 1 到 2 分钟。页面可以关掉，草稿从最后一次修改起保留 7 天。回来时从状态页点「写需求」，再点「打开草稿」就能接着看。每个项目同时只有一份草稿，写新的需求会替换它。</p>
 <h2 id="它先告诉你代码里已经有什么">它先告诉你代码里已经有什么</h2>
-<p>这次的需求是：在 README 的「如何贡献」里补一句，提功能建议请用新的「功能建议」模板。Orbi 读完仓库，先把现状说清楚：这句话其实已经写在「如何贡献」第 2 条的末尾（第 26 到 28 行），模板文件也已经在了，只是这句提示埋在讲另一个模板的段落里，不容易看到。</p>
+<p>下面几张截图用的是另一个需求：在 README 的「如何贡献」里补一句，提功能建议请用新的「功能建议」模板。Orbi 读完仓库，先把现状说清楚：这句话其实已经写在「如何贡献」第 2 条的末尾（第 26 到 28 行），模板文件也已经在了，只是这句提示埋在讲另一个模板的段落里，不容易看到。</p>
 <figure class="post-media">
 <img src="/img/blog-write-request-zh-reply.webp" alt="Orbi 的回复：第一句说这份改动会让 README 的「如何贡献」里出现一条独立、一眼可见的提示；接着列出它在确认现状时发现的两点，包括这句话已经在第 26 到 28 行；最后写明它的假设。" width="1200" height="989">
 <figcaption>回复的第一句用大白话说改完会有什么不同，后面是它查到的现状和它做的假设。</figcaption>
