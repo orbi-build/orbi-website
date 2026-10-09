@@ -40,13 +40,13 @@ const deepDives = [
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: "An open-source lights-out software factory for the agent era: AI coding agents inside it take your GitHub Issues all the way to a release. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
+    lede: "Orbi is open source. AI coding agents write the code, a separate AI reviews it, and Orbi merges and ships the release with nobody watching. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
     button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: "Orbi 是 agent 时代的软件黑灯工厂，代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
+    lede: "Orbi 代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
     button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
@@ -915,7 +915,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #711: the homepage carries exactly one primary hero CTA, visible,
-  // plus the proof CTA and the nav "Start free" keeping the same promise.
+  // plus the proof CTA and the nav "Start free with GitHub" keeping the same
+  // promise (Issue #941 renamed it; the Sign in link is gone).
   // The hero and proof handoff go straight to login.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
@@ -930,7 +931,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: expected exactly one midway-cloud CTA`);
   }
   if ((await page.locator("[data-primary-nav] .nav-apply").count()) !== 1) {
-    throw new Error(`${path}: expected exactly one nav Start free`);
+    throw new Error(`${path}: expected exactly one nav start CTA`);
   }
   const summary = page.locator(".pricing-summary");
   if (await summary.count() !== 1) throw new Error(`${path}: pricing summary is missing`);
@@ -1856,7 +1857,9 @@ export async function assertHomeCloudFlow(
   }
 }
 
-// Issue #711: /compare/ uses the same six-link nav and direct login handoff.
+// Issue #711: /compare/ uses the same primary nav and direct login handoff.
+// Issue #941: the Sign in link is gone and the CTA names GitHub, the entry
+// every visitor actually takes.
 async function assertCompareNavCta(browser, path, label) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
@@ -2519,8 +2522,8 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Start free");
-    await assertCompareNavCta(browser, "/zh/compare/", "免费开始");
+    await assertCompareNavCta(browser, "/compare/", "Start free with GitHub");
+    await assertCompareNavCta(browser, "/zh/compare/", "用 GitHub 免费开始");
     // assertCompareNavCta checks the language-specific direct-login href;
     // assertHomeCloudFlow above verifies the same nav handoff lands correctly.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
