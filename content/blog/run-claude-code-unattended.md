@@ -15,6 +15,8 @@ claude -p "Fix the failing test in tests/test_auth.py" \
   --permission-mode auto --permission-prompts none
 ```
 
+That command checks nothing on its own. Before it goes into cron, whatever mode you use, check `permission_denials`; the full script is below.
+
 `--permission-prompts none` is optional. In cron or CI nobody can answer a prompt anyway; what the flag adds is that Claude stops retrying denied actions and drops tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.
 
 `auto` isn't always available either. If the model doesn't support it, or a settings file or Anthropic turns it off, the session starts in Manual mode (`--permission-mode default`), and any write you didn't pre-approve is denied. So for a nightly job I use `dontAsk` with an allowlist, which doesn't depend on `auto` at all; the check script below is set up that way. In a headless run `dontAsk` allows the same things as `default` with the same allowlist. The difference is that the [docs](https://code.claude.com/docs/en/permission-modes) make it the locked-down mode for CI: it denies even explicit `ask` rules and AskUserQuestion, and the session never waits for input.
@@ -38,7 +40,7 @@ The first session read a one-line file and replied with its first word: `claude 
 
 The second session ran `claude --bare -p "say hi" --output-format json` with no `ANTHROPIC_API_KEY`. `--bare` doesn't read a subscription login, so this run was meant to fail, and I wanted to see what failure looks like. It exited 1, and the JSON still said `"subtype": "success"`. The failure showed only in `"is_error": true` and in `result`, which read `Not logged in · Please run /login`.
 
-The third session asked for a file to be written under `--permission-mode default`, where nothing approves writes in a headless run. Nothing was written. The run exited 0, with `"subtype": "success"` and `"is_error": false`. The only sign was `permission_denials`, which listed the two tool calls that were refused: a Bash redirect and the Write tool. I hadn't pre-approved any write, which is exactly the position a nightly job is in when `auto` isn't available and the session starts in Manual mode (`default`) as described above.
+The third session asked for a file to be written under `--permission-mode default`, where nothing approves writes in a headless run. Nothing was written. The run exited 0, with `"subtype": "success"` and `"is_error": false`. The only sign was `permission_denials`, which listed the two tool calls that were refused: a Bash redirect and the Write tool. I hadn't pre-approved any write, which is exactly the position a nightly job is in when `auto` isn't available and the session starts in Manual mode (`default`) as described above. That job can exit 0 night after night with nothing done.
 
 So a script has to check three things: the exit code, `is_error`, and whether `permission_denials` is empty. I haven't seen a run exit 0 with `is_error` true, so that check is a cheap second line. Put this in a bash script rather than typing it into a terminal, because `exit 1` would close your shell. It needs `jq`:
 
@@ -96,7 +98,7 @@ Save the check script from "What a headless run returns" above as `$HOME/bin/cla
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && "$HOME/bin/claude-nightly.sh" >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-The script finds `claude` through the `PATH` set in the env file, so make sure that line includes the directory `which claude` prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad `cd`, won't show up in it. Look in cron's mail or the system log for those. Whatever mode you use, don't drop the `permission_denials` check. If you switch to `auto` and it isn't available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.
+The script finds `claude` through the `PATH` set in the env file, so make sure the env file's `PATH` includes the directory `which claude` prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad `cd`, won't show up in it. Look in cron's mail or the system log for those. Whatever mode you use, don't drop the `permission_denials` check. If you switch to `auto` and it isn't available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.
 
 If one scheduled job like that is all you need, you're done.
 
@@ -108,7 +110,7 @@ Orbi has been delivering its own Issues since late August. In the normal flow no
 
 In Orbi a person adds the `ai-ready` label to an Issue. A runner takes a lock, then picks the next Issue by priority, urgent first and then bugs; the lock means two runners never pick the same one. It adds `ai-in-progress`, which later scans skip, and creates a worktree from a pinned base commit. Each step is posted back to the Issue as a comment, so the Issue list doubles as the queue and each timeline as the log.
 
-If you run several `claude -p` jobs from cron, the minimum is one `flock` lock shared by every job on the machine: pick the Issue and label it `ai-in-progress` while holding the lock, then release it and start Claude.
+If you run several `claude -p` jobs from cron, the minimum is one `flock` lock shared by every job on the machine: pick an Issue that has `ai-ready` and neither `ai-in-progress` nor `ai-blocked`, and label it `ai-in-progress` while holding the lock, then release it and start Claude.
 
 ### Which system user it runs as
 
@@ -180,7 +182,7 @@ PR #523's tests did what its Issue asked, and that Issue never mentioned words. 
 
 All of this can be built around `claude -p`. Orbi's [workflow doc](https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx), which describes how its version works, runs to about 800 lines.
 
-You can also use Orbi: Orbi Cloud runs [Pi](https://github.com/earendil-works/pi) on DeepSeek by default, and Orbi's own repository has run on DeepSeek since September 22. You can bring your own key instead, and Anthropic is on the provider list through its OpenAI-compatible endpoint. Anthropic positions that endpoint for testing, and it doesn't support prompt caching, so expect a higher token bill than on the native API. What you give up is Claude Code itself, and using your Claude Pro or Max quota for it. [Orbi vs Claude Code](/compare/claude-code/) compares where each one stops. To get reviewed releases from your Issues without running the machinery yourself, [connect a repository to Orbi Cloud](https://orbi.build/cloud/?ref=blog-headless) or self-host the [open-source runner](https://github.com/orbi-build/orbi).
+You can also use Orbi: Orbi Cloud runs [Pi](https://github.com/earendil-works/pi) on DeepSeek by default, and Orbi's own repository has run on DeepSeek since September 22. You can bring your own key instead, and Anthropic is on the provider list through its OpenAI-compatible endpoint. Anthropic positions that endpoint for testing, and it doesn't support prompt caching, so expect a higher token bill than the same model with caching. If you switch to Orbi, you give up Claude Code itself and the use of your Claude Pro or Max quota. [Orbi vs Claude Code](/compare/claude-code/) compares where each one stops. To get reviewed releases from your Issues without running the machinery yourself, [connect a repository to Orbi Cloud](https://orbi.build/cloud/?ref=blog-headless) or self-host the [open-source runner](https://github.com/orbi-build/orbi).
 
 ## Related
 

@@ -17,6 +17,8 @@ claude -p "修复 tests/test_auth.py 里失败的测试" \
   --permission-mode auto --permission-prompts none
 ```
 
+这条命令本身不做任何检查。放进 cron 之前，不管用哪种模式，都要查 `permission_denials`，完整脚本见下文。
+
 `--permission-prompts none` 可加可不加。cron 和 CI 里本来就没人回答授权提示，加了它，Claude 被拒之后不会再重试，也不会去调 AskUserQuestion 这类要人回答的工具。它要 Claude Code v2.1.259 以上，旧版本去掉就行。
 
 `auto` 也不是总能用。模型不支持、设置里关掉了、Anthropic 在服务端关掉，会话都会改从 Manual 模式（即 `--permission-mode default`）启动，没预先放行的写入都会被拒。所以夜间任务我用 `dontAsk` 加白名单，它不依赖 `auto` 能不能用，下文的检查脚本就是这么配的。在 headless 下，`dontAsk` 放行的范围和 `default` 加同一份白名单一样；区别是[官方文档](https://code.claude.com/docs/zh-CN/permission-modes)把它定位成 CI 用的锁定模式，连显式的 `ask` 规则和 AskUserQuestion 都直接拒，会话从不等人输入。
@@ -100,7 +102,7 @@ export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 0 3 * * * cd /srv/myrepo && . "$HOME/.claude-nightly.env" && "$HOME/bin/claude-nightly.sh" >> "$HOME/claude-nightly.log" 2>&1
 ```
 
-脚本靠环境文件里设的 `PATH` 找到 `claude`，所以那一行要包含 `which claude` 打印出来的目录。每次失败都会在日志里留下一行说明；`cd` 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。不管用哪种模式，`permission_denials` 那项检查都不能删：换成 `auto` 后，一旦 `auto` 不可用、会话退回 Manual 模式，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。
+脚本靠环境文件里设的 `PATH` 找到 `claude`，所以环境文件里的 `PATH` 要包含 `which claude` 打印出来的目录。每次失败都会在日志里留下一行说明；`cd` 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。不管用哪种模式，`permission_denials` 那项检查都不能删：换成 `auto` 后，一旦 `auto` 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。
 
 如果你只需要这样一个定时任务，到这里就够了。
 
@@ -112,11 +114,11 @@ Orbi 从 8 月下旬开始交付自己仓库的 Issue，平时写代码、评审
 
 在 Orbi 里，人给 Issue 打上 `ai-ready` 标签。runner 先拿一把锁，再按优先级挑下一个 Issue：紧急的先做，然后是 bug。有这把锁，两个 runner 不会挑到同一个。选中后加上 `ai-in-progress`，之后的扫描都会跳过它，runner 接着从目标分支上一个固定的提交建 worktree。每一步都以评论写回 Issue，排队情况在 Issue 列表上也看得到。
 
-用 cron 跑好几个 `claude -p` 的话，最低限度是同一台机器上的任务共用一把 `flock` 锁：挑 Issue 和打上 `ai-in-progress` 都在锁里做完，再释放锁、启动 Claude。
+用 cron 跑好几个 `claude -p` 的话，最低限度是同一台机器上的任务共用一把 `flock` 锁：挑一个带 `ai-ready`、没有 `ai-in-progress` 也没有 `ai-blocked` 的 Issue 并打上 `ai-in-progress`，都在锁里做完，再释放锁、启动 Claude。
 
 ### 用哪个系统用户跑
 
-没人审批命令时，专用的系统用户能多加一层隔离：权限规则只限制工具，文件和凭据得靠换一个用户来隔开。Orbi Cloud 给每个接入的仓库单独开一个 Unix 用户。9 月 25 日，我看到 GitSpawn（借仓库的 git 配置让编程 agent 执行程序的漏洞），反应过度，开票让 Orbi 写了 1164 行加固代码，护的只是 runner 自己调用 git 的那几处，不到四个小时又撤了。agent 本来就以那个用户的身份运行，它自己就能用同样的权限执行 git，单独护住 runner 那几处什么也防不住。如果你用 cron 跑 `claude -p`，就给它一个专用用户，只放这个仓库的凭据。来龙去脉写在 [GitSpawn 那篇](/zh/blog/gitspawn-unattended-agent/)里。
+没人审批命令时，专用的系统用户能多加一层隔离：权限规则只限制工具，文件和凭据得靠换一个用户来隔开。Orbi Cloud 给每个接入的仓库单独开一个 Unix 用户。9 月 25 日，我看到 GitSpawn（借仓库的 git 配置让编程 agent 执行程序的漏洞），反应过度，开票让 Orbi 写了 1164 行加固代码，护的只是 runner 自己调用 git 的那几处，不到四个小时我又把它回滚了。agent 本来就以那个用户的身份运行，它自己就能用同样的权限执行 git，单独护住 runner 那几处什么也防不住。如果你用 cron 跑 `claude -p`，就给它一个专用用户，只放这个仓库的凭据。来龙去脉写在 [GitSpawn 那篇](/zh/blog/gitspawn-unattended-agent/)里。
 
 ### 谁来评审
 
@@ -152,7 +154,7 @@ Issue、PR、评审通过的 SHA 缺一个，`:` 那一行就退出；读不到�
 
 ### 失败后停在哪个标签
 
-能自己恢复的，Orbi 把 Issue 转成 `ai-fix-needed`，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就换成 `ai-blocked`（同时摘掉 `ai-in-progress`），留一条评论说明发生了什么。
+能自己恢复的，Orbi 把 Issue 转成 `ai-fix-needed`，下一轮在同一个分支、同一个 PR 上接着做。需要人拍板的，就加上 `ai-blocked`（同时摘掉 `ai-in-progress`），留一条评论说明发生了什么。
 
 9 月 28 日，[#1482](https://github.com/orbi-build/orbi/issues/1482) 的第一轮不到三分钟就结束了，一个提交都没有，Orbi 打上了 `ai-blocked`：
 
@@ -184,7 +186,7 @@ PR #523 的测试满足了原 Issue 的要求，只是原 Issue 没提单词断�
 
 这些都能围着 `claude -p` 自己搭。Orbi 自己这一套写在 [workflow 文档](https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx)里，有八百来行。
 
-也可以直接用 Orbi。它的 agent [Pi](https://github.com/earendil-works/pi) 和 runner 都是开源的，runner 可以[自托管](https://github.com/orbi-build/orbi)。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比原生接口高。放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。[Orbi 与 Claude Code 对比](/zh/compare/claude-code/)里写了两者各自做到哪一步。
+也可以直接用 Orbi。它的 agent [Pi](https://github.com/earendil-works/pi) 和 runner 都是开源的，runner 可以[自托管](https://github.com/orbi-build/orbi)。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比能用缓存时高。改用 Orbi，放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。[Orbi 与 Claude Code 对比](/zh/compare/claude-code/)里写了两者各自做到哪一步。
 
 不想维护机器，可以[把仓库接入 Orbi Cloud](https://orbi.build/zh/cloud/?ref=blog-headless)。
 
