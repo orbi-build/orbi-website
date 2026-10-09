@@ -40,13 +40,13 @@ const deepDives = [
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: "An open-source AI agent that takes your GitHub Issues all the way to a release. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
+    lede: "An open-source lights-out software factory for the agent era: AI coding agents inside it take your GitHub Issues all the way to a release. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
     button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: "开源的 AI 编程 agent，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。",
+    lede: "agent 时代的开源软件黑灯工厂：AI 编程 agent 在里面干活，接过 GitHub Issue，一直做到合并发版。可以部署在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上说一句话就能开始。",
     button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
