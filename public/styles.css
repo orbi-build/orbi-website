@@ -471,6 +471,7 @@ h1 span { color: var(--signal); }
    muted body face); the H1 stays the promise. */
 .hero.homepage-hero .hero-kicker {
   margin: 0 0 16px;
+  text-wrap: balance;
   color: #9fb5b0;
   font-family: var(--body);
   font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
