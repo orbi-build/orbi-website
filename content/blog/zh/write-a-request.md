@@ -10,7 +10,7 @@ mirror: write-a-request
 
 Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会建出 Issue。
 
-Orbi 是 agent 时代的软件黑灯工厂：GitHub Issue 进去，评审过、合并、发了版的改动出来，产线上不用人盯着。写代码的编程 agent 只是其中一个工位，在隔离的工作区里干活；另一个没参与写代码的 AI 会话负责评审 PR；从认领打了 `ai-ready` 标签的 Issue，到合并、发版，整条产线由 Orbi 来管。Orbi Cloud 就是我们替你运营的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。
+Orbi 是 agent 时代的软件黑灯工厂：GitHub Issue 进去，评审过、合并好的改动出来；另开一张发版票，Orbi 再把合并的改动打成带 tag 的版本，产线上不用人盯着。写代码的编程 agent 只是其中一个工位，在隔离的工作区里干活；另一个没参与写代码的 AI 会话负责评审 PR；从认领打了 `ai-ready` 标签的 Issue，到合并、打版本，整条产线由 Orbi 来管。Orbi Cloud 就是我们替你运营的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。
 
 我是 Lawrence Liu，Orbi 的维护者。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，[英文版](/blog/write-a-request/)里有完整的例子。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
 
@@ -129,11 +129,11 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 
 ## 要花多少
 
-免费试用有 \_\_FREE\_DELIVERIES\_\_ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占交付次数。
+免费试用有 \_\_FREE\_DELIVERIES\_\_ 次交付。失败的、卡住的（比如上面那个，卡片上也写着「不算免费次数」）、没合并就结束的都不占次数，只有合并了的才算。写草稿不占免费交付次数。
 
 免费次数用完后照样能写草稿。这时交给 Orbi 会马上建好 Issue，但 Orbi 随即摘掉它的 `ai-ready` 标签，并在 Issue 里留言说明原因。订阅后到状态页，点这个 Issue 旁边的「试试 →」，它会给 Issue 打上 `ai-ready`，Orbi 这才开始做。这个按钮只在没有别的任务在跑时列出来。有任务在跑，就等它结束，或者直接在 GitHub 上给这个 Issue 打 `ai-ready`。
 
-按月付费的话，Solo 每月 US$\_\_SOLO\_MONTHLY\_USD\_\_（含 \_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens 模型用量），Pro 每月 US$\_\_CLOUD\_MONTHLY\_USD\_\_（含 \_\_INCLUDED\_TOKENS\_\_ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制（Cloud 页面里有说明）。详情看 [Orbi Cloud 页面](/zh/cloud/?ref=blog-write-request)。
+按月付费的话，Solo 每月 US$\_\_SOLO\_MONTHLY\_USD\_\_（含 \_\_SOLO\_INCLUDED\_TOKENS\_\_ tokens 模型用量），Pro 每月 US$\_\_CLOUD\_MONTHLY\_USD\_\_（含 \_\_INCLUDED\_TOKENS\_\_ tokens）。写草稿和交付一样计入每月用量。当月用量用完后，新草稿和新交付都会暂停（进行中的会做完），下个月 1 号恢复（按 UTC 算月份），不会额外扣钱。接了自己模型 API key 的账户不受这个限制。详情看 [Orbi Cloud 页面](/zh/cloud/?ref=blog-write-request)。
 
 ## 什么时候自己写 Issue 更快
 
@@ -141,7 +141,7 @@ Orbi 的评审会读改动、要求修改，但它不是 GitHub 上的那种批�
 
 三个让草稿更好用的习惯：
 
-- 先说你想要的结果。「提建议的人要写清楚想解决什么问题」能让 Orbi 自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。
+- 先说你想要的结果。比如写「提建议的人要写清楚想解决什么问题」这样一句，Orbi 会自己在代码里找最合适的改法；你已经知道要改哪个文件、有什么限制，也一并写上。
 - 一次只提一件事。Orbi 动工前会先检查 Issue，它判断一张票里塞了几件不相干的事时，会在 Issue 里留言让你拆开，任务先停着；拆开后重新打上 `ai-ready`。这一步是模型的判断，不保证每次都能拦下。
 - 交给 Orbi 之前，读一读回复里写的假设。读偏了，在输入框里补一句就行。
 

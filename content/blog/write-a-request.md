@@ -8,7 +8,7 @@ image: /img/blog-write-request-card.png
 mirror: write-a-request
 ---
 
-Orbi is a lights-out software factory for the agent era: GitHub Issues go in, and reviewed, merged, released changes come out, with nobody watching the line. A coding agent works one station, writing the code in an isolated workspace. A separate AI session that did not write the code reviews the pull request. Orbi runs the whole line, from picking up an Issue labeled `ai-ready` to merging and releasing. Orbi Cloud is that factory, run for you on machines we operate. Unless the branch the task merges into requires an approving review, Orbi merges on its own once your CI and its review pass; more on that below. The new **Write a request** feature, part of Orbi Cloud, changes how a task starts.
+Orbi is a lights-out software factory for the agent era: GitHub Issues go in; reviewed, merged changes come out. Open a release ticket and Orbi tags the merged work as a release, with nobody watching the line. A coding agent works one station, writing the code in an isolated workspace. A separate AI session that did not write the code reviews the pull request. Orbi runs the whole line, from picking up an Issue labeled `ai-ready` to merging and tagging a release. Orbi Cloud is that factory, run for you on machines we operate. Unless the branch the task merges into requires an approving review, Orbi merges on its own once your CI and its review pass; more on that below. The new **Write a request** feature, part of Orbi Cloud, changes how a task starts.
 
 Instead of writing the Issue yourself, you describe the change in a sentence or two. Orbi reads your repository, drafts the Issue, and turns the open choices it spots into questions for you. Nothing is created on GitHub until you read the draft and hand it off.
 
@@ -16,7 +16,7 @@ I'm Lawrence Liu, and I maintain Orbi. This post walks through the feature with 
 
 ## Why let Orbi write the Issue
 
-Orbi does what the Issue says. A one-line Issue leaves Orbi to guess which file to change, what behavior you want, and what counts as done. A wrong guess means a pull request you read and close, or, if nothing requires approval, a merged change you have to revert.
+Orbi does what the Issue says. A one-line Issue leaves Orbi to guess which file to change, what behavior you want, and what counts as done. A wrong guess means clarifying the request first: an unmerged pull request can still be revised, and a merged change may need reverting.
 
 Writing a better Issue usually means knowing the code. With Write a request, Orbi reads the code first, so the draft cites real file paths, line numbers and the tests that will run, and the open choices it spots come back to you as questions before any code is written. Choices it doesn't ask about are written into the reply as assumptions.
 
@@ -146,8 +146,8 @@ If you already know exactly what should change and how to check it, creating the
 
 Some things that make drafts better:
 
-- Lead with the outcome. "Bug reports should ask for steps to reproduce" lets Orbi pick the change that fits your repository. If you already know the file or a constraint, add it too.
-- Keep one request to one change. Orbi checks an Issue before it starts, and when it judges that an Issue asks for several unrelated things, it comments asking you to split it and pauses the task. The check is a model's judgment, so don't count on it to catch every mixed request. Once you've split or clarified it, add `ai-ready` again.
+- Lead with the outcome. A line like "Bug reports should ask for steps to reproduce" lets Orbi pick the change that fits your repository. If you already know the file or a constraint, add it too.
+- Keep one request to one change. Orbi checks an Issue before it starts, and when it judges that an Issue asks for several unrelated things, it comments asking you to split it, removes `ai-ready`, and pauses the task. The check is a model's judgment, so don't count on it to catch every mixed request. Once you've split or clarified it, add `ai-ready` again.
 - Read the assumptions in the reply before you hand off. A misreading is cheapest to fix there.
 
 ## Related
