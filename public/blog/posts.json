@@ -25,10 +25,10 @@
   },
   {
     "slug": "run-claude-code-unattended",
-    "title": "Claude Code headless mode: run it unattended",
-    "summary": "Claude Code headless mode (claude -p) runs one session unattended, logged in with an API key or setup-token. Picking work, review and merge are on you.",
+    "title": "Claude Code headless mode exits 0 despite denials",
+    "summary": "In Claude Code headless mode, a claude -p run with denied tool calls still exits 0. Use --output-format json and check permission_denials to catch it.",
     "zhSlug": "run-claude-code-unattended",
-    "zhTitle": "Claude Code headless 模式是什么？自动化开发还差六件事",
+    "zhTitle": "Claude Code headless 模式下操作被拒，退出码还是 0",
     "related": []
   },
   {

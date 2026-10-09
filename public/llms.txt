@@ -265,9 +265,9 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/blog/orbi-on-pi-coding-agent/
 - Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分 (Chinese):
   https://orbi.build/zh/blog/orbi-on-pi-coding-agent/
-- Claude Code headless mode: run it unattended (English):
+- Claude Code headless mode exits 0 despite denials (English):
   https://orbi.build/blog/run-claude-code-unattended/
-- Claude Code headless 模式是什么？自动化开发还差六件事 (Chinese):
+- Claude Code headless 模式下操作被拒，退出码还是 0 (Chinese):
   https://orbi.build/zh/blog/run-claude-code-unattended/
 - Searching for Orbi's harness, part 2: guard cost (English):
   https://orbi.build/blog/is-the-regression-guard-worth-its-tokens/
