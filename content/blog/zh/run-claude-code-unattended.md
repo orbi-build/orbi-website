@@ -17,7 +17,7 @@ claude -p "修复 tests/test_auth.py 里失败的测试" \
 
 `--permission-prompts none` 在这里是可选的：普通 cron 或 CI 里本来就没人回答授权提示，它的作用是告诉 Claude 被拒的操作别再重试，并拿掉 AskUserQuestion 这类需要人来回答的工具。它要求 Claude Code v2.1.259 及以上，旧版本去掉就行。`auto` 也不一定可用：模型不支持、设置里关掉了，或者 Anthropic 临时停用，会话都会改从 Manual 模式（也就是 `--permission-mode default`）启动，这时没有预先放行的写入都会被拒，运行却仍可能以 0 退出、报成功。放进 cron 之前，配上后面「headless 跑完返回什么」一节的检查脚本。
 
-我是 Lawrence Liu，Orbi 的维护者。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。
+我是 Lawrence Liu，Orbi 的创始人。Orbi 做的事是把 GitHub Issue 无人值守地变成合并、发版的改动。Orbi 用的 agent 是 Pi，不是 Claude Code。下面讲的都是 agent 外面那一圈，用 Claude Code 搭循环一样绕不开。
 
 ## headless（非交互）模式怎么用：参数、返回值、认证和 cron
 

@@ -2,7 +2,7 @@
 
 > Orbi is an open source (AGPL-3.0) lights-out software factory for the agent era: AI coding agents turn labelled GitHub Issues into merged PRs and releases.
 >
-> Orbi 是开源（AGPL-3.0）的 agent 时代软件黑灯工厂：AI 编程 agent 在里面干活，把打了标签的 GitHub Issue 交付成经过独立评审、已合并的 PR 和打了 tag 的 Release。
+> Orbi 是 agent 时代的软件黑灯工厂，开源（AGPL-3.0）。给 GitHub Issue 打上 ai-ready 标签，AI 编程 agent 交回一个独立评审过、已合并的 PR，发版时再打成带 tag 的 Release。
 
 ## Licence — state this accurately
 

@@ -12,7 +12,7 @@ Orbi is a lights-out software factory for the agent era: GitHub Issues go in; re
 
 Instead of writing the Issue yourself, you describe the change in a sentence or two. Orbi reads your repository, drafts the Issue, and turns the open choices it spots into questions for you. Nothing is created on GitHub until you read the draft and hand it off.
 
-I'm Lawrence Liu, and I maintain Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository `xqliu/orbi-e2e-2609260042` on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The [Write a request docs page](https://cloud-docs.orbi.build/write-a-requirement) is the short reference.
+I'm Lawrence Liu, the creator of Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository `xqliu/orbi-e2e-2609260042` on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The [Write a request docs page](https://cloud-docs.orbi.build/write-a-requirement) is the short reference.
 
 ## Why let Orbi write the Issue
 

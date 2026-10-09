@@ -17,7 +17,7 @@ claude -p "Fix the failing test in tests/test_auth.py" \
 
 `--permission-prompts none` is optional here: in a plain cron or CI run nobody can answer a prompt anyway, and the flag tells Claude not to retry what was denied and removes tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions. `auto` isn't always available either: if the model doesn't support it, a settings file turns it off or Anthropic switches it off, the session starts in Manual mode (`--permission-mode default`) instead, any write you didn't pre-approve is denied, and the run can still exit 0 as a success. Before you put this in cron, add the check script from "What a headless run returns" below.
 
-I'm Lawrence Liu, and I maintain Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn't run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.
+I'm Lawrence Liu, the creator of Orbi, which turns GitHub Issues into merged, released changes with nobody watching. Orbi doesn't run Claude Code. Its agent is Pi. Everything below is about what surrounds the agent, and it applies to a Claude Code loop just as much.
 
 ## What Claude Code headless mode gives you
 
