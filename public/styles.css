@@ -467,6 +467,18 @@ h1 {
 
 h1 span { color: var(--signal); }
 
+/* Positioning line above the homepage promise: secondary to it (smaller,
+   muted body face); the H1 stays the promise. */
+.hero.homepage-hero .hero-kicker {
+  margin: 0 0 16px;
+  color: #9fb5b0;
+  font-family: var(--body);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
 .hero-lede {
   max-width: var(--hero-copy-width);
   margin-bottom: 34px;

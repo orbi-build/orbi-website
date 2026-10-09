@@ -9,8 +9,9 @@ const cases = [
   {
     source: "site/pages/index.html",
     built: "public/index.html",
+    kicker: "The lights-out software factory for the agent era",
     h1: "File an Issue.<br> <span>Get a release.</span>",
-    lede: "An open-source lights-out software factory for the agent era: AI coding agents inside it take your GitHub Issues all the way to a release. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
+    lede: "Orbi is open source. AI coding agents write the code, a separate AI reviews it, and Orbi merges and ships the release with nobody watching. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
     href: "/cloud/login",
     button: "Try Orbi Cloud free →",
     note: '<span class="hero-cta-note-first">__FREE_DELIVERIES__ deliveries free, no credit card</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">or self-host it from GitHub</a></span>',
@@ -18,8 +19,9 @@ const cases = [
   {
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
+    kicker: "agent 时代的软件黑灯工厂",
     h1: "提个 Issue，<br><span>收个版本</span>",
-    lede: "Orbi 是 agent 时代的软件黑灯工厂，代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
+    lede: "Orbi 代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
     href: "/zh/cloud/login",
     button: "免费试用 Orbi Cloud →",
     note: '<span class="hero-cta-note-first">前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">源码在 GitHub</a></span>',
@@ -31,6 +33,7 @@ const heroCopy = (html) => hero(html).match(/<div class="hero-copy">([\s\S]*?)<\
 
 function expectedCopy(item) {
   return [
+    `<p class="hero-kicker">${item.kicker}</p>`,
     `<h1>${item.h1}</h1>`,
     `<p class="hero-lede">${item.lede}</p>`,
     `<a class="button button-signal hero-cta" data-cta="cloud-start" href="${item.href}">${item.button}</a>`,
@@ -41,7 +44,7 @@ function expectedCopy(item) {
 const normalizeIndent = (value) => value.split("\n").map((line) => line.trim()).join("\n");
 
 describe("homepage hero CTA (Issues #704, #899)", () => {
-  it("renders exactly the four requested hero-copy elements in both languages", async () => {
+  it("renders exactly the five requested hero-copy elements in both languages", async () => {
     for (const item of cases) {
       for (const path of [item.source, item.built]) {
         const html = await read(path);
