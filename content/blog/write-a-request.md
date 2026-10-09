@@ -6,8 +6,8 @@ lang: en
 author: Lawrence Liu
 image: /img/blog-write-request-card.png
 mirror: write-a-request
-video_name: Write a request in Orbi Cloud, one sentence to a merged PR in 15 minutes
-video_description: A 72-second narrated run. One sentence about a to-do list that loses everything on refresh; Orbi reads the code, asks two questions, writes the Issue and merges 15 minutes later.
+video_name: Write a request in Orbi Cloud: one sentence to a merged PR in 15 minutes
+video_description: A 72-second narrated replay, re-rendered from the record of a real run. One sentence about a to-do list that loses everything on refresh; Orbi reads the code, asks two questions and writes the Issue. About 15 minutes from the first sentence to the merge, drafting and answering included.
 video_thumbnail: /img/blog-write-request-video-en.jpg
 video_upload_date: 2026-10-09
 video_duration: PT1M12S
@@ -20,9 +20,9 @@ Instead of writing the Issue yourself, you describe the change in a sentence or 
 
 I'm Lawrence Liu, the creator of Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository `xqliu/orbi-e2e-2609260042` on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The [Write a request docs page](https://cloud-docs.orbi.build/write-a-requirement) is the short reference.
 
-If you'd rather watch first, the 72-second video below follows a fourth request, separate from the three in the screenshots. On the evening of October 9, on orbi.build itself, I used another test repository, `orbi-build/orbi-e2e-prod`, a small to-do list web app, and typed one sentence: refresh the page and all the to-dos are gone. I didn't say which file to change. Orbi read the code, saw that the list lived only in memory, and asked me two multiple-choice questions: whether to remember the filter and sort order too, and what the page should do when the browser can't store anything. I handed it off with the recommended answers. Drafting and answering took 4 minutes, and the pull request merged 11 minutes after the hand-off, 15 minutes after I typed the sentence. I wrote the request in Chinese, so the screens in the video are re-rendered in English from that run's saved draft, questions and timestamps, with the waits sped up. The repository is private, so there is no Issue link to share.
+If you'd rather watch first, the 72-second video below follows a fourth request, separate from the three in the screenshots. On the evening of October 9, on orbi.build itself, I opened another test repository, `orbi-build/orbi-e2e-prod`, a small to-do list web app. I typed one sentence: refresh the page and all the to-dos are gone. I didn't say which file to change. Orbi read the code and saw that the list lived only in memory. Then it asked me two multiple-choice questions: should the filter and sort order be remembered too, and what should the page do if it can't read local storage or the saved data is corrupted? I kept both recommended answers (save only the to-dos; start with an empty list, no error) and handed it off. The pull request merged 15 minutes after my first sentence: about 4 minutes of drafting and answering, about 11 after the hand-off. The screens are re-rendered from that run's saved draft, questions and timestamps, with the waits sped up, and translated, since I wrote the request in Chinese. The repository is private, so there is no Issue to link.
 
-<figure class="post-media"><iframe src="https://www.youtube.com/embed/767arclz7CM" title="Write a request in Orbi Cloud: one sentence to a merged PR in 15 minutes" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>72 seconds, English narration. Screens re-rendered from the run's record, waits sped up.</figcaption></figure>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/767arclz7CM" title="Write a request in Orbi Cloud: one sentence to a merged PR in 15 minutes" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>72 seconds, English narration.</figcaption></figure>
 
 ## Why let Orbi write the Issue
 

@@ -7,7 +7,7 @@ author: Lawrence Liu
 image: /img/blog-write-request-card.png
 mirror: write-a-request
 video_name: Orbi 写需求：描述一个问题，15 分钟后合进代码
-video_description: 65 秒中文解说：在一个待办清单仓库里只说「刷新一下页面，待办就全没了」，Orbi 读代码、先问两个问题、写成 Issue，15 分钟后合并。
+video_description: 65 秒中文解说：在一个待办清单仓库里只说「刷新一下页面，待办就全没了」，Orbi 读代码、先问两个问题、写成 Issue。从说出那句话到 PR 合并约 15 分钟，其中写草稿和答题约 4 分钟。
 video_thumbnail: /img/blog-write-request-video-zh.jpg
 video_upload_date: 2026-10-09
 video_duration: PT1M5S
@@ -18,9 +18,9 @@ Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句
 
 Orbi 是 agent 时代的软件黑灯工厂。给 Issue 打上 `ai-ready` 标签送进去，出来的是评审过、已经合并的改动，中间没人守着。编程 agent 只占其中一个工位，在隔离的工作区里写代码；评审交给另一个没碰过这段代码的 AI 会话；认领、开 PR、合并这一整条线归 Orbi 管。要发版，另开一张发版票，Orbi 会把已合并的改动打成带 tag 的版本。Orbi Cloud 就是我们替你开着的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。
 
-我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。[英文版](/blog/write-a-request/)里还有另一个从一句话走到合并的例子（新增 bug 反馈模板）。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
+我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。除了下面的视频，[英文版](/blog/write-a-request/)里还有一个从一句话走到合并的例子（新增 bug 反馈模板）。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
 
-下面这段 65 秒的视频是另一个需求，和截图里的不是同一个。10 月 9 日晚上，我在正式站 orbi.build 上用另一个测试仓库 `orbi-build/orbi-e2e-prod`（一个小的待办清单网页），只写了一句「刷新一下页面，待办就全没了」，没说改哪个文件。Orbi 读了代码，看出待办只存在内存里，然后问了我两道选择题：筛选和排序要不要一起记住，浏览器存不了的时候怎么办。我按推荐选项交了出去。写草稿加答题用了 4 分钟，交出后 11 分钟合并，从写下那句话算起一共 15 分钟。视频里的界面按那次运行存下的草稿、问题和时间戳重新渲染，文字照原样，等待的部分快进了。这个测试仓库是私有的，所以没法附上 Issue 链接。
+下面这段 65 秒的视频讲的是另一个需求，不是截图里那几个。10 月 9 日晚上，我在正式站 orbi.build 上用另一个测试仓库 `orbi-build/orbi-e2e-prod`（一个小的待办清单网页），只写了一句「刷新一下页面，待办就全没了」，没说改哪个文件。Orbi 读了代码，看出待办只存在内存里，然后问了我两道选择题：筛选和排序要不要一起记住；浏览器读不到本地存储、或者存下的数据坏了，页面该怎么办。两题我都留着推荐项：只保存待办内容，读不到时直接以空列表启动、不报错，然后交了出去。写草稿加答题约 4 分钟，交出后约 11 分钟合并，从写下那句话算起一共约 15 分钟。视频里的界面按那次运行存下的草稿、问题和时间戳重新渲染，文字照原样，等待的部分快进了。这个测试仓库是私有的，所以没法附上 Issue 链接。
 
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/R1fiDGdcz_o" title="Orbi 写需求：描述一个问题，15 分钟后合进代码" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>65 秒，中文解说。界面按那次运行的记录重新渲染，等待部分快进。</figcaption></figure>
 
