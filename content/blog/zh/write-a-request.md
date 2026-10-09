@@ -12,7 +12,7 @@ Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句
 
 Orbi 是 agent 时代的软件黑灯工厂。给 Issue 打上 `ai-ready` 标签送进去，出来的是评审过、已经合并的改动，中间没人守着。编程 agent 只占其中一个工位，在隔离的工作区里写代码；评审交给另一个没碰过这段代码的 AI 会话；认领、开 PR、合并这一整条线归 Orbi 管。要发版，另开一张发版票，Orbi 会把已合并的改动打成带 tag 的版本。Orbi Cloud 就是我们替你开着的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。
 
-我是 Lawrence Liu，Orbi 的维护者。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，[英文版](/blog/write-a-request/)里有完整的例子。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
+我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，[英文版](/blog/write-a-request/)里有完整的例子。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
 
 ## 为什么让 Orbi 来写 Issue
 

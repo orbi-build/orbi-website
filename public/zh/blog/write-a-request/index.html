@@ -199,7 +199,7 @@
         </details>
 <p>Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句话说想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方做成选择题问你。你看过草稿、点了「交给 Orbi 开始做」，GitHub 上才会建出 Issue。</p>
 <p>Orbi 是 agent 时代的软件黑灯工厂。给 Issue 打上 <code class="post-code--single">ai-ready</code> 标签送进去，出来的是评审过、已经合并的改动，中间没人守着。编程 agent 只占其中一个工位，在隔离的工作区里写代码；评审交给另一个没碰过这段代码的 AI 会话；认领、开 PR、合并这一整条线归 Orbi 管。要发版，另开一张发版票，Orbi 会把已合并的改动打成带 tag 的版本。Orbi Cloud 就是我们替你开着的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<p>我是 Lawrence Liu，Orbi 的维护者。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
+<p>我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 <code class="post-code--single">xqliu/orbi-e2e-2609260042</code> 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。想看一个需求从一句话一直走到合并，<a href="/blog/write-a-request/">英文版</a>里有完整的例子。只想查用法，看文档里的<a href="https://cloud-docs.orbi.build/zh/write-a-requirement">写需求</a>一页。</p>
 <h2 id="为什么让-orbi-来写-issue">为什么让 Orbi 来写 Issue</h2>
 <p>Orbi 照着 Issue 做事。Issue 只有一句话，Orbi 就得自己猜：改哪个文件、要什么行为、做到什么算完。猜错了，就得先把需求补清楚：还没合并的 PR 可以接着改，已经合并的改动可能要回滚。</p>
 <p>把 Issue 写清楚，通常得先看懂代码。写需求让 Orbi 先读代码再动笔，所以草稿里写的是真实的文件路径、行号和会跑的测试。它发现的分叉会在写代码之前做成选择题问你。没问到的判断，作为假设写在回复里。</p>

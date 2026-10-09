@@ -11,7 +11,7 @@ series: pi
 
 Orbi 做的事是：你给 GitHub issue 打上 `ai-ready`，它还你一个评审过、已经合并的 PR。代码平常由 [Pi 编程 agent](https://pi.dev) 来写，Orbi 用命令行启动它，主要是两种角色：实现会话改代码，评审会话审 PR。Pi 进程之外的事都归 Orbi 的 runner 管。runner 是一个定时轮询 GitHub 的调度程序，负责挑 issue、让实现和评审各用各的会话、决定什么能合并、卡住了怎么救。Pi 是 Earendil 做的开源项目，MIT 协议（[earendil-works/pi](https://github.com/earendil-works/pi)），Orbi 跟 Earendil 没有关系。
 
-我是 Lawrence Liu，Orbi 的维护者。Orbi 是开源的，Orbi Cloud 托管的是同一个 runner。Cloud 知道哪些 PR 被合并，靠的是 GitHub 的 webhook，不是 runner 上报，而且只限装了 Orbi GitHub App 的仓库。从 9 月 16 日第一条记录到 10 月 5 日 15:36（北京时间），Cloud 记下了 373 个合并的 PR。这不是 Orbi 合并的全部：我机器上的 runner 做的那些，只有一部分在里面。这 373 个里，20 个在 Cloud 用户的 9 个仓库里，剩下的几乎都在 Orbi 自己的仓库里，Orbi 的代码本来就是 Orbi 交付的。有 169 次交付在 Cloud 上有带 token 数的用量记录，都是在 Pi 会话里写的，本文的数字都来自它们。
+我是 Lawrence Liu，Orbi 的创始人。Orbi 是开源的，Orbi Cloud 托管的是同一个 runner。Cloud 知道哪些 PR 被合并，靠的是 GitHub 的 webhook，不是 runner 上报，而且只限装了 Orbi GitHub App 的仓库。从 9 月 16 日第一条记录到 10 月 5 日 15:36（北京时间），Cloud 记下了 373 个合并的 PR。这不是 Orbi 合并的全部：我机器上的 runner 做的那些，只有一部分在里面。这 373 个里，20 个在 Cloud 用户的 9 个仓库里，剩下的几乎都在 Orbi 自己的仓库里，Orbi 的代码本来就是 Orbi 交付的。有 169 次交付在 Cloud 上有带 token 数的用量记录，都是在 Pi 会话里写的，本文的数字都来自它们。
 
 这是我们 Pi 系列里讲 Orbi 架构的第一篇（文末链接的两篇 harness 测评也属于这个系列）。先跟着一张 issue 把 Orbi 为它起的每个 Pi 会话走一遍，再讲命令行、169 次交付花了多少（按 DeepSeek 闲时公开价，每次 token 花费中位数 0.082 美元），以及 Pi 留给用户自己搭的部分。有三个词后面会反复出现：**Pi 会话**是一个 `pi --print` 进程；**run** 是 runner 对一张 issue 的一次尝试，有一个 `run_id`，里面可以起好几个 Pi 会话；恢复这次 run 时沿用同一个 `run_id`（#1554 被我重新排队后就是这样），重新尝试则换一个新的；**交付**指最后由 Orbi 合并了 PR 的 issue。
 
