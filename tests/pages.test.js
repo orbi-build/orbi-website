@@ -2147,27 +2147,39 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     expect(partial).toContain('href="{{CLOUD_HREF}}"');
   });
 
-  it("offers returning users a Sign in text link left of the nav CTA (Issue #528)", async () => {
-    // /api/login is the Cloud control plane's own login route: on every
-    // deployed host the cloud Worker owns /api*, so the plain relative href
-    // (how the slot fills on pages without a nav.siteBase) reaches the right
-    // environment without per-env configuration; pages living on another host
-    // (aiready.sh, Issue #610) fill the slot with the absolute orbi.build URL.
-    // It is a plain text link (no class of its own) and sits before the Start
-    // Cloud button in DOM order — its left in the nav row.
+  it("drops the Sign in link and keeps one GitHub start CTA (Issue #941)", async () => {
+    // Issue #528 added a separate Sign in text link left of the CTA. Since
+    // orbi-cloud#1362 both entries are the same route (GitHub authorization,
+    // then the console for an installed App or the App install page for a new
+    // user), so the label that promised "just sign in" is gone and the single
+    // button says what the click does. data-cta="nav-start" is unchanged so
+    // the click statistics stay comparable.
     const partial = await readFile(join(ROOT, "site", "partials", "nav.html"), "utf8");
-    expect(partial, "nav partial carries the Sign in slot").toContain(
-      '<a data-cta="nav-signin" href="{{SIGNIN_HREF}}">{{SIGNIN_LABEL}}</a>',
-    );
+    expect(partial, "the nav partial must not offer a separate Sign in link").not.toContain("nav-signin");
     expect(partial, "nav partial carries the GitHub tracking slot").toContain(
       '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
     );
-    expect(partial.indexOf('href="{{SIGNIN_HREF}}"')).toBeLessThan(partial.indexOf('class="nav-apply"'));
-    for (const [output, label] of [["index.html", "Sign in"], ["zh/index.html", "登录"]]) {
+    expect(partial, "nav partial carries the renamed primary CTA").toContain(
+      '<a class="nav-apply" data-cta="nav-start" href="{{CLOUD_HREF}}">{{APPLY_LABEL}}</a>',
+    );
+  });
+
+  it("ships no nav-signin link on any built page (Issue #941)", () => {
+    expect(shipped.size, "need the built pages").toBeGreaterThan(5);
+    for (const [output, html] of shipped) {
+      expect(html, `${output}: the nav Sign in link must be gone`).not.toContain('data-cta="nav-signin"');
+    }
+  });
+
+  it("labels the nav CTA Start free with GitHub on en and 用 GitHub 免费开始 on zh (Issue #941)", () => {
+    for (const [output, label, loginPath] of [
+      ["index.html", "Start free with GitHub", "/cloud/login"],
+      ["zh/index.html", "用 GitHub 免费开始", "/zh/cloud/login"],
+    ]) {
       const nav = navRegion(shipped.get(output));
-      const link = nav.match(/<a data-cta="nav-signin" href="\/api\/login">([^<]*)<\/a>/);
-      expect(link, `${output}: nav Sign in link or tracking attribute missing`).toBeTruthy();
-      expect(link[1], `${output}: nav Sign in label`).toBe(label);
+      expect(nav, `${output}: nav CTA label`).toContain(
+        `<a class="nav-apply" data-cta="nav-start" href="${loginPath}">${label}</a>`,
+      );
       expect(nav, `${output}: nav GitHub tracking attribute missing`).toContain(
         '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
       );
@@ -2197,7 +2209,7 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
       const loginPath = output.startsWith("zh/") ? "/zh/cloud/login" : "/cloud/login";
       expect(cta[1], `${output}: nav CTA must use the language login handoff`).toBe(loginPath);
-      const label = output.startsWith("zh/") ? "免费开始" : "Start free";
+      const label = output.startsWith("zh/") ? "用 GitHub 免费开始" : "Start free with GitHub";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }
   });
@@ -2210,10 +2222,11 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
   });
 });
 
-// Issue #711: every page has the same six-link primary nav. The former Guides
-// entry, every Resources destination and the language switch live in the
-// footer; the mobile hamburger opens the same six-link nav DOM.
-describe("six-link primary nav and relocated links (Issue #711)", () => {
+// Issue #711: every page has the same primary nav. The former Guides entry,
+// every Resources destination and the language switch live in the footer; the
+// mobile hamburger opens the same nav DOM. Issue #941 drops the Sign in link,
+// leaving five.
+describe("five-link primary nav and relocated links (Issue #711)", () => {
   const RESOURCES = {
     en: {
       label: "Resources",
@@ -2241,23 +2254,24 @@ describe("six-link primary nav and relocated links (Issue #711)", () => {
     },
   };
 
-  it("keeps the primary navigation to six links", () => {
+  it("keeps the primary navigation to five links", () => {
     for (const page of [...pages.filter((p) => p.nav), ...posts]) {
       const links = [...navRegion(shipped.get(page.output)).matchAll(/<a\b[^>]*>([^<]*)<\/a>/g)]
         .map(([, label]) => label.trim());
       expect(links, `${page.output}: primary navigation`).toEqual(
         page.lang === "zh"
-          ? ["产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"]
-          : ["How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"],
+          ? ["产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 免费开始"]
+          : ["How it works", "Pricing", "Docs", "GitHub", "Start free with GitHub"],
       );
       const nav = navRegion(shipped.get(page.output));
       expect(nav, `${page.output}: GitHub CTA tracking`).toContain(
         '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
       );
-      const signInLabel = page.lang === "zh" ? "登录" : "Sign in";
-      expect(nav, `${page.output}: Sign in CTA tracking`).toMatch(
-        new RegExp(`<a data-cta="nav-signin" href="(?:/api/login|https://orbi\\.build/api/login)">${signInLabel}</a>`),
+      const startLabel = page.lang === "zh" ? "用 GitHub 免费开始" : "Start free with GitHub";
+      expect(nav, `${page.output}: nav-start CTA tracking`).toMatch(
+        new RegExp(`<a class="nav-apply" data-cta="nav-start" href="(?:/(?:zh/)?cloud/login|https://orbi\\.build/(?:zh/)?cloud/login)">${startLabel}</a>`),
       );
+      expect(nav, `${page.output}: the Sign in link must be gone`).not.toContain('data-cta="nav-signin"');
     }
   });
 
