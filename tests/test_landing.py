@@ -266,22 +266,27 @@ class LandingTests(unittest.TestCase):
             )
 
     def test_primary_navigation_names_the_first_visit_actions(self) -> None:
-        # Issue #711: every wide and narrow nav uses the same six-link element;
+        # Issue #711: every wide and narrow nav uses the same five-link element;
         # Guides, Resources and the language switch now live in the footer.
+        # Issue #941: the Sign in link is gone — since orbi-cloud#1362 both
+        # entries were the same GitHub route, so the label that promised "just
+        # sign in" took new users to the App install page. The one remaining
+        # CTA names GitHub instead.
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Pricing", "Docs", "GitHub", "Sign in", "Start free"),
+                ("How it works", "Pricing", "Docs", "GitHub", "Start free with GitHub"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "价格", "文档", "GitHub", "登录", "免费开始"),
+                ("产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 免费开始"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
             nav_end = html.index("</nav>", nav_start)
             primary_nav = html[nav_start:nav_end]
-            self.assertEqual(primary_nav.count("<a "), 6)
+            self.assertEqual(primary_nav.count("<a "), 5)
+            self.assertNotIn('data-cta="nav-signin"', primary_nav)
             positions = [primary_nav.index(f">{label}<") for label in labels]
             self.assertEqual(positions, sorted(positions))
 

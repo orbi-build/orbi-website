@@ -281,9 +281,10 @@ describe("Worker request helpers", () => {
   it("serves pages with the Cloud CTA rewritten to the self-host docs when Cloud is not configured", async () => {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
     // catch the ref form as well as the bare form, or an unconfigured
-    // environment ships dead-end CTAs again (Issue #179). Issue #528: the
-    // nav's Sign in link points straight at the cloud control plane's
-    // /api/login, so it joins the rewrite — nowhere for a visitor to land.
+    // environment ships dead-end CTAs again (Issue #179). Issue #941 removed
+    // the nav Sign in link, so no shipped page carries the bare /api/login
+    // href any more; the rule stays because that route is still no place for
+    // a visitor to land when Cloud is absent.
     const html = '<a href="/api/login">Sign in</a>'
       + '<a class="nav-apply" href="/cloud/login?ref=nav">Start Cloud</a>'
       + '<a data-cta="cloud-start" href="/cloud/login?ref=home-hero">Start Cloud with GitHub</a>'
