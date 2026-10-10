@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ralph loop 跑完之后，谁来评审和合并 | Orbi</title>
+  <meta name="description" content="Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ralph-loop-claude-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Ralph loop 跑完之后，谁来评审和合并">
+  <meta property="og:description" content="Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/ralph-loop-claude-code/">
+  <meta property="og:image" content="https://orbi.build/img/blog-ralph-loop-card.png">
+  <meta property="og:image:alt" content="Ralph loop 跑完之后，谁来评审和合并">
+  <meta property="article:published_time" content="2026-10-10">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Ralph loop 跑完之后，谁来评审和合并","datePublished":"2026-10-10","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/ralph-loop-claude-code/","image":"https://orbi.build/img/blog-ralph-loop-card.png","inLanguage":"zh-CN","description":"Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。","url":"https://orbi.build/zh/blog/ralph-loop-claude-code/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 免费开始</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Ralph loop 跑完之后，谁来评审和合并</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-10">2026-10-10</time></p>
+
+          <p class="hero-lede">Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#官方-ralph-loop-插件默认不设轮数上限">官方 ralph-loop 插件默认不设轮数上限</a></li>
+          <li><a class="post-toc-link" href="#用-claude-code-实测一次-ralph-loop">用 Claude Code 实测一次 Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#换一个会话来评审-发现-slugify-不符合规格">换一个会话来评审，发现 slugify 不符合规格</a></li>
+          <li><a class="post-toc-link" href="#排在前面的-ralph-loop-教程-很少讲做完以后谁来合并">排在前面的 Ralph loop 教程，很少讲做完以后谁来合并</a></li>
+          <li><a class="post-toc-link" href="#有上限的循环-在生产里是什么样">有上限的循环，在生产里是什么样</a></li>
+          <li><a class="post-toc-link" href="#什么时候适合用-ralph-loop">什么时候适合用 Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 7 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#官方-ralph-loop-插件默认不设轮数上限">官方 ralph-loop 插件默认不设轮数上限</a></li>
+          <li><a class="post-toc-link" href="#用-claude-code-实测一次-ralph-loop">用 Claude Code 实测一次 Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#换一个会话来评审-发现-slugify-不符合规格">换一个会话来评审，发现 slugify 不符合规格</a></li>
+          <li><a class="post-toc-link" href="#排在前面的-ralph-loop-教程-很少讲做完以后谁来合并">排在前面的 Ralph loop 教程，很少讲做完以后谁来合并</a></li>
+          <li><a class="post-toc-link" href="#有上限的循环-在生产里是什么样">有上限的循环，在生产里是什么样</a></li>
+          <li><a class="post-toc-link" href="#什么时候适合用-ralph-loop">什么时候适合用 Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Ralph loop（也叫 Ralph Wiggum 循环、Ralph 循环）是一种让编程 agent 无人值守干活的办法：同一段提示词反复喂给 agent，一轮接一轮。最原始的写法自己不会停，常见的做法是加一个出口，让 agent 自己宣布活干完了。这个名字是 Geoffrey Huntley 在 <a href="https://ghuntley.com/ralph/">2025 年 7 月的文章</a>里起的，最小写法只有一行 bash（原文写的是 <code class="post-code--single">claude-code</code>，换成现在的 Claude Code 命令行就是 <code class="post-code--spaced">claude -p</code>）：</p>
+<pre><code class="language-bash">while :; do cat PROMPT.md | claude-code ; done
+</code></pre>
+<p>每一轮都是新会话，agent 只能靠上一轮留在仓库里的文件知道做到了哪。它往前做一步就退出，循环再把它拉起来。Thoughtworks 在 2026 年 4 月把 <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop 收进了技术雷达</a>，放在「评估」环，意思是值得了解它会带来什么影响，还没到建议在项目里试用的程度。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>Huntley 说这适合从零起的新项目，「预期做到九成」。他说自己绝不会用在现有代码库上，还提醒你「时不时醒来会发现代码库编译不过」。写提示词的建议是每轮只让它做一件事。</p>
+<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 是一座软件黑灯工厂：一张 GitHub Issue 进去，编程 agent 写代码，另一个会话评审，然后合并，多数时候不用人守着。调度这一切的程序叫 runner，runner 本身也是一个循环。我一直想知道，最朴素的 Ralph loop 会在哪出问题、最后由谁收尾。10 月 10 日我用 Claude Code 跑了一次，对象是一个很小的 Python 库。第 4 轮测试全绿，agent 写下了 DONE。之后我另开一个会话评审，花了 0.11 美元，它找出一处不符合规格的地方，结论是不能合并。</p>
+<h2 id="官方-ralph-loop-插件默认不设轮数上限">官方 ralph-loop 插件默认不设轮数上限</h2>
+<p>Anthropic 把这个思路做成了 Claude Code 插件 <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ralph-loop">ralph-loop</a>，早先叫 ralph-wiggum。它不用外层的 bash 循环，而是用一个 Stop hook：Claude 想结束会话时被拦下，同一段提示词再塞回去。所以整个循环跑在一个会话里，上下文会一轮轮累积下来。用法是：</p>
+<pre><code class="language-text">/ralph-loop &quot;&lt;提示词&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
+</code></pre>
+<p>不加参数它就不会停。启动循环的脚本 <code class="post-code--single">setup-ralph-loop.sh</code> 里，<code class="post-code--single">--max-iterations</code> 默认是 0，也就是不限轮数，启动时会提示：不设上限、也不设完成暗号的话，循环会一直跑下去。想中途结束，插件带了一个 <code class="post-code--single">/cancel-ralph</code> 命令。README 的建议是永远设上 <code class="post-code--single">--max-iterations</code>。</p>
+<p>除了到上限或手动取消，循环是否结束由 agent 自己说了算：只有 Claude 写出你设定的完成暗号（这里是 <code class="post-code--single">&lt;promise&gt;DONE&lt;/promise&gt;</code>）循环才会结束，每轮塞回去的提示里还专门写了一句「别为了退出撒谎」。</p>
+<p>Claude Code 另外内置了 <a href="https://code.claude.com/docs/zh-CN/goal"><code class="post-code--single">/goal</code></a> 命令：每一轮结束后，由另一个模型检查条件有没有满足，而不是干活的那个模型自己说了算。</p>
+<h2 id="用-claude-code-实测一次-ralph-loop">用 Claude Code 实测一次 Ralph loop</h2>
+<p>我没用插件，用的是 Huntley 那种外层循环，这样每一轮都是一个独立进程，方便量。</p>
+<p>任务是一个叫 textkit 的小库：<code class="post-code--single">slugify</code>、<code class="post-code--single">truncate</code>、<code class="post-code--single">wrap</code> 三个函数加一个命令行。规格一共 4 条，后面要用到的那条是「重音字母折成 ASCII（é → e）；不是 a-z 或 0-9 的连续字符变成一个 <code class="post-code--single">-</code>」。我照规格写了 15 个测试，textkit 包里先不写实现，测试全红。<code class="post-code--single">PROMPT.md</code> 全文如下：</p>
+<pre><code class="language-text">Study spec.md and fix_plan.md. Pick the single most important unfinished item,
+implement it, and run `python -m pytest -q`.
+Update fix_plan.md (create it if missing) with what is done and what is left,
+then commit with git.
+Only when every test passes and fix_plan.md lists nothing left, write the word
+DONE into a file named STATUS.
+</code></pre>
+<p>意思是：读规格和 <code class="post-code--single">fix_plan.md</code>，挑一件最重要的事做完、跑测试、更新 <code class="post-code--single">fix_plan.md</code>、git 提交；全部通过时在 <code class="post-code--single">STATUS</code> 文件里写 DONE。</p>
+<p>我给循环设了 10 轮上限，用 Claude Code 2.1.281 的 headless 模式跑，模型是 Claude Opus 5.5，登录的是订阅。<code class="post-code--spaced">--setting-sources &quot;&quot;</code> 让我自己的 CLAUDE.md、hooks 和插件都不参与，<code class="post-code--single">--strict-mcp-config</code> 不加载 MCP 服务，更接近一台干净的机器。<code class="post-code--single">dontAsk</code> 的意思是白名单以外、本该弹确认的调用一律拒绝，不等人。下面的脚本比我实测那版多了三处保护：先清掉旧的 DONE，某一轮失败就停，每轮把被拒的调用打印出来。<code class="post-code--single">claude</code> 的参数和实测时一样，每轮的 JSON 也同样存在仓库外面。存成脚本用，需要装 <code class="post-code--single">jq</code>。</p>
+<p>我用一个假的 <code class="post-code--single">claude</code> 放进 <code class="post-code--single">PATH</code> 逐个试过：上次残留的 DONE 会先被清掉，不会让循环提前结束；非零退出码、<code class="post-code--single">is_error</code> 为 true、空输出、跑满 10 轮没有 DONE，都会让脚本以 1 退出。</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# 在任务仓库里运行；每轮的日志写到仓库外面的上一级目录。
+rm -f STATUS
+for i in $(seq 1 10); do
+  log=&quot;../round-$i.json&quot;
+  claude -p &quot;$(cat PROMPT.md)&quot; --setting-sources &quot;&quot; --strict-mcp-config --no-session-persistence \
+    --permission-mode dontAsk \
+    --allowedTools &quot;Read,Edit,Write,Glob,Grep,Bash(python -m pytest *),Bash(python3 -m pytest *),Bash(git *)&quot; \
+    --output-format json &gt; &quot;$log&quot;
+  status=$?
+  if [ &quot;$status&quot; -ne 0 ] || [ &quot;$(jq -r &#39;.is_error&#39; &quot;$log&quot;)&quot; != false ]; then
+    echo &quot;round $i failed (exit $status)&quot; &gt;&amp;2; exit 1
+  fi
+  jq -r &#39;.permission_denials[]? | &quot;\(.tool_name) \(.tool_input.command // .tool_input.file_path // &quot;&quot;)&quot;&#39; &quot;$log&quot; | sed &quot;s/^/round $i denied: /&quot; &gt;&amp;2
+  [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] &amp;&amp; break
+done
+[ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] || { echo &quot;no DONE after 10 rounds&quot; &gt;&amp;2; exit 1; }
+</code></pre>
+<p>每轮结束我数一次通过的测试，再读 JSON。订阅登录不按次扣钱，表里的花费是 Claude Code 按 API 价格自己估的，下文所有美元数字都是这个口径。</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>轮次</th>
+<th>秒数</th>
+<th>agent 回合数（<code class="post-code--single">num_turns</code>）</th>
+<th>估算花费</th>
+<th>被拒的调用</th>
+<th>通过的测试</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="轮次">1</td>
+<td data-label="秒数">28</td>
+<td data-label="agent 回合数（num_turns）">8</td>
+<td data-label="估算花费">0.18 美元</td>
+<td data-label="被拒的调用">0</td>
+<td data-label="通过的测试">4 / 15</td>
+</tr>
+<tr>
+<td data-label="轮次">2</td>
+<td data-label="秒数">40</td>
+<td data-label="agent 回合数（num_turns）">9</td>
+<td data-label="估算花费">0.19 美元</td>
+<td data-label="被拒的调用">1</td>
+<td data-label="通过的测试">8 / 15</td>
+</tr>
+<tr>
+<td data-label="轮次">3</td>
+<td data-label="秒数">28</td>
+<td data-label="agent 回合数（num_turns）">9</td>
+<td data-label="估算花费">0.18 美元</td>
+<td data-label="被拒的调用">1</td>
+<td data-label="通过的测试">12 / 15</td>
+</tr>
+<tr>
+<td data-label="轮次">4</td>
+<td data-label="秒数">27</td>
+<td data-label="agent 回合数（num_turns）">9</td>
+<td data-label="估算花费">0.17 美元</td>
+<td data-label="被拒的调用">1</td>
+<td data-label="通过的测试">15 / 15，写下 DONE</td>
+</tr>
+</tbody></table></div>
+<p>两分钟，0.72 美元左右。每轮正好做完规格里的一条、提交一次，正合「每轮一件事」的要求。三次被拒里有两次是 Claude 想用 <code class="post-code--spaced">python - &lt;&lt;EOF</code> 改 <code class="post-code--single">fix_plan.md</code>，白名单里没有它，它就换成 Edit 工具接着做。第三次在第 4 轮：被拒的是一条把跑测试和手动检查命令行（<code class="post-code--spaced">python -m textkit wrap 0 x</code>）串在一起的命令。Claude 在总结里写了它想手动验证宽度非法的情况、命令被权限拦下，然后照样写下了 DONE。这一轮退出码是 0，<code class="post-code--single">is_error</code> 是 false。所以无人值守跑的时候，还得从 JSON 里查 <code class="post-code--single">permission_denials</code>，这一点我在 <a href="/zh/blog/run-claude-code-unattended/">Claude Code headless 模式那篇</a>里写过。</p>
+<p>接着我照着规格另写了 13 个测试，循环从没见过，比如 <code class="post-code--spaced">slugify(&quot;Ça va, l&#39;été 2026&quot;)</code>、自定义省略号、宽度从 1 到 19 的每种截断长度、制表符、不带参数的命令行。13 个全过，测试层面已经挑不出问题。</p>
+<h2 id="换一个会话来评审-发现-slugify-不符合规格">换一个会话来评审，发现 slugify 不符合规格</h2>
+<p>然后我把 diff 和规格交给一个新的 <code class="post-code--spaced">claude -p</code> 会话。用的还是同一个模型，在 <code class="post-code--single">dontAsk</code> 下不给白名单，并在提示词里要求它不用工具，也不带写代码那个会话的历史。评审提示词如下，后面接上规格和 diff：</p>
+<pre><code class="language-text">You are reviewing a change you did not write. Do not use any tools; answer
+from the text below. List every place where the code does not meet the spec,
+or is wrong for an input the spec covers. For each: the input, expected,
+actual. Last line: MERGE or DO NOT MERGE.
+</code></pre>
+<p>意思是：这段改动不是你写的，只根据下面的文字回答，逐条列出代码不符合规格的地方，写明输入、期望和实际，最后一行只写 MERGE 或 DO NOT MERGE。</p>
+<p>花了 0.11 美元，结论是 DO NOT MERGE。它找到的问题是真的：循环写的 <code class="post-code--single">slugify</code> 用 <code class="post-code--spaced">encode(&quot;ascii&quot;, &quot;ignore&quot;)</code> 折重音，这一步会把折不成 ASCII 的字符直接删掉，本该把它变成 <code class="post-code--single">-</code> 的正则根本看不到它：</p>
+<pre><code class="language-text">slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   （规格：&#39;foo-bar&#39;）
+slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       （规格：&#39;a-b&#39;）
+</code></pre>
+<p>一共 28 个测试，没有一个用到破折号或货币符号，所以全部通过，代码却违反了规格。</p>
+<p>我把评审意见当作下一轮的提示词再喂回去。这一轮花了 0.26 美元，修好了 <code class="post-code--single">slugify</code>，按评审列出的输入补了 6 个测试，仓库里的测试从 15 个变成 21 个，又写下 DONE；我那 13 个也仍然全过。第二次评审（0.15 美元）给了 MERGE，同时列出 8 处规格本身有两种读法的地方，比如 <code class="post-code--single">x²</code> 里的上标 <code class="post-code--single">²</code> 算不算数字。这类问题评审定不了，得由定规格的人拍板。</p>
+<p>循环、两次评审加一轮修复，一共 1.24 美元左右。</p>
+<h2 id="排在前面的-ralph-loop-教程-很少讲做完以后谁来合并">排在前面的 Ralph loop 教程，很少讲做完以后谁来合并</h2>
+<p>10 月 10 日我搜了「ralph loop」和「ralph wiggum loop」，排在前面的 14 个页面里能打开 13 个。有 3 个建议你回来以后看一眼结果，有 3 个提到可以让循环开 PR 而不是直接提交到 <code class="post-code--single">main</code>，但只是可选做法。除了 Huntley 本人把合并和打 tag 交给循环，其余页面都没讲谁来合并，在发版前设人工关口的也没有。</p>
+<p>Huntley 自己的答案是交给循环：他的提示词让循环提交、推送，「一没有构建和测试错误就打 tag」；他后来那篇 <a href="https://ghuntley.com/loop/">everything is a ralph loop</a> 写的是一个循环自己修 bug、自动部署、再验证生效。前面说过，他只建议用在新项目上。新项目通常还没人依赖：一个还没人用的、随时可以扔掉的仓库，合并和打 tag 交给循环也无妨；一旦有人依赖它的结果就不行了，而这些教程没讲那时候该怎么变。</p>
+<p>换成别人要依赖的仓库，就剩下三个问题：</p>
+<ol>
+<li>谁来评审。我这次实测里，写代码的会话写下了 DONE，只看规格和 diff 的会话给了 DO NOT MERGE。<code class="post-code--single">/goal</code> 至少把「是否做完」交给了另一个模型判断，但它不对照规格审 diff。</li>
+<li>谁来合并、发版。用 Huntley 的提示词，循环自己推送、打 tag；用插件，循环里没人管这件事，最后落到恰好在场的人身上。<code class="post-code--single">/goal</code> 和插件都不碰合并。</li>
+<li>什么时候该停下来问人。有些失败根本不在这次改动里，比如 <code class="post-code--single">main</code> 本来就是红的。一个只会「测试不过就再试」的循环，分不清哪些失败是自己造成的。</li>
+</ol>
+<h2 id="有上限的循环-在生产里是什么样">有上限的循环，在生产里是什么样</h2>
+<p>Orbi 的 runner 驱动的是 Pi 编程 agent，不是 Claude Code；这里比的是循环外面的分工，和用哪个 agent 无关。runner 是一个出口写死的循环。写代码的会话只提交，不推送、不合并。评审会话在一个固定下来的提交（冻结提交）上审，能修的当场修，结论对应的是修完以后的那个提交。评审自己改的部分没有第三个会话再审，只靠 CI 和合并前检查把关。合并前检查再确认四件事：结论对应的还是 PR 现在的最新提交、这个提交包含最新的 <code class="post-code--single">main</code>、CI 是绿的、GitHub 显示可以合并。评审最多五轮。</p>
+<p>同一个失败连续出现三次，或者合并前检查发现某项失败在 <code class="post-code--single">main</code> 上本来就是红的，runner 就给 Issue 打上 <code class="post-code--single">ai-blocked</code>，写明原因，然后停下。CI 分诊是仓库里的一个工作流，PR 上的 CI 一失败就触发。它不看 <code class="post-code--single">main</code>，只按失败特征（哪个工作流、哪个任务、在哪个分支上失败）把 Issue 打回去。拿失败和 <code class="post-code--single">main</code> 对照，是合并前检查做的事，要等一轮评审结束后才跑。</p>
+<p><a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a> 就走了这条路，而且走得并不完美。10 月 5 日凌晨 3 点 31 分（北京时间），Orbi 认领了它。CI 以同样的失败特征连续挂了两次，还没触发重复失败的门槛，每次仓库里的 CI 分诊流程都把 Issue 打回 <code class="post-code--single">ai-fix-needed</code>（Orbi 用来表示「在同一个 PR 上再修一轮」的标签）。也就是说，前两轮它都把这个失败当成了自己的问题。4 点 22 分，合并前检查拿失败的检查去对照 <code class="post-code--single">main</code>，发现失败的 macOS 兼容性检查在 <code class="post-code--single">main</code> 上本来就是红的。这一项在目标分支上就过不了，只改这个 Issue 范围内的代码，CI 不会变绿，Orbi 停了：</p>
+<figure>
+<img src="/img/ralph-1554-blocked.webp" alt="Orbi 在 Issue #1554 上的评论：blocked，等人决定，原因是合并前检查发现 main 在 macos-compatibility 检查上已经是红的">
+<figcaption>修了两轮之后，合并前检查发现有一项失败的检查在 main 上本来就是红的，于是停下。</figcaption>
+</figure><p>当天 main 修好以后（<a href="https://github.com/orbi-build/orbi/issues/1552">orbi#1552</a> 是其中一处修复），我在 13 点 39 分把它换回 <code class="post-code--single">ai-fix-needed</code>，13 点 58 分合并，评审一轮，没有问题。像我那样的朴素 Ralph loop 只跑本地测试，根本看不到这个 CI 失败，本地 pytest 一绿就会写下 DONE。就算给它接上 CI，它里面也没有「拿失败去对照 <code class="post-code--single">main</code>」这一步，没有任何东西会告诉它失败不是自己造成的。</p>
+<p>给个量级：不算发版 Issue，我取了 Orbi 自己仓库里 9 月 28 日到 10 月 10 日 6 点（北京时间）之间合并的最近 40 张 Issue。其中 36 张既没被打回也没停过（评审当场修掉的问题不算打回）；剩下 4 张都中途停在过 <code class="post-code--single">ai-blocked</code>，这 4 张里有 2 张还被打回修过，#1554 是这 2 张之一。只被打回、没停过的一张也没有。停下以后一直没合并的 Issue 不在这个数里。</p>
+<h2 id="什么时候适合用-ralph-loop">什么时候适合用 Ralph loop</h2>
+<p>写新代码、规格短而能测、结果在别人依赖之前你会亲自看一遍，这时候用它很合适。但即便 textkit 只有 4 条规格、一开始就配了 15 个测试，单靠测试还是漏了一个 bug，所以测试之外还得有一道独立评审，人或另一个会话都行。</p>
+<p>如果要无人值守地跑：</p>
+<ul>
+<li>一定要设轮数上限。用插件就加 <code class="post-code--single">--max-iterations</code>，自己写循环就加计数器。</li>
+<li>每一轮都查退出码、<code class="post-code--single">is_error</code> 和 <code class="post-code--single">permission_denials</code>。</li>
+<li>评审交给一个上下文干净的会话，评审意见当作下一轮的提示词。</li>
+<li>不给循环推 <code class="post-code--single">main</code> 的权限。给分支加保护，合并前要求检查通过、有人或会话评审过；失败在 <code class="post-code--single">main</code> 上也出现时，让循环停下来问人。</li>
+</ul>
+<p>Orbi 的 runner 把写代码、评审、合并分开：评审在独立会话里对照 Issue 和 diff 审，能修的当场修（它改的部分靠 CI 和合并前检查把关，没有另一个会话再审），合并由 runner 来做、不归 agent；发版走一张单独的发版 Issue，只有人能给它打上 <code class="post-code--single">ai-release</code> 标签，所以一个里程碑什么时候发版由人决定。Pi 本身是开源的（<a href="https://github.com/earendil-works/pi">GitHub</a>）。<a href="https://github.com/orbi-build/orbi">runner 也是开源的</a>，也可以<a href="https://orbi.build/zh/cloud/?ref=blog-ralph">把仓库接入 Orbi Cloud</a>，拿自己的 Issue 试一试。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>继续阅读：<a href="/zh/blog/run-claude-code-unattended/">Claude Code headless 模式下操作被拒，退出码还是 0</a>、<a href="/zh/blog/claude-code-github-actions-who-merges/">Claude Code 跑完之后，谁来合并 PR</a>、<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a> 与 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/ralph-loop-claude-code/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
