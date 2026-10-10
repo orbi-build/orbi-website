@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 | Orbi</title>
-  <meta name="description" content="I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.">
+  <meta name="description" content="I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.">
   <link rel="canonical" href="https://orbi.build/blog/pi-agent-harness/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-agent-harness/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-agent-harness/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-agent-harness/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9">
-  <meta property="og:description" content="I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.">
+  <meta property="og:description" content="I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.">
   <meta property="og:url" content="https://orbi.build/blog/pi-agent-harness/">
   <meta property="og:image" content="https://orbi.build/img/blog-pi-agent-harness-card.png">
   <meta property="og:image:alt" content="Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9">
   <meta property="article:published_time" content="2026-10-06">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9","datePublished":"2026-10-06","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-agent-harness/","image":"https://orbi.build/img/blog-pi-agent-harness-card.png","inLanguage":"en","description":"I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.","url":"https://orbi.build/blog/pi-agent-harness/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9","datePublished":"2026-10-06","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-agent-harness/","image":"https://orbi.build/img/blog-pi-agent-harness-card.png","inLanguage":"en","description":"I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.","url":"https://orbi.build/blog/pi-agent-harness/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-06">2026-10-06</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.</p>
+          <p class="hero-lede">I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.</p>
         </section>
       </div>
     </div>
@@ -166,10 +166,10 @@
           <ol>
           <li><a class="post-toc-link" href="#what-is-the-pi-agent-harness">What is the Pi agent harness?</a>
             <ol>
-              <li><a class="post-toc-link" href="#pi-harness-or-pi-durable">Pi harness or Pi Durable?</a></li>
+              <li><a class="post-toc-link" href="#pi-coding-harness-or-pi-durable">Pi coding harness or Pi Durable?</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#three-ways-to-run-pi-unattended-one-test">Three ways to run Pi unattended, one test</a></li>
-          <li><a class="post-toc-link" href="#how-to-run-pi-agent-headless-with-pi-print">How to run Pi agent headless with pi --print</a>
+          <li><a class="post-toc-link" href="#killing-three-unattended-pi-setups-mid-task">Killing three unattended Pi setups mid-task</a></li>
+          <li><a class="post-toc-link" href="#running-pi-headless-with-pi-print">Running Pi headless with pi --print</a>
             <ol>
               <li><a class="post-toc-link" href="#close-stdin-or-headless-pi-waits-forever">Close stdin, or headless Pi waits forever</a></li>
             </ol></li>
@@ -189,10 +189,10 @@
           <ol>
           <li><a class="post-toc-link" href="#what-is-the-pi-agent-harness">What is the Pi agent harness?</a>
             <ol>
-              <li><a class="post-toc-link" href="#pi-harness-or-pi-durable">Pi harness or Pi Durable?</a></li>
+              <li><a class="post-toc-link" href="#pi-coding-harness-or-pi-durable">Pi coding harness or Pi Durable?</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#three-ways-to-run-pi-unattended-one-test">Three ways to run Pi unattended, one test</a></li>
-          <li><a class="post-toc-link" href="#how-to-run-pi-agent-headless-with-pi-print">How to run Pi agent headless with pi --print</a>
+          <li><a class="post-toc-link" href="#killing-three-unattended-pi-setups-mid-task">Killing three unattended Pi setups mid-task</a></li>
+          <li><a class="post-toc-link" href="#running-pi-headless-with-pi-print">Running Pi headless with pi --print</a>
             <ol>
               <li><a class="post-toc-link" href="#close-stdin-or-headless-pi-waits-forever">Close stdin, or headless Pi waits forever</a></li>
             </ol></li>
@@ -211,10 +211,10 @@
 <h2 id="what-is-the-pi-agent-harness">What is the Pi agent harness?</h2>
 <p>A harness is the program around the model. It builds each request, executes the tools, stores the conversation and decides when a run is over; the model itself only produces text and tool calls. Pi keeps its harness small on purpose. The system prompt is short, and the model gets four tools by default, <code class="post-code--single">read</code>, <code class="post-code--single">bash</code>, <code class="post-code--single">edit</code> and <code class="post-code--single">write</code> (Pi&#39;s <a href="https://pi.dev/docs/latest/cli">CLI docs</a>). A session is a JSONL file with one entry per line: messages, tool results, and changes such as a model switch. Conversation entries point to their parent entry, so you can branch from any earlier point. Extensions are TypeScript modules loaded into the Pi process, skills are instructions the model loads when it needs them, and features such as sub-agents and permission prompts are left to those. The <a href="/blog/orbi-on-pi-coding-agent/#what-pi-leaves-to-you-and-where-orbi-puts-it">first post</a> lists what Pi leaves out and what Orbi adds in its place.</p>
 <p>Pi has four CLI modes: the interactive terminal, print, JSON, and RPC over stdin and stdout. Separately, an SDK embeds it in a Node program. Pi&#39;s docs say all of these interfaces &quot;use the same agent and session mechanisms&quot;, so RPC and the SDK keep the same session files as the command line. I didn&#39;t test RPC. The AI SDK adapter below is built on Pi&#39;s SDK, but it decides for itself where the session file lives.</p>
-<h3 id="pi-harness-or-pi-durable">Pi harness or Pi Durable?</h3>
-<p>Since 1 October, &quot;pi harness&quot; can mean two things from the same team. Earendil describes the Pi coding agent (<code class="post-code--single">@earendil-works/pi-coding-agent</code>, the <code class="post-code--single">pi</code> command) as a harness built for one person at a terminal. Earendil&#39;s <a href="https://earendil.com/posts/pi-durable/">Pi Durable announcement</a> describes what happens when the <code class="post-code--single">pi</code> process dies: &quot;you look at what happened and tell it to continue.&quot; Pi Durable (<code class="post-code--single">@earendil-works/pi-durable</code>) is a separate library for agents that keep running on their own.</p>
+<h3 id="pi-coding-harness-or-pi-durable">Pi coding harness or Pi Durable?</h3>
+<p>Since 1 October, &quot;pi harness&quot; can mean two things from the same team. The first is the Pi coding harness: the Pi coding agent (<code class="post-code--single">@earendil-works/pi-coding-agent</code>, the <code class="post-code--single">pi</code> command), which Earendil describes as a harness built for one person at a terminal. Earendil&#39;s <a href="https://earendil.com/posts/pi-durable/">Pi Durable announcement</a> describes what happens when the <code class="post-code--single">pi</code> process dies: &quot;you look at what happened and tell it to continue.&quot; Pi Durable (<code class="post-code--single">@earendil-works/pi-durable</code>) is a separate library for agents that keep running on their own.</p>
 <p>In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi&#39;s model layer, <code class="post-code--single">pi-ai</code>, but it isn&#39;t the <code class="post-code--single">pi</code> command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node, which doesn&#39;t run inside a Cloudflare Worker.</p>
-<h2 id="three-ways-to-run-pi-unattended-one-test">Three ways to run Pi unattended, one test</h2>
+<h2 id="killing-three-unattended-pi-setups-mid-task">Killing three unattended Pi setups mid-task</h2>
 <p>In the table, a Durable Object is a Cloudflare Worker instance with its own storage, addressed by name.</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
@@ -285,7 +285,7 @@
 </code></pre>
 <p>Uninterrupted, a run took about 50 seconds. The model was <code class="post-code--single">deepseek-flash</code> through DeepSeek&#39;s API every time. Between 19 and 33 seconds in, I killed the process with <code class="post-code--single">SIGKILL</code> (<code class="post-code--spaced">kill -9</code>), which a process can&#39;t catch; the Linux out-of-memory killer sends the same signal. For the AI SDK I also tried <code class="post-code--single">SIGTERM</code>, which a process can catch; <code class="post-code--single">SIGTERM</code> was the only way the AI SDK run recovered. All runs were on 6 October 2026, on my own machine.</p>
 <p>The table also shows that this isn&#39;t a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell or filesystem. I compared one thing: what is left after a hard kill, and who has to act.</p>
-<h2 id="how-to-run-pi-agent-headless-with-pi-print">How to run Pi agent headless with <code class="post-code--spaced">pi --print</code></h2>
+<h2 id="running-pi-headless-with-pi-print">Running Pi headless with <code class="post-code--spaced">pi --print</code></h2>
 <p>Headless Pi is <code class="post-code--spaced">pi --print</code> (short form <code class="post-code--single">-p</code>): it runs the prompt, prints the final answer and exits with status 0, or 1 on an error such as a model the provider rejects. Add <code class="post-code--spaced">--mode json</code> to get every event as a JSON line instead, but then check the events for errors: with the same rejected model, JSON mode exited 0 and left <code class="post-code--single">&quot;stopReason&quot;:&quot;error&quot;</code> in its output. The command I used, with <code class="post-code--single">--no-context-files</code> to skip <code class="post-code--single">AGENTS.md</code> files and the other two flags to skip every discovered extension and skill, mine and the repository&#39;s:</p>
 <pre><code class="language-bash">pi --print --mode json \
    --no-extensions --no-skills --no-context-files \

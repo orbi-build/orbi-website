@@ -168,7 +168,7 @@
             <ol>
               <li><a class="post-toc-link" href="#pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</a></li>
+          <li><a class="post-toc-link" href="#用同一个-kill-测试比三种无人值守的跑法">用同一个 kill 测试比三种无人值守的跑法</a></li>
           <li><a class="post-toc-link" href="#用-pi-print-无头运行-pi">用 pi --print 无头运行 Pi</a>
             <ol>
               <li><a class="post-toc-link" href="#stdin-不关-无头-pi-会一直等">stdin 不关，无头 Pi 会一直等</a></li>
@@ -191,7 +191,7 @@
             <ol>
               <li><a class="post-toc-link" href="#pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</a></li>
+          <li><a class="post-toc-link" href="#用同一个-kill-测试比三种无人值守的跑法">用同一个 kill 测试比三种无人值守的跑法</a></li>
           <li><a class="post-toc-link" href="#用-pi-print-无头运行-pi">用 pi --print 无头运行 Pi</a>
             <ol>
               <li><a class="post-toc-link" href="#stdin-不关-无头-pi-会一直等">stdin 不关，无头 Pi 会一直等</a></li>
@@ -214,7 +214,7 @@
 <h3 id="pi-harness-还是-pi-durable">pi harness 还是 Pi Durable</h3>
 <p>从 10 月 1 日起，「pi harness」可能指同一个团队的两样东西。按 Earendil 的定位，Pi 编程 agent（<code class="post-code--single">@earendil-works/pi-coding-agent</code>，也就是 <code class="post-code--single">pi</code> 命令）是给一个人在终端前用的 harness。Earendil 在 <a href="https://earendil.com/posts/pi-durable/">Pi Durable 的发布文</a>里这样描述 <code class="post-code--single">pi</code> 命令的进程死掉以后的情形：你看看发生了什么，再让它继续。Pi Durable（<code class="post-code--single">@earendil-works/pi-durable</code>）是另一个库，用来搭能自己一直跑下去的 agent。</p>
 <p>在它里面，每次模型调用、每次工具调用都是一个任务，往下走之前先存检查点，新进程打开同一份存储就能接着跑。它和 Pi 共用模型层 <code class="post-code--single">pi-ai</code>，但它不是 <code class="post-code--single">pi</code> 命令。它也带着那四个写代码用的工具，但得先给它们接一个执行环境，也就是真正去读文件、跑命令的地方，工具才能用；Pi Durable 自带一个 Node 的执行环境，但它在 Cloudflare Worker 里用不了。</p>
-<h2 id="三种无人值守的跑法-同一个测试">三种无人值守的跑法，同一个测试</h2>
+<h2 id="用同一个-kill-测试比三种无人值守的跑法">用同一个 kill 测试比三种无人值守的跑法</h2>
 <p>表里的 Durable Object，是 Cloudflare 上一种带自己存储、按名字寻址的 Worker 实例。</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
