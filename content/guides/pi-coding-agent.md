@@ -1,6 +1,6 @@
 ---
 title: How Orbi is built on the Pi coding agent
-summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code, and how the runner around Pi works.
+summary: Orbi turns labelled GitHub issues into merged pull requests and releases, with the Pi coding agent writing the code. This page explains the runner.
 lang: en
 mirror: pi-coding-agent
 published: 2026-10-05
@@ -15,7 +15,7 @@ If you are new here, start with [Pi + DeepSeek Flash, 169 merged PRs](/blog/orbi
 
 <!--@series:pi-->
 
-The title of the 169-PR post is about cost, but it also follows one real issue through every Pi session Orbi started for it, and covers why we stay on Pi and the two incidents that shaped how we run it. The rest of this page is the reference for the same machinery. The 6 October post puts three ways of running Pi through the same kill -9 test: `pi --print`, Pi through the adapter for Vercel's AI SDK, and Pi Durable run on Cloudflare through the Agents SDK's `PiHarness`. The two "Searching for Orbi's harness" posts are earlier benchmarks. There the harness means the prompts and review rules Orbi wraps around the model, not an agent tool like Pi; the posts cover how we changed those rules and compared models, and their data is not part of the production numbers below.
+The 169-PR post leads with cost, but it also follows one real issue through every Pi session Orbi started for it, and covers why we stay on Pi and the two incidents that shaped how we run it. The rest of this page is the reference for the same machinery. The 6 October post puts three ways of running Pi through the same kill -9 test: `pi --print`, Pi through the adapter for Vercel's AI SDK, and Pi Durable run on Cloudflare through the Agents SDK's `PiHarness`. The two "Searching for Orbi's harness" posts are earlier benchmarks. There the harness means the prompts and review rules Orbi wraps around the model, not Pi itself; everywhere else on this page, harness means Pi, as on Pi's own site. Those posts cover how we changed those rules and compared models, and their data is not part of the production numbers below.
 
 ## Words used on this page
 
@@ -29,7 +29,7 @@ The title of the 169-PR post is about cost, but it also follows one real issue t
 
 Orbi Cloud counts the Pi sessions behind every delivery it runs. Between 21 September and 5 October 2026, 170 deliveries have such a count and match a merged pull request: 141 in Orbi's own repositories (`orbi`, `orbi-cloud` and `orbi-website`), 11 in our forks of open-source projects and our test repositories, and 18 in 8 repositories of outside Orbi Cloud users. Merges from before then, and those made by our self-hosted runner before Orbi's own repositories moved to Orbi Cloud, are not in these numbers.
 
-For these 170 deliveries: the model recorded in their Pi session files is DeepSeek's `deepseek-flash` for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it (the reviewer may fix problems itself before passing; see review rounds below). In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts: these are the 169 PRs in [Pi + DeepSeek Flash, 169 merged PRs](/blog/orbi-on-pi-coding-agent/). Counting recorded token usage only, at DeepSeek's off-peak list price, the median delivery cost about 8 cents in model usage. Peak-hour prices are double, so at peak prices throughout it would be about 16 cents, and the recorded usage cost somewhere between the two. Seven of the 169 had an earlier attempt; four of those attempts left no token record, so they are not counted, and counting them could only raise the cost. The breakdown is in that post. (Figures as of 5 October 2026.)
+For these 170 deliveries: the model recorded in their Pi session files is DeepSeek's `deepseek-flash` for all of them. They used 375 Pi sessions, 2.21 per delivery, and 144 of the 170 (85%) used exactly two: one session wrote the code and one reviewed it and passed it (the reviewer may fix problems itself before passing; see review rounds below). In those, no checks were still pending when the merge gate ran, so no re-review (below) was needed. 169 of them also have token counts: these are the 169 PRs in [Pi + DeepSeek Flash, 169 merged PRs](/blog/orbi-on-pi-coding-agent/). Counting recorded token usage only, at DeepSeek's off-peak list price, the median delivery cost about 8 cents in model usage. Peak-hour prices are double, so at peak prices throughout it would be about 16 cents, and the median recorded usage cost fell between 8 and 16 cents. Seven of the 169 had an earlier attempt; four of those attempts left no token record, so they are not counted, and counting them could only raise the cost. The breakdown is in that post. (Figures as of 5 October 2026.)
 
 ## Why Orbi stays on the Pi coding agent
 
@@ -45,7 +45,7 @@ Every session is a non-interactive `pi --print` process. Each run has one sessio
 | `review` | each review round on the pull request | on | fixes for what it finds, pushed to the task branch, and one `REVIEW_VERDICT` JSON line naming the commit it ends on, after its own fixes |
 | `ticket` (answers in text) | an `ai-ready` issue also labelled `ai-content-only`, which asks for a written answer; also, when `clarify_thin_tickets` is on, a check that a new issue has enough detail before it is claimed | off (`--no-tools`) | the text Orbi posts on the issue |
 
-`implement` and `review` sessions start with `--no-extensions`. In Pi that turns off both extension discovery and Pi's built-in extensions, such as MCP and Codemode, Pi's code-execution tool mode, so anything a role needs has to come back through `pi_extensions` in Orbi's config, passed as `--extension`. Orbi Cloud adds Codemode back this way. The `ticket` role, which runs with no tools, gets no extension flags at all, so it does not get the `--no-extensions` protection the other two roles have: Pi's built-in extensions load, and so can extensions the runner's OS user has installed (which ones is covered under the agent directory below). This is a known gap. Skills are not isolated the same way either: Orbi adds its own with `--skill` but does not pass `--no-skills`, so the user's own skills can load in every role.
+`implement` and `review` sessions start with `--no-extensions`. In Pi that turns off both extension discovery and Pi's built-in extensions, such as MCP and Codemode (Pi's code-execution tool mode), so anything a role needs has to come back through `pi_extensions` in Orbi's config, passed as `--extension`. Orbi Cloud adds Codemode back this way. The `ticket` role, which runs with no tools, gets no extension flags at all, so it does not get the `--no-extensions` protection the other two roles have: Pi's built-in extensions load, and so can extensions the runner's OS user has installed (which ones is covered under the agent directory below). This is a known gap. Skills are not isolated the same way either: Orbi adds its own with `--skill` but does not pass `--no-skills`, so the user's own skills can load in every role.
 
 Models are chosen in the runner's `orbi.toml`; a repository's own `.github/orbi.toml` cannot set the model keys. A minimal setup, where the two review keys could point at a different model but here use the same one:
 
@@ -59,7 +59,7 @@ review_pi_model = "deepseek-flash"         # optional; falls back to pi_model
 
 Ready-made provider files are in [`templates/pi-providers`](https://github.com/orbi-build/orbi/tree/main/templates/pi-providers). When `pi_provider` and `pi_model` are set, the provider and model for each role are passed as `--provider` and `--model` on its command line (review uses the `review_` keys first, falling back key by key); left unset, Pi silently falls back to the default model in the user's settings (see the incident below). With no `pi_providers` file, those keys must name a model Pi can resolve on its own (a built-in provider, or one in the user's `~/.pi/agent/models.json`). `orbi doctor` prints the configured provider and model when a providers file, `pi_provider` and `pi_model` are all set and the API key resolves. Without a providers file it reports the model as not configured, even though Pi can still run a model it resolves on its own.
 
-## The layers Orbi adds around the Pi harness
+## The layers Orbi adds around the Pi coding harness
 
 
 A Pi process only knows about its own session. Which issue gets a session, what happens to the commit it leaves, and what to do when a session goes silent are all decided by the runner.
