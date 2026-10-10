@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Ralph loop's code passed 28 tests, then failed review (English):
+  https://orbi.build/blog/ralph-loop-claude-code/
+- Ralph loop 跑完之后，谁来评审和合并 (Chinese):
+  https://orbi.build/zh/blog/ralph-loop-claude-code/
 - Write a request: Orbi Cloud drafts your GitHub Issue (English):
   https://orbi.build/blog/write-a-request/
 - 写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue (Chinese):

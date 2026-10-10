@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ralph-loop-claude-code",
+    "title": "Ralph loop's code passed 28 tests, then failed review",
+    "summary": "A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.",
+    "zhSlug": "ralph-loop-claude-code",
+    "zhTitle": "Ralph loop 跑完之后，谁来评审和合并",
+    "related": []
+  },
+  {
     "slug": "write-a-request",
     "title": "Write a request: Orbi Cloud drafts your GitHub Issue",
     "summary": "Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.",
