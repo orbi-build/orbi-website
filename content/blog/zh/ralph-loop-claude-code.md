@@ -61,7 +61,7 @@ DONE into a file named STATUS.
 rm -f STATUS
 for i in $(seq 1 10); do
   log="../round-$i.json"
-  claude -p "$(cat PROMPT.md)" --setting-sources "" --strict-mcp-config \
+  claude -p "$(cat PROMPT.md)" --setting-sources "" --strict-mcp-config --no-session-persistence \
     --permission-mode dontAsk \
     --allowedTools "Read,Edit,Write,Glob,Grep,Bash(python -m pytest *),Bash(python3 -m pytest *),Bash(git *)" \
     --output-format json > "$log"
@@ -116,7 +116,7 @@ slugify("a€b")      -> 'ab'       （规格：'a-b'）
 
 ## 排在前面的 Ralph loop 教程，很少讲做完以后谁来合并
 
-10 月 10 日我搜了「ralph loop」和「ralph wiggum loop」，排在前面的 14 个页面里能打开 13 个。有 3 个建议你回来以后看一眼结果，有 2 个提到可以让循环开 PR 而不是直接提交到 `main`，但只是可选做法。除了 Huntley 本人把合并和打 tag 交给循环，其余页面都没讲谁来合并，在发版前设人工关口的也没有。
+10 月 10 日我搜了「ralph loop」和「ralph wiggum loop」，排在前面的 14 个页面里能打开 13 个。有 3 个建议你回来以后看一眼结果，有 3 个提到可以让循环开 PR 而不是直接提交到 `main`，但只是可选做法。除了 Huntley 本人把合并和打 tag 交给循环，其余页面都没讲谁来合并，在发版前设人工关口的也没有。
 
 Huntley 自己的答案是交给循环：他的提示词让循环提交、推送，「一没有构建和测试错误就打 tag」；他后来那篇 [everything is a ralph loop](https://ghuntley.com/loop/) 写的是一个循环自己修 bug、自动部署、再验证生效。前面说过，他只建议用在新项目上。新项目通常还没人依赖：一个还没人用的、随时可以扔掉的仓库，合并和打 tag 交给循环也无妨；一旦有人依赖它的结果就不行了，而这些教程没讲那时候该怎么变。
 

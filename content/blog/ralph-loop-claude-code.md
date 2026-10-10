@@ -60,7 +60,7 @@ I tested it with a fake `claude` on the `PATH`: a non-zero exit, `is_error` true
 rm -f STATUS
 for i in $(seq 1 10); do
   log="../round-$i.json"
-  claude -p "$(cat PROMPT.md)" --setting-sources "" --strict-mcp-config \
+  claude -p "$(cat PROMPT.md)" --setting-sources "" --strict-mcp-config --no-session-persistence \
     --permission-mode dontAsk \
     --allowedTools "Read,Edit,Write,Glob,Grep,Bash(python -m pytest *),Bash(python3 -m pytest *),Bash(git *)" \
     --output-format json > "$log"
@@ -113,7 +113,7 @@ The whole run, loop plus two reviews plus the fix, came to about $1.24.
 
 ## What the top Ralph loop guides leave out
 
-Huntley scopes the technique to greenfield work. Leaving merging and tagging to the loop is fine for a throwaway repository nobody uses yet; it stops being fine once someone depends on the result, and the guides that rank for it don't say what changes then. On 10 October I opened the top pages a web search returned for "ralph loop" and "ralph wiggum loop"; 13 of the 14 loaded. Three suggest looking over the result when you come back, and two mention having the loop open a pull request instead of committing to `main`, but only as an option. Apart from Huntley, who hands merging and tagging to the loop itself, none says who merges, and none puts a human gate before a release. Huntley's own prompt tells the loop to commit, push, and create a git tag "as soon as there are no build or test errors", and his later post, [everything is a ralph loop](https://ghuntley.com/loop/), describes a loop that fixed a bug, "deployed it automatically" and verified it worked.
+Huntley scopes the technique to greenfield work. Leaving merging and tagging to the loop is fine for a throwaway repository nobody uses yet; it stops being fine once someone depends on the result, and the guides that rank for it don't say what changes then. On 10 October I opened the top pages a web search returned for "ralph loop" and "ralph wiggum loop"; 13 of the 14 loaded. Three suggest looking over the result when you come back, and three mention having the loop open a pull request instead of committing to `main`, but only as an option. Apart from Huntley, who hands merging and tagging to the loop itself, none says who merges, and none puts a human gate before a release. Huntley's own prompt tells the loop to commit, push, and create a git tag "as soon as there are no build or test errors", and his later post, [everything is a ralph loop](https://ghuntley.com/loop/), describes a loop that fixed a bug, "deployed it automatically" and verified it worked.
 
 On a repository other people depend on, three questions are left open:
 
