@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Ralph loop's code passed 28 tests, then failed review</title>
+      <link>https://orbi.build/blog/ralph-loop-claude-code/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/ralph-loop-claude-code/</guid>
+      <pubDate>Sat, 10 Oct 2026 00:00:00 GMT</pubDate>
+      <description>A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.</description>
+    </item>
+    <item>
       <title>Write a request: Orbi Cloud drafts your GitHub Issue</title>
       <link>https://orbi.build/blog/write-a-request/</link>
       <guid isPermaLink="true">https://orbi.build/blog/write-a-request/</guid>

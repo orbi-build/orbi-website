@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ralph loop's code passed 28 tests, then failed review | Orbi</title>
+  <meta name="description" content="A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.">
+  <link rel="canonical" href="https://orbi.build/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ralph-loop-claude-code/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ralph-loop-claude-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Ralph loop's code passed 28 tests, then failed review">
+  <meta property="og:description" content="A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.">
+  <meta property="og:url" content="https://orbi.build/blog/ralph-loop-claude-code/">
+  <meta property="og:image" content="https://orbi.build/img/blog-ralph-loop-card.png">
+  <meta property="og:image:alt" content="Ralph loop's code passed 28 tests, then failed review">
+  <meta property="article:published_time" content="2026-10-10">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Ralph loop's code passed 28 tests, then failed review","datePublished":"2026-10-10","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ralph-loop-claude-code/","image":"https://orbi.build/img/blog-ralph-loop-card.png","inLanguage":"en","description":"A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.","url":"https://orbi.build/blog/ralph-loop-claude-code/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
+    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Ralph loop's code passed 28 tests, then failed review</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-10">2026-10-10</time></p>
+
+          <p class="hero-lede">A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#anthropic-s-ralph-loop-plugin-has-no-round-limit-by-default">Anthropic's ralph-loop plugin has no round limit by default</a></li>
+          <li><a class="post-toc-link" href="#running-a-ralph-loop-with-claude-code-on-a-small-library">Running a Ralph loop with Claude Code on a small library</a></li>
+          <li><a class="post-toc-link" href="#a-separate-review-found-a-spec-violation">A separate review found a spec violation</a></li>
+          <li><a class="post-toc-link" href="#what-the-top-ralph-loop-guides-leave-out">What the top Ralph loop guides leave out</a></li>
+          <li><a class="post-toc-link" href="#what-a-bounded-loop-looks-like-in-production">What a bounded loop looks like in production</a></li>
+          <li><a class="post-toc-link" href="#when-to-use-a-ralph-loop">When to use a Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 7 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#anthropic-s-ralph-loop-plugin-has-no-round-limit-by-default">Anthropic's ralph-loop plugin has no round limit by default</a></li>
+          <li><a class="post-toc-link" href="#running-a-ralph-loop-with-claude-code-on-a-small-library">Running a Ralph loop with Claude Code on a small library</a></li>
+          <li><a class="post-toc-link" href="#a-separate-review-found-a-spec-violation">A separate review found a spec violation</a></li>
+          <li><a class="post-toc-link" href="#what-the-top-ralph-loop-guides-leave-out">What the top Ralph loop guides leave out</a></li>
+          <li><a class="post-toc-link" href="#what-a-bounded-loop-looks-like-in-production">What a bounded loop looks like in production</a></li>
+          <li><a class="post-toc-link" href="#when-to-use-a-ralph-loop">When to use a Ralph loop</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>A Ralph loop, also called the Ralph Wiggum technique, runs a coding agent on the same prompt over and over. In its barest form it never stops on its own; most setups add a way for the agent to declare the work finished. Geoffrey Huntley <a href="https://ghuntley.com/ralph/">named it in July 2025</a>, and his smallest version is one line of bash (with today&#39;s Claude Code CLI you&#39;d write <code class="post-code--spaced">claude -p</code> where he wrote <code class="post-code--single">claude-code</code>):</p>
+<pre><code class="language-bash">while :; do cat PROMPT.md | claude-code ; done
+</code></pre>
+<p>Each round starts a fresh session, so the only record of how far the last round got is the files it left in the repository. The agent does one more piece of work and exits, and the loop starts it again. Thoughtworks added the <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop to its Technology Radar</a> in April 2026, in the Assess ring: worth exploring to understand its impact, one step short of Trial.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>Huntley pitches it for bootstrapping greenfield projects &quot;with the expectation you&#39;ll get 90% done&quot;. He says he would never use it on an existing codebase, warns that you&#39;ll &quot;wake up to a broken codebase that doesn&#39;t compile from time to time&quot;, and advises asking for one thing per loop.</p>
+<p>I&#39;m Lawrence Liu, and I built Orbi. Orbi takes a GitHub Issue, has a coding agent write the change, puts it through a separate review session and merges it, usually with nobody at the keyboard. Orbi&#39;s runner, the program that moves each Issue through those steps, is a loop too, so I wanted to see where a plain Ralph loop stops. On 10 October I ran one with Claude Code on a small Python library. After four rounds every test passed and the agent wrote DONE. A separate review session, costing 11 cents, then found a spec violation and said not to merge.</p>
+<h2 id="anthropic-s-ralph-loop-plugin-has-no-round-limit-by-default">Anthropic&#39;s ralph-loop plugin has no round limit by default</h2>
+<p>Anthropic publishes the idea as a Claude Code plugin, <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ralph-loop">ralph-loop</a> (it was called ralph-wiggum earlier). There is no outer bash loop. A Stop hook catches Claude&#39;s attempt to end the session and feeds the same prompt back in, so the whole loop runs inside one session and context carries over between rounds:</p>
+<pre><code class="language-text">/ralph-loop &quot;&lt;prompt&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
+</code></pre>
+<p>If you run it unattended:</p>
+<ul>
+<li>Without flags it never stops. The script that starts the loop, <code class="post-code--single">setup-ralph-loop.sh</code>, defaults <code class="post-code--single">--max-iterations</code> to 0, meaning unlimited, and warns that without a cap or a completion promise the loop runs forever. To end one early, the plugin ships a <code class="post-code--single">/cancel-ralph</code> command. The README says to always set <code class="post-code--single">--max-iterations</code>.</li>
+<li>Completion is self-reported. Apart from the iteration cap and <code class="post-code--single">/cancel-ralph</code>, the loop ends only when Claude writes the promise you set, here <code class="post-code--single">&lt;promise&gt;DONE&lt;/promise&gt;</code>, and the reminder injected every round literally says &quot;do not lie to exit!&quot;.</li>
+</ul>
+<p>Claude Code also has a built-in <a href="https://code.claude.com/docs/en/goal"><code class="post-code--single">/goal</code></a> command, where a separate model checks the condition after every turn, so that &quot;completion is decided by a fresh model rather than the one doing the work&quot;.</p>
+<h2 id="running-a-ralph-loop-with-claude-code-on-a-small-library">Running a Ralph loop with Claude Code on a small library</h2>
+<p>I didn&#39;t use the plugin. I used Huntley&#39;s outer-loop shape so each round would be a fresh process I could measure.</p>
+<p>The task was a tiny library called textkit: <code class="post-code--single">slugify</code>, <code class="post-code--single">truncate</code>, <code class="post-code--single">wrap</code> and a small CLI. The spec is four numbered points; the one that matters later reads &quot;ASCII-fold accented letters (é → e); runs of anything that is not a-z or 0-9 become a single <code class="post-code--single">-</code>&quot;. I wrote 15 tests against the spec and left the package empty, so every test failed. This is the whole <code class="post-code--single">PROMPT.md</code>:</p>
+<pre><code class="language-text">Study spec.md and fix_plan.md. Pick the single most important unfinished item,
+implement it, and run `python -m pytest -q`.
+Update fix_plan.md (create it if missing) with what is done and what is left,
+then commit with git.
+Only when every test passes and fix_plan.md lists nothing left, write the word
+DONE into a file named STATUS.
+</code></pre>
+<p>I capped the loop at 10 rounds and ran Claude Code 2.1.281 headless with Claude Opus 5.5, logged in with a subscription. <code class="post-code--spaced">--setting-sources &quot;&quot;</code> keeps my own CLAUDE.md, hooks and plugins out of the run and <code class="post-code--single">--strict-mcp-config</code> keeps out MCP servers, so it behaves more like a clean machine. <code class="post-code--single">dontAsk</code> refuses any tool call not on the allowlist instead of waiting for a person:</p>
+<pre><code class="language-bash">for i in $(seq 1 10); do
+  claude -p &quot;$(cat PROMPT.md)&quot; --setting-sources &quot;&quot; --strict-mcp-config \
+    --permission-mode dontAsk \
+    --allowedTools &quot;Read,Edit,Write,Glob,Grep,Bash(python -m pytest *),Bash(git *)&quot; \
+    --output-format json &gt; &quot;round-$i.json&quot;
+  [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] &amp;&amp; break
+done
+</code></pre>
+<p>After each round I counted passing tests and read the JSON. On a subscription nothing is billed per run; the cost column is Claude Code&#39;s own estimate at API prices, and so is every dollar figure below.</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>Round</th>
+<th>Seconds</th>
+<th>Agent turns (<code class="post-code--single">num_turns</code>)</th>
+<th>Estimated cost</th>
+<th>Denied calls</th>
+<th>Tests passing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="Round">1</td>
+<td data-label="Seconds">28</td>
+<td data-label="Agent turns (num_turns)">8</td>
+<td data-label="Estimated cost">$0.18</td>
+<td data-label="Denied calls">0</td>
+<td data-label="Tests passing">4 / 15</td>
+</tr>
+<tr>
+<td data-label="Round">2</td>
+<td data-label="Seconds">40</td>
+<td data-label="Agent turns (num_turns)">9</td>
+<td data-label="Estimated cost">$0.19</td>
+<td data-label="Denied calls">1</td>
+<td data-label="Tests passing">8 / 15</td>
+</tr>
+<tr>
+<td data-label="Round">3</td>
+<td data-label="Seconds">28</td>
+<td data-label="Agent turns (num_turns)">9</td>
+<td data-label="Estimated cost">$0.18</td>
+<td data-label="Denied calls">1</td>
+<td data-label="Tests passing">12 / 15</td>
+</tr>
+<tr>
+<td data-label="Round">4</td>
+<td data-label="Seconds">27</td>
+<td data-label="Agent turns (num_turns)">9</td>
+<td data-label="Estimated cost">$0.17</td>
+<td data-label="Denied calls">1</td>
+<td data-label="Tests passing">15 / 15, wrote DONE</td>
+</tr>
+</tbody></table></div>
+<p>The four rounds took about two minutes and 72 cents, each doing exactly one spec item and making one commit, which is what &quot;one thing per loop&quot; asks for. The three denied calls were all the same move: Claude tried to edit <code class="post-code--single">fix_plan.md</code> with a <code class="post-code--spaced">python - &lt;&lt;EOF</code> heredoc, which wasn&#39;t on the allowlist, got refused and switched to the Edit tool. Here that was harmless. Had the refused call been the test run or the commit, the round would still have exited 0 with <code class="post-code--single">is_error</code> false, which is why an unattended loop has to read <code class="post-code--single">permission_denials</code> from the JSON too. I covered that in <a href="/blog/run-claude-code-unattended/">the post on Claude Code headless mode</a>.</p>
+<p>I then wrote 13 more tests from the spec that the loop never saw, such as <code class="post-code--spaced">slugify(&quot;Ça va, l&#39;été 2026&quot;)</code>, custom ellipses, result lengths for every width from 1 to 19, tabs and an empty CLI call. All 13 passed, so by every test I had, the loop was finished.</p>
+<h2 id="a-separate-review-found-a-spec-violation">A separate review found a spec violation</h2>
+<p>Next I gave the diff and the spec to a fresh <code class="post-code--spaced">claude -p</code> session. It ran the same model with no tools and none of the writing session&#39;s history; independent here means a clean context, not a different model. This was the review prompt, followed by the spec and the diff:</p>
+<pre><code class="language-text">You are reviewing a change you did not write. Do not use any tools; answer
+from the text below. List every place where the code does not meet the spec,
+or is wrong for an input the spec covers. For each: the input, expected,
+actual. Last line: MERGE or DO NOT MERGE.
+</code></pre>
+<p>It cost $0.11 and came back with DO NOT MERGE, and the finding was real: the loop&#39;s <code class="post-code--single">slugify</code> folds accents with <code class="post-code--spaced">encode(&quot;ascii&quot;, &quot;ignore&quot;)</code>, and that call silently deletes every character it can&#39;t fold, before the regex that should turn it into <code class="post-code--single">-</code> ever sees it:</p>
+<pre><code class="language-text">slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   (spec: &#39;foo-bar&#39;)
+slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       (spec: &#39;a-b&#39;)
+</code></pre>
+<p>None of the 28 tests used an em dash or a currency sign.</p>
+<p>I sent the findings back as one more round&#39;s prompt. That round cost $0.26, fixed <code class="post-code--single">slugify</code> and added six tests for the inputs the review listed, taking the repository from 15 tests to 21, and wrote DONE again; my 13 held-out tests still passed. A second review ($0.15) said MERGE and listed six places where the spec can be read two ways, for example whether a superscript like the <code class="post-code--single">²</code> in <code class="post-code--single">x²</code> counts as a digit, which only the spec&#39;s owner can settle.</p>
+<p>The whole run, loop plus two reviews plus the fix, came to about $1.24.</p>
+<h2 id="what-the-top-ralph-loop-guides-leave-out">What the top Ralph loop guides leave out</h2>
+<p>Huntley scopes the technique to greenfield work. In that setting, as I read it, nobody is waiting on a merge or depending on a release, so those steps can be left to the loop. The guides that rank for it don&#39;t say what changes when someone is. On 10 October I opened the top pages a web search returned for &quot;ralph loop&quot; and &quot;ralph wiggum loop&quot;; 13 of the 14 loaded. Three suggest looking over the result when you come back. None makes the merge wait for that look, by a person or by a separate session, and none puts a human gate before a release. Huntley&#39;s own prompt tells the loop to commit, push, and create a git tag &quot;as soon as there are no build or test errors&quot;, and his later post, <a href="https://ghuntley.com/loop/">everything is a ralph loop</a>, describes a loop that fixed a bug, &quot;deployed it automatically&quot; and verified it worked.</p>
+<p>On a repository other people depend on, three questions are left open:</p>
+<ol>
+<li>Who reviews? In my run, the session that wrote the code wrote DONE. A session reading only the spec and the diff said DO NOT MERGE. <code class="post-code--single">/goal</code> at least hands the done-or-not call to another model, though it doesn&#39;t review the diff against a spec.</li>
+<li>Who merges and releases? With Huntley&#39;s prompt the loop pushes and tags on its own; with the plugin, nothing in the loop decides it, so it falls to whoever is around. Neither <code class="post-code--single">/goal</code> nor the plugin touches merging.</li>
+<li>When should the loop stop and ask? Some failures aren&#39;t in the change at all, say <code class="post-code--single">main</code> is already red. A loop that retries until tests pass can&#39;t tell those from failures it caused.</li>
+</ol>
+<h2 id="what-a-bounded-loop-looks-like-in-production">What a bounded loop looks like in production</h2>
+<p>Orbi&#39;s runner drives Pi, an open-source coding agent, rather than Claude Code; what matters here is the runner around it. The runner is a loop with fixed exits. A coding session writes the change and commits; it doesn&#39;t push or merge. A review session then checks the change at a pinned commit (the &quot;frozen head&quot;), fixes what it can in place, and gives a verdict on the commit it ends on. Nothing re-reviews the reviewer&#39;s own fixes; they are covered only by CI and the merge gate. A merge gate then checks that the verdict still matches the PR&#39;s head, that the head contains the latest <code class="post-code--single">main</code>, that CI is green and that GitHub says the PR is mergeable. Review gets at most five rounds.</p>
+<p>When the same failure comes back three times in a row, or the merge gate finds that a failing check is already red on <code class="post-code--single">main</code>, the runner labels the Issue <code class="post-code--single">ai-blocked</code> with the reason and stops. CI triage, a workflow in the repository, fires the moment CI fails on the PR and sends the Issue back by the failure&#39;s fingerprint alone, meaning which workflow and job failed on which branch. The merge gate, which compares failures with <code class="post-code--single">main</code>, runs only at the end of a review round.</p>
+<p><a href="https://github.com/orbi-build/orbi/issues/1554">orbi#1554</a> went through that path, and not perfectly. Orbi claimed it at 03:31 on 5 October (UTC+8). CI failed twice in a row with the same fingerprint, still under that threshold, and each time the repository&#39;s CI triage workflow sent the Issue back with <code class="post-code--single">ai-fix-needed</code>, Orbi&#39;s label for &quot;run another round on the same PR&quot;. So for two rounds the loop treated the failure as its own. At 04:22 the merge gate compared the failing checks against <code class="post-code--single">main</code> and found that one of them, a macOS compatibility check, was already red on <code class="post-code--single">main</code> itself. With that check failing on the base branch, no change within this Issue&#39;s scope would turn CI green, so Orbi stopped:</p>
+<figure>
+<img src="/img/ralph-1554-blocked.webp" alt="Orbi's comment on Issue #1554: blocked, waiting on a human decision, because the delivery gate (the merge gate's name in the comment) found main already red on the macos-compatibility check">
+<figcaption>After two rounds, the merge gate found a failing check that was already red on main and stopped.</figcaption>
+</figure><p>Later that day, after <a href="https://github.com/orbi-build/orbi/issues/1552">orbi#1552</a> fixed main, I moved the Issue back to <code class="post-code--single">ai-fix-needed</code> at 13:39. It merged at 13:58 after one review round with no findings. A plain Ralph loop like mine runs only local tests, so it would never have seen that CI failure: it would have written DONE once pytest passed. Even wired to CI, nothing in it compares a failure against <code class="post-code--single">main</code>, so nothing would tell it the failure wasn&#39;t its own.</p>
+<p>For scale: of the 60 most recent Issues Orbi merged in its own repository (closed between 27 September and 10 October), 56 went through without being sent back or blocked. Four stopped at <code class="post-code--single">ai-blocked</code> at some point, and two of those four were also sent back for fixes; #1554 is one of them. Issues that were blocked and never merged aren&#39;t in that count.</p>
+<h2 id="when-to-use-a-ralph-loop">When to use a Ralph loop</h2>
+<p>Use it when the task is new code, the spec is short and testable, and you&#39;ll read the result before anyone depends on it. textkit met all three conditions, with a four-point spec and 15 tests from the start, and tests alone still let a bug through, so add an independent review on top of the tests, by a person or a separate session.</p>
+<p>If you run one unattended:</p>
+<ul>
+<li>Cap the rounds, with <code class="post-code--single">--max-iterations</code> on the plugin or a counter in your own loop.</li>
+<li>Read the exit code, <code class="post-code--single">is_error</code> and <code class="post-code--single">permission_denials</code> after every round.</li>
+<li>Give the review to a session with a clean context, and send its findings back as the next round&#39;s prompt.</li>
+<li>Don&#39;t give the loop push rights to <code class="post-code--single">main</code>. Protect the branch, require checks and a review before merge, and make the loop stop and ask when a failure also shows up on <code class="post-code--single">main</code>.</li>
+</ul>
+<p>Orbi builds that separation into its runner: the review runs in its own session against the Issue and the diff, the runner rather than the agent merges, and releases ship through a separate release Issue that only a person can label <code class="post-code--single">ai-release</code>, so a human decides when a milestone ships. <a href="https://github.com/earendil-works/pi">Pi</a> and the <a href="https://github.com/orbi-build/orbi">runner are open source</a>, and you can <a href="https://orbi.build/cloud/?ref=blog-ralph">connect a repository to Orbi Cloud</a> to try it on your own Issues.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>Read <a href="/blog/run-claude-code-unattended/">Claude Code headless mode exits 0 despite denials</a>, <a href="/compare/claude-code/">Orbi vs Claude Code</a> and <a href="/cloud/">Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/ralph-loop-claude-code/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
