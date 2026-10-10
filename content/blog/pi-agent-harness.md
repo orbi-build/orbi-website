@@ -1,7 +1,7 @@
 ---
 title: Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9
 date: 2026-10-06
-summary: I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.
+summary: I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-agent-harness-card.png
@@ -19,13 +19,13 @@ A harness is the program around the model. It builds each request, executes the 
 
 Pi has four CLI modes: the interactive terminal, print, JSON, and RPC over stdin and stdout. Separately, an SDK embeds it in a Node program. Pi's docs say all of these interfaces "use the same agent and session mechanisms", so RPC and the SDK keep the same session files as the command line. I didn't test RPC. The AI SDK adapter below is built on Pi's SDK, but it decides for itself where the session file lives.
 
-### Pi harness or Pi Durable?
+### Pi coding harness or Pi Durable?
 
-Since 1 October, "pi harness" can mean two things from the same team. Earendil describes the Pi coding agent (`@earendil-works/pi-coding-agent`, the `pi` command) as a harness built for one person at a terminal. Earendil's [Pi Durable announcement](https://earendil.com/posts/pi-durable/) describes what happens when the `pi` process dies: "you look at what happened and tell it to continue." Pi Durable (`@earendil-works/pi-durable`) is a separate library for agents that keep running on their own.
+Since 1 October, "pi harness" can mean two things from the same team. The first is the Pi coding harness: the Pi coding agent (`@earendil-works/pi-coding-agent`, the `pi` command), which Earendil describes as a harness built for one person at a terminal. Earendil's [Pi Durable announcement](https://earendil.com/posts/pi-durable/) describes what happens when the `pi` process dies: "you look at what happened and tell it to continue." Pi Durable (`@earendil-works/pi-durable`) is a separate library for agents that keep running on their own.
 
 In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi's model layer, `pi-ai`, but it isn't the `pi` command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node, which doesn't run inside a Cloudflare Worker.
 
-## Three ways to run Pi unattended, one test
+## Killing three unattended Pi setups mid-task
 
 In the table, a Durable Object is a Cloudflare Worker instance with its own storage, addressed by name.
 
@@ -51,7 +51,7 @@ Uninterrupted, a run took about 50 seconds. The model was `deepseek-flash` throu
 
 The table also shows that this isn't a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell or filesystem. I compared one thing: what is left after a hard kill, and who has to act.
 
-## How to run Pi agent headless with `pi --print`
+## Running Pi headless with `pi --print`
 
 Headless Pi is `pi --print` (short form `-p`): it runs the prompt, prints the final answer and exits with status 0, or 1 on an error such as a model the provider rejects. Add `--mode json` to get every event as a JSON line instead, but then check the events for errors: with the same rejected model, JSON mode exited 0 and left `"stopReason":"error"` in its output. The command I used, with `--no-context-files` to skip `AGENTS.md` files and the other two flags to skip every discovered extension and skill, mine and the repository's:
 
