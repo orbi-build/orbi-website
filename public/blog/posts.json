@@ -18,7 +18,7 @@
   {
     "slug": "pi-agent-harness",
     "title": "Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9",
-    "summary": "I ran the Pi agent harness three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.",
+    "summary": "I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.",
     "zhSlug": "pi-agent-harness",
     "zhTitle": "Pi agent harness 三种跑法：kill -9 之后谁能接上",
     "related": []
