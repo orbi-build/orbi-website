@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Claude Code sandbox: what each setup blocks (English):
+  https://orbi.build/blog/claude-code-sandbox/
+- Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界 (Chinese):
+  https://orbi.build/zh/blog/claude-code-sandbox/
 - Ralph loop's code passed 28 tests, then failed review (English):
   https://orbi.build/blog/ralph-loop-claude-code/
 - Ralph loop 跑完之后，谁来评审和合并 (Chinese):
