@@ -91,10 +91,10 @@
     .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
     .post-body li { margin: 6px 0; }
     .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; overflow-wrap: anywhere; }
-    .post-body code.post-code--spaced { white-space: normal; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
     .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
-    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
     .post-table-scroll { overflow-x: auto; }
     .post-body table { width: 100%; border-collapse: collapse; }
     .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
@@ -224,7 +224,7 @@
 <li><code class="post-code--spaced">--output-format json</code> 让脚本拿到结果、会话 ID 和花费；换成 <code class="post-code--single">stream-json</code>（要同时加 <code class="post-code--single">--verbose</code>），会在运行过程中一条条输出事件。</li>
 <li><code class="post-code--spaced">--resume &lt;session_id&gt;</code> 接着之前某一次运行往下跑，ID 从那次运行的 JSON 里拿；<code class="post-code--single">--continue</code> 接最近一次。</li>
 <li><code class="post-code--single">--max-budget-usd</code> 设花费上限，到了就停。这个花费是 Claude Code 自己估的，不是账单，实际还可能超过上限，所以要留点余量。</li>
-<li><code class="post-code--single">--dangerously-skip-permissions</code> 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查。只有少数几类受保护的操作仍要人批准，这些在 headless 下会被拒。官方说只能在容器或虚拟机里、用非 root 用户跑。在自己的机器上跑，<code class="post-code--single">auto</code> 或者 <code class="post-code--single">dontAsk</code>（本该弹确认的操作一律拒绝）加白名单更稳妥。</li>
+<li><code class="post-code--single">--dangerously-skip-permissions</code> 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查。只有少数几类受保护的操作仍要人批准，这些在 headless 下会被拒。官方说只能在容器或虚拟机里、用非 root 用户跑；哪几种配置真能拦住，我在<a href="/zh/blog/claude-code-sandbox/">《Claude Code 沙箱实测》</a>里测过。在自己的机器上跑，<code class="post-code--single">auto</code> 或者 <code class="post-code--single">dontAsk</code>（本该弹确认的操作一律拒绝）加白名单更稳妥。</li>
 <li><code class="post-code--single">--bare</code> 跳过机器和仓库里配置的 hooks、插件、MCP server 和 CLAUDE.md。不加的话，在一个你从没信任过的仓库里跑 headless，也会执行这个仓库自带的 hooks，而且不会弹信任对话框。<code class="post-code--single">--bare</code> 不认订阅登录，要用 API key。</li>
 </ul>
 <h3 id="headless-跑完会返回什么">headless 跑完会返回什么</h3>
@@ -315,7 +315,7 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <p>PR #523 的测试满足了原 Issue 的要求，只是原 Issue 没提单词断行。所以每次从 beta 推到生产之前，我都会在手机和电脑上把改过的页面打开看一遍。</p>
 <h2 id="不想自己搭自动化工作流的话">不想自己搭自动化工作流的话</h2>
 <p>这些都能围着 <code class="post-code--spaced">claude -p</code> 自己搭。Orbi 自己这一套写在 <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow 文档</a>里，有八百来行。</p>
-<p>也可以直接用 Orbi。它的 agent <a href="https://github.com/earendil-works/pi">Pi</a> 和 runner 都是开源的，runner 可以<a href="https://github.com/orbi-build/orbi">自托管</a>。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比能用缓存时高。改用 Orbi，放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>里写了两者各自做到哪一步。</p>
+<p>也可以直接用 Orbi。它的 agent <a href="https://github.com/earendil-works/pi">Pi</a> 和 runner 都是开源的，runner 可以<a href="https://github.com/orbi-build/orbi">自托管</a>。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比能用缓存时高。Orbi 跑的是 Pi，用不到 Claude Code 的用量额度；不过截至 2026 年 10 月，Max 和 Team 订阅每月附带一笔 <a href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers">API 额度</a>（Max 5x 100 美元、Max 20x 200 美元、Team 全队合计最多 500 美元）。领取额度、关联一个 Claude Console 组织之后，把这个组织的 key 接到 Orbi，花的就是这笔额度。<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>里写了两者各自做到哪一步。</p>
 <p>不想维护机器，可以<a href="https://orbi.build/zh/cloud/?ref=blog-headless">把仓库接入 Orbi Cloud</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>

@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Claude Code sandbox: what each setup blocks</title>
+      <link>https://orbi.build/blog/claude-code-sandbox/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/claude-code-sandbox/</guid>
+      <pubDate>Sun, 11 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.</description>
+    </item>
+    <item>
       <title>Ralph loop's code passed 28 tests, then failed review</title>
       <link>https://orbi.build/blog/ralph-loop-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ralph-loop-claude-code/</guid>

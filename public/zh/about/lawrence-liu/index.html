@@ -90,6 +90,11 @@
     <section class="compare-section shell" aria-label="Lawrence Liu 的文章">
       <div class="post-list">
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/claude-code-sandbox/">Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-11">2026-10-11</time></p>
+      <p class="post-entry-summary">开着 --dangerously-skip-permissions 实测 Claude Code 沙箱：只开沙箱、其余默认时，四项越界最终都成功了。加固设置配禁止规则，或者用 sandbox runtime（srt）包住整个进程，这次四项都拦住了；读密钥和联网只用 Bash 测过。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/ralph-loop-claude-code/">Ralph loop 跑完之后，谁来评审和合并</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-10">2026-10-10</time></p>
       <p class="post-entry-summary">Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。</p>

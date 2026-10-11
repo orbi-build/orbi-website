@@ -33,7 +33,7 @@ claude -p "修复 tests/test_auth.py 里失败的测试" \
 - `--output-format json` 让脚本拿到结果、会话 ID 和花费；换成 `stream-json`（要同时加 `--verbose`），会在运行过程中一条条输出事件。
 - `--resume <session_id>` 接着之前某一次运行往下跑，ID 从那次运行的 JSON 里拿；`--continue` 接最近一次。
 - `--max-budget-usd` 设花费上限，到了就停。这个花费是 Claude Code 自己估的，不是账单，实际还可能超过上限，所以要留点余量。
-- `--dangerously-skip-permissions` 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查。只有少数几类受保护的操作仍要人批准，这些在 headless 下会被拒。官方说只能在容器或虚拟机里、用非 root 用户跑。在自己的机器上跑，`auto` 或者 `dontAsk`（本该弹确认的操作一律拒绝）加白名单更稳妥。
+- `--dangerously-skip-permissions` 是让 Claude Code 不用确认就执行的最直接办法。它跳过常规的权限提示和检查。只有少数几类受保护的操作仍要人批准，这些在 headless 下会被拒。官方说只能在容器或虚拟机里、用非 root 用户跑；哪几种配置真能拦住，我在[《Claude Code 沙箱实测》](/zh/blog/claude-code-sandbox/)里测过。在自己的机器上跑，`auto` 或者 `dontAsk`（本该弹确认的操作一律拒绝）加白名单更稳妥。
 - `--bare` 跳过机器和仓库里配置的 hooks、插件、MCP server 和 CLAUDE.md。不加的话，在一个你从没信任过的仓库里跑 headless，也会执行这个仓库自带的 hooks，而且不会弹信任对话框。`--bare` 不认订阅登录，要用 API key。
 
 ### headless 跑完会返回什么
@@ -186,7 +186,7 @@ PR #523 的测试满足了原 Issue 的要求，只是原 Issue 没提单词断�
 
 这些都能围着 `claude -p` 自己搭。Orbi 自己这一套写在 [workflow 文档](https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx)里，有八百来行。
 
-也可以直接用 Orbi。它的 agent [Pi](https://github.com/earendil-works/pi) 和 runner 都是开源的，runner 可以[自托管](https://github.com/orbi-build/orbi)。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比能用缓存时高。改用 Orbi，放弃的是 Claude Code 这个工具，以及用 Claude Pro/Max 订阅额度来跑。[Orbi 与 Claude Code 对比](/zh/compare/claude-code/)里写了两者各自做到哪一步。
+也可以直接用 Orbi。它的 agent [Pi](https://github.com/earendil-works/pi) 和 runner 都是开源的，runner 可以[自托管](https://github.com/orbi-build/orbi)。Cloud 默认用 DeepSeek，额度含在套餐里；也可以自带 key。自带 key 时可选的服务商里有 Anthropic，走的是它的 OpenAI 兼容接口；Anthropic 把这个接口定位为测试用，而且不支持 prompt caching，token 花费会比能用缓存时高。Orbi 跑的是 Pi，用不到 Claude Code 的用量额度；不过截至 2026 年 10 月，Max 和 Team 订阅每月附带一笔 [API 额度](https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers)（Max 5x 100 美元、Max 20x 200 美元、Team 全队合计最多 500 美元）。领取额度、关联一个 Claude Console 组织之后，把这个组织的 key 接到 Orbi，花的就是这笔额度。[Orbi 与 Claude Code 对比](/zh/compare/claude-code/)里写了两者各自做到哪一步。
 
 不想维护机器，可以[把仓库接入 Orbi Cloud](https://orbi.build/zh/cloud/?ref=blog-headless)。
 

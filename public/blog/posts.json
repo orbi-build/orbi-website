@@ -1,5 +1,13 @@
 [
   {
+    "slug": "claude-code-sandbox",
+    "title": "Claude Code sandbox: what each setup blocks",
+    "summary": "Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.",
+    "zhSlug": "claude-code-sandbox",
+    "zhTitle": "Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界",
+    "related": []
+  },
+  {
     "slug": "ralph-loop-claude-code",
     "title": "Ralph loop's code passed 28 tests, then failed review",
     "summary": "A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.",
