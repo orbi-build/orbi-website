@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器 | Orbi</title>
+  <meta name="description" content="有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/long-polling-new-user-wait/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器">
+  <meta property="og:description" content="有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/long-polling-new-user-wait/">
+  <meta property="og:image" content="https://orbi.build/img/blog-longpoll-card.png">
+  <meta property="og:image:alt" content="新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器">
+  <meta property="article:published_time" content="2026-10-12">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器","datePublished":"2026-10-12","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/long-polling-new-user-wait/","image":"https://orbi.build/img/blog-longpoll-card.png","inLanguage":"zh-CN","description":"有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。","url":"https://orbi.build/zh/blog/long-polling-new-user-wait/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"新用户等多久：改前约 30 秒，改后约 12 秒｜Orbi Cloud 长轮询实录","description":"左边旧版本，主机每分钟才查一次新用户；右边是同一批 31 张票之后的版本，长轮询消掉排队，准备环境和页面刷新也一起提速。同一个全新仓库，测试服实录，按真实秒数播放：约 30 秒对约 12 秒。","thumbnailUrl":"https://orbi.build/img/blog-longpoll-video-zh.jpg","uploadDate":"2026-10-12","duration":"PT39S","embedUrl":"https://www.youtube.com/embed/bN8amYpOo8c"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 免费开始</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-12">2026-10-12</time></p>
+
+          <p class="hero-lede">有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</a></li>
+          <li><a class="post-toc-link" href="#新用户排在一个刷新任务后面">新用户排在一个刷新任务后面</a></li>
+          <li><a class="post-toc-link" href="#从-问得更勤-到长轮询">从「问得更勤」到长轮询</a></li>
+          <li><a class="post-toc-link" href="#一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</a></li>
+          <li><a class="post-toc-link" href="#审查早就提醒过的-bug">审查早就提醒过的 bug</a></li>
+          <li><a class="post-toc-link" href="#剩下的时间也一点点抠出来">剩下的时间也一点点抠出来</a></li>
+          <li><a class="post-toc-link" href="#等的那十几秒-给人看什么">等的那十几秒，给人看什么</a></li>
+          <li><a class="post-toc-link" href="#结果">结果</a></li>
+          <li><a class="post-toc-link" href="#活是谁干的">活是谁干的</a></li>
+          <li><a class="post-toc-link" href="#如果你的用户也在等">如果你的用户也在等</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 11 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</a></li>
+          <li><a class="post-toc-link" href="#新用户排在一个刷新任务后面">新用户排在一个刷新任务后面</a></li>
+          <li><a class="post-toc-link" href="#从-问得更勤-到长轮询">从「问得更勤」到长轮询</a></li>
+          <li><a class="post-toc-link" href="#一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</a></li>
+          <li><a class="post-toc-link" href="#审查早就提醒过的-bug">审查早就提醒过的 bug</a></li>
+          <li><a class="post-toc-link" href="#剩下的时间也一点点抠出来">剩下的时间也一点点抠出来</a></li>
+          <li><a class="post-toc-link" href="#等的那十几秒-给人看什么">等的那十几秒，给人看什么</a></li>
+          <li><a class="post-toc-link" href="#结果">结果</a></li>
+          <li><a class="post-toc-link" href="#活是谁干的">活是谁干的</a></li>
+          <li><a class="post-toc-link" href="#如果你的用户也在等">如果你的用户也在等</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>有个新用户在 Orbi Cloud 上连好了仓库，页面显示「正在准备工作环境」。他等了一会儿，走了。</p>
+<p>他走的时候，环境其实已经准备好了。页面每 10 秒才刷新一次，还没来得及告诉他。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>那天夜里我开始查这件事。我做规划用的 AI 助手 Claude Code 告诉我，准备环境「要 5 分钟左右」。我回它：5 分钟，一个操作系统都装好了。</p>
+<p>查下来，这一步一般要一分钟左右，慢的时候两分多钟。一夜之后，测试环境上变成了 10 秒左右。改动拆成 31 张票，全是 Orbi 自己写、自己评审、自己合并的（Orbi 是我在做的产品，agent 时代的软件黑灯工厂：从 Issue 到发版，不用人守着）。中间还撞上了一个 bug：审查早就点过名，我们觉得没必要修，当天晚上就撞上了。</p>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/bN8amYpOo8c" title="新用户等多久：改前约 30 秒，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>左边旧版本，右边是同一批 31 张票之后的版本，同一个新仓库在测试服上实录，按真实秒数播放：从点「连接仓库」到能写第一个需求，约 30 秒对约 12 秒。旧版这一遍运气好，只排了 2 秒队，差出来的主要是准备环境的时间；生产上以前整段要一两分钟。</figcaption></figure><p>后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。</p>
+<h2 id="先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</h2>
+<p>我们从数据库里拉出时间戳，把这一分钟拆成几段：</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>环节</th>
+<th>大概要多久</th>
+<th>谁说了算</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="环节">请求排队，等主机来接</td>
+<td data-label="大概要多久">平均二十多秒，最慢接近两分钟</td>
+<td data-label="谁说了算">主机上每分钟跑一次的定时任务</td>
+</tr>
+<tr>
+<td data-label="环节">主机准备沙箱</td>
+<td data-label="大概要多久">半分钟到一分钟</td>
+<td data-label="谁说了算">开通脚本</td>
+</tr>
+<tr>
+<td data-label="环节">页面发现已经好了</td>
+<td data-label="大概要多久">最多 10 秒</td>
+<td data-label="谁说了算">状态页每 10 秒刷新一次</td>
+</tr>
+</tbody></table></div>
+<p>Claude Code 把两件事混在了一起：准备环境大约一分钟，看到 Orbi 给仓库的建议要三分多钟，「5 分钟」说的其实是后者。这次先压前一件。</p>
+<p>那天还定了一条规矩：用户在操作的时间，比如挑仓库，不算等待。要压的，是他什么都做不了、只能盯着屏幕的那段。</p>
+<h2 id="新用户排在一个刷新任务后面">新用户排在一个刷新任务后面</h2>
+<p>主机上有个每分钟跑一次的任务。它先给所有老用户的沙箱刷新一遍凭据（GitHub 的令牌一小时就过期），刷完了，才去看有没有新用户在等。</p>
+<p>一轮刷新要一分半钟左右，一轮接着一轮。新用户的请求要是刚好错过了这一轮的检查，就得等这一轮跑完，再等下一轮刷新完，才轮到他。用户越多，刷新越久，新用户等得越久。</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-arch-zh.svg" alt="改前：一个任务一轮接一轮地跑，每轮先给所有老沙箱刷新约 90 秒，再查新请求、开通。新请求刚好在第 1 轮的检查之后进来，就要干等完第 2 轮的整轮刷新，才会被看到。改后：两条路同时在跑，每分钟一轮照旧管刷新和重试，快路径挂在 Cloud 上长轮询，新请求 1 到 2 秒就被接走。" width="720" height="380">
+<figcaption>改前，新用户排在全量刷新后面；改后，新用户走单独的快路径。</figcaption>
+</figure><p>最顺手的想法是把每分钟改成每 10 秒。我们差点就这么改了。读了脚本才发现，这么改一点用都没有：刷新本来就一轮接一轮在跑，新用户永远排在刷新后面。要改的是先后顺序。</p>
+<h2 id="从-问得更勤-到长轮询">从「问得更勤」到长轮询</h2>
+<p>先想到的是把「接新用户」单独拆出来，每 2 秒问一次 Cloud。能用，但还是在轮询。我问了一句：为什么不做成基于消息的，来了就知道？</p>
+<p>把请求从 Cloud 送到主机，有三种做法：</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>做法</th>
+<th>怎么做</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="做法">短轮询，问得更勤</td>
+<td data-label="怎么做">每 2 秒问一次</td>
+<td data-label="结论">简单，但总有延迟，没活也一直问</td>
+</tr>
+<tr>
+<td data-label="做法">长轮询</td>
+<td data-label="怎么做">主机发一个请求，Cloud 先不回答，有新活了立刻回，20 秒没有就回个空</td>
+<td data-label="结论">一秒左右就能接到，主机还是只往外连</td>
+</tr>
+<tr>
+<td data-label="做法">推送</td>
+<td data-label="怎么做">Cloud 主动连主机</td>
+<td data-label="结论">主机得开一个对外的端口，我们的设计不允许</td>
+</tr>
+</tbody></table></div>
+<p>选了长轮询。GitHub 的自托管执行器也是这么干的：执行器<a href="https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners">向 GitHub 挂一个 50 秒的长轮询</a>，超时就再挂一个，外面不需要能连进来。我们的主机处境一样：能往外连，外面连不进来。</p>
+<p>Cloud 这边加了一个接口：请求最多挂 20 秒，每秒看一次有没有新用户。它只接新来的请求，失败了要重试的老请求还走原来每分钟那一轮，不然一次小故障就会让同一个请求几秒内把重试机会用光。这一条是动手写代码之前，独立审查查出来的。</p>
+<h2 id="一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</h2>
+<p>第一版设计是在主机上新写一个常驻的 Python 程序，循环挂长轮询、接请求、再去调开通脚本。部署脚本得学会第一次启用它、代码一更新就重启它，它还要配一套自己的测试。</p>
+<p>Orbi 已经按这一版开工了，我问：能不能再薄一点？</p>
+<p>回头看现有的开通脚本，发现根本不用新程序。它可以同时跑两份；刷新是一整段，可以整段跳过；新接口返回的东西和原来的清单一模一样。于是只给脚本加了一个开关 <code class="post-code--single">--claim-only</code>：跳过刷新，改去挂长轮询，接到请求后，开通的代码全部照旧。跑一轮就退出。</p>
+<p>循环交给 systemd。完整的服务文件就这么几行：</p>
+<pre><code class="language-ini">[Unit]
+Description=Orbi Cloud provisioning fast claim (long-poll)
+# 这个服务本来就是要不停重启的，关掉默认的启动限流
+# （10 秒内启动 5 次就停掉），否则 Cloud 一出错它就被停了
+StartLimitIntervalSec=0
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/orbi-cloud/provisioner.env
+ExecStart=/opt/orbi-cloud/host-provisioner/provisioner.sh --claim-only
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>脚本每跑完一轮就退出，systemd 隔 1 秒再把它拉起来。每一轮都从磁盘重新读脚本，所以发新版本时不用写任何「重启服务」的逻辑，下一轮自然就是新代码。前提是部署时先写临时文件、再改名换上去，别直接覆盖一个正在跑的脚本。</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-loop-zh.svg" alt="主机上 systemd 以 Restart=always、RestartSec=1 运行 provisioner.sh --claim-only。每一轮向 Cloud 发请求，Cloud 每秒看一次、最多挂 20 秒、只交出新请求；主机接下请求、准备好环境后退出，1 秒后 systemd 开始下一轮。每分钟一轮的任务照旧刷新凭据、处理重试。" width="720" height="380">
+<figcaption>快路径挂在 Cloud 上等；每分钟那一轮继续管刷新和重试。</figcaption>
+</figure><p>第一版那个新程序、它的重启逻辑和那套单独的测试，最后都没写。</p>
+<h2 id="审查早就提醒过的-bug">审查早就提醒过的 bug</h2>
+<p>接新用户从每分钟那一轮里拆出来以后，就有两样东西同时在跑。审查在设计阶段就指出了两处会撞车的地方。</p>
+<p>一处我们修了。另一处是这样的：每个用户只有一把模型密钥，签一把新的，旧的就作废。接新用户时会签一把交给开通脚本，每分钟那一轮也会给每个用户各签一把。两边要是撞在一起，开通脚本手里的密钥刚拿到就作废了，新用户第一次连仓库就看到「工作环境准备失败」。</p>
+<p>审查给的修法很简单：刷新时跳过正在开通的用户。Claude Code 觉得现在接单只要一秒，撞不上，就没写进票里。我也没拦。</p>
+<p>那天晚上，长轮询在测试环境上线。前四轮新用户测试都过了，第五轮就撞上了，一模一样。自动重试一分多钟后救了回来。我们开了最高优先级的票，Orbi 半小时后合并了修复。</p>
+<p>记下的规矩：审查点名的竞态，要么把修法写进票里，要么写一个测试证明它撞不上。「现在应该够快了」只是猜。</p>
+<h2 id="剩下的时间也一点点抠出来">剩下的时间也一点点抠出来</h2>
+<p>长轮询消掉了排队，之后每一轮，请求一两秒就被接走。同一批票还抠掉了准备环境本身的时间：Orbi 的程序从主机上备好的目录直接复制，不再每次下载；用户的仓库在沙箱还在建的时候就开始下载；页面每 2 秒原地更新，不再每 10 秒整页刷新。</p>
+<p>下面是测试环境上的一轮，从点「连接仓库」开始，第 12 秒环境就绪，第 26 秒出现「Orbi 看懂了你的仓库」：</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-timeline-zh.svg" alt="改前：生产环境请求平均排队 22 秒，准备平均 37 秒，页面最多再过 10 秒才发现；有一次是 79 秒，上线前最后一次是 139 秒。改后（测试环境，从点击算）：第 4 秒建出请求，第 5 秒被接走，第 12 秒环境就绪，第 14.4 秒页面不再显示「准备中」。" width="720" height="330">
+<figcaption>改前是生产环境上的平均值和两次真实连接；改后是测试环境上的一轮。</figcaption>
+</figure><h2 id="等的那十几秒-给人看什么">等的那十几秒，给人看什么</h2>
+<p>十几秒还是比人能专注的 10 秒长一点（Nielsen Norman Group 的<a href="https://www.nngroup.com/articles/response-times-3-important-limits/">经典说法</a>）。所以页面上不放转圈，放真实的进度：建好独立的工作环境、拉取你的代码、安装 Orbi、开始读你的仓库，每完成一步打一个勾，写上用了几秒。</p>
+<p>这么做有研究撑着。哈佛商学院 2011 年有个 <a href="https://www.hbs.edu/faculty/Pages/item.aspx?num=40158">Labor Illusion 实验</a>：两个服务给的结果一模一样，一个立刻出结果，一个要等，但一直把自己在干什么展示给你看。等 60 秒的那个，有 63% 的人选它；如果只让人干等，选它的只剩 23%。</p>
+<p>同一篇论文还有一个反面：过程展示得很卖力，结果却很差，评价最低。我们正好踩过：中文页面上，「Orbi 看懂了你的仓库」那段摘要是英文写的。现在 Orbi 会按页面语言来写。</p>
+<h2 id="结果">结果</h2>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th></th>
+<th>以前</th>
+<th>现在（测试环境）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求排队等主机来接</td>
+<td data-label="以前">平均二十多秒，最慢接近两分钟</td>
+<td data-label="现在（测试环境）">一两秒</td>
+</tr>
+<tr>
+<td>环境准备好</td>
+<td data-label="以前">一般一分钟左右，最慢两分多钟</td>
+<td data-label="现在（测试环境）">10 秒左右</td>
+</tr>
+<tr>
+<td>看到「Orbi 看懂了你的仓库」</td>
+<td data-label="以前">没有这一步</td>
+<td data-label="现在（测试环境）">25 秒左右</td>
+</tr>
+<tr>
+<td>看到 3 条建议</td>
+<td data-label="以前">3 分多钟</td>
+<td data-label="现在（测试环境）">2 分钟左右</td>
+</tr>
+</tbody></table></div>
+<p>新代码已经上了生产，生产上的数字还要等真实用户来了再看。</p>
+<h2 id="活是谁干的">活是谁干的</h2>
+<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 接一张打了 <code class="post-code--single">ai-ready</code> 标签的 GitHub Issue，用它的编程 agent Pi 写代码，另开一个会话评审，合并，再发版。这次的 31 张票都是这么走完的。Claude Code 和我一起写票，每个改动合并前它都读一遍。</p>
+<p>我做的事情就三件：判断什么重要；问了两个问题，「为什么不基于消息？」和「能不能再薄一点？」；还有，放过了那个 bug。</p>
+<h2 id="如果你的用户也在等">如果你的用户也在等</h2>
+<ol>
+<li>先把等待拆成几段，搞清楚每段归谁管，再动手。</li>
+<li>用户在操作的时间不算等待，只压他只能干看的时间。</li>
+<li>想调快间隔之前，先看看前面挡着它的是什么。</li>
+<li>机器不能被外面连进来，就用长轮询。快路径只接新活，重试留给慢路径。</li>
+<li>让 systemd 当循环：<code class="post-code--single">Restart=always</code>、<code class="post-code--single">RestartSec=1</code>、<code class="post-code--single">StartLimitIntervalSec=0</code>，发版时用改名替换文件。</li>
+<li>审查点名的竞态，没有测试证明之前，都当成一定会发生。</li>
+<li>等的时候给人看真实进度；结果看起来不对，先修好再放上屏幕。</li>
+</ol>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>继续阅读：Orbi 怎么把<a href="/zh/guides/issue-to-release/">一张 Issue 做到发版</a>、<a href="/zh/blog/write-a-request/">Orbi Cloud 里怎么写需求</a>、<a href="/zh/compare/claude-code/">和 Claude Code 的对比</a>，以及 <a href="/zh/cloud/">Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/long-polling-new-user-wait/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

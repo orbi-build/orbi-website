@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>New users waited 2 min; long polling made it 10 s</title>
+      <link>https://orbi.build/blog/long-polling-new-user-wait/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/long-polling-new-user-wait/</guid>
+      <pubDate>Mon, 12 Oct 2026 00:00:00 GMT</pubDate>
+      <description>One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.</description>
+    </item>
+    <item>
       <title>Claude Code sandbox: what each setup blocks</title>
       <link>https://orbi.build/blog/claude-code-sandbox/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-sandbox/</guid>

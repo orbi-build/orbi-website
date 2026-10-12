@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- New users waited 2 min; long polling made it 10 s (English):
+  https://orbi.build/blog/long-polling-new-user-wait/
+- 新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器 (Chinese):
+  https://orbi.build/zh/blog/long-polling-new-user-wait/
 - Claude Code sandbox: what each setup blocks (English):
   https://orbi.build/blog/claude-code-sandbox/
 - Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界 (Chinese):
