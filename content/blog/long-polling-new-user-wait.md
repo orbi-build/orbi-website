@@ -38,6 +38,11 @@ A job on the host ran once a minute. It first refreshed credentials for every ex
 
 One refresh took about a minute and a half, and the runs went back to back. A new request that just missed one run's check had to wait for the rest of that run and then the next run's whole refresh. The more users we had, the longer the refresh, and the longer every new user waited.
 
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-arch.svg" alt="Before: one job runs back to back; each run refreshes all existing sandboxes for about 90 seconds, then checks for new requests. A request that arrives just after run 1's check waits through all of run 2's refresh before anyone sees it. After: two paths run side by side; the once-a-minute job still handles refreshes and retries, and a fast path long-polls Cloud and picks up new requests in one to two seconds." width="720" height="380">
+<figcaption>Before, new users queued behind a full refresh. After, they take a separate fast path.</figcaption>
+</figure>
+
 The obvious move was to run the job every 10 seconds instead of every minute. We nearly did. Reading the script showed it would change nothing: the refresh was already running back to back, and new users would still be stuck behind it. The order had to change.
 
 ## From "ask more often" to long polling

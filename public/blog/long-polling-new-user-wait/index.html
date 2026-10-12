@@ -230,7 +230,10 @@
 <h2 id="new-users-were-stuck-behind-a-refresh-job">New users were stuck behind a refresh job</h2>
 <p>A job on the host ran once a minute. It first refreshed credentials for every existing user&#39;s sandbox (GitHub tokens expire after an hour), and only then looked for new users.</p>
 <p>One refresh took about a minute and a half, and the runs went back to back. A new request that just missed one run&#39;s check had to wait for the rest of that run and then the next run&#39;s whole refresh. The more users we had, the longer the refresh, and the longer every new user waited.</p>
-<p>The obvious move was to run the job every 10 seconds instead of every minute. We nearly did. Reading the script showed it would change nothing: the refresh was already running back to back, and new users would still be stuck behind it. The order had to change.</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-arch.svg" alt="Before: one job runs back to back; each run refreshes all existing sandboxes for about 90 seconds, then checks for new requests. A request that arrives just after run 1's check waits through all of run 2's refresh before anyone sees it. After: two paths run side by side; the once-a-minute job still handles refreshes and retries, and a fast path long-polls Cloud and picks up new requests in one to two seconds." width="720" height="380">
+<figcaption>Before, new users queued behind a full refresh. After, they take a separate fast path.</figcaption>
+</figure><p>The obvious move was to run the job every 10 seconds instead of every minute. We nearly did. Reading the script showed it would change nothing: the refresh was already running back to back, and new users would still be stuck behind it. The order had to change.</p>
 <h2 id="from-ask-more-often-to-long-polling">From &quot;ask more often&quot; to long polling</h2>
 <p>The first idea was to pull &quot;pick up new users&quot; out into its own job that asked Cloud every 2 seconds. That works, but it&#39;s still polling. I asked: why isn&#39;t this message-based, so the host knows the moment something arrives?</p>
 <p>There are three ways to get a request from Cloud to the host:</p>
