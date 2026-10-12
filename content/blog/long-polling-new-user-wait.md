@@ -1,17 +1,17 @@
 ---
-title: New users waited 2 min; long polling made it 10 s
+title: New users waited 1–2 min; long polling made it 10 s
 date: 2026-10-12
 summary: One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.
 lang: en
 author: Lawrence Liu
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
-video_name: How long a new user waits: ~30 s before, ~12 s after | Orbi Cloud long polling
-video_description: Left, the old version where the host checked for new users once a minute; right, the version after the same 31 tickets, where long polling removed the queue and setup and page refresh got faster too. Same fresh repository on our test server, played back in real time, about 30 s versus about 12 s.
+video_name: How long new users wait after connecting a repo: 1–2 min before, ~12 s after | Orbi Cloud
+video_description: First the before, from production records: after connecting a repository, new users usually waited about a minute and over two on a bad day, looking at a page that only said “a few minutes”. Then the after, recorded on our test server in real time: about 12 seconds until the workspace is ready for a first task.
 video_thumbnail: /img/blog-longpoll-video-en.jpg
 video_upload_date: 2026-10-12
-video_duration: PT39S
-video_embed_url: https://www.youtube.com/embed/eGTSUMYc6jk
+video_duration: PT43S
+video_embed_url: https://www.youtube.com/embed/YpaOJxtK7HA
 ---
 
 A new user connected a repository to Orbi Cloud. The page said "preparing your workspace". They waited a while, then left.
@@ -22,7 +22,7 @@ I started digging that night. Claude Code, the AI assistant I plan work with, to
 
 It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets; Orbi wrote the code for every one, reviewed it and merged it (Orbi is what I'm building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we'd decided wasn't worth fixing. It bit us the same evening.
 
-<figure class="post-media"><iframe src="https://www.youtube.com/embed/eGTSUMYc6jk" title="How long a new user waits: ~30 s before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Old version on the left; on the right, the version after the same 31 tickets. Same fresh repository on our test server, played back in real time: from clicking “Connect repository” to being able to write a first request, about 30 seconds versus about 12. The old run got lucky and queued for only 2 seconds, so most of the gap is setup time; in production the whole wait used to be a minute or two.</figcaption></figure>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/YpaOJxtK7HA" title="How long new users wait after connecting a repo: 1–2 min before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Both are timed from clicking “Connect repository” until the workspace is ready and the user can hand Orbi a first task. Before, from production records: about a minute on a normal day and over two minutes on a bad one, on a page that only said “a few minutes”. After, recorded on our test server and played back in real time: about 12 seconds.</figcaption></figure>
 
 Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.
 

@@ -1,17 +1,17 @@
 ---
-title: 新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器
+title: 新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器
 date: 2026-10-12
 summary: 有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
-video_name: 新用户等多久：改前约 30 秒，改后约 12 秒｜Orbi Cloud 长轮询实录
-video_description: 左边旧版本，主机每分钟才查一次新用户；右边是同一批 31 张票之后的版本，长轮询消掉排队，准备环境和页面刷新也一起提速。同一个全新仓库，测试服实录，按真实秒数播放：约 30 秒对约 12 秒。
+video_name: 新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒｜Orbi Cloud
+video_description: 开头是改前：生产上的真实记录，新用户连上仓库后一般要等 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。后面是改后在测试服上的实录，按真实秒数播放：约 12 秒就能写第一个需求。
 video_thumbnail: /img/blog-longpoll-video-zh.jpg
 video_upload_date: 2026-10-12
-video_duration: PT39S
-video_embed_url: https://www.youtube.com/embed/bN8amYpOo8c
+video_duration: PT43S
+video_embed_url: https://www.youtube.com/embed/JLmbpUKHCGY
 ---
 
 有个新用户在 Orbi Cloud 上连好了仓库，页面显示「正在准备工作环境」。他等了一会儿，走了。
@@ -22,7 +22,7 @@ video_embed_url: https://www.youtube.com/embed/bN8amYpOo8c
 
 查下来，这一步一般要一分钟左右，慢的时候两分多钟。一夜之后，测试环境上变成了 10 秒左右。改动拆成 31 张票，全是 Orbi 自己写、自己评审、自己合并的（Orbi 是我在做的产品，agent 时代的软件黑灯工厂：从 Issue 到发版，不用人守着）。中间还撞上了一个 bug：审查早就点过名，我们觉得没必要修，当天晚上就撞上了。
 
-<figure class="post-media"><iframe src="https://www.youtube.com/embed/bN8amYpOo8c" title="新用户等多久：改前约 30 秒，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>左边旧版本，右边是同一批 31 张票之后的版本，同一个新仓库在测试服上实录，按真实秒数播放：从点「连接仓库」到能写第一个需求，约 30 秒对约 12 秒。旧版这一遍运气好，只排了 2 秒队，差出来的主要是准备环境的时间；生产上以前整段要一两分钟。</figcaption></figure>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/JLmbpUKHCGY" title="新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>都从点「连接仓库」算起，算到环境就绪、能写第一个需求。改前是生产上的真实记录：一般 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。改后是测试环境上的实录，按真实秒数播放：约 12 秒。</figcaption></figure>
 
 后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。
 
@@ -69,7 +69,7 @@ Claude Code 把两件事混在了一起：准备环境大约一分钟，看到 O
 
 Cloud 这边加了一个接口：请求最多挂 20 秒，每秒看一次有没有新用户。它只接新来的请求，失败了要重试的老请求还走原来每分钟那一轮，不然一次小故障就会让同一个请求几秒内把重试机会用光。这一条是动手写代码之前，独立审查查出来的。
 
-## 一句「能不能再薄一点」，删掉了一个程序
+## 给开通脚本加一个开关，不再新写程序
 
 第一版设计是在主机上新写一个常驻的 Python 程序，循环挂长轮询、接请求、再去调开通脚本。部署脚本得学会第一次启用它、代码一更新就重启它，它还要配一套自己的测试。
 
