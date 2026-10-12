@@ -175,6 +175,48 @@ describe("Worker request helpers", () => {
     ]);
   });
 
+  // iPhone Safari only plays media from servers that answer byte-range
+  // requests; Workers static assets answer a Range with the whole file (200).
+  describe("byte ranges for video assets", () => {
+    const bytes = Uint8Array.from({ length: 1000 }, (_, index) => index % 256);
+    const assets = { fetch: async () => new Response(bytes, { status: 200, headers: { "Content-Type": "video/mp4" } }) };
+    const get = (path, range) => fetchAsset(new Request(`https://orbi.build${path}`, range === undefined ? {} : { headers: { Range: range } }), assets);
+
+    it("answers a closed range with 206 and only those bytes", async () => {
+      const response = await get("/howto/connect.zh.mp4", "bytes=0-99");
+      expect(response.status).toBe(206);
+      expect(response.headers.get("Content-Range")).toBe("bytes 0-99/1000");
+      expect(response.headers.get("Accept-Ranges")).toBe("bytes");
+      expect(response.headers.get("Content-Type")).toBe("video/mp4");
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes.slice(0, 100));
+    });
+
+    it("answers open-ended and suffix ranges", async () => {
+      const open = await get("/video/delivery-loop.mp4", "bytes=990-");
+      expect(open.status).toBe(206);
+      expect(open.headers.get("Content-Range")).toBe("bytes 990-999/1000");
+      const suffix = await get("/video/delivery-loop.mp4", "bytes=-10");
+      expect(suffix.headers.get("Content-Range")).toBe("bytes 990-999/1000");
+      expect(new Uint8Array(await suffix.arrayBuffer())).toEqual(bytes.slice(990));
+    });
+
+    it("clamps an end past the file and answers a start past the file with 416", async () => {
+      const clamped = await get("/howto/connect.zh.mp4", "bytes=900-5000");
+      expect(clamped.headers.get("Content-Range")).toBe("bytes 900-999/1000");
+      const beyond = await get("/howto/connect.zh.mp4", "bytes=1000-1100");
+      expect(beyond.status).toBe(416);
+      expect(beyond.headers.get("Content-Range")).toBe("bytes */1000");
+    });
+
+    it("leaves requests without a Range and non-video assets as they are", async () => {
+      const whole = await get("/howto/connect.zh.mp4");
+      expect(whole.status).toBe(200);
+      expect((await whole.arrayBuffer()).byteLength).toBe(1000);
+      const page = await get("/index.html", "bytes=0-99");
+      expect(page.status).toBe(200);
+    });
+  });
+
   it("redirects Cloud login without forwarding tenant query parameters", async () => {
     const response = cloudLoginResponse(
       new Request("https://orbi.build/cloud/login?tenant=untrusted"),

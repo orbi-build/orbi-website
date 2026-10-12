@@ -412,7 +412,36 @@ async function fetchAsset(request, assets) {
     url.pathname += "index.html";
     return assets.fetch(new Request(url, request));
   }
-  return response;
+  return byteRangeResponse(request, url, response);
+}
+
+// iPhone Safari only plays media from servers that answer byte-range requests
+// (Apple, "Creating Video for Safari on iPhone"), but Workers static assets
+// answer a Range with the whole file (200). Videos are small (about 1 MB), so
+// one range is sliced here; pages are left whole because the Worker rewrites
+// them afterwards. A multi-range or malformed header gets the whole file, which
+// HTTP allows.
+const BYTE_RANGE_MEDIA = /\.(mp4|webm)$/i;
+
+async function byteRangeResponse(request, url, response) {
+  const header = request.headers.get("Range");
+  if (header === null || response.status !== 200 || !BYTE_RANGE_MEDIA.test(url.pathname)) return response;
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
+  if (match === null || (match[1] === "" && match[2] === "")) return response;
+  const body = await response.arrayBuffer();
+  const size = body.byteLength;
+  const headers = new Headers(response.headers);
+  headers.set("Accept-Ranges", "bytes");
+  const start = match[1] === "" ? Math.max(0, size - Number(match[2])) : Number(match[1]);
+  const end = match[1] === "" || match[2] === "" ? size - 1 : Math.min(Number(match[2]), size - 1);
+  if (start >= size || start > end) {
+    headers.set("Content-Range", `bytes */${size}`);
+    headers.delete("Content-Length");
+    return new Response(null, { status: 416, headers });
+  }
+  headers.set("Content-Range", `bytes ${start}-${end}/${size}`);
+  headers.set("Content-Length", String(end - start + 1));
+  return new Response(body.slice(start, end + 1), { status: 206, headers });
 }
 
 // The landing pages ship with their Cloud CTAs pointing at /cloud/login.
