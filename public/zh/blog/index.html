@@ -77,9 +77,9 @@
     <section class="compare-section shell" aria-label="文章列表">
       <div class="post-list">
     <article class="post-entry">
-      <h2 class="post-entry-title"><a href="/zh/blog/long-polling-new-user-wait/">环境早就好了，用户却走了：我们一夜把干等压到 10 秒</a></h2>
+      <h2 class="post-entry-title"><a href="/zh/blog/long-polling-new-user-wait/">新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-12">2026-10-12</time></p>
-      <p class="post-entry-summary">有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们换成长轮询、让 systemd 当循环消掉排队，再抠掉几处准备时间，测试环境上从一两分钟压到了 10 秒左右。</p>
+      <p class="post-entry-summary">有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间，测试环境上从一两分钟压到了 10 秒左右，机器一台没加。</p>
     </article>
     <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/claude-code-sandbox/">Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界</a></h2>

@@ -6,7 +6,7 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
-      <title>A 2-minute new-user wait, cut to 10 s by long polling</title>
+      <title>New users waited 2 min; long polling made it 10 s</title>
       <link>https://orbi.build/blog/long-polling-new-user-wait/</link>
       <guid isPermaLink="true">https://orbi.build/blog/long-polling-new-user-wait/</guid>
       <pubDate>Mon, 12 Oct 2026 00:00:00 GMT</pubDate>

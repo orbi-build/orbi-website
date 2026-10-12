@@ -1,5 +1,5 @@
 ---
-title: A 2-minute new-user wait, cut to 10 s by long polling
+title: New users waited 2 min; long polling made it 10 s
 date: 2026-10-12
 summary: One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.
 lang: en
