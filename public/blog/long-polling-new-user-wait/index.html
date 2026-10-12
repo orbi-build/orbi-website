@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A 2-minute new-user wait, cut to 10 s by long polling | Orbi</title>
+  <meta name="description" content="One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.">
+  <link rel="canonical" href="https://orbi.build/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/long-polling-new-user-wait/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/long-polling-new-user-wait/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="A 2-minute new-user wait, cut to 10 s by long polling">
+  <meta property="og:description" content="One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.">
+  <meta property="og:url" content="https://orbi.build/blog/long-polling-new-user-wait/">
+  <meta property="og:image" content="https://orbi.build/img/blog-longpoll-card.png">
+  <meta property="og:image:alt" content="A 2-minute new-user wait, cut to 10 s by long polling">
+  <meta property="article:published_time" content="2026-10-12">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"A 2-minute new-user wait, cut to 10 s by long polling","datePublished":"2026-10-12","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/long-polling-new-user-wait/","image":"https://orbi.build/img/blog-longpoll-card.png","inLanguage":"en","description":"One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.","url":"https://orbi.build/blog/long-polling-new-user-wait/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Start free with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">A 2-minute new-user wait, cut to 10 s by long polling</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-12">2026-10-12</time></p>
+
+          <p class="hero-lede">One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#first-find-out-where-the-minute-goes">First, find out where the minute goes</a></li>
+          <li><a class="post-toc-link" href="#new-users-were-stuck-behind-a-refresh-job">New users were stuck behind a refresh job</a></li>
+          <li><a class="post-toc-link" href="#from-ask-more-often-to-long-polling">From &quot;ask more often&quot; to long polling</a></li>
+          <li><a class="post-toc-link" href="#a-flag-instead-of-a-new-program">A flag instead of a new program</a></li>
+          <li><a class="post-toc-link" href="#the-bug-review-warned-us-about">The bug review warned us about</a></li>
+          <li><a class="post-toc-link" href="#squeezing-out-the-rest">Squeezing out the rest</a></li>
+          <li><a class="post-toc-link" href="#what-to-show-people-during-those-14-seconds">What to show people during those 14 seconds</a></li>
+          <li><a class="post-toc-link" href="#results">Results</a></li>
+          <li><a class="post-toc-link" href="#who-did-the-work">Who did the work</a></li>
+          <li><a class="post-toc-link" href="#if-your-users-wait-too">If your users wait too</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 11 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#first-find-out-where-the-minute-goes">First, find out where the minute goes</a></li>
+          <li><a class="post-toc-link" href="#new-users-were-stuck-behind-a-refresh-job">New users were stuck behind a refresh job</a></li>
+          <li><a class="post-toc-link" href="#from-ask-more-often-to-long-polling">From &quot;ask more often&quot; to long polling</a></li>
+          <li><a class="post-toc-link" href="#a-flag-instead-of-a-new-program">A flag instead of a new program</a></li>
+          <li><a class="post-toc-link" href="#the-bug-review-warned-us-about">The bug review warned us about</a></li>
+          <li><a class="post-toc-link" href="#squeezing-out-the-rest">Squeezing out the rest</a></li>
+          <li><a class="post-toc-link" href="#what-to-show-people-during-those-14-seconds">What to show people during those 14 seconds</a></li>
+          <li><a class="post-toc-link" href="#results">Results</a></li>
+          <li><a class="post-toc-link" href="#who-did-the-work">Who did the work</a></li>
+          <li><a class="post-toc-link" href="#if-your-users-wait-too">If your users wait too</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>A new user connected a repository to Orbi Cloud. The page said &quot;preparing your workspace&quot;. They waited a while, then left.</p>
+<p>When they left, the workspace was already ready. The page only refreshed every 10 seconds and hadn&#39;t told them yet.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I started digging that night. Claude Code, the AI assistant I plan work with, told me preparing a workspace took &quot;about five minutes&quot;. I said five minutes is long enough to install an operating system.</p>
+<p>It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets, all written, reviewed and merged by Orbi itself (Orbi is what I&#39;m building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we&#39;d decided wasn&#39;t worth fixing. It bit us the same evening.</p>
+<p>Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.</p>
+<h2 id="first-find-out-where-the-minute-goes">First, find out where the minute goes</h2>
+<p>We pulled timestamps from the database and split the wait into pieces:</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>Step</th>
+<th>Roughly how long</th>
+<th>Who decides</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="Step">The request waits in a queue for the host to pick it up</td>
+<td data-label="Roughly how long">20-odd seconds on average, close to two minutes at worst</td>
+<td data-label="Who decides">a job on the host that runs once a minute</td>
+</tr>
+<tr>
+<td data-label="Step">The host prepares the sandbox</td>
+<td data-label="Roughly how long">half a minute to a minute</td>
+<td data-label="Who decides">the provisioning script</td>
+</tr>
+<tr>
+<td data-label="Step">The page notices it&#39;s ready</td>
+<td data-label="Roughly how long">up to 10 seconds</td>
+<td data-label="Who decides">the status page, which refreshed every 10 seconds</td>
+</tr>
+</tbody></table></div>
+<p>Claude Code had mixed up two things: preparing the workspace took about a minute, and seeing Orbi&#39;s suggestions for the repository took over three. &quot;Five minutes&quot; was the second. We went after the first.</p>
+<p>We set one more rule that night: time the user spends doing something, like picking a repository, doesn&#39;t count as waiting. We only went after the time when they can do nothing but watch the screen.</p>
+<h2 id="new-users-were-stuck-behind-a-refresh-job">New users were stuck behind a refresh job</h2>
+<p>A job on the host ran once a minute. It first refreshed credentials for every existing user&#39;s sandbox (GitHub tokens expire after an hour), and only then looked for new users.</p>
+<p>One refresh took about a minute and a half, and the runs went back to back. A new request that just missed one run&#39;s check had to wait for the rest of that run and then the next run&#39;s whole refresh. The more users we had, the longer the refresh, and the longer every new user waited.</p>
+<p>The obvious move was to run the job every 10 seconds instead of every minute. We nearly did. Reading the script showed it would change nothing: the refresh was already running back to back, and new users would still be stuck behind it. The order had to change.</p>
+<h2 id="from-ask-more-often-to-long-polling">From &quot;ask more often&quot; to long polling</h2>
+<p>The first idea was to pull &quot;pick up new users&quot; out into its own job that asked Cloud every 2 seconds. That works, but it&#39;s still polling. I asked: why isn&#39;t this message-based, so the host knows the moment something arrives?</p>
+<p>There are three ways to get a request from Cloud to the host:</p>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th>Option</th>
+<th>How</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody><tr>
+<td data-label="Option">Short polling, more often</td>
+<td data-label="How">Ask every 2 seconds</td>
+<td data-label="Verdict">Simple, but there&#39;s always a delay, and it keeps asking when there&#39;s nothing to do</td>
+</tr>
+<tr>
+<td data-label="Option">Long polling</td>
+<td data-label="How">The host sends a request; Cloud holds it and answers as soon as there&#39;s new work, or with nothing after 20 seconds</td>
+<td data-label="Verdict">Picks up new work in about a second, and the host still only connects outward</td>
+</tr>
+<tr>
+<td data-label="Option">Push</td>
+<td data-label="How">Cloud connects to the host</td>
+<td data-label="Verdict">The host would need an open inbound port, which our design doesn&#39;t allow</td>
+</tr>
+</tbody></table></div>
+<p>We picked long polling. GitHub&#39;s self-hosted runners work the same way: the runner <a href="https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners">holds a 50-second long poll open to GitHub</a>, opens another when it times out, and never needs an inbound connection. Our host is in the same position. It can reach out; nothing can reach in.</p>
+<p>On the Cloud side we added an endpoint that holds the request for up to 20 seconds and checks for new users once a second. It hands out only new requests. Failed ones waiting for a retry stay with the old once-a-minute job, otherwise one small outage could burn through all of a request&#39;s retries in a few seconds. Independent review caught that before any code was written.</p>
+<h2 id="a-flag-instead-of-a-new-program">A flag instead of a new program</h2>
+<p>The first design added a new resident Python program on the host: loop on the long poll, pick up requests, call the provisioning script. The deploy script would have to learn to enable it the first time and restart it on every update, and it needed its own test suite.</p>
+<p>Orbi had already started building that when I asked whether it could be thinner.</p>
+<p>Looking again at the existing provisioning script, we didn&#39;t need a new program at all. Two copies of it can run at once; the refresh is one block that can be skipped; and the new endpoint returns exactly what the old list did. So the script got one flag, <code class="post-code--single">--claim-only</code>: skip the refresh, wait on the long poll instead, and run the same provisioning code as before. One round, then exit.</p>
+<p>systemd does the looping. This is the whole unit:</p>
+<pre><code class="language-ini">[Unit]
+Description=Orbi Cloud provisioning fast claim (long-poll)
+# Restarting is the whole point, so turn off the default
+# start limit (5 starts in 10 s) that would stop the unit
+# during a Cloud outage.
+StartLimitIntervalSec=0
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/orbi-cloud/provisioner.env
+ExecStart=/opt/orbi-cloud/host-provisioner/provisioner.sh --claim-only
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>The script exits after every round and systemd starts it again a second later. Each round reads the script fresh from disk, so shipping a new version needs no restart logic; the next round just runs the new code. The one catch: deploy by writing a temporary file and renaming it into place, never by overwriting a script while it&#39;s running.</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-loop.svg" alt="The host runs provisioner.sh --claim-only under systemd with Restart=always and RestartSec=1. Each round asks Cloud for work; Cloud checks once a second for up to 20 seconds and hands out only new requests. The host picks up the request, prepares the workspace and exits, and systemd starts the next round a second later. The once-a-minute job still refreshes credentials and handles retries." width="720" height="380">
+<figcaption>The fast path waits on Cloud; the once-a-minute job keeps refreshes and retries.</figcaption>
+</figure><p>So the first design&#39;s new program, its restart logic and its separate test suite never got written.</p>
+<h2 id="the-bug-review-warned-us-about">The bug review warned us about</h2>
+<p>Once picking up new users moved out of the once-a-minute job, two things ran at the same time. Review found two places where they could collide, at design time.</p>
+<p>We fixed one. The other: each user has exactly one model API key, and issuing a new one invalidates the old. Picking up a new user issues a key and hands it to the provisioning script; the once-a-minute job issues a fresh key to every user. If the two land together, the script&#39;s key is dead the moment it gets it, and a brand-new user&#39;s first attempt ends with &quot;workspace setup failed&quot;.</p>
+<p>Review&#39;s fix was simple: skip users who are being provisioned during the refresh. Claude Code decided that picking up a request now took about a second, so the two would never collide, and left it out of the ticket. I didn&#39;t push back.</p>
+<p>That evening long polling went live on the test server. The first four new-user test runs passed. The fifth hit exactly that bug. An automatic retry rescued it a minute later. We opened a top-priority ticket, and Orbi merged the fix half an hour after that.</p>
+<p>The rule I took from it: when review names a race, either put the fix in the ticket or write a test that proves it can&#39;t happen. &quot;It should be fast enough now&quot; is a guess.</p>
+<h2 id="squeezing-out-the-rest">Squeezing out the rest</h2>
+<p>Long polling removed the queue; from then on every request was picked up within a second or two. Other tickets in the same batch shaved the setup itself: Orbi&#39;s own program is copied from a prepared directory instead of downloaded, the user&#39;s repository downloads while the sandbox is still being built, and the page updates every 2 seconds instead of reloading every 10.</p>
+<p>Here&#39;s one test run, from the click on &quot;Connect repository&quot;: the workspace was ready at 12 seconds, and &quot;Orbi understood your repository&quot; appeared at 26.</p>
+<figure class="post-media">
+<img src="/img/diagrams/longpoll-timeline.svg" alt="Before: in production a request waited 22 seconds on average to be picked up, preparation took 37 seconds on average and the page took up to 10 more to notice; one connection took 79 seconds and the last one before the release 139. After, on the test server, from the click: request at 4 seconds, picked up at 5, workspace ready at 12, and the page stopped saying preparing at 14.4." width="720" height="330">
+<figcaption>Before: production averages and two real connections. After: one test run.</figcaption>
+</figure><h2 id="what-to-show-people-during-those-14-seconds">What to show people during those 14 seconds</h2>
+<p>Fourteen seconds is still a bit longer than the <a href="https://www.nngroup.com/articles/response-times-3-important-limits/">10 seconds</a> people can stay focused, by Nielsen Norman Group&#39;s classic numbers. So instead of a spinner the page shows real progress: set up your own workspace, pull your code, install Orbi, start reading your repository, each ticked off with the seconds it took.</p>
+<p>There&#39;s research behind that. In a 2011 Harvard Business School study on the <a href="https://www.hbs.edu/faculty/Pages/item.aspx?num=40158">labor illusion</a>, people picked between two services with identical results: one answered instantly, the other made them wait but showed what it was doing. With a 60-second wait, 63% picked the one that showed its work. When it made them wait without showing anything, only 23% did.</p>
+<p>The same paper has a flip side: visible effort followed by a bad result got the worst ratings of all. We&#39;d stepped right into that one. On our Chinese-language page, the &quot;Orbi understood your repository&quot; summary came out in English. Orbi now writes it in the page&#39;s language.</p>
+<h2 id="results">Results</h2>
+<div class="post-table-scroll"><table class="table-stack">
+<thead>
+<tr>
+<th></th>
+<th>Before</th>
+<th>Now (test server)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Waiting for the host to pick up the request</td>
+<td data-label="Before">20-odd seconds on average, close to two minutes at worst</td>
+<td data-label="Now (test server)">a second or two</td>
+</tr>
+<tr>
+<td>Workspace ready</td>
+<td data-label="Before">about a minute normally, over two minutes at worst</td>
+<td data-label="Now (test server)">about 10 seconds</td>
+</tr>
+<tr>
+<td>&quot;Orbi understood your repository&quot; appears</td>
+<td data-label="Before">didn&#39;t exist</td>
+<td data-label="Now (test server)">about 25 seconds</td>
+</tr>
+<tr>
+<td>Three suggestions appear</td>
+<td data-label="Before">over 3 minutes</td>
+<td data-label="Now (test server)">about 2 minutes</td>
+</tr>
+</tbody></table></div>
+<p>The new code is in production now; the production numbers will come when real users connect.</p>
+<h2 id="who-did-the-work">Who did the work</h2>
+<p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi takes a GitHub Issue labelled <code class="post-code--single">ai-ready</code>, writes the change with its coding agent, Pi, reviews it in a separate session, merges it and cuts the release. All 31 tickets in this story went through Orbi that way. Claude Code, the AI assistant I plan work with, wrote the tickets with me and read every change before it merged.</p>
+<p>I did three things: decided what mattered; asked two questions, &quot;why isn&#39;t this message-based?&quot; and &quot;can it be thinner?&quot;; and let that bug through.</p>
+<h2 id="if-your-users-wait-too">If your users wait too</h2>
+<ol>
+<li>Split the wait into pieces and find out who owns each one before you change anything.</li>
+<li>Time the user spends doing something isn&#39;t waiting. Go after the time they can only watch.</li>
+<li>Before you make something run more often, look at what&#39;s in front of it.</li>
+<li>If your machine can&#39;t accept inbound connections, use long polling. Hand out only new work on the fast path and leave retries to the slow one.</li>
+<li>Let systemd be the loop: <code class="post-code--single">Restart=always</code>, <code class="post-code--single">RestartSec=1</code>, <code class="post-code--single">StartLimitIntervalSec=0</code>, and deploy by renaming files into place.</li>
+<li>Treat a race that review names as real until a test says otherwise.</li>
+<li>Show real progress while people wait, and fix results that look wrong before you put them on screen.</li>
+</ol>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>Read how Orbi takes an <a href="/guides/issue-to-release/">Issue to a release</a>, how <a href="/blog/write-a-request/">writing a request in Orbi Cloud</a> works, the <a href="/compare/claude-code/">Claude Code comparison</a>, and <a href="/cloud/">Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/long-polling-new-user-wait/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
