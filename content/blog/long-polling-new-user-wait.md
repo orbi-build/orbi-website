@@ -12,11 +12,11 @@ A new user connected a repository to Orbi Cloud. The page said "preparing your w
 
 When they left, the workspace was already ready. The page only refreshed every 10 seconds and hadn't told them yet.
 
-I started digging that night. Claude Code told me preparing a workspace took "about five minutes". I said five minutes is long enough to install an operating system.
+I started digging that night. Claude Code, the AI assistant I plan work with, told me preparing a workspace took "about five minutes". I said five minutes is long enough to install an operating system.
 
-It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets, all written, reviewed and merged by Orbi itself. Along the way we hit a bug that review had warned us about, which we'd decided wasn't worth fixing. It bit us the same evening.
+It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets, all written, reviewed and merged by Orbi itself (Orbi is what I'm building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we'd decided wasn't worth fixing. It bit us the same evening.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi takes a GitHub Issue labelled `ai-ready`, writes the change with its coding agent, Pi, reviews it in a separate session, merges it and cuts the release. Here's how that night went.
+Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.
 
 ## First, find out where the minute goes
 
@@ -28,7 +28,7 @@ We pulled timestamps from the database and split the wait into pieces:
 | The host prepares the sandbox | half a minute to a minute | the provisioning script |
 | The page notices it's ready | up to 10 seconds | the status page, which refreshed every 10 seconds |
 
-"Five minutes" was really the time until the user sees the first useful thing, Orbi's suggestions for their repository. That's a different step, with a different fix.
+Claude Code had mixed up two things: preparing the workspace took about a minute, and seeing Orbi's suggestions for the repository took over three. "Five minutes" was the second. We went after the first.
 
 We set one more rule that night: time the user spends doing something, like picking a repository, doesn't count as waiting. We only went after the time when they can do nothing but watch the screen.
 
@@ -54,7 +54,7 @@ There are three ways to get a request from Cloud to the host:
 
 We picked long polling. GitHub's self-hosted runners work the same way: the runner [holds a 50-second long poll open to GitHub](https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners), opens another when it times out, and never needs an inbound connection. Our host is in the same position. It can reach out; nothing can reach in.
 
-On the Cloud side we added an endpoint that holds the request for up to 20 seconds and checks for new users once a second. It hands out only new requests. Failed ones waiting for a retry stay on the slow path, otherwise one small outage could burn through all of a request's retries in a few seconds. Independent review caught that before any code was written.
+On the Cloud side we added an endpoint that holds the request for up to 20 seconds and checks for new users once a second. It hands out only new requests. Failed ones waiting for a retry stay with the old once-a-minute job, otherwise one small outage could burn through all of a request's retries in a few seconds. Independent review caught that before any code was written.
 
 ## A flag instead of a new program
 
@@ -94,14 +94,7 @@ The script exits after every round and systemd starts it again a second later. E
 <figcaption>The fast path waits on Cloud; the once-a-minute job keeps refreshes and retries.</figcaption>
 </figure>
 
-What we didn't have to build:
-
-| First design | What shipped |
-|---|---|
-| A new resident program with its own loop | No new program; systemd loops |
-| The program picks up requests, then calls the provisioning script | The provisioning script's existing code |
-| Deploys must enable it and restart it | Enabled once by hand, then nothing to do |
-| Its own test suite | A few cases added to existing tests |
+So the first design's new program, its restart logic and its separate test suite never got written.
 
 ## The bug review warned us about
 
@@ -117,29 +110,14 @@ The rule I took from it: when review names a race, either put the fix in the tic
 
 ## Squeezing out the rest
 
-Long polling removed the queue; from then on every request was picked up within a second or two. Other tickets in the same batch cut the preparation itself:
+Long polling removed the queue; from then on every request was picked up within a second or two. Other tickets in the same batch shaved the setup itself: Orbi's own program is copied from a prepared directory instead of downloaded, the user's repository downloads while the sandbox is still being built, and the page updates every 2 seconds instead of reloading every 10.
 
-- copy Orbi's program from a directory prepared on the host instead of downloading it from GitHub every time;
-- download the user's repository while the sandbox is still being set up, not after;
-- skip a connection probe that always failed on new sandboxes;
-- report "ready" the moment setup is done and start reading the repository right away, instead of waiting for a job that ran every 30 seconds;
-- update the page every 2 seconds in place instead of reloading it every 10.
-
-Here's one test run, from the click on "Connect repository":
+Here's one test run, from the click on "Connect repository": the workspace was ready at 12 seconds, and "Orbi understood your repository" appeared at 26.
 
 <figure class="post-media">
 <img src="/img/diagrams/longpoll-timeline.svg" alt="Before: in production a request waited 22 seconds on average to be picked up, preparation took 37 seconds on average and the page took up to 10 more to notice; one connection took 79 seconds and the last one before the release 139. After, on the test server, from the click: request at 4 seconds, picked up at 5, workspace ready at 12, and the page stopped saying preparing at 14.4." width="720" height="330">
 <figcaption>Before: production averages and two real connections. After: one test run.</figcaption>
 </figure>
-
-| Seconds after the click | What happened |
-|---|---|
-| 4 | Request created |
-| 5 | Host picks it up |
-| 12 | Workspace ready; Orbi starts reading the repository |
-| 14 | The page stops saying "preparing" |
-| 26 | "Orbi understood your repository": three sentences on what the repo does |
-| 114 | Three suggestions for this repository |
 
 ## What to show people during those 14 seconds
 
@@ -158,11 +136,11 @@ The same paper has a flip side: visible effort followed by a bad result got the 
 | "Orbi understood your repository" appears | didn't exist | about 25 seconds |
 | Three suggestions appear | over 3 minutes | about 2 minutes |
 
-The new code is in production now; the production numbers will come when real users connect. In two of the test runs we went on to hand a suggestion to Orbi, and both pull requests merged about nine minutes later.
+The new code is in production now; the production numbers will come when real users connect.
 
 ## Who did the work
 
-31 tickets, every one written, reviewed and merged by Orbi. Claude Code helped me write the tickets and read every change before it merged.
+I'm Lawrence Liu, the creator of Orbi. Orbi takes a GitHub Issue labelled `ai-ready`, writes the change with its coding agent, Pi, reviews it in a separate session, merges it and cuts the release. All 31 tickets in this story went through Orbi that way. Claude Code, the AI assistant I plan work with, wrote the tickets with me and read every change before it merged.
 
 I did three things: decided what mattered; asked two questions, "why isn't this message-based?" and "can it be thinner?"; and let that bug through.
 

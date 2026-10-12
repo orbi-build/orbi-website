@@ -77,6 +77,11 @@
     <section class="compare-section shell" aria-label="文章列表">
       <div class="post-list">
     <article class="post-entry">
+      <h2 class="post-entry-title"><a href="/zh/blog/long-polling-new-user-wait/">环境早就好了，用户却走了：我们一夜把干等压到 10 秒</a></h2>
+      <p class="post-entry-meta"><time datetime="2026-10-12">2026-10-12</time></p>
+      <p class="post-entry-summary">有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们换成长轮询、让 systemd 当循环消掉排队，再抠掉几处准备时间，测试环境上从一两分钟压到了 10 秒左右。</p>
+    </article>
+    <article class="post-entry">
       <h2 class="post-entry-title"><a href="/zh/blog/claude-code-sandbox/">Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界</a></h2>
       <p class="post-entry-meta"><time datetime="2026-10-11">2026-10-11</time></p>
       <p class="post-entry-summary">开着 --dangerously-skip-permissions 实测 Claude Code 沙箱：只开沙箱、其余默认时，四项越界最终都成功了。加固设置配禁止规则，或者用 sandbox runtime（srt）包住整个进程，这次四项都拦住了；读密钥和联网只用 Bash 测过。</p>

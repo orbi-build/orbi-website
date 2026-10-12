@@ -1,5 +1,13 @@
 [
   {
+    "slug": "long-polling-new-user-wait",
+    "title": "A 2-minute new-user wait, cut to 10 s by long polling",
+    "summary": "One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.",
+    "zhSlug": "long-polling-new-user-wait",
+    "zhTitle": "环境早就好了，用户却走了：我们一夜把干等压到 10 秒",
+    "related": []
+  },
+  {
     "slug": "claude-code-sandbox",
     "title": "Claude Code sandbox: what each setup blocks",
     "summary": "Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.",
