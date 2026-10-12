@@ -2522,8 +2522,8 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/compare/orca/index.html": ["2026-09-12", "2026-09-12"],
     "benchmark/index.html": ["2026-09-30", "2026-09-30"],
     "zh/benchmark/index.html": ["2026-09-30", "2026-09-30"],
-    "guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
-    "zh/guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-05"],
+    "guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-12"],
+    "zh/guides/self-hosted-coding-agent/index.html": ["2026-09-26", "2026-10-12"],
     "guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
     "zh/guides/pi-coding-agent/index.html": ["2026-10-05", "2026-10-06"],
   };
