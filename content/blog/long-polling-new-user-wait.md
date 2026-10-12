@@ -7,11 +7,11 @@ author: Lawrence Liu
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
 video_name: How long a new user waits: ~30 s before, ~12 s after | Orbi Cloud long polling
-video_description: Left, the old version where the host checked for new users once a minute; right, long polling, where a new request is picked up as soon as it arrives. Same fresh repository on our test server, played back in real time, about 30 s versus about 12 s.
+video_description: Left, the old version where the host checked for new users once a minute; right, the version after the same 31 tickets, where long polling removed the queue and setup and page refresh got faster too. Same fresh repository on our test server, played back in real time, about 30 s versus about 12 s.
 video_thumbnail: /img/blog-longpoll-video-en.jpg
 video_upload_date: 2026-10-12
 video_duration: PT39S
-video_embed_url: https://www.youtube.com/embed/VN2szfN9Nn4
+video_embed_url: https://www.youtube.com/embed/eGTSUMYc6jk
 ---
 
 A new user connected a repository to Orbi Cloud. The page said "preparing your workspace". They waited a while, then left.
@@ -20,9 +20,9 @@ When they left, the workspace was already ready. The page only refreshed every 1
 
 I started digging that night. Claude Code, the AI assistant I plan work with, told me preparing a workspace took "about five minutes". I said five minutes is long enough to install an operating system.
 
-It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets, all written, reviewed and merged by Orbi itself (Orbi is what I'm building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we'd decided wasn't worth fixing. It bit us the same evening.
+It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets; Orbi wrote the code for every one, reviewed it and merged it (Orbi is what I'm building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we'd decided wasn't worth fixing. It bit us the same evening.
 
-<figure class="post-media"><iframe src="https://www.youtube.com/embed/VN2szfN9Nn4" title="How long a new user waits: ~30 s before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Old version on the left, long polling on the right, same fresh repository, played back in real time: about 30 seconds versus about 12. Recorded on our test server, which has few users, so the old queue there was short; in production it used to take a minute or two.</figcaption></figure>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/eGTSUMYc6jk" title="How long a new user waits: ~30 s before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Old version on the left; on the right, the version after the same 31 tickets. Same fresh repository on our test server, played back in real time: from clicking “Connect repository” to being able to write a first request, about 30 seconds versus about 12. The old run got lucky and queued for only 2 seconds, so most of the gap is setup time; in production the whole wait used to be a minute or two.</figcaption></figure>
 
 Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.
 
