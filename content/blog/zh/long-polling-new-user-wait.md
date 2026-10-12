@@ -6,6 +6,12 @@ lang: zh
 author: Lawrence Liu
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
+video_name: 新用户等多久：改前约 30 秒，改后约 12 秒｜Orbi Cloud 长轮询实录
+video_description: 左边旧版本，主机每分钟才查一次新用户；右边改成长轮询，新请求一来就被接走。同一个全新仓库，测试服实录，按真实秒数播放：约 30 秒对约 12 秒。
+video_thumbnail: /img/blog-longpoll-video-zh.jpg
+video_upload_date: 2026-10-12
+video_duration: PT39S
+video_embed_url: https://www.youtube.com/embed/sw7JPRO20EI
 ---
 
 有个新用户在 Orbi Cloud 上连好了仓库，页面显示「正在准备工作环境」。他等了一会儿，走了。
@@ -15,6 +21,8 @@ mirror: long-polling-new-user-wait
 那天夜里我开始查这件事。我做规划用的 AI 助手 Claude Code 告诉我，准备环境「要 5 分钟左右」。我回它：5 分钟，一个操作系统都装好了。
 
 查下来，这一步一般要一分钟左右，慢的时候两分多钟。一夜之后，测试环境上变成了 10 秒左右。改动拆成 31 张票，全是 Orbi 自己写、自己评审、自己合并的（Orbi 是我在做的产品，agent 时代的软件黑灯工厂：从 Issue 到发版，不用人守着）。中间还撞上了一个 bug：审查早就点过名，我们觉得没必要修，当天晚上就撞上了。
+
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/sw7JPRO20EI" title="新用户等多久：改前约 30 秒，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>左边旧版本，右边长轮询，同一个新仓库，按真实秒数播放：约 30 秒对约 12 秒。这是测试服实录，测试服用户少，旧版排队还算短；生产上以前要一两分钟。</figcaption></figure>
 
 后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。
 
