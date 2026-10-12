@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器 | Orbi</title>
+  <title>新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器 | Orbi</title>
   <meta name="description" content="有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。">
   <link rel="canonical" href="https://orbi.build/zh/blog/long-polling-new-user-wait/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/long-polling-new-user-wait/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/long-polling-new-user-wait/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/long-polling-new-user-wait/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器">
+  <meta property="og:title" content="新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器">
   <meta property="og:description" content="有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。">
   <meta property="og:url" content="https://orbi.build/zh/blog/long-polling-new-user-wait/">
   <meta property="og:image" content="https://orbi.build/img/blog-longpoll-card.png">
-  <meta property="og:image:alt" content="新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器">
+  <meta property="og:image:alt" content="新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器">
   <meta property="article:published_time" content="2026-10-12">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器","datePublished":"2026-10-12","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/long-polling-new-user-wait/","image":"https://orbi.build/img/blog-longpoll-card.png","inLanguage":"zh-CN","description":"有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。","url":"https://orbi.build/zh/blog/long-polling-new-user-wait/"}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"新用户等多久：改前约 30 秒，改后约 12 秒｜Orbi Cloud 长轮询实录","description":"左边旧版本，主机每分钟才查一次新用户；右边是同一批 31 张票之后的版本，长轮询消掉排队，准备环境和页面刷新也一起提速。同一个全新仓库，测试服实录，按真实秒数播放：约 30 秒对约 12 秒。","thumbnailUrl":"https://orbi.build/img/blog-longpoll-video-zh.jpg","uploadDate":"2026-10-12","duration":"PT39S","embedUrl":"https://www.youtube.com/embed/bN8amYpOo8c"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器","datePublished":"2026-10-12","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/long-polling-new-user-wait/","image":"https://orbi.build/img/blog-longpoll-card.png","inLanguage":"zh-CN","description":"有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。","url":"https://orbi.build/zh/blog/long-polling-new-user-wait/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":"新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒｜Orbi Cloud","description":"开头是改前：生产上的真实记录，新用户连上仓库后一般要等 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。后面是改后在测试服上的实录，按真实秒数播放：约 12 秒就能写第一个需求。","thumbnailUrl":"https://orbi.build/img/blog-longpoll-video-zh.jpg","uploadDate":"2026-10-12","duration":"PT43S","embedUrl":"https://www.youtube.com/embed/JLmbpUKHCGY"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
-          <h1 id="post-title">新用户干等从 2 分钟压到 10 秒：长轮询，没加一台机器</h1>
+          <h1 id="post-title">新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询，没加一台机器</h1>
           <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-12">2026-10-12</time></p>
 
           <p class="hero-lede">有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。</p>
@@ -168,7 +168,7 @@
           <li><a class="post-toc-link" href="#先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</a></li>
           <li><a class="post-toc-link" href="#新用户排在一个刷新任务后面">新用户排在一个刷新任务后面</a></li>
           <li><a class="post-toc-link" href="#从-问得更勤-到长轮询">从「问得更勤」到长轮询</a></li>
-          <li><a class="post-toc-link" href="#一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</a></li>
+          <li><a class="post-toc-link" href="#给开通脚本加一个开关-不再新写程序">给开通脚本加一个开关，不再新写程序</a></li>
           <li><a class="post-toc-link" href="#审查早就提醒过的-bug">审查早就提醒过的 bug</a></li>
           <li><a class="post-toc-link" href="#剩下的时间也一点点抠出来">剩下的时间也一点点抠出来</a></li>
           <li><a class="post-toc-link" href="#等的那十几秒-给人看什么">等的那十几秒，给人看什么</a></li>
@@ -185,7 +185,7 @@
           <li><a class="post-toc-link" href="#先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</a></li>
           <li><a class="post-toc-link" href="#新用户排在一个刷新任务后面">新用户排在一个刷新任务后面</a></li>
           <li><a class="post-toc-link" href="#从-问得更勤-到长轮询">从「问得更勤」到长轮询</a></li>
-          <li><a class="post-toc-link" href="#一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</a></li>
+          <li><a class="post-toc-link" href="#给开通脚本加一个开关-不再新写程序">给开通脚本加一个开关，不再新写程序</a></li>
           <li><a class="post-toc-link" href="#审查早就提醒过的-bug">审查早就提醒过的 bug</a></li>
           <li><a class="post-toc-link" href="#剩下的时间也一点点抠出来">剩下的时间也一点点抠出来</a></li>
           <li><a class="post-toc-link" href="#等的那十几秒-给人看什么">等的那十几秒，给人看什么</a></li>
@@ -199,7 +199,7 @@
 <p>他走的时候，环境其实已经准备好了。页面每 10 秒才刷新一次，还没来得及告诉他。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <p>那天夜里我开始查这件事。我做规划用的 AI 助手 Claude Code 告诉我，准备环境「要 5 分钟左右」。我回它：5 分钟，一个操作系统都装好了。</p>
 <p>查下来，这一步一般要一分钟左右，慢的时候两分多钟。一夜之后，测试环境上变成了 10 秒左右。改动拆成 31 张票，全是 Orbi 自己写、自己评审、自己合并的（Orbi 是我在做的产品，agent 时代的软件黑灯工厂：从 Issue 到发版，不用人守着）。中间还撞上了一个 bug：审查早就点过名，我们觉得没必要修，当天晚上就撞上了。</p>
-<figure class="post-media"><iframe src="https://www.youtube.com/embed/bN8amYpOo8c" title="新用户等多久：改前约 30 秒，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>左边旧版本，右边是同一批 31 张票之后的版本，同一个新仓库在测试服上实录，按真实秒数播放：从点「连接仓库」到能写第一个需求，约 30 秒对约 12 秒。旧版这一遍运气好，只排了 2 秒队，差出来的主要是准备环境的时间；生产上以前整段要一两分钟。</figcaption></figure><p>后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。</p>
+<figure class="post-media"><iframe src="https://www.youtube.com/embed/JLmbpUKHCGY" title="新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>都从点「连接仓库」算起，算到环境就绪、能写第一个需求。改前是生产上的真实记录：一般 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。改后是测试环境上的实录，按真实秒数播放：约 12 秒。</figcaption></figure><p>后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。</p>
 <h2 id="先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</h2>
 <p>我们从数据库里拉出时间戳，把这一分钟拆成几段：</p>
 <div class="post-table-scroll"><table class="table-stack">
@@ -264,7 +264,7 @@
 </tbody></table></div>
 <p>选了长轮询。GitHub 的自托管执行器也是这么干的：执行器<a href="https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners">向 GitHub 挂一个 50 秒的长轮询</a>，超时就再挂一个，外面不需要能连进来。我们的主机处境一样：能往外连，外面连不进来。</p>
 <p>Cloud 这边加了一个接口：请求最多挂 20 秒，每秒看一次有没有新用户。它只接新来的请求，失败了要重试的老请求还走原来每分钟那一轮，不然一次小故障就会让同一个请求几秒内把重试机会用光。这一条是动手写代码之前，独立审查查出来的。</p>
-<h2 id="一句-能不能再薄一点-删掉了一个程序">一句「能不能再薄一点」，删掉了一个程序</h2>
+<h2 id="给开通脚本加一个开关-不再新写程序">给开通脚本加一个开关，不再新写程序</h2>
 <p>第一版设计是在主机上新写一个常驻的 Python 程序，循环挂长轮询、接请求、再去调开通脚本。部署脚本得学会第一次启用它、代码一更新就重启它，它还要配一套自己的测试。</p>
 <p>Orbi 已经按这一版开工了，我问：能不能再薄一点？</p>
 <p>回头看现有的开通脚本，发现根本不用新程序。它可以同时跑两份；刷新是一整段，可以整段跳过；新接口返回的东西和原来的清单一模一样。于是只给脚本加了一个开关 <code class="post-code--single">--claim-only</code>：跳过刷新，改去挂长轮询，接到请求后，开通的代码全部照旧。跑一轮就退出。</p>
