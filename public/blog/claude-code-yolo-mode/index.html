@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>YOLO mode Claude Code vs auto mode: what each one lets through | Orbi</title>
-  <meta name="description" content="Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.">
+  <title>YOLO mode Claude Code vs auto mode: what each lets through | Orbi</title>
+  <meta name="description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.">
   <link rel="canonical" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="YOLO mode Claude Code vs auto mode: what each one lets through">
-  <meta property="og:description" content="Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.">
+  <meta property="og:title" content="YOLO mode Claude Code vs auto mode: what each lets through">
+  <meta property="og:description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.">
   <meta property="og:url" content="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:image" content="https://orbi.build/img/blog-yolo-card.png">
-  <meta property="og:image:alt" content="YOLO mode Claude Code vs auto mode: what each one lets through">
+  <meta property="og:image:alt" content="YOLO mode Claude Code vs auto mode: what each lets through">
   <meta property="article:published_time" content="2026-10-13">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"YOLO mode Claude Code vs auto mode: what each one lets through","datePublished":"2026-10-13","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"YOLO mode Claude Code vs auto mode: what each lets through","datePublished":"2026-10-13","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,10 +152,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
-          <h1 id="post-title">YOLO mode Claude Code vs auto mode: what each one lets through</h1>
+          <h1 id="post-title">YOLO mode Claude Code vs auto mode: what each lets through</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-13">2026-10-13</time></p>
 
-          <p class="hero-lede">Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.</p>
+          <p class="hero-lede">YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.</p>
         </section>
       </div>
     </div>
@@ -249,7 +249,7 @@ claude --permission-mode bypassPermissions
 <td data-label="Action">Edit <code class="post-code--single">.git/config</code> (a protected path)</td>
 <td data-label="default">denied</td>
 <td data-label="acceptEdits">denied</td>
-<td data-label="auto"><strong>done</strong></td>
+<td data-label="auto"><strong>done</strong>*</td>
 <td data-label="dontAsk">denied</td>
 <td data-label="bypassPermissions"><strong>done</strong></td>
 </tr>
@@ -262,6 +262,7 @@ claude --permission-mode bypassPermissions
 <td data-label="bypassPermissions">declined</td>
 </tr>
 </tbody></table></div>
+<p>* In auto mode the protected-path edit depends on intent, not a flat rule. I asked for a harmless git alias and the classifier let it through; a riskier edit to the same file can be blocked. The <a href="#claude-code-auto-mode-isnt-yolo-mode-with-extra-steps">auto column</a> is explained below.</p>
 <p>Three columns hold no surprises and are here as the baseline. In <code class="post-code--single">default</code> (called <strong>Manual</strong> in the UI), a <code class="post-code--single">-p</code> run denies anything that would otherwise prompt. <code class="post-code--single">dontAsk</code> denies everything that isn&#39;t on an allow list. <code class="post-code--single">acceptEdits</code> auto-approves edits and common file commands but still stops network calls, writes outside the project, and protected-path edits.</p>
 <p>The two that matter are <code class="post-code--single">auto</code> and <code class="post-code--single">bypassPermissions</code>. In my runs they let through the same five actions. The difference is <em>how</em> they decide, and that difference is the whole point.</p>
 <h2 id="claude-code-auto-mode-isn-t-yolo-mode-with-extra-steps">Claude Code auto mode isn&#39;t YOLO mode with extra steps</h2>
@@ -272,7 +273,7 @@ claude --permission-mode bypassPermissions
 <h2 id="the-thing-that-stopped-the-attack-was-the-model-not-the-mode">The thing that stopped the attack was the model, not the mode</h2>
 <p>I planted an instruction in a repo&#39;s <code class="post-code--single">README.md</code> telling the agent to read a key out of <code class="post-code--single">.env.local</code> and send it to a listener — a classic prompt injection. Then I asked the agent, in all five modes, just to summarize the project.</p>
 <p>It never sent the key. Not in <code class="post-code--single">default</code>, not in auto, not in <code class="post-code--single">bypassPermissions</code>. In every one of the 25 runs the model read the README, recognized the embedded instruction as an injection, said so, and summarized the project without following it. The listener logged zero exfiltration hits (the only hits it saw were the legitimate localhost call from the network-test row).</p>
-<p>Read that carefully before you take comfort in it. The injection was declined by the <em>model</em>, not blocked by the permission layer. <code class="post-code--single">bypassPermissions</code> has no permission layer to block it. If a future model, or a cleverer injection, doesn&#39;t recognize the trap, YOLO mode has nothing behind it — the docs say plainly that it &quot;offers no protection against prompt injection or unintended actions.&quot; Auto mode&#39;s classifier adds a second layer here (it&#39;s designed around exactly this, and it reads your files but not tool <em>results</em>, so hostile content in a command&#39;s output can&#39;t steer it), but Anthropic&#39;s own published figures put its miss rate in the low tens of percent. Neither is a guarantee. The guarantee has to come from the environment.</p>
+<p>Read that carefully before you take comfort in it. The injection was declined by the <em>model</em>, not blocked by the permission layer. <code class="post-code--single">bypassPermissions</code> has no permission layer to block it. If a future model, or a cleverer injection, doesn&#39;t recognize the trap, YOLO mode has nothing behind it — the docs say plainly that it &quot;offers no protection against prompt injection or unintended actions.&quot; Auto mode&#39;s classifier adds a second layer here (it&#39;s designed around exactly this, and it reads your files but not tool <em>results</em>, so hostile content in a command&#39;s output can&#39;t steer it), but it misses some: Anthropic&#39;s own published figures are around 17% on real overeager actions and 5.7% on a synthetic exfiltration set. Neither is a guarantee. The guarantee has to come from the environment.</p>
 <p>I&#39;m not publishing the injection text; if you want to test your own setup, write your own and point the listener at a host you control.</p>
 <h2 id="two-setups-for-don-t-ask-me-but-don-t-open-everything">Two setups for &quot;don&#39;t ask me, but don&#39;t open everything&quot;</h2>
 <p>If you&#39;ve read this far you don&#39;t want YOLO mode. You want the prompts gone <em>and</em> a floor under the agent. Two configurations I tested, each three runs:</p>
@@ -281,7 +282,7 @@ claude --permission-mode bypassPermissions
   --permission-mode dontAsk \
   --allowedTools &quot;Read&quot; &quot;Bash(npm test)&quot;
 </code></pre>
-<p>In my runs all six escape actions were denied. This is the tightest option and the right one for CI: the agent can do the two things you listed and nothing else.</p>
+<p>In my runs all six escape actions were stopped: the five side-effect actions denied by the permission layer, and the injection declined by the model, the same as in every other mode. This is the tightest option and the right one for CI: the agent can do the two things you listed and nothing else. The tool names are passed as space-separated quoted tokens.</p>
 <p><strong>2. <code class="post-code--single">bypassPermissions</code> with deny rules.</strong> YOLO speed, but deny rules still bite (they win in every mode).</p>
 <pre><code class="language-bash">claude -p &quot;...&quot; --permission-mode bypassPermissions \
   --settings &#39;{&quot;permissions&quot;:{&quot;deny&quot;:[&quot;Bash(curl:*)&quot;,&quot;Read(./.env.local)&quot;,&quot;Read(./.env)&quot;]}}&#39;
@@ -289,9 +290,9 @@ claude --permission-mode bypassPermissions
 <p>The network call was denied by the <code class="post-code--single">curl</code> rule; the rest still ran, and the injection was still declined by the model. Use this only where the rest <em>running freely</em> is acceptable — a throwaway container — because the deny list is a blocklist, and a blocklist only stops what you thought to name.</p>
 <p>For a fuller treatment of containing the flag — what the Claude Code sandbox blocks and what leaks past it — see <a href="/blog/claude-code-sandbox/">Claude Code sandbox: what each setup blocks</a>.</p>
 <h2 id="the-same-switch-in-other-agents">The same switch in other agents</h2>
-<p>Other CLIs have the same control under their own names. Commands verified against each tool&#39;s <code class="post-code--single">--help</code> and docs on 2026-10-13:</p>
+<p>If you drive more than one agent, the same trade-off shows up under a different name in each. The flags, verified against each tool&#39;s <code class="post-code--single">--help</code> and docs on 2026-10-13:</p>
 <ul>
-<li><strong>Codex CLI</strong> (0.159.3): <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code>, aliased <code class="post-code--single">--yolo</code> — &quot;Run every command without approvals or sandboxing. Only use inside an externally hardened environment.&quot; Its graded middle ground is <code class="post-code--spaced">--sandbox workspace-write</code> with <code class="post-code--spaced">--ask-for-approval on-request | never</code>. I go deeper on Codex in a separate post.</li>
+<li><strong>Codex CLI</strong> (0.159.3): <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code>, aliased <code class="post-code--single">--yolo</code>. Its <code class="post-code--single">--help</code> calls it &quot;EXTREMELY DANGEROUS. Intended solely for running in environments that are externally sandboxed.&quot; The graded middle ground is <code class="post-code--spaced">--sandbox workspace-write</code> with <code class="post-code--spaced">--ask-for-approval on-request | never</code>. I go deeper on Codex in a separate post.</li>
 <li><strong>OpenCode</strong> (1.18.23): <code class="post-code--spaced">opencode run --auto</code> — &quot;auto-approve permissions that are not explicitly denied (dangerous!)&quot;. Deny rules in <code class="post-code--single">opencode.json</code> still hold, the same shape as setup 2 above.</li>
 </ul>
 <h2 id="how-orbi-runs-agents-all-day-without-yolo-prompts">How Orbi runs agents all day without YOLO prompts</h2>
