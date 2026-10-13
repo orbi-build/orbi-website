@@ -29,7 +29,7 @@ You can't switch into it from a session you didn't start with it enabled. The fi
 
 Even in this mode, a few things still stop: an explicit `ask` rule, an `rm`/`rmdir` that targets a critical path like `rm -rf ~`, and a deny rule. Deny rules win in every mode, YOLO included.
 
-## YOLO mode Claude Code vs the other modes, measured
+## What each permission mode let through
 
 I gave the same six actions to five permission modes and recorded what actually happened on disk and at a local listener, not what the model said it did. Each cell is three runs (the injection row is five). `done` = it ran; `denied` = the permission layer blocked it; `declined` = the model itself refused.
 

@@ -165,7 +165,7 @@
           <h2>On this page</h2>
           <ol>
           <li><a class="post-toc-link" href="#what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</a></li>
-          <li><a class="post-toc-link" href="#yolo-mode-claude-code-vs-the-other-modes-measured">YOLO mode Claude Code vs the other modes, measured</a></li>
+          <li><a class="post-toc-link" href="#what-each-permission-mode-let-through">What each permission mode let through</a></li>
           <li><a class="post-toc-link" href="#how-auto-mode-decides">How auto mode decides</a></li>
           <li><a class="post-toc-link" href="#the-injection-the-model-declined-it-in-every-mode">The injection: the model declined it in every mode</a></li>
           <li><a class="post-toc-link" href="#two-setups-for-don-t-ask-me-but-don-t-open-everything">Two setups for &quot;don't ask me, but don't open everything&quot;</a></li>
@@ -179,7 +179,7 @@
           <summary>On this page · 8 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</a></li>
-          <li><a class="post-toc-link" href="#yolo-mode-claude-code-vs-the-other-modes-measured">YOLO mode Claude Code vs the other modes, measured</a></li>
+          <li><a class="post-toc-link" href="#what-each-permission-mode-let-through">What each permission mode let through</a></li>
           <li><a class="post-toc-link" href="#how-auto-mode-decides">How auto mode decides</a></li>
           <li><a class="post-toc-link" href="#the-injection-the-model-declined-it-in-every-mode">The injection: the model declined it in every mode</a></li>
           <li><a class="post-toc-link" href="#two-setups-for-don-t-ask-me-but-don-t-open-everything">Two setups for &quot;don't ask me, but don't open everything&quot;</a></li>
@@ -200,7 +200,7 @@ claude --permission-mode bypassPermissions
 </code></pre>
 <p>You can&#39;t switch into it from a session you didn&#39;t start with it enabled. The first interactive session asks you to accept responsibility once, then records <code class="post-code--single">skipDangerousModePermissionPrompt</code> so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under <code class="post-code--single">sudo</code> (&quot;<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>&quot;) unless it detects a real sandbox around it. An administrator can block it entirely with <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> in managed settings.</p>
 <p>Even in this mode, a few things still stop: an explicit <code class="post-code--single">ask</code> rule, an <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code> that targets a critical path like <code class="post-code--spaced">rm -rf ~</code>, and a deny rule. Deny rules win in every mode, YOLO included.</p>
-<h2 id="yolo-mode-claude-code-vs-the-other-modes-measured">YOLO mode Claude Code vs the other modes, measured</h2>
+<h2 id="what-each-permission-mode-let-through">What each permission mode let through</h2>
 <p>I gave the same six actions to five permission modes and recorded what actually happened on disk and at a local listener, not what the model said it did. Each cell is three runs (the injection row is five). <code class="post-code--single">done</code> = it ran; <code class="post-code--single">denied</code> = the permission layer blocked it; <code class="post-code--single">declined</code> = the model itself refused.</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>

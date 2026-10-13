@@ -165,7 +165,7 @@
           <h2>本页目录</h2>
           <ol>
           <li><a class="post-toc-link" href="#claude-code-的-yolo-模式到底是什么">Claude Code 的 YOLO 模式到底是什么</a></li>
-          <li><a class="post-toc-link" href="#yolo-模式和另外四种-实测对比">YOLO 模式和另外四种，实测对比</a></li>
+          <li><a class="post-toc-link" href="#五种权限模式-六个动作-谁放行了">五种权限模式、六个动作：谁放行了</a></li>
           <li><a class="post-toc-link" href="#auto-模式怎么判">auto 模式怎么判</a></li>
           <li><a class="post-toc-link" href="#那次注入-五种模式下模型都没照做">那次注入：五种模式下模型都没照做</a></li>
           <li><a class="post-toc-link" href="#两种-别问我-但也别全开-的配置">两种「别问我，但也别全开」的配置</a></li>
@@ -179,7 +179,7 @@
           <summary>本页目录 · 8 节</summary>
           <ol>
           <li><a class="post-toc-link" href="#claude-code-的-yolo-模式到底是什么">Claude Code 的 YOLO 模式到底是什么</a></li>
-          <li><a class="post-toc-link" href="#yolo-模式和另外四种-实测对比">YOLO 模式和另外四种，实测对比</a></li>
+          <li><a class="post-toc-link" href="#五种权限模式-六个动作-谁放行了">五种权限模式、六个动作：谁放行了</a></li>
           <li><a class="post-toc-link" href="#auto-模式怎么判">auto 模式怎么判</a></li>
           <li><a class="post-toc-link" href="#那次注入-五种模式下模型都没照做">那次注入：五种模式下模型都没照做</a></li>
           <li><a class="post-toc-link" href="#两种-别问我-但也别全开-的配置">两种「别问我，但也别全开」的配置</a></li>
@@ -200,7 +200,7 @@ claude --permission-mode bypassPermissions
 </code></pre>
 <p>它不能从一个没开它的会话里中途切进去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动（原话：<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>），除非它检测到自己已经被真正的沙箱包住。管理员可以在 managed settings 里用 <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 把它整个禁掉。</p>
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。</p>
-<h2 id="yolo-模式和另外四种-实测对比">YOLO 模式和另外四种，实测对比</h2>
+<h2 id="五种权限模式-六个动作-谁放行了">五种权限模式、六个动作：谁放行了</h2>
 <p>我给五种权限模式派了同样六个动作，记录的是磁盘上和本机接收端实际发生了什么，不是模型嘴上说它做了什么。每格跑三次（注入那一行五次）。<code class="post-code--single">已执行</code> = 真跑了；<code class="post-code--single">被拦</code> = 权限层挡下；<code class="post-code--single">没照做</code> = 模型自己拒绝。</p>
 <div class="post-table-scroll"><table class="table-stack">
 <thead>
@@ -298,7 +298,7 @@ claude --permission-mode bypassPermissions
 <h2 id="orbi-怎么整天无人值守地跑-agent">Orbi 怎么整天无人值守地跑 agent</h2>
 <p>Orbi 把一张 GitHub Issue 交给编码 agent，由它写代码、开 PR、发版，全程无人值守。所以在 Orbi 里，这个 YOLO 问题是成批出现的，而安全不能寄托在一个你已经关掉的运行时弹窗上。</p>
 <p>Orbi 的 agent 是 Pi，它本来就没有权限弹窗。边界不在逐个动作的批准，而在环境和合并闸门。在 Orbi Cloud 里，每个连接的仓库作为独立的 Linux 用户运行，带内存、CPU、进程数限制，每张 Issue 有自己的 git worktree。这个 Linux 用户是目前唯一的运行时边界，而且它的网络不受限。这比虚拟机弱，而这恰恰是为什么没有任何要紧的东西押在它身上。真正托底的是：GitHub App 的私钥从不离开 Orbi 的控制面，仓库那个 Linux 用户拿到的始终只是一个一小时内过期的安装令牌，每一次改动由另一个会话独立评审，runner 只在 CI 通过后才合并。</p>
-<p>如果这个 agent 能合并到你的主分支，关键是它和那个不可逆的动作之间隔着什么。<a href="/zh/compare/claude-code/">Orbi 和 Claude Code 怎么比</a>把各自停在哪条线讲清楚了。如果你宁愿让 Issue 被做成评审过、合并了的发版，而不是自己从头搭这条流水线，就<a href="https://orbi.build/cloud/?ref=blog-yolo">把仓库连到 Orbi Cloud</a>，或者自托管<a href="https://github.com/orbi-build/orbi">开源 runner</a>。</p>
+<p>如果这个 agent 能合并到你的主分支，关键是它和那个不可逆的动作之间隔着什么。<a href="/zh/compare/claude-code/">Orbi 和 Claude Code 怎么比</a>把各自停在哪条线讲清楚了。如果你希望 Issue 直接变成经过评审、已合并的发版，而不想自己从头搭这条流水线，就<a href="https://orbi.build/cloud/?ref=blog-yolo">把仓库连到 Orbi Cloud</a>，或者自托管<a href="https://github.com/orbi-build/orbi">开源 runner</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>

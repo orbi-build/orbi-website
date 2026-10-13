@@ -29,7 +29,7 @@ claude --permission-mode bypassPermissions
 
 就算在这个模式下，也还有几样东西拦得住：显式的 `ask` 规则、指向关键路径的 `rm`/`rmdir`（比如 `rm -rf ~`）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。
 
-## YOLO 模式和另外四种，实测对比
+## 五种权限模式、六个动作：谁放行了
 
 我给五种权限模式派了同样六个动作，记录的是磁盘上和本机接收端实际发生了什么，不是模型嘴上说它做了什么。每格跑三次（注入那一行五次）。`已执行` = 真跑了；`被拦` = 权限层挡下；`没照做` = 模型自己拒绝。
 
@@ -106,7 +106,7 @@ Orbi 把一张 GitHub Issue 交给编码 agent，由它写代码、开 PR、发�
 
 Orbi 的 agent 是 Pi，它本来就没有权限弹窗。边界不在逐个动作的批准，而在环境和合并闸门。在 Orbi Cloud 里，每个连接的仓库作为独立的 Linux 用户运行，带内存、CPU、进程数限制，每张 Issue 有自己的 git worktree。这个 Linux 用户是目前唯一的运行时边界，而且它的网络不受限。这比虚拟机弱，而这恰恰是为什么没有任何要紧的东西押在它身上。真正托底的是：GitHub App 的私钥从不离开 Orbi 的控制面，仓库那个 Linux 用户拿到的始终只是一个一小时内过期的安装令牌，每一次改动由另一个会话独立评审，runner 只在 CI 通过后才合并。
 
-如果这个 agent 能合并到你的主分支，关键是它和那个不可逆的动作之间隔着什么。[Orbi 和 Claude Code 怎么比](/zh/compare/claude-code/)把各自停在哪条线讲清楚了。如果你宁愿让 Issue 被做成评审过、合并了的发版，而不是自己从头搭这条流水线，就[把仓库连到 Orbi Cloud](https://orbi.build/cloud/?ref=blog-yolo)，或者自托管[开源 runner](https://github.com/orbi-build/orbi)。
+如果这个 agent 能合并到你的主分支，关键是它和那个不可逆的动作之间隔着什么。[Orbi 和 Claude Code 怎么比](/zh/compare/claude-code/)把各自停在哪条线讲清楚了。如果你希望 Issue 直接变成经过评审、已合并的发版，而不想自己从头搭这条流水线，就[把仓库连到 Orbi Cloud](https://orbi.build/cloud/?ref=blog-yolo)，或者自托管[开源 runner](https://github.com/orbi-build/orbi)。
 
 ## 相关
 
