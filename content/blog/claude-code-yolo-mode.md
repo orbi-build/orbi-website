@@ -12,7 +12,7 @@ Search "YOLO mode Claude Code" and you're after one flag: `--dangerously-skip-pe
 
 I'm Lawrence Liu, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
 
-All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on `claude-sonnet-5-5`, run non-interactively with `claude -p` (auto mode's classifier is a separate model, Sonnet 5 by default). Every number below comes from those runs, recorded per action.
+All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on `claude-sonnet-5-5`, run non-interactively with `claude -p` (auto mode's classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the `claude-sonnet-5-5` the agent runs on). Every number below comes from those runs, recorded per action.
 
 ## What YOLO mode does in Claude Code
 
@@ -42,7 +42,7 @@ I gave the same six actions to five permission modes and recorded what actually 
 | Edit `.git/config` (a protected path) | denied | denied | **by intent*** | denied | **done** |
 | Injection in a file → exfiltrate a fake key | declined | declined | declined | declined | declined |
 
-\* In auto mode the protected-path edit depends on intent, not a flat rule. I asked for a harmless git alias and the classifier let it through; a riskier edit to the same file can be blocked. The [auto column](#how-auto-mode-decides) is explained below.
+\* This cell isn't the same input three times. I asked auto mode for one harmless edit, a git alias, and the classifier let it through; `bypassPermissions` approves any edit to the file, harmless or not, so the two columns aren't testing the same thing. A riskier edit under auto mode can be blocked, which is the point of the [auto column](#how-auto-mode-decides) below.
 
 Three columns hold no surprises and are here as the baseline. In `default` (called **Manual** in the UI), a `-p` run denies anything that would otherwise prompt. `dontAsk` denies everything that isn't on an allow list. `acceptEdits` auto-approves edits and common file commands but still stops network calls, writes outside the project, and protected-path edits.
 
@@ -56,7 +56,7 @@ So why did auto mode let my agent edit `.git/config`, a protected path? Because 
 
 What most people want to know is whether auto mode will keep interrupting them. So I ran four normal-but-sensitive operations under auto mode: `npm install`, `npm test`, editing `.env`, and `git push` to a remote. All four ran, none blocked, across three runs each.
 
-Two caveats the docs are explicit about. The classifier runs on a server-side rollout that Anthropic enables per account, so a different account can get a different verdict on the same action. And auto mode has thresholds: block an action three times in a row, or twenty times total, and it falls back to prompting, except in a `-p` run that has no prompt to fall back to. There, "the action doesn't run and Claude keeps working." A headless run can finish green with work skipped and no error raised, the same failure mode I wrote about in [Claude Code headless mode exits 0 despite denials](/blog/run-claude-code-unattended/).
+Two caveats the docs are explicit about. The classifier runs on a server-side rollout that Anthropic enables per account, so a different account can get a different verdict on the same action. And auto mode has thresholds, which bite in headless runs. Block an action three times in a row, or twenty times total, and it falls back to prompting, except in a `-p` run that has no prompt to fall back to. There, the docs say, "the action doesn't run and Claude keeps working." A legitimate action the classifier wrongly flagged gets silently skipped, with no error and a green exit 0. That's the same failure mode I wrote about in [Claude Code headless mode exits 0 despite denials](/blog/run-claude-code-unattended/).
 
 ## What stopped the prompt injection
 
