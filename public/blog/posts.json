@@ -1,5 +1,13 @@
 [
   {
+    "slug": "claude-code-yolo-mode",
+    "title": "YOLO mode Claude Code vs auto mode: what each one lets through",
+    "summary": "Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.",
+    "zhSlug": "claude-code-yolo-mode",
+    "zhTitle": "Claude Code 的 YOLO 模式和 auto 模式：各自放过什么",
+    "related": []
+  },
+  {
     "slug": "long-polling-new-user-wait",
     "title": "New users waited 1–2 min; long polling made it 10 s",
     "summary": "One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.",

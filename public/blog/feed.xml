@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>YOLO mode Claude Code vs auto mode: what each one lets through</title>
+      <link>https://orbi.build/blog/claude-code-yolo-mode/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/claude-code-yolo-mode/</guid>
+      <pubDate>Tue, 13 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Claude Code YOLO mode is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs without asking, and what still stops a prompt injection.</description>
+    </item>
+    <item>
       <title>New users waited 1–2 min; long polling made it 10 s</title>
       <link>https://orbi.build/blog/long-polling-new-user-wait/</link>
       <guid isPermaLink="true">https://orbi.build/blog/long-polling-new-user-wait/</guid>
