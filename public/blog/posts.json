@@ -2,7 +2,7 @@
   {
     "slug": "claude-code-yolo-mode",
     "title": "YOLO mode Claude Code vs auto mode: what I measured",
-    "summary": "YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it vs auto mode and three others on 2.1.287: what each runs, what stops injection.",
+    "summary": "YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.",
     "zhSlug": "claude-code-yolo-mode",
     "zhTitle": "Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍",
     "related": []
