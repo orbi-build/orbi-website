@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>YOLO mode Claude Code vs auto mode: what each lets through | Orbi</title>
-  <meta name="description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.">
+  <title>YOLO mode Claude Code vs auto mode: what I measured | Orbi</title>
+  <meta name="description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it vs auto mode and three others on 2.1.287: what each runs, what stops injection.">
   <link rel="canonical" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="YOLO mode Claude Code vs auto mode: what each lets through">
-  <meta property="og:description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.">
+  <meta property="og:title" content="YOLO mode Claude Code vs auto mode: what I measured">
+  <meta property="og:description" content="YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it vs auto mode and three others on 2.1.287: what each runs, what stops injection.">
   <meta property="og:url" content="https://orbi.build/blog/claude-code-yolo-mode/">
   <meta property="og:image" content="https://orbi.build/img/blog-yolo-card.png">
-  <meta property="og:image:alt" content="YOLO mode Claude Code vs auto mode: what each lets through">
+  <meta property="og:image:alt" content="YOLO mode Claude Code vs auto mode: what I measured">
   <meta property="article:published_time" content="2026-10-13">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"YOLO mode Claude Code vs auto mode: what each lets through","datePublished":"2026-10-13","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"YOLO mode Claude Code vs auto mode: what I measured","datePublished":"2026-10-13","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-yolo-mode/","image":"https://orbi.build/img/blog-yolo-card.png","inLanguage":"en","description":"YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it vs auto mode and three others on 2.1.287: what each runs, what stops injection.","url":"https://orbi.build/blog/claude-code-yolo-mode/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,10 +152,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
-          <h1 id="post-title">YOLO mode Claude Code vs auto mode: what each lets through</h1>
+          <h1 id="post-title">YOLO mode Claude Code vs auto mode: what I measured</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-13">2026-10-13</time></p>
 
-          <p class="hero-lede">YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and three others on 2.1.287: what each runs, what stops an injection.</p>
+          <p class="hero-lede">YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it vs auto mode and three others on 2.1.287: what each runs, what stops injection.</p>
         </section>
       </div>
     </div>
@@ -262,7 +262,7 @@ claude --permission-mode bypassPermissions
 <td data-label="bypassPermissions">declined</td>
 </tr>
 </tbody></table></div>
-<p>* In auto mode the protected-path edit depends on intent, not a flat rule. I asked for a harmless git alias and the classifier let it through; a riskier edit to the same file can be blocked. The <a href="#claude-code-auto-mode-isnt-yolo-mode-with-extra-steps">auto column</a> is explained below.</p>
+<p>* In auto mode the protected-path edit depends on intent, not a flat rule. I asked for a harmless git alias and the classifier let it through; a riskier edit to the same file can be blocked. The <a href="#claude-code-auto-mode-isn-t-yolo-mode-with-extra-steps">auto column</a> is explained below.</p>
 <p>Three columns hold no surprises and are here as the baseline. In <code class="post-code--single">default</code> (called <strong>Manual</strong> in the UI), a <code class="post-code--single">-p</code> run denies anything that would otherwise prompt. <code class="post-code--single">dontAsk</code> denies everything that isn&#39;t on an allow list. <code class="post-code--single">acceptEdits</code> auto-approves edits and common file commands but still stops network calls, writes outside the project, and protected-path edits.</p>
 <p>The two that matter are <code class="post-code--single">auto</code> and <code class="post-code--single">bypassPermissions</code>. In my runs they let through the same five actions. The difference is <em>how</em> they decide, and that difference is the whole point.</p>
 <h2 id="claude-code-auto-mode-isn-t-yolo-mode-with-extra-steps">Claude Code auto mode isn&#39;t YOLO mode with extra steps</h2>

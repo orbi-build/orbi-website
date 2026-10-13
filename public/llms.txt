@@ -253,9 +253,9 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- YOLO mode Claude Code vs auto mode: what each lets through (English):
+- YOLO mode Claude Code vs auto mode: what I measured (English):
   https://orbi.build/blog/claude-code-yolo-mode/
-- Claude Code 的 YOLO 模式和 auto 模式：各自放过什么 (Chinese):
+- Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍 (Chinese):
   https://orbi.build/zh/blog/claude-code-yolo-mode/
 - New users waited 1–2 min; long polling made it 10 s (English):
   https://orbi.build/blog/long-polling-new-user-wait/
