@@ -5,26 +5,29 @@ import { describe, expect, it } from "vitest";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (path) => readFile(`${ROOT}${path}`, "utf8");
 
+// Issue #977: the hero now leads with what Orbi delivers, keeps the Cloud and
+// the self-host entries apart, and names the GitHub authorization before the
+// click. The free-delivery count still comes from the Worker's placeholder.
 const cases = [
   {
     source: "site/pages/index.html",
     built: "public/index.html",
-    kicker: "The lights-out software factory for the agent era",
-    h1: "File an Issue.<br> <span>Get a release.</span>",
-    lede: "Orbi is open source. AI coding agents write the code, a separate AI reviews it, and Orbi merges and ships the release with nobody watching. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
+    kicker: "The lights-out software factory for the Agent era",
+    h1: "File an Issue.<wbr> <span>Get a release.</span>",
+    lede: "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
     href: "/cloud/login",
     button: "Try Orbi Cloud free →",
-    note: '<span class="hero-cta-note-first">__FREE_DELIVERIES__ deliveries free, no credit card</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">or self-host it from GitHub</a></span>',
+    note: '<span class="hero-cta-note-first">GitHub authorization and App installation required. __FREE_DELIVERIES__ deliveries free, no credit card</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">Open source · Self-host ↗</a></span>',
   },
   {
     source: "site/pages/zh/index.html",
     built: "public/zh/index.html",
-    kicker: "agent 时代的软件黑灯工厂",
-    h1: "提个 Issue，<br><span>收个版本</span>",
-    lede: "Orbi 代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
+    kicker: "Agent 时代的软件黑灯工厂",
+    h1: "提个 Issue，<wbr><span>收个版本</span>",
+    lede: "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
     href: "/zh/cloud/login",
     button: "免费试用 Orbi Cloud →",
-    note: '<span class="hero-cta-note-first">前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">源码在 GitHub</a></span>',
+    note: '<span class="hero-cta-note-first">需 GitHub 授权并安装 App 前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">开源自托管 ↗</a></span>',
   },
 ];
 
@@ -76,6 +79,39 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
           '<a href="https://github.com/orbi-build/orbi" data-cta="hero-github">',
         );
       }
+    }
+  });
+
+  // Issue #977: the forced <br> is gone, so the headline shows one line where
+  // the copy column has room and wraps naturally where it does not. The <wbr>
+  // only offers the browser a break opportunity; it is not a rendered break.
+  it("wraps the headline naturally and keeps the emphasised second sentence", async () => {
+    for (const item of cases) {
+      for (const path of [item.source, item.built]) {
+        const html = await read(path);
+        const headline = hero(html).match(/<h1>[\s\S]*?<\/h1>/)?.[0];
+        expect(headline, `${path}: headline`).toBe(`<h1>${item.h1}</h1>`);
+        expect(headline, `${path}: forced break removed`).not.toContain("<br");
+        expect(headline, `${path}: emphasised second sentence`).toMatch(/<span>\S[^<]*<\/span>/);
+      }
+    }
+  });
+
+  // Issue #977: "Agent" is a proper noun in the positioning line, so the capital
+  // is synced everywhere that sentence repeats — meta, OG, JSON-LD and the
+  // kicker — while ordinary nouns like "AI coding agents" stay lowercase.
+  it("capitalises Agent in the positioning line only", async () => {
+    const positioned = {
+      "site/pages/index.html": { line: "the Agent era", occurrences: 4, noun: "AI coding agents" },
+      "site/pages/zh/index.html": { line: "Agent 时代", occurrences: 5, noun: "AI 编程 agent" },
+    };
+    for (const [path, { line, occurrences, noun }] of Object.entries(positioned)) {
+      const html = await read(path);
+      const head = html.slice(0, html.indexOf("<body"));
+      expect(html.split(line).length - 1, `${path}: positioning line copies`).toBe(occurrences);
+      expect(head, `${path}: meta, OG and JSON-LD`).toContain(line);
+      expect(html, `${path}: lowercase positioning line`).not.toContain(line.toLowerCase());
+      expect(html, `${path}: ordinary noun stays lowercase`).toContain(noun);
     }
   });
 
