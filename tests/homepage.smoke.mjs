@@ -729,10 +729,12 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     };
   });
   // Issue #977: no forced <br>. The wide two-column layout fits the headline on
-  // one line; the phone widths wrap naturally onto two.
-  const expectedLines = size.width >= 981 ? 1 : 2;
-  if (heroLayout.lines !== expectedLines) {
-    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected ${expectedLines}`);
+  // one line; the phone widths wrap naturally and take one or two lines —
+  // whether the joined headline fits the phone copy column at 42px depends on
+  // the installed CJK face, so the phone case is a bound.
+  const maxLines = size.width >= 981 ? 1 : 2;
+  if (heroLayout.lines > maxLines) {
+    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected at most ${maxLines}`);
   }
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);

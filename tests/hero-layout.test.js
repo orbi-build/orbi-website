@@ -136,7 +136,12 @@ describe("shared hero layout (Issue #355)", () => {
             }
             expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
             if (width >= 1280) expect(metrics.lineCount, `${context} line count`).toBe(1);
-            if (width === 390) expect(metrics.lineCount, `${context} line count`).toBe(2);
+            // Issue #977: with the forced break gone the phone headline wraps
+            // naturally, so the count is a bound rather than a number: whether
+            // the joined headline fits the 358px copy column at 42px depends on
+            // the installed CJK face — the two-line count measured with Noto
+            // CJK became one line on a browser without one.
+            if (width === 390) expect(metrics.lineCount, `${context} line count`).toBeLessThanOrEqual(2);
           } else if (width >= 768) {
             expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
           }
