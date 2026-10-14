@@ -137,7 +137,9 @@ describe("h1 wrapping (Issue #861)", () => {
     }
   }, 120_000);
 
-  it("keeps the homepage hero headline at two lines from 1280 to 2560", async () => {
+  // Issue #977: with the forced <br> gone, the wide two-column layout fits the
+  // whole headline on one line in both languages.
+  it("keeps the homepage hero headline at one line from 1280 to 2560", async () => {
     const page = await guardedPage(browser, baseUrl);
     try {
       for (const path of ["/", "/zh/"]) {
@@ -146,7 +148,7 @@ describe("h1 wrapping (Issue #861)", () => {
           await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
           await page.evaluate(() => document.fonts.ready);
           const lines = await headingLines(page);
-          expect(lines, `${path} at ${width}px heading lines`).toHaveLength(2);
+          expect(lines, `${path} at ${width}px heading lines`).toHaveLength(1);
         }
       }
     } finally {

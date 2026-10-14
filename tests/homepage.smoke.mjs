@@ -40,13 +40,13 @@ const deepDives = [
 const releaseClaims = {
   "/": {
     h1: "File an Issue. Get a release.",
-    lede: "Orbi is open source. AI coding agents write the code, a separate AI reviews it, and Orbi merges and ships the release with nobody watching. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start.",
+    lede: "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
     button: "Try Orbi Cloud free →",
     title: "File an Issue. Get a release.",
   },
   "/zh/": {
     h1: "提个 Issue，收个版本",
-    lede: "Orbi 代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。",
+    lede: "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
     button: "免费试用 Orbi Cloud →",
     title: "提个 Issue，收个版本",
   },
@@ -728,8 +728,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       overflows: h1.scrollWidth > h1.clientWidth,
     };
   });
-  if (heroLayout.lines !== 2) {
-    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected 2`);
+  // Issue #977: no forced <br>. The wide two-column layout fits the headline on
+  // one line; the phone widths wrap naturally onto two.
+  const expectedLines = size.width >= 981 ? 1 : 2;
+  if (heroLayout.lines !== expectedLines) {
+    throw new Error(`${path}: hero h1 rendered ${heroLayout.lines} lines at ${size.width}px, expected ${expectedLines}`);
   }
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
@@ -755,9 +758,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: hero CTA label is ${JSON.stringify(heroButtonText)}, expected ${JSON.stringify(claim.button)}`);
   }
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
+  // Issue #977: the note first names the GitHub authorization the button leads
+  // to, then the numeric trial and its self-host text link.
   const expectedHeroNote = path === "/"
-    ? `${pricing.freeDeliveries} deliveries free, no credit card · or self-host it from GitHub`
-    : `前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 源码在 GitHub`;
+    ? `GitHub authorization and App installation required. ${pricing.freeDeliveries} deliveries free, no credit card · Open source · Self-host ↗`
+    : `需 GitHub 授权并安装 App 前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 开源自托管 ↗`;
   if (heroNote !== expectedHeroNote) {
     throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
   }
@@ -915,8 +920,8 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   await wall.screenshot({ path: `${artifacts}/avatar-wall-${screenshot}` });
   // Issue #711: the homepage carries exactly one primary hero CTA, visible,
-  // plus the proof CTA and the nav "Start free with GitHub" keeping the same
-  // promise (Issue #941 renamed it; the Sign in link is gone).
+  // plus the proof CTA and the nav "Try Cloud with GitHub" keeping the same
+  // promise (Issues #941/#977 renamed it; the Sign in link is gone).
   // The hero and proof handoff go straight to login.
   if (await hero.locator(".button-signal").count() !== 1) throw new Error(`${path}: expected one primary CTA`);
   const cloudCta = hero.locator('[data-cta="cloud-start"]');
@@ -2522,8 +2527,8 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Start free with GitHub");
-    await assertCompareNavCta(browser, "/zh/compare/", "用 GitHub 免费开始");
+    await assertCompareNavCta(browser, "/compare/", "Try Cloud with GitHub");
+    await assertCompareNavCta(browser, "/zh/compare/", "用 GitHub 试用 Cloud");
     // assertCompareNavCta checks the language-specific direct-login href;
     // assertHomeCloudFlow above verifies the same nav handoff lands correctly.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.

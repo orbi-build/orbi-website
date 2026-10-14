@@ -2171,10 +2171,12 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
     }
   });
 
-  it("labels the nav CTA Start free with GitHub on en and 用 GitHub 免费开始 on zh (Issue #941)", () => {
+  // Issue #977 renames the CTA so it says which product the click enters;
+  // the GitHub authorization expectation is unchanged (Issue #941).
+  it("labels the nav CTA Try Cloud with GitHub on en and 用 GitHub 试用 Cloud on zh (Issues #941, #977)", () => {
     for (const [output, label, loginPath] of [
-      ["index.html", "Start free with GitHub", "/cloud/login"],
-      ["zh/index.html", "用 GitHub 免费开始", "/zh/cloud/login"],
+      ["index.html", "Try Cloud with GitHub", "/cloud/login"],
+      ["zh/index.html", "用 GitHub 试用 Cloud", "/zh/cloud/login"],
     ]) {
       const nav = navRegion(shipped.get(output));
       expect(nav, `${output}: nav CTA label`).toContain(
@@ -2209,7 +2211,7 @@ describe("nav CTA introduces the Cloud page (Issue #308)", () => {
       expect(cta, `${output}: missing the primary-nav CTA`).toBeTruthy();
       const loginPath = output.startsWith("zh/") ? "/zh/cloud/login" : "/cloud/login";
       expect(cta[1], `${output}: nav CTA must use the language login handoff`).toBe(loginPath);
-      const label = output.startsWith("zh/") ? "用 GitHub 免费开始" : "Start free with GitHub";
+      const label = output.startsWith("zh/") ? "用 GitHub 试用 Cloud" : "Try Cloud with GitHub";
       expect(cta[2], `${output}: nav CTA label`).toBe(label);
     }
   });
@@ -2260,14 +2262,14 @@ describe("five-link primary nav and relocated links (Issue #711)", () => {
         .map(([, label]) => label.trim());
       expect(links, `${page.output}: primary navigation`).toEqual(
         page.lang === "zh"
-          ? ["产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 免费开始"]
-          : ["How it works", "Pricing", "Docs", "GitHub", "Start free with GitHub"],
+          ? ["产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 试用 Cloud"]
+          : ["How it works", "Pricing", "Docs", "GitHub", "Try Cloud with GitHub"],
       );
       const nav = navRegion(shipped.get(page.output));
       expect(nav, `${page.output}: GitHub CTA tracking`).toContain(
         '<a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>',
       );
-      const startLabel = page.lang === "zh" ? "用 GitHub 免费开始" : "Start free with GitHub";
+      const startLabel = page.lang === "zh" ? "用 GitHub 试用 Cloud" : "Try Cloud with GitHub";
       expect(nav, `${page.output}: nav-start CTA tracking`).toMatch(
         new RegExp(`<a class="nav-apply" data-cta="nav-start" href="(?:/(?:zh/)?cloud/login|https://orbi\\.build/(?:zh/)?cloud/login)">${startLabel}</a>`),
       );
@@ -3555,21 +3557,21 @@ describe("homepage evidence screenshots lazy-load (Issue #586)", () => {
 
 // Issue #890: a first-time visitor — and an AI answer engine quoting the page —
 // must be able to read what Orbi is in the homepage body, not only in the
-// <head> metadata. Both homes carry the definition under the H1. Issue #899
-// replaced the long AGPL-first sentence with the approved two-sentence lede
-// (open source + where it runs); the assertion follows the new copy.
-describe("homepage body carries an Orbi definition sentence (Issues #890, #899)", () => {
+// <head> metadata. Both homes carry the definition under the H1. Issue #977
+// replaced the open-source-first sentence with the approved delivery-first
+// description; the assertion follows the new copy.
+describe("homepage body carries an Orbi definition sentence (Issues #890, #899, #977)", () => {
   const body = (html) => html.slice(html.indexOf("<body"));
   const homes = {
-    "index.html": /Orbi is open source\. AI coding agents write the code, a separate AI reviews it, and Orbi merges and ships the release with nobody watching\. Run it on your own machine, or on Orbi Cloud, where one sentence is enough to start\./,
-    "zh/index.html": /Orbi 代码开源。你提 Issue，AI 编程 agent 接手写代码，另一个 AI 来评审，合并后一路做到发版，中间不用人守着。可以装在自己的机器上，也可以交给 Orbi Cloud 托管，在 Cloud 上用一句话描述需求就能开工。/,
+    "index.html": "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
+    "zh/index.html": "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
   };
 
   for (const [output, definition] of Object.entries(homes)) {
     it(`${output} states the definition in the rendered body`, () => {
       const html = shipped.get(output);
-      expect(body(html), `${output}: body definition sentence`).toMatch(definition);
-      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toMatch(definition);
+      expect(body(html), `${output}: body definition sentence`).toContain(definition);
+      expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toContain(definition);
     });
   }
 });
