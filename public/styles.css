@@ -2332,16 +2332,38 @@ h2 {
 
 .compare-table thead th:first-child { z-index: 2; }
 
-/* ≤760px (Issue #522, #526): 2-column tables keep their table form — no fixed
+/* Issue #975 / Design System DataTable "Article comparison matrices": a post
+   that declares `table_layout: comparison` keeps its matrix a native table at
+   every width. The action column's cells are <th scope="row">, so they must not
+   pick up the post template's th weight or fill — what they carry is the opaque
+   paper ground the pinned column needs at phone widths, in the page's own
+   colour at desktop. The swipe hint only means something while the matrix
+   actually scrolls, which is the phone width below. */
+.post-body .table-comparison tbody th {
+  background: var(--paper);
+  font-weight: 400;
+}
+
+.post-body .post-table-hint {
+  display: none;
+  margin: 14px 0 6px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+/* ≤760px (Issue #522, #526, #975): the CSS default is the table form — no fixed
    column widths, the browser distributes them, cells tighten and wrap with
    break-word, which leaves min-content alone so words are never split
    mid-word (#526: `anywhere` drops a table cell's min-content to one
    character and the auto layout crushes the first column). `code` inside
    those cells keeps `anywhere`: a long identifier may break rather than push
-   the table past the viewport. Tables with 3+ columns carry the build's
-   .table-stack marker and data-labels and stack row-by-row, where `anywhere`
-   is safe — stacked cells are blocks and feed no column-width calculation.
-   Desktop is untouched. */
+   the table past the viewport. A table with 3+ columns that does not declare
+   `table_layout: comparison` carries the build's .table-stack marker and
+   data-labels and stacks row-by-row, where `anywhere` is safe — stacked cells
+   are blocks and feed no column-width calculation (#975 keeps that the default
+   and adds the exception below). Desktop is untouched. */
 @media (max-width: 760px) {
   .compare-table th,
   .compare-table td {
@@ -2405,6 +2427,28 @@ h2 {
     padding: 12px;
     overflow-wrap: break-word;
   }
+
+  /* Issue #975: a comparison matrix scrolls sideways inside the article width
+     instead of stacking (Design System "Article comparison matrices"). The
+     action column is pinned on the opaque paper ground set above and capped so
+     it never eats the whole visible area; its labels still wrap, while a result
+     cell keeps its word whole and scrolls. */
+  .post-body .post-table-hint { display: block; }
+  .post-body .table-comparison {
+    width: max-content;
+    min-width: 100%;
+  }
+  .post-body .table-comparison th,
+  .post-body .table-comparison td { white-space: nowrap; }
+  .post-body .table-comparison thead th:first-child,
+  .post-body .table-comparison tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    max-width: 8.5rem;
+    white-space: normal;
+  }
+  .post-body .table-comparison thead th:first-child { z-index: 2; }
 }
 
 .compare-table tbody tr:last-child th,

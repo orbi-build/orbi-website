@@ -505,6 +505,22 @@
     });
   }
 
+  // Issue #975: the article comparison matrix is a focusable scroll region
+  // (Design System DataTable "Article comparison matrices"). Browsers do not
+  // uniformly scroll a focused overflow container with the arrow keys — the
+  // headless Chromium this repository's own tests run in scrolls nothing at all
+  // from the keyboard — so the left/right arrows move the region here, in the
+  // same 40px step a native arrow scroll uses, and consume the key so a browser
+  // that does implement it cannot double the step.
+  function bootComparisonMatrix(wrapper) {
+    wrapper.addEventListener("keydown", function (event) {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      wrapper.scrollBy(event.key === "ArrowRight" ? 40 : -40, 0);
+      event.preventDefault();
+    });
+  }
+
+  document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);
   document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
