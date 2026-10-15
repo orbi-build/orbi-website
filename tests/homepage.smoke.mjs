@@ -2394,6 +2394,67 @@ async function assertLegalPage(browser, path, expectedHeading, expectedAddress, 
   }
 }
 
+// Issue #980: the support pages lead with the Telegram group — the invite
+// corrected in Issue #554 — and keep the mail address as a backup only. The
+// reader must be able to reach the group from the keyboard, and no contact
+// entry may be clipped or overlap the next one at the acceptance widths.
+async function assertSupportChannels(browser, path, expected, size, screenshot) {
+  const invite = "https://t.me/+kJRTTpFGBRU0M2Y9";
+  const page = await browser.newPage({ viewport: size });
+  const errors = [];
+  const failures = [];
+  await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("requestfailed", (request) => failures.push(request.url()));
+  try {
+    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    if (!response || response.status() !== 200) throw new Error(`${path} returned ${response?.status() ?? "no response"}`);
+    const contact = page.locator('section[aria-labelledby="contact-title"]');
+    const group = contact.locator(`a[href="${invite}"]`);
+    await group.waitFor();
+    const firstEntry = contact.locator("ul > li").first();
+    if ((await firstEntry.locator(`a[href="${invite}"]`).count()) !== 1) {
+      throw new Error(`${path}: the contact list does not start with the Telegram group ("${(await firstEntry.innerText()).trim()}")`);
+    }
+    const groupLabel = (await group.innerText()).trim();
+    if (groupLabel !== expected.group) {
+      throw new Error(`${path}: the group link reads "${groupLabel}", expected "${expected.group}"`);
+    }
+    if ((await contact.locator(`a[href="${expected.backupHref}"]`).count()) !== 1) {
+      throw new Error(`${path}: the backup mail link is missing from the contact list`);
+    }
+    if (!(await contact.innerText()).includes(expected.backup)) {
+      throw new Error(`${path}: the mail address is not labelled "${expected.backup}"`);
+    }
+    const entries = await contact.locator("ul > li").evaluateAll((nodes) => nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, height: rect.height, clientHeight: node.clientHeight, scrollHeight: node.scrollHeight };
+    }));
+    entries.forEach((entry, index) => {
+      if (entry.height < 1) throw new Error(`${path}: contact entry ${index} has no height at ${size.width}px`);
+      if (entry.scrollHeight > entry.clientHeight + 1) throw new Error(`${path}: contact entry ${index} is clipped at ${size.width}px`);
+      const previous = entries[index - 1];
+      if (previous && entry.top < previous.bottom - 1) throw new Error(`${path}: contact entry ${index} overlaps the entry above it`);
+    });
+    // Keyboard only: the group link has to be in the tab order, and the walk
+    // is bounded so a page that never reaches it fails instead of spinning.
+    let focused = false;
+    for (let presses = 0; presses < 40 && !focused; presses += 1) {
+      await page.keyboard.press("Tab");
+      focused = await page.evaluate((selector) => Boolean(document.activeElement?.matches(selector)), `a[href="${invite}"]`);
+    }
+    if (!focused) throw new Error(`${path}: the Telegram group link is not reachable with Tab`);
+    await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: true });
+    if (errors.length || failures.length) {
+      throw new Error(`${path}: console errors=${JSON.stringify(errors)} failed requests=${JSON.stringify(failures)}`);
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 async function main() {
   await mkdir(artifacts, { recursive: true });
   const server = process.env.BASE_URL ? null : await startServer();
@@ -2502,14 +2563,24 @@ async function main() {
     const legalPages = [
       ["/privacy/", "Privacy policy", "privacy@orbi.build", "privacy-en"],
       ["/terms/", "Terms of service", "support@orbi.build", "terms-en"],
-      ["/support/", "Support that starts with a useful report", "support@orbi.build", "support-en"],
+      ["/support/", "Orbi support: talk to us on Telegram", "support@orbi.build", "support-en"],
       ["/zh/privacy/", "隐私政策", "privacy@orbi.build", "privacy-zh"],
       ["/zh/terms/", "服务条款", "support@orbi.build", "terms-zh"],
-      ["/zh/support/", "从有用的报告开始支持", "support@orbi.build", "support-zh"],
+      ["/zh/support/", "Orbi 支持：来 Telegram 找我们", "support@orbi.build", "support-zh"],
     ];
     for (const [path, heading, address, name] of legalPages) {
       await assertLegalPage(browser, path, heading, address, { width: 1440, height: 900 }, `${name}-desktop.png`);
       await assertLegalPage(browser, path, heading, address, { width: 390, height: 844 }, `${name}-mobile.png`);
+    }
+    // Issue #980: Telegram first and email as the backup, read and reached
+    // with the keyboard, on the support pages in both languages.
+    const supportChannels = [
+      ["/support/", { group: "Join the Telegram group", backup: "backup email", backupHref: "mailto:support@orbi.build" }, "support-en"],
+      ["/zh/support/", { group: "加入 Telegram 群", backup: "备用邮箱", backupHref: "mailto:support@orbi.build" }, "support-zh"],
+    ];
+    for (const [path, expected, name] of supportChannels) {
+      await assertSupportChannels(browser, path, expected, { width: 1440, height: 900 }, `${name}-contact-desktop.png`);
+      await assertSupportChannels(browser, path, expected, { width: 390, height: 844 }, `${name}-contact-mobile.png`);
     }
     // Issue #90: both cost pages, both languages, phone and desktop widths.
     // Issue #118: the two languages' rendered sample sizes must agree — the
