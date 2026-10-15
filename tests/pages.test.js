@@ -3365,9 +3365,12 @@ print(json.dumps({
 
 describe("legal contact addresses (Issue #307)", () => {
   it("uses domain mailboxes on every English and Chinese legal/support page", () => {
+    // Issue #980: the privacy contact paragraph now says the backup address
+    // explicitly both for policy questions and for the opt-out sentence, so
+    // privacy@orbi.build occurs three times per language (was two).
     const expected = {
-      "privacy/index.html": ["privacy@orbi.build", 2],
-      "zh/privacy/index.html": ["privacy@orbi.build", 2],
+      "privacy/index.html": ["privacy@orbi.build", 3],
+      "zh/privacy/index.html": ["privacy@orbi.build", 3],
       "terms/index.html": ["support@orbi.build", 2],
       "zh/terms/index.html": ["support@orbi.build", 2],
       "support/index.html": ["support@orbi.build", 4],
@@ -3387,6 +3390,122 @@ describe("legal contact addresses (Issue #307)", () => {
 // Issue #813: the terms billing paragraph is the contract the /cloud/
 // pricing page actually sells — the yearly interval and the one-time
 // Alipay / WeChat Pay path must not diverge between the two.
+// Issue #980: the site speaks with one voice about support — Telegram first
+// (public questions in the group, private matters in a DM to a group admin),
+// email only as a backup. The invite is the one corrected in Issue #554: this
+// pins the existing channel, it does not introduce a new invite, username,
+// route or tracking.
+describe("support channels put Telegram first (Issue #980)", () => {
+  const INVITE = "https://t.me/+kJRTTpFGBRU0M2Y9";
+  const sectionOf = (html, id) => html.match(new RegExp(`<section[^>]*aria-labelledby="${id}"[\\s\\S]*?</section>`))[0];
+  const mainOf = (html) => html.match(/<main[\s\S]*?<\/main>/)[0];
+
+  const supportPages = {
+    "support/index.html": {
+      title: "Orbi Cloud support on Telegram | Orbi",
+      description: "Get Orbi Cloud help on Telegram. Ask in the group or message an admin privately about accounts, billing, refunds or privacy. Email is a backup.",
+      groupLink: "Join the Telegram group",
+      privateReply: "message a group admin privately on Telegram",
+      backup: 'our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>',
+      feedback: "Send private details to a group admin on Telegram.",
+      refund: "Message a group admin privately on Telegram with your Stripe invoice ID",
+      response: "We do our best to reply, but there is no guaranteed response time.",
+    },
+    "zh/support/index.html": {
+      title: "Orbi Cloud 支持：Telegram 群与私聊，邮件备用",
+      description: "遇到 Orbi Cloud 使用、账号、计费、退款或隐私问题，优先通过 Telegram 联系我们。公开问题在群里交流，私密内容请私聊，邮件作为备用。",
+      groupLink: "加入 Telegram 群",
+      privateReply: "请在 Telegram 私聊群管理员",
+      backup: '备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>',
+      feedback: "不方便公开的内容请通过 Telegram 私聊。",
+      refund: "请在 Telegram 私聊群管理员，提供 Stripe 发票编号",
+      response: "我们会尽力回复，不承诺固定响应时间。",
+    },
+  };
+
+  it("opens the contact list with the Telegram group and keeps email as the backup", () => {
+    for (const [output, expected] of Object.entries(supportPages)) {
+      const html = shipped.get(output);
+      const title = html.match(/<title>([^<]+)<\/title>/)[1];
+      const description = html.match(/<meta name="description" content="([^"]+)"/)[1];
+      expect(title, `${output}: title`).toBe(expected.title);
+      expect(html, `${output}: og:title`).toContain(`<meta property="og:title" content="${expected.title}">`);
+      expect(description, `${output}: description`).toBe(expected.description);
+      expect(html, `${output}: og:description`).toContain(`<meta property="og:description" content="${expected.description}">`);
+
+      // One invite, the corrected one, and it opens the contact list.
+      expect(html.split(INVITE).length - 1, `${output}: invite count`).toBe(1);
+      const contact = sectionOf(html, "contact-title");
+      const firstEntry = contact.match(/<li>[\s\S]*?<\/li>/)[0];
+      expect(firstEntry, `${output}: first contact entry`).toContain(`<a href="${INVITE}">${expected.groupLink}</a>`);
+      expect(contact, `${output}: private channel`).toContain(expected.privateReply);
+      expect(contact, `${output}: backup email`).toContain(expected.backup);
+      expect(contact, `${output}: response expectations`).toContain(expected.response);
+
+      // The feedback and refund sections carry the same channel order.
+      expect(sectionOf(html, "bug-title"), `${output}: feedback section`).toContain(expected.feedback);
+      expect(sectionOf(html, "refund-title"), `${output}: refund section`).toContain(expected.refund);
+
+      // GitHub Issues is no longer offered as a second support entry.
+      expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
+    }
+  });
+
+  it("routes the refund contact through Telegram first, email as the backup", () => {
+    const termsPages = {
+      "terms/index.html": {
+        telegram: "First message a group admin privately on Telegram with the invoice and reason.",
+        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:support@orbi.build">support@orbi.build</a>.',
+        cardIssuer: "Contact us before asking your card issuer to reverse a charge.",
+      },
+      "zh/terms/index.html": {
+        telegram: "请先在 Telegram 私聊群管理员，提供发票和退款原因",
+        backup: '不方便使用 Telegram 时，可以发到备用邮箱 <a href="mailto:support@orbi.build">support@orbi.build</a>。',
+        cardIssuer: "请先联系我们，再向发卡行申请撤销扣款。",
+      },
+    };
+
+    for (const [output, expected] of Object.entries(termsPages)) {
+      const html = shipped.get(output);
+      expect(html, `${output}: Telegram request`).toContain(expected.telegram);
+      expect(html, `${output}: backup email`).toContain(expected.backup);
+      expect(html, `${output}: card-issuer warning`).toContain(expected.cardIssuer);
+      expect(html.indexOf(expected.telegram), `${output}: Telegram before the backup email`)
+        .toBeLessThan(html.indexOf(expected.backup));
+    }
+  });
+
+  it("keeps the privacy opt-out sentence and names the backup address explicitly", () => {
+    const privacyPages = {
+      "privacy/index.html": {
+        deletion: "To request deletion of your Orbi account and associated Cloud records, message a group admin privately on Telegram with your GitHub account so we can identify the records.",
+        questions: "For questions about this policy, deletion requests or stopping these emails, first message a group admin privately on Telegram.",
+        backup: 'If you can’t use Telegram, our backup email is <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>.',
+        optOut: "If you would rather not receive these emails, reply to one of them or write to privacy@orbi.build, and we will delete these records.",
+      },
+      "zh/privacy/index.html": {
+        deletion: "若要删除 Orbi 账号及关联的 Cloud 记录，请在 Telegram 私聊群管理员，并提供用于识别的 GitHub 账号。",
+        questions: "关于本政策、删除记录或停止邮件的问题，都请优先在 Telegram 私聊群管理员。",
+        backup: '不方便使用 Telegram 时，备用邮箱为 <a href="mailto:privacy@orbi.build">privacy@orbi.build</a>。',
+        optOut: "不想收到这类邮件的话，直接回复邮件或写信到 privacy@orbi.build，我们会删除这些记录。",
+      },
+    };
+
+    for (const [output, expected] of Object.entries(privacyPages)) {
+      const html = shipped.get(output);
+      for (const [name, fragment] of Object.entries(expected)) {
+        expect(html, `${output}: ${name}`).toContain(fragment);
+      }
+      // Reordering the contact text must not leave a dangling back-reference.
+      expect(html, `${output}: relative address reference`).not.toContain("the address above");
+      expect(html, `${output}: relative address reference`).not.toContain("上面的地址");
+      expect(mainOf(html), `${output}: GitHub Issues entry`).not.toContain("github.com/orbi-build/orbi/issues");
+      expect(html.indexOf(expected.questions), `${output}: Telegram before the backup email`)
+        .toBeLessThan(html.indexOf(expected.backup));
+    }
+  });
+});
+
 describe("terms billing copy matches the Cloud pricing page (Issue #813)", () => {
   const expected = {
     "terms/index.html": [
