@@ -123,10 +123,25 @@ describe("shared hero layout (Issue #355)", () => {
           expect(metrics.rightDifference, `${context} heading/lede right edges`).toBeLessThanOrEqual(rightEdgeTolerance);
           expect(metrics.heightRatio, `${context} heading height`).toBeLessThanOrEqual(0.18);
           if (path === "/" || path === "/zh/") {
-            if (width >= 900) expect(metrics.fontSize, `${context} font size`).toBe(68);
-            if (width < 700) expect(metrics.fontSize, `${context} font size`).toBe(42);
-            expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(1);
-            expect(metrics.lineCount, `${context} line count`).toBe(2);
+            // Issue #977: 64px base, clamp(56px, 4vw, 64px) once the two-column
+            // layout starts at 981px, 42px on phones; 700–980px stays on the
+            // 64px single-column base rather than shrinking to the phone size.
+            if (width >= 981) {
+              expect(metrics.fontSize, `${context} font size`).toBeGreaterThanOrEqual(56);
+              expect(metrics.fontSize, `${context} font size`).toBeLessThanOrEqual(64);
+            } else if (width <= 699) {
+              expect(metrics.fontSize, `${context} font size`).toBe(42);
+            } else {
+              expect(metrics.fontSize, `${context} font size`).toBe(64);
+            }
+            expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
+            if (width >= 1280) expect(metrics.lineCount, `${context} line count`).toBe(1);
+            // Issue #977: with the forced break gone the phone headline wraps
+            // naturally, so the count is a bound rather than a number: whether
+            // the joined headline fits the 358px copy column at 42px depends on
+            // the installed CJK face — the two-line count measured with Noto
+            // CJK became one line on a browser without one.
+            if (width === 390) expect(metrics.lineCount, `${context} line count`).toBeLessThanOrEqual(2);
           } else if (width >= 768) {
             expect(metrics.activeBreaks, `${context} forced heading breaks`).toBe(0);
           }
@@ -195,7 +210,8 @@ describe("shared hero layout (Issue #355)", () => {
     expect(css).toContain("--hero-copy-width: 48rem;");
     expect(css.match(/max-width: var\(--hero-copy-width\);/g)).toHaveLength(2);
     expect(css).toContain(".responsive-break { display: none; }");
-    expect(css).toContain(".hero.homepage-hero h1 {\n  font-size: 68px;\n  line-height: 1.02;\n  letter-spacing: -2px;\n}");
+    expect(css).toContain(".hero.homepage-hero h1 {\n  font-size: 64px;\n  line-height: 1.02;\n  letter-spacing: -0.055em;\n}");
+    expect(css).toContain("@media (min-width: 981px) {\n  .hero.homepage-hero h1 {\n    font-size: clamp(56px, 4vw, 64px);\n  }\n}");
     expect(css).toContain("@media (max-width: 699px) {\n  .hero.homepage-hero h1 {\n    font-size: 42px;\n  }\n}");
   });
 });

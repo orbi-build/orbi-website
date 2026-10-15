@@ -442,10 +442,19 @@ h1 {
   text-wrap: balance;
 }
 
+/* Issue #977: the homepage headline no longer carries a forced <br>. It fits
+   one line wherever the copy column has room and wraps naturally where it does
+   not — no white-space: nowrap, no per-language layout. */
 .hero.homepage-hero h1 {
-  font-size: 68px;
+  font-size: 64px;
   line-height: 1.02;
-  letter-spacing: -2px;
+  letter-spacing: -0.055em;
+}
+
+@media (min-width: 981px) {
+  .hero.homepage-hero h1 {
+    font-size: clamp(56px, 4vw, 64px);
+  }
 }
 
 @media (max-width: 699px) {

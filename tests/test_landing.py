@@ -275,11 +275,11 @@ class LandingTests(unittest.TestCase):
         for html, labels in (
             (
                 self.en_html,
-                ("How it works", "Pricing", "Docs", "GitHub", "Start free with GitHub"),
+                ("How it works", "Pricing", "Docs", "GitHub", "Try Cloud with GitHub"),
             ),
             (
                 self.zh_html,
-                ("产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 免费开始"),
+                ("产品怎么运作", "价格", "文档", "GitHub", "用 GitHub 试用 Cloud"),
             ),
         ):
             nav_start = html.index('data-primary-nav')
