@@ -169,7 +169,10 @@
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
           <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
-          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a></li>
+          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a>
+            <ol>
+              <li><a class="post-toc-link" href="#release-from-cloud">Release from Cloud</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </nav>
@@ -182,7 +185,10 @@
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
           <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
-          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a></li>
+          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a>
+            <ol>
+              <li><a class="post-toc-link" href="#release-from-cloud">Release from Cloud</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
@@ -197,10 +203,13 @@
   &quot;Run the tests and fix the failures.&quot;
 </code></pre>
 <p><a href="https://learn.chatgpt.com/docs/cli/reference">OpenAI&#39;s CLI reference</a> defines both spellings. It also limits this mode to an externally hardened environment. A temporary Git worktree does not provide that boundary: the agent still runs as your operating-system user.</p>
-<p>A process inside a VM or container can still access the files and credentials readable there. In my experiment, the outer environment hid my real home directory and other processes, exposed only fake writable fixtures, and provided no GPU devices. It retained network access for the model service and the local test listener, so this was not a network-isolation test.</p>
+<p>A VM or container still exposes the files and credentials readable inside it. My outer test environment hid the real home directory and other processes, exposed fake writable fixtures, and had no GPU devices. Network access stayed on for the model and test listener.</p>
 <h2 id="what-codex-yolo-mode-allowed-in-the-experiment">What Codex YOLO mode allowed in the experiment</h2>
-<p>I asked the agent to run the same Python probe under three configurations. It tried to write a file inside the repository, write a harmless sibling file outside it, and contact a loopback HTTP server. The outside directory was under the home cache, beyond the workspace and system temporary directories; <code class="post-code--single">/tmp</code> would be a poor boundary test because workspace permissions can include temporary directories.</p>
-<p>Each CLI configuration ran in a fresh outer sandbox with the same mount and network rules. I used <code class="post-code--single">--ignore-user-config</code> and an isolated CLI home so my normal settings could not silently enable host access. Existing authentication was available only to that temporary CLI environment and was removed afterward. Managed requirements can still constrain effective permissions.</p>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-boundaries-en.webp" alt="The outer test environment contains Codex and fake fixtures. YOLO removes Codex's inner sandbox; the outer environment remains." width="1800" height="1530" loading="lazy">
+<figcaption>Codex YOLO mode removes the inner boundary. The outer environment retained network access; this experiment did not test network isolation.</figcaption>
+</figure><p>I asked the agent to run the same Python probe under three configurations: write inside the repository, write a harmless sibling file outside it, and contact a loopback HTTP server. The sibling directory was under the home cache, beyond the workspace and system temporary directories. <code class="post-code--single">/tmp</code> is a poor boundary test because workspace permissions can include temporary directories.</p>
+<p>Each configuration ran in a fresh outer sandbox with the same mount and network rules. <code class="post-code--single">--ignore-user-config</code> and an isolated CLI home excluded my normal settings. Authentication was copied into the temporary environment and removed afterward. Managed requirements can still constrain effective permissions.</p>
 <p>I checked the files and listener requests independently of the agent&#39;s answer. There was one fixed-probe run per CLI configuration, using <code class="post-code--single">gpt-6.1-sol</code> at low reasoning effort:</p>
 <p class="post-table-hint">Swipe horizontally to see all modes.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all modes."><table class="table-comparison">
 <thead>
@@ -237,7 +246,6 @@
 </tr>
 </tbody></table></div>
 <p>The fixed probe actually executed in all three CLI runs. Denied writes returned a read-only filesystem error; denied connections returned “Operation not permitted.” I also ran the probe directly through Codex&#39;s built-in <code class="post-code--single">:read-only</code> and <code class="post-code--single">:workspace</code> permission profiles and got the same boundary results.</p>
-<p>The control confirmed that the fake files were writable and the listener was reachable. Under Codex YOLO mode, the sibling write and HTTP request succeeded within the outer environment. Under workspace-write, the repository write succeeded while the other two operations stopped at the inner sandbox.</p>
 <p>This small matrix measures those operations on this Linux setup. It does not establish a general escape-proof boundary, test hostile repositories, or measure the automatic approval reviewer&#39;s decisions. The <a href="https://github.com/orbi-build/orbi-website/blob/beta/docs/blog/codex-yolo-mode-lab.md">experiment notes and probe</a> describe the setup and reproduction steps.</p>
 <h2 id="run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</h2>
 <p>For a job whose dependencies are already prepared and whose edits should stay within its allowed workspace:</p>
@@ -245,8 +253,8 @@
   &quot;Fix the failing tests. Run the relevant checks and report what changed.&quot;
 </code></pre>
 <p><code class="post-code--single">exec</code> runs without the interactive terminal UI. <code class="post-code--single">workspace-write</code> sets the filesystem boundary. <code class="post-code--spaced">-a never</code> prevents approval requests, so a command outside the allowed permissions cannot obtain an escalation during the run. Dependency downloads or access to another directory may therefore leave the task incomplete. Prepare the required access before starting it.</p>
-<p>I checked ordinary behavior separately with this request: create <code class="post-code--single">greeting.py</code> containing <code class="post-code--spaced">print(&#39;workspace ok&#39;)</code>, then run it. Workspace-write completed it without Codex YOLO mode, creating the file and printing the message; the YOLO run also completed it. Under read-only, the agent said it could not create the file and made no tool call. That was one ordinary-task run per configuration, separate from the fixed probes.</p>
-<p>All six CLI runs exited 0, including the read-only task that never created its requested file. A successful CLI exit is not sufficient evidence that a coding task met its acceptance criteria. Check the expected files and run the project&#39;s tests before the next pipeline step uses the result.</p>
+<p>I also asked each configuration to create <code class="post-code--single">greeting.py</code> containing <code class="post-code--spaced">print(&#39;workspace ok&#39;)</code>, then run it. Workspace-write completed it without Codex YOLO mode; YOLO also completed it. Under read-only, the agent said it could not create the file and made no tool call. These three ordinary-task runs were separate from the fixed probes.</p>
+<p>All six CLI runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.</p>
 <h2 id="what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</h2>
 <p>Older tutorials use this command:</p>
 <pre><code class="language-bash">codex exec --full-auto &quot;fix the failing tests&quot;
@@ -270,11 +278,22 @@ error: unexpected argument &#39;--full-auto&#39; found
 <p><a href="https://learn.chatgpt.com/docs/sandboxing/auto-review">Auto-review</a> evaluates an action that needs approval. Commands already permitted inside the sandbox run without that review; approved escalations can cross the normal boundary. After a denial, the agent must find a materially safer alternative or stop and ask the user. Account and organization policy can constrain this mode.</p>
 <p>I confirmed that 0.159.3 accepts the parameter. I did not test reviewer decisions in this matrix. Approval review also has a different job from reviewing a patch: permission to execute a command does not prove the resulting code is correct or ready to merge.</p>
 <h2 id="how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</h2>
-<p>When I hand a coding task to an agent, I want the resulting change tested, reviewed and merged. I built Orbi around GitHub Issues for that workflow: put the acceptance criteria in an Issue and add <code class="post-code--single">ai-ready</code>. The runner starts Pi in a separate Git worktree, then pushes the task branch and opens a PR. Self-hosted Orbi can use Pi&#39;s <code class="post-code--single">openai-codex</code> provider with Codex OAuth; the CLI flags in this article are not Orbi settings.</p>
-<p>The worktree keeps task changes out of the shared checkout. It does not restrict which files a process can read or which hosts it can contact. When self-hosting Orbi, choose the runner&#39;s operating-system account, credentials and network access with that in mind. A later code review cannot undo a command that has already used those permissions.</p>
-<p>Before a merge, a fresh Pi session reviews the PR against the Issue. The runner checks the review verdict and rejects an externally changed PR head. If the base has advanced and merges without conflicts, it can absorb that update and check the new head without starting another review session. Pending checks defer the merge; failed checks block it. The tests this gate covers are the ones the repository actually defines.</p>
-<p>In Cloud, sign in and open <strong>Versions</strong> for your connected repository on the status page. If you have only one connected repository, expand <strong>Usage and settings → Versions</strong> at the bottom. Click <strong>Create release task</strong> on the current version&#39;s row. Cloud creates the GitHub release Issue and its labels for you; Orbi handles the release gates, tag and GitHub Release. A release starts with that user action, rather than with every merged development Issue. You can inspect a completed example: <a href="https://github.com/orbi-build/orbi/issues/1522">Issue #1522, created from Cloud</a>, records the checks and the published <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.60">v0.5.60 release</a>.</p>
-<p>For the self-hosted Codex OAuth setup, follow the <a href="/guides/codex-github-issues/?ref=blog-codex-yolo">Codex integration guide</a>. To use the managed workflow, <a href="/cloud/?ref=blog-codex-yolo">connect a repository to Orbi Cloud</a>. Cloud uses its own model configuration; it does not inherit your local Codex login or the permissions of a Codex YOLO mode session.</p>
+<p>I built Orbi to take a coding task through a PR, review and merge. Write the acceptance criteria in a GitHub Issue and add <code class="post-code--single">ai-ready</code>; the runner starts Pi in a separate worktree, pushes the task branch and opens a PR.</p>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-orbi-flow-en.webp" alt="Orbi's successful delivery path: ai-ready Issue, Pi in a worktree, PR, fresh review and repository checks, then merge. Separately, a Cloud release button creates a release Issue leading through gates to a tag and GitHub Release." width="1800" height="2010" loading="lazy">
+<figcaption>A fresh Pi session reviews the PR. Release starts with a separate action in Cloud.</figcaption>
+</figure><p>The runner checks that review&#39;s verdict and rejects externally changed PR heads. It can absorb a conflict-free base update and check the new head without another review session. Pending checks defer merge; failed checks block it. Test coverage depends on the checks your repository defines.</p>
+<p>A worktree separates checkouts, not process permissions. When self-hosting, configure the runner&#39;s OS account, credentials and network access accordingly. Review cannot undo permissions already used during execution.</p>
+<h3 id="release-from-cloud">Release from Cloud</h3>
+<ol>
+<li>Sign in to the status page and open <strong>Versions</strong> for your repository. With only one connected repository, expand <strong>Usage and settings → Versions</strong> at the bottom.</li>
+<li>Click <strong>Create release task</strong> on the current version&#39;s row. Cloud creates the GitHub release Issue and its labels; Orbi runs the gates and publishes the tag and GitHub Release.</li>
+</ol>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-release-proof.webp" alt="Published GitHub release notes for v0.5.60 identify release Issue 1522 and closed scope Issues 1518 and 1519." width="1944" height="1824" loading="lazy">
+<figcaption>Published release notes, captured on 16 October 2026. Release Issue #1522 was created from Cloud.</figcaption>
+</figure><p>Source: <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.60">v0.5.60 release</a> and <a href="https://github.com/orbi-build/orbi/issues/1522">Cloud-created Issue #1522</a>.</p>
+<p>Self-hosted Orbi supports Codex OAuth through Pi&#39;s <code class="post-code--single">openai-codex</code> provider; follow the <a href="/guides/codex-github-issues/?ref=blog-codex-yolo">Codex integration guide</a>. For managed delivery, <a href="/cloud/?ref=blog-codex-yolo">connect your repository to Orbi Cloud</a>. Cloud uses its own model configuration, not your local Codex login or Codex YOLO mode permissions. The CLI flags above are not Orbi settings.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
