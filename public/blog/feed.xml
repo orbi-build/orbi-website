@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Codex YOLO mode: what runs without approval</title>
+      <link>https://orbi.build/blog/codex-yolo-mode/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/codex-yolo-mode/</guid>
+      <pubDate>Fri, 16 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.</description>
+    </item>
+    <item>
       <title>YOLO mode Claude Code vs auto mode: what I measured</title>
       <link>https://orbi.build/blog/claude-code-yolo-mode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-yolo-mode/</guid>
