@@ -169,7 +169,7 @@
           <li><a class="post-toc-link" href="#保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</a></li>
           <li><a class="post-toc-link" href="#codex-full-auto-命令现在还能用吗">Codex full auto 命令现在还能用吗</a></li>
           <li><a class="post-toc-link" href="#需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</a></li>
-          <li><a class="post-toc-link" href="#权限配置之后-谁接住交付流程">权限配置之后，谁接住交付流程</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </nav>
@@ -182,12 +182,12 @@
           <li><a class="post-toc-link" href="#保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</a></li>
           <li><a class="post-toc-link" href="#codex-full-auto-命令现在还能用吗">Codex full auto 命令现在还能用吗</a></li>
           <li><a class="post-toc-link" href="#需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</a></li>
-          <li><a class="post-toc-link" href="#权限配置之后-谁接住交付流程">权限配置之后，谁接住交付流程</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</a></li>
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
 <p>Codex YOLO mode 指的是 <code class="post-code--single">--yolo</code>，它是 <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code> 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 <code class="post-code--spaced">codex -a never exec --sandbox workspace-write</code>。</p>
-<p>我是 Lawrence Liu，<a href="https://github.com/orbi-build/orbi">Orbi</a> 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 使用 Pi 的 Codex provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Lawrence Liu，<a href="https://github.com/orbi-build/orbi">Orbi</a> 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 的 Codex 接入使用 Pi provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="怎样启动-codex-yolo-mode">怎样启动 Codex YOLO mode</h2>
 <p>在已经做好外层隔离的一次性运行环境中执行：</p>
 <pre><code class="language-bash">codex exec --yolo &quot;Run the tests and fix the failures.&quot;
@@ -269,9 +269,12 @@ error: unexpected argument &#39;--full-auto&#39; found
 <p>它组合了 workspace-write、on-request 审批和自动 reviewer。CLI 文档列明它与显式 sandbox 参数、YOLO 冲突，应单独使用。</p>
 <p><a href="https://learn.chatgpt.com/docs/sandboxing/auto-review">Auto-review</a>检查符合条件、需要审批的操作。沙箱已经允许的命令不会经过这道 review；获批的提权请求可以跨出通常的边界。请求被拒绝后，agent 必须改用风险实质上更低的方案；找不到这样的方案时，应停下来询问用户。账户和组织策略也可能限制这个模式。</p>
 <p>我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。</p>
-<h2 id="权限配置之后-谁接住交付流程">权限配置之后，谁接住交付流程</h2>
-<p>Codex YOLO mode 回答的是哪些命令能够不经询问直接运行。反复执行开发任务，还需要任务队列、验收检查，以及对 pull request 的后续处理。</p>
-<p>Orbi 做的是这一段流程。它的 Codex provider 使用 Pi 集成，本文这些 CLI 参数不是 Orbi 设置。<a href="/zh/guides/codex-github-issues/?ref=blog-codex-yolo">Codex 集成指南</a>介绍了 GitHub Issue 的交付方式。对本文的 CLI 任务，workspace-write 能满足需求时就保留它；任务确实需要完全绕过内层权限时，由外部环境承担隔离。</p>
+<h2 id="orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</h2>
+<p>我把编码任务交给 agent 时，希望它产出的改动经过测试、评审，最后合并。Orbi 用 GitHub Issue 接收任务：一张写清验收标准的 Issue 加上 <code class="post-code--single">ai-ready</code> 后，runner 就在单独的 Git worktree 中启动 Pi，再推送任务分支、创建 PR。自托管 Orbi 可以通过 Pi 的 <code class="post-code--single">openai-codex</code> provider 使用 Codex OAuth；本文的 CLI 参数不是 Orbi 设置。</p>
+<p>worktree 把任务改动与共享检出目录分开，不能限制进程读取哪些文件、连接哪些主机。自托管 Orbi 时，运行账户、凭据和网络访问都要按这个边界配置。后续代码评审管不到命令执行时读取的文件或发出的网络请求。</p>
+<p>合并前，另一个 Pi 会话按 Issue 的要求评审 PR。runner 核对评审结论，并拒绝审稿后被外部改动的 PR head。如果基础分支前进且能无冲突合入，runner 可以吸收这次更新、检查新的 head，无需再启动一轮评审。检查未完成时等待，失败时阻止合并。这里能覆盖哪些测试，取决于仓库实际定义了哪些检查。</p>
+<p>发版也可以直接在 Cloud 操作：登录状态页，打开已连接项目的“版本”区。只连接了一个项目时，入口在页面底部的“用量与设置 → 版本”。在当前版本行点击“创建 Release 任务”，Cloud 会代建 GitHub 发版 Issue、加好标签，再由 Orbi 执行发版门禁、打 tag、发布 GitHub Release。发版由这次点击发起，不随每张开发 Issue 的合并自动触发。这里有一条完成记录：<a href="https://github.com/orbi-build/orbi/issues/1522">由 Cloud 创建的 Issue #1522</a>，里面能看到检查结果和已发布的 <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.60">v0.5.60</a>。</p>
+<p>自托管 Orbi 的 Codex OAuth 配置步骤见 <a href="/zh/guides/codex-github-issues/?ref=blog-codex-yolo">Codex 集成指南</a>。使用托管流程则<a href="/zh/cloud/?ref=blog-codex-yolo">把仓库连到 Orbi Cloud</a>。Cloud 使用自己的模型配置，不会继承你本机的 Codex 登录或 Codex YOLO mode 会话权限。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
