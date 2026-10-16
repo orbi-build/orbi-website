@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="670" viewBox="0 0 600 670" role="img" aria-labelledby="title desc">
+  <title id="title">Orbi 交付流程与单独发起的发版</title>
+  <desc id="desc">正常交付路径：带 ai-ready 的 Issue 启动 Pi，在 worktree 中完成改动并创建 PR，独立评审会话和仓库检查之后才合并。发版由用户在 Cloud 单独点击创建 Release 任务开始，Cloud 代建发版 Issue，再经门禁、打 tag、发布 GitHub Release。</desc>
+  <style>text{font-family:Arial,'Noto Sans CJK SC',sans-serif;fill:#10292c}.label{font-size:28px;font-weight:700}.body{font-size:26px}.arrow{fill:none;stroke:#0a6b52;stroke-width:3}</style>
+  <rect width="600" height="670" fill="#e8eeeb"/>
+  <text x="28" y="46" class="label">交付：正常完成的路径</text>
+  <rect x="28" y="68" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="112" class="label">Issue + 验收标准 + ai-ready</text>
+  <path d="M300 138v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="164" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="208" class="label">Pi 在 worktree 中实现 → PR</text>
+  <path d="M300 234v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="260" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="304" class="label">独立评审会话 + 仓库检查</text>
+  <path d="M300 330v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="356" width="544" height="60" fill="#f7f8f5" stroke="#0a6b52" stroke-width="2"/>
+  <text x="48" y="396" class="label">合并</text>
+  <path d="M28 446h544" stroke="#b8c5c1" stroke-width="2"/>
+  <text x="28" y="486" class="label">发版：在 Cloud 单独发起</text>
+  <rect x="28" y="506" width="544" height="136" fill="#06151b"/>
+  <text x="48" y="546" class="label" style="fill:#ffb000">点击“创建 Release 任务”</text>
+  <text x="48" y="585" class="body" style="fill:#edf5f0">Cloud 代建 GitHub 发版 Issue</text>
+  <text x="48" y="624" class="body" style="fill:#edf5f0">→ 发版门禁 → tag + GitHub Release</text>
+</svg>

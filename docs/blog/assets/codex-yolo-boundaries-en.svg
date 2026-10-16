@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="510" viewBox="0 0 600 510" role="img" aria-labelledby="title desc">
+  <title id="title">Two boundaries in the Linux experiment</title>
+  <desc id="desc">An outer test environment contains the Codex process and fake fixtures. Codex's inner sandbox restricts the probe. YOLO removes the inner sandbox, while the outer environment remains.</desc>
+  <style>text{font-family:Arial,'Noto Sans CJK SC',sans-serif;fill:#10292c}.label{font-size:28px;font-weight:700}.body{font-size:26px}.mono{font-family:'DejaVu Sans Mono',monospace;font-size:24px}.muted{fill:#526566}</style>
+  <rect width="600" height="510" fill="#e8eeeb"/>
+  <text x="28" y="46" class="label">Two boundaries in this experiment</text>
+  <rect x="28" y="70" width="544" height="412" fill="#f7f8f5" stroke="#10292c" stroke-width="2"/>
+  <text x="48" y="110" class="label">Outer test environment</text>
+  <text x="48" y="148" class="body muted">Real home and other processes hidden</text>
+  <rect x="48" y="174" width="504" height="172" fill="#e8eeeb" stroke="#0a6b52" stroke-width="3"/>
+  <text x="68" y="216" class="label">Codex's inner sandbox</text>
+  <text x="68" y="256" class="mono">read-only / workspace-write</text>
+  <path d="M68 286h464" stroke="#b8c5c1" stroke-width="2"/>
+  <text x="68" y="324" class="body">--yolo removes this inner boundary</text>
+  <text x="48" y="390" class="body">Probe → repo, sibling file, loopback HTTP</text>
+  <text x="48" y="434" class="body muted">Fake fixtures; outer network left on</text>
+  <text x="48" y="466" class="body muted">No network-isolation claim</text>
+</svg>
