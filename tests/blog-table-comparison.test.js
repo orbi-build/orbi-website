@@ -99,16 +99,28 @@ describe("article comparison matrices (Issue #975)", () => {
       .toThrow(/content\/blog\/t\.md:[\s\S]*table_layout[\s\S]*comparison/);
   });
 
-  it("enables comparison layout in exactly the two YOLO posts", async () => {
-    const declared = [];
+  it("renders every declared article as an accessible comparison matrix", async () => {
     for (const [dir, prefix] of [["content/blog", ""], ["content/blog/zh", "zh/"]]) {
       for (const name of await readdir(join(ROOT, dir))) {
         if (!name.endsWith(".md")) continue;
         const source = await readFile(join(ROOT, dir, name), "utf8");
-        if (/^table_layout:\s*comparison\s*$/m.test(source)) declared.push(`${prefix}${name}`);
+        if (!/^table_layout:\s*comparison\s*$/m.test(source)) continue;
+        const post = postFromSource(`${prefix}${name}`, source);
+        const html = await readFile(join(ROOT, "public", post.output), "utf8");
+        const hint = post.lang === "zh" ? ZH_HINT : EN_HINT;
+        const tables = [...html.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)];
+        expect(tables.length, post.output).toBeGreaterThan(0);
+        for (const [table] of tables) {
+          expect(table, post.output).toContain('<th scope="col">');
+          expect(table, post.output).toContain('<th scope="row">');
+          expect(table, post.output).not.toContain("data-label=");
+        }
+        expect(html, post.output).toContain(
+          `<div class="post-table-scroll" tabindex="0" role="region" aria-label="${hint}">`,
+        );
+        expect(html, post.output).toContain(`<p class="post-table-hint">${hint}</p>`);
       }
     }
-    expect(declared.sort()).toEqual(["claude-code-yolo-mode.md", "zh/claude-code-yolo-mode.md"]);
   });
 
   it("keeps six actions, five modes, all 30 results, emphasis and the footnote in EN", async () => {

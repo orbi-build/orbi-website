@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Codex YOLO mode: what runs without approval (English):
+  https://orbi.build/blog/codex-yolo-mode/
+- Codex YOLO mode 会放开什么权限 (Chinese):
+  https://orbi.build/zh/blog/codex-yolo-mode/
 - YOLO mode Claude Code vs auto mode: what I measured (English):
   https://orbi.build/blog/claude-code-yolo-mode/
 - Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍 (Chinese):
