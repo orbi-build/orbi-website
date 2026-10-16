@@ -11,7 +11,7 @@ table_layout: comparison
 
 Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write`.
 
-I'm Lawrence Liu, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi uses Pi's Codex provider; it does not run Codex CLI. The commands below are for people running the CLI themselves.
+I'm Lawrence Liu, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi's Codex integration uses Pi's provider; it does not run Codex CLI. The commands below are for people running the CLI themselves.
 
 ## How to start Codex YOLO mode
 
@@ -106,11 +106,17 @@ This preset uses workspace-write, on-request approvals and an automatic reviewer
 
 I confirmed that 0.159.3 accepts the parameter. I did not test reviewer decisions in this matrix. Approval review also has a different job from reviewing a patch: permission to execute a command does not prove the resulting code is correct or ready to merge.
 
-## Where Orbi fits after a CLI task
+## How Orbi runs unattended and gates a merge
 
-Codex YOLO mode answers which commands may run without prompting. A recurring delivery workflow also needs a queue, acceptance checks and responsibility for the resulting pull request.
+When I hand a coding task to an agent, I want the resulting change tested, reviewed and merged. I built Orbi around GitHub Issues for that workflow: put the acceptance criteria in an Issue and add `ai-ready`. The runner starts Pi in a separate Git worktree, then pushes the task branch and opens a PR. Self-hosted Orbi can use Pi's `openai-codex` provider with Codex OAuth; the CLI flags in this article are not Orbi settings.
 
-I build Orbi to handle that workflow. Its Codex provider uses Pi's integration, so these CLI flags are not Orbi settings. The [Codex integration guide](/guides/codex-github-issues/?ref=blog-codex-yolo) shows the separate GitHub Issue workflow. For the CLI task above, keep the workspace sandbox when it meets the job's requirements; use an external isolation boundary when the job requires full bypass.
+The worktree keeps task changes out of the shared checkout. It does not restrict which files a process can read or which hosts it can contact. When self-hosting Orbi, choose the runner's operating-system account, credentials and network access with that in mind. A later code review cannot undo a command that has already used those permissions.
+
+Before a merge, a fresh Pi session reviews the PR against the Issue. The runner checks the review verdict and rejects an externally changed PR head. If the base has advanced and merges without conflicts, it can absorb that update and check the new head without starting another review session. Pending checks defer the merge; failed checks block it. The tests this gate covers are the ones the repository actually defines.
+
+In Cloud, sign in and open **Versions** for your connected repository on the status page. If you have only one connected repository, expand **Usage and settings → Versions** at the bottom. Click **Create release task** on the current version's row. Cloud creates the GitHub release Issue and its labels for you; Orbi handles the release gates, tag and GitHub Release. A release starts with that user action, rather than with every merged development Issue. You can inspect a completed example: [Issue #1522, created from Cloud](https://github.com/orbi-build/orbi/issues/1522), records the checks and the published [v0.5.60 release](https://github.com/orbi-build/orbi/releases/tag/v0.5.60).
+
+For the self-hosted Codex OAuth setup, follow the [Codex integration guide](/guides/codex-github-issues/?ref=blog-codex-yolo). To use the managed workflow, [connect a repository to Orbi Cloud](/cloud/?ref=blog-codex-yolo). Cloud uses its own model configuration; it does not inherit your local Codex login or the permissions of a Codex YOLO mode session.
 
 ## Related
 

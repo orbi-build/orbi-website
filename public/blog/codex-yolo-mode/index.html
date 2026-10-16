@@ -169,7 +169,7 @@
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
           <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
-          <li><a class="post-toc-link" href="#where-orbi-fits-after-a-cli-task">Where Orbi fits after a CLI task</a></li>
+          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </nav>
@@ -182,12 +182,12 @@
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
           <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
-          <li><a class="post-toc-link" href="#where-orbi-fits-after-a-cli-task">Where Orbi fits after a CLI task</a></li>
+          <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
 <p>Codex YOLO mode is <code class="post-code--single">--yolo</code>, an alias for <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code>. It skips approval prompts and removes Codex&#39;s local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with <code class="post-code--spaced">codex -a never exec --sandbox workspace-write</code>.</p>
-<p>I&#39;m Lawrence Liu, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi uses Pi&#39;s Codex provider; it does not run Codex CLI. The commands below are for people running the CLI themselves.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Lawrence Liu, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi&#39;s Codex integration uses Pi&#39;s provider; it does not run Codex CLI. The commands below are for people running the CLI themselves.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="how-to-start-codex-yolo-mode">How to start Codex YOLO mode</h2>
 <p>Inside your disposable, externally isolated runner:</p>
 <pre><code class="language-bash">codex exec --yolo &quot;Run the tests and fix the failures.&quot;
@@ -269,9 +269,12 @@ error: unexpected argument &#39;--full-auto&#39; found
 <p>This preset uses workspace-write, on-request approvals and an automatic reviewer for eligible approval requests. The CLI reference lists conflicts with an explicit sandbox flag and with YOLO. Use the preset on its own.</p>
 <p><a href="https://learn.chatgpt.com/docs/sandboxing/auto-review">Auto-review</a> evaluates an action that needs approval. Commands already permitted inside the sandbox run without that review; approved escalations can cross the normal boundary. After a denial, the agent must find a materially safer alternative or stop and ask the user. Account and organization policy can constrain this mode.</p>
 <p>I confirmed that 0.159.3 accepts the parameter. I did not test reviewer decisions in this matrix. Approval review also has a different job from reviewing a patch: permission to execute a command does not prove the resulting code is correct or ready to merge.</p>
-<h2 id="where-orbi-fits-after-a-cli-task">Where Orbi fits after a CLI task</h2>
-<p>Codex YOLO mode answers which commands may run without prompting. A recurring delivery workflow also needs a queue, acceptance checks and responsibility for the resulting pull request.</p>
-<p>I build Orbi to handle that workflow. Its Codex provider uses Pi&#39;s integration, so these CLI flags are not Orbi settings. The <a href="/guides/codex-github-issues/?ref=blog-codex-yolo">Codex integration guide</a> shows the separate GitHub Issue workflow. For the CLI task above, keep the workspace sandbox when it meets the job&#39;s requirements; use an external isolation boundary when the job requires full bypass.</p>
+<h2 id="how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</h2>
+<p>When I hand a coding task to an agent, I want the resulting change tested, reviewed and merged. I built Orbi around GitHub Issues for that workflow: put the acceptance criteria in an Issue and add <code class="post-code--single">ai-ready</code>. The runner starts Pi in a separate Git worktree, then pushes the task branch and opens a PR. Self-hosted Orbi can use Pi&#39;s <code class="post-code--single">openai-codex</code> provider with Codex OAuth; the CLI flags in this article are not Orbi settings.</p>
+<p>The worktree keeps task changes out of the shared checkout. It does not restrict which files a process can read or which hosts it can contact. When self-hosting Orbi, choose the runner&#39;s operating-system account, credentials and network access with that in mind. A later code review cannot undo a command that has already used those permissions.</p>
+<p>Before a merge, a fresh Pi session reviews the PR against the Issue. The runner checks the review verdict and rejects an externally changed PR head. If the base has advanced and merges without conflicts, it can absorb that update and check the new head without starting another review session. Pending checks defer the merge; failed checks block it. The tests this gate covers are the ones the repository actually defines.</p>
+<p>In Cloud, sign in and open <strong>Versions</strong> for your connected repository on the status page. If you have only one connected repository, expand <strong>Usage and settings → Versions</strong> at the bottom. Click <strong>Create release task</strong> on the current version&#39;s row. Cloud creates the GitHub release Issue and its labels for you; Orbi handles the release gates, tag and GitHub Release. A release starts with that user action, rather than with every merged development Issue. You can inspect a completed example: <a href="https://github.com/orbi-build/orbi/issues/1522">Issue #1522, created from Cloud</a>, records the checks and the published <a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.60">v0.5.60 release</a>.</p>
+<p>For the self-hosted Codex OAuth setup, follow the <a href="/guides/codex-github-issues/?ref=blog-codex-yolo">Codex integration guide</a>. To use the managed workflow, <a href="/cloud/?ref=blog-codex-yolo">connect a repository to Orbi Cloud</a>. Cloud uses its own model configuration; it does not inherit your local Codex login or the permissions of a Codex YOLO mode session.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>

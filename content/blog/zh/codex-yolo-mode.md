@@ -11,7 +11,7 @@ table_layout: comparison
 
 Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write`。
 
-我是 Lawrence Liu，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 使用 Pi 的 Codex provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
+我是 Lawrence Liu，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 的 Codex 接入使用 Pi provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
 
 ## 怎样启动 Codex YOLO mode
 
@@ -106,11 +106,17 @@ codex exec --approve-for-me \
 
 我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。
 
-## 权限配置之后，谁接住交付流程
+## Orbi 怎样无人值守运行，又怎样决定合并
 
-Codex YOLO mode 回答的是哪些命令能够不经询问直接运行。反复执行开发任务，还需要任务队列、验收检查，以及对 pull request 的后续处理。
+我把编码任务交给 agent 时，希望它产出的改动经过测试、评审，最后合并。Orbi 用 GitHub Issue 接收任务：一张写清验收标准的 Issue 加上 `ai-ready` 后，runner 就在单独的 Git worktree 中启动 Pi，再推送任务分支、创建 PR。自托管 Orbi 可以通过 Pi 的 `openai-codex` provider 使用 Codex OAuth；本文的 CLI 参数不是 Orbi 设置。
 
-Orbi 做的是这一段流程。它的 Codex provider 使用 Pi 集成，本文这些 CLI 参数不是 Orbi 设置。[Codex 集成指南](/zh/guides/codex-github-issues/?ref=blog-codex-yolo)介绍了 GitHub Issue 的交付方式。对本文的 CLI 任务，workspace-write 能满足需求时就保留它；任务确实需要完全绕过内层权限时，由外部环境承担隔离。
+worktree 把任务改动与共享检出目录分开，不能限制进程读取哪些文件、连接哪些主机。自托管 Orbi 时，运行账户、凭据和网络访问都要按这个边界配置。后续代码评审管不到命令执行时读取的文件或发出的网络请求。
+
+合并前，另一个 Pi 会话按 Issue 的要求评审 PR。runner 核对评审结论，并拒绝审稿后被外部改动的 PR head。如果基础分支前进且能无冲突合入，runner 可以吸收这次更新、检查新的 head，无需再启动一轮评审。检查未完成时等待，失败时阻止合并。这里能覆盖哪些测试，取决于仓库实际定义了哪些检查。
+
+发版也可以直接在 Cloud 操作：登录状态页，打开已连接项目的“版本”区。只连接了一个项目时，入口在页面底部的“用量与设置 → 版本”。在当前版本行点击“创建 Release 任务”，Cloud 会代建 GitHub 发版 Issue、加好标签，再由 Orbi 执行发版门禁、打 tag、发布 GitHub Release。发版由这次点击发起，不随每张开发 Issue 的合并自动触发。这里有一条完成记录：[由 Cloud 创建的 Issue #1522](https://github.com/orbi-build/orbi/issues/1522)，里面能看到检查结果和已发布的 [v0.5.60](https://github.com/orbi-build/orbi/releases/tag/v0.5.60)。
+
+自托管 Orbi 的 Codex OAuth 配置步骤见 [Codex 集成指南](/zh/guides/codex-github-issues/?ref=blog-codex-yolo)。使用托管流程则[把仓库连到 Orbi Cloud](/zh/cloud/?ref=blog-codex-yolo)。Cloud 使用自己的模型配置，不会继承你本机的 Codex 登录或 Codex YOLO mode 会话权限。
 
 ## 相关
 
