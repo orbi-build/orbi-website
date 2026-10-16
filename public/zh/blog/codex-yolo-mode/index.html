@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex YOLO mode 会放开什么权限 | Orbi</title>
+  <meta name="description" content="Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/codex-yolo-mode/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Codex YOLO mode 会放开什么权限">
+  <meta property="og:description" content="Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/codex-yolo-mode/">
+  <meta property="og:image" content="https://orbi.build/img/blog-codex-yolo-card.png">
+  <meta property="og:image:alt" content="Codex YOLO mode 会放开什么权限">
+  <meta property="article:published_time" content="2026-10-16">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Codex YOLO mode 会放开什么权限","datePublished":"2026-10-16","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/codex-yolo-mode/","image":"https://orbi.build/img/blog-codex-yolo-card.png","inLanguage":"zh-CN","description":"Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。","url":"https://orbi.build/zh/blog/codex-yolo-mode/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Codex YOLO mode 会放开什么权限</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-16">2026-10-16</time></p>
+
+          <p class="hero-lede">Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#怎样启动-codex-yolo-mode">怎样启动 Codex YOLO mode</a></li>
+          <li><a class="post-toc-link" href="#实测-codex-yolo-mode-能执行什么">实测 Codex YOLO mode 能执行什么</a></li>
+          <li><a class="post-toc-link" href="#保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</a></li>
+          <li><a class="post-toc-link" href="#codex-full-auto-命令现在还能用吗">Codex full auto 命令现在还能用吗</a></li>
+          <li><a class="post-toc-link" href="#需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</a>
+            <ol>
+              <li><a class="post-toc-link" href="#在-cloud-发版">在 Cloud 发版</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 7 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#怎样启动-codex-yolo-mode">怎样启动 Codex YOLO mode</a></li>
+          <li><a class="post-toc-link" href="#实测-codex-yolo-mode-能执行什么">实测 Codex YOLO mode 能执行什么</a></li>
+          <li><a class="post-toc-link" href="#保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</a></li>
+          <li><a class="post-toc-link" href="#codex-full-auto-命令现在还能用吗">Codex full auto 命令现在还能用吗</a></li>
+          <li><a class="post-toc-link" href="#需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</a></li>
+          <li><a class="post-toc-link" href="#orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</a>
+            <ol>
+              <li><a class="post-toc-link" href="#在-cloud-发版">在 Cloud 发版</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Codex YOLO mode 指的是 <code class="post-code--single">--yolo</code>，它是 <code class="post-code--single">--dangerously-bypass-approvals-and-sandbox</code> 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 <code class="post-code--spaced">codex -a never exec --sandbox workspace-write</code>。</p>
+<p>我是 Lawrence Liu，<a href="https://github.com/orbi-build/orbi">Orbi</a> 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 的 Codex 接入使用 Pi provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<h2 id="怎样启动-codex-yolo-mode">怎样启动 Codex YOLO mode</h2>
+<p>在已经做好外层隔离的一次性运行环境中执行：</p>
+<pre><code class="language-bash">codex exec --yolo &quot;Run the tests and fix the failures.&quot;
+</code></pre>
+<p>完整参数的含义相同：</p>
+<pre><code class="language-bash">codex exec --dangerously-bypass-approvals-and-sandbox \
+  &quot;Run the tests and fix the failures.&quot;
+</code></pre>
+<p><a href="https://learn.chatgpt.com/docs/cli/reference">OpenAI 的 CLI 文档</a> 定义了这两个写法，并要求运行环境有外部防护。新建一个 Git worktree 不提供操作系统层面的隔离：agent 仍以你的系统用户身份运行。</p>
+<p>虚拟机或容器内部可读的文件和凭据，进程依然能够访问。本次实验的外层环境隐藏了真实 home 目录和其他进程，只暴露假的可写测试目录，没有 GPU 设备。模型请求和本地测试服务仍需要网络。</p>
+<h2 id="实测-codex-yolo-mode-能执行什么">实测 Codex YOLO mode 能执行什么</h2>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-boundaries-zh.webp" alt="外层测试环境包含 Codex 和假的测试目录。YOLO 去掉 Codex 内层沙箱，外层环境仍然保留。" width="1800" height="1530" loading="lazy">
+<figcaption>Codex YOLO mode 去掉内层边界。外层环境保留了网络访问，本次实验未验证网络隔离。</figcaption>
+</figure><p>我让 agent 在三种配置下各运行一次相同的 Python 探针：向仓库内写文件、向仓库外同级目录写一个无害文件，再请求本机 loopback HTTP 服务。同级目录放在 home 下的 cache 中，避开工作区和系统临时目录。用 <code class="post-code--single">/tmp</code> 做越界目标容易测错，因为工作区权限可能包含临时目录。</p>
+<p>每次配置都用新的外层沙箱，挂载和网络规则相同。<code class="post-code--single">--ignore-user-config</code> 与独立 CLI home 排除日常配置的影响。登录认证临时复制进去，运行后删除；组织管理的要求仍可能限制实际权限。</p>
+<p>下面的结果来自独立检查文件和 HTTP 请求记录。每种 CLI 配置只有一次固定探针运行，模型为 <code class="post-code--single">gpt-6.1-sol</code>，推理档位 low：</p>
+<p class="post-table-hint">左右滑动查看所有模式。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有模式。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">执行方式</th>
+<th scope="col">仓库内文件</th>
+<th scope="col">仓库外同级文件</th>
+<th scope="col">Loopback HTTP 请求</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">直接运行 Python，对照组</th>
+<td>写入成功</td>
+<td>写入成功</td>
+<td>收到请求</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--spaced">codex exec --sandbox read-only</code>，审批 <code class="post-code--single">never</code></th>
+<td>拦截</td>
+<td>拦截</td>
+<td>拦截</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--spaced">codex exec --sandbox workspace-write</code>，审批 <code class="post-code--single">never</code></th>
+<td>写入成功</td>
+<td>拦截</td>
+<td>拦截</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--spaced">codex exec --yolo</code></th>
+<td>写入成功</td>
+<td>写入成功</td>
+<td>收到请求</td>
+</tr>
+</tbody></table></div>
+<p>三次 CLI 运行都实际执行了探针。写入被拦截时返回只读文件系统错误，网络被拦截时返回 “Operation not permitted”。我还通过 Codex 内置的 <code class="post-code--single">:read-only</code>、<code class="post-code--single">:workspace</code> 权限配置直接运行了探针，边界结果相同。</p>
+<p>这组实验只记录当前 Linux 环境里的三项操作，没有测试恶意仓库、沙箱逃逸或自动审批 reviewer 的判断。<a href="https://github.com/orbi-build/orbi-website/blob/beta/docs/blog/codex-yolo-mode-lab.md">实验记录与探针</a>提供了环境说明和复现步骤。</p>
+<h2 id="保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</h2>
+<p>如果依赖已经准备好，任务只需要在允许的工作区内改文件：</p>
+<pre><code class="language-bash">codex -a never exec --sandbox workspace-write \
+  &quot;Fix the failing tests. Run the relevant checks and report what changed.&quot;
+</code></pre>
+<p><code class="post-code--single">exec</code> 不启动交互式终端界面。<code class="post-code--single">workspace-write</code> 规定文件系统边界，<code class="post-code--spaced">-a never</code> 禁止请求审批，因此越出当前权限的命令不能在运行中申请提权。任务需要下载依赖或访问其他目录时，可能无法完成；这些访问条件要在启动前准备好。</p>
+<p>我还让每种配置各做一次普通任务：创建内容为 <code class="post-code--spaced">print(&#39;workspace ok&#39;)</code> 的 <code class="post-code--single">greeting.py</code>，然后运行它。workspace-write 完成了，没有用到 Codex YOLO mode；YOLO 也完成了。read-only 下，agent 表示无法创建文件，没有调用工具。普通任务加上固定探针，共六次 CLI 调用。</p>
+<p>六次 CLI 退出码全是 0，包括没有创建目标文件的 read-only 普通任务。流水线进入下一步前，还要检查目标文件和项目测试结果；正常退出本身不能证明任务达到了验收标准。</p>
+<h2 id="codex-full-auto-命令现在还能用吗">Codex full auto 命令现在还能用吗</h2>
+<p>旧教程常见这样的命令：</p>
+<pre><code class="language-bash">codex exec --full-auto &quot;fix the failing tests&quot;
+</code></pre>
+<p>在我测试的版本中，参数解析就会失败，任务还没有开始：</p>
+<pre><code class="language-text">$ codex --version
+codex-cli 0.159.3
+
+$ codex exec --full-auto --help
+error: unexpected argument &#39;--full-auto&#39; found
+# exit code: 2
+</code></pre>
+<p>OpenAI 当前的<a href="https://learn.chatgpt.com/docs/non-interactive-mode">非交互运行文档</a>说明，<code class="post-code--single">--full-auto</code> 已不再支持。需要修改仓库的脚本应明确使用 <code class="post-code--spaced">--sandbox workspace-write</code>；需要自动审批 review 时，可用 <code class="post-code--single">--approve-for-me</code>。一些搜索结果仍显示旧的兼容参数示例。实际是否可用，要核对安装版本的参数解析结果。</p>
+<p>迁移 Codex full auto 脚本时，先确定任务需要什么权限。直接替换成 <code class="post-code--single">--yolo</code> 会同时取消本地沙箱，权限变化大于“允许修改仓库”。</p>
+<h2 id="需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</h2>
+<p>官方还提供了这个预设：</p>
+<pre><code class="language-bash">codex exec --approve-for-me \
+  &quot;Fix the failing tests and run the relevant checks.&quot;
+</code></pre>
+<p>它组合了 workspace-write、on-request 审批和自动 reviewer。CLI 文档列明它与显式 sandbox 参数、YOLO 冲突，应单独使用。</p>
+<p><a href="https://learn.chatgpt.com/docs/sandboxing/auto-review">Auto-review</a>检查符合条件、需要审批的操作。沙箱已经允许的命令不会经过这道 review；获批的提权请求可以跨出通常的边界。请求被拒绝后，agent 必须改用风险实质上更低的方案；找不到这样的方案时，应停下来询问用户。账户和组织策略也可能限制这个模式。</p>
+<p>我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。</p>
+<h2 id="orbi-怎样无人值守运行-又怎样决定合并">Orbi 怎样无人值守运行，又怎样决定合并</h2>
+<p>我做 Orbi，是想让编码任务一路完成 PR、评审和合并。在 GitHub Issue 中写清验收标准，加上 <code class="post-code--single">ai-ready</code>，runner 就在单独的 worktree 中启动 Pi，推送任务分支、创建 PR。</p>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-orbi-flow-zh.webp" alt="Orbi 正常交付路径：ai-ready Issue、Pi worktree、PR、独立评审会话和仓库检查，最后合并。Cloud 的发版按钮单独代建发版 Issue，再经门禁、打 tag、发布 GitHub Release。" width="1800" height="2010" loading="lazy">
+<figcaption>另一个 Pi 会话评审 PR。发版由用户在 Cloud 单独发起。</figcaption>
+</figure><p>runner 核对评审结论，拒绝审稿后被外部改动的 PR head。基础分支前进且能无冲突合入时，它可以吸收更新、检查新的 head，无需再开评审会话。检查未完成时等待，失败时阻止合并。测试能覆盖什么，取决于仓库定义了哪些检查。</p>
+<p>worktree 隔开检出目录，不能限制进程权限。自托管时，运行账户、凭据和网络访问要据此配置；评审管不到执行时已经读取的文件或发出的请求。</p>
+<h3 id="在-cloud-发版">在 Cloud 发版</h3>
+<ol>
+<li>登录状态页，打开项目的“版本”区。只连了一个项目时，在页面底部展开“用量与设置 → 版本”。</li>
+<li>在当前版本行点击“创建 Release 任务”。Cloud 会代建 GitHub 发版 Issue、加好标签，Orbi 执行门禁后打 tag、发布 GitHub Release。</li>
+</ol>
+<figure class="post-media">
+<img src="/img/blog-codex-yolo-release-proof.webp" alt="已发布的 GitHub v0.5.60 发版记录，列出发版 Issue 1522 和已关闭的范围票 1518、1519。" width="1944" height="1824" loading="lazy">
+<figcaption>2026 年 10 月 16 日截取的已发布记录局部。对应的发版 Issue #1522 由 Cloud 创建。</figcaption>
+</figure><p>原始记录：<a href="https://github.com/orbi-build/orbi/releases/tag/v0.5.60">v0.5.60 Release</a>、<a href="https://github.com/orbi-build/orbi/issues/1522">由 Cloud 创建的 Issue #1522</a>。</p>
+<p>自托管 Orbi 可通过 Pi 的 <code class="post-code--single">openai-codex</code> provider 使用 Codex OAuth，步骤见 <a href="/zh/guides/codex-github-issues/?ref=blog-codex-yolo">Codex 集成指南</a>。使用托管流程则<a href="/zh/cloud/?ref=blog-codex-yolo">把仓库连到 Orbi Cloud</a>。Cloud 使用自己的模型配置，不继承本机 Codex 登录或 Codex YOLO mode 权限；上面的 CLI 参数也不是 Orbi 设置。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<ul>
+<li><a href="/zh/blog/claude-code-yolo-mode/">Claude Code YOLO 模式与权限边界</a></li>
+<li><a href="/zh/blog/claude-code-sandbox/">Claude Code sandbox 的文件和网络实测</a></li>
+<li><a href="/zh/compare/codex/?ref=blog-codex-yolo">对比 Codex 交付方式</a></li>
+<li><a href="/zh/cloud/?ref=blog-codex-yolo">使用 Orbi Cloud</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/codex-yolo-mode/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="510" viewBox="0 0 600 510" role="img" aria-labelledby="title desc">
+  <title id="title">Linux 实验中的两层边界</title>
+  <desc id="desc">外层测试环境包含 Codex 进程和假的测试目录。Codex 内层沙箱限制探针操作。YOLO 去掉内层沙箱，外层测试环境仍然保留。</desc>
+  <style>text{font-family:Arial,'Noto Sans CJK SC',sans-serif;fill:#10292c}.label{font-size:28px;font-weight:700}.body{font-size:26px}.mono{font-family:'DejaVu Sans Mono',monospace;font-size:24px}.muted{fill:#526566}</style>
+  <rect width="600" height="510" fill="#e8eeeb"/>
+  <text x="28" y="46" class="label">本次实验中的两层边界</text>
+  <rect x="28" y="70" width="544" height="412" fill="#f7f8f5" stroke="#10292c" stroke-width="2"/>
+  <text x="48" y="110" class="label">外层测试环境</text>
+  <text x="48" y="148" class="body muted">隐藏真实 home 目录和其他进程</text>
+  <rect x="48" y="174" width="504" height="172" fill="#e8eeeb" stroke="#0a6b52" stroke-width="3"/>
+  <text x="68" y="216" class="label">Codex 内层沙箱</text>
+  <text x="68" y="256" class="mono">read-only / workspace-write</text>
+  <path d="M68 286h464" stroke="#b8c5c1" stroke-width="2"/>
+  <text x="68" y="324" class="body">--yolo 去掉这一层边界</text>
+  <text x="48" y="390" class="body">探针 → 仓库、同级文件、Loopback HTTP</text>
+  <text x="48" y="434" class="body muted">使用假的测试目录；外层保留网络</text>
+  <text x="48" y="466" class="body muted">本次未验证网络隔离</text>
+</svg>

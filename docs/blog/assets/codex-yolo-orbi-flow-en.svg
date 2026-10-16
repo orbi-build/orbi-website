@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="670" viewBox="0 0 600 670" role="img" aria-labelledby="title desc">
+  <title id="title">Orbi delivery and a separately initiated release</title>
+  <desc id="desc">Successful delivery: an ai-ready Issue starts Pi in a worktree; Pi creates a PR; a fresh review session and repository checks precede merge. Separately, the user clicks Create release task in Cloud; Cloud creates the release Issue, which goes through gates to a tag and GitHub Release.</desc>
+  <style>text{font-family:Arial,'Noto Sans CJK SC',sans-serif;fill:#10292c}.label{font-size:28px;font-weight:700}.body{font-size:26px}.muted{fill:#526566}.arrow{fill:none;stroke:#0a6b52;stroke-width:3}</style>
+  <rect width="600" height="670" fill="#e8eeeb"/>
+  <text x="28" y="46" class="label">Delivery: the successful path</text>
+  <rect x="28" y="68" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="112" class="label">Issue + acceptance criteria + ai-ready</text>
+  <path d="M300 138v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="164" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="208" class="label">Pi in a worktree → PR</text>
+  <path d="M300 234v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="260" width="544" height="70" fill="#f7f8f5" stroke="#b8c5c1"/>
+  <text x="48" y="304" class="label">Fresh review + repository checks</text>
+  <path d="M300 330v26m-8-8 8 8 8-8" class="arrow"/>
+  <rect x="28" y="356" width="544" height="60" fill="#f7f8f5" stroke="#0a6b52" stroke-width="2"/>
+  <text x="48" y="396" class="label">Merge</text>
+  <path d="M28 446h544" stroke="#b8c5c1" stroke-width="2"/>
+  <text x="28" y="486" class="label">Release: a separate action in Cloud</text>
+  <rect x="28" y="506" width="544" height="136" fill="#06151b"/>
+  <text x="48" y="546" class="label" style="fill:#ffb000">Click “Create release task”</text>
+  <text x="48" y="585" class="body" style="fill:#edf5f0">Cloud creates a release Issue</text>
+  <text x="48" y="624" class="body" style="fill:#edf5f0">→ release gates → tag + GitHub Release</text>
+</svg>
