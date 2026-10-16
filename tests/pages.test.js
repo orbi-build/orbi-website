@@ -79,6 +79,28 @@ const footerRegion = (html) => region(html, '<footer class="site-footer shell">'
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
+// Issue #982: a Related link is classified by the page it points at, not by its
+// href string, so `/cloud/?ref=blog-yolo` is the same Cloud page as `/cloud/`
+// (the content flow keeps the attribution ref on landing-page links). Only a
+// root-relative href or an absolute URL on this site resolves; an external
+// origin, a non-root-relative href and an unparsable one return null.
+const SITE_ORIGIN = "https://orbi.build";
+const internalPath = (href) => {
+  if (!href.startsWith("/") && !href.startsWith("https://")) return null;
+  try {
+    const url = new URL(href, SITE_ORIGIN);
+    return url.origin === SITE_ORIGIN ? url.pathname : null;
+  } catch {
+    return null;
+  }
+};
+
+// Issue #438's Related contract: the destination paths of the contextual links
+// — a `/compare/…` entry or the `/cloud/` page of the post's own language.
+const contextualPaths = (links, prefix) => links
+  .map((href) => internalPath(href))
+  .filter((path) => path !== null && (path.startsWith(`${prefix}/compare/`) || path === `${prefix}/cloud/`));
+
 const proofBar = (html) => region(html, '<div class="hero-proof-bar shell">', '<section class="stats');
 
 describe("inner-page h1 line height (Issue #791)", () => {
@@ -1033,12 +1055,66 @@ describe("Issue #438 wording and internal-link contracts", () => {
         ]);
         continue;
       }
-      const contextual = links.filter((href) => href.startsWith(`${prefix}/compare/`) || href === `${prefix}/cloud/`);
+      const contextual = contextualPaths(links, prefix);
       expect(contextual.length, `${post.output}: related links`).toBeGreaterThanOrEqual(2);
       expect(contextual.length, `${post.output}: related links`).toBeLessThanOrEqual(3);
-      expect(contextual.some((href) => href.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
+      expect(contextual.some((path) => path.startsWith(`${prefix}/compare/`)), `${post.output}: compare link`).toBe(true);
       expect(contextual, `${post.output}: Cloud link`).toContain(`${prefix}/cloud/`);
     }
+  });
+});
+
+// Issue #982: the contract above decides by destination path, so the
+// ref-bearing Cloud link the content flow writes counts like the bare one,
+// while an external page merely named /cloud/, the login handoff, the other
+// language's path and a non-URL string stay out.
+describe("Related links are counted by destination path (Issue #982)", () => {
+  const contractHolds = (links, prefix) => {
+    const paths = contextualPaths(links, prefix);
+    return paths.length >= 2 && paths.length <= 3
+      && paths.some((path) => path.startsWith(`${prefix}/compare/`))
+      && paths.includes(`${prefix}/cloud/`);
+  };
+
+  it("accepts the current language's Cloud page with and without a ref", () => {
+    for (const [href, prefix] of [
+      ["/cloud/", ""],
+      ["/cloud/?ref=blog-yolo", ""],
+      ["/cloud/?ref=blog-codex-yolo#pricing", ""],
+      ["/zh/cloud/", "/zh"],
+      ["/zh/cloud/?ref=blog-codex-yolo", "/zh"],
+    ]) {
+      expect(contextualPaths([href], prefix), href).toEqual([`${prefix}/cloud/`]);
+    }
+  });
+
+  it("accepts a compare link whose query differs", () => {
+    expect(contextualPaths(["/compare/devin/?ref=blog-yolo"], "")).toEqual(["/compare/devin/"]);
+    expect(contextualPaths(["/zh/compare/devin/?ref=blog-yolo"], "/zh")).toEqual(["/zh/compare/devin/"]);
+  });
+
+  it("rejects an external /cloud/ page, the login handoff, another language's path and non-URLs", () => {
+    for (const [href, prefix] of [
+      ["https://example.com/cloud/", ""],
+      ["https://cloud-docs.orbi.build/cloud/", ""],
+      ["/cloud/login", ""],
+      ["/cloud/?ref=x", "/zh"],
+      ["/zh/cloud/", ""],
+      ["/blog/cloud/", ""],
+      ["cloud/", ""],
+      ["", ""],
+    ]) {
+      expect(contextualPaths([href], prefix), href).toEqual([]);
+    }
+  });
+
+  it("keeps the two-or-three-link requirement and both kinds", () => {
+    expect(contractHolds(["/compare/devin/", "/cloud/?ref=blog-yolo"], ""), "compare + ref Cloud").toBe(true);
+    expect(contractHolds(["/compare/devin/", "/cloud/"], ""), "compare + bare Cloud").toBe(true);
+    expect(contractHolds(["/compare/devin/"], ""), "no Cloud link").toBe(false);
+    expect(contractHolds(["/cloud/"], ""), "no compare link").toBe(false);
+    expect(contractHolds(["/compare/devin/", "/zh/cloud/"], ""), "wrong-language Cloud").toBe(false);
+    expect(contractHolds(["/compare/a/", "/compare/b/", "/cloud/", "/compare/c/"], ""), "four contextual links").toBe(false);
   });
 });
 
