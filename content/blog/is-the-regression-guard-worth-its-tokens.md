@@ -102,7 +102,7 @@ Models will change, and the right harness will change with them. Every study we 
 
 ## Limits
 
-Eight narrow-example bugs is a small set. Most cells have one to three runs, so a single run can move a cell by a third or more. The held-out results use one implementation model. We chose the narrow-example bugs because a narrow fix fails them. That's the class the guard targets, so their failure rate says little about Orbi's bugs in general. And a hidden grader only catches the defects the maintainer wrote tests for.
+Eight narrow-example bugs is a small set. Most cells have one to three runs, so a single run can move a cell by a third or more. The held-out results use one implementation model. We chose the narrow-example bugs because a narrow fix fails them. That's the class the guard targets, so their failure rate says little about Orbi's bugs in general. And a hidden grader only catches the defects the maintainer wrote tests for. A review misses real bugs too: on [Orbi's upstream PR to pyinfra](/blog/ai-contribute-to-open-source/?ref=blog-guard), the review let an emoji-width regression through, and a human caught it.
 
 ## Related
 

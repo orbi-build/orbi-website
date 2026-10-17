@@ -77,6 +77,8 @@ Orbi 这次没有一次做对，维护者也出手了好几回：解除阻塞、
 
 不过评审说「不行」的时候理由是具体的，修复也落在同一个 PR 上。在别人的代码库里接一张难票，从开 PR 到合并用了十个半小时。所有失败，包括 Orbi 自己的，都留在公开记录里，可以拿这篇文章去对。
 
+k8e 不是 Orbi 唯一提过 PR 的外部项目。[Orbi 给 brig、pyinfra 提的、已被合并的修复](/zh/blog/ai-contribute-to-open-source/?ref=blog-k8e)，每条都链到上游 PR，写清了 agent 做了哪部分、人做了哪部分。
+
 事后 Orbi 改了两处（[orbi#1219](https://github.com/orbi-build/orbi/issues/1219)）。一是 PR 正文不合规时，只让这一张票失败，不再拖垮整个 runner。二是工作流规范里写明：分期的工作不要用一张票承载，维护者先把每一期拆成子票，每张子票的 PR 只关它自己。
 
 如果你的仓库里也排着一串写清楚了的 issue，可以让 [Orbi Cloud](https://orbi.build/zh/cloud/?ref=blog-k8e) 在你的仓库里跑同样的流程。
