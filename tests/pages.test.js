@@ -1372,7 +1372,8 @@ describe("one unified footer on every content page", () => {
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
       // Issue #845 moved the Pi hub from the Guides row to the Resources row:
       // the Resources row gained one link and the Guides row lost one.
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 10, 8, 13, 7]);
+      // Issue #1000 adds the open-source contributions post to Resources.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 7]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
@@ -1380,8 +1381,54 @@ describe("one unified footer on every content page", () => {
         ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
         : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(45);
     }
+  });
+
+  // Issue #1000: the open-source contributions post ships in both languages
+  // (verified live by its sitemap entries) and gets an entry in the footer
+  // Resources group, following the page's own language. It is one more item in
+  // the same <ul>, written exactly like its siblings and sitting next to Blog.
+  it("links the open-source contributions post from the footer Resources group (Issue #1000)", () => {
+    const targets = {
+      en: {
+        href: "/blog/ai-contribute-to-open-source/",
+        label: "Open source contributions",
+        output: "blog/ai-contribute-to-open-source/index.html",
+      },
+      zh: {
+        href: "/zh/blog/ai-contribute-to-open-source/",
+        label: "开源贡献",
+        output: "zh/blog/ai-contribute-to-open-source/index.html",
+      },
+    };
+    for (const target of Object.values(targets)) {
+      expect(shipped.has(target.output), `${target.output}: the linked post must ship`).toBe(true);
+    }
+    const drift = [];
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
+        || region(footer, '<nav aria-label="页脚导航">', "</nav>");
+      const groups = [...nav.matchAll(/<div class="footer-group(?: [^"]+)?">\s*<h2>([^<]+)<\/h2>\s*<ul>([\s\S]*?)<\/ul>\s*<\/div>/g)];
+      const resources = groups[1]?.[2] ?? "";
+      const siteBase = page.nav.siteBase ?? "";
+      const own = targets[page.lang];
+      const other = targets[page.lang === "en" ? "zh" : "en"];
+      const ownHref = `${siteBase}${own.href}`;
+      const otherHref = `${siteBase}${other.href}`;
+      const blogHref = `${siteBase}${page.lang === "en" ? "/blog/" : "/zh/blog/"}`;
+      const hrefs = [...resources.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]);
+      if (!resources.includes(`<li><a href="${ownHref}">${own.label}</a></li>`)) {
+        drift.push(`${page.output}: missing <li><a href="${ownHref}">${own.label}</a></li> in the Resources group`);
+      } else if (hrefs.indexOf(ownHref) !== hrefs.indexOf(blogHref) + 1) {
+        drift.push(`${page.output}: the contributions link must follow the Blog link`);
+      }
+      if (hrefs.includes(otherHref)) {
+        drift.push(`${page.output}: footer crosses into the other language tree (${otherHref})`);
+      }
+    }
+    expect(drift, `footer open-source contributions link drift:\n${drift.join("\n")}`).toEqual([]);
   });
 
   it("links YouTube in the footer with the verbatim anchor, on en and zh (Issue #255)", () => {
