@@ -1978,16 +1978,82 @@ describe("Self-hosted landing pages (Issue #556)", () => {
     }
   });
 
-  it("keeps FAQ JSON-LD in lockstep with 3–6 visible questions", () => {
+  it("keeps FAQ JSON-LD in lockstep with 3–7 visible questions", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
       const section = region(html, '<div class="source-list">', "</div>");
       const visible = (section.match(/<strong>/g) ?? []).length;
       expect(visible, `${output}: visible FAQ count`).toBeGreaterThanOrEqual(3);
-      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(6);
+      // Issue #988 adds the seventh self-hosted question (Claude Code
+      // self-hosted environments vs Orbi), so the ceiling moves with it.
+      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(7);
       const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
       expect(faq, `${output}: FAQPage JSON-LD`).toBeTruthy();
       expect(faq.mainEntity, `${output}: JSON-LD lockstep`).toHaveLength(visible);
+    }
+  });
+});
+
+// Issue #988: "claude code self hosted" is two intents. Anthropic's own
+// self-hosted environments move a Claude Code cloud session onto your machine
+// (control plane stays with Anthropic, GitHub repositories only); this guide is
+// the other intent. One FAQ entry says so, in both languages, in the position
+// the Issue names, with the FAQPage schema in lockstep.
+describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
+  const pages = {
+    "guides/self-hosted-coding-agent/index.html": {
+      question: "Is this Claude Code's self-hosted environments?",
+      after: "Can I use a local model?",
+      before: "How do I stop it?",
+      phrases: ["Claude Code self-hosted environments", "Orbi is a different thing"],
+      href: "https://code.claude.com/docs/en/self-hosted-environments",
+    },
+    "zh/guides/self-hosted-coding-agent/index.html": {
+      question: "这是 Claude Code 的自托管环境吗？",
+      after: "能用本地模型吗？",
+      before: "怎么停掉？",
+      phrases: ["Claude Code 自托管环境", "Orbi 是另一回事"],
+      href: "https://code.claude.com/docs/en/self-hosted-environments",
+    },
+  };
+
+  // The source-list paragraphs are the visible FAQ items on these guide pages.
+  const faqItems = (html) => [...region(html, '<div class="source-list">', "</div>")
+    .matchAll(/<p><strong>([\s\S]*?)<\/strong><br>([\s\S]*?)<\/p>/g)]
+    .map(([, question, answer]) => ({ question: stripTags(question), answer: stripTags(answer) }));
+
+  it("places the Claude Code question between the local-model and stop entries", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const html = shipped.get(output);
+      const items = faqItems(html);
+      const questions = items.map((item) => item.question);
+      const index = questions.indexOf(expected.question);
+      expect(index, `${output}: new FAQ question`).toBe(questions.indexOf(expected.after) + 1);
+      expect(questions[index + 1], `${output}: new FAQ is followed by ${expected.before}`).toBe(expected.before);
+      const answer = items[index].answer;
+      for (const phrase of expected.phrases) {
+        expect(answer, `${output}: ${phrase}`).toContain(phrase);
+      }
+      expect(region(html, '<div class="source-list">', "</div>"), `${output}: official docs link`)
+        .toContain(`href="${expected.href}" rel="noopener"`);
+    }
+  });
+
+  it("keeps FAQPage mainEntity +1 with the new question and its visible answer", () => {
+    for (const [output, expected] of Object.entries(pages)) {
+      const html = shipped.get(output);
+      const items = faqItems(html);
+      const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
+      expect(faq, `${output}: FAQPage JSON-LD`).toBeTruthy();
+      expect(faq.mainEntity, `${output}: mainEntity count`).toHaveLength(items.length);
+      expect(items.length, `${output}: visible FAQ count`).toBe(7);
+      const index = items.findIndex((item) => item.question === expected.question);
+      expect(index, `${output}: new visible question`).toBeGreaterThan(-1);
+      const entity = faq.mainEntity[index];
+      expect(entity.name, `${output}: schema question`).toBe(expected.question);
+      expect(entity.acceptedAnswer?.text, `${output}: schema answer`).toBe(items[index].answer);
+      expect(faq.mainEntity.map((item) => item.name), `${output}: schema order`)
+        .toEqual(items.map((item) => item.question));
     }
   });
 });
