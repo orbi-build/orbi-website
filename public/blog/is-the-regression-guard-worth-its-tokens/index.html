@@ -222,38 +222,38 @@
 </figure><p>The gate saved less than we hoped. On all nine ordinary bugs, the gated guard passed 9 of 9 at a median 5.2 million tokens per run, against 2.8 million for the original harness and 5.8 million for the always-on guard. Most of those bugs touch text handling too (a regex, an argument parser, a line wrapper), so the gate opened on eight of the nine.</p>
 <h2 id="what-it-costs-set-by-set">What it costs, set by set</h2>
 <p>Pass rate is only half the decision. Cache reads make up about 97% of each run&#39;s tokens, and they grow with the number of turns an agent takes. A harness that asks for more checking usually costs more.</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Set</th>
-<th>Original</th>
-<th>Always-on guard (v15)</th>
-<th>Gated guard (v19)</th>
+<th scope="col">Set</th>
+<th scope="col">Original</th>
+<th scope="col">Always-on guard (v15)</th>
+<th scope="col">Gated guard (v19)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Set">3 issues Orbi got wrong (tuning)</td>
-<td data-label="Original">6/15 · 5.7M</td>
-<td data-label="Always-on guard (v15)">9/9 · 13.4M</td>
-<td data-label="Gated guard (v19)">3/3 · 10.8M</td>
+<th scope="row">3 issues Orbi got wrong (tuning)</th>
+<td>6/15 · 5.7M</td>
+<td>9/9 · 13.4M</td>
+<td>3/3 · 10.8M</td>
 </tr>
 <tr>
-<td data-label="Set">8 narrow-example bugs (unseen)</td>
-<td data-label="Original">8/12 · 3.6M</td>
-<td data-label="Always-on guard (v15)">9/10 · 8.3M</td>
-<td data-label="Gated guard (v19)">7/8 · 5.2M</td>
+<th scope="row">8 narrow-example bugs (unseen)</th>
+<td>8/12 · 3.6M</td>
+<td>9/10 · 8.3M</td>
+<td>7/8 · 5.2M</td>
 </tr>
 <tr>
-<td data-label="Set">9 ordinary bugs (unseen)</td>
-<td data-label="Original">9/9 · 2.8M</td>
-<td data-label="Always-on guard (v15)">9/9 · 5.8M</td>
-<td data-label="Gated guard (v19)">9/9 · 5.2M</td>
+<th scope="row">9 ordinary bugs (unseen)</th>
+<td>9/9 · 2.8M</td>
+<td>9/9 · 5.8M</td>
+<td>9/9 · 5.2M</td>
 </tr>
 <tr>
-<td data-label="Set">3 regression-prone bugs (unseen)</td>
-<td data-label="Original">4/4 · 7.1M</td>
-<td data-label="Always-on guard (v15)">3/3 · 13.9M (no numpy)</td>
-<td data-label="Gated guard (v19)">not run</td>
+<th scope="row">3 regression-prone bugs (unseen)</th>
+<td>4/4 · 7.1M</td>
+<td>3/3 · 13.9M (no numpy)</td>
+<td>not run</td>
 </tr>
 </tbody></table></div>
 <p>Each cell is passes / runs · median million tokens per run. Median minutes per run follow the same pattern: 11, 16 and 15 on the ordinary bugs; 12.5, 19 and 17.5 on the narrow-example ones.</p>

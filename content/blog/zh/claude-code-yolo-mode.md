@@ -6,7 +6,6 @@ lang: zh
 author: Lawrence Liu
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
-table_layout: comparison
 ---
 
 搜「Claude Code YOLO mode」，你要找的是一个参数：`--dangerously-skip-permissions`，它让每一次工具调用都不再问你、直接执行。想用它的理由很实在：长任务里权限弹窗越积越多，问到第十次「允许这条命令吗」，你已经不看就点同意了。但这个参数的名字本身就在警告你，官方文档也只建议在「隔离环境里，比如没有联网的容器、虚拟机或开发容器」里打开它。

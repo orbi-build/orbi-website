@@ -207,32 +207,32 @@
 <p>Pi 让 Orbi 可以通过一份 <code class="post-code--single">models.json</code> 格式的 provider 列表自己选模型；Orbi 交给会话的东西，系统提示词、skill、provider 和 model、工具开关、会话记录目录，Pi 都有原生参数对应，中间不需要转接层。Orbi 的 runner 只会发 Pi 的参数，所以我们试另外两个 coding agent 命令行工具（Claude Code 和 zcode）时，给它们各写了一个小转接层来翻译参数。结果我们写的两个转接层都在翻译参数时把 <code class="post-code--single">--skill</code> 列表弄丢了，那些会话一直没带 Orbi 的 skill 在跑，过了一阵才发现。毛病出在转接层，不在那两个工具；用 Pi 就不需要这一层。更完整的回答在 169 个 PR 那篇博文的<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E7%9B%B4%E7%94%A8-pi">「为什么一直用 Pi」</a>一节。</p>
 <h2 id="orbi-怎么启动-pi-coding-agent">Orbi 怎么启动 Pi coding agent</h2>
 <p>每个会话都是一个非交互的 <code class="post-code--spaced">pi --print</code> 进程。每次运行在 worktree 里有一个会话目录 <code class="post-code--single">.pi-session/</code>（和 <code class="post-code--single">.orbi/</code> 一样被 git 排除，不算未提交的改动），这次运行里的每个 Pi 进程各在里面写一个自己的 JSONL 文件（<code class="post-code--single">ticket</code> 会话改用临时目录）。runner 的实时进度和失败报告读的都是这些文件。命令在 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">pi_command.py</code></a> 里拼。角色有三个：</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>角色</th>
-<th>什么时候起</th>
-<th>工具</th>
-<th>产出</th>
+<th scope="col">角色</th>
+<th scope="col">什么时候起</th>
+<th scope="col">工具</th>
+<th scope="col">产出</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="角色"><code class="post-code--single">implement</code></td>
-<td data-label="什么时候起"><code class="post-code--single">ai-ready</code> 的 issue；或者同时带 <code class="post-code--single">ai-ready</code> 和 <code class="post-code--single">ai-ops-only</code> 的 issue（查日志这类运维活），换成运维提示词</td>
-<td data-label="工具">开</td>
-<td data-label="产出">写进 <code class="post-code--single">.orbi/plan.md</code> 的计划、代码改动和测试，停在一个本地 commit 上，从不 push（ops 活的产出是贴在 issue 上的证据，常常没有 commit）</td>
+<th scope="row"><code class="post-code--single">implement</code></th>
+<td><code class="post-code--single">ai-ready</code> 的 issue；或者同时带 <code class="post-code--single">ai-ready</code> 和 <code class="post-code--single">ai-ops-only</code> 的 issue（查日志这类运维活），换成运维提示词</td>
+<td>开</td>
+<td>写进 <code class="post-code--single">.orbi/plan.md</code> 的计划、代码改动和测试，停在一个本地 commit 上，从不 push（ops 活的产出是贴在 issue 上的证据，常常没有 commit）</td>
 </tr>
 <tr>
-<td data-label="角色"><code class="post-code--single">review</code></td>
-<td data-label="什么时候起">PR 上的每一轮评审</td>
-<td data-label="工具">开</td>
-<td data-label="产出">对发现的问题直接修、push 到任务分支，最后输出一行 <code class="post-code--single">REVIEW_VERDICT</code> JSON，写明它修完之后停在哪个 commit</td>
+<th scope="row"><code class="post-code--single">review</code></th>
+<td>PR 上的每一轮评审</td>
+<td>开</td>
+<td>对发现的问题直接修、push 到任务分支，最后输出一行 <code class="post-code--single">REVIEW_VERDICT</code> JSON，写明它修完之后停在哪个 commit</td>
 </tr>
 <tr>
-<td data-label="角色"><code class="post-code--single">ticket</code>（用文字答复）</td>
-<td data-label="什么时候起">同时打了 <code class="post-code--single">ai-content-only</code> 的 issue，这类 issue 要的是一段文字答复；另外，开了 <code class="post-code--single">clarify_thin_tickets</code> 时，认领前判断新 issue 写得够不够详细也用它</td>
-<td data-label="工具">关（<code class="post-code--single">--no-tools</code>）</td>
-<td data-label="产出">Orbi 贴到 issue 上的那段文字</td>
+<th scope="row"><code class="post-code--single">ticket</code>（用文字答复）</th>
+<td>同时打了 <code class="post-code--single">ai-content-only</code> 的 issue，这类 issue 要的是一段文字答复；另外，开了 <code class="post-code--single">clarify_thin_tickets</code> 时，认领前判断新 issue 写得够不够详细也用它</td>
+<td>关（<code class="post-code--single">--no-tools</code>）</td>
+<td>Orbi 贴到 issue 上的那段文字</td>
 </tr>
 </tbody></table></div>
 <p><code class="post-code--single">implement</code> 和 <code class="post-code--single">review</code> 会话带 <code class="post-code--single">--no-extensions</code> 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 <code class="post-code--single">pi_extensions</code> 以 <code class="post-code--single">--extension</code> 加回来，Orbi Cloud 就是这样加回 Codemode 的。<code class="post-code--single">ticket</code> 角色不开工具，启动时完全不带扩展相关的参数，所以另外两个角色有的 <code class="post-code--single">--no-extensions</code> 防护，它没有：Pi 的内置扩展会加载，runner 所在系统用户装的扩展也可能加载（具体是哪些，见下文「agent 目录和模型」）。这是一个已知的缺口。skill 也没有这样隔离：Orbi 用 <code class="post-code--single">--skill</code> 加上自己的 skill，但不传 <code class="post-code--single">--no-skills</code>，所以用户自己的 skill 在每个角色里都可能加载。</p>
@@ -280,39 +280,39 @@ review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退�
 <p>发版不经过 Pi：打了 <code class="post-code--single">ai-release</code> 的 issue 走一套固定流程，改版本号、打 tag、发布 GitHub Release（见<a href="/zh/guides/issue-to-release/">从 Issue 到 Release</a>）。</p>
 <h3 id="标签一览">标签一览</h3>
 <p>有三个标签和 <code class="post-code--single">ai-ready</code> 一起打，决定走哪条路：<code class="post-code--single">ai-content-only</code> 换成 <code class="post-code--single">ticket</code> 角色，<code class="post-code--single">ai-ops-only</code> 仍用 <code class="post-code--single">implement</code> 但换成运维提示词，<code class="post-code--single">ai-release</code> 不经过 Pi。记录 issue 走到哪一步的状态标签如下（评审通过、在等检查时，issue 保持原来的 <code class="post-code--single">ai-pr-opened</code> 或 <code class="post-code--single">ai-fix-needed</code>）：</p>
-<div class="post-table-scroll"><table>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>状态标签</th>
-<th>含义</th>
+<th scope="col">状态标签</th>
+<th scope="col">含义</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><code class="post-code--single">ai-ready</code></td>
+<th scope="row"><code class="post-code--single">ai-ready</code></th>
 <td>等着被认领</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-in-progress</code></td>
+<th scope="row"><code class="post-code--single">ai-in-progress</code></th>
 <td>已认领，有运行在做</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-pr-opened</code></td>
+<th scope="row"><code class="post-code--single">ai-pr-opened</code></th>
 <td>PR 已开，在等检查或评审</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-fix-needed</code></td>
+<th scope="row"><code class="post-code--single">ai-fix-needed</code></th>
 <td>评审、CI、base 冲突或评审会话失败留下了问题，下一次 tick 开新一轮评审。之后评审通过、只在等检查的 issue 也会一直挂着它（见合并闸门）</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-awaiting-merge</code></td>
+<th scope="row"><code class="post-code--single">ai-awaiting-merge</code></th>
 <td>评审通过，但分支保护要维护者介入</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-merged</code></td>
+<th scope="row"><code class="post-code--single">ai-merged</code></th>
 <td>做完了</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-blocked</code></td>
+<th scope="row"><code class="post-code--single">ai-blocked</code></th>
 <td>需要人处理，runner 不会再自己碰它</td>
 </tr>
 </tbody></table></div>

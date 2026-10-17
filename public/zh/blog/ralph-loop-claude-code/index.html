@@ -231,48 +231,48 @@ done
 [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] || { echo &quot;no DONE after 10 rounds&quot; &gt;&amp;2; exit 1; }
 </code></pre>
 <p>每轮结束我数一次通过的测试，再读 JSON。订阅登录不按次扣钱，表里的花费是 Claude Code 按 API 价格自己估的，下文所有美元数字都是这个口径。</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>轮次</th>
-<th>秒数</th>
-<th>agent 回合数（<code class="post-code--single">num_turns</code>）</th>
-<th>估算花费</th>
-<th>被拒的调用</th>
-<th>通过的测试</th>
+<th scope="col">轮次</th>
+<th scope="col">秒数</th>
+<th scope="col">agent 回合数（<code class="post-code--single">num_turns</code>）</th>
+<th scope="col">估算花费</th>
+<th scope="col">被拒的调用</th>
+<th scope="col">通过的测试</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="轮次">1</td>
-<td data-label="秒数">28</td>
-<td data-label="agent 回合数（num_turns）">8</td>
-<td data-label="估算花费">0.18 美元</td>
-<td data-label="被拒的调用">0</td>
-<td data-label="通过的测试">4 / 15</td>
+<th scope="row">1</th>
+<td>28</td>
+<td>8</td>
+<td>0.18 美元</td>
+<td>0</td>
+<td>4 / 15</td>
 </tr>
 <tr>
-<td data-label="轮次">2</td>
-<td data-label="秒数">40</td>
-<td data-label="agent 回合数（num_turns）">9</td>
-<td data-label="估算花费">0.19 美元</td>
-<td data-label="被拒的调用">1</td>
-<td data-label="通过的测试">8 / 15</td>
+<th scope="row">2</th>
+<td>40</td>
+<td>9</td>
+<td>0.19 美元</td>
+<td>1</td>
+<td>8 / 15</td>
 </tr>
 <tr>
-<td data-label="轮次">3</td>
-<td data-label="秒数">28</td>
-<td data-label="agent 回合数（num_turns）">9</td>
-<td data-label="估算花费">0.18 美元</td>
-<td data-label="被拒的调用">1</td>
-<td data-label="通过的测试">12 / 15</td>
+<th scope="row">3</th>
+<td>28</td>
+<td>9</td>
+<td>0.18 美元</td>
+<td>1</td>
+<td>12 / 15</td>
 </tr>
 <tr>
-<td data-label="轮次">4</td>
-<td data-label="秒数">27</td>
-<td data-label="agent 回合数（num_turns）">9</td>
-<td data-label="估算花费">0.17 美元</td>
-<td data-label="被拒的调用">1</td>
-<td data-label="通过的测试">15 / 15，写下 DONE</td>
+<th scope="row">4</th>
+<td>27</td>
+<td>9</td>
+<td>0.17 美元</td>
+<td>1</td>
+<td>15 / 15，写下 DONE</td>
 </tr>
 </tbody></table></div>
 <p>两分钟，0.72 美元左右。每轮正好做完规格里的一条、提交一次，正合「每轮一件事」的要求。三次被拒里有两次是 Claude 想用 <code class="post-code--spaced">python - &lt;&lt;EOF</code> 改 <code class="post-code--single">fix_plan.md</code>，白名单里没有它，它就换成 Edit 工具接着做。第三次在第 4 轮：被拒的是一条把跑测试和手动检查命令行（<code class="post-code--spaced">python -m textkit wrap 0 x</code>）串在一起的命令。Claude 在总结里写了它想手动验证宽度非法的情况、命令被权限拦下，然后照样写下了 DONE。这一轮退出码是 0，<code class="post-code--single">is_error</code> 是 false。所以无人值守跑的时候，还得从 JSON 里查 <code class="post-code--single">permission_denials</code>，这一点我在 <a href="/zh/blog/run-claude-code-unattended/">Claude Code headless 模式那篇</a>里写过。</p>

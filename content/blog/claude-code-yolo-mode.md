@@ -6,7 +6,6 @@ lang: en
 author: Lawrence Liu
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
-table_layout: comparison
 ---
 
 Search "YOLO mode Claude Code" and you're after one flag: `--dangerously-skip-permissions`, which runs every tool call without asking. The reason to reach for it is real. On a long task the permission prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs only let you turn it on inside "isolated environments like containers, VMs, or dev containers without internet access."

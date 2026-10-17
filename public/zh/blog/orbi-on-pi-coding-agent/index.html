@@ -205,55 +205,55 @@
 <figure class="post-media">
 <img src="/img/diagrams/orbi-pi-flow-zh.svg" alt="一张 issue 怎么经过 Orbi 和 Pi，分三条泳道。GitHub：打 ai-ready 标签、CI 检查、最后标成 ai-merged。Orbi runner：认领并从认领时记下的 base 提交建 worktree，推送、开 PR，合并闸门检查 CI、评审结论，以及 base 是否最新。Pi 会话：实现会话（计划、改代码、测试、commit）和评审会话（审、修、最后输出一行结论）。一条红色虚线表示 CI 红了就起一个新的评审会话来修；闸门不过则进入 ai-blocked，由人决定下一步。" width="1050" height="470">
 </figure><p>issue 上的时间线（北京时间，都在 10 月 5 日，周一）。注意第一行：我开 #1554 之前，<code class="post-code--single">main</code> 就已经红了。</p>
-<div class="post-table-scroll"><table>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>时间</th>
-<th>发生了什么</th>
+<th scope="col">时间</th>
+<th scope="col">发生了什么</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>00:20</td>
+<th scope="row">00:20</th>
 <td><code class="post-code--single">main</code> 上两个文档测试开始挂，一个在 <code class="post-code--single">test_docs_site.py</code>，一个在 <code class="post-code--single">test_docs_i18n.py</code>。Orbi 的 CI 工作流自动为它们开了 <a href="https://github.com/orbi-build/orbi/issues/1552">orbi#1552</a>。</td>
 </tr>
 <tr>
-<td>03:21</td>
+<th scope="row">03:21</th>
 <td>开票，打上 <code class="post-code--single">ai-ready</code>。</td>
 </tr>
 <tr>
-<td>03:26</td>
+<th scope="row">03:26</th>
 <td>Orbi 的 runner 给 #1552 打上 <code class="post-code--single">ai-needs-detail</code>，要求补充信息再做。</td>
 </tr>
 <tr>
-<td>03:31</td>
+<th scope="row">03:31</th>
 <td>runner 认领 #1554，起了实现会话（run <code class="post-code--single">598a0fb3</code>）。</td>
 </tr>
 <tr>
-<td>03:43</td>
+<th scope="row">03:43</th>
 <td>实现会话已经提交了修复，但它自己跑的测试挂在了从 00:20 起就在 <code class="post-code--single">main</code> 上挂着的那两个文档测试上。runner 把这个结果贴到 issue 上，照样推送分支、开了 <a href="https://github.com/orbi-build/orbi/pull/1555">PR #1555</a>，把失败留给评审。</td>
 </tr>
 <tr>
-<td>03:47</td>
+<th scope="row">03:47</th>
 <td>CI 挂在同样这两个测试上。03:51 runner 起了一个评审会话去修。</td>
 </tr>
 <tr>
-<td>04:08</td>
+<th scope="row">04:08</th>
 <td>CI 又挂在这两个测试上，这次跑的是评审推上去的一个提交，里面是一段说明这次改动的文档，跟挂掉的测试无关，后来随 PR 一起合了进去。04:11 runner 又起了一个评审会话。</td>
 </tr>
 <tr>
-<td>04:22</td>
+<th scope="row">04:22</th>
 <td>这个会话判 PR 通过，runner 进入合并。合并闸门看到 PR 的检查还是红的，就去看 base 提交上同样的检查：<code class="post-code--single">main</code> 也挂着，<code class="post-code--single">tests</code> 和 <code class="post-code--single">macos-compatibility</code> 两项，这两个 job 跑的都是整套测试，包括那两个文档测试。检查没过的 PR 闸门不合，runner 把 issue 标成 <code class="post-code--single">ai-blocked</code>。</td>
 </tr>
 <tr>
-<td>12:06</td>
+<th scope="row">12:06</th>
 <td>Orbi 交付了 #1552，<code class="post-code--single">main</code> 上这两个测试都修好了。</td>
 </tr>
 <tr>
-<td>13:39</td>
+<th scope="row">13:39</th>
 <td>我把 <code class="post-code--single">ai-blocked</code> 换成 <code class="post-code--single">ai-fix-needed</code>，#1554 回到队列。（PR 还开着，所以用 <code class="post-code--single">ai-fix-needed</code>，不用 <code class="post-code--single">ai-ready</code>。）</td>
 </tr>
 <tr>
-<td>13:41 到 13:58</td>
+<th scope="row">13:41 到 13:58</th>
 <td>新起的评审会话先把新的 <code class="post-code--single">main</code> 合进分支，再审 PR，一条意见没有，通过。runner 合了 PR。</td>
 </tr>
 </tbody></table></div>
@@ -286,56 +286,56 @@
 <p>用量记录每个 issue 和分支只有一行：同一个 run 恢复时会累加，但同一分支上新的一次尝试会把它覆盖掉。Cloud 另外还按每次尝试存了一行，我拿它核对了被覆盖掉的部分：169 次里只有 7 次有过更早的尝试，其中 3 次有 token 数，把它们加回来，花费的中位数和九成位置的值都不变（0.082 美元和 0.22 美元）；另外 4 次没记下 token 数，花了多少不知道。加回来的那 3 次会改变合计，表后面会说。表里其余各行，算的都是最后一次尝试。</p>
 <p>这 169 次里，141 次在 Orbi 自己的三个仓库，11 次在我们组织下的 fork 和测试仓库，17 次在 Cloud 用户的 7 个仓库。用户仓库那 17 次的中位数是 0.090 美元，跟整体差不多。</p>
 <p>表里每一行单独算：把 169 次交付按这一项从小到大排开，取中间的值（一半的交付不超过它）和 90% 位置的值（九成的交付不超过它）。所以同一列的几个数不是同一次交付。花费那一行是先算出每次交付的总价再排序，不是把上面几行加起来。</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>每次交付</th>
-<th>一半的交付不超过</th>
-<th>九成的交付不超过</th>
-<th>#1554</th>
+<th scope="col">每次交付</th>
+<th scope="col">一半的交付不超过</th>
+<th scope="col">九成的交付不超过</th>
+<th scope="col">#1554</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="每次交付">Pi 会话数</td>
-<td data-label="一半的交付不超过">2 个</td>
-<td data-label="九成的交付不超过">3 个</td>
-<td data-label="#1554">4 个</td>
+<th scope="row">Pi 会话数</th>
+<td>2 个</td>
+<td>3 个</td>
+<td>4 个</td>
 </tr>
 <tr>
-<td data-label="每次交付">Pi 运行时间（各会话相加）</td>
-<td data-label="一半的交付不超过">35 分钟</td>
-<td data-label="九成的交付不超过">89 分钟</td>
-<td data-label="#1554">51 分钟</td>
+<th scope="row">Pi 运行时间（各会话相加）</th>
+<td>35 分钟</td>
+<td>89 分钟</td>
+<td>51 分钟</td>
 </tr>
 <tr>
-<td data-label="每次交付">模型请求</td>
-<td data-label="一半的交付不超过">107 次</td>
-<td data-label="九成的交付不超过">235 次</td>
-<td data-label="#1554">164 次</td>
+<th scope="row">模型请求</th>
+<td>107 次</td>
+<td>235 次</td>
+<td>164 次</td>
 </tr>
 <tr>
-<td data-label="每次交付">输出 token</td>
-<td data-label="一半的交付不超过">约 7.0 万</td>
-<td data-label="九成的交付不超过">约 18.8 万</td>
-<td data-label="#1554">约 10.8 万</td>
+<th scope="row">输出 token</th>
+<td>约 7.0 万</td>
+<td>约 18.8 万</td>
+<td>约 10.8 万</td>
 </tr>
 <tr>
-<td data-label="每次交付">未命中缓存的输入 token</td>
-<td data-label="一半的交付不超过">约 13.3 万</td>
-<td data-label="九成的交付不超过">约 30.3 万</td>
-<td data-label="#1554">约 23.2 万</td>
+<th scope="row">未命中缓存的输入 token</th>
+<td>约 13.3 万</td>
+<td>约 30.3 万</td>
+<td>约 23.2 万</td>
 </tr>
 <tr>
-<td data-label="每次交付">缓存读取 token</td>
-<td data-label="一半的交付不超过">约 672 万</td>
-<td data-label="九成的交付不超过">约 1,909 万</td>
-<td data-label="#1554">约 841 万</td>
+<th scope="row">缓存读取 token</th>
+<td>约 672 万</td>
+<td>约 1,909 万</td>
+<td>约 841 万</td>
 </tr>
 <tr>
-<td data-label="每次交付">花费（闲时价）</td>
-<td data-label="一半的交付不超过">0.082 美元</td>
-<td data-label="九成的交付不超过">0.22 美元</td>
-<td data-label="#1554">0.12 美元</td>
+<th scope="row">花费（闲时价）</th>
+<td>0.082 美元</td>
+<td>0.22 美元</td>
+<td>0.12 美元</td>
 </tr>
 </tbody></table></div>
 <p>一般的交付是两个会话，通常就是一个实现加一个评审。#1554 的 4 个会话超过了 90% 位置的值，运行时间和请求数没有超过。</p>
@@ -351,38 +351,38 @@
 <p>Pi 首页（2026 年 10 月 5 日看的）列了五样核心里不做的东西：子 agent、权限弹窗、plan 模式、待办、后台 bash。MCP 原本也在这张单子上，现在已经内置了。每一样 Pi 都给了自己补的办法：扩展、第三方包、容器、写文件或 tmux。这五样 Orbi 一样都没往 Pi 里加，其中三样有近似的做法。</p>
 <figure class="post-media">
 <img src="/img/diagrams/orbi-pi-layers-zh.svg" alt="左右两个面板。Pi（每个会话里面）：调你配置的模型，工具，加上作为扩展加载的 Codemode，skill，会话写成 JSONL，白名单里的扩展（实现和评审会话）。Orbi runner（会话外面）：任务队列是打了 ai-ready 的 GitHub Issues，每张 issue 一个从认领时的 base 建出来的 worktree，按角色起会话，合并闸门检查 CI、评审结论和 base 是否最新，每 5 分钟调度、停掉卡住的会话并恢复，以及仅在 Cloud 上从会话文件里算 token 用量。中间：一个方向是每个角色一条 pi --print，另一个方向是会话文件、commit 和评审结论。" width="960" height="380">
-</figure><div class="post-table-scroll"><table class="table-stack">
+</figure><p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>Pi 核心里没有的</th>
-<th>Pi 建议的补法</th>
-<th>Orbi 里最接近的东西</th>
+<th scope="col">Pi 核心里没有的</th>
+<th scope="col">Pi 建议的补法</th>
+<th scope="col">Orbi 里最接近的东西</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Pi 核心里没有的">权限弹窗</td>
-<td data-label="Pi 建议的补法">容器，或做一个确认用的扩展</td>
-<td data-label="Orbi 里最接近的东西">合并闸门。它管什么能合并，管不到一次工具调用能碰什么。</td>
+<th scope="row">权限弹窗</th>
+<td>容器，或做一个确认用的扩展</td>
+<td>合并闸门。它管什么能合并，管不到一次工具调用能碰什么。</td>
 </tr>
 <tr>
-<td data-label="Pi 核心里没有的">子 agent</td>
-<td data-label="Pi 建议的补法">用 tmux 起多个 Pi，或扩展、第三方包</td>
-<td data-label="Orbi 里最接近的东西">runner 按角色另起独立的 Pi 会话。</td>
+<th scope="row">子 agent</th>
+<td>用 tmux 起多个 Pi，或扩展、第三方包</td>
+<td>runner 按角色另起独立的 Pi 会话。</td>
 </tr>
 <tr>
-<td data-label="Pi 核心里没有的">plan 模式</td>
-<td data-label="Pi 建议的补法">把计划写进文件，或扩展、第三方包</td>
-<td data-label="Orbi 里最接近的东西">动代码前先写的 <code class="post-code--single">.orbi/plan.md</code>，Pi 压缩上下文后会话会重读它。</td>
+<th scope="row">plan 模式</th>
+<td>把计划写进文件，或扩展、第三方包</td>
+<td>动代码前先写的 <code class="post-code--single">.orbi/plan.md</code>，Pi 压缩上下文后会话会重读它。</td>
 </tr>
 <tr>
-<td data-label="Pi 核心里没有的">待办</td>
-<td data-label="Pi 建议的补法"><code class="post-code--single">TODO.md</code>，或扩展</td>
-<td data-label="Orbi 里最接近的东西">会话里没有。</td>
+<th scope="row">待办</th>
+<td><code class="post-code--single">TODO.md</code>，或扩展</td>
+<td>会话里没有。</td>
 </tr>
 <tr>
-<td data-label="Pi 核心里没有的">后台 bash</td>
-<td data-label="Pi 建议的补法">tmux</td>
-<td data-label="Orbi 里最接近的东西">没有。交付会话不跑常驻进程。</td>
+<th scope="row">后台 bash</th>
+<td>tmux</td>
+<td>没有。交付会话不跑常驻进程。</td>
 </tr>
 </tbody></table></div>
 <p>先说权限。每张 issue 有自己的 git worktree，从 runner 认领时记下的 base 提交建出来。实现会话停在 commit，runner 推送、开 PR，再合并评审通过的那个 head。base 前移，Orbi 在两个地方处理：评审会话开始时分支已经落后，它会先把新 base 合进来，13:41 就是这样；评审期间 base 有了新提交、又能无冲突合并，runner 会自己把新 base 合进分支，等新 head 的 CI 跑完就合并 PR，不重新评审。合在一起之后的结果没人审过，只靠新 head 上的 CI 兜底，这是我们接受的取舍。不管哪种，最后的 <code class="post-code--spaced">gh pr merge --match-head-commit</code> 都要求分支 head 正好是 runner 预期的那个提交，对不上就拒绝合并。</p>

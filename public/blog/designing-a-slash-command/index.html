@@ -412,23 +412,23 @@ you forgot&quot;.</p>
 <p>The original ticket said this command changes a config value. That was wrong,
 and finding out why took a grep.</p>
 <p>A complete advance needs three things to happen. We had one of them:</p>
-<div class="post-table-scroll"><table>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Step</th>
-<th>Engine capability before this work</th>
+<th scope="col">Step</th>
+<th scope="col">Engine capability before this work</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Create the milestone</td>
+<th scope="row">Create the milestone</th>
 <td><strong>None.</strong> <code class="post-code--single">create_milestone</code> and <code class="post-code--spaced">milestones --method POST</code> had zero hits repo-wide</td>
 </tr>
 <tr>
-<td>Open the release ticket</td>
+<th scope="row">Open the release ticket</th>
 <td><strong>None.</strong> Only <code class="post-code--single">arm_release_ticket</code>, which labels an <em>existing</em> ticket</td>
 </tr>
 <tr>
-<td>Land <code class="post-code--single">active_milestone</code></td>
+<th scope="row">Land <code class="post-code--single">active_milestone</code></th>
 <td>Yes; <code class="post-code--single">rewrite_active_milestone_line</code></td>
 </tr>
 </tbody></table></div>

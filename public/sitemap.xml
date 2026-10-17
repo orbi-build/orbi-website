@@ -51,7 +51,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/codex/"/>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -231,7 +231,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -321,7 +321,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/codex/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/compare/codex/"/>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -501,7 +501,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/self-hosted-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/self-hosted-coding-agent/"/>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -542,11 +542,65 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/ai-contribute-to-open-source/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-contribute-to-open-source/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-contribute-to-open-source/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-contribute-to-open-source/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/claude-code-subagents/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-subagents/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-subagents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-subagents/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/blog/codex-usage-limits/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-usage-limits/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-usage-limits/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-usage-limits/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/ai-contribute-to-open-source/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-contribute-to-open-source/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-contribute-to-open-source/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-contribute-to-open-source/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/claude-code-subagents/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-subagents/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-subagents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-subagents/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/codex-usage-limits/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-usage-limits/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-usage-limits/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-usage-limits/"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/codex-yolo-mode/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/"/>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -555,7 +609,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/"/>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -564,7 +618,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-yolo-mode/"/>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -573,7 +627,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-yolo-mode/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-yolo-mode/"/>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

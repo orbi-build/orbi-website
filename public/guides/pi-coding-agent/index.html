@@ -207,32 +207,32 @@
 <p>Pi lets Orbi bring its own model through a <code class="post-code--single">models.json</code> of providers, and everything Orbi hands a session (system prompt, skills, provider and model, the tools switch, the session directory) has a native Pi flag, so no bridge sits in between. Orbi&#39;s runner speaks Pi&#39;s flags, so when we tried two other coding-agent CLIs, Claude Code and zcode, we wrote a small adapter for each to translate those flags. Both of our adapters lost the <code class="post-code--single">--skill</code> list while translating, so those sessions ran without Orbi&#39;s skills, and we only noticed later. The bug was in the adapters, not in those tools, and with Pi there is no adapter to get wrong. The longer answer is in the 169-PR post, under <a href="/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi">why we stay on Pi</a>.</p>
 <h2 id="how-orbi-starts-the-pi-coding-agent">How Orbi starts the Pi coding agent</h2>
 <p>Every session is a non-interactive <code class="post-code--spaced">pi --print</code> process. Each run has one session directory, <code class="post-code--single">.pi-session/</code> in its worktree (excluded from git, like <code class="post-code--single">.orbi/</code>, so it never counts as an uncommitted change), and every Pi process in the run writes its own JSONL file there (a <code class="post-code--single">ticket</code> session uses a temporary directory instead). Those files are what the runner reads for live progress and for failure reports. The command is built in <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">pi_command.py</code></a>. There are three roles:</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Role</th>
-<th>Started for</th>
-<th>Tools</th>
-<th>What it produces</th>
+<th scope="col">Role</th>
+<th scope="col">Started for</th>
+<th scope="col">Tools</th>
+<th scope="col">What it produces</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Role"><code class="post-code--single">implement</code></td>
-<td data-label="Started for">an <code class="post-code--single">ai-ready</code> issue; or an <code class="post-code--single">ai-ready</code> issue that also has <code class="post-code--single">ai-ops-only</code> (operations work such as checking logs), with an operations prompt</td>
-<td data-label="Tools">on</td>
-<td data-label="What it produces">a plan in <code class="post-code--single">.orbi/plan.md</code>, code changes and tests, ending at a local commit; it never pushes (for ops work, evidence posted on the issue, often with no commit)</td>
+<th scope="row"><code class="post-code--single">implement</code></th>
+<td>an <code class="post-code--single">ai-ready</code> issue; or an <code class="post-code--single">ai-ready</code> issue that also has <code class="post-code--single">ai-ops-only</code> (operations work such as checking logs), with an operations prompt</td>
+<td>on</td>
+<td>a plan in <code class="post-code--single">.orbi/plan.md</code>, code changes and tests, ending at a local commit; it never pushes (for ops work, evidence posted on the issue, often with no commit)</td>
 </tr>
 <tr>
-<td data-label="Role"><code class="post-code--single">review</code></td>
-<td data-label="Started for">each review round on the pull request</td>
-<td data-label="Tools">on</td>
-<td data-label="What it produces">fixes for what it finds, pushed to the task branch, and one <code class="post-code--single">REVIEW_VERDICT</code> JSON line naming the commit it ends on, after its own fixes</td>
+<th scope="row"><code class="post-code--single">review</code></th>
+<td>each review round on the pull request</td>
+<td>on</td>
+<td>fixes for what it finds, pushed to the task branch, and one <code class="post-code--single">REVIEW_VERDICT</code> JSON line naming the commit it ends on, after its own fixes</td>
 </tr>
 <tr>
-<td data-label="Role"><code class="post-code--single">ticket</code> (answers in text)</td>
-<td data-label="Started for">an <code class="post-code--single">ai-ready</code> issue also labelled <code class="post-code--single">ai-content-only</code>, which asks for a written answer; also, when <code class="post-code--single">clarify_thin_tickets</code> is on, a check that a new issue has enough detail before it is claimed</td>
-<td data-label="Tools">off (<code class="post-code--single">--no-tools</code>)</td>
-<td data-label="What it produces">the text Orbi posts on the issue</td>
+<th scope="row"><code class="post-code--single">ticket</code> (answers in text)</th>
+<td>an <code class="post-code--single">ai-ready</code> issue also labelled <code class="post-code--single">ai-content-only</code>, which asks for a written answer; also, when <code class="post-code--single">clarify_thin_tickets</code> is on, a check that a new issue has enough detail before it is claimed</td>
+<td>off (<code class="post-code--single">--no-tools</code>)</td>
+<td>the text Orbi posts on the issue</td>
 </tr>
 </tbody></table></div>
 <p><code class="post-code--single">implement</code> and <code class="post-code--single">review</code> sessions start with <code class="post-code--single">--no-extensions</code>. In Pi that turns off both extension discovery and Pi&#39;s built-in extensions, such as MCP and Codemode (Pi&#39;s code-execution tool mode), so anything a role needs has to come back through <code class="post-code--single">pi_extensions</code> in Orbi&#39;s config, passed as <code class="post-code--single">--extension</code>. Orbi Cloud adds Codemode back this way. The <code class="post-code--single">ticket</code> role, which runs with no tools, gets no extension flags at all, so it does not get the <code class="post-code--single">--no-extensions</code> protection the other two roles have: Pi&#39;s built-in extensions load, and so can extensions the runner&#39;s OS user has installed (which ones is covered under the agent directory below). This is a known gap. Skills are not isolated the same way either: Orbi adds its own with <code class="post-code--single">--skill</code> but does not pass <code class="post-code--single">--no-skills</code>, so the user&#39;s own skills can load in every role.</p>
@@ -280,39 +280,39 @@ review_pi_model = &quot;deepseek-flash&quot;         # optional; falls back to p
 <p>Releases don&#39;t involve Pi: an issue labelled <code class="post-code--single">ai-release</code> runs a fixed sequence that bumps the version, tags, and publishes the GitHub Release (<a href="/guides/issue-to-release/">from issue to release</a>).</p>
 <h3 id="the-labels">The labels</h3>
 <p>Three labels, added alongside <code class="post-code--single">ai-ready</code>, choose the path: <code class="post-code--single">ai-content-only</code> switches to the <code class="post-code--single">ticket</code> role, <code class="post-code--single">ai-ops-only</code> keeps <code class="post-code--single">implement</code> with an operations prompt, and <code class="post-code--single">ai-release</code> skips Pi. The status labels that track where an issue is are (an issue that passes review while its checks run keeps its current label, <code class="post-code--single">ai-pr-opened</code> or <code class="post-code--single">ai-fix-needed</code>):</p>
-<div class="post-table-scroll"><table>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Status label</th>
-<th>Meaning</th>
+<th scope="col">Status label</th>
+<th scope="col">Meaning</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><code class="post-code--single">ai-ready</code></td>
+<th scope="row"><code class="post-code--single">ai-ready</code></th>
 <td>waiting to be claimed</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-in-progress</code></td>
+<th scope="row"><code class="post-code--single">ai-in-progress</code></th>
 <td>claimed; a run is working on it</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-pr-opened</code></td>
+<th scope="row"><code class="post-code--single">ai-pr-opened</code></th>
 <td>pull request open, waiting for checks or review</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-fix-needed</code></td>
+<th scope="row"><code class="post-code--single">ai-fix-needed</code></th>
 <td>review, CI, a base conflict or a failed review session left problems; the next tick starts another review round. It also stays on an issue that later passed review and is only waiting for checks (see the merge gate)</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-awaiting-merge</code></td>
+<th scope="row"><code class="post-code--single">ai-awaiting-merge</code></th>
 <td>passed review, but a protection rule needs a maintainer</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-merged</code></td>
+<th scope="row"><code class="post-code--single">ai-merged</code></th>
 <td>done</td>
 </tr>
 <tr>
-<td><code class="post-code--single">ai-blocked</code></td>
+<th scope="row"><code class="post-code--single">ai-blocked</code></th>
 <td>needs a human; the runner will not touch it again on its own</td>
 </tr>
 </tbody></table></div>

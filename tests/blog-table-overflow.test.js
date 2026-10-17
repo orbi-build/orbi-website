@@ -277,11 +277,13 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
     expect(mobile.overflow, "table fixture at 390px document overflow").toBe(0);
     expect(mobile.tableCount).toBe(5);
     expect(mobile.wrappersAreExactParents).toBe(true);
-    // Issue #526: table-form cells (2-column tables keep that form) now use
-    // break-word, which never splits a word mid-word — so the fixture's
-    // 132-character unbreakable words grow their column past the viewport
-    // and the wrapper scrolls them. The document itself never overflows.
-    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(5);
+    // Issue #526: table-form cells use break-word, which never splits an
+    // ordinary word mid-word. Issue #975 caps every article column at 12.5rem
+    // on phones, so the fixture's 132-character unbreakable tokens — far wider
+    // than any real word — wrap inside their capped columns instead of
+    // pushing one column to thousands of pixels; two capped columns fit the
+    // phone, so nothing is left to scroll. The document never overflows.
+    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(0);
     const desktop = await overflowAt("/blog/table-fixture/", 1440);
     expect(desktop.overflow, "table fixture at 1440px document overflow").toBe(0);
     expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
@@ -297,18 +299,18 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
 });
 
 
-// Issue #975: the YOLO post's matrix declares `table_layout: comparison`, so on a
-// phone it keeps its column headers, pins the action column on opaque paper and
-// scrolls the remaining columns inside the article width — instead of the 30
-// stacked cells the #522/#526 default produces. The hint and the scroll
-// region's label are localized, the region is reachable and left with the
-// keyboard, and the arrow keys scroll it. An undeclared 3+-column table keeps
-// stacking. Baseline of the pre-#975 layout in this environment, measured with
+// Issue #975: on a phone an article table keeps its column headers, pins its
+// first column on opaque paper and scrolls the remaining columns inside the
+// article width — instead of the 30 stacked cells the #522/#526 stacking
+// produced for the YOLO matrix. This is every article table's default; no post
+// declares it. The hint and the scroll region's label are localized, the
+// region is reachable and left with the keyboard, and the arrow keys scroll
+// it. Baseline of the pre-#975 layout in this environment, measured with
 // the same headless Chromium: table 2922px tall at 390, one action row 487px,
 // class `table-stack`, `thead` display none.
 const yoloMatrixRoutes = [
-  ["/blog/claude-code-yolo-mode/", "Swipe horizontally to see all modes."],
-  ["/zh/blog/claude-code-yolo-mode/", "左右滑动查看所有模式。"],
+  ["/blog/claude-code-yolo-mode/", "Swipe horizontally to see all columns."],
+  ["/zh/blog/claude-code-yolo-mode/", "左右滑动查看所有列。"],
 ];
 
 async function matrixAt(route, width) {
@@ -338,6 +340,12 @@ async function matrixAt(route, width) {
         const box = range.getBoundingClientRect();
         return { textLeft: Math.round(box.left), textRight: Math.round(box.right), textWidth: Math.round(box.width), textHeight: Math.round(box.height) };
       };
+      // The ground a cell paints: its background colour, or — for the pinned
+      // column on phones, whose ground is a gradient leaving the row lines
+      // open — the gradient's colour.
+      const ground = (style) => (style.backgroundColor !== "rgba(0, 0, 0, 0)"
+        ? style.backgroundColor
+        : style.backgroundImage.match(/rgba?\([^)]*\)/)?.[0] ?? "none");
       const cell = (element) => {
         const style = getComputedStyle(element);
         return {
@@ -345,7 +353,7 @@ async function matrixAt(route, width) {
           scope: element.getAttribute("scope"),
           position: style.position,
           weight: style.fontWeight,
-          background: style.backgroundColor,
+          background: ground(style),
           ...rect(element),
           ...textBox(element),
         };
@@ -606,28 +614,154 @@ describe("article comparison matrix on phones (Issue #975)", () => {
     expect(matrix.rows[0][0].width, `${route} pinned column width`).toBeLessThan(matrix.wrapper.clientWidth * 0.6);
   }, 30_000);
 
-  it("keeps an undeclared three-column-plus table stacking on phones", async () => {
+  // Paint defects of the pinned first column, read from pixels because no
+  // computed style shows them: the table's collapsed row lines vanished under
+  // the pinned cells' opaque ground at fractional row edges (#993, #994); a
+  // line the pinned cell drew itself sat 2px off the table's (#995); and when
+  // the columns were swiped to the end a 1px sliver of their text showed at
+  // the region's left edge, where the pinned cell's border had stayed behind.
+  it.each(["/zh/blog/codex-usage-limits/", "/blog/codex-yolo-mode/"])(
+    "keeps the pinned column's row lines and a clean left edge on %s when swiped",
+    async (route) => {
+      // A phone: 2x pixels and mobile emulation, where both defects showed.
+      const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      try {
+        await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+        const geometry = await page.evaluate(() => {
+          const wrapper = document.querySelector(".post-body .post-table-scroll");
+          window.scrollTo({ top: wrapper.getBoundingClientRect().top + window.scrollY - 20, behavior: "instant" });
+          const box = wrapper.getBoundingClientRect();
+          const pinned = [...wrapper.querySelectorAll("tbody tr")].map((row) => row.children[0].getBoundingClientRect());
+          return {
+            clip: { x: Math.round(box.left), y: Math.round(box.top), width: Math.round(box.width), height: Math.min(Math.round(box.height), 800) },
+            pinnedX: Math.round(pinned[0].left + pinned[0].width / 2 - box.left),
+            nextX: (() => {
+              const next = wrapper.querySelector("tbody tr").children[1].getBoundingClientRect();
+              return Math.round(next.left + Math.min(next.width, box.right - next.left) / 2 - box.left);
+            })(),
+            boundaries: pinned.slice(1).map((cell) => cell.top - box.top).filter((y) => y < 800),
+            paper: getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number),
+          };
+        });
+        expect(geometry.boundaries.length, `${route} row boundaries in view`).toBeGreaterThan(0);
+        const atStart = (await page.screenshot({ clip: geometry.clip })).toString("base64");
+        await page.evaluate(() => {
+          const wrapper = document.querySelector(".post-body .post-table-scroll");
+          wrapper.scrollLeft = wrapper.scrollWidth;
+        });
+        const swiped = (await page.screenshot({ clip: geometry.clip })).toString("base64");
+        const found = await page.evaluate(async ([start, end, { pinnedX, nextX, boundaries, paper }]) => {
+          const decode = async (base64) => {
+            const response = await fetch("data:image/png;base64," + base64);
+            const bitmap = await createImageBitmap(await response.blob());
+            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            const context = canvas.getContext("2d");
+            context.drawImage(bitmap, 0, 0);
+            const { data, width, height } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+            return { height, at: (x, y) => { const i = (y * width + x) * 4; return [data[i], data[i + 1], data[i + 2]]; } };
+          };
+          const dpr = 2; // the page's deviceScaleFactor
+          const luma = ([r, g, b]) => 0.299 * r + 0.587 * g + 0.114 * b;
+          const [first, last] = await Promise.all([decode(start), decode(end)]);
+          // The row line at a boundary, read down one pixel column: the first
+          // pixel within 2 CSS px of the boundary that differs from the paper.
+          const lineAt = (x, top) => {
+            const centre = Math.round(top * dpr);
+            for (let y = Math.max(0, centre - 4); y <= Math.min(first.height - 1, centre + 4); y += 1) {
+              const [r, g, b] = first.at(x * dpr, y);
+              if (Math.abs(r - paper[0]) + Math.abs(g - paper[1]) + Math.abs(b - paper[2]) > 20) return y;
+            }
+            return null;
+          };
+          // Every row line is there under the pinned column, and at the same
+          // height as under the next column — one line, not a broken step.
+          const missing = boundaries.filter((top) => lineAt(pinnedX, top) === null);
+          const stepped = boundaries.filter((top) => {
+            const pinnedLine = lineAt(pinnedX, top);
+            const nextLine = lineAt(nextX, top);
+            return pinnedLine !== null && nextLine !== null && Math.abs(pinnedLine - nextLine) > 1;
+          });
+          // Text ink in the region's first 2 CSS px once swiped to the end:
+          // only the pinned column's edge line may sit there, never text.
+          let inkAtEdge = 0;
+          for (let y = 0; y < last.height; y += 1) for (let x = 0; x < 2 * dpr; x += 1) if (luma(last.at(x, y)) < 120) inkAtEdge += 1;
+          return { inkAtEdge, missing: missing.length, stepped: stepped.length };
+        }, [atStart, swiped, geometry]);
+        expect(found.inkAtEdge, `${route} scrolled text showing at the left edge`).toBe(0);
+        expect(found.missing, `${route} row lines missing under the pinned column`).toBe(0);
+        expect(found.stepped, `${route} row lines offset between the pinned column and the next`).toBe(0);
+      } finally {
+        await page.close();
+      }
+    },
+    30_000,
+  );
+
+  // The regression this default exists for: codex-usage-limits (2026-10-17)
+  // was written without the old opt-in line and shipped on phones as one
+  // bordered box per cell, boxes inside the article — the layout the
+  // maintainer rules out on phones (no border inside a border). Every one of
+  // these tables must read as a table: header row visible, each row's cells
+  // side by side, no cell turned into its own block.
+  it.each([
+    "/blog/codex-usage-limits/",
+    "/zh/blog/codex-usage-limits/",
+    "/blog/claude-code-sandbox/",
+    "/zh/blog/long-polling-new-user-wait/",
+    "/guides/pi-coding-agent/",
+    "/zh/guides/pi-coding-agent/",
+  ])("shows %s tables as tables on phones, never as stacked cell boxes", async (route) => {
     const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 844 } });
     try {
-      await page.goto(`${origin}/blog/claude-code-sandbox/`, { waitUntil: "load", timeout: 25_000 });
-      const stacked = await page.evaluate(() => {
-        const tables = [...document.querySelectorAll(".post-body .post-table-scroll table")];
-        return {
-          tables: tables.length,
-          stacked: tables.filter((table) => table.classList.contains("table-stack")).length,
-          comparison: tables.filter((table) => table.classList.contains("table-comparison")).length,
-          hiddenHead: tables.filter((table) => {
-            const head = table.querySelector("thead");
-            return head ? getComputedStyle(head).display === "none" : false;
-          }).length,
-          labelledCells: document.querySelectorAll(".table-stack td[data-label]").length,
-        };
+      await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+      const tables = await page.evaluate(() => {
+        const withTable = document.documentElement.scrollWidth;
+        const wrappers = [...document.querySelectorAll(":is(.post-body, .guide-body) .post-table-scroll")];
+        const result = wrappers.map((wrapper) => {
+          const table = wrapper.querySelector("table");
+          const head = table.querySelector("thead");
+          const hint = wrapper.previousElementSibling;
+          const rows = [...table.querySelectorAll("tbody tr")];
+          return {
+            className: table.className,
+            headVisible: head.getBoundingClientRect().height > 0 && getComputedStyle(head).display !== "none",
+            blockCells: [...table.querySelectorAll("th, td")].filter((cell) => getComputedStyle(cell).display !== "table-cell").length,
+            rowsSideBySide: rows.every((row) => new Set([...row.children].map((cell) => Math.round(cell.getBoundingClientRect().top))).size === 1),
+            columns: rows[0].children.length,
+            overflows: wrapper.scrollWidth > wrapper.clientWidth,
+            hintShown: hint.classList.contains("post-table-hint") && !hint.hidden && getComputedStyle(hint).display !== "none",
+            tabStop: wrapper.getAttribute("tabindex") === "0",
+            region: wrapper.getAttribute("role") === "region",
+            pinnedPaper: (() => {
+              const style = getComputedStyle(table.querySelector("tbody th"));
+              const painted = style.backgroundColor !== "rgba(0, 0, 0, 0)"
+                ? style.backgroundColor
+                : style.backgroundImage.match(/rgba?\([^)]*\)/)?.[0];
+              return painted === getComputedStyle(document.body).backgroundColor;
+            })(),
+            pinned: getComputedStyle(table.querySelector("tbody th")).position === "sticky",
+          };
+        });
+        wrappers.forEach((wrapper) => { wrapper.querySelector("table").style.display = "none"; });
+        return { result, overflowAdded: withTable - document.documentElement.scrollWidth };
       });
-      expect(stacked.tables, "/blog/claude-code-sandbox/ body tables").toBeGreaterThan(0);
-      expect(stacked.stacked, "/blog/claude-code-sandbox/ stacked tables").toBeGreaterThan(0);
-      expect(stacked.comparison, "/blog/claude-code-sandbox/ comparison tables").toBe(0);
-      expect(stacked.hiddenHead, "/blog/claude-code-sandbox/ stacked headers hidden").toBeGreaterThan(0);
-      expect(stacked.labelledCells, "/blog/claude-code-sandbox/ labelled cells").toBeGreaterThan(0);
+      expect(tables.result.length, `${route} body tables`).toBeGreaterThan(0);
+      for (const [index, table] of tables.result.entries()) {
+        const label = `${route} table ${index + 1}`;
+        expect(table.className, label).toBe("table-comparison");
+        expect(table.headVisible, `${label} header row visible`).toBe(true);
+        expect(table.blockCells, `${label} cells turned into blocks`).toBe(0);
+        expect(table.rowsSideBySide, `${label} each row's cells side by side`).toBe(true);
+        expect(table.columns, `${label} columns`).toBeGreaterThanOrEqual(2);
+        expect(table.pinned, `${label} first column pinned`).toBe(true);
+        expect(table.pinnedPaper, `${label} pinned column on the page paper`).toBe(true);
+        // The swipe hint, the Tab stop and the region role appear exactly when
+        // there is something to swipe to.
+        expect(table.hintShown, `${label} swipe hint`).toBe(table.overflows);
+        expect(table.tabStop, `${label} Tab stop`).toBe(table.overflows);
+        expect(table.region, `${label} scroll region role`).toBe(table.overflows);
+      }
+      expect(tables.overflowAdded, `${route} page overflow added by the tables`).toBe(0);
     } finally {
       await page.close();
     }

@@ -253,6 +253,18 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Can an AI agent contribute to open source? (English):
+  https://orbi.build/blog/ai-contribute-to-open-source/
+- Claude Code subagents setup and when to use them (English):
+  https://orbi.build/blog/claude-code-subagents/
+- How to check and reset Codex usage limits (English):
+  https://orbi.build/blog/codex-usage-limits/
+- AI 能不能给开源项目提 PR？ (Chinese):
+  https://orbi.build/zh/blog/ai-contribute-to-open-source/
+- Claude Code subagents 怎么配、什么时候用 (Chinese):
+  https://orbi.build/zh/blog/claude-code-subagents/
+- Codex 额度怎么查、何时重置、用完了怎么办 (Chinese):
+  https://orbi.build/zh/blog/codex-usage-limits/
 - Codex YOLO mode: what runs without approval (English):
   https://orbi.build/blog/codex-yolo-mode/
 - Codex YOLO mode 会放开什么权限 (Chinese):

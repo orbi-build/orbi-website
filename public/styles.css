@@ -2303,6 +2303,11 @@ h2 {
   overflow-x: auto;
 }
 
+/* Prose that continues after a table needs the gap the global p reset removes
+   (space-6 from the design system). */
+.compare-table-wrap + .section-lede,
+.src-note + .section-lede { margin-top: 1.5rem; }
+
 .compare-table {
   width: 100%;
   border-collapse: collapse;
@@ -2341,20 +2346,21 @@ h2 {
 
 .compare-table thead th:first-child { z-index: 2; }
 
-/* Issue #975 / Design System DataTable "Article comparison matrices": a post
-   that declares `table_layout: comparison` keeps its matrix a native table at
-   every width. The action column's cells are <th scope="row">, so they must not
-   pick up the post template's th weight or fill — what they carry is the opaque
-   paper ground the pinned column needs at phone widths, in the page's own
-   colour at desktop. The swipe hint only means something while the matrix
-   actually scrolls, which is the phone width below. */
-.post-body .table-comparison tbody th {
+/* Issue #975 / Design System DataTable "Article comparison matrices": every
+   Markdown article table (blog post or guide — the only producers of
+   .table-comparison) stays a native table at every width; nothing in the post
+   declares it. The first column's cells are <th scope="row">, so they must not
+   pick up the article template's th weight or fill — what they carry is the
+   opaque paper ground the pinned column needs at phone widths, in the page's
+   own colour at desktop. The swipe hint ships with the `hidden` attribute and
+   demo.js reveals it only while its table actually overflows, so it never
+   asks the reader to swipe a table that already fits. */
+:is(.post-body, .guide-body) .table-comparison tbody th {
   background: var(--paper);
   font-weight: 400;
 }
 
-.post-body .post-table-hint {
-  display: none;
+:is(.post-body, .guide-body) .post-table-hint {
   margin: 14px 0 6px;
   color: var(--ink-soft);
   font-family: var(--mono);
@@ -2368,11 +2374,12 @@ h2 {
    mid-word (#526: `anywhere` drops a table cell's min-content to one
    character and the auto layout crushes the first column). `code` inside
    those cells keeps `anywhere`: a long identifier may break rather than push
-   the table past the viewport. A table with 3+ columns that does not declare
-   `table_layout: comparison` carries the build's .table-stack marker and
-   data-labels and stacks row-by-row, where `anywhere` is safe — stacked cells
-   are blocks and feed no column-width calculation (#975 keeps that the default
-   and adds the exception below). Desktop is untouched. */
+   the table past the viewport. A site-page .compare-table with 3+ columns
+   carries the build's .table-stack marker and data-labels and stacks
+   row-by-row inside its one bordered wrapper, where `anywhere` is safe —
+   stacked cells are blocks and feed no column-width calculation. Markdown
+   article tables never stack: they keep the table form below and scroll.
+   Desktop is untouched. */
 @media (max-width: 760px) {
   .compare-table th,
   .compare-table td {
@@ -2382,8 +2389,8 @@ h2 {
 
   .compare-table th code,
   .compare-table td code,
-  .post-body .post-table-scroll th code,
-  .post-body .post-table-scroll td code {
+  :is(.post-body, .guide-body) .post-table-scroll th code,
+  :is(.post-body, .guide-body) .post-table-scroll td code {
     overflow-wrap: anywhere;
   }
 
@@ -2393,8 +2400,8 @@ h2 {
 
   /* Stacked tables: the header row hides, each body row becomes a block
      titled by its leading cell, and every other cell reads「列名：值」from
-     data-label. Cell rules sit at (0,1,2) so they outrank the post template's
-     inline .post-body th/td, keeping blog Markdown tables on the same layout. */
+     data-label. Only the site pages' .compare-table tables carry the marker;
+     Markdown article tables never stack (Issue #975). */
   .table-stack tbody { display: block; }
   .table-stack thead { display: none; }
   .table-stack tbody tr {
@@ -2431,33 +2438,58 @@ h2 {
     text-transform: uppercase;
   }
 
-  .post-body .post-table-scroll th,
-  .post-body .post-table-scroll td {
+  /* Cells read from the top: a short row label next to a long wrapped cell
+     stays on the row's first line instead of floating mid-row. */
+  :is(.post-body, .guide-body) .post-table-scroll th,
+  :is(.post-body, .guide-body) .post-table-scroll td {
     padding: 12px;
     overflow-wrap: break-word;
+    vertical-align: top;
   }
 
-  /* Issue #975: a comparison matrix scrolls sideways inside the article width
-     instead of stacking (Design System "Article comparison matrices"). The
-     action column is pinned on the opaque paper ground set above and capped so
-     it never eats the whole visible area; its labels still wrap, while a result
-     cell keeps its word whole and scrolls. */
-  .post-body .post-table-hint { display: block; }
-  .post-body .table-comparison {
+  /* Issue #975: an article table scrolls sideways inside the article width
+     instead of stacking (Design System "Article comparison matrices"). Each
+     column is as wide as its content on one line, so a short result such as
+     「已执行」never breaks, up to a 12.5rem cap past which prose wraps — two
+     capped columns plus the pinned one still fit a 390px phone without a
+     scroll. When the columns add up past the article width, the table
+     overflows its .post-table-scroll region and scrolls there; when they do
+     not, it fills the width like any table. The first column is pinned on the
+     opaque paper ground set above and capped at 8.5rem, so it never eats the
+     visible area; its labels wrap. */
+  :is(.post-body, .guide-body) .table-comparison {
     width: max-content;
     min-width: 100%;
   }
-  .post-body .table-comparison th,
-  .post-body .table-comparison td { white-space: nowrap; }
-  .post-body .table-comparison thead th:first-child,
-  .post-body .table-comparison tbody th {
+  :is(.post-body, .guide-body) .table-comparison th,
+  :is(.post-body, .guide-body) .table-comparison td { max-width: 12.5rem; }
+  :is(.post-body, .guide-body) .table-comparison thead th:first-child,
+  :is(.post-body, .guide-body) .table-comparison tbody th {
     position: sticky;
     left: 0;
     z-index: 1;
     max-width: 8.5rem;
-    white-space: normal;
+    /* Collapsed borders are painted by the table, under the pinned cell's
+       opaque ground, so at fractional row edges the ground covered the row
+       lines. The ground leaves a 1px band at its top and bottom open: the
+       row lines are horizontal and run the full width of the table, so the
+       table's own line shows through, aligned with the rest of the row
+       whatever the columns scroll to. A line the cell drew itself would be
+       snapped separately from the table's and sit off by a pixel or two. */
+    background: linear-gradient(var(--paper), var(--paper)) 0 1px / 100% calc(100% - 2px) no-repeat;
+    /* The divider on the pinned column's right travels with it, so text
+       scrolling underneath never runs straight into a row label. */
+    box-shadow: inset -1px 0 0 var(--line);
   }
-  .post-body .table-comparison thead th:first-child { z-index: 2; }
+  :is(.post-body, .guide-body) .table-comparison thead th:first-child {
+    background: linear-gradient(var(--paper-2), var(--paper-2)) 0 1px / 100% calc(100% - 2px) no-repeat;
+  }
+  /* Its left border would stay behind with the table when the columns scroll,
+     leaving a 1px gap where the scrolled text shows through. The first column
+     has no left border; the region, which never scrolls away, draws that edge. */
+  :is(.post-body, .guide-body) .table-comparison tr > :first-child { border-left-width: 0; }
+  :is(.post-body, .guide-body) .post-table-scroll { border-left: 1px solid var(--line); }
+  :is(.post-body, .guide-body) .table-comparison thead th:first-child { z-index: 2; }
 }
 
 .compare-table tbody tr:last-child th,

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Can an AI agent contribute to open source? | Orbi</title>
+  <meta name="description" content="Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.">
+  <link rel="canonical" href="https://orbi.build/blog/ai-contribute-to-open-source/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-contribute-to-open-source/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-contribute-to-open-source/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-contribute-to-open-source/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Can an AI agent contribute to open source?">
+  <meta property="og:description" content="Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.">
+  <meta property="og:url" content="https://orbi.build/blog/ai-contribute-to-open-source/">
+  <meta property="og:image" content="https://orbi.build/img/blog-oss-contributions-card.png">
+  <meta property="og:image:alt" content="Can an AI agent contribute to open source?">
+  <meta property="article:published_time" content="2026-10-17">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Can an AI agent contribute to open source?","datePublished":"2026-10-17","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-contribute-to-open-source/","image":"https://orbi.build/img/blog-oss-contributions-card.png","inLanguage":"en","description":"Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.","url":"https://orbi.build/blog/ai-contribute-to-open-source/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Can an AI agent contribute to open source?</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-17">2026-10-17</time></p>
+
+          <p class="hero-lede">Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#what-got-merged">What got merged</a></li>
+          <li><a class="post-toc-link" href="#brig-a-help-flag-fix-reviewed-by-the-maintainer-s-own-ai">brig: a help-flag fix, reviewed by the maintainer's own AI</a></li>
+          <li><a class="post-toc-link" href="#llmvault-a-security-fix-the-maintainer-merged-without-changes">LLMVault: a security fix the maintainer merged without changes</a></li>
+          <li><a class="post-toc-link" href="#pyinfra-a-cjk-width-fix-that-needed-a-second-pass">pyinfra: a CJK width fix that needed a second pass</a></li>
+          <li><a class="post-toc-link" href="#what-it-takes-for-ai-to-contribute-to-open-source">What it takes for AI to contribute to open source</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 6 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#what-got-merged">What got merged</a></li>
+          <li><a class="post-toc-link" href="#brig-a-help-flag-fix-reviewed-by-the-maintainer-s-own-ai">brig: a help-flag fix, reviewed by the maintainer's own AI</a></li>
+          <li><a class="post-toc-link" href="#llmvault-a-security-fix-the-maintainer-merged-without-changes">LLMVault: a security fix the maintainer merged without changes</a></li>
+          <li><a class="post-toc-link" href="#pyinfra-a-cjk-width-fix-that-needed-a-second-pass">pyinfra: a CJK width fix that needed a second pass</a></li>
+          <li><a class="post-toc-link" href="#what-it-takes-for-ai-to-contribute-to-open-source">What it takes for AI to contribute to open source</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>I used Orbi, an AI coding agent, to contribute to open source: I pointed it at three projects I do not own, opened the fixes it wrote as pull requests, and the maintainers merged all three. This post links each one to the record of how it was made, so you can check the work rather than take my word for it. These three are all we have opened upstream this way, not a selection from a longer run, and on one of them I had to catch and rewrite a bug the agent&#39;s own review had missed.</p>
+<p>I&#39;m Lawrence Liu, and I maintain <a href="https://orbi.build/?ref=blog-ai-oss">Orbi</a>. On a repository you own, Orbi turns a GitHub Issue into a merged PR: an agent (we call it Pi) reads the Issue and writes the change in a sandbox, a second Pi session reviews that change with none of the context from writing it, CI runs, and the runner merges when all of those pass. Someone else&#39;s repository works differently, because I cannot let an agent write straight into it. So Orbi read the upstream issue, did the work in a fork we control, and I reviewed the result before opening the PR upstream under my own account, with a line in the body saying an AI agent wrote it.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<h2 id="what-got-merged">What got merged</h2>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Project</th>
+<th scope="col">Stars</th>
+<th scope="col">Issue</th>
+<th scope="col">What it fixed</th>
+<th scope="col">Merged</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row"><a href="https://github.com/brig-sh/brig">brig</a></th>
+<td>232</td>
+<td><a href="https://github.com/brig-sh/brig/issues/357">#357</a></td>
+<td><code class="post-code--single">--help</code> and <code class="post-code--single">-h</code> on top-level commands</td>
+<td><a href="https://github.com/brig-sh/brig/pull/402">PR #402</a></td>
+</tr>
+<tr>
+<th scope="row"><a href="https://github.com/CyberSunil/LLMVault">LLMVault</a></th>
+<td>340</td>
+<td><a href="https://github.com/CyberSunil/LLMVault/issues/28">#28</a></td>
+<td>Flask debug mode left on by default</td>
+<td><a href="https://github.com/CyberSunil/LLMVault/pull/39">PR #39</a></td>
+</tr>
+<tr>
+<th scope="row"><a href="https://github.com/pyinfra-dev/pyinfra">pyinfra</a></th>
+<td>6,039</td>
+<td><a href="https://github.com/pyinfra-dev/pyinfra/issues/1438">#1438</a></td>
+<td>Result table misaligned by CJK text</td>
+<td><a href="https://github.com/pyinfra-dev/pyinfra/pull/1977">PR #1977</a></td>
+</tr>
+</tbody></table></div>
+<p>Each one fixed a bug someone had already reported. Each section below also links the delivery record in our fork, where the agent did the first version.</p>
+<h2 id="brig-a-help-flag-fix-reviewed-by-the-maintainer-s-own-ai">brig: a help-flag fix, reviewed by the maintainer&#39;s own AI</h2>
+<p>brig runs coding agents in a microVM sandbox, and its maintainer reviews pull requests with an AI agent too. Its <a href="https://github.com/brig-sh/brig/issues/357">issue #357</a> reported that <code class="post-code--spaced">brig run --help</code> and the other top-level verbs refused a help flag and exited with an error, while <code class="post-code--spaced">brig help &lt;verb&gt;</code> printed the global text instead of the verb&#39;s. Orbi made the fix in our fork first (<a href="https://github.com/orbi-build/brig/pull/3">orbi-build/brig#3</a>): every top-level verb now answers <code class="post-code--single">--help</code>, <code class="post-code--single">-h</code> and <code class="post-code--spaced">brig help &lt;verb&gt;</code> with its own usage, read from one table so the spellings cannot drift. A brig command looks like <code class="post-code--spaced">brig run &lt;agent&gt; ...</code>, where a flag before the agent name is brig&#39;s and a flag after it belongs to the agent. So <code class="post-code--spaced">brig run --help</code> now prints brig&#39;s usage, while <code class="post-code--spaced">brig run claude --help</code> still passes <code class="post-code--single">--help</code> through to claude.</p>
+<p>I opened <a href="https://github.com/brig-sh/brig/pull/402">PR #402</a> from that fork branch, with a body that stated plainly Orbi wrote it and I reviewed it. The maintainer, Alexandros Sapranidis, ran their own AI review on it (<code class="post-code--spaced">@claude-fleet review</code>); the review checked the help intercept against the tests, flagged only nits, and approved.</p>
+<p>The rest was the ordinary back-and-forth of any contribution. They asked me to rebase onto main, and doing so turned up a <code class="post-code--spaced">brig plan</code> command that had landed since we forked, so I added a <code class="post-code--single">--help</code> entry for it too. They then asked me to bring the new commit in line with the project&#39;s commit guideline, which I did. Then they merged, with &quot;thank @xqliu for the contribution and your patience here.&quot;</p>
+<h2 id="llmvault-a-security-fix-the-maintainer-merged-without-changes">LLMVault: a security fix the maintainer merged without changes</h2>
+<p><a href="https://github.com/CyberSunil/LLMVault">LLMVault</a> is a deliberately vulnerable training platform for LLM security. The vulnerabilities it teaches are in the app; this one was in how you run it. Its own <a href="https://github.com/CyberSunil/LLMVault/issues/28">issue #28</a> noted that <code class="post-code--single">app.run(debug=True)</code> was hardcoded, which turns on the Werkzeug interactive debugger. That is a code-execution risk for whoever runs the platform if the server is exposed, and it has nothing to do with the vulnerabilities the platform is built to teach.</p>
+<p>Orbi&#39;s fix (<a href="https://github.com/orbi-build/LLMVault/pull/3">orbi-build/LLMVault#3</a>) reads debug mode from a <code class="post-code--single">LLMVAULT_DEBUG</code> variable and keeps it off unless the value is <code class="post-code--single">1</code> or <code class="post-code--single">true</code>. The Docker image runs gunicorn and never enabled the debugger, so only <code class="post-code--spaced">python app.py</code> changed. The agent verified it by running the app with the variable unset, <code class="post-code--single">0</code>, <code class="post-code--single">1</code> and <code class="post-code--single">true</code>. I opened <a href="https://github.com/CyberSunil/LLMVault/pull/39">PR #39</a> and the maintainer merged it without asking for a change.</p>
+<h2 id="pyinfra-a-cjk-width-fix-that-needed-a-second-pass">pyinfra: a CJK width fix that needed a second pass</h2>
+<p>pyinfra turns Python into shell commands on your servers. Its <a href="https://github.com/pyinfra-dev/pyinfra/issues/1438">issue #1438</a> reported that CJK characters shifted the columns of the results table: each such character takes two terminal cells, but the code measured width with <code class="post-code--single">len()</code>, so a Chinese operation name pushed every following column to the right.</p>
+<p>Orbi&#39;s first version, in our fork (<a href="https://github.com/orbi-build/pyinfra/pull/3">orbi-build/pyinfra#3</a>), measured cell width with a hand-written loop over each character&#39;s East Asian Width. It fixed the CJK case the issue reported, and in doing so it broke alignment for emoji with skin-tone modifiers, which the issue never mentioned. In 👍🏽 both the base emoji and the skin-tone modifier carry a wide East Asian Width, so the loop counted the pair as four cells where the terminal draws two. <code class="post-code--single">len()</code> undercounts a wide CJK character, but for this emoji it had happened to return the two cells the terminal draws, so those rows lined up fine before the loop; the new code was what broke them. The Pi review session, the same gate that reviews changes on a repository you own, ran on that version and let it through.</p>
+<p>I caught the regression when I reviewed the fork change before taking it upstream. I reworked it with Claude Code to measure width with <code class="post-code--single">rich.cells.cell_len</code> instead, then reviewed and tested the final diff myself. (Orbi&#39;s own agent is Pi; Claude Code was the tool I reached for on this rewrite.) <code class="post-code--single">cell_len</code> only gives a skin-tone modifier zero width in recent rich, so I raised pyinfra&#39;s minimum rich version to 13.7.1, the first release that fixes it. I ran pyinfra&#39;s own test suite, and reran the issue&#39;s own example with <code class="post-code--spaced">pyinfra @local exec</code> to confirm the table lined up. Then I opened <a href="https://github.com/pyinfra-dev/pyinfra/pull/1977">PR #1977</a>, and the PR body said all of it: an AI agent wrote the first version, a review found it made emoji rows worse, and I reworked and tested the final diff. The maintainer merged it.</p>
+<p>I wrote the failure into the PR body so the maintainer could judge the diff with the same information our own review had. I do not know whether that disclosure made the difference, but they could see exactly what they were merging and what had gone wrong on the way.</p>
+<h2 id="what-it-takes-for-ai-to-contribute-to-open-source">What it takes for AI to contribute to open source</h2>
+<p>The common objection to AI-written pull requests is that they are noise: plausible-looking diffs that waste a maintainer&#39;s time. All three of these went through a human before they reached the upstream repository. I cannot tell you why each maintainer accepted them, but I can tell you the pyinfra one would have been noise without that human pass: the Pi review session let the regression through, and I caught it only on my own review.</p>
+<p>That human pass was specific to these contributions, because the repositories were not mine. On a repository you own, Orbi runs the same Pi review session, and by default the runner merges on its own once that review, CI and the PR checks pass, without waiting for you. It all happens on your own PRs, so you can read the findings as they land; and when you want a change held for a person to sign off, Orbi has an <a href="/guides/auto-merge-ai-prs/?ref=blog-ai-oss">AI-human review gate</a> you can turn on. The <a href="/guides/issue-to-release/?ref=blog-ai-oss">Issue-to-release guide</a> covers that flow end to end, and the <a href="/guides/pi-coding-agent/?ref=blog-ai-oss">Pi architecture guide</a> explains the gates.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>See how Orbi compares to <a href="/compare/devin/?ref=blog-ai-oss">Devin</a>, or run the same flow on your own repository with <a href="/cloud/">Cloud</a>.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/ai-contribute-to-open-source/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
