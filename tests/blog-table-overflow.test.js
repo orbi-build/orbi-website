@@ -619,13 +619,16 @@ describe("article comparison matrix on phones (Issue #975)", () => {
     "/zh/blog/codex-usage-limits/",
     "/blog/claude-code-sandbox/",
     "/zh/blog/long-polling-new-user-wait/",
+    "/guides/pi-coding-agent/",
+    "/zh/guides/pi-coding-agent/",
   ])("shows %s tables as tables on phones, never as stacked cell boxes", async (route) => {
     const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 844 } });
     try {
       await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
       const tables = await page.evaluate(() => {
         const withTable = document.documentElement.scrollWidth;
-        const result = [...document.querySelectorAll(".post-body .post-table-scroll")].map((wrapper) => {
+        const wrappers = [...document.querySelectorAll(":is(.post-body, .guide-body) .post-table-scroll")];
+        const result = wrappers.map((wrapper) => {
           const table = wrapper.querySelector("table");
           const head = table.querySelector("thead");
           const hint = wrapper.previousElementSibling;
@@ -638,9 +641,13 @@ describe("article comparison matrix on phones (Issue #975)", () => {
             columns: rows[0].children.length,
             overflows: wrapper.scrollWidth > wrapper.clientWidth,
             hintShown: hint.classList.contains("post-table-hint") && !hint.hidden && getComputedStyle(hint).display !== "none",
+            tabStop: wrapper.getAttribute("tabindex") === "0",
+            region: wrapper.getAttribute("role") === "region",
+            pinnedPaper: getComputedStyle(table.querySelector("tbody th")).backgroundColor === getComputedStyle(document.body).backgroundColor,
+            pinned: getComputedStyle(table.querySelector("tbody th")).position === "sticky",
           };
         });
-        result.forEach((_, index) => { document.querySelectorAll(".post-body .post-table-scroll table")[index].style.display = "none"; });
+        wrappers.forEach((wrapper) => { wrapper.querySelector("table").style.display = "none"; });
         return { result, overflowAdded: withTable - document.documentElement.scrollWidth };
       });
       expect(tables.result.length, `${route} body tables`).toBeGreaterThan(0);
@@ -651,8 +658,13 @@ describe("article comparison matrix on phones (Issue #975)", () => {
         expect(table.blockCells, `${label} cells turned into blocks`).toBe(0);
         expect(table.rowsSideBySide, `${label} each row's cells side by side`).toBe(true);
         expect(table.columns, `${label} columns`).toBeGreaterThanOrEqual(2);
-        // The swipe hint appears exactly when there is something to swipe to.
+        expect(table.pinned, `${label} first column pinned`).toBe(true);
+        expect(table.pinnedPaper, `${label} pinned column on the page paper`).toBe(true);
+        // The swipe hint, the Tab stop and the region role appear exactly when
+        // there is something to swipe to.
         expect(table.hintShown, `${label} swipe hint`).toBe(table.overflows);
+        expect(table.tabStop, `${label} Tab stop`).toBe(table.overflows);
+        expect(table.region, `${label} scroll region role`).toBe(table.overflows);
       }
       expect(tables.overflowAdded, `${route} page overflow added by the tables`).toBe(0);
     } finally {

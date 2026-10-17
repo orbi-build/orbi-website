@@ -2400,8 +2400,8 @@ h2 {
 
   /* Stacked tables: the header row hides, each body row becomes a block
      titled by its leading cell, and every other cell reads「列名：值」from
-     data-label. Cell rules sit at (0,1,2) so they outrank the post template's
-     inline .post-body th/td, keeping blog Markdown tables on the same layout. */
+     data-label. Only the site pages' .compare-table tables carry the marker;
+     Markdown article tables never stack (Issue #975). */
   .table-stack tbody { display: block; }
   .table-stack thead { display: none; }
   .table-stack tbody tr {

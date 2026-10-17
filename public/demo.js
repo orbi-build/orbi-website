@@ -513,10 +513,13 @@
   // same 40px step a native arrow scroll uses, and consume the key so a browser
   // that does implement it cannot double the step.
   //
-  // Every Markdown article table is such a region, wide or not, so its swipe
-  // hint (the <p hidden> the build puts just above it) is shown only while the
-  // table really overflows the region — re-measured whenever the region or the
-  // table changes size (rotation, web fonts arriving).
+  // Every Markdown article table is built as such a region, wide or not. While
+  // the table fits, the region is not a scroll region: its swipe hint (the
+  // <p hidden> the build puts just above it) stays hidden and the region drops
+  // its Tab stop, role and "swipe" label, so neither sighted, keyboard nor
+  // screen-reader users are told to scroll a table that does not scroll.
+  // Re-measured whenever the region or the table changes size (rotation, web
+  // fonts arriving).
   function bootComparisonMatrix(wrapper) {
     wrapper.addEventListener("keydown", function (event) {
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
@@ -525,11 +528,23 @@
     });
     const hint = wrapper.previousElementSibling;
     if (!hint || !hint.classList.contains("post-table-hint")) return;
-    function syncHint() {
-      hint.hidden = wrapper.scrollWidth <= wrapper.clientWidth;
+    const label = wrapper.getAttribute("aria-label");
+    function syncScrollRegion() {
+      const scrolls = wrapper.scrollWidth > wrapper.clientWidth;
+      hint.hidden = !scrolls;
+      if (scrolls) {
+        wrapper.setAttribute("tabindex", "0");
+        wrapper.setAttribute("role", "region");
+        wrapper.setAttribute("aria-label", label);
+      } else {
+        wrapper.removeAttribute("tabindex");
+        wrapper.removeAttribute("role");
+        wrapper.removeAttribute("aria-label");
+      }
     }
-    syncHint();
-    const observer = new ResizeObserver(syncHint);
+    syncScrollRegion();
+    if (!("ResizeObserver" in window)) return;
+    const observer = new ResizeObserver(syncScrollRegion);
     observer.observe(wrapper);
     if (wrapper.firstElementChild) observer.observe(wrapper.firstElementChild);
   }

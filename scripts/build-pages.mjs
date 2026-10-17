@@ -714,7 +714,10 @@ function comparisonTable(html) {
   const opening = html.match(/^<table\b[^>]*>/i);
   if (!opening) throw new Error("article comparison table is missing its opening tag");
   const classed = withClass(opening[0], "table-comparison") + html.slice(opening[0].length);
-  const scopedColumns = classed.replace(/<th(?![a-z-])([^>]*)>/gi, (tag, attributes) => `<th scope="col"${attributes}>`);
+  // A header cell that already states its scope (a guide may carry raw HTML)
+  // keeps it; only marked's bare <th> gains scope="col".
+  const scopedColumns = classed.replace(/<th(?![a-z-])([^>]*)>/gi, (tag, attributes) =>
+    (/\sscope\s*=/i.test(attributes) ? tag : `<th scope="col"${attributes}>`));
   return scopedColumns.replace(/<tbody\b[^>]*>([\s\S]*?)<\/tbody>/i, (body) =>
     body.replace(TABLE_ROW_TAG, (row) =>
       row.replace(/<td\b([^>]*)>([\s\S]*?)<\/td>/i, (cell, attributes, content) => `<th scope="row"${attributes}>${content}</th>`)));
