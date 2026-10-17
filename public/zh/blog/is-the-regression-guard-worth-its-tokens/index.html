@@ -283,7 +283,7 @@
 </ol>
 <p>模型会变，合适的 harness 也会跟着变。以后的每次研究都会放到 <a href="/zh/benchmark/">benchmark 页</a>，数据进 benchmark 仓库，下一次从这次的数字接着往下做。</p>
 <h2 id="局限">局限</h2>
-<p>八个窄例子 bug 是小样本，多数格子只有 1 到 3 次，一次运行就能让一格变动三分之一甚至更多。留出结果只用了一个实现模型。窄例子 bug 本来就是按「只照例子修会挂」挑出来的，恰好是防护针对的那类，它们的失败率不能当成 Orbi 所有 bug 的失败率。隐藏评分器也只抓得到维护者写了测试的缺陷。</p>
+<p>八个窄例子 bug 是小样本，多数格子只有 1 到 3 次，一次运行就能让一格变动三分之一甚至更多。留出结果只用了一个实现模型。窄例子 bug 本来就是按「只照例子修会挂」挑出来的，恰好是防护针对的那类，它们的失败率不能当成 Orbi 所有 bug 的失败率。隐藏评分器也只抓得到维护者写了测试的缺陷。评审也会漏真的 bug：<a href="/zh/blog/ai-contribute-to-open-source/?ref=blog-guard">Orbi 提给 pyinfra 的那个上游 PR</a> 里，评审就放过了一个 emoji 宽度的回归，是人工复核抓住的。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>

@@ -73,6 +73,8 @@ Orbi did not get this right the first time. The maintainer had to unblock the is
 
 When the review said no, it gave reasons, and the fix landed on the same PR. On a hard ticket in someone else's codebase, that took 10 and a half hours from PR open to merge. Every failure, Orbi's included, is in the public record, so you can check this post against it.
 
+k8e is not the only outside project Orbi has sent a PR to. [Its merged fixes to brig and pyinfra](/blog/ai-contribute-to-open-source/?ref=blog-k8e) link each one to the upstream PR and spell out what the agent wrote and what a human changed.
+
 Two things changed in Orbi afterwards ([orbi#1219](https://github.com/orbi-build/orbi/issues/1219)). A bad PR body now fails only its own ticket and no longer kills the runner. And Orbi's workflow contract now says a phased initiative must not be carried by one issue: the maintainer splits each phase into a child issue, and each child's PR closes that child and nothing else.
 
 If you maintain a repo with a queue of well-specified issues, [Orbi Cloud](https://orbi.build/cloud/?ref=blog-k8e) runs the same loop on yours.
