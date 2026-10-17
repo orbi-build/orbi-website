@@ -1,5 +1,13 @@
 [
   {
+    "slug": "claude-code-subagents",
+    "title": "Claude Code subagents setup and when to use them",
+    "summary": "Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.",
+    "zhSlug": "claude-code-subagents",
+    "zhTitle": "Claude Code subagents 怎么配、什么时候用",
+    "related": []
+  },
+  {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
     "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.",

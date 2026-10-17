@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Claude Code subagents setup and when to use them (English):
+  https://orbi.build/blog/claude-code-subagents/
+- Claude Code subagents 怎么配、什么时候用 (Chinese):
+  https://orbi.build/zh/blog/claude-code-subagents/
 - Codex YOLO mode: what runs without approval (English):
   https://orbi.build/blog/codex-yolo-mode/
 - Codex YOLO mode 会放开什么权限 (Chinese):
