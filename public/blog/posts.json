@@ -10,7 +10,7 @@
   {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
-    "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.",
+    "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.",
     "zhSlug": "codex-yolo-mode",
     "zhTitle": "Codex YOLO mode 会放开什么权限",
     "related": []
