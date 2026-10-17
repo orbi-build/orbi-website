@@ -2460,7 +2460,18 @@ h2 {
   :is(.post-body, .guide-body) .table-comparison {
     width: max-content;
     min-width: 100%;
+    /* Collapsed borders belong to the table, not to the cells, so a pinned
+       cell would leave its left border behind and let a 1px sliver of the
+       scrolled columns show at the region's edge. Separate borders with no
+       spacing let every cell carry its own lines: right and bottom on each
+       cell, left on the first column, top on the header row — the same 1px
+       grid as before. */
+    border-collapse: separate;
+    border-spacing: 0;
   }
+  :is(.post-body, .guide-body) .table-comparison :is(th, td) { border-width: 0 1px 1px 0; }
+  :is(.post-body, .guide-body) .table-comparison tr > :first-child { border-left-width: 1px; }
+  :is(.post-body, .guide-body) .table-comparison thead th { border-top-width: 1px; }
   :is(.post-body, .guide-body) .table-comparison th,
   :is(.post-body, .guide-body) .table-comparison td { max-width: 12.5rem; }
   :is(.post-body, .guide-body) .table-comparison thead th:first-child,
