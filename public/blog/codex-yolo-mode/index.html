@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Codex YOLO mode: what runs without approval | Orbi</title>
-  <meta name="description" content="Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.">
+  <meta name="description" content="Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how Codex auto mode differs, and what replaced the old full-auto flag.">
   <link rel="canonical" href="https://orbi.build/blog/codex-yolo-mode/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/codex-yolo-mode/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/codex-yolo-mode/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/codex-yolo-mode/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Codex YOLO mode: what runs without approval">
-  <meta property="og:description" content="Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.">
+  <meta property="og:description" content="Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how Codex auto mode differs, and what replaced the old full-auto flag.">
   <meta property="og:url" content="https://orbi.build/blog/codex-yolo-mode/">
   <meta property="og:image" content="https://orbi.build/img/blog-codex-yolo-card.png">
   <meta property="og:image:alt" content="Codex YOLO mode: what runs without approval">
   <meta property="article:published_time" content="2026-10-16">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Codex YOLO mode: what runs without approval","datePublished":"2026-10-16","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/codex-yolo-mode/","image":"https://orbi.build/img/blog-codex-yolo-card.png","inLanguage":"en","description":"Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.","url":"https://orbi.build/blog/codex-yolo-mode/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Codex YOLO mode: what runs without approval","datePublished":"2026-10-16","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/codex-yolo-mode/","image":"https://orbi.build/img/blog-codex-yolo-card.png","inLanguage":"en","description":"Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how Codex auto mode differs, and what replaced the old full-auto flag.","url":"https://orbi.build/blog/codex-yolo-mode/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Codex YOLO mode: what runs without approval</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-16">2026-10-16</time></p>
 
-          <p class="hero-lede">Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.</p>
+          <p class="hero-lede">Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how Codex auto mode differs, and what replaced the old full-auto flag.</p>
         </section>
       </div>
     </div>
@@ -167,7 +167,7 @@
           <li><a class="post-toc-link" href="#how-to-start-codex-yolo-mode">How to start Codex YOLO mode</a></li>
           <li><a class="post-toc-link" href="#what-codex-yolo-mode-allowed-in-the-experiment">What Codex YOLO mode allowed in the experiment</a></li>
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
-          <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
+          <li><a class="post-toc-link" href="#codex-auto-mode-and-what-happened-to-full-auto">Codex auto mode, and what happened to full auto</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
           <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a>
             <ol>
@@ -183,7 +183,7 @@
           <li><a class="post-toc-link" href="#how-to-start-codex-yolo-mode">How to start Codex YOLO mode</a></li>
           <li><a class="post-toc-link" href="#what-codex-yolo-mode-allowed-in-the-experiment">What Codex YOLO mode allowed in the experiment</a></li>
           <li><a class="post-toc-link" href="#run-unattended-while-keeping-workspace-write">Run unattended while keeping workspace-write</a></li>
-          <li><a class="post-toc-link" href="#what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</a></li>
+          <li><a class="post-toc-link" href="#codex-auto-mode-and-what-happened-to-full-auto">Codex auto mode, and what happened to full auto</a></li>
           <li><a class="post-toc-link" href="#automatic-approval-review-is-another-choice">Automatic approval review is another choice</a></li>
           <li><a class="post-toc-link" href="#how-orbi-runs-unattended-and-gates-a-merge">How Orbi runs unattended and gates a merge</a>
             <ol>
@@ -255,11 +255,14 @@
 <p><code class="post-code--single">exec</code> runs without the interactive terminal UI. <code class="post-code--single">workspace-write</code> sets the filesystem boundary. <code class="post-code--spaced">-a never</code> prevents approval requests, so a command outside the allowed permissions cannot obtain an escalation during the run. Dependency downloads or access to another directory may therefore leave the task incomplete. Prepare the required access before starting it.</p>
 <p>I also asked each configuration to create <code class="post-code--single">greeting.py</code> containing <code class="post-code--spaced">print(&#39;workspace ok&#39;)</code>, then run it. Workspace-write completed it without Codex YOLO mode; YOLO also completed it. Under read-only, the agent said it could not create the file and made no tool call. These three ordinary-task runs were separate from the fixed probes.</p>
 <p>All six CLI runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.</p>
-<h2 id="what-happened-to-codex-full-auto-mode">What happened to Codex full auto mode?</h2>
-<p>Older tutorials use this command:</p>
+<h2 id="codex-auto-mode-and-what-happened-to-full-auto">Codex auto mode, and what happened to full auto</h2>
+<p>Codex auto mode is the preset OpenAI&#39;s docs call <strong>Auto</strong>. The <a href="https://learn.chatgpt.com/docs/agent-approvals-security">approvals and security guide</a> defines it as the <code class="post-code--single">workspace-write</code> sandbox with <code class="post-code--single">on-request</code> approvals. Codex reads, edits and runs commands inside the workspace without asking, and asks before it edits outside the workspace or uses the network. When it launches in a version-controlled folder, Codex recommends Auto; during a session, <code class="post-code--single">/permissions</code> switches between Auto and Read Only. To choose it explicitly:</p>
+<pre><code class="language-bash">codex --sandbox workspace-write --ask-for-approval on-request
+</code></pre>
+<p>Older tutorials use a shortcut instead:</p>
 <pre><code class="language-bash">codex exec --full-auto &quot;fix the failing tests&quot;
 </code></pre>
-<p>On the version I tested, even this parameter check fails before a task starts:</p>
+<p>In Codex CLI 0.100.0, the <a href="https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/exec/src/cli.rs#L47">source describes <code class="post-code--single">--full-auto</code></a> as an alias for <code class="post-code--spaced">-a on-request, --sandbox workspace-write</code>, the same pair as Auto. On the version I tested, the parameter check now fails before a task starts:</p>
 <pre><code class="language-text">$ codex --version
 codex-cli 0.159.3
 
@@ -267,7 +270,36 @@ $ codex exec --full-auto --help
 error: unexpected argument &#39;--full-auto&#39; found
 # exit code: 2
 </code></pre>
-<p>OpenAI&#39;s current <a href="https://learn.chatgpt.com/docs/non-interactive-mode">non-interactive documentation</a> says <code class="post-code--single">--full-auto</code> is no longer supported. For scripts that need repository edits, it directs users to explicit <code class="post-code--spaced">--sandbox workspace-write</code>, or to <code class="post-code--single">--approve-for-me</code> for automatic approval review. Some search results still show an older compatibility example. Check the installed CLI to find out which behavior applies to your version.</p>
+<p>Codex CLI 0.163.0 printed the same error when I repeated the check on 17 October 2026. OpenAI&#39;s current <a href="https://learn.chatgpt.com/docs/non-interactive-mode">non-interactive documentation</a> says <code class="post-code--single">--full-auto</code> is no longer supported. For scripts that need repository edits, it directs users to explicit <code class="post-code--spaced">--sandbox workspace-write</code>, or to <code class="post-code--single">--approve-for-me</code> for automatic approval review. Some search results still show an older compatibility example. Check the installed CLI to find out which behavior applies to your version.</p>
+<p>The same guide puts Auto and YOLO in one table of combinations:</p>
+<p class="post-table-hint">Swipe horizontally to see all modes.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all modes."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Name in OpenAI&#39;s guide</th>
+<th scope="col">Flags</th>
+<th scope="col">Codex sandbox</th>
+<th scope="col">Approval requests go to</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Auto</th>
+<td><code class="post-code--spaced">--sandbox workspace-write --ask-for-approval on-request</code></td>
+<td>workspace-write</td>
+<td>You</td>
+</tr>
+<tr>
+<th scope="row">Auto-review</th>
+<td><code class="post-code--single">--approve-for-me</code> (alias <code class="post-code--single">--not-so-yolo</code>)</td>
+<td>workspace-write</td>
+<td>A reviewer agent, for eligible requests</td>
+</tr>
+<tr>
+<th scope="row">Dangerous full access</th>
+<td><code class="post-code--single">--yolo</code></td>
+<td>None</td>
+<td>Nobody; there are no prompts</td>
+</tr>
+</tbody></table></div>
 <p>When migrating a Codex full auto script, choose its required permissions explicitly. Replacing the removed flag with <code class="post-code--single">--yolo</code> would also remove the local sandbox, which is a broader change than allowing repository edits.</p>
 <h2 id="automatic-approval-review-is-another-choice">Automatic approval review is another choice</h2>
 <p>The documented middle option is:</p>

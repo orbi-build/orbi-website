@@ -1,7 +1,7 @@
 ---
 title: Codex YOLO mode 会放开什么权限
 date: 2026-10-16
-summary: Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。
+summary: Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、与 Codex auto mode 有何区别，以及旧 full-auto 命令怎样迁移。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-codex-yolo-card.png
@@ -71,15 +71,21 @@ codex -a never exec --sandbox workspace-write \
 
 六次 CLI 退出码全是 0，包括没有创建目标文件的 read-only 普通任务。流水线进入下一步前，还要检查目标文件和项目测试结果；正常退出本身不能证明任务达到了验收标准。
 
-## Codex full auto 命令现在还能用吗
+## Codex auto mode 是什么，full auto 命令还能用吗
 
-旧教程常见这样的命令：
+Codex auto mode 就是 OpenAI 文档里的 **Auto** 预设。按[审批与安全文档](https://learn.chatgpt.com/docs/agent-approvals-security)的定义，它是 `workspace-write` 沙箱加 `on-request` 审批：在工作区里读文件、改代码、跑命令，Codex 不用问；要改工作区外的文件或访问网络，它会先问你。在有版本控制的目录里启动时，Codex 会推荐 Auto；会话中可以用 `/permissions` 在 Auto 和 Read Only 之间切换。想显式指定，这样写：
+
+```bash
+codex --sandbox workspace-write --ask-for-approval on-request
+```
+
+旧教程常用的是一个简写：
 
 ```bash
 codex exec --full-auto "fix the failing tests"
 ```
 
-在我测试的版本中，参数解析就会失败，任务还没有开始：
+Codex CLI 0.100.0 的[源码注释](https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/exec/src/cli.rs#L47)写明，`--full-auto` 等于 `-a on-request, --sandbox workspace-write`，和 Auto 是同一组参数。在我测试的版本中，参数解析就会失败，任务还没有开始：
 
 ```text
 $ codex --version
@@ -90,7 +96,15 @@ error: unexpected argument '--full-auto' found
 # exit code: 2
 ```
 
-OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，可用 `--approve-for-me`。一些搜索结果仍显示旧的兼容参数示例。实际是否可用，要核对安装版本的参数解析结果。
+2026 年 10 月 17 日我用 Codex CLI 0.163.0 重跑这条检查，报错相同。OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，可用 `--approve-for-me`。一些搜索结果仍显示旧的兼容参数示例。实际是否可用，要核对安装版本的参数解析结果。
+
+同一份文档用一张表列出各种组合，Auto 和 YOLO 都在里面：
+
+| OpenAI 文档里的名称 | 参数 | Codex 沙箱 | 审批请求交给谁 |
+|---|---|---|---|
+| Auto | `--sandbox workspace-write --ask-for-approval on-request` | workspace-write | 你 |
+| Auto-review | `--approve-for-me`（别名 `--not-so-yolo`） | workspace-write | 符合条件的请求交给 reviewer agent |
+| Dangerous full access | `--yolo` | 无 | 无人审批，也不弹提示 |
 
 迁移 Codex full auto 脚本时，先确定任务需要什么权限。直接替换成 `--yolo` 会同时取消本地沙箱，权限变化大于“允许修改仓库”。
 
