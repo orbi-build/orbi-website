@@ -8,6 +8,14 @@
     "related": []
   },
   {
+    "slug": "codex-usage-limits",
+    "title": "How to check and reset Codex usage limits",
+    "summary": "Codex usage limits use five-hour and weekly windows set by plan. Check them on the Usage page or with /status, see when they reset, and keep runs going.",
+    "zhSlug": "codex-usage-limits",
+    "zhTitle": "Codex 额度怎么查、何时重置、用完了怎么办",
+    "related": []
+  },
+  {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
     "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.",
