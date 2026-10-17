@@ -2469,11 +2469,20 @@ h2 {
     left: 0;
     z-index: 1;
     max-width: 8.5rem;
-    /* Collapsed borders are painted by the table, and a pinned cell is a
-       positioned box with an opaque ground: at fractional row edges it paints
-       over the row line above it. It draws that line itself, on top of its
-       ground, so the line travels with it. */
-    box-shadow: inset 0 1px 0 var(--line);
+    /* Collapsed borders are painted by the table, under the pinned cell's
+       opaque ground, so at fractional row edges the ground covered the row
+       lines. The ground leaves a 1px band at its top and bottom open: the
+       row lines are horizontal and run the full width of the table, so the
+       table's own line shows through, aligned with the rest of the row
+       whatever the columns scroll to. A line the cell drew itself would be
+       snapped separately from the table's and sit off by a pixel or two. */
+    background: linear-gradient(var(--paper), var(--paper)) 0 1px / 100% calc(100% - 2px) no-repeat;
+    /* The divider on the pinned column's right travels with it, so text
+       scrolling underneath never runs straight into a row label. */
+    box-shadow: inset -1px 0 0 var(--line);
+  }
+  :is(.post-body, .guide-body) .table-comparison thead th:first-child {
+    background: linear-gradient(var(--paper-2), var(--paper-2)) 0 1px / 100% calc(100% - 2px) no-repeat;
   }
   /* Its left border would stay behind with the table when the columns scroll,
      leaving a 1px gap where the scrolled text shows through. The first column

@@ -340,6 +340,12 @@ async function matrixAt(route, width) {
         const box = range.getBoundingClientRect();
         return { textLeft: Math.round(box.left), textRight: Math.round(box.right), textWidth: Math.round(box.width), textHeight: Math.round(box.height) };
       };
+      // The ground a cell paints: its background colour, or — for the pinned
+      // column on phones, whose ground is a gradient leaving the row lines
+      // open — the gradient's colour.
+      const ground = (style) => (style.backgroundColor !== "rgba(0, 0, 0, 0)"
+        ? style.backgroundColor
+        : style.backgroundImage.match(/rgba?\([^)]*\)/)?.[0] ?? "none");
       const cell = (element) => {
         const style = getComputedStyle(element);
         return {
@@ -347,7 +353,7 @@ async function matrixAt(route, width) {
           scope: element.getAttribute("scope"),
           position: style.position,
           weight: style.fontWeight,
-          background: style.backgroundColor,
+          background: ground(style),
           ...rect(element),
           ...textBox(element),
         };
@@ -608,11 +614,12 @@ describe("article comparison matrix on phones (Issue #975)", () => {
     expect(matrix.rows[0][0].width, `${route} pinned column width`).toBeLessThan(matrix.wrapper.clientWidth * 0.6);
   }, 30_000);
 
-  // Two paint defects of the pinned first column, read from pixels because no
+  // Paint defects of the pinned first column, read from pixels because no
   // computed style shows them: the table's collapsed row lines vanished under
-  // the pinned cells' opaque ground at fractional row edges, and when the
-  // columns were swiped to the end a 1px sliver of their text showed at the
-  // region's left edge, where the pinned cell's border had stayed behind.
+  // the pinned cells' opaque ground at fractional row edges (#993, #994); a
+  // line the pinned cell drew itself sat 2px off the table's (#995); and when
+  // the columns were swiped to the end a 1px sliver of their text showed at
+  // the region's left edge, where the pinned cell's border had stayed behind.
   it.each(["/zh/blog/codex-usage-limits/", "/blog/codex-yolo-mode/"])(
     "keeps the pinned column's row lines and a clean left edge on %s when swiped",
     async (route) => {
@@ -628,6 +635,10 @@ describe("article comparison matrix on phones (Issue #975)", () => {
           return {
             clip: { x: Math.round(box.left), y: Math.round(box.top), width: Math.round(box.width), height: Math.min(Math.round(box.height), 800) },
             pinnedX: Math.round(pinned[0].left + pinned[0].width / 2 - box.left),
+            nextX: (() => {
+              const next = wrapper.querySelector("tbody tr").children[1].getBoundingClientRect();
+              return Math.round(next.left + Math.min(next.width, box.right - next.left) / 2 - box.left);
+            })(),
             boundaries: pinned.slice(1).map((cell) => cell.top - box.top).filter((y) => y < 800),
             paper: getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number),
           };
@@ -639,7 +650,7 @@ describe("article comparison matrix on phones (Issue #975)", () => {
           wrapper.scrollLeft = wrapper.scrollWidth;
         });
         const swiped = (await page.screenshot({ clip: geometry.clip })).toString("base64");
-        const found = await page.evaluate(async ([start, end, { pinnedX, boundaries, paper }]) => {
+        const found = await page.evaluate(async ([start, end, { pinnedX, nextX, boundaries, paper }]) => {
           const decode = async (base64) => {
             const response = await fetch("data:image/png;base64," + base64);
             const bitmap = await createImageBitmap(await response.blob());
@@ -652,24 +663,33 @@ describe("article comparison matrix on phones (Issue #975)", () => {
           const dpr = 2; // the page's deviceScaleFactor
           const luma = ([r, g, b]) => 0.299 * r + 0.587 * g + 0.114 * b;
           const [first, last] = await Promise.all([decode(start), decode(end)]);
-          // A row line under the pinned column at every row boundary: some
-          // pixel within 2 CSS px of the boundary differs from the paper.
-          const missing = boundaries.filter((top) => {
+          // The row line at a boundary, read down one pixel column: the first
+          // pixel within 2 CSS px of the boundary that differs from the paper.
+          const lineAt = (x, top) => {
             const centre = Math.round(top * dpr);
             for (let y = Math.max(0, centre - 4); y <= Math.min(first.height - 1, centre + 4); y += 1) {
-              const [r, g, b] = first.at(pinnedX * dpr, y);
-              if (Math.abs(r - paper[0]) + Math.abs(g - paper[1]) + Math.abs(b - paper[2]) > 20) return false;
+              const [r, g, b] = first.at(x * dpr, y);
+              if (Math.abs(r - paper[0]) + Math.abs(g - paper[1]) + Math.abs(b - paper[2]) > 20) return y;
             }
-            return true;
+            return null;
+          };
+          // Every row line is there under the pinned column, and at the same
+          // height as under the next column — one line, not a broken step.
+          const missing = boundaries.filter((top) => lineAt(pinnedX, top) === null);
+          const stepped = boundaries.filter((top) => {
+            const pinnedLine = lineAt(pinnedX, top);
+            const nextLine = lineAt(nextX, top);
+            return pinnedLine !== null && nextLine !== null && Math.abs(pinnedLine - nextLine) > 1;
           });
           // Text ink in the region's first 2 CSS px once swiped to the end:
           // only the pinned column's edge line may sit there, never text.
           let inkAtEdge = 0;
           for (let y = 0; y < last.height; y += 1) for (let x = 0; x < 2 * dpr; x += 1) if (luma(last.at(x, y)) < 120) inkAtEdge += 1;
-          return { inkAtEdge, missing: missing.length };
+          return { inkAtEdge, missing: missing.length, stepped: stepped.length };
         }, [atStart, swiped, geometry]);
         expect(found.inkAtEdge, `${route} scrolled text showing at the left edge`).toBe(0);
         expect(found.missing, `${route} row lines missing under the pinned column`).toBe(0);
+        expect(found.stepped, `${route} row lines offset between the pinned column and the next`).toBe(0);
       } finally {
         await page.close();
       }
@@ -712,7 +732,13 @@ describe("article comparison matrix on phones (Issue #975)", () => {
             hintShown: hint.classList.contains("post-table-hint") && !hint.hidden && getComputedStyle(hint).display !== "none",
             tabStop: wrapper.getAttribute("tabindex") === "0",
             region: wrapper.getAttribute("role") === "region",
-            pinnedPaper: getComputedStyle(table.querySelector("tbody th")).backgroundColor === getComputedStyle(document.body).backgroundColor,
+            pinnedPaper: (() => {
+              const style = getComputedStyle(table.querySelector("tbody th"));
+              const painted = style.backgroundColor !== "rgba(0, 0, 0, 0)"
+                ? style.backgroundColor
+                : style.backgroundImage.match(/rgba?\([^)]*\)/)?.[0];
+              return painted === getComputedStyle(document.body).backgroundColor;
+            })(),
             pinned: getComputedStyle(table.querySelector("tbody th")).position === "sticky",
           };
         });
