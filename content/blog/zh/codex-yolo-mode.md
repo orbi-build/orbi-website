@@ -6,7 +6,6 @@ lang: zh
 author: Lawrence Liu
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
-table_layout: comparison
 ---
 
 Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write "<任务>"`。Codex auto mode 是另一个预设，遇到审批仍会停下来等人，[下文](#codex-auto-mode-与已删除的-full-auto-命令)有详细说明。

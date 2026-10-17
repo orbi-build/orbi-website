@@ -233,48 +233,48 @@ done
 [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] || { echo &quot;no DONE after 10 rounds&quot; &gt;&amp;2; exit 1; }
 </code></pre>
 <p>After each round I counted passing tests and read the JSON. On a subscription nothing is billed per run; the cost column is Claude Code&#39;s own estimate at API prices, and so is every dollar figure below.</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Round</th>
-<th>Seconds</th>
-<th>Agent turns (<code class="post-code--single">num_turns</code>)</th>
-<th>Estimated cost</th>
-<th>Denied calls</th>
-<th>Tests passing</th>
+<th scope="col">Round</th>
+<th scope="col">Seconds</th>
+<th scope="col">Agent turns (<code class="post-code--single">num_turns</code>)</th>
+<th scope="col">Estimated cost</th>
+<th scope="col">Denied calls</th>
+<th scope="col">Tests passing</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Round">1</td>
-<td data-label="Seconds">28</td>
-<td data-label="Agent turns (num_turns)">8</td>
-<td data-label="Estimated cost">$0.18</td>
-<td data-label="Denied calls">0</td>
-<td data-label="Tests passing">4 / 15</td>
+<th scope="row">1</th>
+<td>28</td>
+<td>8</td>
+<td>$0.18</td>
+<td>0</td>
+<td>4 / 15</td>
 </tr>
 <tr>
-<td data-label="Round">2</td>
-<td data-label="Seconds">40</td>
-<td data-label="Agent turns (num_turns)">9</td>
-<td data-label="Estimated cost">$0.19</td>
-<td data-label="Denied calls">1</td>
-<td data-label="Tests passing">8 / 15</td>
+<th scope="row">2</th>
+<td>40</td>
+<td>9</td>
+<td>$0.19</td>
+<td>1</td>
+<td>8 / 15</td>
 </tr>
 <tr>
-<td data-label="Round">3</td>
-<td data-label="Seconds">28</td>
-<td data-label="Agent turns (num_turns)">9</td>
-<td data-label="Estimated cost">$0.18</td>
-<td data-label="Denied calls">1</td>
-<td data-label="Tests passing">12 / 15</td>
+<th scope="row">3</th>
+<td>28</td>
+<td>9</td>
+<td>$0.18</td>
+<td>1</td>
+<td>12 / 15</td>
 </tr>
 <tr>
-<td data-label="Round">4</td>
-<td data-label="Seconds">27</td>
-<td data-label="Agent turns (num_turns)">9</td>
-<td data-label="Estimated cost">$0.17</td>
-<td data-label="Denied calls">1</td>
-<td data-label="Tests passing">15 / 15, wrote DONE</td>
+<th scope="row">4</th>
+<td>27</td>
+<td>9</td>
+<td>$0.17</td>
+<td>1</td>
+<td>15 / 15, wrote DONE</td>
 </tr>
 </tbody></table></div>
 <p>The four rounds took about two minutes and 72 cents, each doing exactly one spec item and making one commit, which is what &quot;one thing per loop&quot; asks for. Two of the three denied calls were Claude trying to edit <code class="post-code--single">fix_plan.md</code> with a <code class="post-code--spaced">python - &lt;&lt;EOF</code> heredoc, which wasn&#39;t on the allowlist; it switched to the Edit tool. The third, in round 4, was a test run chained to a manual check of the CLI, <code class="post-code--spaced">python -m textkit wrap 0 x</code>. Claude wrote in its summary that it had tried to check the bad-width case by hand and the command was blocked, then wrote DONE anyway. That round exited 0 with <code class="post-code--single">is_error</code> false, which is why an unattended loop has to read <code class="post-code--single">permission_denials</code> from the JSON too. I covered that in <a href="/blog/run-claude-code-unattended/">the post on Claude Code headless mode</a>.</p>

@@ -211,7 +211,7 @@
 </figure><p>我让 agent 在三种配置下各运行一次相同的 Python 探针：向仓库内写文件、向仓库外同级目录写一个无害文件，再请求本机 loopback HTTP 服务。同级目录放在 home 下的 cache 中，避开工作区和系统临时目录。用 <code class="post-code--single">/tmp</code> 做越界目标容易测错，因为工作区权限可能包含临时目录。</p>
 <p>每次配置都用新的外层沙箱，挂载和网络规则相同。<code class="post-code--single">--ignore-user-config</code> 与独立 CLI home 排除日常配置的影响。登录认证临时复制进去，运行后删除；组织管理的要求仍可能限制实际权限。</p>
 <p>下面的结果来自独立检查文件和 HTTP 请求记录。每种 CLI 配置只有一次固定探针运行，模型为 <code class="post-code--single">gpt-6.1-sol</code>，推理档位 low：</p>
-<p class="post-table-hint">左右滑动查看所有模式。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有模式。"><table class="table-comparison">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">执行方式</th>
@@ -273,7 +273,7 @@ error: unexpected argument &#39;--full-auto&#39; found
 </code></pre>
 <p>2026 年 10 月 17 日补充核对时，我用 Codex CLI 0.163.0 重跑这条检查，报错相同；交互式的 <code class="post-code--spaced">codex --full-auto --help</code> 也一样报错。OpenAI 当前的<a href="https://learn.chatgpt.com/docs/non-interactive-mode">非交互运行文档</a>说明，<code class="post-code--single">--full-auto</code> 已不再支持。需要修改仓库的脚本应明确使用 <code class="post-code--spaced">--sandbox workspace-write</code>；需要自动审批 review 时，改用 <code class="post-code--single">--approve-for-me</code>，它已包含 workspace-write，不要再加 <code class="post-code--single">--sandbox</code>。一些搜索结果描述的是过渡期的行为：<a href="https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99">Codex CLI 0.130.0</a> 仍接受 <code class="post-code--single">--full-auto</code>，只打印一条弃用警告。实际是否可用，要核对安装版本的参数解析结果。</p>
 <p>审批与安全文档的<a href="https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations">常用组合表</a>列出了这几种模式，<code class="post-code--single">--approve-for-me</code> 这个简写出自 <a href="https://learn.chatgpt.com/docs/cli/reference">CLI 参考</a>：</p>
-<p class="post-table-hint">左右滑动查看所有模式。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有模式。"><table class="table-comparison">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">OpenAI 文档里的名称</th>

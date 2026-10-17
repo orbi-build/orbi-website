@@ -512,12 +512,26 @@
   // from the keyboard — so the left/right arrows move the region here, in the
   // same 40px step a native arrow scroll uses, and consume the key so a browser
   // that does implement it cannot double the step.
+  //
+  // Every Markdown article table is such a region, wide or not, so its swipe
+  // hint (the <p hidden> the build puts just above it) is shown only while the
+  // table really overflows the region — re-measured whenever the region or the
+  // table changes size (rotation, web fonts arriving).
   function bootComparisonMatrix(wrapper) {
     wrapper.addEventListener("keydown", function (event) {
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
       wrapper.scrollBy(event.key === "ArrowRight" ? 40 : -40, 0);
       event.preventDefault();
     });
+    const hint = wrapper.previousElementSibling;
+    if (!hint || !hint.classList.contains("post-table-hint")) return;
+    function syncHint() {
+      hint.hidden = wrapper.scrollWidth <= wrapper.clientWidth;
+    }
+    syncHint();
+    const observer = new ResizeObserver(syncHint);
+    observer.observe(wrapper);
+    if (wrapper.firstElementChild) observer.observe(wrapper.firstElementChild);
   }
 
   document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);

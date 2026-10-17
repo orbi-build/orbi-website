@@ -202,28 +202,28 @@
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/JLmbpUKHCGY" title="新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>都从点「连接仓库」算起，算到环境就绪、能写第一个需求。改前是生产上的真实记录：一般 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。改后是测试环境上的实录，按真实秒数播放：约 12 秒。</figcaption></figure><p>后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。</p>
 <h2 id="先拆开看-时间到底花在哪">先拆开看，时间到底花在哪</h2>
 <p>我们从数据库里拉出时间戳，把这一分钟拆成几段：</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>环节</th>
-<th>大概要多久</th>
-<th>谁说了算</th>
+<th scope="col">环节</th>
+<th scope="col">大概要多久</th>
+<th scope="col">谁说了算</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="环节">请求排队，等主机来接</td>
-<td data-label="大概要多久">平均二十多秒，最慢接近两分钟</td>
-<td data-label="谁说了算">主机上每分钟跑一次的定时任务</td>
+<th scope="row">请求排队，等主机来接</th>
+<td>平均二十多秒，最慢接近两分钟</td>
+<td>主机上每分钟跑一次的定时任务</td>
 </tr>
 <tr>
-<td data-label="环节">主机准备沙箱</td>
-<td data-label="大概要多久">半分钟到一分钟</td>
-<td data-label="谁说了算">开通脚本</td>
+<th scope="row">主机准备沙箱</th>
+<td>半分钟到一分钟</td>
+<td>开通脚本</td>
 </tr>
 <tr>
-<td data-label="环节">页面发现已经好了</td>
-<td data-label="大概要多久">最多 10 秒</td>
-<td data-label="谁说了算">状态页每 10 秒刷新一次</td>
+<th scope="row">页面发现已经好了</th>
+<td>最多 10 秒</td>
+<td>状态页每 10 秒刷新一次</td>
 </tr>
 </tbody></table></div>
 <p>Claude Code 把两件事混在了一起：准备环境大约一分钟，看到 Orbi 给仓库的建议要三分多钟，「5 分钟」说的其实是后者。这次先压前一件。</p>
@@ -238,28 +238,28 @@
 <h2 id="从-问得更勤-到长轮询">从「问得更勤」到长轮询</h2>
 <p>先想到的是把「接新用户」单独拆出来，每 2 秒问一次 Cloud。能用，但还是在轮询。我问了一句：为什么不做成基于消息的，来了就知道？</p>
 <p>把请求从 Cloud 送到主机，有三种做法：</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>做法</th>
-<th>怎么做</th>
-<th>结论</th>
+<th scope="col">做法</th>
+<th scope="col">怎么做</th>
+<th scope="col">结论</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="做法">短轮询，问得更勤</td>
-<td data-label="怎么做">每 2 秒问一次</td>
-<td data-label="结论">简单，但总有延迟，没活也一直问</td>
+<th scope="row">短轮询，问得更勤</th>
+<td>每 2 秒问一次</td>
+<td>简单，但总有延迟，没活也一直问</td>
 </tr>
 <tr>
-<td data-label="做法">长轮询</td>
-<td data-label="怎么做">主机发一个请求，Cloud 先不回答，有新活了立刻回，20 秒没有就回个空</td>
-<td data-label="结论">一秒左右就能接到，主机还是只往外连</td>
+<th scope="row">长轮询</th>
+<td>主机发一个请求，Cloud 先不回答，有新活了立刻回，20 秒没有就回个空</td>
+<td>一秒左右就能接到，主机还是只往外连</td>
 </tr>
 <tr>
-<td data-label="做法">推送</td>
-<td data-label="怎么做">Cloud 主动连主机</td>
-<td data-label="结论">主机得开一个对外的端口，我们的设计不允许</td>
+<th scope="row">推送</th>
+<td>Cloud 主动连主机</td>
+<td>主机得开一个对外的端口，我们的设计不允许</td>
 </tr>
 </tbody></table></div>
 <p>选了长轮询。GitHub 的自托管执行器也是这么干的：执行器<a href="https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners">向 GitHub 挂一个 50 秒的长轮询</a>，超时就再挂一个，外面不需要能连进来。我们的主机处境一样：能往外连，外面连不进来。</p>
@@ -309,33 +309,33 @@ WantedBy=multi-user.target
 <p>这么做有研究撑着。哈佛商学院 2011 年有个 <a href="https://www.hbs.edu/faculty/Pages/item.aspx?num=40158">Labor Illusion 实验</a>：两个服务给的结果一模一样，一个立刻出结果，一个要等，但一直把自己在干什么展示给你看。等 60 秒的那个，有 63% 的人选它；如果只让人干等，选它的只剩 23%。</p>
 <p>同一篇论文还有一个反面：过程展示得很卖力，结果却很差，评价最低。我们正好踩过：中文页面上，「Orbi 看懂了你的仓库」那段摘要是英文写的。现在 Orbi 会按页面语言来写。</p>
 <h2 id="结果">结果</h2>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th></th>
-<th>以前</th>
-<th>现在（测试环境）</th>
+<th scope="col"></th>
+<th scope="col">以前</th>
+<th scope="col">现在（测试环境）</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>请求排队等主机来接</td>
-<td data-label="以前">平均二十多秒，最慢接近两分钟</td>
-<td data-label="现在（测试环境）">一两秒</td>
+<th scope="row">请求排队等主机来接</th>
+<td>平均二十多秒，最慢接近两分钟</td>
+<td>一两秒</td>
 </tr>
 <tr>
-<td>环境准备好</td>
-<td data-label="以前">一般一分钟左右，最慢两分多钟</td>
-<td data-label="现在（测试环境）">10 秒左右</td>
+<th scope="row">环境准备好</th>
+<td>一般一分钟左右，最慢两分多钟</td>
+<td>10 秒左右</td>
 </tr>
 <tr>
-<td>看到「Orbi 看懂了你的仓库」</td>
-<td data-label="以前">没有这一步</td>
-<td data-label="现在（测试环境）">25 秒左右</td>
+<th scope="row">看到「Orbi 看懂了你的仓库」</th>
+<td>没有这一步</td>
+<td>25 秒左右</td>
 </tr>
 <tr>
-<td>看到 3 条建议</td>
-<td data-label="以前">3 分多钟</td>
-<td data-label="现在（测试环境）">2 分钟左右</td>
+<th scope="row">看到 3 条建议</th>
+<td>3 分多钟</td>
+<td>2 分钟左右</td>
 </tr>
 </tbody></table></div>
 <p>新代码已经上了生产，生产上的数字还要等真实用户来了再看。</p>

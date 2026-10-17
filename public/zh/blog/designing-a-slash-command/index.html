@@ -363,23 +363,23 @@ TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
 </figure><h2 id="一条命令-三个幂等步骤">一条命令，三个幂等步骤</h2>
 <p>原来的票里写着这条命令改一个配置值。那是错的，查清楚为什么错花了一次 grep。</p>
 <p>一次完整的推进需要发生三件事，我们只有其中一件：</p>
-<div class="post-table-scroll"><table>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>步骤</th>
-<th>这次工作之前引擎的能力</th>
+<th scope="col">步骤</th>
+<th scope="col">这次工作之前引擎的能力</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>建 milestone</td>
+<th scope="row">建 milestone</th>
 <td><strong>没有</strong>。<code class="post-code--single">create_milestone</code> 与 <code class="post-code--spaced">milestones --method POST</code> 全仓零命中</td>
 </tr>
 <tr>
-<td>开 release 票</td>
+<th scope="row">开 release 票</th>
 <td><strong>没有</strong>。只有 <code class="post-code--single">arm_release_ticket</code>，它给<strong>已存在</strong>的票打标签</td>
 </tr>
 <tr>
-<td>落地 <code class="post-code--single">active_milestone</code></td>
+<th scope="row">落地 <code class="post-code--single">active_milestone</code></th>
 <td>有，<code class="post-code--single">rewrite_active_milestone_line</code></td>
 </tr>
 </tbody></table></div>

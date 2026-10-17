@@ -598,14 +598,20 @@ export function validatePostBody(label, body) {
   validateSvgMarkup(label, prose);
 }
 
-// Every rendered table is wrapped in one .post-table-scroll container, so a
-// wide table scrolls inside the article instead of dragging the page. An
-// article that declared `table_layout: comparison` (Issue #975) passes
-// `comparisonHint` and gets the Design System's article comparison matrix
-// instead: the table keeps its native form with a pinned action column and a
-// focusable scroll region, and the localized hint is emitted just above it so
-// a footnote directly under the table stays directly under the table.
-export function wrapRenderedTables(html, { comparisonHint = null } = {}) {
+// Every table of a Markdown article (blog post or guide) is the Design
+// System's article table (components/DataTable, "Article comparison
+// matrices"; Issue #975): it keeps its native form at every width with a pinned
+// first column, inside one focusable .post-table-scroll region, so a wide table
+// scrolls inside the article instead of dragging the page or stacking into
+// bordered cards. This is the default, not an opt-in: #975 first shipped it
+// behind a `table_layout: comparison` front-matter line, and the next post
+// written without that line (codex-usage-limits) went out stacked. The
+// localized hint is emitted just above the region, so a footnote directly
+// under the table stays directly under the table; it ships hidden and demo.js
+// shows it only while the table actually overflows.
+export function wrapRenderedTables(html, lang) {
+  const hint = TABLE_HINTS[lang];
+  if (!hint) throw new Error(`wrapRenderedTables: no table hint for language "${lang}"`);
   const tableTag = /<\/?table\b[^>]*>/gi;
 
   function renderRange(start, end) {
@@ -639,9 +645,7 @@ export function wrapRenderedTables(html, { comparisonHint = null } = {}) {
         scan = tag.index + tag[0].length;
       }
       const table = `${opening[0]}${renderRange(opening.index + opening[0].length, closingStart)}${html.slice(closingStart, closingEnd)}`;
-      output += comparisonHint
-        ? `<p class="post-table-hint">${escAttr(comparisonHint)}</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="${escAttr(comparisonHint)}">${comparisonTable(table)}</div>`
-        : `<div class="post-table-scroll">${table}</div>`;
+      output += `<p class="post-table-hint" hidden>${escAttr(hint)}</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="${escAttr(hint)}">${comparisonTable(table)}</div>`;
       cursor = closingEnd;
     }
     return output;
@@ -650,13 +654,14 @@ export function wrapRenderedTables(html, { comparisonHint = null } = {}) {
   return renderRange(0, html.length);
 }
 
-// Issue #522: phones stack the wide tables row-by-row, so each cell must
-// carry its column's header. The build marks such tables .table-stack and adds
-// a data-label to every <td> (the matching thead text); tables with 2 or fewer
+// Issue #522: on the hand-written site pages (compare, cost, ...) phones stack
+// the wide .compare-table tables row-by-row, so each cell must carry its
+// column's header. The build marks such tables .table-stack and adds a
+// data-label to every <td> (the matching thead text); tables with 2 or fewer
 // columns stay plain, and page sources are never hand-labelled. Issue #526
-// lowered #522's threshold from 4 columns to 3 (see the note inside); Issue
-// #975 keeps this as the default and lets a post opt out of it with
-// `table_layout: comparison`.
+// lowered #522's threshold from 4 columns to 3 (see the note inside). Markdown
+// article tables never pass through here: they keep their table form and
+// scroll (wrapRenderedTables).
 const TABLE_TAG = /<\/?table\b[^>]*>/gi;
 const TABLE_ROW_TAG = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
 const TABLE_CELL_TAG = /<(t[dh])\b[^>]*>([\s\S]*?)<\/\1>/gi;
@@ -701,9 +706,9 @@ function withClass(openingTag, className) {
 }
 
 // Issue #975 / Design System components/DataTable "Article comparison
-// matrices": the matrix stays a native table at every width, so every column
-// header keeps its scope and the first cell of each body row becomes the row
-// header the pinned action column needs. The pinned-column and focus styling
+// matrices": an article table stays a native table at every width, so every
+// column header keeps its scope and the first cell of each body row becomes the
+// row header the pinned first column needs. The pinned-column and focus styling
 // lives with the other table rules in public/styles.css.
 function comparisonTable(html) {
   const opening = html.match(/^<table\b[^>]*>/i);
@@ -763,10 +768,8 @@ export function addTableDataLabels(html) {
       }
       // Issue #526: the threshold is 3, not 4 — at phone widths a table-form
       // 3-column layout crushes its first column below word width and splits
-      // words mid-word, so every 3+-column table stacks row-by-row. Issue #975
-      // (Design System DataTable "Article comparison matrices") keeps this the
-      // default; only a post declaring `table_layout: comparison` skips this
-      // function entirely and keeps the matrix scrolling sideways.
+      // words mid-word, so every 3+-column site-page table stacks row-by-row.
+      // Markdown article tables never reach this function (Issue #975).
       if (labels.length >= 3) {
         const headEnd = head.index + head[0].length;
         rendered = withClass(opening[0], "table-stack") + inner.slice(0, headEnd) + labelBodyRows(inner.slice(headEnd), labels);
@@ -874,11 +877,11 @@ function renderPostToc(post) {
   };
 }
 
-// Issue #975: the swipe hint of an article comparison matrix, one per
-// language, the same sentence the scroll region carries as its aria-label.
+// Issue #975: the swipe hint of an article table, one per language, the same
+// sentence the scroll region carries as its aria-label.
 const TABLE_HINTS = {
-  en: "Swipe horizontally to see all modes.",
-  zh: "左右滑动查看所有模式。",
+  en: "Swipe horizontally to see all columns.",
+  zh: "左右滑动查看所有列。",
 };
 
 export function postFromSource(displayName, source) {
@@ -896,18 +899,7 @@ export function postFromSource(displayName, source) {
     throw new Error(`${label}: front matter needs a non-empty "mirror"`);
   }
   validatePostBody(label, body);
-  // Issue #975: `table_layout: comparison` switches this post's body tables
-  // from the #522/#526 phone stacking to the Design System's article comparison
-  // matrix. Only the documented value is accepted, so a typo fails the build
-  // instead of silently shipping the other layout.
-  const tableLayout = fields.table_layout;
-  if (tableLayout !== undefined && tableLayout !== "comparison") {
-    throw new Error(`${label}: front matter "table_layout" supports only "comparison", got "${tableLayout}"`);
-  }
-  const wrapped = wrapRenderedTables(marked.parse(body), {
-    comparisonHint: tableLayout === "comparison" ? TABLE_HINTS[lang] : null,
-  });
-  const parsedHtml = classifyInlineCode(tableLayout === "comparison" ? wrapped : addTableDataLabels(wrapped));
+  const parsedHtml = classifyInlineCode(wrapRenderedTables(marked.parse(body), lang));
   const { html, headings } = renderPostHeadings(parsedHtml, label);
   const video = parseVideo(label, fields);
   const related = lang === "en" ? parseRelated(label, fields) : [];
@@ -1217,7 +1209,7 @@ function renderGuideBody(guide, posts) {
     })
     .join("\n");
   return renderPostHeadings(
-    classifyInlineCode(addTableDataLabels(wrapRenderedTables(html))),
+    classifyInlineCode(wrapRenderedTables(html, guide.lang)),
     `content/guides/${guide.source}`,
   );
 }

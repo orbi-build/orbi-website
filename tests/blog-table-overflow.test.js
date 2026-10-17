@@ -277,11 +277,13 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
     expect(mobile.overflow, "table fixture at 390px document overflow").toBe(0);
     expect(mobile.tableCount).toBe(5);
     expect(mobile.wrappersAreExactParents).toBe(true);
-    // Issue #526: table-form cells (2-column tables keep that form) now use
-    // break-word, which never splits a word mid-word — so the fixture's
-    // 132-character unbreakable words grow their column past the viewport
-    // and the wrapper scrolls them. The document itself never overflows.
-    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(5);
+    // Issue #526: table-form cells use break-word, which never splits an
+    // ordinary word mid-word. Issue #975 caps every article column at 12.5rem
+    // on phones, so the fixture's 132-character unbreakable tokens — far wider
+    // than any real word — wrap inside their capped columns instead of
+    // pushing one column to thousands of pixels; two capped columns fit the
+    // phone, so nothing is left to scroll. The document never overflows.
+    expect(mobile.scrollableWrappers, "table fixture at 390px scrollable wrappers").toBe(0);
     const desktop = await overflowAt("/blog/table-fixture/", 1440);
     expect(desktop.overflow, "table fixture at 1440px document overflow").toBe(0);
     expect(desktop.scrollableWrappers, "table fixture at 1440px scrollable wrappers").toBe(5);
@@ -297,18 +299,18 @@ describe("blog tables stay within the viewport (Issue #393, #522)", () => {
 });
 
 
-// Issue #975: the YOLO post's matrix declares `table_layout: comparison`, so on a
-// phone it keeps its column headers, pins the action column on opaque paper and
-// scrolls the remaining columns inside the article width — instead of the 30
-// stacked cells the #522/#526 default produces. The hint and the scroll
-// region's label are localized, the region is reachable and left with the
-// keyboard, and the arrow keys scroll it. An undeclared 3+-column table keeps
-// stacking. Baseline of the pre-#975 layout in this environment, measured with
+// Issue #975: on a phone an article table keeps its column headers, pins its
+// first column on opaque paper and scrolls the remaining columns inside the
+// article width — instead of the 30 stacked cells the #522/#526 stacking
+// produced for the YOLO matrix. This is every article table's default; no post
+// declares it. The hint and the scroll region's label are localized, the
+// region is reachable and left with the keyboard, and the arrow keys scroll
+// it. Baseline of the pre-#975 layout in this environment, measured with
 // the same headless Chromium: table 2922px tall at 390, one action row 487px,
 // class `table-stack`, `thead` display none.
 const yoloMatrixRoutes = [
-  ["/blog/claude-code-yolo-mode/", "Swipe horizontally to see all modes."],
-  ["/zh/blog/claude-code-yolo-mode/", "左右滑动查看所有模式。"],
+  ["/blog/claude-code-yolo-mode/", "Swipe horizontally to see all columns."],
+  ["/zh/blog/claude-code-yolo-mode/", "左右滑动查看所有列。"],
 ];
 
 async function matrixAt(route, width) {
@@ -606,28 +608,53 @@ describe("article comparison matrix on phones (Issue #975)", () => {
     expect(matrix.rows[0][0].width, `${route} pinned column width`).toBeLessThan(matrix.wrapper.clientWidth * 0.6);
   }, 30_000);
 
-  it("keeps an undeclared three-column-plus table stacking on phones", async () => {
+  // The regression this default exists for: codex-usage-limits (2026-10-17)
+  // was written without the old opt-in line and shipped on phones as one
+  // bordered box per cell, boxes inside the article — the layout the
+  // maintainer rules out on phones (no border inside a border). Every one of
+  // these tables must read as a table: header row visible, each row's cells
+  // side by side, no cell turned into its own block.
+  it.each([
+    "/blog/codex-usage-limits/",
+    "/zh/blog/codex-usage-limits/",
+    "/blog/claude-code-sandbox/",
+    "/zh/blog/long-polling-new-user-wait/",
+  ])("shows %s tables as tables on phones, never as stacked cell boxes", async (route) => {
     const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 844 } });
     try {
-      await page.goto(`${origin}/blog/claude-code-sandbox/`, { waitUntil: "load", timeout: 25_000 });
-      const stacked = await page.evaluate(() => {
-        const tables = [...document.querySelectorAll(".post-body .post-table-scroll table")];
-        return {
-          tables: tables.length,
-          stacked: tables.filter((table) => table.classList.contains("table-stack")).length,
-          comparison: tables.filter((table) => table.classList.contains("table-comparison")).length,
-          hiddenHead: tables.filter((table) => {
-            const head = table.querySelector("thead");
-            return head ? getComputedStyle(head).display === "none" : false;
-          }).length,
-          labelledCells: document.querySelectorAll(".table-stack td[data-label]").length,
-        };
+      await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+      const tables = await page.evaluate(() => {
+        const withTable = document.documentElement.scrollWidth;
+        const result = [...document.querySelectorAll(".post-body .post-table-scroll")].map((wrapper) => {
+          const table = wrapper.querySelector("table");
+          const head = table.querySelector("thead");
+          const hint = wrapper.previousElementSibling;
+          const rows = [...table.querySelectorAll("tbody tr")];
+          return {
+            className: table.className,
+            headVisible: head.getBoundingClientRect().height > 0 && getComputedStyle(head).display !== "none",
+            blockCells: [...table.querySelectorAll("th, td")].filter((cell) => getComputedStyle(cell).display !== "table-cell").length,
+            rowsSideBySide: rows.every((row) => new Set([...row.children].map((cell) => Math.round(cell.getBoundingClientRect().top))).size === 1),
+            columns: rows[0].children.length,
+            overflows: wrapper.scrollWidth > wrapper.clientWidth,
+            hintShown: hint.classList.contains("post-table-hint") && !hint.hidden && getComputedStyle(hint).display !== "none",
+          };
+        });
+        result.forEach((_, index) => { document.querySelectorAll(".post-body .post-table-scroll table")[index].style.display = "none"; });
+        return { result, overflowAdded: withTable - document.documentElement.scrollWidth };
       });
-      expect(stacked.tables, "/blog/claude-code-sandbox/ body tables").toBeGreaterThan(0);
-      expect(stacked.stacked, "/blog/claude-code-sandbox/ stacked tables").toBeGreaterThan(0);
-      expect(stacked.comparison, "/blog/claude-code-sandbox/ comparison tables").toBe(0);
-      expect(stacked.hiddenHead, "/blog/claude-code-sandbox/ stacked headers hidden").toBeGreaterThan(0);
-      expect(stacked.labelledCells, "/blog/claude-code-sandbox/ labelled cells").toBeGreaterThan(0);
+      expect(tables.result.length, `${route} body tables`).toBeGreaterThan(0);
+      for (const [index, table] of tables.result.entries()) {
+        const label = `${route} table ${index + 1}`;
+        expect(table.className, label).toBe("table-comparison");
+        expect(table.headVisible, `${label} header row visible`).toBe(true);
+        expect(table.blockCells, `${label} cells turned into blocks`).toBe(0);
+        expect(table.rowsSideBySide, `${label} each row's cells side by side`).toBe(true);
+        expect(table.columns, `${label} columns`).toBeGreaterThanOrEqual(2);
+        // The swipe hint appears exactly when there is something to swipe to.
+        expect(table.hintShown, `${label} swipe hint`).toBe(table.overflows);
+      }
+      expect(tables.overflowAdded, `${route} page overflow added by the tables`).toBe(0);
     } finally {
       await page.close();
     }

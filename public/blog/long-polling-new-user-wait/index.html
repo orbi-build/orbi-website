@@ -202,28 +202,28 @@
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/YpaOJxtK7HA" title="How long new users wait after connecting a repo: 1–2 min before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Both are timed from clicking “Connect repository” until the workspace is ready and the user can hand Orbi a first task. Before, from production records: about a minute on a normal day and over two minutes on a bad one, on a page that only said “a few minutes”. After, recorded on our test server and played back in real time: about 12 seconds.</figcaption></figure><p>Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.</p>
 <h2 id="first-find-out-where-the-minute-goes">First, find out where the minute goes</h2>
 <p>We pulled timestamps from the database and split the wait into pieces:</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Step</th>
-<th>Roughly how long</th>
-<th>Who decides</th>
+<th scope="col">Step</th>
+<th scope="col">Roughly how long</th>
+<th scope="col">Who decides</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Step">The request waits in a queue for the host to pick it up</td>
-<td data-label="Roughly how long">20-odd seconds on average, close to two minutes at worst</td>
-<td data-label="Who decides">a job on the host that runs once a minute</td>
+<th scope="row">The request waits in a queue for the host to pick it up</th>
+<td>20-odd seconds on average, close to two minutes at worst</td>
+<td>a job on the host that runs once a minute</td>
 </tr>
 <tr>
-<td data-label="Step">The host prepares the sandbox</td>
-<td data-label="Roughly how long">half a minute to a minute</td>
-<td data-label="Who decides">the provisioning script</td>
+<th scope="row">The host prepares the sandbox</th>
+<td>half a minute to a minute</td>
+<td>the provisioning script</td>
 </tr>
 <tr>
-<td data-label="Step">The page notices it&#39;s ready</td>
-<td data-label="Roughly how long">up to 10 seconds</td>
-<td data-label="Who decides">the status page, which refreshed every 10 seconds</td>
+<th scope="row">The page notices it&#39;s ready</th>
+<td>up to 10 seconds</td>
+<td>the status page, which refreshed every 10 seconds</td>
 </tr>
 </tbody></table></div>
 <p>Claude Code had mixed up two things: preparing the workspace took about a minute, and seeing Orbi&#39;s suggestions for the repository took over three. &quot;Five minutes&quot; was the second. We went after the first.</p>
@@ -238,28 +238,28 @@
 <h2 id="from-ask-more-often-to-long-polling">From &quot;ask more often&quot; to long polling</h2>
 <p>The first idea was to pull &quot;pick up new users&quot; out into its own job that asked Cloud every 2 seconds. That works, but it&#39;s still polling. I asked: why isn&#39;t this message-based, so the host knows the moment something arrives?</p>
 <p>There are three ways to get a request from Cloud to the host:</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th>Option</th>
-<th>How</th>
-<th>Verdict</th>
+<th scope="col">Option</th>
+<th scope="col">How</th>
+<th scope="col">Verdict</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="Option">Short polling, more often</td>
-<td data-label="How">Ask every 2 seconds</td>
-<td data-label="Verdict">Simple, but there&#39;s always a delay, and it keeps asking when there&#39;s nothing to do</td>
+<th scope="row">Short polling, more often</th>
+<td>Ask every 2 seconds</td>
+<td>Simple, but there&#39;s always a delay, and it keeps asking when there&#39;s nothing to do</td>
 </tr>
 <tr>
-<td data-label="Option">Long polling</td>
-<td data-label="How">The host sends a request; Cloud holds it and answers as soon as there&#39;s new work, or with nothing after 20 seconds</td>
-<td data-label="Verdict">Picks up new work in about a second, and the host still only connects outward</td>
+<th scope="row">Long polling</th>
+<td>The host sends a request; Cloud holds it and answers as soon as there&#39;s new work, or with nothing after 20 seconds</td>
+<td>Picks up new work in about a second, and the host still only connects outward</td>
 </tr>
 <tr>
-<td data-label="Option">Push</td>
-<td data-label="How">Cloud connects to the host</td>
-<td data-label="Verdict">The host would need an open inbound port, which our design doesn&#39;t allow</td>
+<th scope="row">Push</th>
+<td>Cloud connects to the host</td>
+<td>The host would need an open inbound port, which our design doesn&#39;t allow</td>
 </tr>
 </tbody></table></div>
 <p>We picked long polling. GitHub&#39;s self-hosted runners work the same way: the runner <a href="https://docs.github.com/en/enterprise-server@3.12/actions/hosting-your-own-runners/managing-self-hosted-runners/communicating-with-self-hosted-runners">holds a 50-second long poll open to GitHub</a>, opens another when it times out, and never needs an inbound connection. Our host is in the same position. It can reach out; nothing can reach in.</p>
@@ -310,33 +310,33 @@ WantedBy=multi-user.target
 <p>There&#39;s research behind that. In a 2011 Harvard Business School study on the <a href="https://www.hbs.edu/faculty/Pages/item.aspx?num=40158">labor illusion</a>, people picked between two services with identical results: one answered instantly, the other made them wait but showed what it was doing. With a 60-second wait, 63% picked the one that showed its work. When it made them wait without showing anything, only 23% did.</p>
 <p>The same paper has a flip side: visible effort followed by a bad result got the worst ratings of all. We&#39;d stepped right into that one. On our Chinese-language page, the &quot;Orbi understood your repository&quot; summary came out in English. Orbi now writes it in the page&#39;s language.</p>
 <h2 id="results">Results</h2>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
-<th></th>
-<th>Before</th>
-<th>Now (test server)</th>
+<th scope="col"></th>
+<th scope="col">Before</th>
+<th scope="col">Now (test server)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Waiting for the host to pick up the request</td>
-<td data-label="Before">20-odd seconds on average, close to two minutes at worst</td>
-<td data-label="Now (test server)">a second or two</td>
+<th scope="row">Waiting for the host to pick up the request</th>
+<td>20-odd seconds on average, close to two minutes at worst</td>
+<td>a second or two</td>
 </tr>
 <tr>
-<td>Workspace ready</td>
-<td data-label="Before">about a minute normally, over two minutes at worst</td>
-<td data-label="Now (test server)">about 10 seconds</td>
+<th scope="row">Workspace ready</th>
+<td>about a minute normally, over two minutes at worst</td>
+<td>about 10 seconds</td>
 </tr>
 <tr>
-<td>&quot;Orbi understood your repository&quot; appears</td>
-<td data-label="Before">didn&#39;t exist</td>
-<td data-label="Now (test server)">about 25 seconds</td>
+<th scope="row">&quot;Orbi understood your repository&quot; appears</th>
+<td>didn&#39;t exist</td>
+<td>about 25 seconds</td>
 </tr>
 <tr>
-<td>Three suggestions appear</td>
-<td data-label="Before">over 3 minutes</td>
-<td data-label="Now (test server)">about 2 minutes</td>
+<th scope="row">Three suggestions appear</th>
+<td>over 3 minutes</td>
+<td>about 2 minutes</td>
 </tr>
 </tbody></table></div>
 <p>The new code is in production now; the production numbers will come when real users connect.</p>
