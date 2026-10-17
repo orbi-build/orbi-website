@@ -3070,15 +3070,18 @@ describe("blog table rendering (Issue #393)", () => {
     const post = postFromSource("t.md", front(`| A | B |
 | - | - |
 | 1 | 2 |`));
-    expect(post.html).toContain('<div class="post-table-scroll"><table>');
+    expect(post.html).toContain('<div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">');
     expect(post.html.match(/class="post-table-scroll"/g)).toHaveLength(1);
   });
 
   it("wraps nested tables recursively without double-wrapping a table", () => {
     const html = '<table><tr><td><table><tr><td>x</td></tr></table></td></tr></table>';
-    const wrapped = wrapRenderedTables(html);
-    expect(wrapped).toBe('<div class="post-table-scroll"><table><tr><td><div class="post-table-scroll"><table><tr><td>x</td></tr></table></div></td></tr></table></div>');
-    expect(wrapped.match(/<div class="post-table-scroll"><table/g)).toHaveLength(2);
+    const wrapped = wrapRenderedTables(html, "en");
+    expect(wrapped.match(/<div class="post-table-scroll"[^>]*><table/g)).toHaveLength(2);
+    expect(wrapped.match(/class="post-table-scroll"/g)).toHaveLength(2);
+    // The inner table sits inside the outer table's cell, not beside it.
+    expect(wrapped.indexOf('<p class="post-table-hint" hidden>', 1)).toBeGreaterThan(wrapped.indexOf("<table"));
+    expect(wrapped.endsWith("</table></div>")).toBe(true);
   });
 
   it("defines the table scroll and token-based table styles in the post template", async () => {

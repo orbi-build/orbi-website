@@ -202,7 +202,7 @@ claude --permission-mode bypassPermissions
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。受保护路径是一小组路径，<code class="post-code--single">.git/config</code> 只是其中之一，主要是 <code class="post-code--single">.git</code>、<code class="post-code--single">.config/git</code> 和 <code class="post-code--single">.claude</code>（Claude 自己的配置）；写它们在多数模式下不会被自动放行。</p>
 <h2 id="五种权限模式分别放行了哪些动作">五种权限模式分别放行了哪些动作</h2>
 <p>我给五种权限模式派了同样六个动作，记录的是磁盘上和本机接收端实际发生了什么，不是模型嘴上说它做了什么。每格跑三次；注入那一行涉及模型判断、方差大，多跑到五次。<code class="post-code--single">已执行</code> = 真跑了；<code class="post-code--single">被拦</code> = 权限层挡下；<code class="post-code--single">没照做</code> = 模型自己拒绝。</p>
-<p class="post-table-hint">左右滑动查看所有模式。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有模式。"><table class="table-comparison">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">动作</th>

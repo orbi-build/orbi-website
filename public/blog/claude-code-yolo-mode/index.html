@@ -202,7 +202,7 @@ claude --permission-mode bypassPermissions
 <p>Even in this mode, a few things still stop: an explicit <code class="post-code--single">ask</code> rule, an <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code> that targets a critical path like <code class="post-code--spaced">rm -rf ~</code>, and a deny rule. Deny rules win in every mode, YOLO included. (The protected paths the table below refers to are a small set, chiefly <code class="post-code--single">.git</code>, <code class="post-code--single">.config/git</code> and <code class="post-code--single">.claude</code>.)</p>
 <h2 id="what-each-permission-mode-let-through">What each permission mode let through</h2>
 <p>I gave the same six actions to five permission modes and recorded what actually happened on disk and at a local listener, not what the model said it did. Each cell is three runs (the injection row is five). <code class="post-code--single">done</code> = it ran; <code class="post-code--single">denied</code> = the permission layer blocked it; <code class="post-code--single">declined</code> = the model itself refused.</p>
-<p class="post-table-hint">Swipe horizontally to see all modes.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all modes."><table class="table-comparison">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">Action</th>

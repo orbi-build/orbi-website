@@ -104,8 +104,8 @@ belongs to decides where you edit it.
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
 - `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
   per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
-  `lang`, `author`, `image`, all six required; optional `mirror` and
-  `table_layout`; posts with a video provide all six `video_*` fields) plus a
+  `lang`, `author`, `image`, all six required; optional `mirror`; posts with a
+  video provide all six `video_*` fields) plus a
   CommonMark body. Blog bodies
   may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
   `alt`) and responsive `<iframe>` media tags; other raw HTML, JSON headers and
@@ -119,18 +119,21 @@ belongs to decides where you edit it.
   points at the other language's blog index. A post missing a front-matter
   field, a `mirror:` naming a file that does not exist, or a `mirror:` the
   named file does not name back, fails the build naming both files.
-  `table_layout: comparison` (Issue #975) marks the post's body tables as
-  **article comparison matrices**; `comparison` is the only supported value and
-  any other value fails the build naming the file, so a typo cannot silently
-  ship the wrong layout. A comparison matrix stays a native table at every
-  width: column headers (`th scope="col"`) stay visible, the first cell of every
-  body row becomes the row header (`th scope="row"`), the action column is
-  pinned on an opaque paper ground and wraps, and the remaining columns scroll
-  inside the article width in a keyboard-focusable region (`tabindex="0"`,
-  `role="region"`, arrow keys scroll it, Tab leaves it) whose localized swipe
-  hint sits just above it — 中文「左右滑动查看所有模式。」/ EN "Swipe horizontally
-  to see all modes." Every other table keeps the phone stacking rules
-  (#522/#526). The contract is the Design System's [DataTable "Article
+  Every table in a post body (and in a Markdown guide) is an **article
+  table** (Issue #975), with nothing to declare: it stays a native table at
+  every width — column headers (`th scope="col"`) stay visible, the first cell
+  of every body row becomes the row header (`th scope="row"`), the first
+  column is pinned on an opaque paper ground and wraps, and on phones the
+  columns scroll inside the article width in a keyboard-focusable region
+  (`tabindex="0"`, `role="region"`, arrow keys scroll it, Tab leaves it).
+  Its localized swipe hint — 中文「左右滑动查看所有列。」/ EN "Swipe
+  horizontally to see all columns." — sits just above the region and shows
+  only while the table actually overflows. Article tables never use the
+  phone stacking (#522/#526), which is for the hand-written site pages'
+  `.compare-table` only. #975 first shipped this behind a
+  `table_layout: comparison` front-matter opt-in; the next post written
+  without it went out as stacked boxes, so the opt-in was removed and this is
+  the default. The contract is the Design System's [DataTable "Article
   comparison matrices"](https://github.com/orbi-build/orbi-design-system/blob/main/components/DataTable/README.md#article-comparison-matrices)
   section: land it there first, then consume it here.
 - `site/partials/nav.html`, `site/partials/footer.html` and

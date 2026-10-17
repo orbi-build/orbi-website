@@ -211,7 +211,7 @@
 </figure><p>I asked the agent to run the same Python probe under three configurations: write inside the repository, write a harmless sibling file outside it, and contact a loopback HTTP server. The sibling directory was under the home cache, beyond the workspace and system temporary directories. <code class="post-code--single">/tmp</code> is a poor boundary test because workspace permissions can include temporary directories.</p>
 <p>Each configuration ran in a fresh outer sandbox with the same mount and network rules. <code class="post-code--single">--ignore-user-config</code> and an isolated CLI home excluded my normal settings. Authentication was copied into the temporary environment and removed afterward. Managed requirements can still constrain effective permissions.</p>
 <p>I checked the files and listener requests independently of the agent&#39;s answer. There was one fixed-probe run per CLI configuration, using <code class="post-code--single">gpt-6.1-sol</code> at low reasoning effort:</p>
-<p class="post-table-hint">Swipe horizontally to see all modes.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all modes."><table class="table-comparison">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">Execution</th>
@@ -272,7 +272,7 @@ error: unexpected argument &#39;--full-auto&#39; found
 </code></pre>
 <p>Codex CLI 0.163.0 printed the same error when I repeated the check on 17 October 2026, and interactive <code class="post-code--spaced">codex --full-auto --help</code> failed the same way. OpenAI&#39;s current <a href="https://learn.chatgpt.com/docs/non-interactive-mode">non-interactive documentation</a> says <code class="post-code--single">--full-auto</code> is no longer supported. For scripts that need repository edits, it directs users to explicit <code class="post-code--spaced">--sandbox workspace-write</code>, or to <code class="post-code--single">--approve-for-me</code> on its own for automatic approval review (that preset already includes workspace-write, so don&#39;t add <code class="post-code--single">--sandbox</code>). Some search results describe an older transition: <a href="https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99">Codex CLI 0.130.0</a> still accepted <code class="post-code--single">--full-auto</code> with a deprecation warning. Check the installed CLI to find out which behavior applies to your version.</p>
 <p>OpenAI&#39;s <a href="https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations">table of common combinations</a> puts these modes side by side; the <code class="post-code--single">--approve-for-me</code> shortcut is from the <a href="https://learn.chatgpt.com/docs/cli/reference">CLI reference</a>:</p>
-<p class="post-table-hint">Swipe horizontally to see all modes.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all modes."><table class="table-comparison">
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">Name in OpenAI&#39;s guide</th>

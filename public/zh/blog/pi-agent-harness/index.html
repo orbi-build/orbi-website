@@ -216,68 +216,68 @@
 <p>在它里面，每次模型调用、每次工具调用都是一个任务，往下走之前先存检查点，新进程打开同一份存储就能接着跑。它和 Pi 共用模型层 <code class="post-code--single">pi-ai</code>，但它不是 <code class="post-code--single">pi</code> 命令。它也带着那四个写代码用的工具，但得先给它们接一个执行环境，也就是真正去读文件、跑命令的地方，工具才能用；Pi Durable 自带一个 Node 的执行环境，但它在 Cloudflare Worker 里用不了。</p>
 <h2 id="用同一个-kill-测试比三种无人值守的跑法">用同一个 kill 测试比三种无人值守的跑法</h2>
 <p>表里的 Durable Object，是 Cloudflare 上一种带自己存储、按名字寻址的 Worker 实例。</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th></th>
-<th><code class="post-code--spaced">pi --print</code></th>
-<th>AI SDK <code class="post-code--single">HarnessAgent</code></th>
-<th>Cloudflare <code class="post-code--single">PiHarness</code></th>
+<th scope="col"></th>
+<th scope="col"><code class="post-code--spaced">pi --print</code></th>
+<th scope="col">AI SDK <code class="post-code--single">HarnessAgent</code></th>
+<th scope="col">Cloudflare <code class="post-code--single">PiHarness</code></th>
 </tr>
 </thead>
 <tbody><tr>
-<td>跑的是什么</td>
-<td data-label="pi --print">Pi 1.0.0，作为子进程</td>
-<td data-label="AI SDK HarnessAgent">Pi 编程 agent 0.85.1，跑在你的 Node 进程里，经由 <code class="post-code--single">@ai-sdk/harness-pi</code> 1.0.141</td>
-<td data-label="Cloudflare PiHarness">Pi Durable 1.0.4，跑在 Durable Object 里，经由 Cloudflare Agents SDK（npm 包 <code class="post-code--single">agents</code>）0.26.0</td>
+<th scope="row">跑的是什么</th>
+<td>Pi 1.0.0，作为子进程</td>
+<td>Pi 编程 agent 0.85.1，跑在你的 Node 进程里，经由 <code class="post-code--single">@ai-sdk/harness-pi</code> 1.0.141</td>
+<td>Pi Durable 1.0.4，跑在 Durable Object 里，经由 Cloudflare Agents SDK（npm 包 <code class="post-code--single">agents</code>）0.26.0</td>
 </tr>
 <tr>
-<td>状态</td>
-<td data-label="pi --print">稳定版</td>
-<td data-label="AI SDK HarnessAgent">实验性</td>
-<td data-label="Cloudflare PiHarness">Pi Durable 是实验性，<code class="post-code--single">PiHarness</code> 标 beta</td>
+<th scope="row">状态</th>
+<td>稳定版</td>
+<td>实验性</td>
+<td>Pi Durable 是实验性，<code class="post-code--single">PiHarness</code> 标 beta</td>
 </tr>
 <tr>
-<td>测试用的工具</td>
-<td data-label="pi --print">Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code></td>
-<td data-label="AI SDK HarnessAgent">Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code>，在沙箱里执行</td>
-<td data-label="Cloudflare PiHarness">我写的两个工具：<code class="post-code--single">sleep</code>，以及往 SQLite 存一行的 <code class="post-code--single">write_file</code></td>
+<th scope="row">测试用的工具</th>
+<td>Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code></td>
+<td>Pi 自带的 <code class="post-code--single">bash</code> 和 <code class="post-code--single">write</code>，在沙箱里执行</td>
+<td>我写的两个工具：<code class="post-code--single">sleep</code>，以及往 SQLite 存一行的 <code class="post-code--single">write_file</code></td>
 </tr>
 <tr>
-<td>kill 了几次，结果</td>
-<td data-label="pi --print"><code class="post-code--single">SIGKILL</code> 两次，用 <code class="post-code--single">--continue</code> 重新拉起，两次都跑完</td>
-<td data-label="AI SDK HarnessAgent"><code class="post-code--single">SIGKILL</code> 两次：两次的对话都恢复不了（宿主机临时目录里还留着一份，但没有 API 读它）。<code class="post-code--single">SIGTERM</code> 七次，处理函数里调了 <code class="post-code--single">session.stop()</code>：每次都接上并跑完。其中三次查了会话文件：两次信号打断了命令，都被记成成功；另一次没有命令被打断</td>
-<td data-label="Cloudflare PiHarness"><code class="post-code--single">SIGKILL</code> 三次。我重启本地运行时后，对象没收到任何请求就自己起来，三次都跑完</td>
+<th scope="row">kill 了几次，结果</th>
+<td><code class="post-code--single">SIGKILL</code> 两次，用 <code class="post-code--single">--continue</code> 重新拉起，两次都跑完</td>
+<td><code class="post-code--single">SIGKILL</code> 两次：两次的对话都恢复不了（宿主机临时目录里还留着一份，但没有 API 读它）。<code class="post-code--single">SIGTERM</code> 七次，处理函数里调了 <code class="post-code--single">session.stop()</code>：每次都接上并跑完。其中三次查了会话文件：两次信号打断了命令，都被记成成功；另一次没有命令被打断</td>
+<td><code class="post-code--single">SIGKILL</code> 三次。我重启本地运行时后，对象没收到任何请求就自己起来，三次都跑完</td>
 </tr>
 <tr>
-<td>会话记录在哪</td>
-<td data-label="pi --print"><code class="post-code--single">--session-dir</code> 里的 JSONL 文件，一行一条记录</td>
-<td data-label="AI SDK HarnessAgent">一轮进行中放在宿主机的临时目录，只有 stop、detach、suspend 时才拷进沙箱</td>
-<td data-label="Cloudflare PiHarness">Durable Object 的 SQLite 里以 <code class="post-code--single">pi_</code> 开头的表</td>
+<th scope="row">会话记录在哪</th>
+<td><code class="post-code--single">--session-dir</code> 里的 JSONL 文件，一行一条记录</td>
+<td>一轮进行中放在宿主机的临时目录，只有 stop、detach、suspend 时才拷进沙箱</td>
+<td>Durable Object 的 SQLite 里以 <code class="post-code--single">pi_</code> 开头的表</td>
 </tr>
 <tr>
-<td>扩展和 key</td>
-<td data-label="pi --print">OS 用户装的、受信任的仓库里带的，都会加载，除非传 <code class="post-code--single">--no-extensions</code>、<code class="post-code--single">--no-skills</code>。key 来自这个用户的环境变量或 <code class="post-code--single">auth.json</code></td>
-<td data-label="AI SDK HarnessAgent">不自动发现扩展，只跑你在代码里传的工厂函数。key 来自 <code class="post-code--single">auth</code> 参数、你自己的凭据存储或宿主机的环境变量，留在宿主机</td>
-<td data-label="Cloudflare PiHarness">扩展是 Worker 代码里装进 registry 的对象，key 是 Worker secret</td>
+<th scope="row">扩展和 key</th>
+<td>OS 用户装的、受信任的仓库里带的，都会加载，除非传 <code class="post-code--single">--no-extensions</code>、<code class="post-code--single">--no-skills</code>。key 来自这个用户的环境变量或 <code class="post-code--single">auth.json</code></td>
+<td>不自动发现扩展，只跑你在代码里传的工厂函数。key 来自 <code class="post-code--single">auth</code> 参数、你自己的凭据存储或宿主机的环境变量，留在宿主机</td>
+<td>扩展是 Worker 代码里装进 registry 的对象，key 是 Worker secret</td>
 </tr>
 <tr>
-<td>进程死了谁拉起</td>
-<td data-label="pi --print">你的监督程序，<code class="post-code--single">pi</code> 留下的工具进程也得由它清：<code class="post-code--single">SIGKILL</code> 之后还在跑的命令，以及放到后台的东西</td>
-<td data-label="AI SDK HarnessAgent">你的代码，从之前 <code class="post-code--single">stop()</code>、<code class="post-code--single">detach()</code> 或 <code class="post-code--single">suspendTurn()</code> 存下的状态接着跑</td>
-<td data-label="Cloudflare PiHarness">按 Cloudflare 文档，是任务没做完时每 30 秒一次的心跳 alarm。本地实测在重启后 1 到 10 秒内恢复，和任务开始后约第 30 秒到期的第一次 alarm 对得上，具体是哪一次 alarm 响的没确认</td>
+<th scope="row">进程死了谁拉起</th>
+<td>你的监督程序，<code class="post-code--single">pi</code> 留下的工具进程也得由它清：<code class="post-code--single">SIGKILL</code> 之后还在跑的命令，以及放到后台的东西</td>
+<td>你的代码，从之前 <code class="post-code--single">stop()</code>、<code class="post-code--single">detach()</code> 或 <code class="post-code--single">suspendTurn()</code> 存下的状态接着跑</td>
+<td>按 Cloudflare 文档，是任务没做完时每 30 秒一次的心跳 alarm。本地实测在重启后 1 到 10 秒内恢复，和任务开始后约第 30 秒到期的第一次 alarm 对得上，具体是哪一次 alarm 响的没确认</td>
 </tr>
 <tr>
-<td>卡住了谁发现</td>
-<td data-label="pi --print">你的监督程序</td>
-<td data-label="AI SDK HarnessAgent">你的代码：<code class="post-code--single">stream()</code> 接受 abort signal</td>
-<td data-label="Cloudflare PiHarness">你的代码，通过 <code class="post-code--single">abort()</code>；没有内置机制，忽略 abort signal 的工具会让会话一直占着</td>
+<th scope="row">卡住了谁发现</th>
+<td>你的监督程序</td>
+<td>你的代码：<code class="post-code--single">stream()</code> 接受 abort signal</td>
+<td>你的代码，通过 <code class="post-code--single">abort()</code>；没有内置机制，忽略 abort signal 的工具会让会话一直占着</td>
 </tr>
 <tr>
-<td>要自己运维什么</td>
-<td data-label="pi --print">一台机器，加一个监督程序</td>
-<td data-label="AI SDK HarnessAgent">一个 Node 服务，加一个沙箱</td>
-<td data-label="Cloudflare PiHarness">不用自己的服务器；部署需要 Cloudflare 账号，写代码用的工具要你自己提供执行环境</td>
+<th scope="row">要自己运维什么</th>
+<td>一台机器，加一个监督程序</td>
+<td>一个 Node 服务，加一个沙箱</td>
+<td>不用自己的服务器；部署需要 Cloudflare 账号，写代码用的工具要你自己提供执行环境</td>
 </tr>
 </tbody></table></div>
 <p>每次给模型的指令都一样：按顺序建 <code class="post-code--single">step1.txt</code> 到 <code class="post-code--single">step5.txt</code>，每建一个文件之前先调一次 8 秒的 sleep，全部建完回复 <code class="post-code--spaced">ALL DONE</code>。实际发出去的提示词如下（Cloudflare 那边把「在 bash 里跑 <code class="post-code--spaced">sleep 8</code>」换成了「调用 sleep 工具，seconds=8」，也去掉了「in the current directory」）：</p>

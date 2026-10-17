@@ -222,38 +222,38 @@
 </figure><p>门控省下的比预想的少。九个普通 bug，按需触发 9 次全过，每次中位数 5.2 百万 token；原版 2.8 百万，常开防护 5.8 百万。原因是这些普通 bug 大多也碰文本处理（正则、参数解析、换行），九个里有八个触发了门控。</p>
 <h2 id="分题组看成本">分题组看成本</h2>
 <p>通过率只是一半。每次运行的 token 大头是缓存读取（约 97%），随 agent 的对话轮数增长。harness 要求的检查越多，跑一个 bug 通常就越贵。</p>
-<div class="post-table-scroll"><table class="table-stack">
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
-<th>题组</th>
-<th>原版</th>
-<th>常开防护（v15）</th>
-<th>按需触发（v19）</th>
+<th scope="col">题组</th>
+<th scope="col">原版</th>
+<th scope="col">常开防护（v15）</th>
+<th scope="col">按需触发（v19）</th>
 </tr>
 </thead>
 <tbody><tr>
-<td data-label="题组">3 个 Orbi 做错过的（调参集）</td>
-<td data-label="原版">6/15 · 5.7M</td>
-<td data-label="常开防护（v15）">9/9 · 13.4M</td>
-<td data-label="按需触发（v19）">3/3 · 10.8M</td>
+<th scope="row">3 个 Orbi 做错过的（调参集）</th>
+<td>6/15 · 5.7M</td>
+<td>9/9 · 13.4M</td>
+<td>3/3 · 10.8M</td>
 </tr>
 <tr>
-<td data-label="题组">8 个窄例子 bug（没见过）</td>
-<td data-label="原版">8/12 · 3.6M</td>
-<td data-label="常开防护（v15）">9/10 · 8.3M</td>
-<td data-label="按需触发（v19）">7/8 · 5.2M</td>
+<th scope="row">8 个窄例子 bug（没见过）</th>
+<td>8/12 · 3.6M</td>
+<td>9/10 · 8.3M</td>
+<td>7/8 · 5.2M</td>
 </tr>
 <tr>
-<td data-label="题组">9 个普通 bug（没见过）</td>
-<td data-label="原版">9/9 · 2.8M</td>
-<td data-label="常开防护（v15）">9/9 · 5.8M</td>
-<td data-label="按需触发（v19）">9/9 · 5.2M</td>
+<th scope="row">9 个普通 bug（没见过）</th>
+<td>9/9 · 2.8M</td>
+<td>9/9 · 5.8M</td>
+<td>9/9 · 5.2M</td>
 </tr>
 <tr>
-<td data-label="题组">3 个容易改出回归的 bug（没见过）</td>
-<td data-label="原版">4/4 · 7.1M</td>
-<td data-label="常开防护（v15）">3/3 · 13.9M（没有 numpy）</td>
-<td data-label="按需触发（v19）">没跑</td>
+<th scope="row">3 个容易改出回归的 bug（没见过）</th>
+<td>4/4 · 7.1M</td>
+<td>3/3 · 13.9M（没有 numpy）</td>
+<td>没跑</td>
 </tr>
 </tbody></table></div>
 <p>格子里是「通过 / 运行 · 每次运行 token 中位数（百万）」。耗时中位数走势相同：普通 bug 上 11、16、15 分钟，窄例子 bug 上 12.5、19、17.5 分钟。</p>

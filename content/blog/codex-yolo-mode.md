@@ -6,7 +6,6 @@ lang: en
 author: Lawrence Liu
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
-table_layout: comparison
 ---
 
 Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto).

@@ -1,25 +1,27 @@
-// Issue #975: an article whose front matter declares `table_layout: comparison`
-// keeps its matrix as a native two-dimensional table on phones — visible column
-// headers, the action column pinned on opaque paper, the remaining columns
+// Issue #975 made a phone-width article table a native two-dimensional table
+// — visible column headers, the first column pinned on opaque paper, the rest
 // scrolling inside the article width, a localized swipe hint and a
-// keyboard-focusable scroll region. That is the Design System's
-// components/DataTable README, "Article comparison matrices"; every other
-// article table keeps the #522/#526 stacking row-by-row with data-labels.
+// keyboard-focusable scroll region (Design System components/DataTable,
+// "Article comparison matrices") — but only for posts that opted in with
+// `table_layout: comparison`. Every other article kept the #522/#526 phone
+// stacking, so the next post written without that line (codex-usage-limits,
+// 2026-10-17) shipped its table as a pile of bordered boxes, one box per cell.
+// Since then every Markdown article table — blog posts and Markdown guides, in
+// both languages — renders this way by default, with nothing to declare.
 //
-// The two YOLO posts are asserted through the shipped bytes in public/ — the
-// same bytes the Worker deploys — so a hand edit that skips `npm run build`
-// fails here; the rendering contract itself is driven through postFromSource.
+// The shipped articles are asserted through the bytes in public/ — the same
+// bytes the Worker deploys — so a hand edit that skips `npm run build` fails
+// here; the rendering contract itself is driven through postFromSource.
 
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { postFromSource } from "../scripts/build-pages.mjs";
+import { collectGuides, collectPosts, postFromSource } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const EN_HINT = "Swipe horizontally to see all modes.";
-const ZH_HINT = "左右滑动查看所有模式。";
-const HINT_BEFORE_SCROLL = /<p class="post-table-hint">/;
+const EN_HINT = "Swipe horizontally to see all columns.";
+const ZH_HINT = "左右滑动查看所有列。";
 
 const TABLE = [
   "| Action | default | acceptEdits | auto | dontAsk | bypassPermissions |",
@@ -56,9 +58,9 @@ async function shippedMatrix(output) {
   };
 }
 
-describe("article comparison matrices (Issue #975)", () => {
-  it("keeps a declared matrix a table with scoped headers and a focusable scroll region", () => {
-    const post = postFromSource("t.md", front({ ...base, table_layout: "comparison" }, TABLE));
+describe("article tables are native scrolling tables by default (Issue #975)", () => {
+  it("renders a post table as a scoped native table with a focusable scroll region, with nothing declared", () => {
+    const post = postFromSource("t.md", front(base, TABLE));
     expect(post.html).toContain('<table class="table-comparison">');
     expect(post.html).toContain('<th scope="col">Action</th>');
     expect(post.html).toContain('<th scope="col">bypassPermissions</th>');
@@ -71,56 +73,57 @@ describe("article comparison matrices (Issue #975)", () => {
       `<div class="post-table-scroll" tabindex="0" role="region" aria-label="${EN_HINT}">`,
     );
     // The hint sits above the scroll region, so a footnote directly under the
-    // table stays directly under the table.
-    expect(post.html).toMatch(HINT_BEFORE_SCROLL);
-    expect(post.html.indexOf(`<p class="post-table-hint">${EN_HINT}</p>`))
+    // table stays directly under the table. It ships hidden: demo.js shows it
+    // only while the table actually overflows its region.
+    expect(post.html.indexOf(`<p class="post-table-hint" hidden>${EN_HINT}</p>`))
+      .toBeGreaterThan(-1);
+    expect(post.html.indexOf(`<p class="post-table-hint" hidden>${EN_HINT}</p>`))
       .toBeLessThan(post.html.indexOf('<div class="post-table-scroll"'));
   });
 
   it("localizes the swipe hint", () => {
     const zhTable = TABLE.replace("| Action |", "| 动作 |");
-    const post = postFromSource("zh/t.md", front({ ...base, lang: "zh", table_layout: "comparison" }, zhTable));
-    expect(post.html).toContain(`<p class="post-table-hint">${ZH_HINT}</p>`);
+    const post = postFromSource("zh/t.md", front({ ...base, lang: "zh" }, zhTable));
+    expect(post.html).toContain(`<p class="post-table-hint" hidden>${ZH_HINT}</p>`);
     expect(post.html).toContain(`aria-label="${ZH_HINT}"`);
     expect(post.html).not.toContain(EN_HINT);
   });
 
-  it("leaves an undeclared table on the #522/#526 stacking rules", () => {
-    const post = postFromSource("t.md", front(base, TABLE));
-    expect(post.html).toContain('<table class="table-stack">');
-    expect(post.html).toContain('data-label="default"');
-    expect(post.html).not.toMatch(HINT_BEFORE_SCROLL);
-    expect(post.html).not.toContain("table-comparison");
-    expect(post.html).not.toContain("tabindex");
-  });
-
-  it("fails the build naming the file and the supported value", () => {
-    expect(() => postFromSource("t.md", front({ ...base, table_layout: "stack" }, TABLE)))
-      .toThrow(/content\/blog\/t\.md:[\s\S]*table_layout[\s\S]*comparison/);
-  });
-
-  it("renders every declared article as an accessible comparison matrix", async () => {
-    for (const [dir, prefix] of [["content/blog", ""], ["content/blog/zh", "zh/"]]) {
-      for (const name of await readdir(join(ROOT, dir))) {
-        if (!name.endsWith(".md")) continue;
-        const source = await readFile(join(ROOT, dir, name), "utf8");
-        if (!/^table_layout:\s*comparison\s*$/m.test(source)) continue;
-        const post = postFromSource(`${prefix}${name}`, source);
-        const html = await readFile(join(ROOT, "public", post.output), "utf8");
-        const hint = post.lang === "zh" ? ZH_HINT : EN_HINT;
-        const tables = [...html.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)];
-        expect(tables.length, post.output).toBeGreaterThan(0);
-        for (const [table] of tables) {
-          expect(table, post.output).toContain('<th scope="col">');
-          expect(table, post.output).toContain('<th scope="row">');
-          expect(table, post.output).not.toContain("data-label=");
-        }
-        expect(html, post.output).toContain(
-          `<div class="post-table-scroll" tabindex="0" role="region" aria-label="${hint}">`,
-        );
-        expect(html, post.output).toContain(`<p class="post-table-hint">${hint}</p>`);
+  it("ships every blog and guide table, in both languages, as a native table and never as stacked cards", async () => {
+    const articles = [...await collectPosts(), ...await collectGuides()];
+    let checked = 0;
+    for (const article of articles) {
+      const html = await readFile(join(ROOT, "public", article.output), "utf8");
+      const hint = article.lang === "zh" ? ZH_HINT : EN_HINT;
+      const tables = [...html.matchAll(/<table\b[^>]*>[\s\S]*?<\/table>/g)].map((match) => match[0]);
+      // The stacked layout is the build's .table-stack marker plus a
+      // data-label on every cell; neither may reach an article page.
+      expect(html, article.output).not.toContain("table-stack");
+      expect(html, article.output).not.toContain("data-label=");
+      for (const table of tables) {
+        expect(table, article.output).toMatch(/^<table class="table-comparison">/);
+        expect(table, article.output).toContain('<th scope="col">');
+        expect(table, article.output).toContain('<th scope="row">');
       }
+      expect(html.split('<div class="post-table-scroll" tabindex="0" role="region"').length - 1, article.output)
+        .toBe(tables.length);
+      if (tables.length) {
+        expect(html, article.output).toContain(`aria-label="${hint}"`);
+        expect(html, article.output).toContain(`<p class="post-table-hint" hidden>${hint}</p>`);
+      }
+      checked += tables.length;
     }
+    // The articles that motivated the default, and the ones fixed before it,
+    // must really be in the sweep: an empty sweep would pass vacuously.
+    const outputs = articles.map((article) => article.output);
+    for (const output of [
+      "blog/codex-usage-limits/index.html",
+      "zh/blog/codex-usage-limits/index.html",
+      "blog/claude-code-yolo-mode/index.html",
+      "zh/blog/codex-yolo-mode/index.html",
+      "zh/guides/pi-coding-agent/index.html",
+    ]) expect(outputs).toContain(output);
+    expect(checked).toBeGreaterThan(20);
   });
 
   it("keeps six actions, five modes, all 30 results, emphasis and the footnote in EN", async () => {
