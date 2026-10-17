@@ -2303,6 +2303,11 @@ h2 {
   overflow-x: auto;
 }
 
+/* Prose that continues after a table needs the gap the global p reset removes
+   (space-6 from the design system). */
+.compare-table-wrap + .section-lede,
+.src-note + .section-lede { margin-top: 1.5rem; }
+
 .compare-table {
   width: 100%;
   border-collapse: collapse;

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Code subagents setup and when to use them | Orbi</title>
+  <meta name="description" content="Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.">
+  <link rel="canonical" href="https://orbi.build/blog/claude-code-subagents/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-subagents/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-subagents/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-subagents/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Claude Code subagents setup and when to use them">
+  <meta property="og:description" content="Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.">
+  <meta property="og:url" content="https://orbi.build/blog/claude-code-subagents/">
+  <meta property="og:image" content="https://orbi.build/img/blog-cc-subagents-card.png">
+  <meta property="og:image:alt" content="Claude Code subagents setup and when to use them">
+  <meta property="article:published_time" content="2026-10-17">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code subagents setup and when to use them","datePublished":"2026-10-17","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-subagents/","image":"https://orbi.build/img/blog-cc-subagents-card.png","inLanguage":"en","description":"Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.","url":"https://orbi.build/blog/claude-code-subagents/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Claude Code subagents setup and when to use them</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-17">2026-10-17</time></p>
+
+          <p class="hero-lede">Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#configure-claude-code-subagents-for-a-project">Configure Claude Code subagents for a project</a></li>
+          <li><a class="post-toc-link" href="#give-the-reviewer-a-complete-assignment">Give the reviewer a complete assignment</a></li>
+          <li><a class="post-toc-link" href="#when-a-separate-context-helps">When a separate context helps</a></li>
+          <li><a class="post-toc-link" href="#independent-review-in-orbi">Independent review in Orbi</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 5 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#configure-claude-code-subagents-for-a-project">Configure Claude Code subagents for a project</a></li>
+          <li><a class="post-toc-link" href="#give-the-reviewer-a-complete-assignment">Give the reviewer a complete assignment</a></li>
+          <li><a class="post-toc-link" href="#when-a-separate-context-helps">When a separate context helps</a></li>
+          <li><a class="post-toc-link" href="#independent-review-in-orbi">Independent review in Orbi</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>Claude Code subagents are specialized assistants that handle delegated tasks in their own context windows and return results to the main conversation. For a first configuration, I suggest a reviewer with a narrow assignment and a report you can check against the code.</p>
+<p>I checked Anthropic&#39;s <a href="https://code.claude.com/docs/en/sub-agents">subagent configuration</a> and <a href="https://code.claude.com/docs/en/best-practices#create-custom-subagents">usage guidance</a> on 2026-10-17.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<h2 id="configure-claude-code-subagents-for-a-project">Configure Claude Code subagents for a project</h2>
+<p>Save this as <code class="post-code--single">.claude/agents/change-reviewer.md</code> in your repository; Claude Code picks up a new agent file at the start of a session, so start a fresh session in the project after adding it. That directory scopes the agent to the project; <code class="post-code--single">~/.claude/agents/</code> makes it available across your projects. Both locations are covered in the <a href="https://code.claude.com/docs/en/claude-directory#file-reference">directory reference</a>.</p>
+<pre><code class="language-markdown">---
+name: change-reviewer
+description: Review supplied changed files for behavioral bugs and missing tests.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+Review the supplied requirement, changed-file list and diff.
+Read the affected code and its callers as needed.
+Use the diff to distinguish the change from existing behavior.
+
+For each finding, return:
+- The file and line.
+- The input or action that triggers the problem.
+- The expected and actual behavior.
+- A test that would expose it.
+
+Report uncertainty when the evidence is incomplete.
+If no actionable findings remain, say what you inspected.
+Do not edit files. Identify tests that need running by the main session.
+</code></pre>
+<p>The YAML requires <code class="post-code--single">name</code> and <code class="post-code--single">description</code>. The Markdown body supplies the agent&#39;s system prompt. Here, <code class="post-code--single">tools</code> limits access to file inspection and <code class="post-code--single">model</code> requests Sonnet (a call can still override the model). Claude uses the description when deciding whether to delegate. <a href="https://code.claude.com/docs/en/sub-agents#frontmatter-reference">Anthropic documents these fields in the frontmatter reference.</a></p>
+<p>Keep the description short and put the review procedure in the body. A description such as &quot;help with coding&quot; gives the main agent little reason to choose this reviewer for a particular task.</p>
+<p>To confirm the agent loaded, start a session in the project, type <code class="post-code--single">@</code> and pick <code class="post-code--single">change-reviewer</code> from the list, then send a request. If it does not appear, check that the file sits in <code class="post-code--single">.claude/agents/</code> and restart the session. When the task runs, the transcript shows a delegation entry naming the agent, which is how you verify the subagent ran rather than the main session answering in place.</p>
+<h2 id="give-the-reviewer-a-complete-assignment">Give the reviewer a complete assignment</h2>
+<p>Ask the main session to collect the diff, then give it a request like this with the bracketed inputs filled in:</p>
+<pre><code class="language-text">Use the change-reviewer subagent to review this change.
+
+Requirement: [paste the expected user-visible behavior]
+Changed files: [paste the file paths]
+Diff: [paste the patch for these files]
+Constraints: [paste compatibility requirements or repository rules]
+
+Check whether the changed behavior satisfies the requirement.
+Return actionable findings using the format in your instructions.
+List any tests the main session should run. Do not change files.
+</code></pre>
+<p>For the ordinary subagent used here, <a href="https://code.claude.com/docs/en/sub-agents#what-loads-at-startup">startup context</a> excludes the main conversation&#39;s history; Claude prepares its task message. Supply the requirement, paths and diff explicitly. Claude Code also supports forks that inherit the conversation; this example uses an ordinary subagent.</p>
+<p>Suppose a change should reject an empty form submission. Include that requirement, the handler&#39;s path and any relevant validation tests. Asking only &quot;review the change&quot; leaves the reviewer to infer what successful behavior should be.</p>
+<p>This agent has no Bash tool, so ask the main session to run the proposed tests. When reading its report, check that each finding identifies a triggering input and a location in the code. A suggestion to &quot;improve validation&quot; is too vague to act on. A report that names an accepted empty value, the handler that accepts it and the missing assertion gives you something to verify.</p>
+<h2 id="when-a-separate-context-helps">When a separate context helps</h2>
+<p>Anthropic&#39;s <a href="https://code.claude.com/docs/en/best-practices#use-subagents-for-investigation">investigation guidance</a> recommends subagents for reading many files and returning a summary. The intermediate exploration stays in a separate context. Its best practices also suggest verification after implementation.</p>
+<p>A useful repository lookup asks a concrete question, such as finding the existing function that validates a form field. Ask for the function&#39;s location, its callers and the constraints a new caller must respect. The main session can use that answer without needing every search result.</p>
+<p>A focused review is another useful boundary. Give the reviewer a requirement and a fixed set of changed files. Pause edits to those files until the report returns, then have the main session check each finding against that version before making changes.</p>
+<p>Keep a small edit in the main conversation when it depends on the discussion already in progress. Before delegating, try writing the assignment and the expected return. If you cannot describe either clearly, narrow the task first. Splitting an unclear request across several agents leaves several unclear assignments to reconcile.</p>
+<p>This reviewer shares the main session&#39;s working directory; its separate context does not freeze the files. For a separate Git working directory, Claude Code supports <a href="https://code.claude.com/docs/en/sub-agents#frontmatter-reference"><code class="post-code--spaced">isolation: worktree</code></a>. The example above does not request it.</p>
+<h2 id="independent-review-in-orbi">Independent review in Orbi</h2>
+<p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi uses Pi as its coding agent, with a runner that assigns work and manages the resulting pull requests. Each Issue delivery run gets a git worktree and an implementation session. Review runs in a fresh Pi session that can also fix the code. The runner checks the review verdict, CI results and pull request state before merging. <a href="/guides/pi-coding-agent/?ref=blog-cc-subagents">The Pi architecture guide</a> explains those gates.</p>
+<p>The reviewer above hands its report back to the main session, and you act on it. When you want an Issue to move through implementation, review and merge on its own, you need a runner rather than a single delegated task. Orbi fills that by orchestrating Pi processes: the agent file above belongs to Claude Code, and Orbi does not run it. Orbi&#39;s review session can edit code; the reviewer above is read-only.</p>
+<p>For unattended work, I would start by defining a checkable Issue and who evaluates its result. Orbi&#39;s <a href="/guides/issue-to-release/?ref=blog-cc-subagents">Issue-to-release guide</a> follows that assignment through implementation, review and the merge gate, then describes the release workflow.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<ul>
+<li><a href="/compare/claude-code/?ref=blog-cc-subagents">Compare Orbi with Claude Code</a></li>
+<li><a href="/cloud/">Run Orbi&#39;s delivery workflow with Cloud</a></li>
+</ul>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/claude-code-subagents/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

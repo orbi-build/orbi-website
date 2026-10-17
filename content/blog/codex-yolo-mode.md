@@ -1,7 +1,7 @@
 ---
 title: Codex YOLO mode: what runs without approval
 date: 2026-10-16
-summary: Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.
+summary: Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.
 lang: en
 author: Lawrence Liu
 image: /img/blog-codex-yolo-card.png
@@ -9,9 +9,9 @@ mirror: codex-yolo-mode
 table_layout: comparison
 ---
 
-Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write`.
+Codex YOLO mode is `--yolo`, an alias for `--dangerously-bypass-approvals-and-sandbox`. It skips approval prompts and removes Codex's local sandbox. Use it inside an environment that supplies its own isolation, such as a disposable VM or a restricted CI runner. For unattended repository edits that should keep a sandbox, start with `codex -a never exec --sandbox workspace-write "<task>"`. Codex auto mode is a different preset that still stops for approval prompts; it is [explained below](#codex-auto-mode-and-what-happened-to-full-auto).
 
-I'm Lawrence Liu, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi's Codex integration uses Pi's provider; it does not run Codex CLI. The commands below are for people running the CLI themselves.
+I'm Lawrence Liu, the creator of [Orbi](https://github.com/orbi-build/orbi). I tested these choices on Linux with Codex CLI 0.159.3 on 16 October 2026. Orbi runs the Pi coding agent, and its Codex integration uses Pi's `openai-codex` provider rather than Codex CLI. The commands below are for people running the CLI themselves.
 
 ## How to start Codex YOLO mode
 
@@ -71,15 +71,21 @@ I also asked each configuration to create `greeting.py` containing `print('works
 
 All six CLI runs exited 0, including the read-only task that never created its file. Before the next pipeline step, check the expected files and project tests; a successful CLI exit alone does not prove the task met its acceptance criteria.
 
-## What happened to Codex full auto mode?
+## Codex auto mode, and what happened to full auto
 
-Older tutorials use this command:
+Codex auto mode is the preset OpenAI's docs call **Auto**. The [approvals and security guide](https://learn.chatgpt.com/docs/agent-approvals-security) defines it as the `workspace-write` sandbox with `on-request` approvals. Codex reads, edits and runs commands inside the workspace without asking. With the default network setting, it asks before editing files outside the workspace or running commands that need network access. When Codex starts in a version-controlled folder, it recommends Auto as the default; it may stay read-only until you trust the folder. Mid-session, `/permissions` switches presets, for example from Auto to Read Only. Auto needs someone at the terminal to answer those prompts, so an unattended run should use the workspace-write command from the previous section. To choose Auto explicitly:
+
+```bash
+codex --sandbox workspace-write --ask-for-approval on-request
+```
+
+Older tutorials use a shortcut instead:
 
 ```bash
 codex exec --full-auto "fix the failing tests"
 ```
 
-On the version I tested, even this parameter check fails before a task starts:
+In Codex CLI 0.100.0, the interactive [`codex --full-auto`](https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/tui/src/cli.rs#L79) was a shortcut for `-a on-request` plus `--sandbox workspace-write`, the same pair as Auto. Under `codex exec`, `--full-auto` set only the sandbox, and approvals stayed at exec's [default of never](https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/exec/src/lib.rs#L246). The old exec shortcut therefore behaved like `codex -a never exec --sandbox workspace-write`. On the version I tested, the flag now fails the parameter check before a task starts:
 
 ```text
 $ codex --version
@@ -90,9 +96,17 @@ error: unexpected argument '--full-auto' found
 # exit code: 2
 ```
 
-OpenAI's current [non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) says `--full-auto` is no longer supported. For scripts that need repository edits, it directs users to explicit `--sandbox workspace-write`, or to `--approve-for-me` for automatic approval review. Some search results still show an older compatibility example. Check the installed CLI to find out which behavior applies to your version.
+Codex CLI 0.163.0 printed the same error when I repeated the check on 17 October 2026, and interactive `codex --full-auto --help` failed the same way. OpenAI's current [non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) says `--full-auto` is no longer supported. For scripts that need repository edits, it directs users to explicit `--sandbox workspace-write`, or to `--approve-for-me` on its own for automatic approval review (that preset already includes workspace-write, so don't add `--sandbox`). Some search results describe an older transition: [Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) still accepted `--full-auto` with a deprecation warning. Check the installed CLI to find out which behavior applies to your version.
 
-When migrating a Codex full auto script, choose its required permissions explicitly. Replacing the removed flag with `--yolo` would also remove the local sandbox, which is a broader change than allowing repository edits.
+OpenAI's [table of common combinations](https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations) puts these modes side by side; the `--approve-for-me` shortcut is from the [CLI reference](https://learn.chatgpt.com/docs/cli/reference):
+
+| Name in OpenAI's guide | Flags | Codex sandbox | Approval requests go to |
+|---|---|---|---|
+| Auto | None in a trusted version-controlled folder; otherwise `--sandbox workspace-write --ask-for-approval on-request` | workspace-write | You |
+| Auto-review | `--approve-for-me` (alias `--not-so-yolo`) | workspace-write | A reviewer agent, for eligible requests |
+| Dangerous full access | `--yolo` | None | Nobody; there are no prompts |
+
+When migrating a Codex full auto script, choose its required permissions explicitly. For a script that only needs repository edits, replace `codex exec --full-auto "..."` with `codex -a never exec --sandbox workspace-write "..."`. Replacing the removed flag with `--yolo` would also remove the local sandbox, which is a broader change than allowing repository edits.
 
 ## Automatic approval review is another choice
 

@@ -1,7 +1,7 @@
 ---
 title: Codex YOLO mode 会放开什么权限
 date: 2026-10-16
-summary: Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测说明它能执行哪些操作、workspace-write 的区别，以及旧 full-auto 命令该怎样迁移。
+summary: Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测它放开了哪些操作，并说明 Codex auto mode 是什么、旧 full-auto 命令怎样迁移。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-codex-yolo-card.png
@@ -9,9 +9,9 @@ mirror: codex-yolo-mode
 table_layout: comparison
 ---
 
-Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write`。
+Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write "<任务>"`。Codex auto mode 是另一个预设，遇到审批仍会停下来等人，[下文](#codex-auto-mode-与已删除的-full-auto-命令)有详细说明。
 
-我是 Lawrence Liu，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 的 Codex 接入使用 Pi provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
+我是 Lawrence Liu，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 运行的是编码 agent Pi，Codex 接入走 Pi 的 `openai-codex` provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
 
 ## 怎样启动 Codex YOLO mode
 
@@ -71,15 +71,23 @@ codex -a never exec --sandbox workspace-write \
 
 六次 CLI 退出码全是 0，包括没有创建目标文件的 read-only 普通任务。流水线进入下一步前，还要检查目标文件和项目测试结果；正常退出本身不能证明任务达到了验收标准。
 
-## Codex full auto 命令现在还能用吗
+## Codex auto mode 与已删除的 full-auto 命令
 
-旧教程常见这样的命令：
+Codex auto mode 就是 OpenAI 文档里的 **Auto** 预设。按[审批与安全文档](https://learn.chatgpt.com/docs/agent-approvals-security)的定义，它由 `workspace-write` 沙箱和 `on-request` 审批组成。工作区里的读文件、改代码、跑命令，Codex 直接做；在默认网络设置下，改工作区外的文件、运行需要联网的命令之前，它会先问你。
+
+在有版本控制的目录里启动时，Codex 会把 Auto 作为推荐的默认值；信任该目录之前，它可能保持只读。会话中途可以用 `/permissions` 换预设，比如从 Auto 换成 Read Only。Auto 需要有人在终端前回应审批，无人值守运行应改用上一节的 workspace-write 命令。要显式指定 Auto，这样写：
+
+```bash
+codex --sandbox workspace-write --ask-for-approval on-request
+```
+
+旧教程常用的是一个简写：
 
 ```bash
 codex exec --full-auto "fix the failing tests"
 ```
 
-在我测试的版本中，参数解析就会失败，任务还没有开始：
+在 Codex CLI 0.100.0 中，交互式 [`codex --full-auto`](https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/tui/src/cli.rs#L79) 的源码注释写作 `-a on-request` 加 `--sandbox workspace-write`，和 Auto 是同一组参数。在 `codex exec` 下，`--full-auto` 只设置沙箱，审批保持 exec 的[默认值 never](https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/exec/src/lib.rs#L246)，所以旧的 exec 简写实际相当于 `codex -a never exec --sandbox workspace-write`。在我测试的版本中，这个参数在解析阶段就会报错，任务还没有开始：
 
 ```text
 $ codex --version
@@ -90,9 +98,17 @@ error: unexpected argument '--full-auto' found
 # exit code: 2
 ```
 
-OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，可用 `--approve-for-me`。一些搜索结果仍显示旧的兼容参数示例。实际是否可用，要核对安装版本的参数解析结果。
+2026 年 10 月 17 日补充核对时，我用 Codex CLI 0.163.0 重跑这条检查，报错相同；交互式的 `codex --full-auto --help` 也一样报错。OpenAI 当前的[非交互运行文档](https://learn.chatgpt.com/docs/non-interactive-mode)说明，`--full-auto` 已不再支持。需要修改仓库的脚本应明确使用 `--sandbox workspace-write`；需要自动审批 review 时，改用 `--approve-for-me`，它已包含 workspace-write，不要再加 `--sandbox`。一些搜索结果描述的是过渡期的行为：[Codex CLI 0.130.0](https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99) 仍接受 `--full-auto`，只打印一条弃用警告。实际是否可用，要核对安装版本的参数解析结果。
 
-迁移 Codex full auto 脚本时，先确定任务需要什么权限。直接替换成 `--yolo` 会同时取消本地沙箱，权限变化大于“允许修改仓库”。
+审批与安全文档的[常用组合表](https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations)列出了这几种模式，`--approve-for-me` 这个简写出自 [CLI 参考](https://learn.chatgpt.com/docs/cli/reference)：
+
+| OpenAI 文档里的名称 | 参数 | Codex 沙箱 | 审批请求交给谁 |
+|---|---|---|---|
+| Auto | 在已信任的版本控制目录里无需参数；否则用 `--sandbox workspace-write --ask-for-approval on-request` | workspace-write | 你 |
+| Auto-review | `--approve-for-me`（别名 `--not-so-yolo`） | workspace-write | 符合条件的请求交给 reviewer agent |
+| Dangerous full access | `--yolo` | 无 | 无人审批，也不弹提示 |
+
+迁移 Codex full auto 脚本时，先确定任务需要什么权限。如果脚本只需要修改仓库，把 `codex exec --full-auto "..."` 换成 `codex -a never exec --sandbox workspace-write "..."`。直接替换成 `--yolo` 会同时取消本地沙箱，放开的权限远不止修改仓库。
 
 ## 需要审批时，让自动 reviewer 判断
 
@@ -109,7 +125,7 @@ codex exec --approve-for-me \
 
 我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。
 
-## Orbi 怎样无人值守运行，又怎样决定合并
+## Orbi 的无人值守运行与合并流程
 
 我做 Orbi，是想让编码任务一路完成 PR、评审和合并。在 GitHub Issue 中写清验收标准，加上 `ai-ready`，runner 就在单独的 worktree 中启动 Pi，推送任务分支、创建 PR。
 
@@ -118,7 +134,7 @@ codex exec --approve-for-me \
 <figcaption>另一个 Pi 会话评审 PR。发版由用户在 Cloud 单独发起。</figcaption>
 </figure>
 
-runner 核对评审结论，拒绝审稿后被外部改动的 PR head。基础分支前进且能无冲突合入时，它可以吸收更新、检查新的 head，无需再开评审会话。检查未完成时等待，失败时阻止合并。测试能覆盖什么，取决于仓库定义了哪些检查。
+runner 核对评审结论，拒绝评审后被外部改动的 PR head。基础分支前进且能无冲突合入时，它可以吸收更新、检查新的 head，无需再开评审会话。检查未完成时等待，失败时阻止合并。测试能覆盖什么，取决于仓库定义了哪些检查。
 
 worktree 隔开检出目录，不能限制进程权限。自托管时，运行账户、凭据和网络访问要据此配置；评审管不到执行时已经读取的文件或发出的请求。
 

@@ -2642,8 +2642,8 @@ describe("Article publish and update dates (Issue #889)", () => {
   const DATED_PAGES = {
     "compare/claude-code/index.html": ["2026-09-17", "2026-10-06"],
     "zh/compare/claude-code/index.html": ["2026-09-17", "2026-09-17"],
-    "compare/codex/index.html": ["2026-09-07", "2026-10-06"],
-    "zh/compare/codex/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/codex/index.html": ["2026-09-07", "2026-10-17"],
+    "zh/compare/codex/index.html": ["2026-09-07", "2026-10-17"],
     "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "compare/devin/index.html": ["2026-09-07", "2026-10-08"],
