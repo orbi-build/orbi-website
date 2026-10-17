@@ -608,6 +608,75 @@ describe("article comparison matrix on phones (Issue #975)", () => {
     expect(matrix.rows[0][0].width, `${route} pinned column width`).toBeLessThan(matrix.wrapper.clientWidth * 0.6);
   }, 30_000);
 
+  // Two paint defects of the pinned first column, read from pixels because no
+  // computed style shows them: the table's collapsed row lines vanished under
+  // the pinned cells' opaque ground at fractional row edges, and when the
+  // columns were swiped to the end a 1px sliver of their text showed at the
+  // region's left edge, where the pinned cell's border had stayed behind.
+  it.each(["/zh/blog/codex-usage-limits/", "/blog/codex-yolo-mode/"])(
+    "keeps the pinned column's row lines and a clean left edge on %s when swiped",
+    async (route) => {
+      // A phone: 2x pixels and mobile emulation, where both defects showed.
+      const page = await guardedPage(browser, origin, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      try {
+        await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
+        const geometry = await page.evaluate(() => {
+          const wrapper = document.querySelector(".post-body .post-table-scroll");
+          window.scrollTo({ top: wrapper.getBoundingClientRect().top + window.scrollY - 20, behavior: "instant" });
+          const box = wrapper.getBoundingClientRect();
+          const pinned = [...wrapper.querySelectorAll("tbody tr")].map((row) => row.children[0].getBoundingClientRect());
+          return {
+            clip: { x: Math.round(box.left), y: Math.round(box.top), width: Math.round(box.width), height: Math.min(Math.round(box.height), 800) },
+            pinnedX: Math.round(pinned[0].left + pinned[0].width / 2 - box.left),
+            boundaries: pinned.slice(1).map((cell) => cell.top - box.top).filter((y) => y < 800),
+            paper: getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number),
+          };
+        });
+        expect(geometry.boundaries.length, `${route} row boundaries in view`).toBeGreaterThan(0);
+        const atStart = (await page.screenshot({ clip: geometry.clip })).toString("base64");
+        await page.evaluate(() => {
+          const wrapper = document.querySelector(".post-body .post-table-scroll");
+          wrapper.scrollLeft = wrapper.scrollWidth;
+        });
+        const swiped = (await page.screenshot({ clip: geometry.clip })).toString("base64");
+        const found = await page.evaluate(async ([start, end, { pinnedX, boundaries, paper }]) => {
+          const decode = async (base64) => {
+            const response = await fetch("data:image/png;base64," + base64);
+            const bitmap = await createImageBitmap(await response.blob());
+            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            const context = canvas.getContext("2d");
+            context.drawImage(bitmap, 0, 0);
+            const { data, width, height } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+            return { height, at: (x, y) => { const i = (y * width + x) * 4; return [data[i], data[i + 1], data[i + 2]]; } };
+          };
+          const dpr = 2; // the page's deviceScaleFactor
+          const luma = ([r, g, b]) => 0.299 * r + 0.587 * g + 0.114 * b;
+          const [first, last] = await Promise.all([decode(start), decode(end)]);
+          // A row line under the pinned column at every row boundary: some
+          // pixel within 2 CSS px of the boundary differs from the paper.
+          const missing = boundaries.filter((top) => {
+            const centre = Math.round(top * dpr);
+            for (let y = Math.max(0, centre - 4); y <= Math.min(first.height - 1, centre + 4); y += 1) {
+              const [r, g, b] = first.at(pinnedX * dpr, y);
+              if (Math.abs(r - paper[0]) + Math.abs(g - paper[1]) + Math.abs(b - paper[2]) > 20) return false;
+            }
+            return true;
+          });
+          // Text ink in the region's first 2 CSS px once swiped to the end:
+          // only the pinned column's edge line may sit there, never text.
+          let inkAtEdge = 0;
+          for (let y = 0; y < last.height; y += 1) for (let x = 0; x < 2 * dpr; x += 1) if (luma(last.at(x, y)) < 120) inkAtEdge += 1;
+          return { inkAtEdge, missing: missing.length };
+        }, [atStart, swiped, geometry]);
+        expect(found.inkAtEdge, `${route} scrolled text showing at the left edge`).toBe(0);
+        expect(found.missing, `${route} row lines missing under the pinned column`).toBe(0);
+      } finally {
+        await page.close();
+      }
+    },
+    30_000,
+  );
+
   // The regression this default exists for: codex-usage-limits (2026-10-17)
   // was written without the old opt-in line and shipped on phones as one
   // bordered box per cell, boxes inside the article — the layout the
