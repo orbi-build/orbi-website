@@ -5,9 +5,10 @@ summary: Codex usage limits use five-hour and weekly windows set by plan. Check 
 lang: en
 author: Lawrence Liu
 image: /img/blog-codex-usage-card.png
+mirror: codex-usage-limits
 ---
 
-Codex usage limits are the allowance included with your ChatGPT plan, measured in a five-hour window, a weekly window, or both, depending on the plan. Your remaining balance and reset times are on the [Codex usage dashboard](https://chatgpt.com/codex/settings/usage) (Settings → Usage), and `/status` shows them inside a CLI session. When you run out, Codex lets the agent finish the turn it is on; after that you wait for the reset, use a reset or credits if your account has them, or switch the CLI to API billing.
+Codex usage limits are the allowance included with your ChatGPT plan, measured in a five-hour window, a weekly window, or both, depending on the plan. Your remaining balance and reset times are on the [Codex usage dashboard](https://chatgpt.com/codex/settings/usage) (Settings → Usage), and `/status` shows your remaining limits inside a CLI session. If you hit a limit mid-turn, Codex lets the agent finish that turn, subject to fair-use limits. After that you wait for the reset, use a reset or credits if your account has them, or switch the CLI to API billing.
 
 Every OpenAI fact below links to the official page it comes from. All were retrieved on 17 October 2026, and OpenAI changes these terms often, so your own Usage page wins whenever it disagrees with this post.
 
@@ -23,60 +24,76 @@ Which windows apply depends on the plan:
 | Pro ($100, $200 or $500 a month) | None at the moment | The included allowance is still finite |
 | Business Premium | None | Five times the included Work and Codex usage of a Standard seat |
 | Enterprise and Edu with flexible pricing | No fixed rate limits | Usage draws on workspace credits |
-| Enterprise and Edu without flexible pricing | Same per-seat limits as Plus for most features | Admins may set their own caps |
+| Enterprise and Edu without flexible pricing | Same per-seat limits as Plus for most features | Check with your workspace admin |
 
-Sources: [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan), [managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex), [ChatGPT Business models and limits](https://help.openai.com/en/articles/12003714-chatgpt-business-models-and-limits).
+Free and Go also include Codex, on GPT-6 Luna in the desktop app (subject to rollout); check their limits on the Usage page. Sources: [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan), [managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex), [ChatGPT Business models and limits](https://help.openai.com/en/articles/12003714-chatgpt-business-models-and-limits), [ChatGPT Business FAQ](https://help.openai.com/en/articles/8542115-chatgpt-business-general-faq).
 
 OpenAI does not publish a fixed message count for any plan. Its estimate table for Plus and Business Standard gives a range per model instead: 15 to 160 local messages per five hours on GPT-6.1 Sol, and 350 to 3,000 on GPT-6 Luna. The page calls these estimates, "not fixed message limits." Fast mode spends included usage at 2.5 times the Standard rate, and Ultrafast at 8 times. [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#what-are-the-usage-limits-for-my-plan)
 
 ## How to check your Codex usage limit
 
-1. Open Settings → Usage, or go straight to the [usage dashboard](https://chatgpt.com/codex/settings/usage). It lists what is left in each window, your credit balance, and the reset time for each window.
-2. Check that this is the account and workspace your agent uses. In a terminal, `codex login status` prints the active method, for example `Logged in using ChatGPT` or `Logged in using an API key`.
-3. Inside a running CLI session, type `/status` for the active model and token usage. `/usage daily`, `/usage weekly` and `/usage cumulative` show your account's token activity, and plain `/usage` opens a menu that can also redeem an earned reset. [Slash commands](https://learn.chatgpt.com/docs/cli/slash-commands), [where to see your limits](https://learn.chatgpt.com/docs/pricing#where-can-i-see-my-current-usage-limits)
+1. Open Settings → Usage, or go straight to the [usage dashboard](https://chatgpt.com/codex/settings/usage). It shows what is left and when each limit resets.
+2. Make sure you are looking at the account and workspace your agent runs under. On ChatGPT web, the profile menu shows the active account and workspace. In a terminal, `codex login status` only tells you the sign-in method: `Logged in using ChatGPT` or `Logged in using an API key`. The CLI uses whichever account last ran `codex login` under its `CODEX_HOME`; if you are not sure which one that was, sign in again. [Authentication](https://learn.chatgpt.com/docs/auth)
+3. Inside a running CLI session, `/status` shows your remaining limits along with the active model and token usage. `/usage daily`, `/usage weekly` and `/usage cumulative` show how many tokens the account has used, which is a different number from what is left. Plain `/usage` opens a menu that can also redeem an available reset. [Slash commands](https://learn.chatgpt.com/docs/cli/slash-commands), [where to see your limits](https://learn.chatgpt.com/docs/pricing#where-can-i-see-my-current-usage-limits)
 4. Note which allowance is empty: the five-hour window, the weekly window, or your credits. When both windows apply, an empty one blocks you even if the other still has room, so a refreshed five-hour window does not help while the weekly one is used up.
 
 OpenAI suggests checking the dashboard every week or two. If usage runs higher than you expected, try a smaller model or a tighter task scope. [Codex pricing FAQ](https://learn.chatgpt.com/docs/pricing#where-can-i-see-my-current-usage-limits)
 
 ## How to reset a Codex usage limit
 
-There is no reset button that every account has, and OpenAI support does not reset limits by hand. If you see no reset option, you have not missed a setting. [How banked Codex resets work](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
+Not every account has a reset option, and OpenAI support does not reset limits by hand. If you see none, confirm you are in the right account and workspace; after that, the scheduled reset is your path. [How banked Codex resets work](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
 
 **Wait for the scheduled reset.** This is the normal path. Where a five-hour limit applies, the window does not start on a clock: your first Work or Codex message after the previous window ends starts the next one, so hitting the limit early in a window does not add another full five hours of waiting. The weekly window resets at the time shown on your Usage page. [Managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex)
 
-**Use a banked reset, if you have one.** Some accounts receive a banked reset as a promotion. It is saved until you use it or it expires. In Settings → Usage, look for "1 reset available" or "Full reset", check which limits it covers and when it expires, then confirm. A full banked reset refreshes the five-hour and weekly windows that apply to you and moves your weekly reset date. In the CLI, `/usage` can redeem it too. [How banked Codex resets work](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
+**Use a banked reset, if you have one.** Some accounts receive a banked reset as a promotion. It is saved until you use it or it expires. In Settings → Usage, look for "1 reset available" or "Full reset", check which limits it covers and when it expires, then confirm. A full banked reset refreshes the five-hour and weekly windows that apply to you and moves your weekly reset date. In the CLI, `/usage` can redeem an available reset too. [How banked Codex resets work](https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work)
 
-**Buy an instant reset, if offered.** Eligible personal Plus and Pro accounts may see "Buy an instant reset" in the desktop app's Usage settings, or an offer after reaching the weekly limit. Reaching only the five-hour limit does not bring up that offer. A purchased reset restores the five-hour and weekly allowances that apply right away and cannot be saved for later. Your new weekly period starts with your first Work or Codex request after the reset, and the next automatic weekly reset comes seven days after that request. [Paid weekly resets](https://help.openai.com/en/articles/20001507-paid-weekly-work-and-codex-rate-limit-resets)
+**Buy an instant reset, if offered.** Eligible personal Plus and Pro accounts may see "Buy an instant reset" in the desktop app's Usage settings, or an offer after reaching the weekly limit. Reaching only the five-hour limit does not bring up that offer. A purchased reset restores the five-hour and weekly allowances that apply right away and cannot be saved for later. It moves your weekly allowance forward; it does not add extra usage on top. Your new weekly period starts with your first Work or Codex request after the reset, and the next automatic weekly reset comes seven days after that request. [Paid weekly resets](https://help.openai.com/en/articles/20001507-paid-weekly-work-and-codex-rate-limit-resets)
 
-**Buy credits or upgrade.** Plus and Pro users can buy credits to keep working after the included allowance runs out, without changing plans. Business, Edu and Enterprise workspaces on flexible pricing buy workspace credits instead. Moving to a plan with a larger allowance, such as a higher Pro tier, is the other way. [What happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)
+**Buy credits or upgrade.** Plus and Pro users can buy credits to keep working after the included allowance runs out, without changing plans. Business, Edu and Enterprise workspaces on flexible pricing buy workspace credits instead ([what happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)). The other route is a plan with a larger allowance; the [Pro plans page](https://help.openai.com/en/articles/9793128-about-chatgpt-pro-plans) compares the tiers.
+
+**Check for Luna Reserve.** Some selected personal Plus and Pro accounts get Luna Reserve: after regular usage runs out, a separate allowance with its own limit lets them keep working on a Luna model. When regular usage runs out, look for a Luna Reserve notice or a moon icon in the usage warning; if none appears, your account probably does not have it. [Luna Reserve](https://help.openai.com/en/articles/20001499-luna-reserve-in-codex-and-chatgpt-work)
 
 ## Keep a long Codex run from stopping at the limit
 
-If you reach a limit during an active turn, OpenAI says the agent "will be able to continue working on that turn, subject to fair use limits." The next turn needs allowance again. So a batch of tasks left running overnight tends to stop between tasks, and the rest waits for the reset. [What happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)
+If you reach a limit during an active turn, OpenAI says the agent "will be able to continue working on that turn, subject to fair use limits." The next turn needs allowance again. What happens to work queued behind it depends on the script or runner calling Codex, so have it check each run's exit status instead of assuming the next task went through. [What happens when you hit usage limits](https://learn.chatgpt.com/docs/pricing#what-happens-when-you-hit-usage-limits)
 
-**Spend less of the allowance per task.** Switching to another model does not give back allowance you already used, because it is one shared pool. A lighter model makes what is left last longer, as the Sol and Luna ranges above show. Run routine work on it with `codex exec -m gpt-6-luna "..."`, leave Fast mode off, keep `AGENTS.md` short, and turn off MCP servers the task does not need, since each one adds context to every message. [Managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex), [making limits last longer](https://learn.chatgpt.com/docs/pricing#what-can-i-do-to-make-my-usage-limits-last-longer)
+**Spend less of the allowance per task.** Switching to another model does not give back allowance you already used, because it is one shared pool (Luna Reserve, above, is the exception for accounts that have it). A lighter model makes what is left last longer, as the Sol and Luna ranges above show. Run routine work on it with `codex exec -m gpt-6-luna "..."`, leave Fast mode off, keep `AGENTS.md` short, and turn off MCP servers the task does not need, since each one adds context to every message. [Managing usage in Work and Codex](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex), [making limits last longer](https://learn.chatgpt.com/docs/pricing#what-can-i-do-to-make-my-usage-limits-last-longer)
 
 **Move the run to API billing.** The CLI, IDE extension and desktop app can sign in with an OpenAI API key instead of ChatGPT. That usage is billed through your OpenAI Platform account at standard API rates and does not touch your plan's allowance. OpenAI recommends API-key sign-in for programmatic jobs such as CI. The trade-offs: Codex cloud and cloud features such as GitHub code review and Slack need ChatGPT sign-in, and the models you get are the ones your key can use. [Authentication](https://learn.chatgpt.com/docs/auth), [feature availability](https://learn.chatgpt.com/docs/pricing)
 
-I'm Lawrence Liu, the creator of Orbi, and I tested this setup on Linux with Codex CLI 0.163.0 on 17 October 2026. Give the API login its own `CODEX_HOME` so it does not replace the ChatGPT login you use interactively. Codex refuses to start if that directory does not exist yet, so create it first:
+First create an API key in the [OpenAI Platform dashboard](https://platform.openai.com/api-keys) and put it in `OPENAI_API_KEY` (from your secret store, not typed into shell history). Then give the API login its own `CODEX_HOME`, so it does not replace the ChatGPT login you use interactively. Save this as a bash script and run it; do not paste it into an interactive shell, where `set -e` would close the shell on the first error:
 
 ```bash
+#!/usr/bin/env bash
+set -euo pipefail
+: "${OPENAI_API_KEY:?set OPENAI_API_KEY to an OpenAI Platform API key first}"
 export CODEX_HOME="$HOME/.codex-api"
 mkdir -p "$CODEX_HOME"
 printenv OPENAI_API_KEY | codex login --with-api-key
 codex login status
-codex exec --skip-git-repo-check -m gpt-6-luna "Reply with the single word OK"
+codex exec --skip-git-repo-check -m gpt-6-luna "Reply with the single word OK" </dev/null
 ```
 
-Keep the last line. `codex login --with-api-key` printed "Successfully logged in" for a made-up key, and `codex login status` then reported it as an API-key login. Only the test request caught it: it exited 1 with `401 Unauthorized` and `invalid_api_key`. The same request under my ChatGPT login printed `OK` and exited 0. Every later command in that shell, and any job started with the same `CODEX_HOME`, uses the API key.
+I'm Lawrence Liu, the creator of Orbi. On 17 October 2026 I ran this on Linux with Codex CLI 0.163.0, with a made-up key, because I did not want to bill a real one for a test:
+
+- With `OPENAI_API_KEY` unset or empty, the script stopped at the third line with exit code 1.
+- Without the `mkdir`, Codex refused to start because the `CODEX_HOME` directory did not exist.
+- With the made-up key, `codex login --with-api-key` printed "Successfully logged in", and `codex login status` reported an API-key login. Only the test request caught the bad key: it failed with `401 Unauthorized` and `invalid_api_key`, and the script exited 1.
+- In my first version the last line had no `</dev/null`. Run from a pipe, `codex exec` printed "Reading additional input from stdin..." and waited until my timeout killed it.
+
+The same request under my ChatGPT login printed `OK` and exited 0. I have not run the success path with a real API key.
+
+Later Codex commands that use the same `CODEX_HOME` use the API key, as long as nothing signs in again or changes the login settings. That directory starts empty. If your runs need settings from `~/.codex/config.toml`, copy only those keys, leave out login and provider settings such as `forced_login_method`, and run the test request again.
+
+Codex can also leave OpenAI billing entirely: define another provider that speaks the Responses API under `model_providers.<id>` in `config.toml` and select it with `model_provider`, or use `--oss` to run a local model through Ollama or LM Studio. [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 
 **Put a hard cap on API spend.** A spend alert only sends a notification, and API traffic keeps going. To stop at a monthly cap, open Organization limits (or Project settings → Limits), choose Edit spend limit, enter the amount, turn on "Enforce a hard limit" and save. Requests past the cap return a 429 error with `organization_spend_limit_exceeded` or `project_spend_limit_exceeded`. Enforcement is not instantaneous, so recorded spend can go slightly over. API rate limits and your prepaid balance still apply too. [OpenAI spend limits](https://developers.openai.com/api/docs/guides/spend-limits)
 
-To compare what a finished task costs on different models, including retries, see the [cost table](/cost/?ref=blog-codex-usage).
+For a measured reference point on a pay-per-token model, Orbi's [cost page](/cost/?ref=blog-codex-usage) lists what 169 merged deliveries cost on DeepSeek, with the limits of that sample.
 
 ## Codex limits and Orbi
 
-Orbi is an open-source runner that takes GitHub Issues through review and merge to a tagged release without someone watching it. Self-hosted Orbi can use any OpenAI-compatible API with your own key, so its runs bill to that provider and not to a Codex plan. If you sign it in with your ChatGPT/Codex subscription instead, it spends the same allowance described above. The [self-hosted guide](/guides/self-hosted-coding-agent/?ref=blog-codex-usage) covers the API-key setup, and the [Codex guide](/guides/codex-github-issues/?ref=blog-codex-usage) covers the subscription login.
+Orbi is an open-source runner that takes GitHub Issues through review and merge to a tagged release without someone watching it. Its agent is Pi, not Codex CLI, so the Codex login steps above do not configure it. Self-hosted Orbi can use any OpenAI-compatible API with your own key, so its runs bill to that provider and not to a Codex plan. If you sign Pi in with your ChatGPT/Codex subscription instead, it spends the same allowance described above. The [self-hosted guide](/guides/self-hosted-coding-agent/?ref=blog-codex-usage) covers the API-key setup, and the [Codex guide](/guides/codex-github-issues/?ref=blog-codex-usage) covers the subscription login.
 
 ## Related
 

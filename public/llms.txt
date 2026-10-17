@@ -255,6 +255,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - How to check and reset Codex usage limits (English):
   https://orbi.build/blog/codex-usage-limits/
+- Codex 额度怎么查、何时重置、用完了怎么办 (Chinese):
+  https://orbi.build/zh/blog/codex-usage-limits/
 - Codex YOLO mode: what runs without approval (English):
   https://orbi.build/blog/codex-yolo-mode/
 - Codex YOLO mode 会放开什么权限 (Chinese):
