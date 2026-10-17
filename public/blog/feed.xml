@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/codex-yolo-mode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/codex-yolo-mode/</guid>
       <pubDate>Fri, 16 Oct 2026 00:00:00 GMT</pubDate>
-      <description>Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how Codex auto mode differs, and what replaced the old full-auto flag.</description>
+      <description>Codex YOLO mode skips approvals and the local sandbox. Linux tests show what it allows; the guide also explains Codex auto mode and the full-auto removal.</description>
     </item>
     <item>
       <title>YOLO mode Claude Code vs auto mode: what I measured</title>
