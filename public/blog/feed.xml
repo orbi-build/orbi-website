@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>How to check and reset Codex usage limits</title>
+      <link>https://orbi.build/blog/codex-usage-limits/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/codex-usage-limits/</guid>
+      <pubDate>Sat, 17 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Codex usage limits use five-hour and weekly windows set by plan. Check them on the Usage page or with /status, see when they reset, and keep runs going.</description>
+    </item>
+    <item>
       <title>Codex YOLO mode: what runs without approval</title>
       <link>https://orbi.build/blog/codex-yolo-mode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/codex-yolo-mode/</guid>

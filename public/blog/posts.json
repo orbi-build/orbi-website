@@ -1,5 +1,13 @@
 [
   {
+    "slug": "codex-usage-limits",
+    "title": "How to check and reset Codex usage limits",
+    "summary": "Codex usage limits use five-hour and weekly windows set by plan. Check them on the Usage page or with /status, see when they reset, and keep runs going.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "codex-yolo-mode",
     "title": "Codex YOLO mode: what runs without approval",
     "summary": "Codex YOLO mode skips approvals and the local sandbox. Linux tests show what runs, how workspace-write differs, and what replaces the old full-auto flag.",
