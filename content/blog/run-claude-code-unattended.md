@@ -102,6 +102,76 @@ The script finds `claude` through the `PATH` set in the env file, so make sure t
 
 If one scheduled job like that is all you need, you're done.
 
+## Claude Code VPS: keep a job running after SSH disconnects
+
+For Claude Code on a VPS, run the job inside a terminal multiplexer such as `tmux`, and save its output on the server. After reconnecting, inspect the job's saved result and terminal. This keeps the process attached to tmux's terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.
+
+On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This was an isolated Linux VM test, not a comparison of commercial VPS providers. The task was to make a Python `greet` function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.
+
+| Run | What happened after I killed the SSH client |
+|---|---|
+| Foreground shell, without tmux | The Claude process ended; no exit-code record or completed JSON result was produced, and the source remained unchanged |
+| Inside tmux | The job completed with exit code 0, `is_error: false` and an empty `permission_denials` array; a separate test run passed all three tests |
+
+The tmux job started at 14:15:56 +08, was disconnected that second while the Claude process was alive, and finished at 14:16:14 +08. I reconnected to inspect the JSON and changed files, then ran the tests independently. The foreground result is one observed failure mode; how a process reacts to disconnects depends on its terminal and signal handling.
+
+### Start with the right user and credentials
+
+Use a dedicated non-root Linux user that holds only the repository access and credentials this job needs. Install `tmux`, `jq` and the repository's test dependencies. Follow the [Linux installation instructions](https://code.claude.com/docs/en/setup), then authenticate Claude Code as that user and check the account. Installing it as root and logging in as another user leaves you with different configuration and credentials.
+
+The earlier authentication section explains subscription tokens and API keys. A VPS adds hosting cost; it does not add Claude allowance. [Claude Code pricing](/blog/claude-code-pricing/) covers the billing route, and [Cursor vs Claude Code](/blog/cursor-vs-claude-code/) compares hosted execution options if you would rather use a product's cloud environment.
+
+### Start, disconnect and reconnect
+
+The following example assumes a trusted Python repository at `/srv/myrepo`, with a `greet` function and a unittest suite. Change the path, prompt and test command together for your own project. Run it once with a person present before scheduling it.
+
+As the job user, create a fresh result directory and open tmux. The first command intentionally fails if the directory already exists, so do not reuse an old job's evidence:
+
+```bash
+mkdir "$HOME/claude-vps-demo" && tmux new-session -s cc-vps-demo
+```
+
+Inside the tmux terminal, save the command as a script and run it:
+
+```bash
+cat > "$HOME/claude-vps-demo/run.sh" <<'SH'
+#!/usr/bin/env bash
+cd /srv/myrepo &&
+claude -p "Make greet reject empty or whitespace-only names with ValueError. Add regression tests, keep the valid-name behavior, and run python3 -m unittest." \
+  --permission-mode dontAsk \
+  --allowedTools "Read,Edit,Write,Bash(python3 -m unittest *)" \
+  --output-format json \
+  > "$HOME/claude-vps-demo/result.json" \
+  2> "$HOME/claude-vps-demo/stderr.log"
+rc=$?
+printf '%s\n' "$rc" > "$HOME/claude-vps-demo/exit-code"
+SH
+bash "$HOME/claude-vps-demo/run.sh"
+```
+
+The writes are pre-approved for this trusted repository; they are not OS isolation. Keep unrelated credentials out of the job user's account. To detach while Claude runs, press `Ctrl-b`, release both keys, then press `d`. You can now close SSH. Reconnect as the same user and run `tmux attach-session -t cc-vps-demo` to return to that terminal. The shell stays open after the command finishes.
+
+### Check the result before counting it as done
+
+No `exit-code` file means the wrapper did not finish recording a result; it is not a success. From a reconnected shell, inspect the log and check the recorded exit code, non-empty JSON and permission-denial array together:
+
+```bash
+cat "$HOME/claude-vps-demo/stderr.log"
+if test "$(cat "$HOME/claude-vps-demo/exit-code")" = 0 &&
+   test -s "$HOME/claude-vps-demo/result.json" &&
+   jq -e '.is_error == false and
+          (.permission_denials | type == "array" and length == 0)' \
+     "$HOME/claude-vps-demo/result.json"; then
+  echo "Run reported success; inspect the diff and rerun tests."
+else
+  echo "Run incomplete or failed; inspect its JSON and log." >&2
+fi
+```
+
+Then read the changed files or `git diff` and independently run `python3 -m unittest -v` from `/srv/myrepo`. In the VM test, this checked the valid name, empty name and whitespace-only name cases. I also checked the result-reading condition with denied tools, missing fields, empty output, invalid JSON and a non-zero exit code; those cases did not print the success message.
+
+This test covered an SSH client disappearing while the VM kept running. It did not test reboot recovery. After a host reboot, tmux's processes are gone; use a separately designed service or scheduler for restart behavior. To continue a recorded Claude conversation, `--resume` uses its session ID, but a resumed conversation still needs a live process and a check of the work already done.
+
 ## Six things a headless loop doesn't answer
 
 Orbi has been delivering its own Issues since late August. In the normal flow nobody writes, reviews or merges the code by hand; a person adds labels, makes the calls Orbi can't (including the two reverts below), and looks at pages before production. When this post went up on 1 October, 599 Issues in [its repository](https://github.com/orbi-build/orbi) carried the `ai-merged` label, and v0.5.58 went out on September 30. If you want Issues to reach a merge and a release, a bare loop around `claude -p` leaves most of the following to you. Two of them, the merge check and the isolation hardening, I got wrong first. A runner, below, is the loop process around the agent: it picks an Issue, starts a session and collects the result.
