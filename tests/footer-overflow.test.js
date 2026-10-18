@@ -188,23 +188,62 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           if (!wrapper) return { wrapper: false };
           const round = (value) => Math.round(value);
           const badges = [...wrapper.querySelectorAll(":scope > a")];
+          const altern = wrapper.querySelector('a[href="https://altern.ai/ai/orbi"]');
+          const alternImage = altern?.querySelector("img");
+          const imageRect = alternImage?.getBoundingClientRect();
           return {
             wrapper: true,
             isLastChild: nav.lastElementChild === wrapper,
             wrapperTop: round(wrapper.getBoundingClientRect().top),
             lastTextFriendsBottom: round(Math.max(...textFriends.map((node) => node.getBoundingClientRect().bottom))),
             badgeCount: badges.length,
+            alternTarget: altern?.getAttribute("target"),
+            alternRel: altern?.getAttribute("rel"),
+            alternImageSrc: alternImage?.getAttribute("src"),
+            alternImageWidth: imageRect?.width,
+            alternImageHeight: imageRect?.height,
+            alternNaturalWidth: alternImage?.naturalWidth,
+            alternNaturalHeight: alternImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on the four badge
-        // boxes: LaunchNest's image declares only width="240", so its height
-        // comes from the placeholder ratio the guard serves (Issue #871).
-        // Only the structure is asserted here.
-        expect(result.badgeCount, path + ": the footer badges").toBe(4);
+        // Whether the badges line up on one row depends on the five badge
+        // boxes: LaunchNest's image declares only width="240" and the Altern
+        // badge (Issue #1012) only width="150", so their heights come from the
+        // placeholder ratio the guard serves (Issue #871). Only the structure
+        // and the rendered Altern box are asserted here.
+        expect(result.badgeCount, path + ": the footer badges").toBe(5);
+        // Issue #1012: the Altern badge keeps the maintainer's anchor, but
+        // renders at the 430x151 source ratio instead of the supplied 150x32.
+        expect(result.alternTarget, path + ": the Altern badge opens in a new tab").toBe("_blank");
+        expect(result.alternRel, path + ": the Altern backlink must be noopener").toBe("noopener");
+        expect(result.alternImageSrc, path + ": Altern badge image src").toBe("https://data.altern.ai/alternbadge.png");
+        expect(result.alternImageWidth, path + ": Altern badge rendered width").toBeCloseTo(150, 1);
+        expect(result.alternImageHeight, path + ": Altern badge rendered height").toBeCloseTo(52.67, 1);
+        expect(
+          Math.abs(result.alternImageWidth / result.alternImageHeight
+            - result.alternNaturalWidth / result.alternNaturalHeight),
+          path + ": the Altern badge must keep the source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1012: the badge is reachable from the keyboard and shows the
+        // focus ring. Tab from the badge before it, as a keyboard visitor does.
+        await page.locator('footer .footer-badges a[href="https://toolradar.com/tools/orbi"]').focus();
+        await page.keyboard.press("Tab");
+        const focused = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            href: active?.getAttribute("href"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(focused.href, path + ": Tab from Toolradar must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
+        expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
+        expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);

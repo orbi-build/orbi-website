@@ -1639,16 +1639,38 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1012: the maintainer supplied the Altern badge for
+  // https://altern.ai/ai/orbi. Anchor, src, alt and the 150px width are copied
+  // verbatim, but the supplied 150x32 height is not: the source PNG is
+  // 430x151, so declaring only width renders it at 150x52.67 in the source
+  // ratio instead of squashing it. The badge follows the Toolradar badge, so
+  // the existing four keep their order.
+  it("carries the Altern badge at its 430x151 ratio on every footer page", () => {
+    const anchor = '<a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">';
+    const image = '<img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />';
+    const toolradar = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Altern badge anchor drifted`).toContain(anchor);
+      // The exact image string has no height attribute, so the box keeps the
+      // 430x151 source ratio instead of the squashed supplied 150x32.
+      expect(footer, `${page.output}: Altern badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: Altern badge must follow Toolradar`)
+        .toBeGreaterThan(footer.indexOf(toolradar));
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
-  // Toolradar badge to that row.
+  // Toolradar badge to that row, and Issue #1012 the Altern badge after it.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
       "https://aiagentsdirectory.com/agent/orbi",
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
+      "https://altern.ai/ai/orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
