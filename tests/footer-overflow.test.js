@@ -191,12 +191,16 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const altern = wrapper.querySelector('a[href="https://altern.ai/ai/orbi"]');
           const alternImage = altern?.querySelector("img");
           const imageRect = alternImage?.getBoundingClientRect();
+          const saaspa = wrapper.querySelector('a[href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb"]');
+          const saaspaImage = saaspa?.querySelector("img");
+          const saaspaRect = saaspaImage?.getBoundingClientRect();
           return {
             wrapper: true,
             isLastChild: nav.lastElementChild === wrapper,
             wrapperTop: round(wrapper.getBoundingClientRect().top),
             lastTextFriendsBottom: round(Math.max(...textFriends.map((node) => node.getBoundingClientRect().bottom))),
             badgeCount: badges.length,
+            lastBadgeHref: badges.at(-1)?.getAttribute("href"),
             alternTarget: altern?.getAttribute("target"),
             alternRel: altern?.getAttribute("rel"),
             alternImageSrc: alternImage?.getAttribute("src"),
@@ -204,18 +208,42 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             alternImageHeight: imageRect?.height,
             alternNaturalWidth: alternImage?.naturalWidth,
             alternNaturalHeight: alternImage?.naturalHeight,
+            saaspaTarget: saaspa?.getAttribute("target"),
+            saaspaRel: saaspa?.getAttribute("rel"),
+            saaspaImageSrc: saaspaImage?.getAttribute("src"),
+            saaspaImageAlt: saaspaImage?.getAttribute("alt"),
+            saaspaImageWidth: saaspaRect?.width,
+            saaspaImageHeight: saaspaRect?.height,
+            saaspaNaturalWidth: saaspaImage?.naturalWidth,
+            saaspaNaturalHeight: saaspaImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on the five badge
+        // Whether the badges line up on one row depends on the six badge
         // boxes: LaunchNest's image declares only width="240" and the Altern
         // badge (Issue #1012) only width="150", so their heights come from the
         // placeholder ratio the guard serves (Issue #871). Only the structure
-        // and the rendered Altern box are asserted here.
-        expect(result.badgeCount, path + ": the footer badges").toBe(5);
+        // and the rendered Altern / SaaSpa.ge boxes are asserted here.
+        expect(result.badgeCount, path + ": the footer badges").toBe(6);
+        // Issue #1015: the SaaSpa.ge badge is appended last, at the declared
+        // 200x60 with the supplied target/rel and alt.
+        expect(result.lastBadgeHref, path + ": the footer badges end with SaaSpa.ge")
+          .toBe("https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb");
+        expect(result.saaspaTarget, path + ": the SaaSpa.ge badge opens in a new tab").toBe("_blank");
+        expect(result.saaspaRel, path + ": the SaaSpa.ge anchor keeps rel=nofollow").toBe("nofollow");
+        expect(result.saaspaImageSrc, path + ": SaaSpa.ge badge image src")
+          .toBe("https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black");
+        expect(result.saaspaImageAlt, path + ": SaaSpa.ge badge image alt").toBe("Featured on Saaspa.ge");
+        expect(result.saaspaImageWidth, path + ": SaaSpa.ge badge rendered width").toBeCloseTo(200, 1);
+        expect(result.saaspaImageHeight, path + ": SaaSpa.ge badge rendered height").toBeCloseTo(60, 1);
+        expect(
+          Math.abs(result.saaspaImageWidth / result.saaspaImageHeight
+            - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
+          path + ": the SaaSpa.ge badge must keep the source ratio",
+        ).toBeLessThan(0.02);
         // Issue #1012: the Altern badge keeps the maintainer's anchor, but
         // renders at the 430x151 source ratio instead of the supplied 150x32.
         expect(result.alternTarget, path + ": the Altern badge opens in a new tab").toBe("_blank");
@@ -244,6 +272,21 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(focused.href, path + ": Tab from Toolradar must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
         expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
         expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
+        // Issue #1015: the new last badge is reachable too, with the same ring.
+        await page.keyboard.press("Tab");
+        const next = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            href: active?.getAttribute("href"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(next.href, path + ": Tab from Altern must focus the SaaSpa.ge badge")
+          .toBe("https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb");
+        expect(next.outlineStyle, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("none");
+        expect(next.outlineWidth, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("0px");
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
