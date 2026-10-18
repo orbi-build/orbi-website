@@ -26,7 +26,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbi vs OpenClaw: self-hosted agents compared</title>
-  <meta name="description" content="Orbi vs OpenClaw: compare self-hosted agents, model control, state, GitHub delivery, and Anthropic access changes to see which workflow fits your team.">
+  <meta name="description" content="Orbi vs OpenClaw: compare self-hosted agents, model control, state and GitHub delivery, plus sourced OpenClaw alternatives for teams keeping their keys.">
   <link rel="canonical" href="https://orbi.build/compare/openclaw/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/compare/openclaw/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/">
@@ -70,7 +70,7 @@
   },
   "about": { "@id": "https://orbi.build/#software" },
   "datePublished": "2026-09-07",
-  "dateModified": "2026-09-07",
+  "dateModified": "2026-10-18",
   "author": { "@type": "Person", "name": "Lawrence Liu" },
   "publisher": { "@type": "Organization", "name": "Orbi", "url": "https://orbi.build/", "logo": { "@type": "ImageObject", "url": "https://orbi.build/logo-mark.svg" } }
 }
@@ -220,10 +220,30 @@
       </div>
     </section>
 
+    <section class="compare-section shell" aria-labelledby="openclaw-alternatives">
+      <p class="section-tag">IF YOU ARE REPLACING OPENCLAW</p>
+      <h2 class="orbi-compare-section-h2" id="openclaw-alternatives">OpenClaw alternatives</h2>
+      <p class="section-lede"><strong>Most openclaw alternatives are the thing OpenClaw already is: a self-hosted agent you reach from chat.</strong> The best openclaw alternatives split by the job you want done, not by the model behind them. Each option below is self-hosted, described from its own documentation, and one sentence says when to pick it. Orbi, the subject of this page, is the last entry — the one whose job ends as reviewed, merged code.</p>
+      <ul class="dive-list">
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://github.com/NousResearch/hermes-agent" rel="noopener"><strong class="orbi-dive-list-strong">Hermes Agent</strong><p class="orbi-dive-list-p">Pick it when you want the closest swap: Nous Research's MIT-licensed agent runs one gateway across Telegram, Discord, Slack, WhatsApp, Signal and the CLI, keeps memory and skills, schedules cron jobs, and its README documents <code>hermes claw migrate</code> for importing OpenClaw settings, memories, skills and API keys.</p></a></li>
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://github.com/elizaOS/eliza" rel="noopener"><strong class="orbi-dive-list-strong">elizaOS</strong><p class="orbi-dive-list-p">Pick it when you want to build the assistant yourself: elizaOS is an open-source TypeScript framework and app stack for autonomous agents, with messaging and workspace connectors, scheduled workflows, and a runtime you run from source.</p></a></li>
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://docs.letta.com/self-hosting/channels/" rel="noopener"><strong class="orbi-dive-list-strong">Letta</strong><p class="orbi-dive-list-p">Pick it when memory is the point: Letta (formerly MemGPT) builds stateful agents you run on your own App Server with <code>letta server</code>, and its channels connect them to Slack, Telegram, Discord, WhatsApp or Signal.</p></a></li>
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://docs.khoj.dev/get-started/setup" rel="noopener"><strong class="orbi-dive-list-strong">Khoj</strong><p class="orbi-dive-list-p">Pick it when the assistant should answer from your own notes: Khoj is open-source and self-hostable, and you reach it from the browser, Obsidian, Emacs, desktop, phone or WhatsApp.</p></a></li>
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://github.com/n8n-io/n8n" rel="noopener"><strong class="orbi-dive-list-strong">n8n</strong><p class="orbi-dive-list-p">Pick it when the assistant is a workflow: n8n is fair-code and self-hosted, its AI Agent node connects a chat model to tools, and 1,500+ integrations supply the triggers and services around it.</p></a></li>
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://github.com/All-Hands-AI/OpenHands" rel="noopener"><strong class="orbi-dive-list-strong">OpenHands</strong><p class="orbi-dive-list-p">Pick it when the job is code: OpenHands is a self-hosted control center that runs OpenHands, Claude Code, Codex or any ACP-compatible agent locally, in Docker, on a VM or in the cloud, and can decompose GitHub issues into tasks.</p></a></li>
+      </ul>
+      <p class="option-state">IF YOU WANT A SELF-HOSTED DELIVERY LINE</p>
+      <ul class="dive-list">
+        <li class="orbi-dive-list-li"><a class="orbi-dive-list-a" href="https://docs.orbi.build"><strong class="orbi-dive-list-strong">Orbi</strong><p class="orbi-dive-list-p">Pick it when the output should be merged software: Orbi is self-hosted and GitHub-native, takes an <code>ai-ready</code> Issue through implementation and an independent review session, and merges only the reviewed commit — no chat surface, no second workspace.</p></a></li>
+      </ul>
+      <p>Orbi is the only openclaw alternative here that is not general-purpose: it does not replace OpenClaw's personal-assistant job. It is the self-hosted option for work that starts as a GitHub Issue and has to end as a reviewed, merged change — the boundary this page compares above.</p>
+      <p class="src-note">Sources: <a class="orbi-src-note-a" href="https://github.com/NousResearch/hermes-agent" rel="noopener">Hermes Agent repository</a>; <a class="orbi-src-note-a" href="https://github.com/elizaOS/eliza" rel="noopener">elizaOS repository</a>; <a class="orbi-src-note-a" href="https://docs.letta.com/self-hosting/channels/" rel="noopener">Letta channels</a>; <a class="orbi-src-note-a" href="https://docs.khoj.dev/get-started/setup" rel="noopener">Khoj self-hosting</a>; <a class="orbi-src-note-a" href="https://github.com/n8n-io/n8n" rel="noopener">n8n repository</a>; <a class="orbi-src-note-a" href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">OpenHands repository</a>; <a class="orbi-src-note-a" href="https://docs.orbi.build">Orbi documentation</a> — all verified 2026-10-18. Each alternative is described from its own documentation; product scope is a dated snapshot.</p>
+    </section>
+
     <section class="compare-section shell" id="sources" aria-labelledby="sources-title">
       <p class="section-tag">PROVENANCE</p>
       <h2 class="orbi-compare-section-h2" id="sources-title">Sources and verification dates</h2>
-      <p class="section-lede">Every factual claim on this page maps to one of these. All were checked on 2026-09-07; this page is a snapshot, so re-check the sources before you bet architecture on them.</p>
+      <p class="section-lede">Every factual claim on this page maps to one of these. All were checked on 2026-09-07; the alternatives sources were added and checked on 2026-10-18. This page is a snapshot, so re-check the sources before you bet architecture on them.</p>
       <ul class="source-list">
         <li class="orbi-source-list-li">
           <strong ><a class="orbi-source-list-a" href="https://openclaw.ai" rel="noopener">OpenClaw official site</a> — project description, channels, model support, foundation status</strong>
@@ -249,6 +269,36 @@
           <strong ><a class="orbi-source-list-a" href="https://docs.orbi.build">Orbi documentation</a> and the <a class="orbi-source-list-a" href="https://github.com/orbi-build/orbi">orbi-build/orbi</a> repository — the Orbi column of the comparison</strong>
           <span class="source-date">verified 2026-09-07</span>
           <small>docs.orbi.build · github.com/orbi-build/orbi</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://github.com/NousResearch/hermes-agent" rel="noopener">NousResearch/hermes-agent</a> — self-improving agent, messaging gateway, memory, skills, cron, and OpenClaw import</strong>
+          <span class="source-date">Nous Research · verified 2026-10-18</span>
+          <small>Single gateway across Telegram, Discord, Slack, WhatsApp, Signal and CLI; MIT license; <code>hermes claw migrate</code></small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://github.com/elizaOS/eliza" rel="noopener">elizaOS repository</a> — open-source TypeScript agent framework and app stack</strong>
+          <span class="source-date">elizaOS · verified 2026-10-18</span>
+          <small>Messaging and workspace connectors, scheduled workflows, and running the agent host from source</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://docs.letta.com/self-hosting/channels/" rel="noopener">Letta — Channels</a> and the <a class="orbi-source-list-a" href="https://github.com/letta-ai/letta" rel="noopener">Letta repository</a></strong>
+          <span class="source-date">Letta · verified 2026-10-18</span>
+          <small>Stateful agents with memory, the self-hosted App Server (<code>letta server</code>), and Slack, Telegram, Discord, WhatsApp and Signal channels</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://docs.khoj.dev/get-started/setup" rel="noopener">Khoj — Self-Host</a> and the <a class="orbi-source-list-a" href="https://github.com/khoj-ai/khoj" rel="noopener">Khoj repository</a></strong>
+          <span class="source-date">Khoj · verified 2026-10-18</span>
+          <small>Open-source and self-hostable; browser, Obsidian, Emacs, desktop, phone and WhatsApp access</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://github.com/n8n-io/n8n" rel="noopener">n8n repository</a> and <a class="orbi-source-list-a" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/" rel="noopener">AI Agent node documentation</a></strong>
+          <span class="source-date">n8n · verified 2026-10-18</span>
+          <small>Fair-code and self-hostable, an AI Agent node that connects a chat model to tools, and 1,500+ integrations</small>
+        </li>
+        <li class="orbi-source-list-li">
+          <strong ><a class="orbi-source-list-a" href="https://github.com/All-Hands-AI/OpenHands" rel="noopener">All-Hands-AI/OpenHands</a> — self-hosted control center for coding agents and automations</strong>
+          <span class="source-date">OpenHands · verified 2026-10-18</span>
+          <small>Runs OpenHands, Claude Code, Codex or any ACP-compatible agent locally, in Docker, on a VM or in the cloud</small>
         </li>
       </ul>
     </section>
