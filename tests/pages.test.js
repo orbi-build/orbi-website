@@ -719,6 +719,89 @@ describe("Claude Code alternatives (Issue #869)", () => {
   });
 });
 
+// Issue #1004 re-scoped the same page against orbi-growth#260: the English
+// /compare/claude-code/ section must answer both "claude code alternatives" and
+// "open source claude code alternative", keep the Orbi-vs-Claude-Code comparison
+// in the title and h1, keep the "Orbi is not a Claude Code alternative" red line
+// (it wraps Claude Code as the engine), and leave the ZH mirror alone.
+describe("Claude Code alternatives (Issue #1004)", () => {
+  const page = () => shipped.get("compare/claude-code/index.html");
+  const sectionOf = (html) => {
+    const anchor = html.indexOf('id="claude-code-alternatives"');
+    if (anchor < 0) return "";
+    const start = html.lastIndexOf("<section", anchor);
+    return html.slice(start, html.indexOf("</section>", anchor));
+  };
+  const textOf = (html) =>
+    html
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&#39;|&rsquo;/g, "'")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  it("keeps the comparison intent in the title and h1", () => {
+    const html = page();
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
+    const h1 = textOf(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "");
+    expect(title).toContain("Orbi vs Claude Code");
+    expect(title).toContain("Claude Code alternatives");
+    expect(h1).toBe("Orbi vs Claude Code");
+  });
+
+  it("heads the section exactly 'Claude Code alternatives' and answers the open source query", () => {
+    const html = page();
+    const section = sectionOf(html);
+    expect(section, "missing the #claude-code-alternatives section").not.toBe("");
+    expect(section).toMatch(/<h2[^>]*id="claude-code-alternatives"[^>]*>Claude Code alternatives<\/h2>/);
+    const text = textOf(section).toLowerCase();
+    expect(text, "the section must carry the head term").toContain("claude code alternatives");
+    expect(text, "the section must carry the open source variant").toContain(
+      "open source claude code alternative",
+    );
+  });
+
+  it("makes the two moves explicit: swap the agent, or wrap Claude Code in Orbi", () => {
+    const section = textOf(sectionOf(page()));
+    expect(section).toMatch(/IF YOU WANT A DIFFERENT AGENT IN YOUR TERMINAL OR IDE/);
+    expect(section).toMatch(/IF YOU WANT CLAUDE CODE TO FINISH THE DELIVERY LINE/);
+    for (const tool of ["Codex CLI", "Cursor", "Aider", "Cline", "OpenCode", "Gemini CLI", "Pi"]) {
+      expect(section, tool + " must be listed").toContain(tool);
+    }
+  });
+
+  it("never claims Orbi is a Claude Code alternative", () => {
+    const section = textOf(sectionOf(page()));
+    expect(section, "the red line must be stated").toMatch(/Orbi is not a Claude Code alternative/i);
+    const withoutRedLine = section.replace(/Orbi is not (?:a|an) Claude Code alternative/gi, "");
+    expect(withoutRedLine, "no positive 'Orbi is a Claude Code alternative' claim").not.toMatch(
+      /Orbi is (?:an? )?(?:open source )?Claude Code alternative/i,
+    );
+  });
+
+  it("sends no /cloud/ link with a ref from the section", () => {
+    const section = sectionOf(page());
+    for (const [href] of section.matchAll(/href="([^"]+)"/g)) {
+      if (href.startsWith("/cloud/") || href.includes("orbi.build/cloud")) {
+        expect(href, "/cloud/ handoff links carry no ref").not.toMatch(/[?&]ref=/);
+      }
+    }
+  });
+
+  it("keeps the ZH mirror out of this English-only scope", () => {
+    const zh = shipped.get("zh/compare/claude-code/index.html");
+    expect(zh).not.toContain('id="claude-code-alternatives"');
+    expect(zh).not.toContain("Claude Code alternatives");
+    expect(zh).not.toContain("open source claude code alternative");
+  });
+
+  it("points the /compare/ Claude Code row at the section", () => {
+    expect(shipped.get("compare/index.html")).toContain(
+      '<a href="/compare/claude-code/#claude-code-alternatives">Claude Code alternatives</a>',
+    );
+  });
+});
+
 // Issue #907: /compare/github-copilot-coding-agent/ targets the "github
 // copilot alternatives" query. The EN page carries the term in its title
 // while keeping the Orbi-vs-Copilot comparison h1, gains a
