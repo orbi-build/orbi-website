@@ -719,6 +719,81 @@ describe("Claude Code alternatives (Issue #869)", () => {
   });
 });
 
+// Issue #1008: /compare/openclaw/ targets the "openclaw alternatives" query.
+// The EN page keeps its "Orbi vs OpenClaw" title and H1 — the comparison
+// intent the page was built for — and gains an #openclaw-alternatives section:
+// six self-hosted alternatives described from their own documentation, Orbi
+// placed as the GitHub Issue→reviewed-merge category, and a source plus
+// verification date for every entry. The Issue scopes this to English, so the
+// ZH mirror is deliberately untouched.
+describe("OpenClaw alternatives (Issue #1008)", () => {
+  const alternatives = [
+    "https://github.com/NousResearch/hermes-agent",
+    "https://github.com/elizaOS/eliza",
+    "https://docs.letta.com/self-hosting/channels/",
+    "https://docs.khoj.dev/get-started/setup",
+    "https://github.com/n8n-io/n8n",
+    "https://github.com/All-Hands-AI/OpenHands",
+  ];
+  const page = () => shipped.get("compare/openclaw/index.html");
+  const sectionOf = (html) => {
+    const start = html.indexOf('id="openclaw-alternatives"');
+    return start < 0 ? "" : html.slice(start, html.indexOf("</section>", start));
+  };
+  const textOf = (html) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
+
+  it("keeps the OpenClaw comparison title and H1", () => {
+    const html = page();
+    expect(html).toContain("<title>Orbi vs OpenClaw: self-hosted agents compared</title>");
+    expect(html).toContain('<h1 id="compare-title">Orbi vs OpenClaw</h1>');
+  });
+
+  it("adds 'OpenClaw alternatives' to the description without overrunning a search result", () => {
+    const description = page().match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+    expect(description, "the description must carry the search term").toContain("OpenClaw alternatives");
+    expect([...description].length, "description is " + [...description].length + " chars").toBeLessThanOrEqual(155);
+  });
+
+  it("anchors an 'OpenClaw alternatives' H2 carrying the query and its variants", () => {
+    const html = page();
+    expect(
+      html,
+      "missing the #openclaw-alternatives h2",
+    ).toContain('<h2 class="orbi-compare-section-h2" id="openclaw-alternatives">OpenClaw alternatives</h2>');
+    const text = textOf(sectionOf(html));
+    expect(text, "the section must carry the head term").toContain("openclaw alternatives");
+    expect(text, "the section must carry the 'openclaw alternative' variant").toContain("openclaw alternative");
+    expect(text, "the section must carry the 'best openclaw alternatives' variant").toContain("best openclaw alternatives");
+  });
+
+  it("lists six self-hosted alternatives and Orbi's delivery-line category", () => {
+    const section = sectionOf(page());
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of alternatives) {
+      expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
+    }
+    expect(hrefs, "Orbi must be linked from the same section").toContain("https://docs.orbi.build");
+    expect(textOf(section), "the list must state that the entries are self-hosted").toContain("self-hosted");
+    expect(textOf(section), "Orbi's category is the independent review gate").toContain("independent review");
+  });
+
+  it("lists every newly cited source with a 2026-10-18 verification date", () => {
+    const list = page().match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of alternatives) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, href + " must appear in Sources and verification dates").toBeTruthy();
+      expect(item, href + ": source must carry the 2026-10-18 date").toContain("verified 2026-10-18");
+    }
+  });
+
+  it("leaves the ZH mirror without the English-only section", () => {
+    const zh = shipped.get("zh/compare/openclaw/index.html");
+    expect(zh, "the ZH mirror must not grow #openclaw-alternatives").not.toContain("openclaw-alternatives");
+    expect(zh, "the ZH mirror must not carry the English H2").not.toContain("OpenClaw alternatives");
+  });
+});
+
 // Issue #907: /compare/github-copilot-coding-agent/ targets the "github
 // copilot alternatives" query. The EN page carries the term in its title
 // while keeping the Orbi-vs-Copilot comparison h1, gains a
@@ -2726,7 +2801,7 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
     "compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
     "zh/compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
-    "compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openclaw/index.html": ["2026-09-07", "2026-10-18"],
     "zh/compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
     "compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
     "zh/compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
