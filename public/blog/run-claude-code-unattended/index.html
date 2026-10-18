@@ -170,6 +170,12 @@
               <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
               <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
             </ol></li>
+          <li><a class="post-toc-link" href="#claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</a>
+            <ol>
+              <li><a class="post-toc-link" href="#start-with-the-right-user-and-credentials">Start with the right user and credentials</a></li>
+              <li><a class="post-toc-link" href="#start-disconnect-and-reconnect">Start, disconnect and reconnect</a></li>
+              <li><a class="post-toc-link" href="#check-the-result-before-counting-it-as-done">Check the result before counting it as done</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a>
             <ol>
               <li><a class="post-toc-link" href="#which-task-and-only-once">Which task, and only once</a></li>
@@ -186,13 +192,19 @@
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>On this page · 5 sections</summary>
+          <summary>On this page · 6 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#claude-code-headless-mode-flags-for-cron-and-ci">Claude Code headless mode flags for cron and CI</a>
             <ol>
               <li><a class="post-toc-link" href="#what-a-headless-run-returns-and-what-to-check">What a headless run returns, and what to check</a></li>
               <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
               <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</a>
+            <ol>
+              <li><a class="post-toc-link" href="#start-with-the-right-user-and-credentials">Start with the right user and credentials</a></li>
+              <li><a class="post-toc-link" href="#start-disconnect-and-reconnect">Start, disconnect and reconnect</a></li>
+              <li><a class="post-toc-link" href="#check-the-result-before-counting-it-as-done">Check the result before counting it as done</a></li>
             </ol></li>
           <li><a class="post-toc-link" href="#six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn't answer</a>
             <ol>
@@ -271,6 +283,65 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 </code></pre>
 <p>The script finds <code class="post-code--single">claude</code> through the <code class="post-code--single">PATH</code> set in the env file, so make sure that <code class="post-code--single">PATH</code> includes the directory <code class="post-code--spaced">which claude</code> prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad <code class="post-code--single">cd</code>, won&#39;t show up in it. Look in cron&#39;s mail or the system log for those. Don&#39;t drop the <code class="post-code--single">permission_denials</code> check. If you switch to <code class="post-code--single">auto</code> and it isn&#39;t available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.</p>
 <p>If one scheduled job like that is all you need, you&#39;re done.</p>
+<h2 id="claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</h2>
+<p>For Claude Code on a VPS, run the job inside a terminal multiplexer such as <code class="post-code--single">tmux</code>, and save its output on the server. After reconnecting, inspect the job&#39;s saved result and terminal. This keeps the process attached to tmux&#39;s terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.</p>
+<p>On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This was an isolated Linux VM test, not a comparison of commercial VPS providers. The task was to make a Python <code class="post-code--single">greet</code> function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Run</th>
+<th scope="col">What happened after I killed the SSH client</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Foreground shell, without tmux</th>
+<td>The Claude process ended; no exit-code record or completed JSON result was produced, and the source remained unchanged</td>
+</tr>
+<tr>
+<th scope="row">Inside tmux</th>
+<td>The job completed with exit code 0, <code class="post-code--spaced">is_error: false</code> and an empty <code class="post-code--single">permission_denials</code> array; a separate test run passed all three tests</td>
+</tr>
+</tbody></table></div>
+<p>The tmux job started at 14:15:56 +08, was disconnected that second while the Claude process was alive, and finished at 14:16:14 +08. I reconnected to inspect the JSON and changed files, then ran the tests independently. The foreground result is one observed failure mode; how a process reacts to disconnects depends on its terminal and signal handling.</p>
+<h3 id="start-with-the-right-user-and-credentials">Start with the right user and credentials</h3>
+<p>Use a dedicated non-root Linux user that holds only the repository access and credentials this job needs. Install <code class="post-code--single">tmux</code>, <code class="post-code--single">jq</code> and the repository&#39;s test dependencies. Follow the <a href="https://code.claude.com/docs/en/setup">Linux installation instructions</a>, then authenticate Claude Code as that user and check the account. Installing it as root and logging in as another user leaves you with different configuration and credentials.</p>
+<p>The earlier authentication section explains subscription tokens and API keys. A VPS adds hosting cost; it does not add Claude allowance. <a href="/blog/claude-code-pricing/">Claude Code pricing</a> covers the billing route, and <a href="/blog/cursor-vs-claude-code/">Cursor vs Claude Code</a> compares hosted execution options if you would rather use a product&#39;s cloud environment.</p>
+<h3 id="start-disconnect-and-reconnect">Start, disconnect and reconnect</h3>
+<p>The following example assumes a trusted Python repository at <code class="post-code--single">/srv/myrepo</code>, with a <code class="post-code--single">greet</code> function and a unittest suite. Change the path, prompt and test command together for your own project. Run it once with a person present before scheduling it.</p>
+<p>As the job user, create a fresh result directory and open tmux. The first command intentionally fails if the directory already exists, so do not reuse an old job&#39;s evidence:</p>
+<pre><code class="language-bash">mkdir &quot;$HOME/claude-vps-demo&quot; &amp;&amp; tmux new-session -s cc-vps-demo
+</code></pre>
+<p>Inside the tmux terminal, save the command as a script and run it:</p>
+<pre><code class="language-bash">cat &gt; &quot;$HOME/claude-vps-demo/run.sh&quot; &lt;&lt;&#39;SH&#39;
+#!/usr/bin/env bash
+cd /srv/myrepo &amp;&amp;
+claude -p &quot;Make greet reject empty or whitespace-only names with ValueError. Add regression tests, keep the valid-name behavior, and run python3 -m unittest.&quot; \
+  --permission-mode dontAsk \
+  --allowedTools &quot;Read,Edit,Write,Bash(python3 -m unittest *)&quot; \
+  --output-format json \
+  &gt; &quot;$HOME/claude-vps-demo/result.json&quot; \
+  2&gt; &quot;$HOME/claude-vps-demo/stderr.log&quot;
+rc=$?
+printf &#39;%s\n&#39; &quot;$rc&quot; &gt; &quot;$HOME/claude-vps-demo/exit-code&quot;
+SH
+bash &quot;$HOME/claude-vps-demo/run.sh&quot;
+</code></pre>
+<p>The writes are pre-approved for this trusted repository; they are not OS isolation. Keep unrelated credentials out of the job user&#39;s account. To detach while Claude runs, press <code class="post-code--single">Ctrl-b</code>, release both keys, then press <code class="post-code--single">d</code>. You can now close SSH. Reconnect as the same user and run <code class="post-code--spaced">tmux attach-session -t cc-vps-demo</code> to return to that terminal. The shell stays open after the command finishes.</p>
+<h3 id="check-the-result-before-counting-it-as-done">Check the result before counting it as done</h3>
+<p>No <code class="post-code--single">exit-code</code> file means the wrapper did not finish recording a result; it is not a success. From a reconnected shell, inspect the log and check the recorded exit code, non-empty JSON and permission-denial array together:</p>
+<pre><code class="language-bash">cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
+if test &quot;$(cat &quot;$HOME/claude-vps-demo/exit-code&quot;)&quot; = 0 &amp;&amp;
+   test -s &quot;$HOME/claude-vps-demo/result.json&quot; &amp;&amp;
+   jq -e &#39;.is_error == false and
+          (.permission_denials | type == &quot;array&quot; and length == 0)&#39; \
+     &quot;$HOME/claude-vps-demo/result.json&quot;; then
+  echo &quot;Run reported success; inspect the diff and rerun tests.&quot;
+else
+  echo &quot;Run incomplete or failed; inspect its JSON and log.&quot; &gt;&amp;2
+fi
+</code></pre>
+<p>Then read the changed files or <code class="post-code--spaced">git diff</code> and independently run <code class="post-code--spaced">python3 -m unittest -v</code> from <code class="post-code--single">/srv/myrepo</code>. In the VM test, this checked the valid name, empty name and whitespace-only name cases. I also checked the result-reading condition with denied tools, missing fields, empty output, invalid JSON and a non-zero exit code; those cases did not print the success message.</p>
+<p>This test covered an SSH client disappearing while the VM kept running. It did not test reboot recovery. After a host reboot, tmux&#39;s processes are gone; use a separately designed service or scheduler for restart behavior. To continue a recorded Claude conversation, <code class="post-code--single">--resume</code> uses its session ID, but a resumed conversation still needs a live process and a check of the work already done.</p>
 <h2 id="six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn&#39;t answer</h2>
 <p>Orbi has been delivering its own Issues since late August. In the normal flow nobody writes, reviews or merges the code by hand; a person adds labels, makes the calls Orbi can&#39;t (including the two reverts below), and looks at pages before production. When this post went up on 1 October, 599 Issues in <a href="https://github.com/orbi-build/orbi">its repository</a> carried the <code class="post-code--single">ai-merged</code> label, and v0.5.58 went out on September 30. If you want Issues to reach a merge and a release, a bare loop around <code class="post-code--spaced">claude -p</code> leaves most of the following to you. Two of them, the merge check and the isolation hardening, I got wrong first. A runner, below, is the loop process around the agent: it picks an Issue, starts a session and collects the result.</p>
 <h3 id="which-task-and-only-once">Which task, and only once</h3>
@@ -386,6 +457,9 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
         </a>
       </div>
     </nav>
