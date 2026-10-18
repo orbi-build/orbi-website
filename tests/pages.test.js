@@ -719,6 +719,81 @@ describe("Claude Code alternatives (Issue #869)", () => {
   });
 });
 
+// Issue #1008: /compare/openclaw/ targets the "openclaw alternatives" query.
+// The EN page keeps its "Orbi vs OpenClaw" title and H1 — the comparison
+// intent the page was built for — and gains an #openclaw-alternatives section:
+// six self-hosted alternatives described from their own documentation, Orbi
+// placed as the GitHub Issue→reviewed-merge category, and a source plus
+// verification date for every entry. The Issue scopes this to English, so the
+// ZH mirror is deliberately untouched.
+describe("OpenClaw alternatives (Issue #1008)", () => {
+  const alternatives = [
+    "https://github.com/NousResearch/hermes-agent",
+    "https://github.com/elizaOS/eliza",
+    "https://docs.letta.com/self-hosting/channels/",
+    "https://docs.khoj.dev/get-started/setup",
+    "https://github.com/n8n-io/n8n",
+    "https://github.com/All-Hands-AI/OpenHands",
+  ];
+  const page = () => shipped.get("compare/openclaw/index.html");
+  const sectionOf = (html) => {
+    const start = html.indexOf('id="openclaw-alternatives"');
+    return start < 0 ? "" : html.slice(start, html.indexOf("</section>", start));
+  };
+  const textOf = (html) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
+
+  it("keeps the OpenClaw comparison title and H1", () => {
+    const html = page();
+    expect(html).toContain("<title>Orbi vs OpenClaw: self-hosted agents compared</title>");
+    expect(html).toContain('<h1 id="compare-title">Orbi vs OpenClaw</h1>');
+  });
+
+  it("adds 'OpenClaw alternatives' to the description without overrunning a search result", () => {
+    const description = page().match(/<meta name="description" content="([^"]+)"/)?.[1] ?? "";
+    expect(description, "the description must carry the search term").toContain("OpenClaw alternatives");
+    expect([...description].length, "description is " + [...description].length + " chars").toBeLessThanOrEqual(155);
+  });
+
+  it("anchors an 'OpenClaw alternatives' H2 carrying the query and its variants", () => {
+    const html = page();
+    expect(
+      html,
+      "missing the #openclaw-alternatives h2",
+    ).toContain('<h2 class="orbi-compare-section-h2" id="openclaw-alternatives">OpenClaw alternatives</h2>');
+    const text = textOf(sectionOf(html));
+    expect(text, "the section must carry the head term").toContain("openclaw alternatives");
+    expect(text, "the section must carry the 'openclaw alternative' variant").toContain("openclaw alternative");
+    expect(text, "the section must carry the 'best openclaw alternatives' variant").toContain("best openclaw alternatives");
+  });
+
+  it("lists six self-hosted alternatives and Orbi's delivery-line category", () => {
+    const section = sectionOf(page());
+    const hrefs = [...section.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of alternatives) {
+      expect(hrefs, href + " must be linked from the alternatives section").toContain(href);
+    }
+    expect(hrefs, "Orbi must be linked from the same section").toContain("https://docs.orbi.build");
+    expect(textOf(section), "the list must state that the entries are self-hosted").toContain("self-hosted");
+    expect(textOf(section), "Orbi's category is the independent review gate").toContain("independent review");
+  });
+
+  it("lists every newly cited source with a 2026-10-18 verification date", () => {
+    const list = page().match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
+    for (const href of alternatives) {
+      const item = items.find((chunk) => chunk.includes(href));
+      expect(item, href + " must appear in Sources and verification dates").toBeTruthy();
+      expect(item, href + ": source must carry the 2026-10-18 date").toContain("verified 2026-10-18");
+    }
+  });
+
+  it("leaves the ZH mirror without the English-only section", () => {
+    const zh = shipped.get("zh/compare/openclaw/index.html");
+    expect(zh, "the ZH mirror must not grow #openclaw-alternatives").not.toContain("openclaw-alternatives");
+    expect(zh, "the ZH mirror must not carry the English H2").not.toContain("OpenClaw alternatives");
+  });
+});
+
 // Issue #907: /compare/github-copilot-coding-agent/ targets the "github
 // copilot alternatives" query. The EN page carries the term in its title
 // while keeping the Orbi-vs-Copilot comparison h1, gains a
@@ -856,6 +931,27 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
     expect(html.slice(start - 60, start)).toContain("<h2");
     const section = html.slice(start, html.indexOf("</section>", start));
     expect(section, "the section must link /compare/claude-code/").toContain('href="/compare/claude-code/"');
+  });
+
+  // Issue #1005: the section has to be the answer to both queries — the head
+  // term and its largest variant — inside its own body, not only in the H2 and
+  // the meta description. It stays an English-only section; the ZH mirror must
+  // not grow one.
+  it("names 'devin vs claude code' and 'devin ai vs claude code' in the section body", () => {
+    const html = shipped.get("compare/devin/index.html");
+    const start = html.indexOf('id="devin-vs-claude-code"');
+    expect(start, "missing the #devin-vs-claude-code h2").toBeGreaterThan(-1);
+    const text = html
+      .slice(start, html.indexOf("</section>", start))
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+    expect(text, "the section must carry the head term").toContain("devin vs claude code");
+    expect(text, "the section must carry the 'devin ai vs claude code' variant").toContain("devin ai vs claude code");
+    expect(
+      shipped.get("zh/compare/devin/index.html"),
+      "the ZH mirror stays untouched by this English-only section",
+    ).not.toContain("devin-vs-claude-code");
   });
 
   it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
@@ -1372,7 +1468,8 @@ describe("one unified footer on every content page", () => {
       const linkCounts = groups.map((match) => [...match[2].matchAll(/<a href="([^"]+)"/g)].length);
       // Issue #845 moved the Pi hub from the Guides row to the Resources row:
       // the Resources row gained one link and the Guides row lost one.
-      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 10, 8, 13, 7]);
+      // Issue #1000 adds the open-source contributions post to Resources.
+      expect(linkCounts, `${page.output}: footer group link counts`).toEqual([6, 11, 8, 13, 7]);
       const companyLinks = [...groups[4][2].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
         .map(([, href, label]) => [href, label]);
       const siteBase = page.nav.siteBase ?? "";
@@ -1380,8 +1477,54 @@ describe("one unified footer on every content page", () => {
         ? [[`${siteBase}/zh/support/`, "支持"], ["https://github.com/orbi-build/orbi/milestones", "路线图"], [`${siteBase}/zh/privacy/`, "隐私政策"], [`${siteBase}/zh/terms/`, "服务条款"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]
         : [[`${siteBase}/support/`, "Support"], ["https://github.com/orbi-build/orbi/milestones", "Roadmap"], [`${siteBase}/privacy/`, "Privacy"], [`${siteBase}/terms/`, "Terms"], ["https://github.com/orbi-build/orbi", "GitHub"], ["https://x.com/xqliu", "X"], ["https://www.youtube.com/@orbibuild", "YouTube"]]);
       const items = [...nav.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
-      expect(items, `${page.output}: footer nav drifted`).toHaveLength(44);
+      expect(items, `${page.output}: footer nav drifted`).toHaveLength(45);
     }
+  });
+
+  // Issue #1000: the open-source contributions post ships in both languages
+  // (verified live by its sitemap entries) and gets an entry in the footer
+  // Resources group, following the page's own language. It is one more item in
+  // the same <ul>, written exactly like its siblings and sitting next to Blog.
+  it("links the open-source contributions post from the footer Resources group (Issue #1000)", () => {
+    const targets = {
+      en: {
+        href: "/blog/ai-contribute-to-open-source/",
+        label: "Open source contributions",
+        output: "blog/ai-contribute-to-open-source/index.html",
+      },
+      zh: {
+        href: "/zh/blog/ai-contribute-to-open-source/",
+        label: "开源贡献",
+        output: "zh/blog/ai-contribute-to-open-source/index.html",
+      },
+    };
+    for (const target of Object.values(targets)) {
+      expect(shipped.has(target.output), `${target.output}: the linked post must ship`).toBe(true);
+    }
+    const drift = [];
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      const nav = region(footer, '<nav aria-label="Footer navigation">', "</nav>")
+        || region(footer, '<nav aria-label="页脚导航">', "</nav>");
+      const groups = [...nav.matchAll(/<div class="footer-group(?: [^"]+)?">\s*<h2>([^<]+)<\/h2>\s*<ul>([\s\S]*?)<\/ul>\s*<\/div>/g)];
+      const resources = groups[1]?.[2] ?? "";
+      const siteBase = page.nav.siteBase ?? "";
+      const own = targets[page.lang];
+      const other = targets[page.lang === "en" ? "zh" : "en"];
+      const ownHref = `${siteBase}${own.href}`;
+      const otherHref = `${siteBase}${other.href}`;
+      const blogHref = `${siteBase}${page.lang === "en" ? "/blog/" : "/zh/blog/"}`;
+      const hrefs = [...resources.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]);
+      if (!resources.includes(`<li><a href="${ownHref}">${own.label}</a></li>`)) {
+        drift.push(`${page.output}: missing <li><a href="${ownHref}">${own.label}</a></li> in the Resources group`);
+      } else if (hrefs.indexOf(ownHref) !== hrefs.indexOf(blogHref) + 1) {
+        drift.push(`${page.output}: the contributions link must follow the Blog link`);
+      }
+      if (hrefs.includes(otherHref)) {
+        drift.push(`${page.output}: footer crosses into the other language tree (${otherHref})`);
+      }
+    }
+    expect(drift, `footer open-source contributions link drift:\n${drift.join("\n")}`).toEqual([]);
   });
 
   it("links YouTube in the footer with the verbatim anchor, on en and zh (Issue #255)", () => {
@@ -2642,8 +2785,8 @@ describe("Article publish and update dates (Issue #889)", () => {
   const DATED_PAGES = {
     "compare/claude-code/index.html": ["2026-09-17", "2026-10-06"],
     "zh/compare/claude-code/index.html": ["2026-09-17", "2026-09-17"],
-    "compare/codex/index.html": ["2026-09-07", "2026-10-17"],
-    "zh/compare/codex/index.html": ["2026-09-07", "2026-10-17"],
+    "compare/codex/index.html": ["2026-09-07", "2026-10-18"],
+    "zh/compare/codex/index.html": ["2026-09-07", "2026-10-18"],
     "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "zh/compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
     "compare/devin/index.html": ["2026-09-07", "2026-10-08"],
@@ -2658,7 +2801,7 @@ describe("Article publish and update dates (Issue #889)", () => {
     "zh/compare/keelen/index.html": ["2026-09-24", "2026-09-24"],
     "compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
     "zh/compare/managed-agents/index.html": ["2026-09-07", "2026-09-07"],
-    "compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
+    "compare/openclaw/index.html": ["2026-09-07", "2026-10-18"],
     "zh/compare/openclaw/index.html": ["2026-09-07", "2026-09-07"],
     "compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
     "zh/compare/openhands/index.html": ["2026-09-07", "2026-09-07"],
