@@ -106,6 +106,76 @@ export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 
 如果你只需要这样一个定时任务，到这里就够了。
 
+## Claude Code VPS：断开 SSH 后继续运行，重连查看结果
+
+在 VPS 上跑 Claude Code，可以把作业放进 `tmux` 这类终端复用器，并把结果保存在服务器上。SSH 连接断开时，进程仍连着 tmux 的终端，重连后能回来检查。它不会把失败的任务变成成功，也不会在主机重启后自动恢复作业。
+
+2026 年 10 月 18 日，我通过 SSH，在一台隔离的 Debian 12 KVM 虚机里实测了 Claude Code 2.1.281。运行身份是非 root 用户，认证用 Claude Max 订阅。这次测的是 Linux 虚机上的断连行为，没有比较商业 VPS 服务商。任务是让 Python 的 `greet` 函数拒绝空名字和纯空白名字，保留正常名字的行为，再加回归测试。
+
+| 运行方式 | 强制结束 SSH 客户端后发生了什么 |
+|---|---|
+| 普通前台 shell，没有 tmux | Claude 进程结束；没有退出码记录和完整 JSON 结果，源码没有改变 |
+| tmux 内运行 | 作业完成，退出码 0、`is_error: false`、`permission_denials` 为空数组；另外独立运行的三个测试全部通过 |
+
+tmux 作业在 14:15:56 +08 启动，同一秒确认 Claude 进程还活着时断开连接，14:16:14 +08 完成。重连后，我看了 JSON 和改动文件，再独立跑了一次测试。前台运行的结果只说明这次观察到的失败方式；进程如何响应断连，还受终端和信号处理方式影响。
+
+### 先确认运行用户和凭据
+
+使用专门的非 root Linux 用户，只给它这个仓库需要的访问权限和凭据。准备好 `tmux`、`jq` 和项目测试依赖，按[官方 Linux 安装说明](https://code.claude.com/docs/en/setup)安装，再以这个用户认证 Claude Code、确认账号。root 装好并登录，不代表另一个用户能读到同一套配置和凭据。
+
+前面的认证节已经区分了订阅 token 与 API key。VPS 会增加主机费用，不会增加 Claude 额度。[Claude Code 价格说明](/zh/blog/claude-code-pricing/)讲清计费路径；想用产品自带的云端环境，可以看 [Cursor 与 Claude Code 对比](/zh/blog/cursor-vs-claude-code/)。
+
+### 启动、断开、重新连接
+
+下面假定 `/srv/myrepo` 是一个可信的 Python 仓库，已有 `greet` 函数和 unittest 测试。用于自己的项目时，把目录、需求和测试命令一起改。安排定时任务前，先有人在场跑通一次。
+
+用作业用户创建一个全新的结果目录，再进入 tmux。目录已经存在时，第一条命令会故意失败，避免把旧作业结果当成这次证据：
+
+```bash
+mkdir "$HOME/claude-vps-demo" && tmux new-session -s cc-vps-demo
+```
+
+在 tmux 终端里，把命令存成脚本再运行：
+
+```bash
+cat > "$HOME/claude-vps-demo/run.sh" <<'SH'
+#!/usr/bin/env bash
+cd /srv/myrepo &&
+claude -p "Make greet reject empty or whitespace-only names with ValueError. Add regression tests, keep the valid-name behavior, and run python3 -m unittest." \
+  --permission-mode dontAsk \
+  --allowedTools "Read,Edit,Write,Bash(python3 -m unittest *)" \
+  --output-format json \
+  > "$HOME/claude-vps-demo/result.json" \
+  2> "$HOME/claude-vps-demo/stderr.log"
+rc=$?
+printf '%s\n' "$rc" > "$HOME/claude-vps-demo/exit-code"
+SH
+bash "$HOME/claude-vps-demo/run.sh"
+```
+
+这里给可信仓库预先放行了写入操作，不构成操作系统隔离，作业用户的账号里不要留无关凭据。Claude 运行时，按 `Ctrl-b`，松开，再按 `d`，即可脱离 tmux；随后可以关闭 SSH。以同一用户重连，运行 `tmux attach-session -t cc-vps-demo` 就能回到那个终端。命令结束后，shell 仍然开着。
+
+### 检查结果以后再算完成
+
+没有 `exit-code` 文件，表示脚本没有完成结果记录，不能算成功。重连后查看日志，把退出码、非空 JSON 与工具拒绝数组一起检查：
+
+```bash
+cat "$HOME/claude-vps-demo/stderr.log"
+if test "$(cat "$HOME/claude-vps-demo/exit-code")" = 0 &&
+   test -s "$HOME/claude-vps-demo/result.json" &&
+   jq -e '.is_error == false and
+          (.permission_denials | type == "array" and length == 0)' \
+     "$HOME/claude-vps-demo/result.json"; then
+  echo "Run reported success; inspect the diff and rerun tests."
+else
+  echo "Run incomplete or failed; inspect its JSON and log." >&2
+fi
+```
+
+接着读改动文件或 `git diff`，在 `/srv/myrepo` 独立运行 `python3 -m unittest -v`。这次虚机实验检查了正常名字、空字符串、纯空白名字三个场景。我还给结果读取条件喂了工具被拒、缺字段、空输出、无效 JSON、非零退出码等样例，都没有显示成功信息。
+
+这次只测了 SSH 客户端消失、虚机仍在运行的情况，没有测试重启恢复。主机重启后，tmux 的进程也没了，需要另外设计服务或调度器来管理重启。`--resume` 可以用 session ID 接着一段 Claude 对话，但恢复对话仍需要启动进程，并确认此前的工作做到哪里。
+
 ## claude -p 外面还缺的六件事
 
 Orbi 从 8 月下旬开始交付自己仓库的 Issue，平时写代码、评审、合并都不用人动手；人负责打标签、拍板（包括下文那两次回滚），以及上生产前看一眼页面。截至 10 月 1 日发文时，[仓库](https://github.com/orbi-build/orbi)里有 599 个 Issue 带着 `ai-merged` 标签，最近一次发版是 9 月 30 日的 v0.5.58。想让 Issue 自动走到合并、发版，只在 `claude -p` 外面套个循环是不够的，下面六件事大多得你自己补。合并前的检查和隔离加固这两件，我是先做错了才改对的。下文的 runner，指的是围着 agent 转的那个循环进程：挑 Issue、起会话、收结果。

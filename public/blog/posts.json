@@ -1,5 +1,21 @@
 [
   {
+    "slug": "claude-code-pricing",
+    "title": "Claude Code pricing: Pro, Max and API billing",
+    "summary": "Compare Claude Code pricing for Pro, Max and API access. Check shared limits, extra usage, API credit exclusions and which account pays before you upgrade.",
+    "zhSlug": "claude-code-pricing",
+    "zhTitle": "Claude Code 价格：Pro、Max 和 API 怎么付费",
+    "related": []
+  },
+  {
+    "slug": "cursor-vs-claude-code",
+    "title": "Cursor vs Claude Code: workflow, plans and usage",
+    "summary": "Choose Cursor vs Claude Code by workflow, execution environment and billing. Compare current plans, Claude access and a simple task evaluation checklist.",
+    "zhSlug": "cursor-vs-claude-code",
+    "zhTitle": "Cursor 与 Claude Code 对比：工作流、套餐和用量",
+    "related": []
+  },
+  {
     "slug": "ai-contribute-to-open-source",
     "title": "Can an AI agent contribute to open source?",
     "summary": "Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.",
