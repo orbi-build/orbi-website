@@ -858,6 +858,27 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
     expect(section, "the section must link /compare/claude-code/").toContain('href="/compare/claude-code/"');
   });
 
+  // Issue #1005: the section has to be the answer to both queries — the head
+  // term and its largest variant — inside its own body, not only in the H2 and
+  // the meta description. It stays an English-only section; the ZH mirror must
+  // not grow one.
+  it("names 'devin vs claude code' and 'devin ai vs claude code' in the section body", () => {
+    const html = shipped.get("compare/devin/index.html");
+    const start = html.indexOf('id="devin-vs-claude-code"');
+    expect(start, "missing the #devin-vs-claude-code h2").toBeGreaterThan(-1);
+    const text = html
+      .slice(start, html.indexOf("</section>", start))
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+    expect(text, "the section must carry the head term").toContain("devin vs claude code");
+    expect(text, "the section must carry the 'devin ai vs claude code' variant").toContain("devin ai vs claude code");
+    expect(
+      shipped.get("zh/compare/devin/index.html"),
+      "the ZH mirror stays untouched by this English-only section",
+    ).not.toContain("devin-vs-claude-code");
+  });
+
   it("lists every newly cited source in 'Sources and verification dates' with a date", () => {
     const list = shipped.get("compare/devin/index.html").match(/<ul class="source-list">([\s\S]*?)<\/ul>/)?.[1] ?? "";
     const items = list.split('<li class="orbi-source-list-li">').slice(1).map((chunk) => chunk.split("</li>")[0]);
