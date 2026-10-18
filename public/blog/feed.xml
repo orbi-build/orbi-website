@@ -6,6 +6,20 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Claude Code pricing: Pro, Max and API billing</title>
+      <link>https://orbi.build/blog/claude-code-pricing/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/claude-code-pricing/</guid>
+      <pubDate>Sun, 18 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Compare Claude Code pricing for Pro, Max and API access. Check shared limits, extra usage, API credit exclusions and which account pays before you upgrade.</description>
+    </item>
+    <item>
+      <title>Cursor vs Claude Code: workflow, plans and usage</title>
+      <link>https://orbi.build/blog/cursor-vs-claude-code/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/cursor-vs-claude-code/</guid>
+      <pubDate>Sun, 18 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Choose Cursor vs Claude Code by workflow, execution environment and billing. Compare current plans, Claude access and a simple task evaluation checklist.</description>
+    </item>
+    <item>
       <title>Can an AI agent contribute to open source?</title>
       <link>https://orbi.build/blog/ai-contribute-to-open-source/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-contribute-to-open-source/</guid>

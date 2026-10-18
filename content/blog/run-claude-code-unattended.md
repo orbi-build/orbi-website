@@ -104,7 +104,7 @@ If one scheduled job like that is all you need, you're done.
 
 ## Claude Code VPS: keep a job running after SSH disconnects
 
-For Claude Code on a VPS, run the job inside a terminal multiplexer such as `tmux`, and save its output on the server. Closing your laptop should leave you with a job you can inspect when you reconnect. This keeps the process attached to tmux's terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.
+For Claude Code on a VPS, run the job inside a terminal multiplexer such as `tmux`, and save its output on the server. After reconnecting, inspect the job's saved result and terminal. This keeps the process attached to tmux's terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.
 
 On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This was an isolated Linux VM test, not a comparison of commercial VPS providers. The task was to make a Python `greet` function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.
 

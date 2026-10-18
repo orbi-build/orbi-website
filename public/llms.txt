@@ -253,6 +253,14 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Claude Code pricing: Pro, Max and API billing (English):
+  https://orbi.build/blog/claude-code-pricing/
+- Cursor vs Claude Code: workflow, plans and usage (English):
+  https://orbi.build/blog/cursor-vs-claude-code/
+- Claude Code 价格：Pro、Max 和 API 怎么付费 (Chinese):
+  https://orbi.build/zh/blog/claude-code-pricing/
+- Cursor 与 Claude Code 对比：工作流、套餐和用量 (Chinese):
+  https://orbi.build/zh/blog/cursor-vs-claude-code/
 - Can an AI agent contribute to open source? (English):
   https://orbi.build/blog/ai-contribute-to-open-source/
 - Claude Code subagents setup and when to use them (English):

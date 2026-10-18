@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Code 价格：Pro、Max 和 API 怎么付费 | Orbi</title>
+  <meta name="description" content="Claude Code 月付订阅从 Pro 的 20 美元起。分清订阅额度、额外用量、API 账单和 Max 附赠额度，再决定是否升级。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/claude-code-pricing/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-pricing/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-pricing/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/claude-code-pricing/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Claude Code 价格：Pro、Max 和 API 怎么付费">
+  <meta property="og:description" content="Claude Code 月付订阅从 Pro 的 20 美元起。分清订阅额度、额外用量、API 账单和 Max 附赠额度，再决定是否升级。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/claude-code-pricing/">
+  <meta property="og:image" content="https://orbi.build/img/blog-claude-code-pricing-card.png">
+  <meta property="og:image:alt" content="Claude Code 价格：Pro、Max 和 API 怎么付费">
+  <meta property="article:published_time" content="2026-10-18">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code 价格：Pro、Max 和 API 怎么付费","datePublished":"2026-10-18","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-code-pricing/","image":"https://orbi.build/img/blog-claude-code-pricing-card.png","inLanguage":"zh-CN","description":"Claude Code 月付订阅从 Pro 的 20 美元起。分清订阅额度、额外用量、API 账单和 Max 附赠额度，再决定是否升级。","url":"https://orbi.build/zh/blog/claude-code-pricing/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Claude Code 价格：Pro、Max 和 API 怎么付费</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-18">2026-10-18</time></p>
+
+          <p class="hero-lede">Claude Code 月付订阅从 Pro 的 20 美元起。分清订阅额度、额外用量、API 账单和 Max 附赠额度，再决定是否升级。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#claude-code-价格和套餐怎么选">Claude Code 价格和套餐怎么选</a></li>
+          <li><a class="post-toc-link" href="#订阅额度-额外用量和-api-账单是三条路径">订阅额度、额外用量和 API 账单是三条路径</a>
+            <ol>
+              <li><a class="post-toc-link" href="#max-附送的每月-api-credits-能付-claude-code-吗">Max 附送的每月 API credits 能付 Claude Code 吗？</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#长任务启动前-先确认谁在付费">长任务启动前，先确认谁在付费</a>
+            <ol>
+              <li><a class="post-toc-link" href="#cost-显示的是应付账单吗">/cost 显示的是应付账单吗？</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#用自己的工作记录判断是否升级">用自己的工作记录判断是否升级</a></li>
+          <li><a class="post-toc-link" href="#如果你核算的是-issue-交付成本">如果你核算的是 Issue 交付成本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 6 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#claude-code-价格和套餐怎么选">Claude Code 价格和套餐怎么选</a></li>
+          <li><a class="post-toc-link" href="#订阅额度-额外用量和-api-账单是三条路径">订阅额度、额外用量和 API 账单是三条路径</a>
+            <ol>
+              <li><a class="post-toc-link" href="#max-附送的每月-api-credits-能付-claude-code-吗">Max 附送的每月 API credits 能付 Claude Code 吗？</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#长任务启动前-先确认谁在付费">长任务启动前，先确认谁在付费</a>
+            <ol>
+              <li><a class="post-toc-link" href="#cost-显示的是应付账单吗">/cost 显示的是应付账单吗？</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#用自己的工作记录判断是否升级">用自己的工作记录判断是否升级</a></li>
+          <li><a class="post-toc-link" href="#如果你核算的是-issue-交付成本">如果你核算的是 Issue 交付成本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>Claude Code 价格按月付订阅看，从 Pro 的每月 20 美元起；也可以通过 API 按量付费。Max 每月 100 或 200 美元，提高的是订阅用量额度。选套餐之前，先确认当前会话用了哪个账号：同一条命令，设了 API key 就可能走 API 账单，不再消耗订阅内含额度。</p>
+<p>本文的价格与计费规则于 2026 年 10 月 18 日核对官方文档。金额均为美元、网页订阅税前价格；手机应用内的结账价格可能不同。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<h2 id="claude-code-价格和套餐怎么选">Claude Code 价格和套餐怎么选</h2>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">付费方式</th>
+<th scope="col">基础价格</th>
+<th scope="col">能拿到什么</th>
+<th scope="col">付钱前要确认什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Claude Pro</th>
+<td>每月 20 美元，或每年 200 美元</td>
+<td>在套餐额度内使用 Claude Code 和 Claude 应用</td>
+<td>聊天和编程共用用量限制</td>
+</tr>
+<tr>
+<th scope="row">Claude Max 5x</th>
+<td>每月 100 美元</td>
+<td>每个会话用量周期有 Pro 的 5 倍容量</td>
+<td>仍有会话和每周限制</td>
+</tr>
+<tr>
+<th scope="row">Claude Max 20x</th>
+<td>每月 200 美元</td>
+<td>每个会话用量周期有 Pro 的 20 倍容量</td>
+<td>额度提高不等于无限使用</td>
+</tr>
+<tr>
+<th scope="row">Claude Console / API</th>
+<td>按用量计费</td>
+<td>Claude Code 按 API 费率使用模型</td>
+<td>模型、token、缓存和账号支出设置都会影响费用</td>
+</tr>
+</tbody></table></div>
+<p><a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Max 套餐说明</a>列出两个档位；<a href="https://claude.com/pricing">官方价格页</a>确认 Pro 和 Max 包含 Claude Code，Free 不包含。Team 和 Enterprise 的席位、用量安排另外计算，不能直接拿个人套餐单价乘人数。</p>
+<p>个人开发者刚开始用 Claude Code，Pro 是最低的付费订阅档。低一档的额度经常打断必须完成的工作时，再评估 Max。5x 和 20x 描述的是相对 Pro 的容量，不保证每个仓库都能多完成五倍或二十倍任务。</p>
+<h2 id="订阅额度-额外用量和-api-账单是三条路径">订阅额度、额外用量和 API 账单是三条路径</h2>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">当前用法</th>
+<th scope="col">用量记在哪里</th>
+<th scope="col">去哪里查</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">用 Pro 或 Max 登录，尚在内含额度内</th>
+<td>订阅额度</td>
+<td>Claude 设置、Claude Code 的 <code class="post-code--single">/usage</code></td>
+</tr>
+<tr>
+<th scope="row">开启了付费额外用量，内含额度已用完</th>
+<td>单独购买的 usage credits</td>
+<td>Claude 的用量与账单设置</td>
+</tr>
+<tr>
+<th scope="row">用 Console 账号或 API key 认证</th>
+<td>API 组织的付费余额或约定账单</td>
+<td>Claude Console 的用量与账单页</td>
+</tr>
+</tbody></table></div>
+<p>额外用量是在订阅额度用完后继续付费；Console API key 则从请求开始就走 API 计费。两处设置要分别查，不能只看到自己订了 Max，就认定这次运行不会产生额外费用。</p>
+<p>官方将<a href="https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans">订阅的付费用量额度</a>和 <a href="https://support.claude.com/en/articles/8977456-how-do-i-pay-for-my-claude-api-usage">Console API 计费</a>分开说明。去实际支付这次用量的账号里检查自动充值和支出限制。升级订阅不会替你关闭 API 组织的自动充值。</p>
+<h3 id="max-附送的每月-api-credits-能付-claude-code-吗">Max 附送的每月 API credits 能付 Claude Code 吗？</h3>
+<p>不能。Max 5x 可以领取每月 100 美元 API credits，Max 20x 可以领取每月 200 美元，但官方明确排除了 Claude Code，也排除了 Claude 应用的额外用量。</p>
+<p>符合条件的订阅者需要关联一个 Claude Console 组织。新订阅者要等七天才能领取；未用完的额度在本账期结束时过期，不累计到下一期。它可以支付该组织内符合条件的 API 应用和 agent，范围见<a href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers">订阅附赠 API 额度规则</a>。</p>
+<p>所以，Max 5x 的 100 美元月费，与附赠的 100 美元 API credits，用途不同。估算 Claude Code 支出时，不能把后者直接从账单里减掉，也不能把它当成另有 100 美元 Claude Code 超额额度。</p>
+<h2 id="长任务启动前-先确认谁在付费">长任务启动前，先确认谁在付费</h2>
+<p>在 Claude Code 中运行 <code class="post-code--single">/status</code> 看账号，运行 <code class="post-code--single">/usage</code> 看订阅用量。<a href="https://code.claude.com/docs/en/authentication">认证文档</a>说明了订阅和 Console 访问的区别。</p>
+<p>还要检查真正启动任务的 shell。下面只显示变量有没有设置，不打印变量值：</p>
+<pre><code class="language-bash">python3 - &lt;&lt;&#39;PY&#39;
+import os
+for name in (&quot;ANTHROPIC_API_KEY&quot;, &quot;ANTHROPIC_AUTH_TOKEN&quot;,
+             &quot;ANTHROPIC_BASE_URL&quot;, &quot;CLAUDE_CODE_OAUTH_TOKEN&quot;):
+    print(f&quot;{name}: {&#39;set&#39; if os.environ.get(name) else &#39;unset&#39;}&quot;)
+PY
+</code></pre>
+<p>这个检查只能帮助排查，不能单独证明最终计费路径；配置文件、凭据辅助程序也可能影响认证。官方特别提醒，环境变量里设置了 <code class="post-code--single">ANTHROPIC_API_KEY</code> 时，Claude Code 可能改走 API 计费，不使用 Pro 或 Max 内含额度。<a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan">订阅接入说明</a>也写了如何切换账号。</p>
+<p>远程 shell、cron 或 CI 的环境，可能和你平时打开的终端不同。无人值守任务开始前，查实际作业环境。<a href="/zh/blog/run-claude-code-unattended/">headless 运行指南</a>还说明了怎样留存结果、识别工具被拒；退出码成功不保证需求已经完成。</p>
+<h3 id="cost-显示的是应付账单吗"><code class="post-code--single">/cost</code> 显示的是应付账单吗？</h3>
+<p><a href="https://code.claude.com/docs/en/commands">命令表</a>把 <code class="post-code--single">/cost</code> 列为 <code class="post-code--single">/usage</code> 的别名。同一个界面既显示订阅限制和活动统计，也有 Session 区域的 token 成本估算。<a href="https://code.claude.com/docs/en/costs">成本文档</a>说，Session 的美元数主要面向 API 用户，不是额外开给订阅用户的账单。</p>
+<p>API 用户去 Console 对账；订阅用户检查剩余额度，以及是否开启了付费额外用量。把代码 diff、测试结果和计费路径一起留下来。一次运行看起来便宜，却没修好问题，重试和评审的时间也要算。</p>
+<h2 id="用自己的工作记录判断是否升级">用自己的工作记录判断是否升级</h2>
+<p>先用能支持日常工作的最低档，记一个有代表性的星期：哪条限制拦住了你、是否耽误必须完成的任务、单独付了多少用量费用。Pro 和 Max 都有五小时会话限制和每周限制，Claude 应用与 Claude Code 共用，所以当天大量聊天也会影响编程额度。</p>
+<p>拿这份记录做判断：</p>
+<ul>
+<li>偶尔被拦、没有截止时间：先等额度恢复。</li>
+<li>临时集中处理一批任务：比较设有明确上限的额外用量预算与升级差价。</li>
+<li>正常工作反复被打断：用同样的工作负载评估下一档 Max。</li>
+<li>应用或 runner 必须使用 API 认证：单独核算 API 组织的预算、可用额度和支出限制。</li>
+</ul>
+<p>按网页月付价格，Pro 升 Max 5x，基础月费增加 80 美元；Max 5x 升 Max 20x，增加 100 美元。这能做预算比较，不能换算成相同 token 数。例如，20 美元 Pro 加 80 美元单独付费用量，总额是 100 美元，和 Max 5x 的基础月费相同；但仍要确认 Max 的额度是否适合你工作集中的时段和任务。年付 Pro 的比较要另算。</p>
+<h2 id="如果你核算的是-issue-交付成本">如果你核算的是 Issue 交付成本</h2>
+<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 使用编程 agent Pi，把 GitHub Issue 交给实现会话，再经过独立评审、合并检查与发版流程。Orbi Cloud 默认使用 DeepSeek，不消耗 Claude Code 订阅额度。<a href="/zh/cost/?ref=blog-cc-pricing">Orbi 成本页</a>统计的是另一种 agent 和交付流程，不能拿它预测 Claude Code 账单。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>日常交互式编程工具的选择，可以继续看 <a href="/zh/blog/cursor-vs-claude-code/">Cursor 与 Claude Code 对比</a>。如果需求是让 Issue 无人值守交付，<a href="/zh/compare/claude-code/">Orbi 与 Claude Code 的边界</a>说明了各自负责到哪里，<a href="/zh/cloud/?ref=blog-cc-pricing">Orbi Cloud</a>提供托管的 runner。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/claude-code-pricing/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

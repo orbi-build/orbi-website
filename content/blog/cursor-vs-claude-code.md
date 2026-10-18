@@ -1,10 +1,11 @@
 ---
 title: Cursor vs Claude Code: workflow, plans and usage
 date: 2026-10-18
-summary: Choose Cursor vs Claude Code by workflow, execution environment and billing. Compare current plans, Claude access and a practical task evaluation checklist.
+summary: Choose Cursor vs Claude Code by workflow, execution environment and billing. Compare current plans, Claude access and a simple task evaluation checklist.
 lang: en
 author: Lawrence Liu
 image: /img/blog-cursor-vs-claude-code-card.png
+mirror: cursor-vs-claude-code
 ---
 
 For Cursor vs Claude Code, start with where you want to inspect and steer the work. Cursor is worth trying when you want the coding agent inside your main editor. Claude Code is worth trying when you want a terminal workflow tied to your existing Claude account. Both also have IDE and cloud options, so “editor versus terminal” is only a starting preference.
@@ -21,8 +22,6 @@ The comparison below uses official documentation checked on 18 October 2026. It 
 | Your laptop needs to be off while a task runs | Either product's cloud execution option | Repository access, dependencies, secrets, plan access and the result you receive |
 | You need Issues reviewed, merged and released under repository rules | The whole delivery workflow | Who owns each check, failure, merge decision and release |
 
-These are suggested starting points. The last column is what can change the decision for your repository.
-
 ### Editor and terminal are available on both sides
 
 Cursor has a [CLI](https://cursor.com/docs/cli/overview) as well as its editor. Claude Code has a terminal CLI, a VS Code extension and a JetBrains integration, plus desktop and web surfaces in its [product overview](https://code.claude.com/docs/en/overview).
@@ -36,7 +35,7 @@ That gives an existing Cursor user a useful option: evaluate Claude Code without
 | Choice | Current individual web price | How Claude usage is funded |
 |---|---|---|
 | Cursor Plus | $8/month | Third-party models are unavailable on this tier |
-| Cursor Premium | $30/month | Claude is a third-party model, billed separately from prepaid credit |
+| Cursor Premium | $30/month | Claude is a third-party model, charged against prepaid credit from the first request |
 | Cursor Super / Ultra | $100 / $200 per month | Larger included Cursor-model pool; third-party usage remains separate |
 | Claude Pro | $20/month or $200/year | Claude Code draws from the shared subscription allowance when authenticated that way |
 | Claude Max 5x / 20x | $100 / $200 per month | Larger subscription allowance, still subject to usage limits |
@@ -75,10 +74,12 @@ Save this record for each attempt:
 
 Run the tests yourself in the intended environment and read the changed call path. For a UI task, open the rendered page and exercise the keyboard path. If one attempt fails, keep that failure in the record instead of comparing only the two best outputs.
 
-Choose the tool whose workflow and allowance fit the tasks you actually do. A single task helps expose setup problems and review friction; it is too small a sample to declare a general quality winner. If the first task produces a clear result, use a different task type before committing your team's workflow to it.
+Choose the tool whose workflow and allowance fit the tasks you actually do. One task can expose setup problems or awkward review steps. It is too small a sample to declare a general quality winner. If the first task produces a clear result, use a different task type before committing your team's workflow to it.
 
 ## Where Orbi fits
 
-I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi, not Claude Code or Cursor. Its runner takes an Issue through implementation and a fresh review session, then checks CI and PR state before merging; releases use their own workflow. [The Issue-to-release guide](/guides/issue-to-release/) describes those steps.
+I'm Lawrence Liu, the creator of Orbi. Orbi uses the Pi coding agent, not Claude Code or Cursor. Its runner takes an Issue through implementation and a fresh review session, then checks CI and PR state before merging; releases use their own workflow. [The Issue-to-release guide](/guides/issue-to-release/) describes those steps.
+
+## Related
 
 Use the comparison above to choose a coding tool you work with directly. When your requirement is an unattended delivery queue, compare the configured end-to-end workflow as well. [Orbi vs Cursor](/compare/cursor/) and [Orbi vs Claude Code](/compare/claude-code/) explain those boundaries. [Orbi Cloud](/cloud/?ref=blog-cursor-cc) hosts the runner with Pi and DeepSeek by default; it does not consume either tool's subscription quota.
