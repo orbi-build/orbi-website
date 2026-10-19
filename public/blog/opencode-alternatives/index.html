@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OpenCode alternatives: who merges and releases? | Orbi</title>
-  <meta name="description" content="OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.">
+  <meta name="description" content="OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.">
   <link rel="canonical" href="https://orbi.build/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-alternatives/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="OpenCode alternatives: who merges and releases?">
-  <meta property="og:description" content="OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.">
+  <meta property="og:description" content="OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.">
   <meta property="og:url" content="https://orbi.build/blog/opencode-alternatives/">
   <meta property="og:image" content="https://orbi.build/img/blog-opencode-alternatives-card.png">
   <meta property="og:image:alt" content="OpenCode alternatives: who merges and releases?">
   <meta property="article:published_time" content="2026-10-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode alternatives: who merges and releases?","datePublished":"2026-10-19","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/opencode-alternatives/","image":"https://orbi.build/img/blog-opencode-alternatives-card.png","inLanguage":"en","description":"OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.","url":"https://orbi.build/blog/opencode-alternatives/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode alternatives: who merges and releases?","datePublished":"2026-10-19","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/opencode-alternatives/","image":"https://orbi.build/img/blog-opencode-alternatives-card.png","inLanguage":"en","description":"OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.","url":"https://orbi.build/blog/opencode-alternatives/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">OpenCode alternatives: who merges and releases?</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-19">2026-10-19</time></p>
 
-          <p class="hero-lede">OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.</p>
+          <p class="hero-lede">OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.</p>
         </section>
       </div>
     </div>
@@ -212,7 +212,7 @@
 <p>Compared with the first group, Orbi automates the merge behind the review gate and leaves the release to one human action. The test guarantee stays whatever your repository&#39;s CI already enforces, since Orbi runs your existing checks.</p>
 <p>Orbi publishes its measured cost. Orbi Cloud&#39;s <a href="/cost/?ref=blog-opencode-alt">cost page</a> records 169 merged deliveries between 2026-09-16 and 2026-10-05, all on deepseek-flash (the default DeepSeek model), at a median of $0.082 per merged delivery and a 90th percentile of $0.22, both at off-peak DeepSeek rates. Those are Orbi&#39;s own deliveries on its own workflow, a different agent and task mix than your OpenCode runs, so treat them as a reference point for the hosted model rather than a prediction of your bill.</p>
 <h2 id="how-to-choose">How to choose</h2>
-<p>Match the tool to how much of the line after the pull request you want to own:</p>
+<p>To rank the OpenCode alternatives for your own setup, match each tool to how much of the line after the pull request you want to own:</p>
 <ul>
 <li>You want a different agent writing the code, and you are happy owning merge and release yourself: any of Claude Code, Codex CLI, Aider, Cline or Goose, chosen by whether you want a terminal, an editor, or a headless CI step.</li>
 <li>You are staying on OpenCode for its model flexibility and open-source license, and your real gap is the steps after the PR: keep OpenCode and build the merge-and-release pipeline on GitHub, or compare it against a runner that owns that line.</li>

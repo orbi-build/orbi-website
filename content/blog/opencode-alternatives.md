@@ -1,7 +1,7 @@
 ---
 title: OpenCode alternatives: who merges and releases?
 date: 2026-10-19
-summary: OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.
+summary: OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.
 lang: en
 author: Lawrence Liu
 image: /img/blog-opencode-alternatives-card.png
@@ -44,7 +44,7 @@ Orbi publishes its measured cost. Orbi Cloud's [cost page](/cost/?ref=blog-openc
 
 ## How to choose
 
-Match the tool to how much of the line after the pull request you want to own:
+To rank the OpenCode alternatives for your own setup, match each tool to how much of the line after the pull request you want to own:
 
 - You want a different agent writing the code, and you are happy owning merge and release yourself: any of Claude Code, Codex CLI, Aider, Cline or Goose, chosen by whether you want a terminal, an editor, or a headless CI step.
 - You are staying on OpenCode for its model flexibility and open-source license, and your real gap is the steps after the PR: keep OpenCode and build the merge-and-release pipeline on GitHub, or compare it against a runner that owns that line.

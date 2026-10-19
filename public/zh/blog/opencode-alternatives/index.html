@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OpenCode 替代方案：PR 之后那条线归谁 | Orbi</title>
-  <meta name="description" content="OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。">
+  <meta name="description" content="OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。">
   <link rel="canonical" href="https://orbi.build/zh/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-alternatives/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-alternatives/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="OpenCode 替代方案：PR 之后那条线归谁">
-  <meta property="og:description" content="OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。">
+  <meta property="og:description" content="OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。">
   <meta property="og:url" content="https://orbi.build/zh/blog/opencode-alternatives/">
   <meta property="og:image" content="https://orbi.build/img/blog-opencode-alternatives-card.png">
   <meta property="og:image:alt" content="OpenCode 替代方案：PR 之后那条线归谁">
   <meta property="article:published_time" content="2026-10-19">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode 替代方案：PR 之后那条线归谁","datePublished":"2026-10-19","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/opencode-alternatives/","image":"https://orbi.build/img/blog-opencode-alternatives-card.png","inLanguage":"zh-CN","description":"OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。","url":"https://orbi.build/zh/blog/opencode-alternatives/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode 替代方案：PR 之后那条线归谁","datePublished":"2026-10-19","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/opencode-alternatives/","image":"https://orbi.build/img/blog-opencode-alternatives-card.png","inLanguage":"zh-CN","description":"OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。","url":"https://orbi.build/zh/blog/opencode-alternatives/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">OpenCode 替代方案：PR 之后那条线归谁</h1>
           <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-19">2026-10-19</time></p>
 
-          <p class="hero-lede">OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。</p>
+          <p class="hero-lede">OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。</p>
         </section>
       </div>
     </div>
@@ -212,7 +212,7 @@
 <p>跟上面那一组的分别很具体：合并是在评审闸门后自动做的，发版是人工的一步，测试保证仍然是你仓库的 CI 说了算，Orbi 跑的是你已经定好的检查。</p>
 <p>Orbi 的成本是公开实测的。Orbi Cloud 的<a href="/zh/cost/?ref=blog-opencode-alt">成本页</a>记录了 2026-09-16 到 2026-10-05 之间的 169 次已合并交付，全部跑在 deepseek-flash（默认那个 DeepSeek 模型）上，每次合并交付中位 $0.082、90 分位 $0.22，都按 DeepSeek 的非高峰费率算。那是 Orbi 在自己工作流上的交付，衡量的 agent 和任务构成跟你的 OpenCode 跑法不同，所以把它当托管模式的参考点，不是你账单的预测。</p>
 <h2 id="怎么选">怎么选</h2>
-<p>按 PR 之后那条线你想自己扛多少来配：</p>
+<p>给这些 OpenCode 替代方案排个序，按 PR 之后那条线你想自己扛多少来配：</p>
 <ul>
 <li>想换个 agent 写代码、合并和发版你乐意自己来：Claude Code、Codex CLI、Aider、Cline、Goose 任选，看你要的是终端、编辑器，还是一个无人值守的 CI 步骤。</li>
 <li>为了模型灵活度和开源许可继续留在 OpenCode，真正缺的是 PR 之后那几步：留着 OpenCode，在 GitHub 上把合并到发版这条流水线搭起来，或者拿它跟一个把那条线包了的 runner 比一比。</li>
