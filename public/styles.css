@@ -467,7 +467,10 @@ h1 {
    the CTA row below the fold: header 84 + hero 665 = 749 > 698. Trim the
    headline and the hero padding so the buttons stay in the first screen. */
 @media (max-height: 820px) and (min-width: 981px) {
-  .hero { min-height: auto; padding: 0 0 64px; }
+  /* 2026-10-19: padding-top 0 put the eyebrow and the proof card flush against
+     the header's bottom rule on every laptop-height screen. 40px keeps a clear
+     gap and the CTA row still lands inside a 1366x768 first screen. */
+  .hero { min-height: auto; padding: 40px 0 64px; }
   h1 { margin-bottom: 8px; }
   .hero-lede { margin-bottom: 8px; font-size: 1.05rem; }
   .eyebrow { margin-bottom: 12px; }
