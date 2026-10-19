@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships six footer directory badges (site/partials/footer.html) and
+// Every page ships seven footer directory badges (site/partials/footer.html) and
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -16,22 +16,26 @@
 // The counters are module state, and Vitest isolates test files, so a counter
 // covers exactly the pages the file that imported it opened.
 
-// The six footer badge embeds declared in site/partials/footer.html, with the
+// The seven footer badge embeds declared in site/partials/footer.html, with the
 // size the page declares. LaunchNest's embed declares only width="240"; its
 // live badge is 205x36, so 240x42.146 keeps that ratio and the <img> renders
 // 240x42 exactly like it does online. The Altern badge (Issue #1012) also
 // declares only width="150"; its source is 430x151, so the placeholder carries
 // that ratio and the <img> renders 150x52.67. The SaaSpa.ge badge (Issue #1015)
 // declares width="200" height="60", the size of its black-theme image. The
+// Tooluck badge (Issue #1027) declares width="210" height="55"; its source is
+// 336x88, so the placeholder carries that ratio and the rendered box proves
+// the declared size matches the real source instead of stretching it. The
 // other three declare width and height too, which fix the rendered box
 // regardless of the placeholder's natural size.
-const BADGE_PLACEHOLDER_SIZES = [
+export const BADGE_PLACEHOLDER_SIZES = [
   { host: "launchnest.io", width: 240, height: 42.146 },
   { host: "aiagentsdirectory.com", width: 168, height: 42 },
   { host: "aiagentslisting.com", width: 168, height: 42 },
   { host: "toolradar.com", width: 147, height: 42 },
   { host: "data.altern.ai", width: 430, height: 151 },
   { host: "saaspa.ge", width: 200, height: 60 },
+  { host: "www.tooluck.org", width: 336, height: 88 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
@@ -42,7 +46,7 @@ function isNetworkUrl(url) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
-function placeholderSvg(url) {
+export function placeholderSvg(url) {
   const size = BADGE_PLACEHOLDER_SIZES.find((badge) => badge.host === new URL(url).hostname)
     ?? FALLBACK_PLACEHOLDER_SIZE;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}"></svg>`;

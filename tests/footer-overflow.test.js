@@ -194,6 +194,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const saaspa = wrapper.querySelector('a[href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb"]');
           const saaspaImage = saaspa?.querySelector("img");
           const saaspaRect = saaspaImage?.getBoundingClientRect();
+          const tooluck = wrapper.querySelector('a[href="https://www.tooluck.org/item/orbi"]');
+          const tooluckImage = tooluck?.querySelector("img");
+          const tooluckRect = tooluckImage?.getBoundingClientRect();
           return {
             wrapper: true,
             isLastChild: nav.lastElementChild === wrapper,
@@ -216,22 +219,29 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             saaspaImageHeight: saaspaRect?.height,
             saaspaNaturalWidth: saaspaImage?.naturalWidth,
             saaspaNaturalHeight: saaspaImage?.naturalHeight,
+            tooluckTarget: tooluck?.getAttribute("target"),
+            tooluckRel: tooluck?.getAttribute("rel"),
+            tooluckImageSrc: tooluckImage?.getAttribute("src"),
+            tooluckImageAlt: tooluckImage?.getAttribute("alt"),
+            tooluckImageWidth: tooluckRect?.width,
+            tooluckImageHeight: tooluckRect?.height,
+            tooluckNaturalWidth: tooluckImage?.naturalWidth,
+            tooluckNaturalHeight: tooluckImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on the six badge
+        // Whether the badges line up on one row depends on the seven badge
         // boxes: LaunchNest's image declares only width="240" and the Altern
         // badge (Issue #1012) only width="150", so their heights come from the
         // placeholder ratio the guard serves (Issue #871). Only the structure
-        // and the rendered Altern / SaaSpa.ge boxes are asserted here.
-        expect(result.badgeCount, path + ": the footer badges").toBe(6);
-        // Issue #1015: the SaaSpa.ge badge is appended last, at the declared
-        // 200x60 with the supplied target/rel and alt.
-        expect(result.lastBadgeHref, path + ": the footer badges end with SaaSpa.ge")
-          .toBe("https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb");
+        // and the rendered Altern / SaaSpa.ge / Tooluck boxes are asserted here.
+        expect(result.badgeCount, path + ": the footer badges").toBe(7);
+        // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
+        // by Issue #1027, at the declared 200x60 with the supplied target/rel
+        // and alt.
         expect(result.saaspaTarget, path + ": the SaaSpa.ge badge opens in a new tab").toBe("_blank");
         expect(result.saaspaRel, path + ": the SaaSpa.ge anchor keeps rel=nofollow").toBe("nofollow");
         expect(result.saaspaImageSrc, path + ": SaaSpa.ge badge image src")
@@ -243,6 +253,24 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           Math.abs(result.saaspaImageWidth / result.saaspaImageHeight
             - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
           path + ": the SaaSpa.ge badge must keep the source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1027: the Tooluck badge is appended last, at the declared
+        // 210x55 with the supplied target/rel/src/alt. The placeholder the
+        // guard serves is 336x88, the real source ratio, so the rendered box
+        // must match it instead of stretching.
+        expect(result.lastBadgeHref, path + ": the footer badges end with Tooluck")
+          .toBe("https://www.tooluck.org/item/orbi");
+        expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
+        expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
+          .toBe("https://www.tooluck.org/badges/tooluck-badge-dark.svg");
+        expect(result.tooluckImageAlt, path + ": Tooluck badge image alt").toBe("Featured on Tooluck.org");
+        expect(result.tooluckImageWidth, path + ": Tooluck badge rendered width").toBeCloseTo(210, 1);
+        expect(result.tooluckImageHeight, path + ": Tooluck badge rendered height").toBeCloseTo(55, 1);
+        expect(
+          Math.abs(result.tooluckImageWidth / result.tooluckImageHeight
+            - result.tooluckNaturalWidth / result.tooluckNaturalHeight),
+          path + ": the Tooluck badge must keep the 336x88 source ratio",
         ).toBeLessThan(0.02);
         // Issue #1012: the Altern badge keeps the maintainer's anchor, but
         // renders at the 430x151 source ratio instead of the supplied 150x32.
@@ -287,6 +315,34 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           .toBe("https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb");
         expect(next.outlineStyle, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("none");
         expect(next.outlineWidth, path + ": the focused SaaSpa.ge badge needs a visible focus ring").not.toBe("0px");
+        // Issue #1027: Tab from SaaSpa.ge enters the Tooluck badge with the
+        // same ring, and one more Tab leaves the badge row — the row stays a
+        // normal tab sequence, never a keyboard trap.
+        await page.keyboard.press("Tab");
+        const tooluck = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            href: active?.getAttribute("href"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(tooluck.href, path + ": Tab from SaaSpa.ge must focus the Tooluck badge")
+          .toBe("https://www.tooluck.org/item/orbi");
+        expect(tooluck.outlineStyle, path + ": the focused Tooluck badge needs a visible focus ring").not.toBe("none");
+        expect(tooluck.outlineWidth, path + ": the focused Tooluck badge needs a visible focus ring").not.toBe("0px");
+        await page.keyboard.press("Tab");
+        const afterTooluck = await page.evaluate(() => {
+          const active = document.activeElement;
+          return {
+            href: active?.getAttribute("href"),
+            inBadges: Boolean(active?.closest(".footer-badges")),
+          };
+        });
+        expect(afterTooluck.inBadges, path + ": Tab from Tooluck must leave the badge row").toBe(false);
+        expect(afterTooluck.href, path + ": Tab from Tooluck must not stay on the badge")
+          .not.toBe("https://www.tooluck.org/item/orbi");
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
