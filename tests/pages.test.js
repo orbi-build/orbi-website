@@ -76,6 +76,14 @@ const region = (html, startMarker, endMarker) => {
 
 const navRegion = (html) => region(html, "<nav id=", "</nav>");
 const footerRegion = (html) => region(html, '<footer class="site-footer shell">', "</footer>");
+// The opening tag of the anchor with this href. Crawlability assertions scope
+// to the link itself: since Issue #1015 the shared footer carries a
+// rel="nofollow" on the SaaSpa.ge badge, so "the footer contains no nofollow"
+// no longer says anything about one specific backlink.
+const footerAnchorTag = (html, href) => {
+  const start = html.indexOf(`<a href="${href}"`);
+  return start < 0 ? "" : html.slice(start, html.indexOf(">", start) + 1);
+};
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
 
@@ -1544,7 +1552,8 @@ describe("one unified footer on every content page", () => {
       expect(footer, `${output}: Open Source Alternatives footer anchor drifted`).toContain(
         '<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>',
       );
-      expect(footer, `${output}: the backlink must be crawlable`).not.toContain("nofollow");
+      expect(footerAnchorTag(footer, "https://www.opensourcealternatives.to/"), `${output}: the backlink must be crawlable`)
+        .not.toContain("nofollow");
     }
   });
 
@@ -1569,7 +1578,8 @@ describe("one unified footer on every content page", () => {
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Agentic.ai footer anchor drifted`).toContain(anchor);
-      expect(footer, `${page.output}: the Agentic.ai backlink must be crawlable`).not.toContain("nofollow");
+      expect(footerAnchorTag(footer, "https://agentic.ai/best/free-coding-agents"), `${page.output}: the Agentic.ai backlink must be crawlable`)
+        .not.toContain("nofollow");
       expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must follow Open Source Alternatives`)
         .toBeGreaterThan(footer.indexOf('<a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>'));
       expect(footer.indexOf(anchor), `${page.output}: Agentic.ai must precede the badge row`)
@@ -1635,7 +1645,8 @@ describe("one unified footer on every content page", () => {
       expect(footer, `${page.output}: Toolradar badge image drifted`).toContain(image);
       expect(footer.indexOf(anchor), `${page.output}: Toolradar badge must follow AI Agents Listing`)
         .toBeGreaterThan(footer.indexOf(listing));
-      expect(footer, `${page.output}: the Toolradar backlink must be crawlable`).not.toContain("nofollow");
+      expect(footerAnchorTag(footer, "https://toolradar.com/tools/orbi"), `${page.output}: the Toolradar backlink must be crawlable`)
+        .not.toContain("nofollow");
     }
   });
 
@@ -1660,10 +1671,31 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1015: the maintainer supplied the SaaSpa.ge embed for
+  // https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb. Anchor, src, alt,
+  // width and height are copied verbatim: the black-theme image is 200x60, the
+  // anchor keeps target="_blank" and rel="nofollow" (the outbound direction is
+  // the site's own choice; SaaSpa.ge changes the return link only after its
+  // verification). The badge follows the Altern badge so the five existing
+  // badges keep their order.
+  it("carries the SaaSpa.ge black badge on every footer page", () => {
+    const anchor = '<a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">';
+    const image = '<img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />';
+    const altern = '<a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: SaaSpa.ge badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: SaaSpa.ge badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: SaaSpa.ge badge must follow Altern`)
+        .toBeGreaterThan(footer.indexOf(altern));
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
-  // Toolradar badge to that row, and Issue #1012 the Altern badge after it.
+  // Toolradar badge to that row, Issue #1012 the Altern badge after it, and
+  // Issue #1015 the SaaSpa.ge badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1671,6 +1703,7 @@ describe("one unified footer on every content page", () => {
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
       "https://altern.ai/ai/orbi",
+      "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

@@ -170,7 +170,7 @@
               <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
               <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</a>
+          <li><a class="post-toc-link" href="#keep-a-claude-code-vps-job-running-after-ssh-disconnects">Keep a Claude Code VPS job running after SSH disconnects</a>
             <ol>
               <li><a class="post-toc-link" href="#start-with-the-right-user-and-credentials">Start with the right user and credentials</a></li>
               <li><a class="post-toc-link" href="#start-disconnect-and-reconnect">Start, disconnect and reconnect</a></li>
@@ -200,7 +200,7 @@
               <li><a class="post-toc-link" href="#headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</a></li>
               <li><a class="post-toc-link" href="#a-minimal-cron-job">A minimal cron job</a></li>
             </ol></li>
-          <li><a class="post-toc-link" href="#claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</a>
+          <li><a class="post-toc-link" href="#keep-a-claude-code-vps-job-running-after-ssh-disconnects">Keep a Claude Code VPS job running after SSH disconnects</a>
             <ol>
               <li><a class="post-toc-link" href="#start-with-the-right-user-and-credentials">Start with the right user and credentials</a></li>
               <li><a class="post-toc-link" href="#start-disconnect-and-reconnect">Start, disconnect and reconnect</a></li>
@@ -283,9 +283,9 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 </code></pre>
 <p>The script finds <code class="post-code--single">claude</code> through the <code class="post-code--single">PATH</code> set in the env file, so make sure that <code class="post-code--single">PATH</code> includes the directory <code class="post-code--spaced">which claude</code> prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad <code class="post-code--single">cd</code>, won&#39;t show up in it. Look in cron&#39;s mail or the system log for those. Don&#39;t drop the <code class="post-code--single">permission_denials</code> check. If you switch to <code class="post-code--single">auto</code> and it isn&#39;t available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.</p>
 <p>If one scheduled job like that is all you need, you&#39;re done.</p>
-<h2 id="claude-code-vps-keep-a-job-running-after-ssh-disconnects">Claude Code VPS: keep a job running after SSH disconnects</h2>
-<p>For Claude Code on a VPS, run the job inside a terminal multiplexer such as <code class="post-code--single">tmux</code>, and save its output on the server. After reconnecting, inspect the job&#39;s saved result and terminal. This keeps the process attached to tmux&#39;s terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.</p>
-<p>On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This was an isolated Linux VM test, not a comparison of commercial VPS providers. The task was to make a Python <code class="post-code--single">greet</code> function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.</p>
+<h2 id="keep-a-claude-code-vps-job-running-after-ssh-disconnects">Keep a Claude Code VPS job running after SSH disconnects</h2>
+<p>For Claude Code on a VPS, run the job inside a terminal multiplexer such as <code class="post-code--single">tmux</code>, and save its output on the server. After reconnecting, inspect the job&#39;s saved result and terminal. This keeps the process attached to tmux&#39;s terminal while your SSH connection comes and goes. A task that fails still fails, and a host reboot still ends the job; tmux only outlives the SSH session, not those.</p>
+<p>On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This measured one isolated Linux VM; commercial VPS providers are their own comparison, for another day. The task was to make a Python <code class="post-code--single">greet</code> function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -326,7 +326,7 @@ printf &#39;%s\n&#39; &quot;$rc&quot; &gt; &quot;$HOME/claude-vps-demo/exit-code
 SH
 bash &quot;$HOME/claude-vps-demo/run.sh&quot;
 </code></pre>
-<p>The writes are pre-approved for this trusted repository; they are not OS isolation. Keep unrelated credentials out of the job user&#39;s account. To detach while Claude runs, press <code class="post-code--single">Ctrl-b</code>, release both keys, then press <code class="post-code--single">d</code>. You can now close SSH. Reconnect as the same user and run <code class="post-code--spaced">tmux attach-session -t cc-vps-demo</code> to return to that terminal. The shell stays open after the command finishes.</p>
+<p>The writes are pre-approved for this trusted repository; treat that as an allowlist, and leave OS-level isolation to the dedicated user account, which should hold no unrelated credentials. To detach while Claude runs, press <code class="post-code--single">Ctrl-b</code>, release both keys, then press <code class="post-code--single">d</code>. You can now close SSH. Reconnect as the same user and run <code class="post-code--spaced">tmux attach-session -t cc-vps-demo</code> to return to that terminal. The shell stays open after the command finishes.</p>
 <h3 id="check-the-result-before-counting-it-as-done">Check the result before counting it as done</h3>
 <p>No <code class="post-code--single">exit-code</code> file means the wrapper did not finish recording a result; it is not a success. From a reconnected shell, inspect the log and check the recorded exit code, non-empty JSON and permission-denial array together:</p>
 <pre><code class="language-bash">cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
@@ -379,8 +379,9 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
 <h2 id="the-step-i-still-do-by-hand">The step I still do by hand</h2>
 <p>A loop that runs clean can still ship a broken page. On September 25, Orbi merged <a href="https://github.com/orbi-build/orbi-website/pull/523">a mobile table fix</a> for this website. Its overflow tests all passed. Then a 390px screenshot showed words split mid-word, so I measured all 34 table pages at 390px: no horizontal overflow anywhere, but 193 split words or numbers on 25 of them. Here is the effect, reproduced on the current page (October 2026) by putting PR #523&#39;s CSS back:</p>
 <p><img src="/img/headless-table-before.webp" alt="The Orbi vs Devin capability table at 390px with PR #523&#39;s CSS put back: &quot;Task entry&quot; breaks into &quot;Tas&quot;, &quot;k&quot;, &quot;ent&quot;, &quot;ry&quot;"></p>
-<p>I filed the measurements as <a href="https://github.com/orbi-build/orbi-website/issues/526">#526</a>, and Orbi merged the fix 53 minutes after picking it up. The same table on orbi.build now (October 2026):</p>
+<p>I filed the measurements as <a href="https://github.com/orbi-build/orbi-website/issues/526">#526</a>, and Orbi merged the fix 53 minutes after picking it up. The fix was not the obvious one. The cells were set to <code class="post-code--spaced">overflow-wrap: anywhere</code>, which drops a cell&#39;s min-content width to a single character, which is what squeezed the first column to a few characters and split the words. Switching to <code class="post-code--spaced">overflow-wrap: break-word</code> stopped the splitting, but <code class="post-code--single">break-word</code> keeps each cell&#39;s min-content at its longest word instead of dropping it to one character, so on a phone 13 pages went back into horizontal overflow: the three-column tables (four-plus columns already stacked) ran 349 to 457 pixels wide, past the room the post body left them on a 390px screen. So what shipped stacked every table of three or more columns by row on a phone (the stack threshold moved from four columns to three). The same table on orbi.build now (October 2026):</p>
 <p><img src="/img/headless-table-after.webp" alt="The same table on orbi.build in October 2026 at 390px: the row is a stacked block and every word reads whole"></p>
+<p>The overflow tests missed the split words entirely, and more tests are not a free fix. Over a few weeks this site grew 1,906 lines of tests against only 377 lines of source code and scripts, and most of those test lines pinned exact copy, coordinates and CSS strings, so every wording change dragged a test change with it. We deleted that class of test on September 25 (<a href="https://github.com/orbi-build/orbi-website/issues/540">#540</a>) and kept the structural checks, which say nothing about how the page reads.</p>
 <p>PR #523&#39;s tests did what its Issue asked, and that Issue never mentioned words. So before anything is promoted from beta to production, I open the changed pages on a phone and a desktop and look.</p>
 <h2 id="if-you-d-rather-not-build-it">If you&#39;d rather not build it</h2>
 <p>All of this can be built around <code class="post-code--spaced">claude -p</code>. Orbi&#39;s <a href="https://github.com/orbi-build/orbi/blob/main/docs/workflow.mdx">workflow doc</a>, which describes how its version works, runs to about 800 lines.</p>
@@ -460,6 +461,9 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
         </a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
           <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
         </a>
       </div>
     </nav>

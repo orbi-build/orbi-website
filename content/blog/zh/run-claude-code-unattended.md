@@ -106,7 +106,7 @@ export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
 
 如果你只需要这样一个定时任务，到这里就够了。
 
-## Claude Code VPS：断开 SSH 后继续运行，重连查看结果
+## SSH 断开后，让 VPS 上的 Claude Code 接着跑
 
 在 VPS 上跑 Claude Code，可以把作业放进 `tmux` 这类终端复用器，并把结果保存在服务器上。SSH 连接断开时，进程仍连着 tmux 的终端，重连后能回来检查。它不会把失败的任务变成成功，也不会在主机重启后自动恢复作业。
 
@@ -172,7 +172,7 @@ else
 fi
 ```
 
-接着读改动文件或 `git diff`，在 `/srv/myrepo` 独立运行 `python3 -m unittest -v`。这次虚机实验检查了正常名字、空字符串、纯空白名字三个场景。我还给结果读取条件喂了工具被拒、缺字段、空输出、无效 JSON、非零退出码等样例，都没有显示成功信息。
+接着读改动文件或 `git diff`，在 `/srv/myrepo` 独立运行 `python3 -m unittest -v`。这次虚机实验检查了正常名字、空字符串、纯空白名字三个场景。我还用工具被拒、缺字段、空输出、无效 JSON、非零退出码这几种样例试过上面的判断，它们都没有输出成功信息。
 
 这次只测了 SSH 客户端消失、虚机仍在运行的情况，没有测试重启恢复。主机重启后，tmux 的进程也没了，需要另外设计服务或调度器来管理重启。`--resume` 可以用 session ID 接着一段 Claude 对话，但恢复对话仍需要启动进程，并确认此前的工作做到哪里。
 
@@ -246,9 +246,11 @@ Orbi 里发版也是一个 Issue，打 `ai-release` 标签，写明版本号和�
 
 ![在现在的页面上套回 PR #523 的 CSS，390px 下的 Orbi 与 Devin 能力对比表：「Task entry」被拆成「Tas」「k」「ent」「ry」](/img/headless-table-before.webp)
 
-我把量到的数字写进 [#526](https://github.com/orbi-build/orbi-website/issues/526)，Orbi 认领后 53 分钟合并了修复。现在（2026 年 10 月）的同一张表：
+我把量到的数字写进 [#526](https://github.com/orbi-build/orbi-website/issues/526)，Orbi 认领后 53 分钟合并了修复。修法还不是最直觉的那个。单元格原先设的是 `overflow-wrap: anywhere`，`anywhere` 会把单元格的 min-content 宽度压到一个字符，首列才被挤到几个字符、单词从中间断开。改成 `overflow-wrap: break-word` 后单词不再断开，但 `break-word` 的 min-content 仍按最长的那个单词算，不像 `anywhere` 能压到一个字符，于是有 13 个页面的表在手机上重新横向溢出：这些三列的表（四列及以上的早就按行堆叠了）在 390px 视口下宽到 349–457px，撑破了正文留给它们的宽度。所以最后上线的做法是，在手机上把三列及以上的表一律改成按行堆叠（堆叠阈值从 4 列改成 3 列）。现在（2026 年 10 月）的同一张表：
 
 ![orbi.build 2026 年 10 月的同一张表，390px 下：这一行叠成一块，单词都是完整的](/img/headless-table-after.webp)
+
+当时的溢出测试压根没覆盖断词，而多加测试也不是没有代价。那几周里这个网站长出了 1906 行测试，源码和脚本却只增加了 377 行；这 1906 行测试里大半是把确切文案、坐标、CSS 字符串写死的断言，改一个词就得连带改一处测试。9 月 25 日我们把这类测试删了（[#540](https://github.com/orbi-build/orbi-website/issues/540)），只保留结构性检查，而结构性检查说明不了页面读起来对不对。
 
 PR #523 的测试满足了原 Issue 的要求，只是原 Issue 没提单词断行。所以每次从 beta 推到生产之前，我都会在手机和电脑上把改过的页面打开看一遍。
 
