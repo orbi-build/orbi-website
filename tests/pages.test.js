@@ -1691,11 +1691,34 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1027: tooluck.org grants the free listing only once the site
+  // carries its official dark badge, so the maintainer-supplied embed is
+  // copied verbatim — anchor, target, rel, src, alt and the 210x55 size — and
+  // follows the SaaSpa.ge badge so the six existing badges keep their order.
+  // The outbound link stays crawlable (no nofollow); the badge is declared
+  // once per page.
+  it("carries the Tooluck dark badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">';
+    const image = '<img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />';
+    const saaspa = '<a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Tooluck badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: Tooluck badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: Tooluck badge must follow SaaSpa.ge`)
+        .toBeGreaterThan(footer.indexOf(saaspa));
+      expect(countMatches(footer, /https:\/\/www\.tooluck\.org\/badges\/tooluck-badge-dark\.svg/g), `${page.output}: exactly one Tooluck badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://www.tooluck.org/item/orbi"), `${page.output}: the Tooluck backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
-  // Toolradar badge to that row, Issue #1012 the Altern badge after it, and
-  // Issue #1015 the SaaSpa.ge badge last.
+  // Toolradar badge to that row, Issue #1012 the Altern badge after it,
+  // Issue #1015 the SaaSpa.ge badge and Issue #1027 the Tooluck badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1704,6 +1727,7 @@ describe("one unified footer on every content page", () => {
       "https://toolradar.com/tools/orbi",
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
+      "https://www.tooluck.org/item/orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
