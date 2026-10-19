@@ -1446,6 +1446,7 @@ h2 {
 .pricing-subscribe { font-size: .82rem; }
 .once-pay-note { margin: 8px 0 0; color: var(--ink-soft); }
 .self-hosted-note { color: var(--ink-soft); }
+.founder-talk-note { margin: 12px 0 0; color: var(--ink-soft); }
 
 .run-options {
   display: grid;
