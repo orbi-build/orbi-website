@@ -1,7 +1,7 @@
 ---
 title: OpenCode 替代方案：PR 之后那条线归谁
 date: 2026-10-19
-summary: OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。
+summary: OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-opencode-alternatives-card.png
@@ -44,7 +44,7 @@ Orbi 的成本是公开实测的。Orbi Cloud 的[成本页](/zh/cost/?ref=blog-
 
 ## 怎么选
 
-按 PR 之后那条线你想自己扛多少来配：
+给这些 OpenCode 替代方案排个序，按 PR 之后那条线你想自己扛多少来配：
 
 - 想换个 agent 写代码、合并和发版你乐意自己来：Claude Code、Codex CLI、Aider、Cline、Goose 任选，看你要的是终端、编辑器，还是一个无人值守的 CI 步骤。
 - 为了模型灵活度和开源许可继续留在 OpenCode，真正缺的是 PR 之后那几步：留着 OpenCode，在 GitHub 上把合并到发版这条流水线搭起来，或者拿它跟一个把那条线包了的 runner 比一比。
