@@ -3,11 +3,32 @@ import { createServer } from "node:http";
 import { mkdir, readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
+import { BADGE_PLACEHOLDER_SIZES, placeholderSvg } from "./browser-network.mjs";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
 const targetURL = process.env.BASE_URL || baseURL;
 const artifacts = ".orbi";
+
+// The footer badge images are third-party embeds the site does not own. The
+// vitest browser suites answer them with placeholders through
+// tests/browser-network.mjs (Issue #871); this standalone suite used to leave
+// them to the real hosts, so a badge host could decide it. On 2026-10-19 the
+// Tooluck badge (Issue #1027) failed from the CI runner and reddened /cloud/
+// even though the page was correct. Answer the same table of hosts here, with
+// the same placeholder, so no footer badge host can turn this suite red.
+async function newSmokePage(target, options) {
+  const page = await target.newPage(options);
+  await page.route(
+    (url) => BADGE_PLACEHOLDER_SIZES.some((badge) => badge.host === url.hostname),
+    (route) => route.fulfill({
+      status: 200,
+      contentType: "image/svg+xml",
+      body: placeholderSvg(route.request().url()),
+    }),
+  );
+  return page;
+}
 
 // The homepage's one-line install command. aiready.sh is the canonical
 // public entry (Issue #186): a visitor on any environment is told to fetch
@@ -252,7 +273,7 @@ export async function assertEngagementEndpoint(targetURL) {
 }
 
 async function assertSubscriptionFlow(browser, path, expectedSuccess, expectedInvalid) {
-  const page = await browser.newPage();
+  const page = await newSmokePage(browser);
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     const email = page.locator("[data-subscribe-form] input[type=email]");
@@ -431,7 +452,7 @@ async function assertCtaLandsAtEndpoint(browser, path, ctas) {
   const landing = expectedCtaLanding(resolveCloudLoginExpect(process.env.CLOUD_LOGIN_EXPECT));
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   try {
-    const page = await context.newPage();
+    const page = await newSmokePage(context);
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     const targets = [];
     for (const [label, selector] of ctas) {
@@ -475,7 +496,7 @@ async function assertCampaignRefSurvivesHeroClick(browser) {
   const token = "x-2609201530";
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
   try {
-    const page = await context.newPage();
+    const page = await newSmokePage(context);
     const consoleErrors = [];
     const failedRequests = [];
     const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -598,7 +619,7 @@ export function statsMatchServedStats(served, root = document) {
 }
 
 async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   let statsRequested = false;
@@ -1028,7 +1049,7 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
 // tests/hero-above-fold.test.js; this measurement is the acceptance itself:
 // geometry, not strings.
 async function assertHeroAboveFold(browser, path, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const ctaTop = await page.locator('.hero [data-cta="cloud-start"]')
     .evaluate((el) => el.getBoundingClientRect().top);
@@ -1052,7 +1073,7 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
 // share its top (aligned within 1px, or genuinely wrapped to their own row),
 // and no checklist row runs wider than the copy measure the h1 box anchors.
 async function assertHeroSingleColumn(browser, path, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   const view = `${path} ${size.width}x${size.height}`;
@@ -1105,7 +1126,7 @@ async function assertHeroSingleColumn(browser, path, size, screenshot) {
 // The midway CTA directly under the video carries the video's own ref token —
 // the signup attribution this Issue exists for.
 async function assertProofLoop(browser, path, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
   const view = `${path} ${size.width}x${size.height}`;
   const video = page.locator(".proof-loop-video");
@@ -1191,7 +1212,7 @@ async function assertProofLoop(browser, path, size, screenshot) {
 // to reduce, and the poster background stand-in is gone with the hide rule.
 // Emulated here because no string check exercises the media query.
 async function assertProofLoopReducedMotion(browser, path) {
-  const page = await browser.newPage({
+  const page = await newSmokePage(browser, {
     viewport: { width: 1366, height: 768 },
     reducedMotion: "reduce",
   });
@@ -1313,7 +1334,7 @@ const cloudPages = {
 
 async function assertCloudPage(browser, path, size, screenshot) {
   const claim = cloudPages[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -1605,7 +1626,7 @@ const costPages = {
 
 async function assertCostPage(browser, path, size, screenshot) {
   const claim = costPages[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -1726,7 +1747,7 @@ const compareMatrix = {
 
 async function assertCompareMatrix(browser, path, size, screenshot) {
   const claim = compareMatrix[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -1804,7 +1825,7 @@ export async function assertHomeCloudFlow(
   const context = await browser.newContext({ viewport: size });
   try {
     await onContext?.(context);
-    const page = await context.newPage();
+    const page = await newSmokePage(context);
     await page.goto(`${flowTargetURL}${path}`, { waitUntil: "load" });
     const entry = page.locator(selector);
     if (!(await entry.isVisible()) && selector.includes("data-primary-nav")) {
@@ -1868,7 +1889,7 @@ export async function assertHomeCloudFlow(
 // Issue #941: the Sign in link is gone and the CTA names GitHub, the entry
 // every visitor actually takes.
 async function assertCompareNavCta(browser, path, label) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await newSmokePage(browser, { viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     const cta = page.locator("[data-primary-nav] .nav-apply");
@@ -1927,7 +1948,7 @@ const orcaPages = {
 
 async function assertOrcaPage(browser, path, size, screenshot) {
   const claim = orcaPages[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -2151,7 +2172,7 @@ const evidencePages = {
 
 async function assertEvidencePage(browser, path, size, screenshot) {
   const claim = evidencePages[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -2227,7 +2248,7 @@ async function assertEvidencePage(browser, path, size, screenshot) {
 }
 
 async function assertHomeEvidenceEntry(browser, homePath, evidenceHref) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await newSmokePage(browser, { viewport: { width: 1440, height: 900 } });
   try {
     // Do not wait for networkidle on a page with an autoplaying video.
     await page.goto(`${targetURL}${homePath}`, { waitUntil: "load" });
@@ -2254,7 +2275,7 @@ async function assertHomeEvidenceEntry(browser, homePath, evidenceHref) {
 
 async function assertCiGatesPage(browser, path, size, screenshot) {
   const claim = ciGatesPages[path];
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const consoleErrors = [];
   const failedRequests = [];
   const isTelemetry = (url) => url.includes("cloudflareinsights.com");
@@ -2317,7 +2338,7 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
 async function assertInstallCopiesOneLiner(browser, path) {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   try {
-    const page = await context.newPage();
+    const page = await newSmokePage(context);
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
     await page.locator(".install-copy").click();
     // is-copied flips exactly when the write promise resolved, so the
@@ -2356,7 +2377,7 @@ async function assertPublishedInstallScript(browser) {
 }
 
 async function assertLegalPage(browser, path, expectedHeading, expectedAddress, size, screenshot) {
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const errors = [];
   const failures = [];
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
@@ -2400,7 +2421,7 @@ async function assertLegalPage(browser, path, expectedHeading, expectedAddress, 
 // entry may be clipped or overlap the next one at the acceptance widths.
 async function assertSupportChannels(browser, path, expected, size, screenshot) {
   const invite = "https://t.me/+kJRTTpFGBRU0M2Y9";
-  const page = await browser.newPage({ viewport: size });
+  const page = await newSmokePage(browser, { viewport: size });
   const errors = [];
   const failures = [];
   await page.route("**cloudflareinsights.com/**", (route) => route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } }));
@@ -2633,7 +2654,7 @@ async function main() {
     } finally {
       await assetContext.close();
     }
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const page = await newSmokePage(browser, { viewport: { width: 390, height: 844 } });
     const errors = [];
     const failures = [];
     // Issue #585: pages must not request Google Fonts at all, so it is no

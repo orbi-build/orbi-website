@@ -28,7 +28,7 @@
 // the declared size matches the real source instead of stretching it. The
 // other three declare width and height too, which fix the rendered box
 // regardless of the placeholder's natural size.
-const BADGE_PLACEHOLDER_SIZES = [
+export const BADGE_PLACEHOLDER_SIZES = [
   { host: "launchnest.io", width: 240, height: 42.146 },
   { host: "aiagentsdirectory.com", width: 168, height: 42 },
   { host: "aiagentslisting.com", width: 168, height: 42 },
@@ -46,7 +46,7 @@ function isNetworkUrl(url) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
-function placeholderSvg(url) {
+export function placeholderSvg(url) {
   const size = BADGE_PLACEHOLDER_SIZES.find((badge) => badge.host === new URL(url).hostname)
     ?? FALLBACK_PLACEHOLDER_SIZE;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}"></svg>`;
