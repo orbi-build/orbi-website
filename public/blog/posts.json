@@ -1,5 +1,13 @@
 [
   {
+    "slug": "opencode-alternatives",
+    "title": "OpenCode alternatives: who merges and releases?",
+    "summary": "OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.",
+    "zhSlug": "opencode-alternatives",
+    "zhTitle": "OpenCode 替代方案：PR 之后那条线归谁",
+    "related": []
+  },
+  {
     "slug": "claude-code-pricing",
     "title": "Claude Code pricing: Pro, Max and API billing",
     "summary": "Compare Claude Code pricing for Pro, Max and API access. Check shared limits, extra usage, API credit exclusions and which account pays before you upgrade.",
