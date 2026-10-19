@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/opencode-alternatives/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-alternatives/</guid>
       <pubDate>Mon, 19 Oct 2026 00:00:00 GMT</pubDate>
-      <description>OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.</description>
+      <description>OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.</description>
     </item>
     <item>
       <title>Claude Code pricing: Pro, Max and API billing</title>
