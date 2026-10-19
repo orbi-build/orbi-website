@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>OpenCode alternatives: who merges and releases?</title>
+      <link>https://orbi.build/blog/opencode-alternatives/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/opencode-alternatives/</guid>
+      <pubDate>Mon, 19 Oct 2026 00:00:00 GMT</pubDate>
+      <description>OpenCode and its GitHub integration take an Issue to an open PR and a review. The alternatives differ in who owns the merge and release after that.</description>
+    </item>
+    <item>
       <title>Claude Code pricing: Pro, Max and API billing</title>
       <link>https://orbi.build/blog/claude-code-pricing/</link>
       <guid isPermaLink="true">https://orbi.build/blog/claude-code-pricing/</guid>
