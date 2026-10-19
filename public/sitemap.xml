@@ -542,6 +542,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://orbi.build/blog/opencode-alternatives/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-alternatives/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-alternatives/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-alternatives/"/>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/opencode-alternatives/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-alternatives/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-alternatives/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-alternatives/"/>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/claude-code-pricing/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/claude-code-pricing/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/claude-code-pricing/"/>

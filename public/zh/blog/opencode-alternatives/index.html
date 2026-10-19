@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenCode 替代方案：PR 之后那条线归谁 | Orbi</title>
+  <meta name="description" content="OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/opencode-alternatives/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-alternatives/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-alternatives/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-alternatives/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="OpenCode 替代方案：PR 之后那条线归谁">
+  <meta property="og:description" content="OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/opencode-alternatives/">
+  <meta property="og:image" content="https://orbi.build/img/blog-opencode-alternatives-card.png">
+  <meta property="og:image:alt" content="OpenCode 替代方案：PR 之后那条线归谁">
+  <meta property="article:published_time" content="2026-10-19">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode 替代方案：PR 之后那条线归谁","datePublished":"2026-10-19","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/opencode-alternatives/","image":"https://orbi.build/img/blog-opencode-alternatives-card.png","inLanguage":"zh-CN","description":"OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。","url":"https://orbi.build/zh/blog/opencode-alternatives/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">OpenCode 替代方案：PR 之后那条线归谁</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-19">2026-10-19</time></p>
+
+          <p class="hero-lede">OpenCode 和它的 GitHub 集成能把一个 Issue 跑到开好 PR、留下评审。挑替代方案，要看合并和发版那一段归谁。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#怎么比较">怎么比较</a></li>
+          <li><a class="post-toc-link" href="#各工具停在哪一步">各工具停在哪一步</a>
+            <ol>
+              <li><a class="post-toc-link" href="#还是停在-pr">还是停在 PR</a></li>
+              <li><a class="post-toc-link" href="#从-issue-一路做到合并之后">从 Issue 一路做到合并之后</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#怎么选">怎么选</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 4 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#怎么比较">怎么比较</a></li>
+          <li><a class="post-toc-link" href="#各工具停在哪一步">各工具停在哪一步</a>
+            <ol>
+              <li><a class="post-toc-link" href="#还是停在-pr">还是停在 PR</a></li>
+              <li><a class="post-toc-link" href="#从-issue-一路做到合并之后">从 Issue 一路做到合并之后</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#怎么选">怎么选</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>OpenCode 的流程停在 PR，找替代方案前先认清这一点。OpenCode 是 Anomaly 做的开源编码 agent（<a href="https://github.com/sst/opencode">github.com/sst/opencode</a>，MIT 许可，GitHub 上 21 万多 star，是目前 star 数最高的编码 agent 之一）。它的官方 GitHub 集成本身就能做不少事：跑一次 <code class="post-code--spaced">opencode github install</code>，在 Issue 里提一句 <code class="post-code--single">/opencode</code>，它就会读 Issue 的来龙去脉、建分支、改代码、开 PR，还能评审 PR，这些都在你自己的 GitHub Actions runner 里跑。</p>
+<p>它不做的是合并和发版。OpenCode 的 GitHub 文档讲到提交一个带改动的 PR 就停了，没有哪一步去合并这个 PR 或者打 tag。所以挑替代方案时，真正要问的是：PR 开出来、评审过了之后，谁来判断它能不能合、谁对那个发版 tag 负责？这几个工具的分别就在这里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Lawrence Liu，Orbi 的创始人。下面每个工具，包括 Orbi 在内，我都在 2026 年 10 月 19 日对着它自己的官方文档核过，用同一把尺子量。</p>
+<h2 id="怎么比较">怎么比较</h2>
+<p>判断一个替代方案合不合适，看四件事：怎么跑（终端里、编辑器里，还是一个无人值守的 runner），替不替你开 PR，PR 之后那段归谁，以及许可和谁维护，毕竟开源这件事往往正是你当初用 OpenCode 的原因。</p>
+<p>还有一点：这些工具你都要自带模型 key、自己付推理费用，花多少由你选的模型决定，跟换哪个 agent 关系不大。OpenCode 本身支持 75 家以上的模型供应商，包括本地模型和 DeepSeek，想换更便宜的模型，在它里面换就行。换工具真正要看的，是整条工作流合不合适。</p>
+<h2 id="各工具停在哪一步">各工具停在哪一步</h2>
+<h3 id="还是停在-pr">还是停在 PR</h3>
+<p>这几个和 OpenCode 最像：把需求变成代码很强，但合并和发版那段要你自己搭。</p>
+<ul>
+<li><strong><a href="https://code.claude.com/docs/en/github-actions">Claude Code</a></strong> 既是终端 agent，也能在 GitHub Actions 里把一个 Issue 变成 PR。评审是另一回事：Anthropic 托管的 <a href="https://code.claude.com/docs/en/code-review">Code Review</a> 会在 PR 上逐行评论，但它的文档说得很明确，「a review never approves or blocks the pull request, so the decision to merge stays with your team」（评审从不批准也不阻止 PR，合不合的决定权留在你团队手里）。如果你要的交接点就是一个评审过的 PR、合并和发版你自己来，选它。注意它不是开源的（<a href="https://github.com/anthropics/claude-code/blob/main/LICENSE.md">许可证</a>保留所有权利），所以如果你用 OpenCode 正是看中开源，它不是等价替换。</li>
+<li><strong><a href="https://developers.openai.com/codex/cli/">Codex CLI</a></strong> 把 OpenAI 的 Codex 带进终端，<code class="post-code--spaced">codex exec</code> 能把同一个 agent 放进可重复的脚本和流水线。你自己在写那些步骤、想要一条命令就能调起 agent 时，选它。</li>
+<li><strong><a href="https://aider.chat/docs/">Aider</a></strong> 是终端里的结对编程，全程用 git 记录改动：它给仓库建索引、用自己的提交信息 commit，所以普通 git 工具就能 diff 和回退。它只 commit 到本地，开 PR 以及之后的一切都归你。</li>
+<li><strong><a href="https://docs.cline.bot/cline-overview">Cline</a></strong> 待在你的编辑器和终端里，动手前要你批准，不过它的 <a href="https://docs.cline.bot/features/auto-approve">Auto Approve</a> 设置能按动作类型放开这道关，一直到它自己文档都称作危险的 YOLO 全自动模式。想默认一步步看着批、再有意识地放开时，选它。</li>
+<li><strong><a href="https://goose-docs.ai/">Goose</a></strong>（开源，Apache-2.0，起于 Block、现在归 Agentic AI Foundation；<a href="https://github.com/aaif-goose/goose">aaif-goose/goose</a>，5 万多 star）以 CLI 和桌面应用的形态跑，有个无人值守的 <code class="post-code--spaced">goose run -t &quot;…&quot;</code> 或 <code class="post-code--spaced">-i instructions.md</code>，任务做完就结束会话，能放进 CI 的一步。它改文件、跑命令，但不替你开 PR，所以 PR、合并、发版全是你的流程。</li>
+</ul>
+<p>这一组里的每个工具，PR 之后那段（判断 PR 安不安全、合并它、切发版）都是你用 GitHub 的分支保护、必需检查和自己的发版步骤拼出来的一条流水线。如果你本来就想自己掌控这段，这样正合适。OpenCode 自己的 GitHub 集成已经把你带到评审过的 PR，换成这一组里的某个 agent，并不改变剩下那段归谁。</p>
+<h3 id="从-issue-一路做到合并之后">从 Issue 一路做到合并之后</h3>
+<ul>
+<li><strong><a href="https://docs.orbi.build">Orbi</a></strong> 不用你亲手驱动。它认领一个 <code class="post-code--single">ai-ready</code> 的 GitHub Issue，跑一个叫 <a href="/zh/guides/pi-coding-agent/">Pi</a> 的编码 agent 把改动写出来。然后一个独立的评审会话读这份改动，锁定在它评审的那一版提交上，runner 只合并这一版评审过的提交。发版是唯一需要人起头的一步：由人去开一个发版 Issue，之后 Orbi 自己打 tag、发布。Orbi 在 AGPL-3.0 下开源，自己部署时用你自己的 key。Orbi Cloud 是托管版，替你跑同一条流程，默认用 DeepSeek，所以在那里跑一趟不会动你的 Claude 订阅额度。</li>
+</ul>
+<p>跟上面那一组的分别很具体：合并是在评审闸门后自动做的，发版是人工的一步，测试保证仍然是你仓库的 CI 说了算，Orbi 跑的是你已经定好的检查。</p>
+<p>Orbi 的成本是公开实测的。Orbi Cloud 的<a href="/zh/cost/?ref=blog-opencode-alt">成本页</a>记录了 2026-09-16 到 2026-10-05 之间的 169 次已合并交付，全部跑在 deepseek-flash（默认那个 DeepSeek 模型）上，每次合并交付中位 $0.082、90 分位 $0.22，都按 DeepSeek 的非高峰费率算。那是 Orbi 在自己工作流上的交付，衡量的 agent 和任务构成跟你的 OpenCode 跑法不同，所以把它当托管模式的参考点，不是你账单的预测。</p>
+<h2 id="怎么选">怎么选</h2>
+<p>按 PR 之后那条线你想自己扛多少来配：</p>
+<ul>
+<li>想换个 agent 写代码、合并和发版你乐意自己来：Claude Code、Codex CLI、Aider、Cline、Goose 任选，看你要的是终端、编辑器，还是一个无人值守的 CI 步骤。</li>
+<li>为了模型灵活度和开源许可继续留在 OpenCode，真正缺的是 PR 之后那几步：留着 OpenCode，在 GitHub 上把合并到发版这条流水线搭起来，或者拿它跟一个把那条线包了的 runner 比一比。</li>
+<li>想把 Issue 一路推进到合并、再到发版 tag，又不想自己拼那条流水线：这正是 Orbi 覆盖的范围；同一段流程里其他工具做到哪一步，上文已经列出。</li>
+</ul>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>想看针对某一个具体 agent 的同类对比，读<a href="/zh/compare/claude-code/">Orbi 对比 Claude Code</a>，那页也列了 Claude Code 的替代方案。想要那个把 Issue 带到发版 tag 的托管 runner，<a href="/zh/cloud/?ref=blog-opencode-alt">Orbi Cloud</a> 是托管版，<a href="/zh/cost/?ref=blog-opencode-alt">成本页</a>列出它实测的每次交付数字。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+      <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+      <span>Orbi</span>
+    </a>
+    <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/opencode-alternatives/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
