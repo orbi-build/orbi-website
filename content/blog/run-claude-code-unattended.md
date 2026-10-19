@@ -102,11 +102,11 @@ The script finds `claude` through the `PATH` set in the env file, so make sure t
 
 If one scheduled job like that is all you need, you're done.
 
-## Claude Code VPS: keep a job running after SSH disconnects
+## Keep a Claude Code VPS job running after SSH disconnects
 
-For Claude Code on a VPS, run the job inside a terminal multiplexer such as `tmux`, and save its output on the server. After reconnecting, inspect the job's saved result and terminal. This keeps the process attached to tmux's terminal while your SSH connection comes and goes; it does not make a failed task successful or restart a job after the host reboots.
+For Claude Code on a VPS, run the job inside a terminal multiplexer such as `tmux`, and save its output on the server. After reconnecting, inspect the job's saved result and terminal. This keeps the process attached to tmux's terminal while your SSH connection comes and goes. A task that fails still fails, and a host reboot still ends the job; tmux only outlives the SSH session, not those.
 
-On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This was an isolated Linux VM test, not a comparison of commercial VPS providers. The task was to make a Python `greet` function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.
+On 18 October 2026, I tested Claude Code 2.1.281 in a Debian 12 KVM virtual machine over SSH, using a non-root user and a Claude Max subscription. This measured one isolated Linux VM; commercial VPS providers are their own comparison, for another day. The task was to make a Python `greet` function reject empty and whitespace-only names, retain its valid-name behavior, and add regression tests.
 
 | Run | What happened after I killed the SSH client |
 |---|---|
@@ -149,7 +149,7 @@ SH
 bash "$HOME/claude-vps-demo/run.sh"
 ```
 
-The writes are pre-approved for this trusted repository; they are not OS isolation. Keep unrelated credentials out of the job user's account. To detach while Claude runs, press `Ctrl-b`, release both keys, then press `d`. You can now close SSH. Reconnect as the same user and run `tmux attach-session -t cc-vps-demo` to return to that terminal. The shell stays open after the command finishes.
+The writes are pre-approved for this trusted repository; treat that as an allowlist, and leave OS-level isolation to the dedicated user account, which should hold no unrelated credentials. To detach while Claude runs, press `Ctrl-b`, release both keys, then press `d`. You can now close SSH. Reconnect as the same user and run `tmux attach-session -t cc-vps-demo` to return to that terminal. The shell stays open after the command finishes.
 
 ### Check the result before counting it as done
 
@@ -242,9 +242,11 @@ A loop that runs clean can still ship a broken page. On September 25, Orbi merge
 
 ![The Orbi vs Devin capability table at 390px with PR #523's CSS put back: "Task entry" breaks into "Tas", "k", "ent", "ry"](/img/headless-table-before.webp)
 
-I filed the measurements as [#526](https://github.com/orbi-build/orbi-website/issues/526), and Orbi merged the fix 53 minutes after picking it up. The same table on orbi.build now (October 2026):
+I filed the measurements as [#526](https://github.com/orbi-build/orbi-website/issues/526), and Orbi merged the fix 53 minutes after picking it up. The fix was not the obvious one. The cells were set to `overflow-wrap: anywhere`, which drops a cell's min-content width to a single character, which is what squeezed the first column to a few characters and split the words. Switching to `overflow-wrap: break-word` stopped the splitting, but `break-word` keeps each cell's min-content at its longest word instead of dropping it to one character, so on a phone 13 pages went back into horizontal overflow: the three-column tables (four-plus columns already stacked) ran 349 to 457 pixels wide, past the room the post body left them on a 390px screen. So what shipped stacked every table of three or more columns by row on a phone (the stack threshold moved from four columns to three). The same table on orbi.build now (October 2026):
 
 ![The same table on orbi.build in October 2026 at 390px: the row is a stacked block and every word reads whole](/img/headless-table-after.webp)
+
+The overflow tests missed the split words entirely, and more tests are not a free fix. Over a few weeks this site grew 1,906 lines of tests against only 377 lines of source code and scripts, and most of those test lines pinned exact copy, coordinates and CSS strings, so every wording change dragged a test change with it. We deleted that class of test on September 25 ([#540](https://github.com/orbi-build/orbi-website/issues/540)) and kept the structural checks, which say nothing about how the page reads.
 
 PR #523's tests did what its Issue asked, and that Issue never mentioned words. So before anything is promoted from beta to production, I open the changed pages on a phone and a desktop and look.
 
