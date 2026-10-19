@@ -2163,6 +2163,13 @@ h2 {
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
   .site-footer { grid-template-columns: 1fr; }
+  /* Issue #1021: in one column the 34px row gap separates whole groups, and it
+     also landed between the wordmark and its tagline, so on a phone the two read
+     as two unrelated blocks. The tagline continues the wordmark: the wordmark's
+     row gives back 26px of that gap so the tagline sits 8px (0.5rem, the design
+     system's space-2) below the 44px tap-target box. Desktop and every other
+     group gap stay at 34px. */
+  .site-footer > .wordmark-footer { margin-bottom: -26px; }
   .site-footer > .orbi-site-footer-p {
     grid-column: 1;
     grid-row: auto;

@@ -297,3 +297,84 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
     }, 30_000);
   }
 });
+
+// Issue #1021: on a phone the footer stacks into one column, and the grid's
+// 34px gap landed between the wordmark and its tagline, so the two read as two
+// unrelated groups. The brand pair must sit 8px apart (design system space-2)
+// while every other footer group keeps its 34px.
+describe("the footer wordmark and tagline read as one group on phones (Issue #1021)", () => {
+  const measureFooter = (page) => page.locator("footer.site-footer").evaluate((footer) => {
+    const wordmark = footer.querySelector("a.wordmark-footer");
+    const mark = wordmark.querySelector(".wordmark-mark");
+    const tagline = footer.querySelector(".orbi-site-footer-p");
+    const nav = footer.querySelector("nav:not(.footer-friends)");
+    const rect = (node) => node.getBoundingClientRect();
+    return {
+      wordmarkTop: rect(wordmark).top,
+      wordmarkLeft: rect(wordmark).left,
+      wordmarkBottom: rect(wordmark).bottom,
+      wordmarkRight: rect(wordmark).right,
+      markBottom: rect(mark).bottom,
+      taglineTop: rect(tagline).top,
+      taglineLeft: rect(tagline).left,
+      taglineBottom: rect(tagline).bottom,
+      navTop: rect(nav).top,
+      firstGroupBottom: rect(footer.querySelector(".footer-group")).bottom,
+      footerGap: getComputedStyle(footer).gap,
+    };
+  });
+
+  for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
+    it(name + " keeps the tagline 8px under the wordmark on a phone, side by side on desktop", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        const desktop = await measureFooter(page);
+        // Desktop keeps the three-column layout: the tagline starts to the
+        // right of the wordmark, on the same row.
+        expect(desktop.taglineLeft, path + " at 1440px: the tagline sits beside the wordmark")
+          .toBeGreaterThan(desktop.wordmarkRight);
+        expect(Math.abs(desktop.taglineTop - desktop.wordmarkTop), path + " at 1440px: same row")
+          .toBeLessThanOrEqual(2);
+
+        // Artifacts read back by eye: 1440 keeps the wordmark, tagline and nav
+        // columns side by side, 390 stacks the brand pair tight with the first
+        // group a full 34px below.
+        const capture = async (width) => {
+          await page.locator("footer.site-footer > a.wordmark-footer").scrollIntoViewIfNeeded();
+          const footerBox = await page.locator("footer.site-footer").boundingBox();
+          const shot = await measureFooter(page);
+          await page.screenshot({
+            path: ".orbi/footer-wordmark-tagline-" + name + "-" + width + ".png",
+            clip: { x: 0, y: footerBox.y - 8, width, height: shot.firstGroupBottom - footerBox.y + 16 },
+          });
+        };
+        await capture(1440);
+
+        await page.setViewportSize({ width: 390, height: 900 });
+        await page.waitForTimeout(150);
+        const phone = await measureFooter(page);
+        // One column, so the groups still get the 34px gap...
+        expect(phone.footerGap, path + " at 390px: the footer keeps its 34px group gap").toBe("34px");
+        // ...but the tagline is the wordmark's second line, not another group.
+        expect(phone.taglineLeft, path + " at 390px: the tagline starts under the wordmark")
+          .toBe(phone.wordmarkLeft);
+        expect(phone.taglineTop, path + " at 390px: the tagline sits below the wordmark")
+          .toBeGreaterThan(phone.wordmarkBottom);
+        expect(Math.round(phone.taglineTop - phone.wordmarkBottom),
+          path + " at 390px: wordmark box bottom to tagline top").toBe(8);
+        // The wordmark's 44px tap target centres the 28px mark, so the gap the
+        // eye sees from the icon to the tagline text is 16px — half a group.
+        expect(Math.round(phone.taglineTop - phone.markBottom),
+          path + " at 390px: mark bottom to tagline top").toBe(16);
+        expect(Math.round(phone.navTop - phone.taglineBottom),
+          path + " at 390px: tagline to the first nav group").toBe(34);
+        // The gap below the tagline is what tells the two distances apart by eye.
+        await capture(390);
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});
