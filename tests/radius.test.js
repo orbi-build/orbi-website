@@ -34,13 +34,18 @@ describe("site radius tokens", () => {
     }
   });
 
+  it("keeps FAQ rows square: they are divider rows, not cards", () => {
+    const rule = css.match(/\.faq-item \{[\s\S]*?\}/);
+    expect(rule?.[0]).toContain("border-bottom: 1px solid var(--line)");
+    expect(rule?.[0]).not.toContain("border-radius");
+  });
+
   it("uses the card radius for the named panels", () => {
     for (const selector of [
       ".hero-receipt",
       ".stats",
       ".proof-card",
       ".production-map",
-      ".faq-item",
       ".pricing-card",
       ".founding-offer",
       ".subscribe-box",
