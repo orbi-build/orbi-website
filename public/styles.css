@@ -1850,8 +1850,8 @@ h2 {
 
 .site-footer {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 34px 64px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 34px;
   align-items: start;
   padding-top: 34px;
   padding-bottom: 48px;
@@ -1861,8 +1861,8 @@ h2 {
 }
 
 .wordmark-footer { color: var(--ink); }
-/* The tagline is the wordmark's second line, not a column of its own: the pair
-   stacks at every width, 8px apart (design system space-2). */
+/* The brand pair takes its own row above the nav at every width: the tagline is
+   the wordmark's second line, 8px below it (design system space-2). */
 .site-footer .footer-brand {
   display: flex;
   flex-direction: column;
@@ -1871,11 +1871,6 @@ h2 {
   min-width: 0;
 }
 .site-footer .orbi-site-footer-p { margin: 0; }
-/* Below 1200px the one-line tagline would squeeze the five nav columns, so the
-   brand pair takes its own row above the nav instead of wrapping. */
-@media (max-width: 1199px) {
-  .site-footer { grid-template-columns: minmax(0, 1fr); }
-}
 .site-footer nav {
   display: grid;
   align-items: start;
@@ -2177,7 +2172,6 @@ h2 {
 
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
-  .site-footer { grid-template-columns: 1fr; gap: 34px; }
   .site-footer nav:not(.footer-friends) {
     grid-column: 1;
     grid-row: auto;
