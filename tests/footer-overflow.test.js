@@ -376,6 +376,10 @@ describe("the footer tagline sits under the wordmark at every width (Issue #1021
       taglineLeft: rect(tagline).left,
       taglineBottom: rect(tagline).bottom,
       navTop: rect(nav).top,
+      navLeft: rect(nav).left,
+      brandRight: rect(footer.querySelector(".footer-brand")).right,
+      taglineHeight: rect(tagline).height,
+      taglineLineHeight: parseFloat(getComputedStyle(tagline).lineHeight),
       firstGroupBottom: rect(footer.querySelector(".footer-group")).bottom,
       footerGap: getComputedStyle(footer).gap,
     };
@@ -394,6 +398,12 @@ describe("the footer tagline sits under the wordmark at every width (Issue #1021
           .toBe(desktop.wordmarkLeft);
         expect(Math.round(desktop.taglineTop - desktop.wordmarkBottom),
           path + " at 1440px: wordmark box bottom to tagline top").toBe(8);
+        // The tagline stays on one line, and the brand column is only as wide
+        // as that line: the nav starts one 64px column gap to its right.
+        expect(desktop.taglineHeight, path + " at 1440px: the tagline is one line")
+          .toBeLessThan(desktop.taglineLineHeight * 1.5);
+        expect(Math.round(desktop.navLeft - desktop.brandRight),
+          path + " at 1440px: brand column to nav").toBe(64);
 
         // Artifacts read back by eye: at 1440 the brand pair stacks in the first
         // column beside the nav, at 390 it stacks with the first group a full
