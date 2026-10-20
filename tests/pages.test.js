@@ -2230,14 +2230,14 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
     "guides/self-hosted-coding-agent/index.html": {
       question: "Is this Claude Code's self-hosted environments?",
       after: "Can I use a local model?",
-      before: "How do I stop it?",
+      before: "How do I pause new tasks?",
       phrases: ["Claude Code self-hosted environments", "Orbi is a different thing"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
     "zh/guides/self-hosted-coding-agent/index.html": {
       question: "这是 Claude Code 的自托管环境吗？",
       after: "能用本地模型吗？",
-      before: "怎么停掉？",
+      before: "怎么暂停新任务？",
       phrases: ["Claude Code 自托管环境", "Orbi 是另一回事"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
