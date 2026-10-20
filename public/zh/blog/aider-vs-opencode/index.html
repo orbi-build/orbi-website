@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aider vs OpenCode：上下文、提交和测试怎么选 | Orbi</title>
+  <meta name="description" content="比较 Aider 与 OpenCode 2 的文件上下文、Git 提交、测试和权限。用同一起始提交检查改动，避免自动提交后漏看代码，也别把本地 commit 当成测试通过。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/aider-vs-opencode/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Aider vs OpenCode：上下文、提交和测试怎么选">
+  <meta property="og:description" content="比较 Aider 与 OpenCode 2 的文件上下文、Git 提交、测试和权限。用同一起始提交检查改动，避免自动提交后漏看代码，也别把本地 commit 当成测试通过。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/aider-vs-opencode/">
+  <meta property="og:image" content="https://orbi.build/img/blog-aider-vs-opencode-card.png">
+  <meta property="og:image:alt" content="Aider vs OpenCode：上下文、提交和测试怎么选">
+  <meta property="article:published_time" content="2026-10-20">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Aider vs OpenCode：上下文、提交和测试怎么选","datePublished":"2026-10-20","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/aider-vs-opencode/","image":"https://orbi.build/img/blog-aider-vs-opencode-card.png","inLanguage":"zh-CN","description":"比较 Aider 与 OpenCode 2 的文件上下文、Git 提交、测试和权限。用同一起始提交检查改动，避免自动提交后漏看代码，也别把本地 commit 当成测试通过。","url":"https://orbi.build/zh/blog/aider-vs-opencode/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Aider vs OpenCode：上下文、提交和测试怎么选</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-20">2026-10-20</time></p>
+
+          <p class="hero-lede">比较 Aider 与 OpenCode 2 的文件上下文、Git 提交、测试和权限。用同一起始提交检查改动，避免自动提交后漏看代码，也别把本地 commit 当成测试通过。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#aider-vs-opencode-按工作方式选">Aider vs OpenCode：按工作方式选</a></li>
+          <li><a class="post-toc-link" href="#把改动需要的背景给够">把改动需要的背景给够</a></li>
+          <li><a class="post-toc-link" href="#从开始时的提交检查完整改动">从开始时的提交检查完整改动</a></li>
+          <li><a class="post-toc-link" href="#接受改动前核对检查结果">接受改动前核对检查结果</a></li>
+          <li><a class="post-toc-link" href="#用同一个需求和模型试一遍">用同一个需求和模型试一遍</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 6 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#aider-vs-opencode-按工作方式选">Aider vs OpenCode：按工作方式选</a></li>
+          <li><a class="post-toc-link" href="#把改动需要的背景给够">把改动需要的背景给够</a></li>
+          <li><a class="post-toc-link" href="#从开始时的提交检查完整改动">从开始时的提交检查完整改动</a></li>
+          <li><a class="post-toc-link" href="#接受改动前核对检查结果">接受改动前核对检查结果</a></li>
+          <li><a class="post-toc-link" href="#用同一个需求和模型试一遍">用同一个需求和模型试一遍</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>比较 Aider vs OpenCode 时，如果你想先选好少量文件，再按本地提交逐次查看修改，可以先试 Aider。如果找文件也是任务的一部分，希望 agent 搜索代码、修改文件、执行命令，再按配置控制工具权限，可以先试 OpenCode 2。两者都支持多种模型提供方，也都能放进脚本运行。</p>
+<p>OpenCode 现在分 V1 和 V2 文档。本文比较的是 <a href="https://opencode.ai/v2/docs/">OpenCode 2</a>，资料核对日期为 2026 年 10 月 20 日。照旧教程配置前，先看 <a href="https://opencode.ai/v2/docs/migrate-v1/">V2 迁移说明</a>：两个版本使用同一个 <code class="post-code--single">opencode</code> 命令名，安装 V2 可能替换原来的命令，配置格式也有变化。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 使用 Pi 编码和评审，没有把 Aider 或 OpenCode 当作引擎。下面按两者公开文档里的工作方式比较；代码质量和费用，可以用后面的试用方法在自己的任务上核对。</p>
+<h2 id="aider-vs-opencode-按工作方式选">Aider vs OpenCode：按工作方式选</h2>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">你要控制的部分</th>
+<th scope="col">Aider</th>
+<th scope="col">OpenCode 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">模型看到哪些文件</th>
+<td>添加要修改的文件，用仓库地图补充其他代码的背景</td>
+<td>让 agent 搜索并读取相关文件</td>
+</tr>
+<tr>
+<th scope="row">本地修改记录</th>
+<td>默认会自动创建 Git 提交</td>
+<td>查看任务实际留下的工作区改动和提交</td>
+</tr>
+<tr>
+<th scope="row">命令与检查</th>
+<td>配置项目的 lint 和测试</td>
+<td>提供测试命令，并配置工具权限</td>
+</tr>
+<tr>
+<th scope="row">从脚本调用</th>
+<td>发送非交互消息</td>
+<td>使用 <code class="post-code--spaced">opencode run</code></td>
+</tr>
+</tbody></table></div>
+<p>可以先从最影响你日常操作的那一行试起。已经知道该改哪些文件，Aider 的文件选择方式比较直接；还需要定位实现和调用方，可以试 OpenCode 的搜索与命令工具。Aider 也能帮忙找文件，这里比较的是你想怎样指挥它干活。</p>
+<h2 id="把改动需要的背景给够">把改动需要的背景给够</h2>
+<p>Aider 可以在启动时指定要编辑的文件，也可以用 <code class="post-code--single">/add</code> 添加。<a href="https://aider.chat/docs/usage.html">使用文档</a>建议只加入相关文件；不提前选文件也能开始，让它协助定位。<a href="https://aider.chat/docs/repomap.html">仓库地图</a>会补充其他文件里的部分符号和关系，帮助模型理解当前代码。地图经过筛选，并不包含每个文件的全文。</p>
+<p>OpenCode 2 提供<a href="https://opencode.ai/v2/docs/tools/">搜索、读取、编辑和 shell 工具</a>。可以让它先查一个函数的调用方，再动手修改。验收时看它有没有找到相关实现和测试；读过更多文件，本身不能证明结果更好。</p>
+<p>无论选哪款，都要给预期行为和检查办法。比如“拒绝过期 token，保留有效 token 的现有行为，并增加回归测试”，就比“优化认证”更方便核对。再写上仓库实际使用的测试命令，以及不能修改的文件或依赖。</p>
+<h2 id="从开始时的提交检查完整改动">从开始时的提交检查完整改动</h2>
+<p>Aider 的 <a href="https://aider.chat/docs/git.html">Git 集成</a>默认会提交它的修改。遇到原本就有未提交改动的文件，它还可能先提交已有改动；自动提交也可以关闭。OpenCode 可以通过工具运行 Git 命令，最终是留下 commit 还是未提交修改，要看任务要求和实际执行的操作。</p>
+<p>所以，光看 <code class="post-code--spaced">git diff</code> 容易漏掉已经提交的代码：agent 提交之后，这条命令可能什么也不输出。</p>
+<p>给两款工具分别准备一个干净的仓库副本，从同一个提交开始。在各自的仓库目录里，用 Bash 运行：</p>
+<pre><code class="language-bash">git status --short
+trial_base=$(git rev-parse HEAD)
+</code></pre>
+<p>如果 status 列出了已有改动，先准备干净的试用副本。保留这个终端。等 agent 完成后，回到同一个 Bash 会话运行：</p>
+<pre><code class="language-bash">git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
+git status --short &amp;&amp;
+git diff --stat &quot;$trial_base&quot; -- &amp;&amp;
+git diff &quot;$trial_base&quot; -- &amp;&amp;
+git log --oneline &quot;$trial_base&quot;..HEAD
+</code></pre>
+<p>相对于 <code class="post-code--single">trial_base</code> 的 diff 会显示已跟踪文件的最终改动，包括已提交、已暂存和尚未暂存的部分。status 还会用 <code class="post-code--single">??</code> 列出未跟踪的新文件；它们的内容不在这个 diff 里，需要另外打开检查。log 则列出开始之后新增的提交。</p>
+<p>这组 Git 检查方法已在隔离仓库验证过，覆盖已提交、未提交的修改和未跟踪文件。它验证的是检查方法，没有测出哪款 agent 写代码更好。</p>
+<h2 id="接受改动前核对检查结果">接受改动前核对检查结果</h2>
+<p>Aider <a href="https://aider.chat/docs/usage/lint-test.html">默认 lint 编辑过的文件，也支持配置测试</a>。自动测试需要指定测试命令并开启对应设置。本地有了 commit，不能据此判断测试通过。它的 Git 文档还说明，默认提交会跳过 pre-commit hooks；<code class="post-code--single">--git-commit-verify</code> 可以启用这些提交前检查。</p>
+<p>OpenCode 2 要看请求的测试命令实际输出和退出状态。它的原生<a href="https://opencode.ai/v2/docs/permissions/">权限配置</a>使用有序的 <code class="post-code--single">permissions</code> 数组和 <code class="post-code--single">shell</code> 动作。受支持的 V1 配置仍可使用，转为原生 V2 格式是可选操作。V2 的基础规则广泛允许操作，对 <code class="post-code--single">.env</code> 读取等情况另有询问规则。shell 和项目外目录要按自己的需要设置审批；shell 命令仍使用宿主用户的权限。</p>
+<p>agent 改完代码后，再独立跑验收检查。试用前就记下原有测试失败，才能分清哪些是新回归。指定的检查通过，只能说明这些检查的结果，不能代替全部需求的验收。</p>
+<h2 id="用同一个需求和模型试一遍">用同一个需求和模型试一遍</h2>
+<p>选一张结果容易核对的真实 Issue。两个仓库副本采用同一起始提交、验收标准和测试命令。两款工具都支持时，选相同的模型与提供方，并记下准确模型和推理设置。可选连接见 <a href="https://aider.chat/docs/llms.html">Aider 模型文档</a>和 <a href="https://opencode.ai/v2/docs/models/">OpenCode 2 模型选择</a>。相同模型仍可能收到不同的提示、上下文和工具结果，不能把结果差异全归到模型上。</p>
+<p>每次保留最终 diff、测试输出、你补充纠正过的话，以及实际提供方的用量或账单。看哪种方式能在可接受的人工干预下交出你能验收的改动。客户端免费，也不等于推理费用相同。</p>
+<p>需要定时运行时，Aider 支持<a href="https://aider.chat/docs/scripting.html">非交互消息调用</a>，OpenCode 2 的 <a href="https://opencode.ai/v2/docs/cli/"><code class="post-code--spaced">opencode run</code></a>也用于脚本和 CI。先确认配置的权限和必填输入在无人值守时会怎样处理，再安排真实任务。</p>
+<p>如果希望交出去的是整张 GitHub Issue，包括独立评审和有条件的合并，还要单独判断交付流程。Orbi 使用 Pi 完成这部分工作；发版另提需求，按仓库规则执行。<a href="/zh/guides/self-hosted-coding-agent/?ref=blog-aider-opencode">自托管指南</a>说明了这些步骤。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p>更多工具可以看 <a href="/zh/blog/opencode-alternatives/?ref=blog-aider-opencode">OpenCode 替代方案</a>。<a href="/zh/compare/claude-code/?ref=blog-aider-opencode">Orbi 与 Claude Code 对比</a>说明了仓库交付与编码 agent 的工作方式。<a href="/zh/cloud/?ref=blog-aider-opencode">Orbi Cloud</a>托管运行 Orbi 的 Issue 交付，不用在本地安装 Orbi。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/aider-vs-opencode/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>

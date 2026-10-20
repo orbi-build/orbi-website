@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Aider vs OpenCode: context, commits and checks (English):
+  https://orbi.build/blog/aider-vs-opencode/
+- Aider vs OpenCode：上下文、提交和测试怎么选 (Chinese):
+  https://orbi.build/zh/blog/aider-vs-opencode/
 - OpenCode alternatives: who merges and releases? (English):
   https://orbi.build/blog/opencode-alternatives/
 - OpenCode 替代方案：PR 之后那条线归谁 (Chinese):
