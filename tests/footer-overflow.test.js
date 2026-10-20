@@ -377,7 +377,6 @@ describe("the footer tagline sits under the wordmark at every width (Issue #1021
       taglineBottom: rect(tagline).bottom,
       navTop: rect(nav).top,
       navLeft: rect(nav).left,
-      brandRight: rect(footer.querySelector(".footer-brand")).right,
       taglineHeight: rect(tagline).height,
       taglineLineHeight: parseFloat(getComputedStyle(tagline).lineHeight),
       firstGroupBottom: rect(footer.querySelector(".footer-group")).bottom,
@@ -398,16 +397,17 @@ describe("the footer tagline sits under the wordmark at every width (Issue #1021
           .toBe(desktop.wordmarkLeft);
         expect(Math.round(desktop.taglineTop - desktop.wordmarkBottom),
           path + " at 1440px: wordmark box bottom to tagline top").toBe(8);
-        // The tagline stays on one line, and the brand column is only as wide
-        // as that line: the nav starts one 64px column gap to its right.
+        // The brand pair has its own row: the tagline stays on one line and the
+        // nav starts a full 34px group gap below it, aligned to the same left edge.
         expect(desktop.taglineHeight, path + " at 1440px: the tagline is one line")
           .toBeLessThan(desktop.taglineLineHeight * 1.5);
-        expect(Math.round(desktop.navLeft - desktop.brandRight),
-          path + " at 1440px: brand column to nav").toBe(64);
+        expect(Math.round(desktop.navTop - desktop.taglineBottom),
+          path + " at 1440px: tagline to the nav row").toBe(34);
+        expect(desktop.navLeft, path + " at 1440px: the nav starts at the brand's left edge")
+          .toBe(desktop.wordmarkLeft);
 
-        // Artifacts read back by eye: at 1440 the brand pair stacks in the first
-        // column beside the nav, at 390 it stacks with the first group a full
-        // 34px below.
+        // Artifacts read back by eye: at 1440 and 390 the brand pair is its own
+        // row with the nav a full 34px below.
         const capture = async (width) => {
           await page.locator("footer.site-footer a.wordmark-footer").scrollIntoViewIfNeeded();
           const footerBox = await page.locator("footer.site-footer").boundingBox();
