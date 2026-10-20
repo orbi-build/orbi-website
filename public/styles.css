@@ -1850,7 +1850,7 @@ h2 {
 
 .site-footer {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
   gap: 34px;
   align-items: start;
   padding-top: 34px;
@@ -1861,6 +1861,15 @@ h2 {
 }
 
 .wordmark-footer { color: var(--ink); }
+/* The tagline is the wordmark's second line, not a column of its own: the pair
+   stacks at every width, 8px apart (design system space-2). */
+.site-footer .footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
 .site-footer .orbi-site-footer-p {
   max-width: 18ch;
   margin: 0;
@@ -2167,18 +2176,7 @@ h2 {
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
   .site-footer { grid-template-columns: 1fr; }
-  /* Issue #1021: in one column the 34px row gap separates whole groups, and it
-     also landed between the wordmark and its tagline, so on a phone the two read
-     as two unrelated blocks. The tagline continues the wordmark: the wordmark's
-     row gives back 26px of that gap so the tagline sits 8px (0.5rem, the design
-     system's space-2) below the 44px tap-target box. Desktop and every other
-     group gap stay at 34px. */
-  .site-footer > .wordmark-footer { margin-bottom: -26px; }
-  .site-footer > .orbi-site-footer-p {
-    grid-column: 1;
-    grid-row: auto;
-    max-width: none;
-  }
+  .site-footer .orbi-site-footer-p { max-width: none; }
   .site-footer nav:not(.footer-friends) {
     grid-column: 1;
     grid-row: auto;
