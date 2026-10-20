@@ -1923,6 +1923,17 @@ h2 {
   align-items: center;
   gap: 12px 18px;
 }
+/* Issue #1038: the seven directory badges render 28px high — the design
+   system's size-mark — each image in its own source ratio, so the row stays
+   compact without squashing or cropping the vendor embeds. width:auto is
+   required because the width attribute is a presentational hint (LaunchNest
+   would otherwise stay 240px wide); display:block drops the inline line-box
+   descender so the row is exactly 28px tall. */
+.site-footer .footer-badges img {
+  display: block;
+  width: auto;
+  height: 28px;
+}
 
 /* The hero keeps two columns far longer than the prose sections do: it needs
    ~913px (480px trace + 81px gap + 271px headline + 80px shell padding), so
