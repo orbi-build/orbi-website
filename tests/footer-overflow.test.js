@@ -354,11 +354,12 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
   }
 });
 
-// Issue #1021: on a phone the footer stacks into one column, and the grid's
-// 34px gap landed between the wordmark and its tagline, so the two read as two
-// unrelated groups. The brand pair must sit 8px apart (design system space-2)
-// while every other footer group keeps its 34px.
-describe("the footer wordmark and tagline read as one group on phones (Issue #1021)", () => {
+// Issue #1021: the tagline is the wordmark's second line at every width. On
+// desktop it used to sit in its own column to the right of the wordmark, and on
+// a phone the grid's 34px gap landed between the two. The brand pair now sits
+// 8px apart (design system space-2), the tagline left-aligned under the
+// wordmark, while every other footer group keeps its 34px.
+describe("the footer tagline sits under the wordmark at every width (Issue #1021)", () => {
   const measureFooter = (page) => page.locator("footer.site-footer").evaluate((footer) => {
     const wordmark = footer.querySelector("a.wordmark-footer");
     const mark = wordmark.querySelector(".wordmark-mark");
@@ -381,24 +382,24 @@ describe("the footer wordmark and tagline read as one group on phones (Issue #10
   });
 
   for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
-    it(name + " keeps the tagline 8px under the wordmark on a phone, side by side on desktop", async () => {
+    it(name + " keeps the tagline 8px under the wordmark on desktop and on a phone", async () => {
       const page = await guardedPage(browser, baseUrl);
       try {
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
         const desktop = await measureFooter(page);
-        // Desktop keeps the three-column layout: the tagline starts to the
-        // right of the wordmark, on the same row.
-        expect(desktop.taglineLeft, path + " at 1440px: the tagline sits beside the wordmark")
-          .toBeGreaterThan(desktop.wordmarkRight);
-        expect(Math.abs(desktop.taglineTop - desktop.wordmarkTop), path + " at 1440px: same row")
-          .toBeLessThanOrEqual(2);
+        // Desktop: the brand column holds the wordmark with the tagline right
+        // under it, and the nav starts to the right of that column.
+        expect(desktop.taglineLeft, path + " at 1440px: the tagline starts under the wordmark")
+          .toBe(desktop.wordmarkLeft);
+        expect(Math.round(desktop.taglineTop - desktop.wordmarkBottom),
+          path + " at 1440px: wordmark box bottom to tagline top").toBe(8);
 
-        // Artifacts read back by eye: 1440 keeps the wordmark, tagline and nav
-        // columns side by side, 390 stacks the brand pair tight with the first
-        // group a full 34px below.
+        // Artifacts read back by eye: at 1440 the brand pair stacks in the first
+        // column beside the nav, at 390 it stacks with the first group a full
+        // 34px below.
         const capture = async (width) => {
-          await page.locator("footer.site-footer > a.wordmark-footer").scrollIntoViewIfNeeded();
+          await page.locator("footer.site-footer a.wordmark-footer").scrollIntoViewIfNeeded();
           const footerBox = await page.locator("footer.site-footer").boundingBox();
           const shot = await measureFooter(page);
           await page.screenshot({
