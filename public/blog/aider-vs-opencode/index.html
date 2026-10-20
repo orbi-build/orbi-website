@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aider vs OpenCode: context, commits and checks | Orbi</title>
+  <meta name="description" content="Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.">
+  <link rel="canonical" href="https://orbi.build/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/aider-vs-opencode/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/aider-vs-opencode/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Aider vs OpenCode: context, commits and checks">
+  <meta property="og:description" content="Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.">
+  <meta property="og:url" content="https://orbi.build/blog/aider-vs-opencode/">
+  <meta property="og:image" content="https://orbi.build/img/blog-aider-vs-opencode-card.png">
+  <meta property="og:image:alt" content="Aider vs OpenCode: context, commits and checks">
+  <meta property="article:published_time" content="2026-10-20">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Aider vs OpenCode: context, commits and checks","datePublished":"2026-10-20","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/aider-vs-opencode/","image":"https://orbi.build/img/blog-aider-vs-opencode-card.png","inLanguage":"en","description":"Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.","url":"https://orbi.build/blog/aider-vs-opencode/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">Aider vs OpenCode: context, commits and checks</h1>
+          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-20">2026-10-20</time></p>
+
+          <p class="hero-lede">Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#aider-vs-opencode-which-workflow-fits">Aider vs OpenCode: which workflow fits?</a></li>
+          <li><a class="post-toc-link" href="#give-each-tool-the-context-it-needs">Give each tool the context it needs</a></li>
+          <li><a class="post-toc-link" href="#compare-changes-from-the-starting-commit">Compare changes from the starting commit</a></li>
+          <li><a class="post-toc-link" href="#check-what-ran-before-accepting-the-change">Check what ran before accepting the change</a></li>
+          <li><a class="post-toc-link" href="#try-the-same-task-with-the-same-model">Try the same task with the same model</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 6 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#aider-vs-opencode-which-workflow-fits">Aider vs OpenCode: which workflow fits?</a></li>
+          <li><a class="post-toc-link" href="#give-each-tool-the-context-it-needs">Give each tool the context it needs</a></li>
+          <li><a class="post-toc-link" href="#compare-changes-from-the-starting-commit">Compare changes from the starting commit</a></li>
+          <li><a class="post-toc-link" href="#check-what-ran-before-accepting-the-change">Check what ran before accepting the change</a></li>
+          <li><a class="post-toc-link" href="#try-the-same-task-with-the-same-model">Try the same task with the same model</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>For Aider vs OpenCode, try Aider first if you want to work with a small set of files and review frequent local commits. Try OpenCode 2 first if you want an agent to find files, edit them and run commands through a configurable tool workflow. Both can use different model providers, and both support scripted use.</p>
+<p>OpenCode now has separate V1 and V2 documentation. This comparison uses <a href="https://opencode.ai/v2/docs/">OpenCode 2</a>, checked on 20 October 2026. Before following an older tutorial, check the <a href="https://opencode.ai/v2/docs/migrate-v1/">V2 migration guide</a>: installing V2 can replace the same <code class="post-code--single">opencode</code> command, and its configuration differs from V1.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi uses Pi for coding and review; it does not run Aider or OpenCode as its engine. This comparison covers documented workflows. Use the trial below to measure results and cost on your own tasks.</p>
+<h2 id="aider-vs-opencode-which-workflow-fits">Aider vs OpenCode: which workflow fits?</h2>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">What you want to control</th>
+<th scope="col">Aider</th>
+<th scope="col">OpenCode 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Files supplied to the model</th>
+<td>Add the files you want edited; a repository map supplies broader context</td>
+<td>Ask the agent to search and read the relevant files</td>
+</tr>
+<tr>
+<th scope="row">Local change history</th>
+<td>Automatic Git commits are part of the default workflow</td>
+<td>Inspect the working tree and any commits the agent makes for your task</td>
+</tr>
+<tr>
+<th scope="row">Commands and checks</th>
+<td>Configure linting and tests for your project</td>
+<td>Give the task&#39;s test command and configure tool permissions</td>
+</tr>
+<tr>
+<th scope="row">Running from a script</th>
+<td>Send a message non-interactively</td>
+<td>Use <code class="post-code--spaced">opencode run</code></td>
+</tr>
+</tbody></table></div>
+<p>Start with the row that affects your daily work. If you already know the files involved, Aider&#39;s file selection is a useful starting point. If locating the change is part of the task, OpenCode&#39;s search and command tools are worth evaluating. Aider can also help locate files, so this is a preference about how you steer the work, not a limit on what it can find.</p>
+<h2 id="give-each-tool-the-context-it-needs">Give each tool the context it needs</h2>
+<p>In Aider, add editable files at launch or with <code class="post-code--single">/add</code>. Its <a href="https://aider.chat/docs/usage.html">usage guide</a> recommends a small relevant set; you can also start without files and let it help identify them. The <a href="https://aider.chat/docs/repomap.html">repository map</a> supplies selected symbols and relationships from the wider repository. It is a compact guide to the code, not the full contents of every file.</p>
+<p>OpenCode 2 has <a href="https://opencode.ai/v2/docs/tools/">search, read, edit and shell tools</a>. You can ask it to find a function&#39;s callers before changing it. Judge the result by whether it found the relevant implementation and tests. A larger list of files read is not itself a better result.</p>
+<p>For either tool, give the expected behavior and a way to check it. “Reject an expired token, preserve the valid-token behavior, and add a regression test” is more useful than “improve authentication.” Include your repository&#39;s real test command and any files or dependencies the task must leave alone.</p>
+<h2 id="compare-changes-from-the-starting-commit">Compare changes from the starting commit</h2>
+<p>Aider&#39;s <a href="https://aider.chat/docs/git.html">Git integration</a> normally commits its edits. It can also commit pre-existing changes before working on a dirty file. Its automatic commits can be disabled. OpenCode can run Git commands through its tools; whether a task leaves commits or uncommitted edits depends on the instructions and actions taken.</p>
+<p>This makes plain <code class="post-code--spaced">git diff</code> a poor comparison: after an agent commits, it can print nothing even though the task changed code.</p>
+<p>Use separate clean checkouts of the same starting commit for the two trials. In each checkout, run this in Bash before starting the tool:</p>
+<pre><code class="language-bash">git status --short
+trial_base=$(git rev-parse HEAD)
+</code></pre>
+<p>If status shows existing changes, prepare a clean trial checkout first. Keep this terminal open. After the agent finishes, run these commands in that same Bash session:</p>
+<pre><code class="language-bash">git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
+git status --short &amp;&amp;
+git diff --stat &quot;$trial_base&quot; -- &amp;&amp;
+git diff &quot;$trial_base&quot; -- &amp;&amp;
+git log --oneline &quot;$trial_base&quot;..HEAD
+</code></pre>
+<p>The diff against <code class="post-code--single">trial_base</code> includes tracked changes whether they have been committed, staged or left unstaged. Status also identifies untracked files, marked <code class="post-code--single">??</code>; their contents are absent from this diff, so inspect them separately. The log shows commits added after the starting point.</p>
+<p>These Git commands were checked in an isolated repository with committed and uncommitted edits, plus an untracked file. That checks the inspection method, not either agent&#39;s coding performance.</p>
+<h2 id="check-what-ran-before-accepting-the-change">Check what ran before accepting the change</h2>
+<p>Aider <a href="https://aider.chat/docs/usage/lint-test.html">lints edited files by default and can run configured tests</a>. Automatic tests require the test command and automatic-test setting. A local commit alone does not prove the tests passed. Its Git documentation also says commits skip pre-commit hooks by default; <code class="post-code--single">--git-commit-verify</code> enables those hooks.</p>
+<p>In OpenCode 2, inspect the command output and exit status for the tests you requested. Its native <a href="https://opencode.ai/v2/docs/permissions/">permission rules</a> use an ordered <code class="post-code--single">permissions</code> array and the <code class="post-code--single">shell</code> action. Supported V1 configuration is normalized automatically; conversion to the native V2 format is optional. V2&#39;s base policy broadly allows actions, with exceptions such as asking about <code class="post-code--single">.env</code> reads. Configure shell and outside-directory approval deliberately. Shell commands still run with the host user&#39;s authority.</p>
+<p>Run your acceptance checks yourself after the final edit. Record existing test failures before the trial so that you can distinguish a new regression from an earlier failure. Passing the selected checks establishes their result, not that every requirement has been covered.</p>
+<h2 id="try-the-same-task-with-the-same-model">Try the same task with the same model</h2>
+<p>Choose a small real Issue with an observable result. Use the same starting commit, acceptance criteria and test command in both checkouts. Where both tools support it, select the same model and provider; record the exact model and reasoning settings. Aider&#39;s <a href="https://aider.chat/docs/llms.html">model connections</a> and OpenCode 2&#39;s <a href="https://opencode.ai/v2/docs/models/">model selector</a> explain the options. The tool name is not a model name, and using the same model still leaves differences in prompts, context and tool calls.</p>
+<p>For each run, keep the final diff, test output, any corrections you had to give, and the usage or bill from the actual provider. Choose the workflow that produces a change you can verify with an acceptable amount of intervention. A free client does not determine your inference bill.</p>
+<p>For automation, Aider supports <a href="https://aider.chat/docs/scripting.html">non-interactive messages</a>, and OpenCode 2 documents <a href="https://opencode.ai/v2/docs/cli/"><code class="post-code--spaced">opencode run</code></a> for scripts and CI. Confirm how your configured permissions and required inputs behave without a person at the terminal before scheduling real work.</p>
+<p>If the task you want to delegate is an entire GitHub Issue, including independent review and a conditional merge, evaluate that delivery workflow separately. Orbi uses Pi for that work; a release starts with a separate release request and follows repository rules. The <a href="/guides/self-hosted-coding-agent/?ref=blog-aider-opencode">self-hosted guide</a> explains those steps.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p>For the wider shortlist, read <a href="/blog/opencode-alternatives/?ref=blog-aider-opencode">OpenCode alternatives</a>. <a href="/compare/claude-code/?ref=blog-aider-opencode">Orbi vs Claude Code</a> compares repository delivery with a coding agent workflow. <a href="/cloud/?ref=blog-aider-opencode">Orbi Cloud</a> runs Orbi&#39;s Issue delivery without a local Orbi installation.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/aider-vs-opencode/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
