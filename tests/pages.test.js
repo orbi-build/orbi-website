@@ -1605,7 +1605,8 @@ describe("one unified footer on every content page", () => {
   // free listing for a live, crawlable backlink badge. The maintainer-supplied
   // embeds are copied verbatim (each directory checks the attributes on
   // review); width/height are scaled 200x50 -> 168x42 to match the LaunchNest
-  // badge's 42px rendered height.
+  // badge's declared height. Since Issue #1038 the rendered height of every
+  // footer badge is 28px, owned by the shared CSS rule, not these attributes.
   it("carries the AI Agents Directory badge on every footer page", () => {
     const anchor = '<a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">';
     const image = '<img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />';
@@ -1634,7 +1635,8 @@ describe("one unified footer on every content page", () => {
   // (no nofollow) or Toolradar never verifies it. Issue #843 switched the
   // embed from style=dark to style=light so the badge matches the two light
   // Featured badges on the same row; type, version, size and the anchor stay
-  // as #832 shipped them.
+  // as #832 shipped them. Issue #1038 leaves the declared size alone and caps
+  // the rendered height at 28px from the shared footer rule.
   it("carries the Toolradar badge with a crawlable backlink on every footer page", () => {
     const anchor = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
     const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
@@ -1655,7 +1657,8 @@ describe("one unified footer on every content page", () => {
   // verbatim, but the supplied 150x32 height is not: the source PNG is
   // 430x151, so declaring only width renders it at 150x52.67 in the source
   // ratio instead of squashing it. The badge follows the Toolradar badge, so
-  // the existing four keep their order.
+  // the existing four keep their order. Issue #1038 keeps that width hint and
+  // renders the badge 28px high from the shared footer rule.
   it("carries the Altern badge at its 430x151 ratio on every footer page", () => {
     const anchor = '<a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">';
     const image = '<img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />';
@@ -1664,7 +1667,8 @@ describe("one unified footer on every content page", () => {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Altern badge anchor drifted`).toContain(anchor);
       // The exact image string has no height attribute, so the box keeps the
-      // 430x151 source ratio instead of the squashed supplied 150x32.
+      // 430x151 source ratio instead of the squashed supplied 150x32 — at the
+      // 28px height the shared footer rule sets (Issue #1038).
       expect(footer, `${page.output}: Altern badge image drifted`).toContain(image);
       expect(footer.indexOf(anchor), `${page.output}: Altern badge must follow Toolradar`)
         .toBeGreaterThan(footer.indexOf(toolradar));

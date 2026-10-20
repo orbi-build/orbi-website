@@ -233,31 +233,31 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.isLastChild, path + ": .footer-badges must be the last child of footer-friends").toBe(true);
         expect(result.wrapperTop, path + ": badges must sit below the text friends")
           .toBeGreaterThanOrEqual(result.lastTextFriendsBottom);
-        // Whether the badges line up on one row depends on the seven badge
-        // boxes: LaunchNest's image declares only width="240" and the Altern
-        // badge (Issue #1012) only width="150", so their heights come from the
-        // placeholder ratio the guard serves (Issue #871). Only the structure
-        // and the rendered Altern / SaaSpa.ge / Tooluck boxes are asserted here.
+        // Issue #1038: every badge is 28px high by one shared rule, so the
+        // seven boxes no longer depend on the vendor embeds' width/height
+        // attributes. Only the structure and the rendered Altern / SaaSpa.ge /
+        // Tooluck boxes are asserted here; the 28px contract for all seven is
+        // the Issue #1038 suite below.
         expect(result.badgeCount, path + ": the footer badges").toBe(7);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
-        // by Issue #1027, at the declared 200x60 with the supplied target/rel
-        // and alt.
+        // by Issue #1027, carries the supplied target/rel and alt, and — since
+        // Issue #1038 — renders 28px high in its 200x60 source ratio.
         expect(result.saaspaTarget, path + ": the SaaSpa.ge badge opens in a new tab").toBe("_blank");
         expect(result.saaspaRel, path + ": the SaaSpa.ge anchor keeps rel=nofollow").toBe("nofollow");
         expect(result.saaspaImageSrc, path + ": SaaSpa.ge badge image src")
           .toBe("https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black");
         expect(result.saaspaImageAlt, path + ": SaaSpa.ge badge image alt").toBe("Featured on Saaspa.ge");
-        expect(result.saaspaImageWidth, path + ": SaaSpa.ge badge rendered width").toBeCloseTo(200, 1);
-        expect(result.saaspaImageHeight, path + ": SaaSpa.ge badge rendered height").toBeCloseTo(60, 1);
+        expect(result.saaspaImageWidth, path + ": SaaSpa.ge badge rendered width").toBeGreaterThan(0);
+        expect(Math.abs(result.saaspaImageHeight - 28), path + ": SaaSpa.ge badge rendered height").toBeLessThanOrEqual(1);
         expect(
           Math.abs(result.saaspaImageWidth / result.saaspaImageHeight
             - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1027: the Tooluck badge is appended last, at the declared
-        // 210x55 with the supplied target/rel/src/alt. The placeholder the
-        // guard serves is 336x88, the real source ratio, so the rendered box
-        // must match it instead of stretching.
+        // Issue #1027: the Tooluck badge is appended last with the supplied
+        // target/rel/src/alt. The placeholder the guard serves is 336x88, the
+        // real source ratio, so at the Issue #1038 height of 28px the rendered
+        // box must follow that ratio instead of stretching.
         expect(result.lastBadgeHref, path + ": the footer badges end with Tooluck")
           .toBe("https://www.tooluck.org/item/orbi");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
@@ -265,20 +265,21 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
           .toBe("https://www.tooluck.org/badges/tooluck-badge-dark.svg");
         expect(result.tooluckImageAlt, path + ": Tooluck badge image alt").toBe("Featured on Tooluck.org");
-        expect(result.tooluckImageWidth, path + ": Tooluck badge rendered width").toBeCloseTo(210, 1);
-        expect(result.tooluckImageHeight, path + ": Tooluck badge rendered height").toBeCloseTo(55, 1);
+        expect(result.tooluckImageWidth, path + ": Tooluck badge rendered width").toBeGreaterThan(0);
+        expect(Math.abs(result.tooluckImageHeight - 28), path + ": Tooluck badge rendered height").toBeLessThanOrEqual(1);
         expect(
           Math.abs(result.tooluckImageWidth / result.tooluckImageHeight
             - result.tooluckNaturalWidth / result.tooluckNaturalHeight),
           path + ": the Tooluck badge must keep the 336x88 source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1012: the Altern badge keeps the maintainer's anchor, but
-        // renders at the 430x151 source ratio instead of the supplied 150x32.
+        // Issue #1012: the Altern badge keeps the maintainer's anchor and
+        // renders at the 430x151 source ratio instead of the supplied 150x32;
+        // Issue #1038 then caps the height at 28px.
         expect(result.alternTarget, path + ": the Altern badge opens in a new tab").toBe("_blank");
         expect(result.alternRel, path + ": the Altern backlink must be noopener").toBe("noopener");
         expect(result.alternImageSrc, path + ": Altern badge image src").toBe("https://data.altern.ai/alternbadge.png");
-        expect(result.alternImageWidth, path + ": Altern badge rendered width").toBeCloseTo(150, 1);
-        expect(result.alternImageHeight, path + ": Altern badge rendered height").toBeCloseTo(52.67, 1);
+        expect(result.alternImageWidth, path + ": Altern badge rendered width").toBeGreaterThan(0);
+        expect(Math.abs(result.alternImageHeight - 28), path + ": Altern badge rendered height").toBeLessThanOrEqual(1);
         expect(
           Math.abs(result.alternImageWidth / result.alternImageHeight
             - result.alternNaturalWidth / result.alternNaturalHeight),
@@ -347,6 +348,136 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-390.png" });
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});
+
+// Issue #1038: the maintainer asked for the directory badges to shrink — the
+// 42 / 52.67 / 55 / 60px boxes read as noise under the footer links. One shared
+// CSS rule now sets every badge to 28px high (the design system's size-mark)
+// and lets each image keep its own source ratio, so the row is compact without
+// squashing or cropping any embed.
+describe("the footer directory badges render 28px high (Issue #1038)", () => {
+  const badgeHrefs = [
+    "https://launchnest.io/p/orbi",
+    "https://aiagentsdirectory.com/agent/orbi",
+    "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+    "https://toolradar.com/tools/orbi",
+    "https://altern.ai/ai/orbi",
+    "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
+    "https://www.tooluck.org/item/orbi",
+  ];
+
+  // The AI Agents Listing badge is loading="lazy", so it only starts loading
+  // once the footer is near the viewport: scroll it in and let all seven
+  // placeholders decode before measuring.
+  const loadBadges = async (page) => {
+    await page.locator("footer .footer-badges").scrollIntoViewIfNeeded();
+    await page.waitForFunction(
+      () => [...document.querySelectorAll("footer .footer-badges img")]
+        .every((image) => image.complete && image.naturalWidth > 0),
+      null,
+      { timeout: 10_000 },
+    );
+  };
+
+  const measureBadges = (page) => page.locator("footer .footer-badges img").evaluateAll((images) =>
+    images.map((image) => {
+      const rect = image.getBoundingClientRect();
+      return {
+        alt: image.alt,
+        width: rect.width,
+        height: rect.height,
+        top: Math.round(rect.top),
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+      };
+    }));
+
+  for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
+    it(name + " renders all seven badges 28px high in their source ratio", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+
+        const expectBadges = (badges, label) => {
+          expect(badges, label + ": badge count").toHaveLength(7);
+          for (const badge of badges) {
+            expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
+            expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
+            expect(
+              Math.abs(badge.height - 28),
+              label + ": " + badge.alt + " rendered height (28px, 1px rounding)",
+            ).toBeLessThanOrEqual(1);
+            expect(
+              Math.abs(badge.width / badge.height - badge.naturalWidth / badge.naturalHeight),
+              label + ": " + badge.alt + " must keep its source ratio",
+            ).toBeLessThan(0.02);
+          }
+        };
+
+        await loadBadges(page);
+        const desktop = await measureBadges(page);
+        expectBadges(desktop, path + " at 1440px");
+        // At 28px high the seven boxes fit one row, so they share a top edge.
+        expect(new Set(desktop.map((badge) => badge.top)).size, path + " at 1440px: the badges share one row").toBe(1);
+
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-1440.png" });
+
+        // The badge row stays a normal tab sequence: seven links in the source
+        // order, each with a visible ring, and the next Tab leaves the row.
+        await page.locator('footer nav.footer-friends > a[href="https://agentic.ai/best/free-coding-agents"]').focus();
+        const visited = [];
+        for (let step = 0; step < badgeHrefs.length; step += 1) {
+          await page.keyboard.press("Tab");
+          visited.push(await page.evaluate(() => {
+            const active = document.activeElement;
+            const style = getComputedStyle(active);
+            return {
+              href: active?.getAttribute("href"),
+              outlineStyle: style.outlineStyle,
+              outlineWidth: style.outlineWidth,
+            };
+          }));
+        }
+        expect(visited.map((step) => step.href), path + ": Tab order through the badges").toEqual(badgeHrefs);
+        for (const [index, step] of visited.entries()) {
+          expect(step.outlineStyle, path + ": badge " + (index + 1) + " needs a visible focus ring").not.toBe("none");
+          expect(step.outlineWidth, path + ": badge " + (index + 1) + " needs a visible focus ring").not.toBe("0px");
+        }
+        await page.keyboard.press("Tab");
+        expect(
+          await page.evaluate(() => Boolean(document.activeElement?.closest(".footer-badges"))),
+          path + ": Tab after the seventh badge must leave the badge row",
+        ).toBe(false);
+
+        // 390px: the same 28px height, natural wrapping, nothing clipped.
+        await page.setViewportSize({ width: 390, height: 900 });
+        await page.waitForTimeout(150);
+        await loadBadges(page);
+        const phone = await measureBadges(page);
+        expectBadges(phone, path + " at 390px");
+        expect(new Set(phone.map((badge) => badge.top)).size, path + " at 390px: the badges wrap").toBeGreaterThan(1);
+        const phoneLayout = await page.evaluate(() => {
+          const documentElement = document.documentElement;
+          const badges = [...document.querySelectorAll("footer .footer-badges img")];
+          return {
+            overflow: documentElement.scrollWidth - documentElement.clientWidth,
+            clipped: badges
+              .filter((badge) => {
+                const rect = badge.getBoundingClientRect();
+                return rect.left < 0 || rect.right > documentElement.clientWidth;
+              })
+              .map((badge) => badge.alt),
+          };
+        });
+        expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
+        expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
       }
