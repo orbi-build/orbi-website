@@ -1850,8 +1850,8 @@ h2 {
 
 .site-footer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
-  gap: 34px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 34px 64px;
   align-items: start;
   padding-top: 34px;
   padding-bottom: 48px;
@@ -1870,9 +1870,11 @@ h2 {
   gap: 8px;
   min-width: 0;
 }
-.site-footer .orbi-site-footer-p {
-  max-width: 18ch;
-  margin: 0;
+.site-footer .orbi-site-footer-p { margin: 0; }
+/* Below 1200px the one-line tagline would squeeze the five nav columns, so the
+   brand pair takes its own row above the nav instead of wrapping. */
+@media (max-width: 1199px) {
+  .site-footer { grid-template-columns: minmax(0, 1fr); }
 }
 .site-footer nav {
   display: grid;
@@ -2175,8 +2177,7 @@ h2 {
 
   .closing .cta-row { align-items: stretch; }
   .text-link { margin: 12px 0 0; text-align: center; }
-  .site-footer { grid-template-columns: 1fr; }
-  .site-footer .orbi-site-footer-p { max-width: none; }
+  .site-footer { grid-template-columns: 1fr; gap: 34px; }
   .site-footer nav:not(.footer-friends) {
     grid-column: 1;
     grid-row: auto;
