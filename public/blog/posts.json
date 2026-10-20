@@ -1,5 +1,13 @@
 [
   {
+    "slug": "aider-vs-opencode",
+    "title": "Aider vs OpenCode: context, commits and checks",
+    "summary": "Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.",
+    "zhSlug": "aider-vs-opencode",
+    "zhTitle": "Aider vs OpenCode：上下文、提交和测试怎么选",
+    "related": []
+  },
+  {
     "slug": "opencode-alternatives",
     "title": "OpenCode alternatives: who merges and releases?",
     "summary": "OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.",

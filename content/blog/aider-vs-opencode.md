@@ -5,13 +5,14 @@ summary: Compare Aider vs OpenCode 2 by file context, Git commits, tests and per
 lang: en
 author: Lawrence Liu
 image: /img/blog-aider-vs-opencode-card.png
+mirror: aider-vs-opencode
 ---
 
 For Aider vs OpenCode, try Aider first if you want to work with a small set of files and review frequent local commits. Try OpenCode 2 first if you want an agent to find files, edit them and run commands through a configurable tool workflow. Both can use different model providers, and both support scripted use.
 
 OpenCode now has separate V1 and V2 documentation. This comparison uses [OpenCode 2](https://opencode.ai/v2/docs/), checked on 20 October 2026. Before following an older tutorial, check the [V2 migration guide](https://opencode.ai/v2/docs/migrate-v1/): installing V2 can replace the same `opencode` command, and its configuration differs from V1.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi for coding and review; it does not run Aider or OpenCode as its engine. The recommendations here concern their documented workflows. There is no speed, quality or cost winner from a model benchmark in this article.
+I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi for coding and review; it does not run Aider or OpenCode as its engine. This comparison covers documented workflows. Use the trial below to measure results and cost on your own tasks.
 
 ## Aider vs OpenCode: which workflow fits?
 
@@ -48,9 +49,10 @@ trial_base=$(git rev-parse HEAD)
 If status shows existing changes, prepare a clean trial checkout first. Keep this terminal open. After the agent finishes, run these commands in that same Bash session:
 
 ```bash
-git status --short
-git diff --stat "$trial_base" --
-git diff "$trial_base" --
+git rev-parse --verify "${trial_base:?Record trial_base before the run}^{commit}" >/dev/null &&
+git status --short &&
+git diff --stat "$trial_base" -- &&
+git diff "$trial_base" -- &&
 git log --oneline "$trial_base"..HEAD
 ```
 
@@ -62,7 +64,7 @@ These Git commands were checked in an isolated repository with committed and unc
 
 Aider [lints edited files by default and can run configured tests](https://aider.chat/docs/usage/lint-test.html). Automatic tests require the test command and automatic-test setting. A local commit alone does not prove the tests passed. Its Git documentation also says commits skip pre-commit hooks by default; `--git-commit-verify` enables those hooks.
 
-In OpenCode 2, inspect the command output and exit status for the tests you requested. Its [permission rules](https://opencode.ai/v2/docs/permissions/) use an ordered `permissions` array; V1 examples using `permission` and `bash` need migration. V2's base policy broadly allows actions, with exceptions such as asking about `.env` reads. Configure shell and outside-directory approval deliberately. Shell commands still run with the host user's authority.
+In OpenCode 2, inspect the command output and exit status for the tests you requested. Its native [permission rules](https://opencode.ai/v2/docs/permissions/) use an ordered `permissions` array and the `shell` action. Supported V1 configuration is normalized automatically; conversion to the native V2 format is optional. V2's base policy broadly allows actions, with exceptions such as asking about `.env` reads. Configure shell and outside-directory approval deliberately. Shell commands still run with the host user's authority.
 
 Run your acceptance checks yourself after the final edit. Record existing test failures before the trial so that you can distinguish a new regression from an earlier failure. Passing the selected checks establishes their result, not that every requirement has been covered.
 
@@ -74,7 +76,7 @@ For each run, keep the final diff, test output, any corrections you had to give,
 
 For automation, Aider supports [non-interactive messages](https://aider.chat/docs/scripting.html), and OpenCode 2 documents [`opencode run`](https://opencode.ai/v2/docs/cli/) for scripts and CI. Confirm how your configured permissions and required inputs behave without a person at the terminal before scheduling real work.
 
-If the task you want to delegate is an entire GitHub Issue, including independent review and a conditional merge, evaluate that delivery workflow separately. Orbi uses Pi for that work; a release starts with a separate release request and follows repository rules. The [Issue-to-release guide](/guides/issue-to-release/?ref=blog-aider-opencode) explains the handoff.
+If the task you want to delegate is an entire GitHub Issue, including independent review and a conditional merge, evaluate that delivery workflow separately. Orbi uses Pi for that work; a release starts with a separate release request and follows repository rules. The [self-hosted guide](/guides/self-hosted-coding-agent/?ref=blog-aider-opencode) explains those steps.
 
 ## Related
 
