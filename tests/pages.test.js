@@ -2049,8 +2049,6 @@ describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
     for (const output of [
       "guides/autonomous-coding-agent/index.html",
       "zh/guides/autonomous-coding-agent/index.html",
-      "guides/self-hosted-coding-agent/index.html",
-      "zh/guides/self-hosted-coding-agent/index.html",
       "guides/codex-github-issues/index.html",
       "zh/guides/codex-github-issues/index.html",
     ]) {
@@ -2102,6 +2100,11 @@ const CLOUD_FAQ_PAGES = [
 
 const stripTags = (html) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 
+const comparisonFaqSection = (html) => html.match(/<section\b[^>]*\bid="faq"[^>]*>[\s\S]*?<\/section>/)?.[0] ?? "";
+const comparisonFaqItems = (html) => [...comparisonFaqSection(html)
+  .matchAll(/<details class="faq-item"(?: open)?><summary><span>[^<]*<\/span>([\s\S]*?)<\/summary><div class="faq-answer"><p class="orbi-faq-answer-p">([\s\S]*?)<\/p><\/div><\/details>/g)]
+  .map(([, question, answer]) => ({ question: stripTags(question), answer: stripTags(answer) }));
+
 const cloudFaqItems = (html) => {
   const section = region(html, '<section class="faq" id="faq"', "</section>");
   return [...section.matchAll(/<details class="faq-item"( open)?>([\s\S]*?)<\/details>/g)].map(
@@ -2142,6 +2145,27 @@ describe("Issue-to-release landing pages (Issue #514)", () => {
     for (const output of ["index.html", "cloud/index.html", "guides/auto-merge-ai-prs/index.html"]) {
       expect(shipped.get(output), output).toContain('href="/guides/issue-to-release/"');
       expect(shipped.get(`zh/${output}`), `zh/${output}`).toContain('href="/zh/guides/issue-to-release/"');
+    }
+  });
+});
+
+describe("full-width tinted comparison sections", () => {
+  it.each([
+    "compare/devin/index.html",
+    "compare/keelen/index.html",
+    "guides/self-hosted-coding-agent/index.html",
+    "zh/compare/devin/index.html",
+    "zh/compare/keelen/index.html",
+    "zh/guides/self-hosted-coding-agent/index.html",
+  ])("keeps shell off tinted section elements in %s", async (output) => {
+    const source = await readFile(join(ROOT, "site/pages", output), "utf8");
+    for (const [kind, html] of [["source", source], ["built", shipped.get(output)]]) {
+      const sections = [...html.matchAll(/<section\b[^>]*\bclass="([^"]+)"[^>]*>/g)]
+        .filter(([, classes]) => classes.split(/\s+/).includes("compare-section-tint"));
+      expect(sections.length, `${output}: ${kind} tinted sections exist`).toBeGreaterThan(0);
+      for (const [tag, classes] of sections) {
+        expect(classes.split(/\s+/), `${output}: ${kind} ${tag}`).not.toContain("shell");
+      }
     }
   });
 });
@@ -2192,30 +2216,22 @@ describe("Self-hosted landing pages (Issue #556)", () => {
     }
   });
 
-  it("keeps the setup commands on separate lines without changing printf's format", () => {
+  it("uses the shared FAQ disclosures with JSON-LD matching all seven questions and answers", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
-      expect(html, `${output}: setup commands use a real newline`).toContain(
-        "mkdir -p .orbi\nprintf '%s\\n'",
-      );
-      expect(html, `${output}: setup commands do not contain a literal separator`).not.toContain(
-        "mkdir -p .orbi\\nprintf",
-      );
-    }
-  });
-
-  it("keeps FAQ JSON-LD in lockstep with 3–7 visible questions", () => {
-    for (const { output } of landingPages) {
-      const html = shipped.get(output);
-      const section = region(html, '<div class="source-list">', "</div>");
-      const visible = (section.match(/<strong>/g) ?? []).length;
-      expect(visible, `${output}: visible FAQ count`).toBeGreaterThanOrEqual(3);
-      // Issue #988 adds the seventh self-hosted question (Claude Code
-      // self-hosted environments vs Orbi), so the ceiling moves with it.
-      expect(visible, `${output}: visible FAQ count`).toBeLessThanOrEqual(7);
+      const section = comparisonFaqSection(html);
+      expect(section, `${output}: shared FAQ section`).toMatch(/class="compare-section compare-section-tint faq"/);
+      expect(section, `${output}: shared FAQ list`).toContain('<div class="faq-list">');
+      expect(section, `${output}: no provenance list`).not.toContain('class="source-list"');
+      expect(section, `${output}: first answer open`).toContain('<details class="faq-item" open>');
+      const items = comparisonFaqItems(html);
+      expect(items, `${output}: FAQ count`).toHaveLength(7);
+      expect([...section.matchAll(/<summary><span>(\d+)<\/span>/g)].map((match) => match[1]))
+        .toEqual(["01", "02", "03", "04", "05", "06", "07"]);
       const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");
       expect(faq, `${output}: FAQPage JSON-LD`).toBeTruthy();
-      expect(faq.mainEntity, `${output}: JSON-LD lockstep`).toHaveLength(visible);
+      expect(faq.mainEntity.map((entity) => ({ question: entity.name, answer: entity.acceptedAnswer.text })),
+        `${output}: JSON-LD lockstep`).toEqual(items);
     }
   });
 });
@@ -2231,22 +2247,19 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
       question: "Is this Claude Code's self-hosted environments?",
       after: "Can I use a local model?",
       before: "How do I pause new tasks?",
-      phrases: ["Claude Code self-hosted environments", "Orbi is a different thing"],
+      phrases: ["Claude Code self-hosted environments", "Orbi uses Pi"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
     "zh/guides/self-hosted-coding-agent/index.html": {
       question: "这是 Claude Code 的自托管环境吗？",
       after: "能用本地模型吗？",
       before: "怎么暂停新任务？",
-      phrases: ["Claude Code 自托管环境", "Orbi 是另一回事"],
+      phrases: ["Claude Code 自托管环境", "Orbi 使用 Pi"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
   };
 
-  // The source-list paragraphs are the visible FAQ items on these guide pages.
-  const faqItems = (html) => [...region(html, '<div class="source-list">', "</div>")
-    .matchAll(/<p><strong>([\s\S]*?)<\/strong><br>([\s\S]*?)<\/p>/g)]
-    .map(([, question, answer]) => ({ question: stripTags(question), answer: stripTags(answer) }));
+  const faqItems = comparisonFaqItems;
 
   it("places the Claude Code question between the local-model and stop entries", () => {
     for (const [output, expected] of Object.entries(pages)) {
@@ -2260,7 +2273,7 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
       for (const phrase of expected.phrases) {
         expect(answer, `${output}: ${phrase}`).toContain(phrase);
       }
-      expect(region(html, '<div class="source-list">', "</div>"), `${output}: official docs link`)
+      expect(comparisonFaqSection(html), `${output}: official docs link`)
         .toContain(`href="${expected.href}" rel="noopener"`);
     }
   });
@@ -2435,7 +2448,7 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
   it("keeps visible FAQ answers and FAQPage JSON-LD in lockstep", () => {
     for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
       const html = shipped.get(output);
-      const faqSection = html.match(/<section class="compare-section compare-section-tint shell faq"[\s\S]*?<\/section>/)?.[0] ?? "";
+      const faqSection = comparisonFaqSection(html);
       const items = [...faqSection.matchAll(/<details class="faq-item"(?: open)?[^>]*>[\s\S]*?<summary><span>[^<]*<\/span>([\s\S]*?)<\/summary>[\s\S]*?<div class="faq-answer">([\s\S]*?)<\/div>[\s\S]*?<\/details>/g)].map((match) => ({ question: stripTags(match[1]), answer: stripTags(match[2]) }));
       expect(items, output).toHaveLength(4);
       const faq = jsonLdGraph(html).find((node) => node["@type"] === "FAQPage");

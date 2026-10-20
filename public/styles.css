@@ -1767,7 +1767,7 @@ h2 {
 }
 
 .faq-item {
-  border-radius: var(--radius-card);
+  /* A divider row, not a card: no radius, or the bottom line curls up at both ends. */
   border-bottom: 1px solid var(--line);
 }
 
