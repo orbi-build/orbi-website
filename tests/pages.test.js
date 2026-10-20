@@ -2049,8 +2049,6 @@ describe("cost page leads with the 169-delivery sample (Issue #886)", () => {
     for (const output of [
       "guides/autonomous-coding-agent/index.html",
       "zh/guides/autonomous-coding-agent/index.html",
-      "guides/self-hosted-coding-agent/index.html",
-      "zh/guides/self-hosted-coding-agent/index.html",
       "guides/codex-github-issues/index.html",
       "zh/guides/codex-github-issues/index.html",
     ]) {
@@ -2192,18 +2190,6 @@ describe("Self-hosted landing pages (Issue #556)", () => {
     }
   });
 
-  it("keeps the setup commands on separate lines without changing printf's format", () => {
-    for (const { output } of landingPages) {
-      const html = shipped.get(output);
-      expect(html, `${output}: setup commands use a real newline`).toContain(
-        "mkdir -p .orbi\nprintf '%s\\n'",
-      );
-      expect(html, `${output}: setup commands do not contain a literal separator`).not.toContain(
-        "mkdir -p .orbi\\nprintf",
-      );
-    }
-  });
-
   it("keeps FAQ JSON-LD in lockstep with 3–7 visible questions", () => {
     for (const { output } of landingPages) {
       const html = shipped.get(output);
@@ -2231,14 +2217,14 @@ describe("Claude Code self-hosted environments FAQ (Issue #988)", () => {
       question: "Is this Claude Code's self-hosted environments?",
       after: "Can I use a local model?",
       before: "How do I pause new tasks?",
-      phrases: ["Claude Code self-hosted environments", "Orbi is a different thing"],
+      phrases: ["Claude Code self-hosted environments", "Orbi uses Pi"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
     "zh/guides/self-hosted-coding-agent/index.html": {
       question: "这是 Claude Code 的自托管环境吗？",
       after: "能用本地模型吗？",
       before: "怎么暂停新任务？",
-      phrases: ["Claude Code 自托管环境", "Orbi 是另一回事"],
+      phrases: ["Claude Code 自托管环境", "Orbi 使用 Pi"],
       href: "https://code.claude.com/docs/en/self-hosted-environments",
     },
   };

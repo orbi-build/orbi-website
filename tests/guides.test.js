@@ -120,7 +120,7 @@ describe("Markdown guide rendering (Issue #826)", () => {
   it("links the hub from both self-hosted guide FAQs with the requested anchor text", async () => {
     const expectations = [
       ["guides/self-hosted-coding-agent/index.html", "/guides/pi-coding-agent/", "How Orbi is built on the Pi coding agent"],
-      ["zh/guides/self-hosted-coding-agent/index.html", "/zh/guides/pi-coding-agent/", "Orbi 怎么搭在 Pi coding agent 上"],
+      ["zh/guides/self-hosted-coding-agent/index.html", "/zh/guides/pi-coding-agent/", "Orbi 如何基于 Pi coding agent 构建"],
     ];
     for (const [output, href, anchor] of expectations) {
       expect(await shipped(output), `${output}: FAQ anchor`).toContain(`<a href="${href}">${anchor}</a>`);
