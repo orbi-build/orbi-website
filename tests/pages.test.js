@@ -661,14 +661,15 @@ describe("Codex alternatives (Issue #870)", () => {
   });
 });
 
+// Issue #1054: /compare/claude-code/ presents sourced alternatives and keeps Orbi's Pi boundary clear.
 // Issue #869: /compare/claude-code/ targets the "claude code alternatives"
 // query while keeping the Orbi-vs-Claude-Code comparison. The EN page carries
 // both phrases in its title, gains a #claude-code-alternatives section that
 // names the seven terminal/IDE agents (Pi links its guide) and links the three
-// Orbi-wraps-Claude-Code comparisons, dates every newly cited source, and the
-// /compare/ overview points its Claude Code row at that section. The Issue
-// scopes this to English pages, so the ZH mirror is deliberately untouched.
-describe("Claude Code alternatives (Issue #869)", () => {
+// Orbi's Pi boundary, dates every newly cited source, and keeps the
+// /compare/ overview pointing its Claude Code row at that section. The EN/ZH
+// mirrors carry equivalent content.
+describe("Claude Code alternatives (Issue #1054)", () => {
   const tools = ["Codex CLI", "Cursor", "Aider", "Cline", "OpenCode", "Gemini CLI", "Pi"];
   const sectionLinks = [
     "/guides/pi-coding-agent/",
@@ -677,13 +678,13 @@ describe("Claude Code alternatives (Issue #869)", () => {
     "/compare/github-copilot-coding-agent/",
   ];
   const newSources = [
-    "https://developers.openai.com/codex/cli/",
-    "https://cursor.com/docs/agent/overview",
-    "https://aider.chat/docs/",
+    "https://github.com/Aider-AI/aider/blob/main/LICENSE.txt",
     "https://docs.cline.bot/cline-overview",
-    "https://opencode.ai/docs/",
+    "https://opencode.ai/v2/docs/providers/",
+    "https://github.com/earendil-works/pi",
+    "https://learn.chatgpt.com/docs/codex/cli",
+    "https://cursor.com/docs/agent/overview",
     "https://github.com/google-gemini/gemini-cli",
-    "https://pi.dev/",
   ];
 
   it("carries 'Claude Code alternatives' in the title without losing the comparison", () => {
@@ -972,14 +973,14 @@ describe("Devin vs Claude Code section (Issue #908)", () => {
     }
   });
 
-  it("links the new section from the Claude Code delivery-line paragraph, not the terminal list", () => {
+  it("keeps the Devin comparison link in the delivery-boundary copy, not the tool table", () => {
     const html = shipped.get("compare/claude-code/index.html");
     const sectionStart = html.indexOf('id="claude-code-alternatives"');
-    const deliveryLine = html.indexOf("IF YOU WANT CLAUDE CODE TO FINISH THE DELIVERY LINE");
-    expect(deliveryLine, "missing the delivery-line paragraph").toBeGreaterThan(sectionStart);
+    const deliveryLine = html.indexOf("When you want GitHub to carry the delivery");
+    expect(deliveryLine, "missing the delivery-boundary heading").toBeGreaterThan(sectionStart);
     const delivery = html.slice(deliveryLine, html.indexOf("</section>", deliveryLine));
-    expect(delivery, "the delivery-line paragraph must link the Devin section").toContain('href="/compare/devin/#devin-vs-claude-code"');
-    expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the terminal/IDE list").not.toContain("/compare/devin/#devin-vs-claude-code");
+    expect(delivery, "the delivery copy must link the Devin comparison").toContain('href="/compare/devin/#devin-vs-claude-code"');
+    expect(html.slice(sectionStart, deliveryLine), "the link must not sit in the alternatives table").not.toContain("/compare/devin/#devin-vs-claude-code");
   });
 
   it("carries first-hand Orbi material, not only a description", () => {
@@ -2879,8 +2880,8 @@ describe("Google Jules comparison contract (Issue #200)", () => {
 // the page outside its JSON-LD, so a guessed date cannot ship.
 describe("Article publish and update dates (Issue #889)", () => {
   const DATED_PAGES = {
-    "compare/claude-code/index.html": ["2026-09-17", "2026-10-06"],
-    "zh/compare/claude-code/index.html": ["2026-09-17", "2026-09-17"],
+    "compare/claude-code/index.html": ["2026-09-17", "2026-10-23"],
+    "zh/compare/claude-code/index.html": ["2026-09-17", "2026-10-23"],
     "compare/codex/index.html": ["2026-09-07", "2026-10-18"],
     "zh/compare/codex/index.html": ["2026-09-07", "2026-10-18"],
     "compare/cursor/index.html": ["2026-09-17", "2026-10-04"],
