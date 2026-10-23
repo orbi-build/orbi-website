@@ -144,21 +144,31 @@ async function blogLayoutAt(route, width) {
   }
 }
 
-async function constrainedHeadingAt(route, selector, ch) {
+async function constrainedHeadingAt(route, selector, ch = null) {
   const page = await guardedPage(browser, origin, { viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${origin}${route}`, { waitUntil: "load", timeout: 25_000 });
     return await page.locator(selector).first().evaluate((heading, expectedCh) => {
-      const expected = document.createElement("span");
       const style = getComputedStyle(heading);
-      expected.style.cssText = `position:absolute; width:${expectedCh}ch; font:${style.font};`;
-      document.body.append(expected);
-      const expectedWidth = expected.getBoundingClientRect().width;
-      expected.remove();
+      let expectedWidth = null;
+      if (expectedCh !== null) {
+        const expected = document.createElement("span");
+        expected.style.cssText = `position:absolute; width:${expectedCh}ch; font:${style.font};`;
+        document.body.append(expected);
+        expectedWidth = expected.getBoundingClientRect().width;
+        expected.remove();
+      }
+      const column = heading.parentElement;
+      const columnStyle = getComputedStyle(column);
       return {
-        maxWidth: Number.parseFloat(getComputedStyle(heading).maxWidth),
+        maxWidth: Number.parseFloat(style.maxWidth),
+        maxWidthRaw: style.maxWidth,
         width: heading.getBoundingClientRect().width,
         expectedWidth,
+        columnWidth:
+          column.clientWidth
+          - Number.parseFloat(columnStyle.paddingLeft)
+          - Number.parseFloat(columnStyle.paddingRight),
       };
     }, ch);
   } finally {
@@ -236,11 +246,13 @@ describe("blog titles use the post entry width (Issue #401)", () => {
     }
   }, 30_000);
 
-  it("keeps the recorded desktop heading widths on compare, cloud, pricing, FAQ, and closing", async () => {
+  // Issue #1057 deleted the generic ".compare-section .orbi-compare-section-h2"
+  // 26ch measure: "ch" is the width of the digit zero, not a count of CJK
+  // glyphs, so it wrapped short content headings early while the parent column
+  // still had room. The FAQ (24ch) and closing (22ch) roles are separate
+  // measures and keep theirs; the content headings now fill their column.
+  it("keeps the recorded desktop heading widths on FAQ and closing, and lets content headings fill their column", async () => {
     const cases = [
-      ["/compare/", ".compare-section h2", 26, 702],
-      ["/cloud/", ".compare-section h2", 26, 702],
-      ["/pricing/", ".compare-section h2", 26, 702],
       ["/", ".faq h2", 24, 648],
       ["/", ".closing h2", 22, 594],
     ];
@@ -250,6 +262,13 @@ describe("blog titles use the post entry width (Issue #401)", () => {
       expect(result.width, `${route} ${selector}: rendered width`).toBeCloseTo(result.expectedWidth, 1);
       // CI's fallback font is up to 6px narrower than the production webfont.
       expect(Math.abs(result.width - productionWidth), `${route} ${selector}: production baseline`).toBeLessThanOrEqual(6);
+    }
+
+    // /pricing/ redirects to /cloud/#pricing, so it is the same content heading.
+    for (const route of ["/compare/", "/cloud/"]) {
+      const result = await constrainedHeadingAt(route, ".compare-section h2");
+      expect(result.maxWidthRaw, `${route} .compare-section h2: no 26ch measure`).toBe("none");
+      expect(result.width, `${route} .compare-section h2: parent column width`).toBeCloseTo(result.columnWidth, 1);
     }
   }, 30_000);
 });
