@@ -12,14 +12,7 @@
 //                                template and derives the /blog/ indexes and
 //                                /blog/feed.xml from the post list.
 //
-// Usage: node scripts/build-pages.mjs [--out <dir>] [--sitemap-only]   (default: public)
-//
-// --sitemap-only writes just public/sitemap.xml. It exists because the sitemap
-// is a deploy-time asset (Issue #1062): its lastmod is the UTC day of each
-// source's last Git commit, and a squash merge rewrites that commit onto a new
-// day, so a committed sitemap goes stale exactly when CI compares the two. The
-// entry shares the collectors, the date source and the XML renderer with the
-// full build — only the set of files it writes differs.
+// Usage: node scripts/build-pages.mjs [--out <dir>]   (default: public)
 //
 // A `layout: "minified"` page receives both fragments joined onto one line,
 // the shape those ten files were authored in; everything else gets the
@@ -27,7 +20,6 @@
 // a fragment and rebuilding never reflows a page that declares minified.
 
 import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
-import { execFileSync } from "node:child_process";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { marked } from "marked";
@@ -420,43 +412,6 @@ function renderRelated(page, data) {
 function renderGuideIndex(page, data) {
   const zh = page.lang === "zh";
   return data.guides.map((guide) => { const copy = guide[zh ? "zh" : "en"]; return `<article class="guide-index-entry"><a class="guide-index-link" href="${zh ? "/zh/" : "/"}guides/${guide.slug}/"><h2 class="guide-index-title">${escAttr(copy.title)}</h2><p class="guide-index-summary">${escAttr(copy.summary)}</p></a></article>`; }).join("\n");
-}
-
-// The UTC day a source's lastmod carries. %ct is the timezone-independent
-// commit epoch; rendering it to the UTC day matches the untracked-file
-// fallback exactly. A local-day format (%cs, or slicing %cI) moves with the
-// committer's timezone and disagrees with a UTC CI whenever a commit and a
-// build straddle local midnight.
-function utcDay(epochSeconds) {
-  return new Date(Number(epochSeconds) * 1000).toISOString().slice(0, 10);
-}
-
-export function lastCommitDate(source, root = ROOT) {
-  const relativeSource = relative(root, source);
-  // Content outside the repository (the fixture builds in the tests) has no
-  // git history to ask: same fallback as an untracked file.
-  if (relativeSource.startsWith("..")) return new Date().toISOString().slice(0, 10);
-  try {
-    // A source with uncommitted changes is being committed right now: the
-    // build runs before the commit, so git log would return the PREVIOUS
-    // commit's epoch and the shipped sitemap would lag by one commit — a CI
-    // rebuild (file committed) then computes a different lastmod and the
-    // byte-for-byte gate goes red (Issue #279). Use the current UTC day,
-    // the day the change is committed.
-    const dirty = execFileSync("git", ["status", "--porcelain", "--", relativeSource], {
-      cwd: root,
-      encoding: "utf8",
-    }).trim();
-    if (dirty) return new Date().toISOString().slice(0, 10);
-    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", relativeSource], {
-      cwd: root,
-      encoding: "utf8",
-    }).trim();
-    return epoch ? utcDay(epoch) : new Date().toISOString().slice(0, 10);
-  } catch (error) {
-    const detail = error.stderr?.toString().trim() || error.message;
-    throw new Error(`unable to get git lastmod for ${relativeSource}: ${detail}`);
-  }
 }
 
 // Attribute-value escaping for the generated meta lines, index entries and
@@ -1477,14 +1432,12 @@ function isIndexableAtOwnUrl(page) {
   return canonical === `https://orbi.build${pathToHref(page.output)}`;
 }
 
-function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR, root = ROOT } = {}) {
-  const urls = pages.filter(({ page }) => !page.standalone && isIndexableAtOwnUrl(page)).map(({ page, path }) => {
+function renderSitemap(pages, posts = [], guides = []) {
+  const urls = pages.filter((page) => !page.standalone && isIndexableAtOwnUrl(page)).map((page) => {
     const href = pathToHref(page.output);
     const mirror = pathToHref(page.mirror);
     const base = "https://orbi.build";
-    const isHome = page.output === "index.html" || page.output === "zh/index.html";
-    const priority = page.output === "index.html" ? "1.0" : page.output === "zh/index.html" ? "0.9" : "0.8";
-    return `  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${page.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastCommitDate(path, root)}</lastmod>\n    <changefreq>${isHome ? "weekly" : "monthly"}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+    return `  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${page.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${page.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${page.lang === "en" ? href : mirror}"/>\n  </url>`;
   });
   // Blog posts: rendered from content/blog, one URL per published post
   // regardless of pairing (Issue #214). Paired posts carry hreflang
@@ -1494,41 +1447,33 @@ function renderSitemap(pages, posts = [], guides = [], { contentDir = CONTENT_DI
   for (const post of posts) {
     const base = "https://orbi.build";
     const href = post.href;
-    const tail = `\n    <lastmod>${lastCommitDate(join(contentDir, post.source), root)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`;
     if (!post.paired) {
-      urls.push(`  <url>\n    <loc>${base}${href}</loc>${tail}`);
+      urls.push(`  <url>\n    <loc>${base}${href}</loc>\n  </url>`);
       continue;
     }
     const mirror = pathToHref(post.mirrorOutput);
-    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>${tail}`);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>\n  </url>`);
   }
   // Guides (Issue #826): always paired, so every entry carries the three
-  // hreflang alternates. The lastmod is the newer of the guide md's own commit
-  // and every series post the page's generated index lists: a new series post
-  // changes the page even though the guide md itself did not move.
+  // hreflang alternates.
   for (const guide of guides) {
     const base = "https://orbi.build";
     const href = guide.href;
     const mirror = pathToHref(guide.mirrorOutput);
-    const seriesPosts = posts.filter((post) => guide.series.includes(post.series));
-    const lastmod = [
-      lastCommitDate(join(guidesDir, guide.source), root),
-      ...seriesPosts.map((post) => lastCommitDate(join(contentDir, post.source), root)),
-    ].sort().at(-1);
-    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${guide.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${guide.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${guide.lang === "en" ? href : mirror}"/>\n  </url>`);
   }
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
 }
 
-export async function loadPages(pagesDir = PAGES_DIR) {
-  const sources = await walkPages(pagesDir);
+export async function loadPages() {
+  const sources = await walkPages(PAGES_DIR);
   const pages = [];
   for (const path of sources) {
     const page = parsePage(path, await readFile(path, "utf8"));
     // The source path relative to site/pages, POSIX form: "blog/post.html".
     // Identity for the blog conventions, and the file name the build's
     // errors carry.
-    page.source = relative(pagesDir, path).split("\\").join("/");
+    page.source = relative(PAGES_DIR, path).split("\\").join("/");
     pages.push(page);
   }
   return pages;
@@ -1565,20 +1510,6 @@ function renderLlmsFull(template, renderedPages, matrixCsv) {
     throw new Error("llms-full.txt is missing <!--@comparison-matrix-->");
   }
   return output.replace("<!--@comparison-matrix-->", matrixCsv.trim()).trimEnd() + "\n";
-}
-
-// Issue #1062: the sitemap-only entry point. It runs the same page/post/guide
-// collectors and the same renderSitemap as the full build, and writes exactly
-// one file — a deploy-time build must never touch (and so never "repair") the
-// committed pages the byte-for-byte gate compares.
-export async function buildSitemap(outDir, { root = ROOT, pagesDir = join(root, "site", "pages"), contentDir = join(root, "content", "blog"), guidesDir = join(root, "content", "guides") } = {}) {
-  const pages = await loadPages(pagesDir);
-  const posts = await collectPosts(contentDir);
-  const guides = await collectGuides(guidesDir);
-  const xml = renderSitemap(pages.map((page) => ({ page, path: join(pagesDir, page.source) })), posts, guides, { contentDir, guidesDir, root });
-  await mkdir(outDir, { recursive: true });
-  await writeFile(join(outDir, "sitemap.xml"), xml);
-  return xml;
 }
 
 export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir = GUIDES_DIR, socialProofPath = SOCIAL_PROOF_PATH } = {}) {
@@ -1699,7 +1630,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   }
   await writeFile(
     join(outDir, "sitemap.xml"),
-    renderSitemap(pages.map((page) => ({ page, path: join(PAGES_DIR, page.source) })), posts, guides, { contentDir, guidesDir }),
+    renderSitemap(pages, posts, guides),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
   const englishPosts = posts.filter((post) => post.lang === "en");
@@ -1735,15 +1666,16 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const argv = process.argv.slice(2);
   const outIndex = argv.indexOf("--out");
   if (outIndex >= 0 && (!argv[outIndex + 1] || argv[outIndex + 1].startsWith("--"))) {
-    console.error("usage: node scripts/build-pages.mjs [--out <dir>] [--sitemap-only]");
+    console.error("usage: node scripts/build-pages.mjs [--out <dir>]");
     process.exit(2);
   }
   const outDir = outIndex >= 0 ? resolve(argv[outIndex + 1]) : join(ROOT, "public");
-  const run = argv.includes("--sitemap-only")
-    ? buildSitemap(outDir).then(() => console.log(`built sitemap.xml into ${outDir}`))
-    : buildPages(outDir).then((count) => console.log(`built ${count} pages into ${outDir}`));
-  run.catch((error) => {
-    console.error(error.message);
-    process.exit(1);
-  });
+  buildPages(outDir)
+    .then((count) => {
+      console.log(`built ${count} pages into ${outDir}`);
+    })
+    .catch((error) => {
+      console.error(error.message);
+      process.exit(1);
+    });
 }
