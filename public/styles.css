@@ -2265,8 +2265,6 @@ h2 {
   background: var(--paper-2);
 }
 
-.compare-section .orbi-compare-section-h2 { max-width: 26ch; }
-
 /* Inline source citations: one line under a fact group or a timeline event,
    mono and quiet, so the claim and its provenance stay visually attached. */
 .src-note {
