@@ -238,7 +238,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // attributes. Only the structure and the rendered Altern / SaaSpa.ge /
         // Tooluck boxes are asserted here; the 28px contract for all seven is
         // the Issue #1038 suite below.
-        expect(result.badgeCount, path + ": the footer badges").toBe(12);
+        expect(result.badgeCount, path + ": the footer badges").toBe(14);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -374,6 +374,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://altern.ai/ai/orbi",
     "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     "https://www.tooluck.org/item/orbi",
+    "https://dofollow.tools",
   ];
 
   // The AI Agents Listing badge is loading="lazy", so it only starts loading
@@ -410,7 +411,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
 
         const expectBadges = (badges, label) => {
-          expect(badges, label + ": badge count").toHaveLength(11);
+          expect(badges, label + ": badge count").toHaveLength(12);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);

@@ -1681,6 +1681,8 @@ describe("one unified footer on every content page", () => {
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
       "https://www.tooluck.org/item/orbi",
+      "https://launchtory.com/projects/orbi-build",
+      "https://dofollow.tools",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
