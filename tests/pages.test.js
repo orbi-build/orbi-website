@@ -1678,6 +1678,8 @@ describe("one unified footer on every content page", () => {
       "https://showmebest.ai",
       "https://goodaitools.com/ai/orbi",
       "https://aixcollection.com/ai/orbi",
+      "https://launchtory.com/projects/orbi-build",
+      "https://dofollow.tools",
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
       "https://www.tooluck.org/item/orbi",
