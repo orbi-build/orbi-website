@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectGuides, collectPosts, insertInlinePostCta, lastCommitDate, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
+import { buildPages, collectGuides, collectPosts, insertInlinePostCta, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
@@ -52,10 +52,6 @@ beforeAll(async () => {
     shipped.set(guide.output, await readFile(join(ROOT, "public", guide.output), "utf8"));
   }
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
-  // Issue #1062: public/sitemap.xml is not committed — its lastmod is a Git
-  // commit day, which a squash merge rewrites. `npm test` generates it before
-  // the suite runs (pretest -> npm run build:sitemap), so this read pins the
-  // deploy-time entry's output against a fresh full build.
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
   shippedFeed = await readFile(join(ROOT, "public", "blog", "feed.xml"), "utf8");
   generatedLlms = await readFile(join(builtDir, "llms.txt"), "utf8");
@@ -1314,7 +1310,7 @@ describe("build output is committed (npm run build ran)", () => {
     ).toEqual([]);
   });
 
-  it("generates a sitemap for every orbi.build page with git lastmod dates", () => {
+  it("generates a sitemap for every orbi.build page", () => {
     // Issue #888: a page is listed only when it is indexable HTML at its own
     // orbi.build URL — its canonical. The two aiready pages canonically live
     // on aiready.sh and /compare/matrix.csv is not a page, so none of the
@@ -1324,20 +1320,11 @@ describe("build output is committed (npm run build ran)", () => {
     );
     expect(generatedSitemap).toBe(shippedSitemap);
     expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(pagesForSitemap.length + posts.length + guides.length);
-    expect(new Set([...generatedSitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1])).size)
-      .toBeGreaterThanOrEqual(2);
-
-    const source = "site/pages/zh/cloud/index.html";
-    // Same basis as the build's lastCommitDate: the commit epoch, rendered to
-    // the UTC day.
-    const epoch = execFileSync("git", ["log", "-1", "--format=%ct", "--", source], {
-      cwd: ROOT,
-      encoding: "utf8",
-    }).trim();
-    const dirty = execFileSync("git", ["status", "--porcelain", "--", source], { cwd: ROOT, encoding: "utf8" }).trim();
-    const expectedDate = dirty ? new Date().toISOString().slice(0, 10) : new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
-    const cloudUrl = generatedSitemap.match(/<loc>https:\/\/orbi\.build\/zh\/cloud\/<\/loc>([\s\S]*?)<\/url>/)?.[1];
-    expect(cloudUrl).toContain(`<lastmod>${expectedDate}</lastmod>`);
+    // Issue #1065: the sitemap carries the URL and its hreflang alternates
+    // only. lastmod, changefreq and priority are optional in the protocol, and
+    // dropping them is what keeps this a plain build artifact with no Git or
+    // clock dependency.
+    expect(generatedSitemap).not.toMatch(/<(?:lastmod|changefreq|priority)>/);
   });
 
   // Issue #888: every URL in the sitemap must be an indexable HTML page that
@@ -1361,54 +1348,6 @@ describe("build output is committed (npm run build ran)", () => {
       if (canonical !== `https://orbi.build${href}`) failures.push(`${href}: canonical is ${canonical ?? "missing"}`);
     }
     expect(failures, failures.join("\n")).toEqual([]);
-  });
-
-  // Issue #279: the build runs before the commit, so a source with
-  // uncommitted changes must carry the current UTC day (the day the change
-  // is committed), not the previous commit's epoch. A clean source keeps the
-  // committed epoch. Both are timezone-independent.
-  describe("lastCommitDate (Issue #279)", () => {
-    let repo;
-    const git = (args) =>
-      execFileSync("git", args, { cwd: repo, encoding: "utf8", stdio: "pipe" });
-
-    beforeAll(async () => {
-      repo = await mkdtemp(join(tmpdir(), "orbi-lastmod-"));
-      git(["init", "-q"]);
-      git(["config", "user.email", "test@orbi.build"]);
-      git(["config", "user.name", "orbi-test"]);
-      await writeFile(join(repo, "page.html"), "<p>one</p>\n");
-      git(["add", "page.html"]);
-      // Commit with a fixed PAST date so the committed epoch's UTC day
-      // (2026-09-19) differs from the current UTC day — otherwise the
-      // clean-source and dirty-source tests cannot tell the behaviors apart.
-      execFileSync("git", ["commit", "-q", "-m", "initial"], {
-        cwd: repo,
-        encoding: "utf8",
-        env: { ...process.env, GIT_COMMITTER_DATE: "2026-09-19T12:00:00Z", GIT_AUTHOR_DATE: "2026-09-19T12:00:00Z" },
-      });
-    });
-
-    afterAll(async () => {
-      if (repo) await rm(repo, { recursive: true, force: true });
-    });
-
-    it("returns the committed epoch's UTC day for a clean source", () => {
-      const epoch = git(["log", "-1", "--format=%ct", "--", "page.html"]).trim();
-      const expected = new Date(Number(epoch) * 1000).toISOString().slice(0, 10);
-      // The fixed commit date is 2026-09-19, so this asserts the committed
-      // epoch is used — not the current UTC day.
-      expect(expected).toBe("2026-09-19");
-      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe("2026-09-19");
-    });
-
-    it("returns the current UTC day for a source with uncommitted changes", async () => {
-      await writeFile(join(repo, "page.html"), "<p>two</p>\n"); // dirty, uncommitted
-      const todayUtc = new Date().toISOString().slice(0, 10);
-      expect(lastCommitDate(join(repo, "page.html"), repo)).toBe(todayUtc);
-      // Restore so the clean-source test stays valid on rerun.
-      git(["checkout", "--", "page.html"]);
-    });
   });
 
   it("leaves no build markers or unfilled slots in shipped pages", () => {

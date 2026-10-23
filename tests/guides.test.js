@@ -8,11 +8,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectGuides, collectPosts, lastCommitDate } from "../scripts/build-pages.mjs";
+import { buildPages, collectGuides, collectPosts } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const GUIDES_DIR = join(ROOT, "content", "guides");
-const CONTENT_DIR = join(ROOT, "content", "blog");
 const PUBLIC = join(ROOT, "public");
 
 const SLUG = "pi-coding-agent";
@@ -81,18 +80,12 @@ describe("Markdown guide rendering (Issue #826)", () => {
     }
   });
 
-  it("lists both hub URLs in the sitemap with a lastmod from the guide md or a series post", () => {
-    const seriesPosts = posts.filter((post) => post.series === "pi");
+  it("lists both hub URLs in the sitemap with their mutual hreflang alternates", () => {
     for (const page of PAGES) {
       const entry = sitemap.match(new RegExp(`<loc>https://orbi\\.build${page.href}</loc>([\\s\\S]*?)</url>`))?.[1];
       expect(entry, `${page.href}: sitemap entry`).toBeTruthy();
       expect(entry, `${page.href}: EN hreflang`).toContain(`hreflang="en" href="https://orbi.build${page.lang === "en" ? page.href : page.mirror}"`);
       expect(entry, `${page.href}: ZH hreflang`).toContain(`hreflang="zh-CN" href="https://orbi.build${page.lang === "zh" ? page.href : page.mirror}"`);
-      const expected = [
-        lastCommitDate(join(GUIDES_DIR, page.source)),
-        ...seriesPosts.map((post) => lastCommitDate(join(CONTENT_DIR, post.source))),
-      ].sort().at(-1);
-      expect(entry, `${page.href}: lastmod`).toContain(`<lastmod>${expected}</lastmod>`);
     }
   });
 
