@@ -162,19 +162,12 @@ describe("h1 wrapping (Issue #861)", () => {
   }, 60_000);
 });
 
-// Issue #1057: the generic content heading inside ".compare-section" carried a
-// 26ch measure in public/styles.css. "ch" is the width of the digit zero, not a
-// count of CJK glyphs, so it squeezed every H2 on the comparison, cost, Cloud,
-// guide and evidence pages into a narrow column of its own and wrapped short
-// headings early while the parent column still had room. This Issue deletes
-// that rule, so every one of these headings now uses the parent column's width:
-// one line where it fits, natural wrapping where it does not.
-//
-// The three short H3s under "Claude Code alternatives" are sub-headings of that
-// section's copy column, not content headings: at 1440 they carried the H2 role
-// class and its measure, which cut the Chinese heading after "许可" and left
-// "界面" alone on a second line. They are now native H3s and follow the same
-// column-width rule as the H2s below.
+// Issue #1057: the three short H3s under "Claude Code alternatives" are
+// sub-headings of that section's copy column, not content headings. At 1440
+// they carried the H2 role class and its 26ch measure (deleted in this Issue,
+// see the content-heading cases below), which cut the Chinese heading after
+// "许可" and left "界面" alone on a second line. They are native H3s now and
+// follow the same column-width rule as the H2s below.
 const alternativesPages = ["/compare/claude-code/", "/zh/compare/claude-code/"];
 const alternativesSubheadings = "#claude-code-alternatives ~ h3";
 
