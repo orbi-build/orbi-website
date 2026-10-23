@@ -287,7 +287,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         ).toBeLessThan(0.02);
         // Issue #1012: the badge is reachable from the keyboard and shows the
         // focus ring. Tab from the badge before it, as a keyboard visitor does.
-        await page.locator('footer .footer-badges a[href="https://aixcollection.com/ai/orbi"]').focus();
+        await page.locator('footer .footer-badges a[href="https://dofollow.tools"]').focus();
         await page.keyboard.press("Tab");
         const focused = await page.evaluate(() => {
           const active = document.activeElement;
@@ -371,10 +371,11 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://showmebest.ai",
     "https://goodaitools.com/ai/orbi",
     "https://aixcollection.com/ai/orbi",
+    "https://launchtory.com/projects/orbi-build",
+    "https://dofollow.tools",
     "https://altern.ai/ai/orbi",
     "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     "https://www.tooluck.org/item/orbi",
-    "https://dofollow.tools",
   ];
 
   // The AI Agents Listing badge is loading="lazy", so it only starts loading
