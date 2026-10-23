@@ -1673,14 +1673,14 @@ describe("one unified footer on every content page", () => {
       "https://aiagentsdirectory.com/agent/orbi",
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
-      "https://altern.ai/ai/orbi",
-      "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
-      "https://www.tooluck.org/item/orbi",
       "https://nicklaunches.com/",
       "https://yourhack.ai",
       "https://showmebest.ai",
       "https://goodaitools.com/ai/orbi",
       "https://aixcollection.com/ai/orbi",
+      "https://altern.ai/ai/orbi",
+      "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
+      "https://www.tooluck.org/item/orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
