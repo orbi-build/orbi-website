@@ -7,3 +7,8 @@ __pycache__/
 .pytest_cache/
 .drafts/
 .worktrees/
+# Issue #1062: the sitemap's lastmod is the UTC day of each source's last Git
+# commit, so it is generated from the deploying checkout and never committed.
+# Only this one file: every other generated page stays tracked and is compared
+# byte-for-byte against the build.
+/public/sitemap.xml

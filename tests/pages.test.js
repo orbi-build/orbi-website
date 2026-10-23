@@ -52,6 +52,10 @@ beforeAll(async () => {
     shipped.set(guide.output, await readFile(join(ROOT, "public", guide.output), "utf8"));
   }
   generatedSitemap = await readFile(join(builtDir, "sitemap.xml"), "utf8");
+  // Issue #1062: public/sitemap.xml is not committed — its lastmod is a Git
+  // commit day, which a squash merge rewrites. `npm test` generates it before
+  // the suite runs (pretest -> npm run build:sitemap), so this read pins the
+  // deploy-time entry's output against a fresh full build.
   shippedSitemap = await readFile(join(ROOT, "public", "sitemap.xml"), "utf8");
   shippedFeed = await readFile(join(ROOT, "public", "blog", "feed.xml"), "utf8");
   generatedLlms = await readFile(join(builtDir, "llms.txt"), "utf8");
