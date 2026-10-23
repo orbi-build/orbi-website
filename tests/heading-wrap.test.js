@@ -77,10 +77,11 @@ afterAll(async () => {
   assertNoExternalRequests();
 });
 
-// Measure the rendered h1 line by line: each distinct glyph top is one line,
-// and a line's width is the span from its leftmost to its rightmost character.
-function headingLines(page) {
-  return page.locator("h1").first().evaluate((heading) => {
+// Measure an element's rendered text line by line: each distinct glyph top is
+// one line, and a line's width is the span from its leftmost to its rightmost
+// character.
+function textLines(locator) {
+  return locator.evaluate((heading) => {
     const range = document.createRange();
     const lines = new Map();
     const visit = (node) => {
@@ -107,6 +108,10 @@ function headingLines(page) {
       .sort((a, b) => a.top - b.top)
       .map((line) => line.right - line.left);
   });
+}
+
+function headingLines(page) {
+  return textLines(page.locator("h1").first());
 }
 
 describe("h1 wrapping (Issue #861)", () => {
@@ -155,4 +160,150 @@ describe("h1 wrapping (Issue #861)", () => {
       await page.close();
     }
   }, 60_000);
+});
+
+// Issue #1057: the three short H3s under "Claude Code alternatives" are
+// sub-headings of that section's copy column, not content headings. At 1440
+// they carried the H2 role class and its 26ch measure (deleted in this Issue,
+// see the content-heading cases below), which cut the Chinese heading after
+// "许可" and left "界面" alone on a second line. They are native H3s now and
+// follow the same column-width rule as the H2s below.
+const alternativesPages = ["/compare/claude-code/", "/zh/compare/claude-code/"];
+const alternativesSubheadings = "#claude-code-alternatives ~ h3";
+
+describe("Claude Code alternatives sub-headings (Issue #1057)", () => {
+  it("keeps each of the three short H3s on one line at 1440", async () => {
+    const page = await guardedPage(browser, baseUrl);
+    try {
+      for (const path of alternativesPages) {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate(() => document.fonts.ready);
+        const subheadings = page.locator(alternativesSubheadings);
+        expect(await subheadings.count(), `${path} sub-heading count`).toBe(3);
+        for (let index = 0; index < 3; index += 1) {
+          const subheading = subheadings.nth(index);
+          const text = (await subheading.textContent()).trim();
+          const lines = await textLines(subheading);
+          expect(lines, `${path} at 1440px "${text}" heading lines`).toHaveLength(1);
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 60_000);
+
+  it("wraps them inside the copy column without page overflow at 390 and 320", async () => {
+    const page = await guardedPage(browser, baseUrl);
+    try {
+      for (const path of alternativesPages) {
+        for (const width of [390, 320]) {
+          await page.setViewportSize({ width, height: 844 });
+          await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+          await page.evaluate(() => document.fonts.ready);
+          const subheadings = page.locator(alternativesSubheadings);
+          expect(await subheadings.count(), `${path} at ${width}px sub-heading count`).toBe(3);
+          for (let index = 0; index < 3; index += 1) {
+            const subheading = subheadings.nth(index);
+            const text = (await subheading.textContent()).trim();
+            const context = `${path} at ${width}px "${text}"`;
+            const lines = await textLines(subheading);
+            expect(lines.length, `${context} heading lines`).toBeGreaterThanOrEqual(1);
+            const box = await subheading.evaluate((element) => ({
+              width: element.getBoundingClientRect().width,
+              clientWidth: element.clientWidth,
+              scrollWidth: element.scrollWidth,
+            }));
+            for (const line of lines) {
+              expect(line, `${context} line ${line.toFixed(1)}px vs box ${box.width.toFixed(1)}px`)
+                .toBeLessThanOrEqual(box.width + 1);
+            }
+            expect(box.scrollWidth, `${context} clipped text`).toBeLessThanOrEqual(box.clientWidth + 1);
+          }
+          const viewport = await page.evaluate(() => ({
+            scrollWidth: document.documentElement.scrollWidth,
+            innerWidth: window.innerWidth,
+          }));
+          expect(
+            viewport.scrollWidth,
+            `${path} at ${width}px page scrollWidth ${viewport.scrollWidth}px vs viewport ${viewport.innerWidth}px`,
+          ).toBeLessThanOrEqual(viewport.innerWidth + 1);
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 90_000);
+});
+
+// Issue #1057's measured samples for the deleted 26ch measure, in both
+// languages: at 1440 the whole heading fits the parent column, so it is one
+// line; the 26ch rule wrapped each of them into two. The exact values the Issue
+// recorded on production were 693.04px of heading inside a 1345px column.
+const contentHeadings = [
+  { path: "/compare/", selector: "#risk-title", text: "Convenience should not mean surrendering the boundary" },
+  { path: "/zh/cost/", selector: "#merged-pr-title", text: "169 次合并交付，来自 Orbi Cloud 的实测记录" },
+];
+
+describe("generic content heading measure (Issue #1057)", () => {
+  it("keeps the EN /compare/ and ZH /zh/cost/ H2 to one line at 1440", async () => {
+    const page = await guardedPage(browser, baseUrl);
+    try {
+      for (const heading of contentHeadings) {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(`${baseUrl}${heading.path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate(() => document.fonts.ready);
+        const locator = page.locator(heading.selector);
+        expect(await locator.count(), `${heading.path} ${heading.selector} count`).toBe(1);
+        const text = (await locator.textContent()).trim();
+        expect(text, `${heading.path} ${heading.selector} text`).toBe(heading.text);
+        const lines = await textLines(locator);
+        expect(
+          lines,
+          `${heading.path} at 1440px "${text}" heading lines ${lines.map((line) => line.toFixed(1)).join(" + ")}`,
+        ).toHaveLength(1);
+      }
+    } finally {
+      await page.close();
+    }
+  }, 60_000);
+
+  it("wraps them inside the parent column without page overflow at 390 and 320", async () => {
+    const page = await guardedPage(browser, baseUrl);
+    try {
+      for (const heading of contentHeadings) {
+        for (const width of [390, 320]) {
+          await page.setViewportSize({ width, height: 844 });
+          await page.goto(`${baseUrl}${heading.path}`, { waitUntil: "load", timeout: 25_000 });
+          await page.evaluate(() => document.fonts.ready);
+          const locator = page.locator(heading.selector);
+          expect(await locator.count(), `${heading.path} at ${width}px ${heading.selector} count`).toBe(1);
+          const text = (await locator.textContent()).trim();
+          const context = `${heading.path} at ${width}px "${text}"`;
+          const lines = await textLines(locator);
+          const box = await locator.evaluate((element) => ({
+            width: element.getBoundingClientRect().width,
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth,
+          }));
+          expect(lines.length, `${context} heading lines`).toBeGreaterThanOrEqual(1);
+          for (const line of lines) {
+            expect(line, `${context} line ${line.toFixed(1)}px vs box ${box.width.toFixed(1)}px`)
+              .toBeLessThanOrEqual(box.width + 1);
+          }
+          expect(box.scrollWidth, `${context} clipped text`).toBeLessThanOrEqual(box.clientWidth + 1);
+          const viewport = await page.evaluate(() => ({
+            scrollWidth: document.documentElement.scrollWidth,
+            innerWidth: window.innerWidth,
+          }));
+          expect(
+            viewport.scrollWidth,
+            `${context} page scrollWidth ${viewport.scrollWidth}px vs viewport ${viewport.innerWidth}px`,
+          ).toBeLessThanOrEqual(viewport.innerWidth + 1);
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 90_000);
 });
