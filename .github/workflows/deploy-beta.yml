@@ -78,15 +78,6 @@ jobs:
       - name: Install dependencies
         run: timeout 300s npm ci
 
-      - name: Generate sitemap.xml from this checkout
-        # Issue #1062: the sitemap's lastmod comes from Git history, so it is
-        # built here instead of being committed (a squash merge rewrites the
-        # dates and a committed copy goes stale). Beta has its own checkout and
-        # runs the Python contract tests instead of the full vitest gate, so
-        # nothing else would generate the file these tests read and the deploy
-        # ships — the step is explicit for that reason.
-        run: timeout 300s npm run build:sitemap
-
       - name: Run landing and deployment contract tests
         run: timeout 300s python3 -m unittest tests.test_landing -v
 
