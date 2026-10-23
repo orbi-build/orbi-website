@@ -852,6 +852,21 @@ class LandingTests(unittest.TestCase):
         self.assertIn('node-version: "20.19.0"', workflow)
         self.assertIn('wranglerVersion: "4.34.0"', workflow)
         self.assertNotIn("npm test", workflow)
+        # Issue #1062: public/sitemap.xml is generated from the deploying
+        # checkout (its lastmod is a Git commit day, so it is never committed).
+        # Beta's checkout never runs the full vitest gate, whose pretest would
+        # generate it, so the workflow must run the entry itself — after
+        # npm ci and before the contract tests that read the file.
+        self.assertIn("timeout 300s npm run build:sitemap", workflow)
+        self.assertLess(workflow.index("npm ci"), workflow.index("npm run build:sitemap"))
+        self.assertLess(
+            workflow.index("npm run build:sitemap"),
+            workflow.index("tests.test_landing"),
+        )
+        self.assertLess(
+            workflow.index("npm run build:sitemap"),
+            workflow.index("command: deploy --env beta"),
+        )
         self.assertIn("npm run test:browser", workflow)
         self.assertIn("BASE_URL=https://beta.orbi.build", workflow)
         self.assertIn("command: deploy --env beta", workflow)
