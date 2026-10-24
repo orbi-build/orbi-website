@@ -1976,6 +1976,81 @@ describe("homepage avatar wall from the cron KV snapshot (Issue #1073)", () => {
     expect(db.calls).toBe(0);
   });
 
+  // Issue #1076: a KV read error is not proof that the key is missing. It must
+  // degrade the wall to its existing empty rendering, with zero D1 queries and
+  // no KV write — only a confirmed absent key reaches the 1s D1 fallback.
+  function unreadableKv(entries = {}) {
+    const store = new Map(Object.entries(entries).map(([key, value]) => [key, JSON.stringify(value)]));
+    const puts = [];
+    return {
+      store,
+      puts,
+      get: async (key) => {
+        if (key === FOUNDING_AVATARS_KV_KEY) throw new Error("KV_ERROR: read failed");
+        return store.get(key);
+      },
+      put: async (key, value) => { puts.push({ key, value }); store.set(key, value); },
+      read: (key) => JSON.parse(store.get(key)),
+    };
+  }
+
+  // D1 double that reds the test the moment the homepage touches it. The call
+  // count is the assertion; the throw keeps a regression from waiting on it.
+  function forbiddenDb() {
+    const db = {
+      calls: 0,
+      prepare() {
+        db.calls += 1;
+        throw new Error("D1 must not be queried when the KV read failed");
+      },
+    };
+    return db;
+  }
+
+  it("hides the wall without touching D1 when the KV read throws on /", async () => {
+    const kv = unreadableKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    const db = forbiddenDb();
+    const pendingWrites = [];
+    const started = Date.now();
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(db, kv),
+      { waitUntil: (promise) => pendingWrites.push(promise) },
+    );
+    const elapsed = Date.now() - started;
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(elapsed).toBeLessThan(500);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("avatars.githubusercontent.com");
+    expect(body).not.toContain('title="snapshot-team"');
+    expect(db.calls).toBe(0);
+    expect(kv.puts).toHaveLength(0);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(pendingWrites).toHaveLength(0);
+    expect(warnings.join("\n")).toContain("founding avatars kv read failed: KV_ERROR: read failed");
+    expect(warnings.join("\n")).not.toContain("founding avatars unavailable");
+  });
+
+  it("hides the wall on /zh when the KV read throws, again with zero D1 queries", async () => {
+    const kv = unreadableKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    const db = forbiddenDb();
+    const pendingWrites = [];
+    const response = await handleFetch(
+      new Request("https://orbi.build/zh/"),
+      homepageEnv(db, kv),
+      { waitUntil: (promise) => pendingWrites.push(promise) },
+    );
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("GitHub 贡献者 snapshot-team");
+    expect(db.calls).toBe(0);
+    expect(kv.puts).toHaveLength(0);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(pendingWrites).toHaveLength(0);
+  });
+
   it("treats a malformed KV value as absent and repairs it from D1", async () => {
     const kv = fakeKv({ [FOUNDING_AVATARS_KV_KEY]: { logins: "not-an-array" } });
     const pending = [];
