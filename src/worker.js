@@ -239,15 +239,20 @@ function withDeadline(promise, ms, message) {
   return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
 }
 
-// A malformed or unreadable value is treated as absent so the next request
-// repairs it instead of serving garbage (same rule as the stats snapshot).
+// Issue #1076: a read error proves nothing about the key, so it must not be
+// merged into "no snapshot yet" and reach the D1 fallback. Only a confirmed
+// absent key does; a failed read is this module-internal sentinel.
+const FOUNDING_AVATARS_KV_READ_FAILED = Symbol("founding avatars kv read failed");
+
+// A malformed value is treated as absent so the next request repairs it
+// instead of serving garbage (same rule as the stats snapshot).
 async function readFoundingAvatarsKv(env) {
   let raw;
   try {
     raw = await env?.STATS_KV?.get(FOUNDING_AVATARS_KV_KEY);
   } catch (err) {
     console.warn("founding avatars kv read failed:", err && err.message ? err.message : err);
-    return null;
+    return FOUNDING_AVATARS_KV_READ_FAILED;
   }
   if (!raw) return null;
   try {
@@ -281,6 +286,10 @@ async function refreshFoundingAvatars(env) {
 
 async function foundingAvatars(env, ctx) {
   const snapshot = await readFoundingAvatarsKv(env);
+  // Issue #1076: the read failed, so there is no evidence the snapshot is
+  // missing. Hide the wall (the existing empty rendering) and touch neither D1
+  // nor KV; the next request reads KV again.
+  if (snapshot === FOUNDING_AVATARS_KV_READ_FAILED) return { logins: [], total: 0 };
   if (snapshot) return snapshot;
   // No snapshot yet (a fresh deploy, before the first cron): the only case
   // that waits for D1 inside a request, and then no longer than the ceiling.
