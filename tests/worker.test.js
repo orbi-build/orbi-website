@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
 import pricing from "../src/pricing.json";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
 
 // Issue #917: the Worker reads its stats snapshot from the STATS_KV binding;
 // only the 5-minute cron (or, while KV is still empty, a single request)
@@ -1762,5 +1762,230 @@ describe("/__cf diagnostic (Issue #251)", () => {
     const aiready = await handleFetch(new Request("https://aiready.sh/__cf"), notFoundAssets);
     expect(aiready.status).toBe(302);
     expect(aiready.headers.get("Location")).toBe("https://orbi.build/__cf");
+  });
+});
+
+// Issue #1073: the homepage never queries CONTROL_PLANE_DB. The hourly cron
+// writes the avatar snapshot into STATS_KV (same shape /stats uses), every
+// request renders that snapshot, and only a missing key (a fresh deploy,
+// before the first cron) reaches a 1s-ceilinged lookup inside the request.
+// These tests drive the real handleFetch homepage path and the real scheduled
+// handler with a KV double, D1 doubles and a ctx that collects waitUntil work.
+describe("homepage avatar wall from the cron KV snapshot (Issue #1073)", () => {
+  const realCaches = globalThis.caches;
+  const realFetch = globalThis.fetch;
+  const realWarn = console.warn;
+  let warnings;
+
+  beforeEach(() => {
+    warnings = [];
+    console.warn = (...args) => { warnings.push(args.join(" ")); };
+    // The stats path stays out of the way: homepageStats needs caches.default.
+    globalThis.caches = undefined;
+    // The cron's stats pull must not reach GitHub.
+    globalThis.fetch = async () => new Response("{}", { status: 200 });
+  });
+
+  afterEach(() => {
+    globalThis.caches = realCaches;
+    globalThis.fetch = realFetch;
+    console.warn = realWarn;
+  });
+
+  const HOME_HTML = '<section class="avatar-wall" data-avatar-wall __FOUNDING_AVATARS_HIDDEN__><div data-avatar-list>__FOUNDING_AVATARS__</div></section>';
+  const AVATAR = { logins: ["snapshot-team"], total: 3, fetchedAt: Date.parse("2026-10-24T08:00:00Z") };
+
+  // KV double: any key, puts recorded per key so a test can assert that a
+  // failed lookup wrote nothing and left the old value alone.
+  function fakeKv(entries = {}) {
+    const store = new Map(Object.entries(entries).map(([key, value]) => [key, JSON.stringify(value)]));
+    const puts = [];
+    return {
+      store,
+      puts,
+      get: async (key) => store.get(key),
+      put: async (key, value) => { puts.push({ key, value }); store.set(key, value); },
+      read: (key) => JSON.parse(store.get(key)),
+    };
+  }
+
+  function homepageEnv(db, kv) {
+    return {
+      ASSETS: { fetch: async () => new Response(HOME_HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } }) },
+      CONTROL_PLANE_DB: db,
+      STATS_KV: kv,
+    };
+  }
+
+  function tenantDb(logins, total = logins.length) {
+    const db = {
+      calls: 0,
+      prepare(sql) {
+        db.calls += 1;
+        return {
+          all: async () => (sql.includes("COUNT(*)")
+            ? { results: [{ total }] }
+            : { results: logins.map((login) => ({ login })) }),
+        };
+      },
+    };
+    return db;
+  }
+
+  function hangingDb() {
+    const db = {
+      calls: 0,
+      prepare() {
+        db.calls += 1;
+        return { all: () => new Promise(() => {}) };
+      },
+    };
+    return db;
+  }
+
+  function failingDb(message = "D1_ERROR: connection lost") {
+    const db = {
+      calls: 0,
+      prepare() {
+        db.calls += 1;
+        throw new Error(message);
+      },
+    };
+    return db;
+  }
+
+  it("renders the KV snapshot without touching D1, even when the database hangs", async () => {
+    const db = hangingDb();
+    const started = Date.now();
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(db, fakeKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR })),
+      { waitUntil: () => {} },
+    );
+    const elapsed = Date.now() - started;
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(elapsed).toBeLessThan(500);
+    expect(body).toContain('title="snapshot-team"');
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall >');
+    expect(db.calls).toBe(0);
+    expect(warnings).toEqual([]);
+  });
+
+  it("serves the same snapshot on /zh without touching D1", async () => {
+    const db = hangingDb();
+    const response = await handleFetch(
+      new Request("https://orbi.build/zh/"),
+      homepageEnv(db, fakeKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR })),
+      { waitUntil: () => {} },
+    );
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(body).toContain("GitHub 贡献者 snapshot-team");
+    expect(db.calls).toBe(0);
+  });
+
+  it("writes the avatar snapshot to KV on a successful cron lookup", async () => {
+    const kv = fakeKv();
+    await worker.scheduled({ cron: "0 * * * *" }, { CONTROL_PLANE_DB: tenantDb(["cron-team"], 5), STATS_KV: kv });
+    const stored = kv.read(FOUNDING_AVATARS_KV_KEY);
+    expect(stored.logins).toEqual(["cron-team"]);
+    expect(stored.total).toBe(5);
+    expect(Date.now() - stored.fetchedAt).toBeLessThan(60 * 1000);
+  });
+
+  it("keeps the previous KV value when the cron lookup fails", async () => {
+    const kv = fakeKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    await worker.scheduled({}, { CONTROL_PLANE_DB: failingDb(), STATS_KV: kv });
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(kv.puts.filter((put) => put.key === FOUNDING_AVATARS_KV_KEY)).toHaveLength(0);
+    expect(warnings.join("\n")).toContain("founding avatars cron failed: D1_ERROR: connection lost");
+  });
+
+  it("keeps the previous KV value when the cron lookup times out", async () => {
+    const kv = fakeKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    const db = hangingDb();
+    const started = Date.now();
+    await worker.scheduled({}, { CONTROL_PLANE_DB: db, STATS_KV: kv });
+    expect(Date.now() - started).toBeLessThan(5000);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(db.calls).toBe(2);
+    expect(warnings.join("\n")).toContain("founding avatars cron failed: founding avatars query timed out");
+  });
+
+  it("answers within about a second with the wall hidden when KV is empty and D1 hangs", async () => {
+    const kv = fakeKv();
+    const pending = [];
+    const started = Date.now();
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(hangingDb(), kv),
+      { waitUntil: (promise) => pending.push(promise) },
+    );
+    const elapsed = Date.now() - started;
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(elapsed).toBeGreaterThanOrEqual(900);
+    expect(elapsed).toBeLessThan(3000);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("avatars.githubusercontent.com");
+    expect(kv.puts).toHaveLength(0);
+    expect(pending).toHaveLength(0);
+    expect(warnings.join("\n")).toContain("founding avatars unavailable: founding avatars query timed out");
+  });
+
+  it("hides the wall without writing KV when KV is empty and D1 throws", async () => {
+    const kv = fakeKv();
+    const db = failingDb();
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(db, kv),
+      { waitUntil: () => {} },
+    );
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("avatars.githubusercontent.com");
+    expect(db.calls).toBe(1);
+    expect(kv.puts).toHaveLength(0);
+    expect(warnings.join("\n")).toContain("founding avatars unavailable: D1_ERROR: connection lost");
+  });
+
+  it("fills KV from the first request of a fresh deploy, then serves it without D1", async () => {
+    const kv = fakeKv();
+    const pending = [];
+    const first = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(tenantDb(["first-team"], 2), kv),
+      { waitUntil: (promise) => pending.push(promise) },
+    );
+    expect(await first.text()).toContain('title="first-team"');
+    expect(pending).toHaveLength(1);
+    await Promise.all(pending);
+    const stored = kv.read(FOUNDING_AVATARS_KV_KEY);
+    expect(stored.logins).toEqual(["first-team"]);
+    expect(stored.total).toBe(2);
+
+    const db = hangingDb();
+    const second = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(db, kv),
+      { waitUntil: () => {} },
+    );
+    expect(await second.text()).toContain('title="first-team"');
+    expect(db.calls).toBe(0);
+  });
+
+  it("treats a malformed KV value as absent and repairs it from D1", async () => {
+    const kv = fakeKv({ [FOUNDING_AVATARS_KV_KEY]: { logins: "not-an-array" } });
+    const pending = [];
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(tenantDb(["repaired-team"], 1), kv),
+      { waitUntil: (promise) => pending.push(promise) },
+    );
+    expect(await response.text()).toContain('title="repaired-team"');
+    await Promise.all(pending);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY).logins).toEqual(["repaired-team"]);
   });
 });

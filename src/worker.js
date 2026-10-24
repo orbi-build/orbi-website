@@ -218,6 +218,93 @@ async function loadFoundingAvatars(db) {
   return { logins, total: Number(counted?.results?.[0]?.total) || 0 };
 }
 
+// Issue #1073: the homepage must not query CONTROL_PLANE_DB at all. On
+// 2026-10-24 these two queries stalled for 30–53 seconds and the whole page
+// went with them, while every other route answered in 10–25ms. The row now
+// renders the snapshot the hourly cron writes into STATS_KV (same shape /stats
+// uses): the faces are at most an hour old, and a slow or broken database
+// costs the homepage nothing. Only the very first request after a fresh deploy
+// — before any cron has run — looks the avatars up itself, under a 1s ceiling.
+const FOUNDING_AVATARS_KV_KEY = "founding-avatars";
+const FOUNDING_AVATARS_TIMEOUT_MS = 1000;
+
+// D1's prepare().all() takes no AbortSignal, so the ceiling is a raced
+// deadline. It never rejects the page: the caller decides what a timeout
+// means (hide the wall, or keep the old snapshot).
+function withDeadline(promise, ms, message) {
+  let timer;
+  const deadline = new Promise((_resolve, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
+}
+
+// A malformed or unreadable value is treated as absent so the next request
+// repairs it instead of serving garbage (same rule as the stats snapshot).
+async function readFoundingAvatarsKv(env) {
+  let raw;
+  try {
+    raw = await env?.STATS_KV?.get(FOUNDING_AVATARS_KV_KEY);
+  } catch (err) {
+    console.warn("founding avatars kv read failed:", err && err.message ? err.message : err);
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const snapshot = JSON.parse(raw);
+    if (!Array.isArray(snapshot?.logins) || !Number.isFinite(snapshot.total)) return null;
+    return { logins: snapshot.logins, total: snapshot.total };
+  } catch (err) {
+    console.warn("founding avatars kv parse failed:", err && err.message ? err.message : err);
+    return null;
+  }
+}
+
+function foundingAvatarsSnapshot({ logins, total }) {
+  return JSON.stringify({ logins, total, fetchedAt: Date.now() });
+}
+
+// The hourly cron's lookup. Success replaces the KV snapshot; a failure is one
+// log line and the value already there stays — an hour-old row beats none.
+async function refreshFoundingAvatars(env) {
+  if (!env?.STATS_KV) {
+    throw new Error("STATS_KV binding is not configured");
+  }
+  const avatars = await withDeadline(
+    loadFoundingAvatars(env.CONTROL_PLANE_DB),
+    FOUNDING_AVATARS_TIMEOUT_MS,
+    "founding avatars query timed out",
+  );
+  await env.STATS_KV.put(FOUNDING_AVATARS_KV_KEY, foundingAvatarsSnapshot(avatars));
+  return avatars;
+}
+
+async function foundingAvatars(env, ctx) {
+  const snapshot = await readFoundingAvatarsKv(env);
+  if (snapshot) return snapshot;
+  // No snapshot yet (a fresh deploy, before the first cron): the only case
+  // that waits for D1 inside a request, and then no longer than the ceiling.
+  // A failure hides the wall (existing render logic) and writes nothing, so
+  // the next request tries again.
+  try {
+    const avatars = await withDeadline(
+      loadFoundingAvatars(env?.CONTROL_PLANE_DB),
+      FOUNDING_AVATARS_TIMEOUT_MS,
+      "founding avatars query timed out",
+    );
+    if (env?.STATS_KV) {
+      const write = env.STATS_KV.put(FOUNDING_AVATARS_KV_KEY, foundingAvatarsSnapshot(avatars))
+        .catch((err) => console.warn("founding avatars kv write failed:", err && err.message ? err.message : err));
+      if (ctx?.waitUntil) ctx.waitUntil(write);
+      else await write;
+    }
+    return avatars;
+  } catch (err) {
+    console.warn("founding avatars unavailable:", err && err.message ? err.message : err);
+    return { logins: [], total: 0 };
+  }
+}
+
 // Issue #915/#917: a failing repo answers null, but it must not do so
 // silently — one log line names the repo and carries ghJson's
 // `github <status> <path>` so the cause (403 rate limit vs 404) is visible in
@@ -1000,13 +1087,12 @@ async function handleFetch(request, env, ctx) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
+    // Issue #1073: the KV snapshot the cron keeps, so a stalled
+    // CONTROL_PLANE_DB costs the homepage nothing — only a never-yet-filled
+    // KV reaches the 1s-ceilinged lookup inside this request.
     let founding = { logins: [], total: 0 };
     if (route === "/" || route === "/zh") {
-      try {
-        founding = await loadFoundingAvatars(env.CONTROL_PLANE_DB);
-      } catch (err) {
-        console.error("founding avatars failed:", err && err.message ? err.message : err);
-      }
+      founding = await foundingAvatars(env, ctx);
     }
     // The Assets binding answers a directory path without its trailing slash
     // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
@@ -1362,7 +1448,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: the visit attribution report rides
@@ -1378,13 +1464,20 @@ export default {
     return stamped;
   },
   // Issue #917: the 5-minute Cron Trigger pulls GitHub once and writes the
-  // global KV snapshot every colo then reads. Event detail (cron,
+  // global KV snapshot every colo then reads. Issue #1073 rides the same
+  // trigger: one avatar lookup an hour, written next to the stats snapshot, so
+  // no homepage request ever waits on CONTROL_PLANE_DB. Event detail (cron,
   // scheduledTime) is not needed — the pull is the same every time.
   scheduled: async (event, env) => {
     try {
       await refreshStatsOnce(env);
     } catch (err) {
       console.error("stats cron failed:", err && err.message ? err.message : err);
+    }
+    try {
+      await refreshFoundingAvatars(env);
+    } catch (err) {
+      console.warn("founding avatars cron failed:", err && err.message ? err.message : err);
     }
   },
 };
