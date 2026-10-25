@@ -58,6 +58,12 @@ const STATUS_CACHE_KEY = "https://orbi.build/__status";
 // snapshot of its own and answered all nulls.
 const STATS_KV_KEY = "stats";
 const STATS_TTL_MS = 300000;
+// Issue #1079: without a cacheTtl a colo keeps a KV read for 60 seconds only,
+// so a low-traffic colo (HKG, ICN, KIX, BOM, SYD…) went back to the central
+// store on nearly every homepage visit — twice, one read after the other. The
+// cron writes both snapshots hourly, so an hour of colo cache can never serve
+// anything older than the hourly snapshot already allows.
+const SNAPSHOT_KV_CACHE_TTL_SECONDS = 3600;
 // On the shared beta hostname the cloud control plane owns the route
 // prefixes /api*, /auth*, /login*, /app*, /connect*, /checkout*, /stripe*
 // (orbi-cloud discussion 120 §2 C2), so a website route under any of them
@@ -249,7 +255,7 @@ const FOUNDING_AVATARS_KV_READ_FAILED = Symbol("founding avatars kv read failed"
 async function readFoundingAvatarsKv(env) {
   let raw;
   try {
-    raw = await env?.STATS_KV?.get(FOUNDING_AVATARS_KV_KEY);
+    raw = await env?.STATS_KV?.get(FOUNDING_AVATARS_KV_KEY, { cacheTtl: SNAPSHOT_KV_CACHE_TTL_SECONDS });
   } catch (err) {
     console.warn("founding avatars kv read failed:", err && err.message ? err.message : err);
     return FOUNDING_AVATARS_KV_READ_FAILED;
@@ -335,8 +341,14 @@ async function loadStats(token) {
 // Issue #917: the global snapshot the cron writes, in the same JSON shape
 // /stats serves. A malformed value is treated as absent so the next request
 // repairs it instead of serving garbage.
-async function readStatsFromKv(env) {
-  const raw = await env?.STATS_KV?.get(STATS_KV_KEY);
+// Issue #1079: the homepage passes a cacheTtl so a colo keeps the snapshot it
+// already read; the hourly cron's own read stays uncached, or a repo that
+// failed this hour would be merged from a value a colo cached an hour ago.
+async function readStatsFromKv(env, cacheTtlSeconds) {
+  const raw = await env?.STATS_KV?.get(
+    STATS_KV_KEY,
+    cacheTtlSeconds ? { cacheTtl: cacheTtlSeconds } : undefined,
+  );
   if (!raw) {
     return null;
   }
@@ -733,9 +745,15 @@ async function homepageStats(env, ctx) {
     // Issue #917: fall back to the global KV snapshot so a colo whose cache
     // expired still renders real numbers instead of the HTML floors.
     try {
-      stats = await readStatsFromKv(env);
+      stats = await readStatsFromKv(env, SNAPSHOT_KV_CACHE_TTL_SECONDS);
       if (stats) {
-        await cache.put(STATS_CACHE_KEY, statsCacheEntry(stats));
+        // Issue #1079: the visitor came for the page, not for the colo cache.
+        // A deduplicated copy of a snapshot that is already in hand can be
+        // written after the response, so its latency is not the page's.
+        const write = cache.put(STATS_CACHE_KEY, statsCacheEntry(stats))
+          .catch((err) => console.error("homepage_stats_cache_put_failed:", err && err.message ? err.message : err));
+        if (ctx?.waitUntil) ctx.waitUntil(write);
+        else await write;
       }
     } catch (err) {
       console.error("homepage_stats_kv_failed:", err && err.message ? err.message : err);
@@ -749,7 +767,7 @@ async function homepageStats(env, ctx) {
   return stats;
 }
 
-async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [], total: 0 }, request, env, ctx) {
+async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [], total: 0 }, request, env, ctx, stats = null) {
   if ([301, 302, 307, 308].includes(asset.status)) {
     console.error("asset_redirect_unexpected", asset.status);
     return new Response("asset redirect unexpectedly reached the Worker\n", {
@@ -813,7 +831,9 @@ async function assetResponse(asset, cloudLoginConfigured, founding = { logins: [
     .replaceAll("__FOUNDING_AVATARS_HIDDEN__", founding.total ? "" : "hidden")
     .replaceAll("__FOUNDING_AVATARS__", foundingAvatarMarkup(founding.logins, founding.total, zh));
   if (homepage) {
-    body = fillHomepageStats(body, await homepageStats(env, ctx));
+    // Issue #1079: handleFetch starts this read alongside the avatar read and
+    // hands the result in, so the two KV round trips overlap.
+    body = fillHomepageStats(body, stats);
   }
   if (!cloudLoginConfigured) {
     // The shipped hrefs carry ?ref= tokens (Issue #256); the rewrite must
@@ -1096,13 +1116,6 @@ async function handleFetch(request, env, ctx) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
-    // Issue #1073: the KV snapshot the cron keeps, so a stalled
-    // CONTROL_PLANE_DB costs the homepage nothing — only a never-yet-filled
-    // KV reaches the 1s-ceilinged lookup inside this request.
-    let founding = { logins: [], total: 0 };
-    if (route === "/" || route === "/zh") {
-      founding = await foundingAvatars(env, ctx);
-    }
     // The Assets binding answers a directory path without its trailing slash
     // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
     // binding's own canonicalisation, not an unexpected asset redirect: pass
@@ -1112,7 +1125,15 @@ async function handleFetch(request, env, ctx) {
     if (slashRedirect !== null) {
       return slashRedirect;
     }
-    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), founding, request, env, ctx);
+    // Issue #1079: the homepage's two snapshots are independent KV reads, so
+    // they leave together — one round trip for the visitor instead of two.
+    // Issue #1073: the KV snapshot the cron keeps, so a stalled
+    // CONTROL_PLANE_DB costs the homepage nothing — only a never-yet-filled
+    // KV reaches the 1s-ceilinged lookup inside this request.
+    const [founding, stats] = route === "/" || route === "/zh"
+      ? await Promise.all([foundingAvatars(env, ctx), homepageStats(env, ctx)])
+      : [{ logins: [], total: 0 }, null];
+    return assetResponse(asset, Boolean(env.CLOUD_LOGIN_URL), founding, request, env, ctx, stats);
 }
 
 // Issue #541: the subscription endpoint answers JSON only — the form is
