@@ -933,7 +933,11 @@ describe("server-rendered homepage stats (Issue #873)", () => {
     };
     const env = await homepageEnvironment();
     env.STATS_KV = fakeStatsKv(fakeStats);
-    await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    // Issue #1079: the entry is written after the response, so the assertion
+    // waits for the ctx-handled writes the way the runtime does.
+    const waited = [];
+    await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: (promise) => waited.push(promise) });
+    await Promise.all(waited);
     const response = await handleFetch(new Request("https://orbi.build/stats"), env);
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
     expect(response.headers.get("X-Frame-Options")).toBe("DENY");
@@ -969,6 +973,111 @@ describe("server-rendered homepage stats (Issue #873)", () => {
     expect(statText(html, "orbi-cloud", "prs")).toBe("700");
     expect(statText(html, "orbi-cloud", "issues")).toBe("1000");
     expect(statText(html, "orbi-cloud", "days")).toBe("30");
+  });
+
+  // Issue #1079: the two snapshots the cron writes are read on every homepage
+  // request. Without cacheTtl each colo keeps a KV read for 60s only, so a
+  // low-traffic colo (HKG/ICN/KIX/BOM/SYD) went back to the central store on
+  // both reads — serially — and the page's P90 sat at ~500ms while its median
+  // was ~170ms. The snapshots are written hourly, so an hour of colo cache
+  // cannot serve anything older than the design allows.
+  const SNAPSHOT_TTL = 3600;
+  const foundingSnapshot = { logins: ["alice", "bob"], total: 2 };
+
+  // Records the options each get() was called with and can hold every read
+  // open for a while, which is what a colo miss costs in production.
+  function recordingKv({ delayMs = 0, values = {} } = {}) {
+    const calls = [];
+    const store = new Map(Object.entries(values));
+    const kv = {
+      calls,
+      store,
+      inFlight: 0,
+      maxInFlight: 0,
+      get: async (key, options) => {
+        calls.push({ key, options });
+        kv.inFlight += 1;
+        kv.maxInFlight = Math.max(kv.maxInFlight, kv.inFlight);
+        try {
+          if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
+          return store.get(key);
+        } finally {
+          kv.inFlight -= 1;
+        }
+      },
+      put: async (key, value) => { store.set(key, value); },
+    };
+    return kv;
+  }
+
+  function snapshotValues() {
+    return {
+      [STATS_KV_KEY]: JSON.stringify(fakeStats),
+      [FOUNDING_AVATARS_KV_KEY]: JSON.stringify(foundingSnapshot),
+    };
+  }
+
+  it("asks KV for both homepage snapshots with cacheTtl 3600", async () => {
+    serveCachedStats(undefined);
+    const env = await homepageEnvironment();
+    env.STATS_KV = recordingKv({ values: snapshotValues() });
+    const response = await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    expect(response.status).toBe(200);
+    await response.text();
+    const options = Object.fromEntries(env.STATS_KV.calls.map((call) => [call.key, call.options]));
+    expect(options[FOUNDING_AVATARS_KV_KEY]).toEqual({ cacheTtl: SNAPSHOT_TTL });
+    expect(options[STATS_KV_KEY]).toEqual({ cacheTtl: SNAPSHOT_TTL });
+  });
+
+  it("reads both homepage snapshots at once instead of one after the other", async () => {
+    serveCachedStats(undefined);
+    const readMs = 200;
+    const env = await homepageEnvironment();
+    env.STATS_KV = recordingKv({ delayMs: readMs, values: snapshotValues() });
+    const started = Date.now();
+    const response = await handleFetch(new Request("https://orbi.build/"), env, { waitUntil: () => {} });
+    const elapsed = Date.now() - started;
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    // Both reads really happened and both filled the page.
+    expect(env.STATS_KV.calls.map((call) => call.key).sort())
+      .toEqual([FOUNDING_AVATARS_KV_KEY, STATS_KV_KEY].sort());
+    expect(statText(html, "orbi", "prs")).toBe("615");
+    expect(html).toContain('title="alice"');
+    // The two reads overlapped, which is the behavior itself — the machine's
+    // clock only has to confirm the consequence.
+    expect(env.STATS_KV.maxInFlight).toBe(2);
+    // The visitor waited for one read, not the sum of two.
+    expect(elapsed).toBeGreaterThanOrEqual(readMs);
+    expect(elapsed).toBeLessThan(readMs * 2);
+  });
+
+  it("writes the colo cache through ctx.waitUntil so the response does not wait for it", async () => {
+    let releaseWrite;
+    const pendingWrite = new Promise((resolve) => { releaseWrite = resolve; });
+    let puts = 0;
+    globalThis.caches = {
+      default: {
+        match: async () => undefined,
+        put: () => { puts += 1; return pendingWrite; },
+      },
+    };
+    const env = await homepageEnvironment();
+    env.STATS_KV = recordingKv({ values: snapshotValues() });
+    const waited = [];
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      env,
+      { waitUntil: (promise) => waited.push(promise) },
+    );
+    const html = await response.text();
+    expect(statText(html, "orbi", "prs")).toBe("615");
+    expect(puts).toBe(1);
+    // The pending cache write was handed to ctx, not awaited: the response is
+    // already here while the write is still open.
+    expect(waited).toHaveLength(1);
+    releaseWrite();
+    await Promise.all(waited);
   });
 });
 
@@ -1974,6 +2083,81 @@ describe("homepage avatar wall from the cron KV snapshot (Issue #1073)", () => {
     );
     expect(await second.text()).toContain('title="first-team"');
     expect(db.calls).toBe(0);
+  });
+
+  // Issue #1076: a KV read error is not proof that the key is missing. It must
+  // degrade the wall to its existing empty rendering, with zero D1 queries and
+  // no KV write — only a confirmed absent key reaches the 1s D1 fallback.
+  function unreadableKv(entries = {}) {
+    const store = new Map(Object.entries(entries).map(([key, value]) => [key, JSON.stringify(value)]));
+    const puts = [];
+    return {
+      store,
+      puts,
+      get: async (key) => {
+        if (key === FOUNDING_AVATARS_KV_KEY) throw new Error("KV_ERROR: read failed");
+        return store.get(key);
+      },
+      put: async (key, value) => { puts.push({ key, value }); store.set(key, value); },
+      read: (key) => JSON.parse(store.get(key)),
+    };
+  }
+
+  // D1 double that reds the test the moment the homepage touches it. The call
+  // count is the assertion; the throw keeps a regression from waiting on it.
+  function forbiddenDb() {
+    const db = {
+      calls: 0,
+      prepare() {
+        db.calls += 1;
+        throw new Error("D1 must not be queried when the KV read failed");
+      },
+    };
+    return db;
+  }
+
+  it("hides the wall without touching D1 when the KV read throws on /", async () => {
+    const kv = unreadableKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    const db = forbiddenDb();
+    const pendingWrites = [];
+    const started = Date.now();
+    const response = await handleFetch(
+      new Request("https://orbi.build/"),
+      homepageEnv(db, kv),
+      { waitUntil: (promise) => pendingWrites.push(promise) },
+    );
+    const elapsed = Date.now() - started;
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(elapsed).toBeLessThan(500);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("avatars.githubusercontent.com");
+    expect(body).not.toContain('title="snapshot-team"');
+    expect(db.calls).toBe(0);
+    expect(kv.puts).toHaveLength(0);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(pendingWrites).toHaveLength(0);
+    expect(warnings.join("\n")).toContain("founding avatars kv read failed: KV_ERROR: read failed");
+    expect(warnings.join("\n")).not.toContain("founding avatars unavailable");
+  });
+
+  it("hides the wall on /zh when the KV read throws, again with zero D1 queries", async () => {
+    const kv = unreadableKv({ [FOUNDING_AVATARS_KV_KEY]: AVATAR });
+    const db = forbiddenDb();
+    const pendingWrites = [];
+    const response = await handleFetch(
+      new Request("https://orbi.build/zh/"),
+      homepageEnv(db, kv),
+      { waitUntil: (promise) => pendingWrites.push(promise) },
+    );
+    const body = await response.text();
+    expect(response.status).toBe(200);
+    expect(body).toContain('<section class="avatar-wall" data-avatar-wall hidden>');
+    expect(body).not.toContain("GitHub 贡献者 snapshot-team");
+    expect(db.calls).toBe(0);
+    expect(kv.puts).toHaveLength(0);
+    expect(kv.read(FOUNDING_AVATARS_KV_KEY)).toEqual(AVATAR);
+    expect(pendingWrites).toHaveLength(0);
   });
 
   it("treats a malformed KV value as absent and repairs it from D1", async () => {
