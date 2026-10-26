@@ -27,6 +27,11 @@ jobs:
     needs: require-main
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Issue #1090: the IndexNow step reads the previous successful run of this
+    # workflow; everything else in the job only reads the repository.
+    permissions:
+      contents: read
+      actions: read
     # The human gate: the `production` environment's required reviewers must
     # approve before this job runs (repo Settings, not git).
     environment: production
@@ -269,6 +274,24 @@ jobs:
             exit 1
           fi
           echo "Smoke test passed: https://aiready.sh/ returned HTTP 200 without Location and the bash install script body"
+
+      - name: Submit new and changed pages to IndexNow
+        # Issue #1090: the pages are live by the time the smoke passes, so a
+        # failed submission is a warning in this log, never a deploy failure:
+        # continue-on-error keeps it from firing the rollback step below.
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # The diff base is the previous *successful* production run's source
+          # commit. This run is still in progress, so --status success cannot
+          # select it. An empty value means this is the first deploy after
+          # IndexNow shipped: the script then submits the whole sitemap once.
+          prev="$(timeout 60s gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-production.yml --status success --limit 1 --json headSha --jq '.[0].headSha // empty')"
+          echo "previous successful production deploy: ${prev:-<none>}"
+          timeout 300s node scripts/indexnow.mjs --prev "$prev"
 
       - name: Roll back production on smoke failure
         if: failure()
