@@ -745,12 +745,28 @@ class LandingTests(unittest.TestCase):
             hrefs = [href for _, href in page.hrefs]
             self.assertIn("https://x.com/xqliu", hrefs, hrefs)
 
+    # Issue #1083 sanctions exactly one more external script host, and only on
+    # the pages that carry the chat.sh support widget: the two Cloud pricing
+    # pages and the two support pages. Every other page still loads the
+    # analytics beacon and nothing else.
+    CHAT_SH_PAGES = frozenset({
+        "cloud/index.html",
+        "zh/cloud/index.html",
+        "support/index.html",
+        "zh/support/index.html",
+    })
+
     def test_external_scripts_are_only_the_analytics_host(self) -> None:
-        hosts = set()
         for path in (ROOT / "public").rglob("*.html"):
-            html = path.read_text(encoding="utf-8")
-            hosts |= set(re.findall(r'<script[^>]*src="(https?://[^/"]+)', html))
-        self.assertEqual(hosts, {"https://static.cloudflareinsights.com"})
+            page = path.relative_to(ROOT / "public").as_posix()
+            hosts = set(re.findall(
+                r'<script[^>]*src="(https?://[^/"]+)',
+                path.read_text(encoding="utf-8"),
+            ))
+            expected = {"https://static.cloudflareinsights.com"}
+            if page in self.CHAT_SH_PAGES:
+                expected.add("https://chat.sh")
+            self.assertEqual(hosts, expected, page)
 
     def test_beta_wrangler_environment_isolated_from_production(self) -> None:
         import tomllib
