@@ -9,7 +9,6 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = new URL("..", import.meta.url).pathname;
-const WIDGET = "https://chat.sh/widget.js";
 const WIDGET_TAG =
   '<script src="https://chat.sh/widget.js" data-site="3d9e07ad-8a5f-4356-99b2-a82e52f99ecc" async></script>';
 const WIDGET_PAGES = [
