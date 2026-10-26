@@ -1,5 +1,13 @@
 [
   {
+    "slug": "pi-coding-agent-worktree",
+    "title": "Pi coding agent worktree: a failed recovery",
+    "summary": "A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.",
+    "zhSlug": "pi-coding-agent-worktree",
+    "zhTitle": "Pi coding agent worktree：失败的交付怎么继续",
+    "related": []
+  },
+  {
     "slug": "aider-vs-opencode",
     "title": "Aider vs OpenCode: context, commits and checks",
     "summary": "Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.",
