@@ -1516,6 +1516,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   NAV_PARTIAL = await readFile(join(PARTIALS_DIR, "nav.html"), "utf8");
   FOOTER_PARTIAL = await readFile(join(PARTIALS_DIR, "footer.html"), "utf8");
   SUBSCRIBE_PARTIAL = await readFile(join(PARTIALS_DIR, "subscribe.html"), "utf8");
+  const CHAT_PARTIAL = await readFile(join(PARTIALS_DIR, "chat.html"), "utf8");
   const POST_TEMPLATE = await readFile(join(PARTIALS_DIR, "post.html"), "utf8");
   const GUIDE_TEMPLATE = await readFile(join(PARTIALS_DIR, "guide.html"), "utf8");
   const pages = await loadPages();
@@ -1587,6 +1588,11 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
       }
       html = html.replace('<div class="night">', `<div class="night">${breadcrumbNav}`);
       html = html.replace("</head>", `${breadcrumbJson}</head>`);
+    }
+    // Issue #1083: the chat.sh support widget loads only on the pages that
+    // carry the <!--@chat--> marker; every other page ships without it.
+    if (html.includes("<!--@chat-->")) {
+      html = html.replace("<!--@chat-->", () => toLayout(CHAT_PARTIAL, page.layout));
     }
     if (!html.includes("</body>")) throw new Error(`${page.source}: missing </body> for engagement script`);
     html = html.replace("</body>", `${ENGAGEMENT_SCRIPT}${CLOUDFLARE_ANALYTICS_SCRIPT}</body>`);
