@@ -162,7 +162,8 @@ with it, like every other generated file.
 
 **Hand-written (edit directly in `public/`):** `styles.css`, `demo.js`,
 `install.sh`, `robots.txt`, `favicon.svg`, `logo-mark.svg`,
-`logo-mark-on-dark.svg`, and everything under `public/img/`.
+`logo-mark-on-dark.svg`, the IndexNow key `83f38aa2a589432901477c2735eea995.txt`
+(checked by `scripts/indexnow.mjs`, Issue #1090), and everything under `public/img/`.
 These are outside the build and have no source under `site/`.
 
 Editing a generated page in `public/` fails three ways: the next build overwrites
