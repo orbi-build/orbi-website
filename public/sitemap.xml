@@ -362,6 +362,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/pi-coding-agent-worktree/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-worktree/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/pi-coding-agent-worktree/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-worktree/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/aider-vs-opencode/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/aider-vs-opencode/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/aider-vs-opencode/"/>
