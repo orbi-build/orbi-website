@@ -2870,8 +2870,13 @@ describe("Article publish and update dates (Issue #889)", () => {
 
   // Dates inside the JSON-LD do not count as visible: the structured data must
   // agree with a date the reader can see, not only with itself.
+  // Neither do the dates inside the generated `.series-list` (Issue #1085): that list
+  // indexes series posts by their own publication date, and a newer post is not
+  // the guide being re-verified, so only the page's own copy can raise
+  // dateModified.
   const visibleDates = (html) => [...html
     .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "")
+    .replace(/<ul class="series-list">[\s\S]*?<\/ul>/g, "")
     .matchAll(/\b\d{4}-\d{2}-\d{2}\b/g)].map((match) => match[0]);
 
   it("carries datePublished, dateModified, a Person author and a publisher", () => {
@@ -2892,6 +2897,37 @@ describe("Article publish and update dates (Issue #889)", () => {
       const visible = visibleDates(shipped.get(output));
       expect(visible, `${output}: the page states no date outside its JSON-LD`).toContain(modified);
       expect(visible.slice().sort().at(-1), `${output}: newest visible date`).toBe(modified);
+    }
+  });
+
+  // Issue #1085: a new series post carries its own publication date into the
+  // generated `.series-list`, and before this test read only the guide's own
+  // copy that date was counted as the guide's update date, so publishing a post
+  // reddened the suite. The two directions are pinned here against the shipped
+  // pages: a later series post must not move the answer, and a guide Update log
+  // that disagrees with dateModified must still be caught.
+  it("reads the guide's own dates past the generated series list", () => {
+    for (const output of ["guides/pi-coding-agent/index.html", "zh/guides/pi-coding-agent/index.html"]) {
+      const html = shipped.get(output);
+      const modified = DATED_PAGES[output][1];
+      const seriesList = /<ul class="series-list">[\s\S]*?<\/ul>/.exec(html);
+      expect(seriesList, `${output}: series list`).toBeTruthy();
+
+      const withLaterPost = html.replace(
+        seriesList[0],
+        seriesList[0].replace("</ul>", '  <li><a href="/blog/date-gate-repro/">Newer series post</a> <time datetime="2026-12-31">2026-12-31</time></li>\n</ul>'),
+      );
+      expect(withLaterPost, `${output}: fixture inserted`).not.toBe(html);
+      expect(visibleDates(withLaterPost).sort().at(-1), `${output}: a newer series post must not move dateModified`).toBe(modified);
+
+      const updateLog = /<h2 id="[^"]*">(?:Update log|更新记录)<\/h2>[\s\S]*?<\/ul>/.exec(html);
+      expect(updateLog, `${output}: visible Update log`).toBeTruthy();
+      const shiftedLog = updateLog[0].replace(`<li>${modified}`, "<li>2026-12-31");
+      expect(shiftedLog, `${output}: Update log fixture`).not.toBe(updateLog[0]);
+      const withShiftedLog = html.replace(updateLog[0], shiftedLog);
+      const newest = visibleDates(withShiftedLog).sort().at(-1);
+      expect(newest, `${output}: a guide Update log past dateModified must still fail`).not.toBe(modified);
+      expect(newest).toBe("2026-12-31");
     }
   });
 
