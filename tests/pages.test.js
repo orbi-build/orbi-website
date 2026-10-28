@@ -1662,11 +1662,72 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1092: neeed.directory and zPlatform.ai list Orbi once the site
+  // carries their badge, so the maintainer-supplied embeds are appended after
+  // the Tooluck badge in that order. neeed ships a 139x44 SVG, and only its
+  // width is declared so the shared 28px footer rule (Issue #1038) still
+  // renders it in the source ratio; zPlatform keeps the supplied 250x60 box
+  // and loads lazily. Both anchors open a new tab and stay crawlable — the
+  // directories verify the backlink on review — and each badge ships once.
+  it("carries the neeed.directory badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
+    const image = '<img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />';
+    const tooluck = '<a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: neeed.directory badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: neeed.directory badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: neeed.directory badge must follow Tooluck`)
+        .toBeGreaterThan(footer.indexOf(tooluck));
+      expect(countMatches(footer, /https:\/\/neeed\.directory\/badges\/neeed-badge-light\.svg/g), `${page.output}: exactly one neeed.directory badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://neeed.directory/products/orbi?utm_source=orbi"), `${page.output}: the neeed.directory backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  it("carries the zPlatform badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
+    const image = '<img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />';
+    const neeed = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: zPlatform badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: zPlatform badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: zPlatform badge must follow neeed.directory`)
+        .toBeGreaterThan(footer.indexOf(neeed));
+      expect(countMatches(footer, /https:\/\/zplatform\.ai\/badges\/zplatform-featured\.png/g), `${page.output}: exactly one zPlatform badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://zplatform.ai/"), `${page.output}: the zPlatform backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // The Startup Project only lists Orbi after the directory homepage carries
+  // the backlink, so the last entry is a text link in the same badge row, with
+  // the existing text-friend treatment and the same new-tab/no-nofollow rules.
+  it("links The Startup Project from the badge row on every footer page", () => {
+    const anchor = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
+    const zplatform = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: The Startup Project footer anchor drifted`).toContain(anchor);
+      expect(footer.indexOf(anchor), `${page.output}: The Startup Project must follow the zPlatform badge`)
+        .toBeGreaterThan(footer.indexOf(zplatform));
+      expect(countMatches(footer, /https:\/\/startupproject\.org\/startups\//g), `${page.output}: exactly one Startup Project link`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://startupproject.org/startups/"), `${page.output}: the Startup Project backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row, Issue #1012 the Altern badge after it,
-  // Issue #1015 the SaaSpa.ge badge and Issue #1027 the Tooluck badge last.
+  // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge and
+  // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
+  // Project text link last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1683,6 +1744,9 @@ describe("one unified footer on every content page", () => {
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
       "https://www.tooluck.org/item/orbi",
+      "https://neeed.directory/products/orbi?utm_source=orbi",
+      "https://zplatform.ai/",
+      "https://startupproject.org/startups/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
