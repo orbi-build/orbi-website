@@ -214,6 +214,14 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const zplatformImage = zplatform?.querySelector("img");
           const zplatformRect = zplatformImage?.getBoundingClientRect();
           const startup = wrapper.querySelector('a[href="https://startupproject.org/startups/"]');
+          const nicklaunches = wrapper.querySelector('a[href="https://nicklaunches.com/products/orbi/"]');
+          const nicklaunchesImage = nicklaunches?.querySelector("img");
+          const nicklaunchesRect = nicklaunchesImage?.getBoundingClientRect();
+          const devhub = wrapper.querySelector('a[href="https://devhub.best/projects/orbi?utm_source=badge"]');
+          const devhubImage = devhub?.querySelector("img");
+          const devhubRect = devhubImage?.getBoundingClientRect();
+          const devhubImageSrc = devhubImage?.getAttribute("src");
+          const devhubImageAlt = devhubImage?.getAttribute("alt");
           return {
             wrapper: true,
             isLastChild: nav.lastElementChild === wrapper,
@@ -266,6 +274,31 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             startupRel: startup?.getAttribute("rel"),
             startupText: startup?.textContent?.trim(),
             startupHasImage: Boolean(startup?.querySelector("img")),
+            nicklaunchesTarget: nicklaunches?.getAttribute("target"),
+            nicklaunchesRel: nicklaunches?.getAttribute("rel"),
+            nicklaunchesImageSrc: nicklaunchesImage?.getAttribute("src"),
+            nicklaunchesImageAlt: nicklaunchesImage?.getAttribute("alt"),
+            nicklaunchesImageWidth: nicklaunchesRect?.width,
+            nicklaunchesImageHeight: nicklaunchesRect?.height,
+            nicklaunchesNaturalWidth: nicklaunchesImage?.naturalWidth,
+            nicklaunchesNaturalHeight: nicklaunchesImage?.naturalHeight,
+            nicklaunchesDeclaredWidth: nicklaunchesImage?.getAttribute("width"),
+            nicklaunchesDeclaredHeight: nicklaunchesImage?.getAttribute("height"),
+            nicklaunchesLoading: nicklaunchesImage?.getAttribute("loading"),
+            homepageAnchorCount: wrapper.querySelectorAll('a[href="https://nicklaunches.com/"]').length,
+            devhubHref: devhub?.getAttribute("href"),
+            devhubTarget: devhub?.getAttribute("target"),
+            devhubRel: devhub?.getAttribute("rel"),
+            devhubImageSrc,
+            devhubImageAlt,
+            devhubImageWidth: devhubRect?.width,
+            devhubImageHeight: devhubRect?.height,
+            devhubNaturalWidth: devhubImage?.naturalWidth,
+            devhubNaturalHeight: devhubImage?.naturalHeight,
+            devhubDeclaredWidth: devhubImage?.getAttribute("width"),
+            devhubDeclaredHeight: devhubImage?.getAttribute("height"),
+            devhubImageStyle: devhubImage?.getAttribute("style"),
+            devhubLinkText: devhub?.textContent?.trim(),
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -277,9 +310,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // attributes. Only the structure and the rendered Altern / SaaSpa.ge /
         // Tooluck / neeed.directory / zPlatform boxes are asserted here; the
         // 28px contract for every badge image is the Issue #1038 suite below.
-        // Issue #1092 appends the neeed.directory and zPlatform badges plus The
-        // Startup Project text link: 14 anchors before, 17 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(17);
+        // Issue #1092 appended the neeed.directory and zPlatform badges plus
+        // The Startup Project text link (17 anchors), and Issue #1094 appends
+        // the DevHub badge last: 18 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(18);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -295,12 +329,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1027: the Tooluck badge is appended last with the supplied
-        // target/rel/src/alt. The placeholder the guard serves is 336x88, the
-        // real source ratio, so at the Issue #1038 height of 28px the rendered
-        // box must follow that ratio instead of stretching.
-        expect(result.lastBadgeHref, path + ": the footer badges end with The Startup Project")
-          .toBe("https://startupproject.org/startups/");
+        // Issue #1094: the DevHub badge is appended last, so it closes the row
+        // instead of The Startup Project.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the DevHub badge")
+          .toBe("https://devhub.best/projects/orbi?utm_source=badge");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -352,6 +384,52 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.startupHasImage, path + ": The Startup Project stays a text link").toBe(false);
         expect(result.startupText, path + ": The Startup Project link text")
           .toBe("Featured on The Startup Project");
+        // Issue #1094: the NickLaunches badge keeps every attribute and only
+        // moves its href to the Orbi entry page — 244x56 declared, lazy, a new
+        // tab and a crawlable (no nofollow) backlink the directory can verify.
+        expect(result.homepageAnchorCount, path + ": no badge may still link the NickLaunches homepage").toBe(0);
+        expect(result.nicklaunchesTarget, path + ": the NickLaunches badge opens in a new tab").toBe("_blank");
+        expect(result.nicklaunchesRel, path + ": the NickLaunches anchor keeps rel=noopener").toBe("noopener");
+        expect(result.nicklaunchesRel, path + ": the NickLaunches backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.nicklaunchesImageSrc, path + ": NickLaunches badge image src")
+          .toBe("https://nicklaunches.com/badges/featured.png");
+        expect(result.nicklaunchesImageAlt, path + ": NickLaunches badge image alt")
+          .toBe("Featured on Nick Launches");
+        expect(result.nicklaunchesDeclaredWidth, path + ": NickLaunches keeps its declared width").toBe("244");
+        expect(result.nicklaunchesDeclaredHeight, path + ": NickLaunches keeps its declared height").toBe("56");
+        expect(result.nicklaunchesLoading, path + ": NickLaunches keeps loading=lazy").toBe("lazy");
+        expect(result.nicklaunchesImageHeight, path + ": NickLaunches badge rendered height").toBeGreaterThan(0);
+        expect(
+          Math.abs(result.nicklaunchesImageWidth / result.nicklaunchesImageHeight
+            - result.nicklaunchesNaturalWidth / result.nicklaunchesNaturalHeight),
+          path + ": the NickLaunches badge must keep its source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1094: the DevHub badge is the last anchor. The vendor's
+        // href/target/rel/src/alt ship unchanged (Verify Backlink rejects
+        // nofollow, so the anchor stays crawlable), and the inline
+        // style="height:44px;width:auto" became the 150x44 attributes of the
+        // source SVG. The placeholder the guard serves is 150x44 as well, so
+        // the 28px row must render 150/44 * 28 = 95.45px wide, not stretch.
+        expect(result.devhubHref, path + ": the DevHub badge href")
+          .toBe("https://devhub.best/projects/orbi?utm_source=badge");
+        expect(result.devhubTarget, path + ": the DevHub badge opens in a new tab").toBe("_blank");
+        expect(result.devhubRel, path + ": the DevHub anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.devhubRel, path + ": the DevHub backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.devhubImageSrc, path + ": DevHub badge image src")
+          .toBe("https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg");
+        expect(result.devhubImageAlt, path + ": DevHub badge image alt").toBe("Featured on DevHub");
+        expect(result.devhubDeclaredWidth, path + ": the DevHub badge declares the 150px source width").toBe("150");
+        expect(result.devhubDeclaredHeight, path + ": the DevHub badge declares the 44px source height").toBe("44");
+        expect(result.devhubImageStyle, path + ": the DevHub badge carries no inline style").toBeNull();
+        expect(result.devhubLinkText, path + ": the DevHub badge is an image link").toBe("");
+        expect(result.devhubNaturalWidth, path + ": the DevHub placeholder is 150px wide").toBe(150);
+        expect(result.devhubNaturalHeight, path + ": the DevHub placeholder is 44px high").toBe(44);
+        expect(Math.abs(result.devhubImageHeight - 28), path + ": the DevHub badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.devhubImageWidth / result.devhubImageHeight
+            - result.devhubNaturalWidth / result.devhubNaturalHeight),
+          path + ": the DevHub badge must keep the 150x44 source ratio",
+        ).toBeLessThan(0.02);
         // Issue #1012: the Altern badge keeps the maintainer's anchor and
         // renders at the 430x151 source ratio instead of the supplied 150x32;
         // Issue #1038 then caps the height at 28px.
@@ -416,10 +494,12 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1092: the two new badges and The Startup Project text link sit
         // in the same tab sequence after Tooluck, each with the visible ring;
         // one more Tab leaves the row, so the row is never a keyboard trap.
+        // Issue #1094 tabs through the DevHub badge last, then leaves the row.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
           "https://startupproject.org/startups/",
+          "https://devhub.best/projects/orbi?utm_source=badge",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -444,7 +524,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from The Startup Project must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab from the DevHub badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -467,7 +547,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://aiagentsdirectory.com/agent/orbi",
     "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
     "https://toolradar.com/tools/orbi",
-    "https://nicklaunches.com/",
+    "https://nicklaunches.com/products/orbi/",
     "https://yourhack.ai",
     "https://showmebest.ai",
     "https://goodaitools.com/ai/orbi",
@@ -480,6 +560,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://neeed.directory/products/orbi?utm_source=orbi",
     "https://zplatform.ai/",
     "https://startupproject.org/startups/",
+    "https://devhub.best/projects/orbi?utm_source=badge",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -516,9 +597,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
 
         const expectBadges = (badges, label) => {
-          // Issue #1092 adds the neeed.directory and zPlatform images to the
-          // twelve that shipped before: 14 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(14);
+          // Issue #1092 added the neeed.directory and zPlatform images (14),
+          // and Issue #1094 appends the DevHub image: 15 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(15);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
