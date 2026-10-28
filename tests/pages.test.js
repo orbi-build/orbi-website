@@ -1721,20 +1721,65 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1094: the NickLaunches badge links its own entry page for Orbi
+  // instead of the directory homepage. Only the href changes — the new tab,
+  // the noopener rel, the src, the alt, the 244x56 declared size and the lazy
+  // loading stay as earlier Issues shipped them, and the link stays crawlable
+  // (no nofollow) so the directory can verify the backlink.
+  it("points the NickLaunches badge at the Orbi entry page on every footer page", () => {
+    const anchor = '<a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener">';
+    const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: NickLaunches badge anchor drifted`).toContain(anchor + image);
+      expect(countMatches(footer, /https:\/\/nicklaunches\.com\/badges\/featured\.png/g), `${page.output}: exactly one NickLaunches badge`)
+        .toBe(1);
+      expect(footer, `${page.output}: the NickLaunches badge must not link the directory homepage`)
+        .not.toContain('<a href="https://nicklaunches.com/"');
+      expect(footerAnchorTag(footer, "https://nicklaunches.com/products/orbi/"), `${page.output}: the NickLaunches backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // Issue #1094: devhub.best grants the free listing and accepts the site's
+  // backlink once Orbi carries its official badge, so the maintainer-supplied
+  // embed is appended after The Startup Project as the last badge. Anchor,
+  // target, rel, src and alt are the vendor's; only the inline
+  // style="height:44px;width:auto" became the equivalent width/height
+  // attributes of the 150x44 source, like every other badge. The outbound
+  // link is dofollow on purpose — DevHub's Verify Backlink rejects nofollow —
+  // and the badge ships exactly once per page.
+  it("carries the DevHub badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
+    const image = '<img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" />';
+    const startup = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: DevHub badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: DevHub badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: the DevHub badge must follow The Startup Project`)
+        .toBeGreaterThan(footer.indexOf(startup));
+      expect(countMatches(footer, /https:\/\/devhub\.best\/projects\/orbi\?utm_source=badge/g), `${page.output}: exactly one DevHub badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://devhub.best/projects/orbi?utm_source=badge"), `${page.output}: the DevHub backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row, Issue #1012 the Altern badge after it,
-  // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge and
+  // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge,
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
-  // Project text link last.
+  // Project text link and Issue #1094 the DevHub badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
       "https://aiagentsdirectory.com/agent/orbi",
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
-      "https://nicklaunches.com/",
+      "https://nicklaunches.com/products/orbi/",
       "https://yourhack.ai",
       "https://showmebest.ai",
       "https://goodaitools.com/ai/orbi",
@@ -1747,6 +1792,7 @@ describe("one unified footer on every content page", () => {
       "https://neeed.directory/products/orbi?utm_source=orbi",
       "https://zplatform.ai/",
       "https://startupproject.org/startups/",
+      "https://devhub.best/projects/orbi?utm_source=badge",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

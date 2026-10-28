@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships fourteen footer badge images (site/partials/footer.html) plus
+// Every page ships fifteen footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -21,8 +21,10 @@
 // vendor's declared size. Verified against the live sources on 2026-10-20:
 // LaunchNest 205x36, AI Agents Directory 200x50, AI Agents Listing 200x50,
 // Toolradar 280x80, Altern 430x151 (PNG), SaaSpa.ge 200x60 (SVG), Tooluck
-// 336x88; and on 2026-10-28 neeed.directory 139x44 (SVG, Issue #1092) and
-// zplatform.ai 250x60 (PNG, Issue #1092). Since Issue #1038 the shared footer
+// 336x88; and on 2026-10-28 neeed.directory 139x44 (SVG, Issue #1092),
+// zplatform.ai 250x60 (PNG, Issue #1092) and the DevHub badge on
+// r2.direasy-multi-tenant.focusapps.app 150x44 (SVG, Issue #1094). Since
+// Issue #1038 the shared footer
 // rule renders every badge at 28px high, so the placeholder's natural size
 // decides only the width the source ratio implies (e.g. LaunchNest
 // 205/36 * 28 = 159.44).
@@ -36,6 +38,7 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "www.tooluck.org", width: 336, height: 88 },
   { host: "neeed.directory", width: 139, height: 44 },
   { host: "zplatform.ai", width: 250, height: 60 },
+  { host: "r2.direasy-multi-tenant.focusapps.app", width: 150, height: 44 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
