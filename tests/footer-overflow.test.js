@@ -222,7 +222,41 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const devhubRect = devhubImage?.getBoundingClientRect();
           const devhubImageSrc = devhubImage?.getAttribute("src");
           const devhubImageAlt = devhubImage?.getAttribute("alt");
+          const startupfast = wrapper.querySelector('a[href="https://startupfa.st"]');
+          const startupfastImage = startupfast?.querySelector("img");
+          const startupfastRect = startupfastImage?.getBoundingClientRect();
+          const artificin = wrapper.querySelector('a[href="https://artificin.com"]');
+          const artificinImage = artificin?.querySelector("img");
+          const artificinRect = artificinImage?.getBoundingClientRect();
+          const aitooltrek = wrapper.querySelector('a[href="https://aitooltrek.com"]');
+          const whatisaitools = wrapper.querySelector('a[href="https://whatisaitools.com/"]');
+          // Issue #1096: two image badges and two text links share the row, so
+          // the flex line must centre each of them. Group the wrapper's direct
+          // children into rows by their vertical centre and report the worst
+          // spread inside every row that carries one of the new entries.
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools].filter(Boolean);
+          const rows = [];
+          for (const node of [...wrapper.children]) {
+            const box = node.getBoundingClientRect();
+            if (box.width === 0 && box.height === 0) continue;
+            const centre = (box.top + box.bottom) / 2;
+            const row = rows.find((candidate) => Math.abs(candidate.centre - centre) <= 2);
+            if (row) row.items.push({ node, centre });
+            else rows.push({ centre, items: [{ node, centre }] });
+          }
+          const mixedRowSpread = Math.max(0, ...rows
+            .filter((row) => row.items.some((item) => newItems.includes(item.node)))
+            .map((row) => Math.max(...row.items.map((item) => item.centre))
+              - Math.min(...row.items.map((item) => item.centre))));
+          const newItemOverflow = newItems
+            .filter((node) => {
+              const box = node.getBoundingClientRect();
+              return box.left < 0 || box.right > document.documentElement.clientWidth;
+            })
+            .map((node) => node.getAttribute("href"));
           return {
+            mixedRowSpread,
+            newItemOverflow,
             wrapper: true,
             isLastChild: nav.lastElementChild === wrapper,
             wrapperTop: round(wrapper.getBoundingClientRect().top),
@@ -299,6 +333,40 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             devhubDeclaredHeight: devhubImage?.getAttribute("height"),
             devhubImageStyle: devhubImage?.getAttribute("style"),
             devhubLinkText: devhub?.textContent?.trim(),
+            startupfastHref: startupfast?.getAttribute("href"),
+            startupfastTarget: startupfast?.getAttribute("target"),
+            startupfastRel: startupfast?.getAttribute("rel"),
+            startupfastTitle: startupfast?.getAttribute("title"),
+            startupfastImageSrc: startupfastImage?.getAttribute("src"),
+            startupfastImageAlt: startupfastImage?.getAttribute("alt"),
+            startupfastDeclaredWidth: startupfastImage?.getAttribute("width"),
+            startupfastDeclaredHeight: startupfastImage?.getAttribute("height"),
+            startupfastLoading: startupfastImage?.getAttribute("loading"),
+            startupfastImageWidth: startupfastRect?.width,
+            startupfastImageHeight: startupfastRect?.height,
+            startupfastNaturalWidth: startupfastImage?.naturalWidth,
+            startupfastNaturalHeight: startupfastImage?.naturalHeight,
+            artificinHref: artificin?.getAttribute("href"),
+            artificinTarget: artificin?.getAttribute("target"),
+            artificinRel: artificin?.getAttribute("rel"),
+            artificinImageSrc: artificinImage?.getAttribute("src"),
+            artificinImageAlt: artificinImage?.getAttribute("alt"),
+            artificinDeclaredWidth: artificinImage?.getAttribute("width"),
+            artificinDeclaredHeight: artificinImage?.getAttribute("height"),
+            artificinLoading: artificinImage?.getAttribute("loading"),
+            artificinImageWidth: artificinRect?.width,
+            artificinImageHeight: artificinRect?.height,
+            artificinNaturalWidth: artificinImage?.naturalWidth,
+            artificinNaturalHeight: artificinImage?.naturalHeight,
+            aitooltrekTarget: aitooltrek?.getAttribute("target"),
+            aitooltrekRel: aitooltrek?.getAttribute("rel"),
+            aitooltrekText: aitooltrek?.textContent?.trim(),
+            aitooltrekHasImage: Boolean(aitooltrek?.querySelector("img")),
+            whatisaitoolsTarget: whatisaitools?.getAttribute("target"),
+            whatisaitoolsRel: whatisaitools?.getAttribute("rel"),
+            whatisaitoolsTitle: whatisaitools?.getAttribute("title"),
+            whatisaitoolsText: whatisaitools?.textContent?.trim(),
+            whatisaitoolsHasImage: Boolean(whatisaitools?.querySelector("img")),
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -311,9 +379,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Tooluck / neeed.directory / zPlatform boxes are asserted here; the
         // 28px contract for every badge image is the Issue #1038 suite below.
         // Issue #1092 appended the neeed.directory and zPlatform badges plus
-        // The Startup Project text link (17 anchors), and Issue #1094 appends
-        // the DevHub badge last: 18 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(18);
+        // The Startup Project text link (17 anchors), Issue #1094 the DevHub
+        // badge and Issue #1096 the Startup Fast / Artificin badges plus the
+        // AI Tool Trek / What Is Ai Tools text links: 22 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(22);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -329,10 +398,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1094: the DevHub badge is appended last, so it closes the row
-        // instead of The Startup Project.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the DevHub badge")
-          .toBe("https://devhub.best/projects/orbi?utm_source=badge");
+        // Issue #1096: the 2026-10-29 batch closes the row instead of the
+        // DevHub badge — What Is Ai Tools is the last entry.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the What Is Ai Tools link")
+          .toBe("https://whatisaitools.com/");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -430,6 +499,66 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.devhubNaturalWidth / result.devhubNaturalHeight),
           path + ": the DevHub badge must keep the 150x44 source ratio",
         ).toBeLessThan(0.02);
+        // Issue #1096: the Startup Fast embed declares the source SVG's
+        // 119x50 instead of the vendor snippet's 150x44, so the badge cannot
+        // squash; the guard's placeholder is the same 119x50, and the 28px row
+        // therefore renders it 119/50 * 28 = 66.6px wide.
+        expect(result.startupfastHref, path + ": the Startup Fast badge href").toBe("https://startupfa.st");
+        expect(result.startupfastTarget, path + ": the Startup Fast badge opens in a new tab").toBe("_blank");
+        expect(result.startupfastRel, path + ": the Startup Fast anchor keeps rel=noopener").toBe("noopener");
+        expect(result.startupfastRel, path + ": the Startup Fast backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.startupfastTitle, path + ": the Startup Fast badge title").toBe("Powered by Startup Fast");
+        expect(result.startupfastImageSrc, path + ": the Startup Fast badge image src")
+          .toBe("https://startupfa.st/images/badges/powered-by-dark.svg");
+        expect(result.startupfastImageAlt, path + ": the Startup Fast badge image alt").toBe("Powered by Startup Fast");
+        expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 119px source width").toBe("119");
+        expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 50px source height").toBe("50");
+        expect(result.startupfastLoading, path + ": the Startup Fast badge loads lazily").toBe("lazy");
+        expect(result.startupfastNaturalWidth, path + ": the Startup Fast placeholder is 119px wide").toBe(119);
+        expect(result.startupfastNaturalHeight, path + ": the Startup Fast placeholder is 50px high").toBe(50);
+        expect(Math.abs(result.startupfastImageHeight - 28), path + ": the Startup Fast badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.startupfastImageWidth / result.startupfastImageHeight
+            - result.startupfastNaturalWidth / result.startupfastNaturalHeight),
+          path + ": the Startup Fast badge must keep the 119x50 source ratio",
+        ).toBeLessThan(0.02);
+        // The Artificin PNG is 551x175; the declared 139x44 is that ratio
+        // rounded to whole pixels, and the 28px row keeps it.
+        expect(result.artificinHref, path + ": the Artificin badge href").toBe("https://artificin.com");
+        expect(result.artificinTarget, path + ": the Artificin badge opens in a new tab").toBe("_blank");
+        expect(result.artificinRel, path + ": the Artificin anchor keeps rel=noopener").toBe("noopener");
+        expect(result.artificinRel, path + ": the Artificin backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.artificinImageSrc, path + ": the Artificin badge image src")
+          .toBe("https://artificin.com/badges/Artificin-badge.png");
+        expect(result.artificinImageAlt, path + ": the Artificin badge image alt").toBe("Featured on Artificin");
+        expect(result.artificinDeclaredWidth, path + ": the Artificin badge declares the 139px width").toBe("139");
+        expect(result.artificinDeclaredHeight, path + ": the Artificin badge declares the 44px height").toBe("44");
+        expect(result.artificinLoading, path + ": the Artificin badge loads lazily").toBe("lazy");
+        expect(result.artificinNaturalWidth, path + ": the Artificin placeholder is 551px wide").toBe(551);
+        expect(result.artificinNaturalHeight, path + ": the Artificin placeholder is 175px high").toBe(175);
+        expect(Math.abs(result.artificinImageHeight - 28), path + ": the Artificin badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.artificinImageWidth / result.artificinImageHeight
+            - result.artificinNaturalWidth / result.artificinNaturalHeight),
+          path + ": the Artificin badge must keep the 551x175 source ratio",
+        ).toBeLessThan(0.02);
+        // The two text links reuse the text-friend treatment: no image, new
+        // tab, noopener, no nofollow.
+        expect(result.aitooltrekTarget, path + ": AI Tool Trek opens in a new tab").toBe("_blank");
+        expect(result.aitooltrekRel, path + ": the AI Tool Trek anchor keeps rel=noopener").toBe("noopener");
+        expect(result.aitooltrekText, path + ": the AI Tool Trek link text").toBe("AI Tool Trek");
+        expect(result.aitooltrekHasImage, path + ": AI Tool Trek is a text link").toBe(false);
+        expect(result.whatisaitoolsTarget, path + ": What Is Ai Tools opens in a new tab").toBe("_blank");
+        expect(result.whatisaitoolsRel, path + ": the What Is Ai Tools anchor keeps rel=noopener").toBe("noopener");
+        expect(result.whatisaitoolsTitle, path + ": the What Is Ai Tools link title").toBe("What Is Ai Tools");
+        expect(result.whatisaitoolsText, path + ": the What Is Ai Tools link text").toBe("What Is Ai Tools");
+        expect(result.whatisaitoolsHasImage, path + ": What Is Ai Tools is a text link").toBe(false);
+        // Issue #1096: the badges and the text links share the row, so every
+        // flex line carrying a new entry is centred (align-items:center) and
+        // none of the four sticks out of the viewport.
+        expect(result.mixedRowSpread, path + ": the new badges and text links must share one centred line")
+          .toBeLessThanOrEqual(1.5);
+        expect(result.newItemOverflow, path + ": the new links stay inside the viewport").toEqual([]);
         // Issue #1012: the Altern badge keeps the maintainer's anchor and
         // renders at the 430x151 source ratio instead of the supplied 150x32;
         // Issue #1038 then caps the height at 28px.
@@ -494,12 +623,17 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1092: the two new badges and The Startup Project text link sit
         // in the same tab sequence after Tooluck, each with the visible ring;
         // one more Tab leaves the row, so the row is never a keyboard trap.
-        // Issue #1094 tabs through the DevHub badge last, then leaves the row.
+        // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
+        // Startup Fast / Artificin badges and the two text links, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
           "https://startupproject.org/startups/",
           "https://devhub.best/projects/orbi?utm_source=badge",
+          "https://startupfa.st",
+          "https://artificin.com",
+          "https://aitooltrek.com",
+          "https://whatisaitools.com/",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -524,7 +658,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from the DevHub badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab from the What Is Ai Tools link must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -561,6 +695,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://zplatform.ai/",
     "https://startupproject.org/startups/",
     "https://devhub.best/projects/orbi?utm_source=badge",
+    "https://startupfa.st",
+    "https://artificin.com",
+    "https://aitooltrek.com",
+    "https://whatisaitools.com/",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -598,8 +736,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
 
         const expectBadges = (badges, label) => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
-          // and Issue #1094 appends the DevHub image: 15 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(15);
+          // Issue #1094 the DevHub image and Issue #1096 the Startup Fast and
+          // Artificin images: 17 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(17);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
