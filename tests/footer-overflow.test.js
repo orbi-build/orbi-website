@@ -380,9 +380,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // 28px contract for every badge image is the Issue #1038 suite below.
         // Issue #1092 appended the neeed.directory and zPlatform badges plus
         // The Startup Project text link (17 anchors), Issue #1094 the DevHub
-        // badge and Issue #1096 the Startup Fast / Artificin badges plus the
-        // AI Tool Trek / What Is Ai Tools text links: 22 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(22);
+        // badge, Issue #1096 the Startup Fast / Artificin badges plus the
+        // AI Tool Trek / What Is Ai Tools text links and Issue #1099 the
+        // ToolPotion badge: 23 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(23);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -398,10 +399,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.saaspaNaturalWidth / result.saaspaNaturalHeight),
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1096: the 2026-10-29 batch closes the row instead of the
-        // DevHub badge — What Is Ai Tools is the last entry.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the What Is Ai Tools link")
-          .toBe("https://whatisaitools.com/");
+        // Issue #1096 closed the row after the DevHub badge; Issue #1099
+        // appends the ToolPotion badge, so that is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the ToolPotion badge")
+          .toBe("https://toolpotion.ai/en/ai-agent/orbi");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -624,7 +625,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // in the same tab sequence after Tooluck, each with the visible ring;
         // one more Tab leaves the row, so the row is never a keyboard trap.
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
-        // Startup Fast / Artificin badges and the two text links, then leaves.
+        // Startup Fast / Artificin badges and the two text links, Issue #1099
+        // through the ToolPotion badge, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -634,6 +636,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://artificin.com",
           "https://aitooltrek.com",
           "https://whatisaitools.com/",
+          "https://toolpotion.ai/en/ai-agent/orbi",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -658,7 +661,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from the What Is Ai Tools link must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab from the ToolPotion badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -699,6 +702,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://artificin.com",
     "https://aitooltrek.com",
     "https://whatisaitools.com/",
+    "https://toolpotion.ai/en/ai-agent/orbi",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -736,9 +740,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
 
         const expectBadges = (badges, label) => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
-          // Issue #1094 the DevHub image and Issue #1096 the Startup Fast and
-          // Artificin images: 17 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(17);
+          // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
+          // Artificin images and Issue #1099 the ToolPotion image: 18 badge
+          // images in the row.
+          expect(badges, label + ": badge count").toHaveLength(18);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
