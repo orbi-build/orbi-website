@@ -1766,13 +1766,64 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1096: the 2026-10-29 batch appends two badge embeds and two text
+  // links after the DevHub badge, in the batch's order. Startup Fast's official
+  // embed declares 150x44 while the live SVG is 119x50, so the declared box
+  // follows the source image and cannot squash it; the Artificin PNG is
+  // 551x175, declared as the proportional 139x44. Both text links reuse the
+  // existing text-friend treatment. Every link opens a new tab, keeps the
+  // vendor's href/src/alt/title and stays crawlable — each directory verifies
+  // the backlink on review — and each ships exactly once per page.
+  it("carries the 2026-10-29 directory backlinks after the DevHub badge on every footer page", () => {
+    const devhub = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
+    const entries = [
+      {
+        anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
+        image: '<img src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="119" height="50" loading="lazy" />',
+        href: "https://startupfa.st",
+      },
+      {
+        anchor: '<a href="https://artificin.com" target="_blank" rel="noopener">',
+        image: '<img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" />',
+        href: "https://artificin.com",
+      },
+      {
+        anchor: '<a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>',
+        image: null,
+        href: "https://aitooltrek.com",
+      },
+      {
+        anchor: '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>',
+        image: null,
+        href: "https://whatisaitools.com/",
+      },
+    ];
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      let previous = devhub;
+      for (const entry of entries) {
+        expect(footer, `${page.output}: ${entry.href} footer anchor drifted`)
+          .toContain(entry.image ? entry.anchor + entry.image : entry.anchor);
+        expect(countMatches(footer, new RegExp(`href="${entry.href}"`, "g")), `${page.output}: exactly one ${entry.href} link`)
+          .toBe(1);
+        expect(footer.indexOf(entry.anchor), `${page.output}: ${entry.href} must follow the previous badge`)
+          .toBeGreaterThan(footer.indexOf(previous));
+        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} backlink must stay crawlable`)
+          .not.toContain("nofollow");
+        previous = entry.anchor;
+      }
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row, Issue #1012 the Altern badge after it,
   // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge,
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
-  // Project text link and Issue #1094 the DevHub badge last.
+  // Project text link, Issue #1094 the DevHub badge and Issue #1096 the
+  // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
+  // text links last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1793,6 +1844,10 @@ describe("one unified footer on every content page", () => {
       "https://zplatform.ai/",
       "https://startupproject.org/startups/",
       "https://devhub.best/projects/orbi?utm_source=badge",
+      "https://startupfa.st",
+      "https://artificin.com",
+      "https://aitooltrek.com",
+      "https://whatisaitools.com/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
