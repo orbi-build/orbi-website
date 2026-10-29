@@ -1662,18 +1662,175 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1092: neeed.directory and zPlatform.ai list Orbi once the site
+  // carries their badge, so the maintainer-supplied embeds are appended after
+  // the Tooluck badge in that order. neeed ships a 139x44 SVG, and only its
+  // width is declared so the shared 28px footer rule (Issue #1038) still
+  // renders it in the source ratio; zPlatform keeps the supplied 250x60 box
+  // and loads lazily. Both anchors open a new tab and stay crawlable — the
+  // directories verify the backlink on review — and each badge ships once.
+  it("carries the neeed.directory badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
+    const image = '<img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />';
+    const tooluck = '<a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: neeed.directory badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: neeed.directory badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: neeed.directory badge must follow Tooluck`)
+        .toBeGreaterThan(footer.indexOf(tooluck));
+      expect(countMatches(footer, /https:\/\/neeed\.directory\/badges\/neeed-badge-light\.svg/g), `${page.output}: exactly one neeed.directory badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://neeed.directory/products/orbi?utm_source=orbi"), `${page.output}: the neeed.directory backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  it("carries the zPlatform badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
+    const image = '<img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />';
+    const neeed = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: zPlatform badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: zPlatform badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: zPlatform badge must follow neeed.directory`)
+        .toBeGreaterThan(footer.indexOf(neeed));
+      expect(countMatches(footer, /https:\/\/zplatform\.ai\/badges\/zplatform-featured\.png/g), `${page.output}: exactly one zPlatform badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://zplatform.ai/"), `${page.output}: the zPlatform backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // The Startup Project only lists Orbi after the directory homepage carries
+  // the backlink, so the last entry is a text link in the same badge row, with
+  // the existing text-friend treatment and the same new-tab/no-nofollow rules.
+  it("links The Startup Project from the badge row on every footer page", () => {
+    const anchor = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
+    const zplatform = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: The Startup Project footer anchor drifted`).toContain(anchor);
+      expect(footer.indexOf(anchor), `${page.output}: The Startup Project must follow the zPlatform badge`)
+        .toBeGreaterThan(footer.indexOf(zplatform));
+      expect(countMatches(footer, /https:\/\/startupproject\.org\/startups\//g), `${page.output}: exactly one Startup Project link`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://startupproject.org/startups/"), `${page.output}: the Startup Project backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // Issue #1094: the NickLaunches badge links its own entry page for Orbi
+  // instead of the directory homepage. Only the href changes — the new tab,
+  // the noopener rel, the src, the alt, the 244x56 declared size and the lazy
+  // loading stay as earlier Issues shipped them, and the link stays crawlable
+  // (no nofollow) so the directory can verify the backlink.
+  it("points the NickLaunches badge at the Orbi entry page on every footer page", () => {
+    const anchor = '<a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener">';
+    const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: NickLaunches badge anchor drifted`).toContain(anchor + image);
+      expect(countMatches(footer, /https:\/\/nicklaunches\.com\/badges\/featured\.png/g), `${page.output}: exactly one NickLaunches badge`)
+        .toBe(1);
+      expect(footer, `${page.output}: the NickLaunches badge must not link the directory homepage`)
+        .not.toContain('<a href="https://nicklaunches.com/"');
+      expect(footerAnchorTag(footer, "https://nicklaunches.com/products/orbi/"), `${page.output}: the NickLaunches backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // Issue #1094: devhub.best grants the free listing and accepts the site's
+  // backlink once Orbi carries its official badge, so the maintainer-supplied
+  // embed is appended after The Startup Project as the last badge. Anchor,
+  // target, rel, src and alt are the vendor's; only the inline
+  // style="height:44px;width:auto" became the equivalent width/height
+  // attributes of the 150x44 source, like every other badge. The outbound
+  // link is dofollow on purpose — DevHub's Verify Backlink rejects nofollow —
+  // and the badge ships exactly once per page.
+  it("carries the DevHub badge with a crawlable backlink on every footer page", () => {
+    const anchor = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
+    const image = '<img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" />';
+    const startup = '<a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: DevHub badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: DevHub badge image drifted`).toContain(image);
+      expect(footer.indexOf(anchor), `${page.output}: the DevHub badge must follow The Startup Project`)
+        .toBeGreaterThan(footer.indexOf(startup));
+      expect(countMatches(footer, /https:\/\/devhub\.best\/projects\/orbi\?utm_source=badge/g), `${page.output}: exactly one DevHub badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://devhub.best/projects/orbi?utm_source=badge"), `${page.output}: the DevHub backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
+  // Issue #1096: the 2026-10-29 batch appends two badge embeds and two text
+  // links after the DevHub badge, in the batch's order. Startup Fast's official
+  // embed declares 150x44 while the live SVG is 119x50, so the declared box
+  // follows the source image and cannot squash it; the Artificin PNG is
+  // 551x175, declared as the proportional 139x44. Both text links reuse the
+  // existing text-friend treatment. Every link opens a new tab, keeps the
+  // vendor's href/src/alt/title and stays crawlable — each directory verifies
+  // the backlink on review — and each ships exactly once per page.
+  it("carries the 2026-10-29 directory backlinks after the DevHub badge on every footer page", () => {
+    const devhub = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
+    const entries = [
+      {
+        anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
+        image: '<img src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="119" height="50" loading="lazy" />',
+        href: "https://startupfa.st",
+      },
+      {
+        anchor: '<a href="https://artificin.com" target="_blank" rel="noopener">',
+        image: '<img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" />',
+        href: "https://artificin.com",
+      },
+      {
+        anchor: '<a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>',
+        image: null,
+        href: "https://aitooltrek.com",
+      },
+      {
+        anchor: '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>',
+        image: null,
+        href: "https://whatisaitools.com/",
+      },
+    ];
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      let previous = devhub;
+      for (const entry of entries) {
+        expect(footer, `${page.output}: ${entry.href} footer anchor drifted`)
+          .toContain(entry.image ? entry.anchor + entry.image : entry.anchor);
+        expect(countMatches(footer, new RegExp(`href="${entry.href}"`, "g")), `${page.output}: exactly one ${entry.href} link`)
+          .toBe(1);
+        expect(footer.indexOf(entry.anchor), `${page.output}: ${entry.href} must follow the previous badge`)
+          .toBeGreaterThan(footer.indexOf(previous));
+        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} backlink must stay crawlable`)
+          .not.toContain("nofollow");
+        previous = entry.anchor;
+      }
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row, Issue #1012 the Altern badge after it,
-  // Issue #1015 the SaaSpa.ge badge and Issue #1027 the Tooluck badge last.
+  // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge,
+  // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
+  // Project text link, Issue #1094 the DevHub badge and Issue #1096 the
+  // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
+  // text links last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
       "https://aiagentsdirectory.com/agent/orbi",
       "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
-      "https://nicklaunches.com/",
+      "https://nicklaunches.com/products/orbi/",
       "https://yourhack.ai",
       "https://showmebest.ai",
       "https://goodaitools.com/ai/orbi",
@@ -1683,6 +1840,14 @@ describe("one unified footer on every content page", () => {
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
       "https://www.tooluck.org/item/orbi",
+      "https://neeed.directory/products/orbi?utm_source=orbi",
+      "https://zplatform.ai/",
+      "https://startupproject.org/startups/",
+      "https://devhub.best/projects/orbi?utm_source=badge",
+      "https://startupfa.st",
+      "https://artificin.com",
+      "https://aitooltrek.com",
+      "https://whatisaitools.com/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

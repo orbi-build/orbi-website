@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships seven footer directory badges (site/partials/footer.html) and
+// Every page ships seventeen footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -16,14 +16,20 @@
 // The counters are module state, and Vitest isolates test files, so a counter
 // covers exactly the pages the file that imported it opened.
 
-// The seven footer badge embeds in site/partials/footer.html, each served here
-// at its real source ratio so the rendered box proves the ratio rather than the
+// The footer badge embeds in site/partials/footer.html, each served here at its
+// real source ratio so the rendered box proves the ratio rather than the
 // vendor's declared size. Verified against the live sources on 2026-10-20:
 // LaunchNest 205x36, AI Agents Directory 200x50, AI Agents Listing 200x50,
 // Toolradar 280x80, Altern 430x151 (PNG), SaaSpa.ge 200x60 (SVG), Tooluck
-// 336x88. Since Issue #1038 the shared footer rule renders every badge at 28px
-// high, so the placeholder's natural size decides only the width the source
-// ratio implies (e.g. LaunchNest 205/36 * 28 = 159.44).
+// 336x88; on 2026-10-28 neeed.directory 139x44 (SVG, Issue #1092),
+// zplatform.ai 250x60 (PNG, Issue #1092) and the DevHub badge on
+// r2.direasy-multi-tenant.focusapps.app 150x44 (SVG, Issue #1094); and on
+// 2026-10-29 startupfa.st 119x50 (SVG, Issue #1096 — the live URL answers
+// 307 to www.startupfa.st, so both hosts are listed) and artificin.com
+// 551x175 (PNG, Issue #1096). Since Issue #1038 the shared footer
+// rule renders every badge at 28px high, so the placeholder's natural size
+// decides only the width the source ratio implies (e.g. LaunchNest
+// 205/36 * 28 = 159.44).
 export const BADGE_PLACEHOLDER_SIZES = [
   { host: "launchnest.io", width: 205, height: 36 },
   { host: "aiagentsdirectory.com", width: 168, height: 42 },
@@ -32,6 +38,12 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "data.altern.ai", width: 430, height: 151 },
   { host: "saaspa.ge", width: 200, height: 60 },
   { host: "www.tooluck.org", width: 336, height: 88 },
+  { host: "neeed.directory", width: 139, height: 44 },
+  { host: "zplatform.ai", width: 250, height: 60 },
+  { host: "r2.direasy-multi-tenant.focusapps.app", width: 150, height: 44 },
+  { host: "startupfa.st", width: 119, height: 50 },
+  { host: "www.startupfa.st", width: 119, height: 50 },
+  { host: "artificin.com", width: 551, height: 175 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
