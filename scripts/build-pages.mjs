@@ -32,6 +32,11 @@ const CONTENT_DIR = join(ROOT, "content", "blog");
 const GUIDES_DIR = join(ROOT, "content", "guides");
 const SOCIAL_PROOF_PATH = join(ROOT, "site", "data", "social-proof.json");
 const GUIDES_DATA_PATH = join(ROOT, "site", "data", "guides.json");
+// Issue #1105: a few pages on orbi.build are rendered by the Cloud worker
+// (/proof/<owner>/<repo>), not built here, so walking site/** cannot find
+// them. Only the URLs approved for indexing are listed, explicitly, in
+// site/data/external-pages.json — never a scan of the /proof/ tree.
+const EXTERNAL_PAGES_PATH = join(ROOT, "site", "data", "external-pages.json");
 // Issue #887: the author record every byline, Article author and homepage
 // founder points at. One record: the site publishes one author page per
 // language, and a post whose front matter names anyone else fails the build.
@@ -1432,7 +1437,31 @@ function isIndexableAtOwnUrl(page) {
   return canonical === `https://orbi.build${pathToHref(page.output)}`;
 }
 
-function renderSitemap(pages, posts = [], guides = []) {
+// Issue #1105: the approved external URLs, validated so the list can only hold
+// fixed production canonicals. A beta host, a query string, a fragment or a
+// duplicate fails the build naming the file, instead of shipping a sitemap a
+// crawler has to interpret.
+export async function collectExternalPages(path = EXTERNAL_PAGES_PATH) {
+  const source = path.startsWith(ROOT) ? relative(ROOT, path).split("\\").join("/") : path;
+  const { pages } = JSON.parse(await readFile(path, "utf8"));
+  if (!Array.isArray(pages)) {
+    throw new Error(`${source}: "pages" must be an array of URLs (Issue #1105)`);
+  }
+  const seen = new Set();
+  for (const url of pages) {
+    if (typeof url !== "string" || !url.startsWith("https://orbi.build/")) {
+      throw new Error(`${source}: ${JSON.stringify(url)} is not an absolute https://orbi.build/ URL (Issue #1105)`);
+    }
+    if (/[?#]/.test(url)) {
+      throw new Error(`${source}: ${url} carries a query or fragment; the sitemap lists the fixed canonical URL (Issue #1105)`);
+    }
+    if (seen.has(url)) throw new Error(`${source}: ${url} is listed twice (Issue #1105)`);
+    seen.add(url);
+  }
+  return pages;
+}
+
+function renderSitemap(pages, posts = [], guides = [], externalPages = []) {
   const urls = pages.filter((page) => !page.standalone && isIndexableAtOwnUrl(page)).map((page) => {
     const href = pathToHref(page.output);
     const mirror = pathToHref(page.mirror);
@@ -1461,6 +1490,12 @@ function renderSitemap(pages, posts = [], guides = []) {
     const href = guide.href;
     const mirror = pathToHref(guide.mirrorOutput);
     urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${guide.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${guide.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${guide.lang === "en" ? href : mirror}"/>\n  </url>`);
+  }
+  // Issue #1105: pages served on orbi.build but rendered by the Cloud worker.
+  // Each carries only its loc: the same path picks its language from the
+  // request, so there is no /zh/ alternate to advertise.
+  for (const url of externalPages) {
+    urls.push(`  <url>\n    <loc>${url}</loc>\n  </url>`);
   }
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
 }
@@ -1522,6 +1557,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   const pages = await loadPages();
   const posts = await collectPosts(contentDir);
   const guides = await collectGuides(guidesDir);
+  const externalPages = await collectExternalPages();
   const guidesData = JSON.parse(await readFile(GUIDES_DATA_PATH, "utf8"));
   const author = await loadAuthor();
   // Issue #887: every byline links to the author page, so a post naming an
@@ -1636,7 +1672,7 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
   }
   await writeFile(
     join(outDir, "sitemap.xml"),
-    renderSitemap(pages, posts, guides),
+    renderSitemap(pages, posts, guides, externalPages),
   );
   await mkdir(join(outDir, "blog"), { recursive: true });
   const englishPosts = posts.filter((post) => post.lang === "en");
