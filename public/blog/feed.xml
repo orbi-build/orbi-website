@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/pi-extensions-in-production/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-extensions-in-production/</guid>
       <pubDate>Fri, 30 Oct 2026 00:00:00 GMT</pubDate>
-      <description>How Orbi runs Pi coding agent extensions unattended: a pinned --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.</description>
+      <description>How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.</description>
     </item>
     <item>
       <title>Pi coding agent worktree: a failed recovery</title>

@@ -1,7 +1,7 @@
 ---
 title: Pi extensions in production: isolate, then write one
 date: 2026-10-30
-summary: How Orbi runs Pi coding agent extensions unattended: a pinned --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.
+summary: How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-extensions-card.png
@@ -96,7 +96,7 @@ Not every Orbi session uses that list, though. These are the three shapes, and e
 | the repository-summary session of `orbi suggest` (the command that reads a repository and proposes tasks) | `--no-extensions` with no `--extension` at all; its other flags are `--tools read,ls,find --no-skills --no-context-files` | it only reads; it does not need even the configured extensions |
 | the clarification gate (`clarify_thin_tickets = true` in the repository's `.github/orbi.toml`) | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | exactly one tool, shipped with the engine; nothing else callable |
 
-The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills are the other half of the same picture. A skill is a Markdown file of instructions Pi loads into the prompt, and Pi discovers skills the same way it discovers extensions. There the isolation is still partial: the implementer, the reviewer, and the `ticket` role get Orbi's own `--skill` entries but not `--no-skills`, so skills the OS user installed can load into them. Only `orbi suggest` passes `--no-skills`, in both of its sessions (the one that writes the suggestions and the one that writes the repository summary). The clarification gate below is a `ticket` session whose extension flags differ (the single `--extension` instead of the configured list), so its skills are the `ticket` role's too.
+The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills are the other half of the same picture. A skill is a directory with a `SKILL.md` of instructions; at startup Pi puts each skill's name and description into the prompt and reads the file when the model asks for it, and it discovers skills much as it discovers extensions, except recursively. There the isolation is still partial: the implementer, the reviewer, and the `ticket` role get Orbi's own `--skill` entries but not `--no-skills`, so skills the OS user installed can load into them. Among the runner's sessions, only `orbi suggest` passes `--no-skills`, in both of its sessions (the one that writes the suggestions and the one that writes the repository summary). The clarification gate below is a `ticket` session whose extension flags differ (the single `--extension` instead of the configured list), so its skills are the `ticket` role's too.
 
 ## Writing a Pi extension with one accepted output channel
 

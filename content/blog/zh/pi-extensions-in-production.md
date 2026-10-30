@@ -1,7 +1,7 @@
 ---
 title: Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展
 date: 2026-10-30
-summary: Orbi 无人值守跑 Pi 时怎么处理扩展：--no-extensions 加一份钉死版本的白名单，一次 D-Bus 卡死逼出来的做法，以及我们自己写的两个扩展。
+summary: Orbi 无人值守跑 Pi 时怎么处理扩展：--no-extensions 加一份显式的白名单，一次 D-Bus 卡死逼出来的做法，以及我们自己写的两个扩展。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-pi-extensions-card.png
@@ -42,7 +42,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（`read`、`bash`、`edit`、`write`）还在；`ls`、`find`、`grep` 也是内置工具，只是默认不开，下面几处 `--tools` 清单里的名字就是从这儿来的。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
+`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把 `builtin:mcp` 换成你自己的扩展文件，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（`read`、`bash`、`edit`、`write`）还在；`ls`、`find`、`grep` 也是内置工具，只是默认不开，下面几处 `--tools` 清单里的名字就是从这儿来的。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
 
 ## 一次 D-Bus 卡死，让 Orbi 不再信任 Pi 的默认加载
 
@@ -96,7 +96,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 | `orbi suggest`（读仓库、提任务建议的命令）的仓库摘要会话 | `--no-extensions`，不带任何 `--extension`；其他参数是 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
-第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 传了 `--no-skills`，它的两个会话（写建议的那个和写仓库摘要的那个）都传。下面的澄清门禁是一个 `ticket` 会话，扩展参数不同（单独那一个 `--extension`，而不是配置里的清单），skill 的设置和 `ticket` 角色一样。
+第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是一个含 `SKILL.md` 指令文件的目录；Pi 启动时只把每个 skill 的名字和描述放进提示词，模型要用时才读全文，找 skill 的路数和找扩展差不多，只是会递归找。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。runner 的这些会话里，只有 `orbi suggest` 传了 `--no-skills`，它的两个会话（写建议的那个和写仓库摘要的那个）都传。下面的澄清门禁是一个 `ticket` 会话，扩展参数不同（单独那一个 `--extension`，而不是配置里的清单），skill 的设置和 `ticket` 角色一样。
 
 ## 用一个扩展工具拿结构化裁决
 

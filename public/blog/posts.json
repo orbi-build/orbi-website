@@ -2,7 +2,7 @@
   {
     "slug": "pi-extensions-in-production",
     "title": "Pi extensions in production: isolate, then write one",
-    "summary": "How Orbi runs Pi coding agent extensions unattended: a pinned --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.",
+    "summary": "How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.",
     "zhSlug": "pi-extensions-in-production",
     "zhTitle": "Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展",
     "related": []
