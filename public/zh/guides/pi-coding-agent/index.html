@@ -186,6 +186,7 @@
 <p>第一次读，从 10 月 5 日的<a href="/zh/blog/orbi-on-pi-coding-agent/">《Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分》</a>读起。</p>
 
 <ul class="series-list">
+  <li><a href="/zh/blog/pi-extensions-in-production/">Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展</a> <time datetime="2026-10-30">2026-10-30</time></li>
   <li><a href="/zh/blog/pi-coding-agent-worktree/">Pi coding agent worktree：失败的交付怎么继续</a> <time datetime="2026-10-26">2026-10-26</time></li>
   <li><a href="/zh/blog/pi-agent-harness/">Pi agent harness 三种跑法：kill -9 之后谁能接上</a> <time datetime="2026-10-06">2026-10-06</time></li>
   <li><a href="/zh/blog/orbi-on-pi-coding-agent/">Pi + DeepSeek Flash 写的 169 个已合并 PR：token 中位成本 8–16 美分</a> <time datetime="2026-10-05">2026-10-05</time></li>
@@ -236,7 +237,7 @@
 <td>Orbi 贴到 issue 上的那段文字</td>
 </tr>
 </tbody></table></div>
-<p><code class="post-code--single">implement</code> 和 <code class="post-code--single">review</code> 会话带 <code class="post-code--single">--no-extensions</code> 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 <code class="post-code--single">pi_extensions</code> 以 <code class="post-code--single">--extension</code> 加回来，Orbi Cloud 就是这样加回 Codemode 的。<code class="post-code--single">ticket</code> 角色不开工具，启动时完全不带扩展相关的参数，所以另外两个角色有的 <code class="post-code--single">--no-extensions</code> 防护，它没有：Pi 的内置扩展会加载，runner 所在系统用户装的扩展也可能加载（具体是哪些，见下文「agent 目录和模型」）。这是一个已知的缺口。skill 也没有这样隔离：Orbi 用 <code class="post-code--single">--skill</code> 加上自己的 skill，但不传 <code class="post-code--single">--no-skills</code>，所以用户自己的 skill 在每个角色里都可能加载。</p>
+<p><code class="post-code--single">implement</code> 和 <code class="post-code--single">review</code> 会话带 <code class="post-code--single">--no-extensions</code> 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 <code class="post-code--single">pi_extensions</code> 以 <code class="post-code--single">--extension</code> 加回来，Orbi Cloud 就是这样加回 Codemode 的。<code class="post-code--single">ticket</code> 角色不开工具，从 v0.6.2 起（<a href="https://github.com/orbi-build/orbi/issues/1558">Issue #1558</a>，2026 年 10 月 5 日）也带同样的 <code class="post-code--single">--no-extensions</code> 和 <code class="post-code--single">--extension</code> 参数；在那之前它启动时完全不带扩展相关的参数，runner 所在系统用户装的扩展可能加载进去。Orbi 怎么加载、怎么写扩展，见<a href="/zh/blog/pi-extensions-in-production/">扩展那篇</a>。skill 也没有这样隔离：Orbi 用 <code class="post-code--single">--skill</code> 加上自己的 skill，但不传 <code class="post-code--single">--no-skills</code>，所以用户自己的 skill 在每个角色里都可能加载。</p>
 <p>模型在 runner 的 <code class="post-code--single">orbi.toml</code> 里选；仓库自己的 <code class="post-code--single">.github/orbi.toml</code> 不能设模型相关的键。一个最小的配置如下，评审的两个键可以指向另一个模型，这里用的是同一个：</p>
 <pre><code class="language-toml">pi_providers = &quot;.orbi/pi-providers.json&quot;   # 相对这份配置文件所在目录；Pi models.json 格式
 pi_provider = &quot;deepseek&quot;

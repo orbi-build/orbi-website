@@ -362,6 +362,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/terms/"/>
   </url>
   <url>
+    <loc>https://orbi.build/blog/pi-extensions-in-production/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-extensions-in-production/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-extensions-in-production/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-extensions-in-production/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/pi-extensions-in-production/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-extensions-in-production/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-extensions-in-production/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-extensions-in-production/"/>
+  </url>
+  <url>
     <loc>https://orbi.build/blog/pi-coding-agent-worktree/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-worktree/"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-worktree/"/>
