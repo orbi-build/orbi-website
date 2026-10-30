@@ -4,3 +4,4 @@ Disallow: /cloud/login
 Disallow: /zh/cloud/login
 
 Sitemap: https://orbi.build/sitemap.xml
+Sitemap: https://orbi.build/proof/sitemap.xml

@@ -733,10 +733,4 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/guides/pi-coding-agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/guides/pi-coding-agent/"/>
   </url>
-  <url>
-    <loc>https://orbi.build/proof/orbi-build/orbi</loc>
-  </url>
-  <url>
-    <loc>https://orbi.build/proof/orbi-build/orbi-website</loc>
-  </url>
 </urlset>
