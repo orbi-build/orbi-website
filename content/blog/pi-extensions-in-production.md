@@ -44,7 +44,7 @@ Then there is the switch that turns the first two off. From `pi --help` in 1.2.0
 
 `--no-extensions` disables discovery, the packages in `settings.json`, and Pi's own built-in extensions such as MCP support (the [CLI reference](https://pi.dev/docs/latest/cli) spells it out as "discovered, configured, and built-in extensions"). Explicit `-e` paths still load, and a built-in can be named that way too: `pi -ne -e builtin:mcp` is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: Pi's built-in tools (`read`, `bash`, `edit`, `write`) are still there. Turning those off is a separate switch, `--no-builtin-tools`, and the clarification gate below uses both.
 
-## The D-Bus hang that made Orbi stop trusting Pi extension discovery
+## The D-Bus hang that made Orbi stop trusting Pi's default extension loading
 
 Orbi's runner on my machine is a systemd user service. On 4 September 2026 a run stopped before it did anything: the Pi process was alive, but minutes went by with no session file and no request to the model. The full write-up, with the diagnosis script, is in [the first post's incident section](/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi); the short version is what matters here.
 
@@ -86,13 +86,13 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. `-e` takes more than a path: the help text says "file or `builtin:<name>`", but on Pi 1.2.0 `pi -ne -e npm:<package>@<version>` fetches the package from the npm registry (a wrong name fails with npm's own 404), which is how Orbi's `npm:` and `git:` sources reach Pi unchanged. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
+The implementer, the reviewer, the `ticket` role, and the suggestion-writing session of `orbi suggest` get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. `-e` takes more than a path: the help text says "file or `builtin:<name>`", but on Pi 1.2.0 `pi -ne -e npm:<package>@<version>` fetches the package from the npm registry (a wrong name fails with npm's own 404), which is how Orbi's `npm:` and `git:` sources reach Pi unchanged. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
 
 Not every Orbi session uses that list, though. These are the three shapes, and each is a different answer to "what should this session be able to do":
 
 | Session | Extension flags | Why |
 |---|---|---|
-| implementer, reviewer, and the `ticket` role that writes comments | `--no-extensions` + the configured `--extension` entries | the allowlist above |
+| implementer, reviewer, the `ticket` role that writes comments, and the suggestion-writing session of `orbi suggest` | `--no-extensions` + the configured `--extension` entries | the allowlist above |
 | the repository-summary session of `orbi suggest` | `--no-extensions` and nothing else, with `--tools read,ls,find --no-skills --no-context-files` | it only reads; it does not need even the configured extensions |
 | the clarification gate (`clarify_thin_tickets = true` in the repository's `.github/orbi.toml`) | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | exactly one tool, shipped with the engine; nothing else callable |
 

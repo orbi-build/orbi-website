@@ -44,7 +44,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 
 `--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管什么：Pi 的内置工具（`read`、`bash`、`edit`、`write`）还在。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
 
-## 一次 D-Bus 卡死，让 Orbi 不再信任扩展的自动发现
+## 一次 D-Bus 卡死，让 Orbi 不再信任 Pi 的默认加载
 
 我机器上的 Orbi runner 是一个 systemd 用户服务。2026 年 9 月 4 日，一次运行什么都没做就停住了：Pi 进程活着，几分钟过去没有会话文件，也没有发给模型的请求。完整的记录和诊断脚本在[第一篇的事故一节](/zh/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi)，这里只说要紧的。
 
@@ -86,13 +86,13 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-实现者、评审者和 `ticket` 三个角色拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
+实现者、评审者、`ticket` 角色，以及 `orbi suggest` 里写建议的那个会话，拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
 
 不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：
 
 | 会话 | 扩展参数 | 为什么 |
 |---|---|---|
-| 实现者、评审者，以及写评论的 `ticket` 角色 | `--no-extensions` + 配置里的各条 `--extension` | 上面的白名单 |
+| 实现者、评审者、写评论的 `ticket` 角色，以及 `orbi suggest` 里写建议的那个会话 | `--no-extensions` + 配置里的各条 `--extension` | 上面的白名单 |
 | `orbi suggest` 的仓库摘要会话 | 只有 `--no-extensions`，外加 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
