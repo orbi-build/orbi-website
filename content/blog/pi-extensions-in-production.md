@@ -8,7 +8,7 @@ image: /img/blog-pi-extensions-card.png
 series: pi
 ---
 
-Pi extensions are TypeScript modules that the [Pi coding agent](https://pi.dev) loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi has several ways of finding them, and on a laptop every one of them is convenient. In a service that runs Pi with nobody watching, every one of them is also a way for code you did not choose to end up inside the session.
+Pi extensions are TypeScript modules that the [Pi coding agent](https://pi.dev) loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi has several ways of finding Pi extensions, and on a laptop every one of them is convenient. In a service that runs Pi with nobody watching, every one of them is also a way for code you did not choose to end up inside the session.
 
 I'm Lawrence Liu, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The [Pi hub](/guides/pi-coding-agent/) describes the runner around those sessions and [the first post of this series](/blog/orbi-on-pi-coding-agent/) walks one issue through them. This post is about Pi extensions only: how Orbi loads them, what went wrong before it did it this way, and two extensions we ended up writing ourselves. The commands and config below are what runs today, on Pi 1.2.0; the Orbi version numbers are the open-source engine's releases.
 
@@ -54,7 +54,7 @@ It happened once that we know of, and once was enough: a package the OS user ins
 
 ## How Orbi loads Pi extensions: `--no-extensions` plus a pinned allowlist
 
-Orbi's runner reads its own config file, `orbi.toml` (the `.github/orbi.toml` that appears later is a different file, a repository's settings on GitHub). The extension list is one repeatable table in it:
+Orbi's runner reads its own config file, `orbi.toml` (the `.github/orbi.toml` that appears later is a different file, a repository's settings on GitHub). The list of Pi extensions is one repeatable table in it:
 
 ```toml
 [[pi_extensions]]
@@ -173,7 +173,7 @@ The failures look different from each other. No file and no error: the model nev
 
 ## A Pi extension as the only write path: Orbi Cloud's draft tool
 
-The second extension is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant's sandbox, started with `--no-extensions -e <draft extension>` and `--tools read,grep,find,ls,write_draft,ask_user_question`, so the allowlist rule holds here too. The extension registers the two tools at the end of that list:
+The second of our Pi extensions is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant's sandbox, started with `--no-extensions -e <draft extension>` and `--tools read,grep,find,ls,write_draft,ask_user_question`, so the allowlist rule holds here too. The extension registers the two tools at the end of that list:
 
 - `write_draft` takes the complete draft and its issue title and writes them to fixed files. Those files are the only thing the page accepts as a draft, so whatever the model prints to the screen never becomes one. With that tool set the session has no general write or edit tool, so it cannot change files in the repository. A second, separate Pi session then checks the draft against what the person asked for, with the request and the draft as its input text; it loads the same extension with `write_draft` as its only tool and hands the checked draft back through it.
 - `ask_user_question` is for the case where the request is underspecified. The model asks one to four questions, each with two to four options, the recommended option first. The questions are written to a file next to the draft and the round ends there. Pi keeps every session in a file, and the run names that file with `--session-dir` and `--session-id`; when the person answers on the page, the next round starts Pi on the same session file with that one message, so there is no resident process and no timeout.
@@ -184,7 +184,7 @@ The tool's name and parameter shape came from a community extension, `@juiceshar
 
 If you run Pi without a person at the keyboard, the short version of this post is three habits:
 
-1. Start every unattended Pi with `--no-extensions`, then add back exactly the extensions you mean to load with `-e`. Keep the list in config, pin versions, and reject the config when a pin is missing.
+1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin versions, and reject the config when a pin is missing.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
 
