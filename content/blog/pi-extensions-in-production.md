@@ -42,7 +42,7 @@ Then there is the switch that turns the first two off. From `pi --help` in 1.2.0
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` disables discovery, the settings packages, and Pi's own built-in extensions such as MCP support. Explicit `-e` paths still load, and a built-in can be named that way too: `pi -ne -e builtin:mcp` is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: Pi's built-in tools (`read`, `bash`, `edit`, `write`) are still there. Turning those off is a separate switch, `--no-builtin-tools`, and the clarification gate below uses both.
+`--no-extensions` disables discovery, the packages in `settings.json`, and Pi's own built-in extensions such as MCP support (the [CLI reference](https://pi.dev/docs/latest/cli) spells it out as "discovered, configured, and built-in extensions"). Explicit `-e` paths still load, and a built-in can be named that way too: `pi -ne -e builtin:mcp` is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: Pi's built-in tools (`read`, `bash`, `edit`, `write`) are still there. Turning those off is a separate switch, `--no-builtin-tools`, and the clarification gate below uses both.
 
 ## The D-Bus hang that made Orbi stop trusting Pi extension discovery
 
@@ -50,7 +50,7 @@ Orbi's runner on my machine is a systemd user service. On 4 September 2026 a run
 
 The runner's Pi had loaded the packages declared in my own `~/.pi/agent/settings.json`, one of which was `pi-mcp-adapter`. That plugin initializes `@napi-rs/keyring` at startup, which makes a Secret Service call over D-Bus. Inside a `systemd --user` service that call occasionally never returns, and node waits on it before the first model request goes out. Nothing in the run had asked for MCP. The plugin was there because I had installed it for interactive use, and discovery handed it to the unattended session too. Removing it from `settings.json` fixed that run: restarted, the same issue got its session file and its first model response within 15 seconds.
 
-It happened once that we know of, and once was enough: a package the OS user installed for themselves had stopped an unattended run, and nothing in Orbi's config said it was allowed in. The fix for that, [Issue #249](https://github.com/orbi-build/orbi/issues/249), merged on 7 September (UTC): Orbi declares the extensions a run may have, and starts the implementer and the reviewer with `--no-extensions`. The third role, `ticket`, followed a month later; that story is in the table below.
+It happened once that we know of, and once was enough: a package the runner's own user account had installed for interactive use (on my machine, me) had stopped an unattended run, and nothing in Orbi's config said it was allowed in. The fix for that, [Issue #249](https://github.com/orbi-build/orbi/issues/249), merged on 7 September (UTC): Orbi declares the extensions a run may have, and starts the implementer and the reviewer with `--no-extensions`. The third role, `ticket`, the session that writes issue comments, followed a month later; that story is in the table below.
 
 ## How Orbi loads Pi extensions: `--no-extensions` plus a pinned allowlist
 
@@ -86,9 +86,9 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-Every role gets `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit paths are the only extensions the session can have. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
+The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit paths are the only extensions the session can have. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
 
-Three kinds of Pi session in Orbi differ from that default, and each is a different answer to "what should this session be able to do":
+Not every Orbi session uses that list, though. These are the three shapes, and each is a different answer to "what should this session be able to do":
 
 | Session | Extension flags | Why |
 |---|---|---|
@@ -96,15 +96,15 @@ Three kinds of Pi session in Orbi differ from that default, and each is a differ
 | the repository-summary session of `orbi suggest` | `--no-extensions` and nothing else, with `--tools read,ls,find --no-skills --no-context-files` | it only reads; it does not need even the configured extensions |
 | the clarification gate (`clarify_thin_tickets = true` in the repository's `.github/orbi.toml`) | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | exactly one tool, shipped with the engine; nothing else callable |
 
-The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills are the other half of the same picture. A skill is a Markdown file of instructions Pi loads into the prompt, and Pi discovers skills the same way it discovers extensions. There the isolation is still partial: the implementer, the reviewer, and the `ticket` role get Orbi's own `--skill` entries but not `--no-skills`, so skills the OS user installed can load into them. Only the `orbi suggest` sessions pass `--no-skills`.
+The first row was not always complete. Until 5 October the `ticket` role was started with no extension flags at all, so a user's installed extensions could load into the sessions that write issue comments. [Issue #1558](https://github.com/orbi-build/orbi/issues/1558) fixed it in Orbi v0.6.2 that day. Skills are the other half of the same picture. A skill is a Markdown file of instructions Pi loads into the prompt, and Pi discovers skills the same way it discovers extensions. There the isolation is still partial: the implementer, the reviewer, and the `ticket` role get Orbi's own `--skill` entries but not `--no-skills`, so skills the OS user installed can load into them. Only the two `orbi suggest` sessions pass `--no-skills`; the clarification gate below, which runs as a `ticket` session, does not either.
 
 ## Writing a Pi extension with one accepted output channel
 
 If you want to write a Pi extension and are not sure what for, the clarification gate is the one I would point to first, because it solves a problem that has nothing to do with MCP or tooling: getting a structured answer out of a model reliably.
 
-The gate runs before Orbi starts a delivery. One Pi session reads the issue and judges it on three checks (does it state an observable result, an acceptance condition, and a single outcome). If the issue is thin, Orbi stops the attempt, swaps the issue's label to `ai-needs-detail`, and leaves a comment (the stop comment) that lists what is missing and, when the model can propose one, a fix: split it into these tickets, or add these acceptance lines. Through Orbi v0.7.20 the gate asked the model for JSON in free text and parsed stdout. On the beta that dropped every proposal: the model put `kind` and `items` at the top level next to `missing`, the parser read only `suggestion`, and no stop comment ever showed a proposal; the same prompt sent three times to DeepSeek returned a usable split every time, at the wrong level ([Issue #1955](https://github.com/orbi-build/orbi/issues/1955)).
+The gate runs before Orbi starts a delivery. One Pi session reads the issue and judges it on three checks (does it state an observable result, an acceptance condition, and a single outcome). If the issue is thin, Orbi stops the attempt, swaps the issue's label to `ai-needs-detail`, and leaves a comment (the stop comment) that lists what is missing and, when the model can propose one, a fix: split it into these tickets, or add these acceptance lines. Through Orbi v0.7.20 the gate asked the model for JSON in free text and parsed stdout. On Orbi Cloud's beta environment the gate dropped every proposal: the model put `kind` and `items` at the top level next to `missing`, the parser read only `suggestion`, and no stop comment ever showed a proposal; the same prompt sent three times to DeepSeek returned a usable split every time, at the wrong level ([Issue #1955](https://github.com/orbi-build/orbi/issues/1955)).
 
-The fix was to stop parsing text. Since Orbi v0.7.21 (28 October) the engine ships `src/orbi/extensions/clarify_verdict.ts`, an extension that registers one tool. Below is a 48-line abridged version: the `split` proposal shape, the exported constants and the comments are cut, and the description is shortened. The [full file](https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts) is 138 lines:
+The fix was to stop parsing text. Since Orbi v0.7.21 (28 October) the engine ships `src/orbi/extensions/clarify_verdict.ts`, an extension that registers one tool. Below is an abridged version: the `split` proposal shape, the exported constants and the comments are cut, and the description is shortened. The [full file](https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts) is 138 lines:
 
 ```ts
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -157,7 +157,7 @@ export default function (pi: ExtensionAPI) {
 
 Three parts do the work. `parameters` is a TypeBox schema with `additionalProperties: false` at every level, and Pi validates the model's arguments against it before `execute` runs, so a top-level `kind`, an unknown check id, or (in the full file) a split with one item never reaches the file. `execute` writes the validated arguments to the path the engine put in `ORBI_CLARIFY_OUT`, so the engine reads a file instead of stdout. And `terminate: true` ends the run on the tool call, so there is no follow-up turn to pay for. The session is started with `--no-builtin-tools --no-extensions --extension <that file>`: built-in tools off, discovery off, one extension on.
 
-What the schema protects against is a malformed verdict, not a missing one. If the model answers in prose, or calls the tool with arguments the schema rejects, there is no file, and the engine treats that exactly as it treats a model that is down: the gate fails open and the delivery starts without the check. A thin issue then goes through as it did before the gate existed; what no longer happens is a proposal silently lost.
+What the schema protects against is a malformed verdict, not a missing one. A rejected call only fails that call; the model may try again. If the run ends with no file, because the model answered in prose or never got a call past the schema, the engine treats that exactly as it treats a model that is down: the gate fails open and the delivery starts without the check. A thin issue then goes through as it did before the gate existed; what no longer happens is a proposal silently lost.
 
 Pi aliases `typebox` to its own pinned copy when it loads an extension, so a file like this needs no `package.json` of its own. To try the shape yourself:
 
@@ -173,10 +173,10 @@ The failures look different from each other. No file and no error: the model nev
 
 ## A Pi extension as the only write path: Orbi Cloud's draft tool
 
-The second of our Pi extensions is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant's sandbox, started with `--no-extensions -e <draft extension>` and `--tools read,grep,find,ls,write_draft,ask_user_question`, so the allowlist rule holds here too. The extension registers the two tools at the end of that list:
+The second of our Pi extensions is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant's sandbox, started with `--no-extensions -e <draft extension>` and `--tools read,grep,find,ls,write_draft,ask_user_question`, so the allowlist rule holds here too. `--tools` is itself an allowlist: it replaces Pi's default tool selection, so `bash`, `edit` and `write` are not callable in this session. The extension registers the two tools at the end of that list:
 
 - `write_draft` takes the complete draft and its issue title and writes them to fixed files. Those files are the only thing the page accepts as a draft, so whatever the model prints to the screen never becomes one. With that tool set the session has no general write or edit tool, so it cannot change files in the repository. A second, separate Pi session then checks the draft against what the person asked for, with the request and the draft as its input text; it loads the same extension with `write_draft` as its only tool and hands the checked draft back through it.
-- `ask_user_question` is for the case where the request is underspecified. The model asks one to four questions, each with two to four options, the recommended option first. The questions are written to a file next to the draft and the round ends there. Pi keeps every session in a file, and the run names that file with `--session-dir` and `--session-id`; when the person answers on the page, the next round starts Pi on the same session file with that one message, so there is no resident process and no timeout.
+- `ask_user_question` is for the case where the request is underspecified. The model asks one to four questions, each with two to four options, the recommended option first. The questions are written to a file next to the draft and the round ends there. This drafting session is persisted to a file, which the run names with `--session-dir` and `--session-id`; when the person answers on the page, the next round starts Pi on the same session file with that one message, so there is no resident process and no timeout.
 
 The tool's name and parameter shape came from a community extension, `@juicesharp/rpiv-ask-user-question`, which asks the questions in the terminal. We did not take it as a dependency: in `pi -p`, the non-interactive mode Orbi always uses, that package withdraws its tool entirely, because there is nobody at a terminal to answer. We copied its name and parameter shape and wrote our own.
 
@@ -188,7 +188,7 @@ If you run Pi without a person at the keyboard, the short version of this post i
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
 
-One gap is still open on our side: skills do not get the same treatment yet, so an OS user's skills can still load into Orbi's implementer, reviewer, and `ticket` sessions.
+One gap is still open on our side: skills do not get the same treatment yet, so skills installed by the user account that runs the runner can still load into every Orbi session except the two `orbi suggest` ones.
 
 ## Related
 

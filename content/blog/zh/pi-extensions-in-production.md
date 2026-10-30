@@ -1,5 +1,5 @@
 ---
-title: Pi 扩展在生产环境里怎么用：先隔离，再自己写一个
+title: Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展
 date: 2026-10-30
 summary: Orbi 无人值守跑 Pi 时怎么处理扩展：--no-extensions 加一份钉死版本的白名单，一次 D-Bus 卡死逼出来的做法，以及我们自己写的两个扩展。
 lang: zh
@@ -42,7 +42,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` 关掉自动发现、设置文件里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管什么：Pi 的内置工具（`read`、`bash`、`edit`、`write`）还在。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
+`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管什么：Pi 的内置工具（`read`、`bash`、`edit`、`write`）还在。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
 
 ## 一次 D-Bus 卡死，让 Orbi 不再信任扩展的自动发现
 
@@ -50,9 +50,9 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 
 runner 的 Pi 加载了我自己 `~/.pi/agent/settings.json` 里声明的包，其中一个是 `pi-mcp-adapter`。这个插件启动时初始化 `@napi-rs/keyring`，后者会通过 D-Bus 调一次 Secret Service。在 `systemd --user` 的服务上下文里，这个调用偶尔永远不返回，node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，自动发现又把它交给了无人值守的会话。把它从 `settings.json` 里拿掉，那次运行就好了：同一张 Issue 重新跑，15 秒内写出了会话文件、拿到了第一个模型响应。
 
-我们知道的只有这一次，但一次就够了：系统用户给自己装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 [Issue #249](https://github.com/orbi-build/orbi/issues/249)，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 `--no-extensions` 启动。第三个角色 `ticket` 晚了一个月才补上，见下面的表。
+我们知道的只有这一次，但一次就够了：跑 runner 的那个用户账号（在我机器上就是我）为交互使用装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 [Issue #249](https://github.com/orbi-build/orbi/issues/249)，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 `--no-extensions` 启动。第三个角色 `ticket`（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。
 
-## Orbi 怎么加载 Pi 扩展：`--no-extensions` 加一份钉死版本的白名单
+## Orbi 用 `--no-extensions` 加白名单加载 Pi 扩展
 
 Orbi 的 runner 读自己的配置文件 `orbi.toml`（后面出现的 `.github/orbi.toml` 是另一个文件，放在仓库里的 GitHub 侧设置）。扩展清单是里面一张可重复的表：
 
@@ -86,9 +86,9 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-每个角色都拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式路径就是会话能有的全部扩展。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
+实现者、评审者和 `ticket` 三个角色拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式路径就是会话能有的全部扩展。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
 
-Orbi 里有三种 Pi 会话和这个默认值不一样，每一种都是对「这个会话该能做什么」的不同回答：
+不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：
 
 | 会话 | 扩展参数 | 为什么 |
 |---|---|---|
@@ -96,15 +96,15 @@ Orbi 里有三种 Pi 会话和这个默认值不一样，每一种都是对「�
 | `orbi suggest` 的仓库摘要会话 | 只有 `--no-extensions`，外加 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
-第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 的会话传了 `--no-skills`。
+第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 的两个会话传了 `--no-skills`；下面的澄清门禁以 `ticket` 会话跑，也没有传。
 
 ## 用一个扩展工具拿结构化裁决
 
 如果你想写一个 Pi 扩展又不知道拿来干什么，我最先会指给你看的是澄清门禁，因为它解决的问题和 MCP、工具链都没关系：怎么稳定地从模型那里拿到一个结构化的答案。
 
-门禁在 Orbi 开始交付之前跑。一个 Pi 会话读 Issue，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 `ai-needs-detail`，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在测试环境上这把提议全丢了：模型把 `kind` 和 `items` 放在顶层、和 `missing` 并列，解析器只读 `suggestion`，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（[Issue #1955](https://github.com/orbi-build/orbi/issues/1955)）。
+门禁在 Orbi 开始交付之前跑。一个 Pi 会话读 Issue，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 `ai-needs-detail`，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在 Orbi Cloud 的测试环境上，门禁把提议全丢了：模型把 `kind` 和 `items` 放在顶层、和 `missing` 并列，解析器只读 `suggestion`，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（[Issue #1955](https://github.com/orbi-build/orbi/issues/1955)）。
 
-修法是不再解析文本。从 Orbi v0.7.21（10 月 28 日）起，引擎自带 `src/orbi/extensions/clarify_verdict.ts`，一个只注册一个工具的扩展。下面是 48 行的删节版：去掉了 `split` 那一种提议形状、导出的常量和注释，描述也缩短了；[完整文件](https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts) 138 行：
+修法是不再解析文本。从 Orbi v0.7.21（10 月 28 日）起，引擎自带 `src/orbi/extensions/clarify_verdict.ts`，一个只注册一个工具的扩展。下面是删节版：去掉了 `split` 那一种提议形状、导出的常量和注释，描述也缩短了；[完整文件](https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts) 138 行：
 
 ```ts
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -157,7 +157,7 @@ export default function (pi: ExtensionAPI) {
 
 起作用的有三处。`parameters` 是一个每一层都带 `additionalProperties: false` 的 TypeBox schema，Pi 在跑 `execute` 之前就按它校验模型给的参数，所以顶层的 `kind`、不认识的检查 id、（完整文件里）只有一项的 split，都到不了文件。`execute` 把校验过的参数写到引擎放在 `ORBI_CLARIFY_OUT` 里的那个路径，引擎读文件，不读 stdout。`terminate: true` 让这次运行在工具调用上就结束，不再为下一轮付钱。会话用 `--no-builtin-tools --no-extensions --extension <这个文件>` 启动：内置工具关、自动发现关、只开这一个扩展。
 
-schema 防的是畸形的裁决，不是缺失的裁决。模型要是用散文回答，或者调用时参数不合 schema，就不会有文件，引擎把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议被悄悄丢掉。
+schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议被悄悄丢掉。
 
 Pi 加载扩展时会把 `typebox` 指向它自己钉死的那份，所以这样的文件不需要自己的 `package.json`。想自己试一下这个形状：
 
@@ -173,10 +173,10 @@ cat "$out"
 
 ## Orbi Cloud 起草 Issue 用的扩展
 
-第二个扩展在 Orbi Cloud 里。Cloud 托管同一套 runner，另外加了一个页面：你用对话说想改什么，Orbi 替你起草 Issue。那次起草是租户沙箱（Cloud 给每个账号分配的一台独立 Linux 用户环境）里的一个 Pi 会话，用 `--no-extensions -e <起草扩展>` 和 `--tools read,grep,find,ls,write_draft,ask_user_question` 启动，白名单那条规矩在这里也成立。扩展注册的就是列表末尾那两个工具：
+第二个扩展在 Orbi Cloud 里。Cloud 托管同一套 runner，另外加了一个页面：你用对话说想改什么，Orbi 替你起草 Issue。那次起草是租户沙箱（Cloud 给每个账号分配的一台独立 Linux 用户环境）里的一个 Pi 会话，用 `--no-extensions -e <起草扩展>` 和 `--tools read,grep,find,ls,write_draft,ask_user_question` 启动，白名单那条规矩在这里也成立。`--tools` 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 `bash`、`edit`、`write` 都调不到。扩展注册的就是列表末尾那两个工具：
 
 - `write_draft` 接收完整的草稿和它的 Issue 标题，写到固定的文件里。页面只认这些文件是草稿，所以模型打在屏幕上的东西永远不会变成草稿。这套工具里没有通用的 write、edit，会话改不了仓库里的文件。之后另起一个 Pi 会话，拿用户的原话和草稿当输入文本，对照检查；它加载同一个扩展，但工具只有 `write_draft`，检查完的草稿也从这条路交回来。
-- `ask_user_question` 用在需求说得不够清楚的时候。模型问一到四个问题，每个两到四个选项，推荐项放第一个。问题写到草稿旁边的一个文件里，这一轮就此结束。Pi 把每个会话都存成文件，起草运行用 `--session-dir` 和 `--session-id` 指定它；用户在页面上答了，下一轮在同一个会话文件上重新起 Pi，带上那一条消息，所以没有常驻进程，也没有超时。
+- `ask_user_question` 用在需求说得不够清楚的时候。模型问一到四个问题，每个两到四个选项，推荐项放第一个。问题写到草稿旁边的一个文件里，这一轮就此结束。这次起草会话存成文件，起草运行用 `--session-dir` 和 `--session-id` 指定它；用户在页面上答了，下一轮在同一个会话文件上重新起 Pi，带上那一条消息，所以没有常驻进程，也没有超时。
 
 工具的名字和参数形状来自一个社区扩展 `@juicesharp/rpiv-ask-user-question`，它是在终端里问问题的。我们没有把它当依赖：在 `pi -p`（Orbi 一直用的非交互模式）下，那个包会把工具整个撤掉，因为终端前没有人回答。我们只借了它的工具名和参数形状，自己写了一个。
 
@@ -188,7 +188,7 @@ cat "$out"
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
 
-我们这边还有一个口子没堵：skill 还没有同样的待遇，系统用户的 skill 仍然可能加载进 Orbi 的实现者、评审者和 `ticket` 会话。
+我们这边还有一个口子没堵：skill 还没有同样的待遇，跑 runner 的那个用户账号装的 skill，除了 `orbi suggest` 的两个会话，仍然可能加载进 Orbi 的每一个会话。
 
 ## 相关
 
