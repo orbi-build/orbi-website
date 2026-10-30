@@ -1955,6 +1955,28 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1110: dang.ai lists orbi.build for free only when the site carries
+  // a crawler-reachable link back to dang.ai, so a plain text link closes the
+  // badge row after the Fazier badge. It is ordinary server-rendered HTML — no
+  // nofollow and no JavaScript — so the directory's crawler reads it in the
+  // shipped bytes.
+  it("links dang.ai from the footer badge row on every footer page (Issue #1110)", () => {
+    const anchor = '<a href="https://dang.ai/" target="_blank">Featured on Dang.ai</a>';
+    const fazier = '<a href="https://fazier.com" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: dang.ai footer anchor drifted`).toContain(anchor);
+      expect(footer.indexOf(anchor), `${page.output}: the dang.ai link must follow the Fazier badge`)
+        .toBeGreaterThan(footer.indexOf(fazier));
+      expect(countMatches(footer, /href="https:\/\/dang\.ai\/"/g), `${page.output}: exactly one dang.ai link`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://dang.ai/"), `${page.output}: the dang.ai backlink must stay crawlable`)
+        .not.toContain("nofollow");
+      expect(footerAnchorTag(footer, "https://dang.ai/"), `${page.output}: the dang.ai link is plain HTML`)
+        .toContain('target="_blank"');
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
@@ -1963,8 +1985,8 @@ describe("one unified footer on every content page", () => {
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
-  // text links, Issue #1099 the ToolPotion badge and Issue #1102 the Fazier
-  // badge last.
+  // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge
+  // and Issue #1110 the Dang.ai text link last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1991,6 +2013,7 @@ describe("one unified footer on every content page", () => {
       "https://whatisaitools.com/",
       "https://toolpotion.ai/en/ai-agent/orbi",
       "https://fazier.com",
+      "https://dang.ai/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
