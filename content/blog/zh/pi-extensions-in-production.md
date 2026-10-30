@@ -42,7 +42,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管内置工具：`read`、`bash`、`edit`、`write` 还在。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
+`--no-extensions` 关掉自动发现、`settings.json` 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；[命令行文档](https://pi.dev/docs/latest/cli)的原话是关掉「discovered, configured, and built-in extensions」。显式的 `-e` 照样加载，内置扩展也可以用 `-e builtin:<名字>` 单独点名：`pi -ne -e builtin:mcp` 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（`read`、`bash`、`edit`、`write`）还在；`ls`、`find`、`grep` 也是内置工具，只是默认不开，下面几处 `--tools` 清单里的名字就是从这儿来的。关内置工具是另一个开关 `--no-builtin-tools`，下面的澄清门禁两个都用。
 
 ## 一次 D-Bus 卡死，让 Orbi 不再信任 Pi 的默认加载
 
@@ -169,7 +169,7 @@ ORBI_CLARIFY_OUT="$out" \
 cat "$out"
 ```
 
-几种出错长得不一样。没文件也没报错：模型根本没调工具。Pi 报参数校验错误：参数不合 schema。工具抛异常：`ORBI_CLARIFY_OUT` 没设，或者那个路径写不了。
+几种出错长得不一样。Pi 没报错、`cat` 说文件不存在：模型根本没调工具。Pi 报参数校验错误：参数不合 schema。工具抛异常：`ORBI_CLARIFY_OUT` 没设，或者那个路径写不了。
 
 ## Orbi Cloud 起草 Issue 用的扩展
 
@@ -193,7 +193,7 @@ pi --no-extensions --no-context-files --no-skills -e <起草扩展> \
 
 如果你跑 Pi 时键盘前没有人，这篇的短版是三个习惯：
 
-1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号、git 钉 commit SHA，缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「`@` 后面有没有东西」，不查那个 ref 会不会动。
+1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号；git 至少写 `@ref`（tag、分支都能过校验），要两个会话跑的代码一字不差再钉 commit SHA；缺了钉子就拒绝整份配置；记住对 git 来源，Orbi 的校验只查「`@` 后面有没有东西」，不查那个 ref 会不会动。
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
 

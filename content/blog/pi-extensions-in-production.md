@@ -42,7 +42,7 @@ Besides those three sources of your own extensions, Pi ships built-in ones, such
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 ```
 
-`--no-extensions` disables discovery, the packages in `settings.json`, and Pi's own built-in extensions such as MCP support (the [CLI reference](https://pi.dev/docs/latest/cli) spells it out as "discovered, configured, and built-in extensions"). Explicit `-e` paths still load, and a built-in can be named that way too: `pi -ne -e builtin:mcp` is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: Pi's built-in tools (`read`, `bash`, `edit`, `write`) are still there. Turning those off is a separate switch, `--no-builtin-tools`, and the clarification gate below uses both.
+`--no-extensions` disables discovery, the packages in `settings.json`, and Pi's own built-in extensions such as MCP support (the [CLI reference](https://pi.dev/docs/latest/cli) spells it out as "discovered, configured, and built-in extensions"). Explicit `-e` paths still load, and a built-in can be named that way too: `pi -ne -e builtin:mcp` is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: it leaves Pi's built-in tools alone. The four on by default (`read`, `bash`, `edit`, `write`) are still there, and `ls`, `find` and `grep` are built in too, off by default, which is where the `--tools` lists below get those names. Turning those off is a separate switch, `--no-builtin-tools`, and the clarification gate below uses both.
 
 ## The D-Bus hang that made Orbi stop trusting Pi's default extension loading
 
@@ -169,7 +169,7 @@ ORBI_CLARIFY_OUT="$out" \
 cat "$out"
 ```
 
-The failures look different from each other. No file and no error: the model never called the tool. Pi reports a validation error on the call: the arguments did not match the schema. The tool throws: `ORBI_CLARIFY_OUT` was not set or not writable.
+The failures look different from each other. Pi reports no error and `cat` says the file does not exist: the model never called the tool. Pi reports a validation error on the call: the arguments did not match the schema. The tool throws: `ORBI_CLARIFY_OUT` was not set or not writable.
 
 ## A Pi extension as the only write path: Orbi Cloud's draft tool
 
@@ -193,7 +193,7 @@ The tool's name and parameter shape came from a community extension, `@juiceshar
 
 If you run Pi without a person at the keyboard, the short version of this post is three habits:
 
-1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version and git sources to a commit, and reject the config when a pin is missing; remember that for git sources Orbi's validation only checks that something follows an `@`, not whether the ref can move.
+1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version, give git sources at least an `@ref` (a tag or a branch passes validation) and pin a commit SHA when two sessions must run identical code, and reject the config when a pin is missing; remember that for git sources Orbi's validation only checks that something follows an `@`, not whether the ref can move.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
 
