@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Pi extensions in production: isolate, then write one</title>
+      <link>https://orbi.build/blog/pi-extensions-in-production/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/pi-extensions-in-production/</guid>
+      <pubDate>Fri, 30 Oct 2026 00:00:00 GMT</pubDate>
+      <description>How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.</description>
+    </item>
+    <item>
       <title>Pi coding agent worktree: a failed recovery</title>
       <link>https://orbi.build/blog/pi-coding-agent-worktree/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-worktree/</guid>

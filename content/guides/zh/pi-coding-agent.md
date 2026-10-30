@@ -45,7 +45,7 @@ Pi 让 Orbi 可以通过一份 `models.json` 格式的 provider 列表自己选�
 | `review` | PR 上的每一轮评审 | 开 | 对发现的问题直接修、push 到任务分支，最后输出一行 `REVIEW_VERDICT` JSON，写明它修完之后停在哪个 commit |
 | `ticket`（用文字答复） | 同时打了 `ai-content-only` 的 issue，这类 issue 要的是一段文字答复；另外，开了 `clarify_thin_tickets` 时，认领前判断新 issue 写得够不够详细也用它 | 关（`--no-tools`） | Orbi 贴到 issue 上的那段文字 |
 
-`implement` 和 `review` 会话带 `--no-extensions` 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 `pi_extensions` 以 `--extension` 加回来，Orbi Cloud 就是这样加回 Codemode 的。`ticket` 角色不开工具，启动时完全不带扩展相关的参数，所以另外两个角色有的 `--no-extensions` 防护，它没有：Pi 的内置扩展会加载，runner 所在系统用户装的扩展也可能加载（具体是哪些，见下文「agent 目录和模型」）。这是一个已知的缺口。skill 也没有这样隔离：Orbi 用 `--skill` 加上自己的 skill，但不传 `--no-skills`，所以用户自己的 skill 在每个角色里都可能加载。
+`implement` 和 `review` 会话带 `--no-extensions` 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 `pi_extensions` 以 `--extension` 加回来，Orbi Cloud 就是这样加回 Codemode 的。`ticket` 角色不开工具，从 v0.6.2 起（[Issue #1558](https://github.com/orbi-build/orbi/issues/1558)，2026 年 10 月 5 日）也带同样的 `--no-extensions` 和 `--extension` 参数；在那之前它启动时完全不带扩展相关的参数，runner 所在系统用户装的扩展可能加载进去。Orbi 怎么加载、怎么写扩展，见[扩展那篇](/zh/blog/pi-extensions-in-production/)。skill 也没有这样隔离：Orbi 用 `--skill` 加上自己的 skill，但不传 `--no-skills`，所以用户自己的 skill 在每个角色里都可能加载。
 
 模型在 runner 的 `orbi.toml` 里选；仓库自己的 `.github/orbi.toml` 不能设模型相关的键。一个最小的配置如下，评审的两个键可以指向另一个模型，这里用的是同一个：
 
@@ -145,7 +145,7 @@ Pi 会话卡住时不会退出，runner 收不到任何报错，所以它盯的�
 - `settings.json`：以这个用户的设置为底。给这个角色配了 provider 和 model，`defaultProvider`、`defaultModel`（会话启动时用的模型）和 `enabledModels`（切换模型时 Pi 轮流使用的列表）都锁成这一个模型；没配的话，只从 `enabledModels` 里去掉合并后的 `models.json` 里没有的模型。设置里如果有 `httpIdleTimeoutMs: 0`，Orbi 会删掉它：设成 0 等于关掉 Pi 对模型请求的空闲超时，第一个响应迟迟不来的请求会一直等下去；删掉以后用 Pi 默认的 300 秒。这些都是用户级设置：如果 Pi 信任这个项目，仓库自己的 `.pi/settings.json` 会叠加在上面、可以覆盖它们，不过命令行上的 `--provider` 和 `--model` 仍然优先。
 - `auth.json`：软链接到这个用户自己的文件。
 
-对 `ticket` 角色来说，这决定了用户的哪些扩展会被加载：没设 `pi_providers` 时，是这个用户 `~/.pi/agent` 里装的全部扩展；设了时，自动发现改到生成的目录里进行，但用户 `settings.json` 里声明的扩展和包（用绝对路径、`~/` 路径或包的形式写的）仍可能加载。无论哪种情况，`ticket` 都没有扩展白名单。
+从 v0.6.2 起，`ticket` 角色和另外两个角色一样带 `--no-extensions` 和 `--extension` 启动（见上文），所以这个目录不再决定它加载哪些扩展。它仍然决定的是每个角色加载哪些用户 skill：Orbi 不给 runner 的角色传 `--no-skills`，这个用户 `~/.pi/agent` 下（设了 `pi_providers` 时是生成目录下）的 skill 会加载进去；各角色的参数表见[扩展那篇](/zh/blog/pi-extensions-in-production/)。
 
 没设 `pi_providers` 时，Pi 直接用这个用户的 `~/.pi/agent`，`enabledModels` 锁定和 `httpIdleTimeoutMs` 的清理这两条都不生效；`--no-extensions`、命令行上的 `--provider` 和 `--model`（配了的话），以及上文的静默看门狗都不受影响。见 [providers](https://docs.orbi.build/zh/providers) 和 [configuration](https://docs.orbi.build/zh/configuration)。
 

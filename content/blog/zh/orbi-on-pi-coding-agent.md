@@ -70,7 +70,7 @@ pi [--no-tools] [--no-extensions [--extension <白名单里的扩展>]] \
 
 评审会话是对着 PR 另起的。它的活是审这一份 diff，有问题就在这份 diff 上修到能合，所以 03:51 那个评审推过提交。Orbi 不给它传两个 skill：`tdd-dev` 会把它带去从头实现这张票；`review-fix-loop`（审、修、再审，直到没问题）会在会话里再套一层评审循环，而 runner 外面已经在跑一层了。评审可以单独配模型（`review_pi_provider`、`review_pi_model`），结束时必须输出一行 `REVIEW_VERDICT {...}` JSON，Orbi 解析的就是这一行。
 
-还有第三种角色叫答复，只在 issue 上回答问题，什么都不改。实现和评审会话都带 `--no-extensions`（原因见下面第一个事故），答复会话带 `--no-tools`，却完全不传扩展参数，所以它会加载这个系统用户（跑 runner 的那个操作系统用户）装的所有 Pi 扩展。Cloud 上 runner 的系统用户一个都没装，但自己部署的机器上这是个口子，下面第一个事故里那种扩展也会被它加载。skill 也有类似的口子：Orbi 不传 `--no-skills`，系统用户级的 skill 目录里有什么，每种角色都会自动加载；仓库里的 skill 目录在 Pi 信任这个项目之后也一样，包括 Orbi 特意不给评审的那些。
+还有第三种角色叫答复，只在 issue 上回答问题，什么都不改。实现和评审会话都带 `--no-extensions`（原因见下面第一个事故），答复会话带 `--no-tools`，却完全不传扩展参数，所以它会加载这个系统用户（跑 runner 的那个操作系统用户）装的所有 Pi 扩展。Cloud 上 runner 的系统用户一个都没装，但自己部署的机器上这曾是个口子，下面第一个事故里那种扩展也会被它加载。这篇发出的当天，Orbi v0.6.2 把它补上了（[orbi#1558](https://github.com/orbi-build/orbi/issues/1558)），答复会话现在拿到同样的参数；各角色现在的参数表见[讲 Pi 扩展的那一篇](/zh/blog/pi-extensions-in-production/)。skill 也有类似的口子：Orbi 不传 `--no-skills`，系统用户级的 skill 目录里有什么，每种角色都会自动加载；仓库里的 skill 目录在 Pi 信任这个项目之后也一样，包括 Orbi 特意不给评审的那些。
 
 每个 run 有自己的会话目录，就是 worktree 里的 `.pi-session/`，Pi 把会话写成 JSONL 放在里面，一条消息或一个工具结果占一行。run 失败时，Orbi 把最近最多 20 条记录的结构摘要（时间、角色、工具，不含正文）附到失败评论里，能看出会话停下时在干什么。run 跑着的时候，Orbi 也一直读这个文件，更新 issue 上的那条进度评论（[orbi#24](https://github.com/orbi-build/orbi/issues/24)）：
 
@@ -181,7 +181,7 @@ awk -v p="pid=$PID," '$0 ~ p {print $8}' <<<"$unix" |
 ls -la "$WT/.pi-session/"
 ```
 
-原因是一个装在用户级别的 Pi 扩展包 `pi-mcp-adapter`。它启动时通过 D-Bus 向桌面的 Secret Service 要钥匙串，在 systemd 用户服务里，这个请求有时永远等不到回应。为什么会这样，我们没再往下挖。把它从 `~/.pi/agent/settings.json` 里去掉，同一个 run 15 秒就拿到了第一个模型响应（[排查过程见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。长期的修法是 [orbi#249](https://github.com/orbi-build/orbi/issues/249)，这张票 9 月 3 日就开着，9 月 8 日合入：实现和评审会话一律带 `--no-extensions` 启动，只加载 Orbi 配置里列出的扩展。它只管扩展，这一点跟下一个事故有关。
+原因是一个装在用户级别的 Pi 扩展包 `pi-mcp-adapter`。它启动时通过 D-Bus 向桌面的 Secret Service 要钥匙串，在 systemd 用户服务里，这个请求有时永远等不到回应。为什么会这样，我们没再往下挖。把它从 `~/.pi/agent/settings.json` 里去掉，同一个 run 15 秒就拿到了第一个模型响应（[排查过程见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。长期的修法是 [orbi#249](https://github.com/orbi-build/orbi/issues/249)，这张票 9 月 3 日就开着，9 月 7 日（UTC）合入：实现和评审会话一律带 `--no-extensions` 启动，只加载 Orbi 配置里列出的扩展。它只管扩展，这一点跟下一个事故有关。之后 Orbi 怎么加载 Pi 扩展（钉死版本的白名单），以及我们自己最后写了哪两个扩展，见[《Pi 扩展在生产环境里怎么用》](/zh/blog/pi-extensions-in-production/)。
 
 第二次是 runner 跑错了模型。9 月 20 日我新配了一个 runner，本来要通过 Pi 用 GPT。配置里写了仓库，却漏了 `pi_provider` 和 `pi_model`，Orbi 就没传 `--provider` 和 `--model`，Pi 退回去用这个系统用户 `~/.pi/agent/settings.json` 里的 `defaultModel`，这一项 #249 没管。我以为它是 GPT runner。Orbi 的日志会在会话启动时记下实际用的 provider 和模型，那一行写的却是 `provider=LLAMA_INTRANET model=qwen3.8:27b`，一个本地模型。没有任何报错，唯一的线索就是那一行，好在我当天就看到了。现在每个 runner 的配置都写明 provider 和模型。这是约定，Orbi 不强制检查，所以实际跑的是哪个模型，看启动行，不看配置。
 
