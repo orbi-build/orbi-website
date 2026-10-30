@@ -181,7 +181,7 @@ awk -v p="pid=$PID," '$0 ~ p {print $8}' <<<"$unix" |
 ls -la "$WT/.pi-session/"
 ```
 
-原因是一个装在用户级别的 Pi 扩展包 `pi-mcp-adapter`。它启动时通过 D-Bus 向桌面的 Secret Service 要钥匙串，在 systemd 用户服务里，这个请求有时永远等不到回应。为什么会这样，我们没再往下挖。把它从 `~/.pi/agent/settings.json` 里去掉，同一个 run 15 秒就拿到了第一个模型响应（[排查过程见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。长期的修法是 [orbi#249](https://github.com/orbi-build/orbi/issues/249)，这张票 9 月 3 日就开着，9 月 8 日合入：实现和评审会话一律带 `--no-extensions` 启动，只加载 Orbi 配置里列出的扩展。它只管扩展，这一点跟下一个事故有关。之后 Orbi 怎么加载 Pi 扩展（钉死版本的白名单），以及我们自己最后写了哪两个扩展，见[《Pi 扩展在生产环境里怎么用》](/zh/blog/pi-extensions-in-production/)。
+原因是一个装在用户级别的 Pi 扩展包 `pi-mcp-adapter`。它启动时通过 D-Bus 向桌面的 Secret Service 要钥匙串，在 systemd 用户服务里，这个请求有时永远等不到回应。为什么会这样，我们没再往下挖。把它从 `~/.pi/agent/settings.json` 里去掉，同一个 run 15 秒就拿到了第一个模型响应（[排查过程见 orbi#311](https://github.com/orbi-build/orbi/issues/311)）。长期的修法是 [orbi#249](https://github.com/orbi-build/orbi/issues/249)，这张票 9 月 3 日就开着，9 月 7 日（UTC）合入：实现和评审会话一律带 `--no-extensions` 启动，只加载 Orbi 配置里列出的扩展。它只管扩展，这一点跟下一个事故有关。之后 Orbi 怎么加载 Pi 扩展（钉死版本的白名单），以及我们自己最后写了哪两个扩展，见[《Pi 扩展在生产环境里怎么用》](/zh/blog/pi-extensions-in-production/)。
 
 第二次是 runner 跑错了模型。9 月 20 日我新配了一个 runner，本来要通过 Pi 用 GPT。配置里写了仓库，却漏了 `pi_provider` 和 `pi_model`，Orbi 就没传 `--provider` 和 `--model`，Pi 退回去用这个系统用户 `~/.pi/agent/settings.json` 里的 `defaultModel`，这一项 #249 没管。我以为它是 GPT runner。Orbi 的日志会在会话启动时记下实际用的 provider 和模型，那一行写的却是 `provider=LLAMA_INTRANET model=qwen3.8:27b`，一个本地模型。没有任何报错，唯一的线索就是那一行，好在我当天就看到了。现在每个 runner 的配置都写明 provider 和模型。这是约定，Orbi 不强制检查，所以实际跑的是哪个模型，看启动行，不看配置。
 

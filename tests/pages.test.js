@@ -88,6 +88,7 @@ const footerAnchorTag = (html, href) => {
 };
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // Issue #982: a Related link is classified by the page it points at, not by its
 // href string, so `/cloud/?ref=blog-yolo` is the same Cloud page as `/cloud/`
@@ -1955,6 +1956,59 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1116: the 2026-10-30 batch appends four directory badges after the
+  // Fazier badge, in the batch's order. Issue #1110 had closed the row with a
+  // plain "Featured on Dang.ai" text link; dang.ai now ships its own verified
+  // badge, so that anchor becomes the badge's crawler-reachable link (still no
+  // nofollow and no JavaScript, so the directory reads it in the shipped
+  // bytes). Each embed keeps the vendor's href/src/alt, opens a new tab and
+  // declares its source image's box — turbo0's SVG viewBox is 481.56x160.97,
+  // toolfame's 160x54, dang.ai's PNG 550x198 (the vendor declares the
+  // proportional 260x94) and LaunchIgniter's 212x55 — so the shared 28px
+  // footer rule (Issue #1038) keeps every badge in its source ratio.
+  it("carries the 2026-10-30 directory badges after the Fazier badge on every footer page (Issue #1116)", () => {
+    const fazier = '<a href="https://fazier.com" target="_blank" rel="noopener">';
+    const entries = [
+      {
+        href: "https://turbo0.com/item/orbi",
+        anchor: '<a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer">',
+        image: '<img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" />',
+      },
+      {
+        href: "https://toolfame.com/item/orbi",
+        anchor: '<a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer">',
+        image: '<img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" />',
+      },
+      {
+        href: "https://dang.ai",
+        anchor: '<a href="https://dang.ai" target="_blank" rel="noopener">',
+        image: '<img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" />',
+      },
+      {
+        href: "https://launchigniter.com/product/orbi?ref=badge-orbi",
+        anchor: '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">',
+        image: '<img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" />',
+      },
+    ];
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      let previous = fazier;
+      for (const entry of entries) {
+        expect(footer, `${page.output}: ${entry.href} footer anchor drifted`)
+          .toContain(entry.anchor + entry.image);
+        expect(countMatches(footer, new RegExp(`href="${escapeRegExp(entry.href)}"`, "g")), `${page.output}: exactly one ${entry.href} link`)
+          .toBe(1);
+        expect(footer.indexOf(entry.anchor), `${page.output}: ${entry.href} must follow the previous badge`)
+          .toBeGreaterThan(footer.indexOf(previous));
+        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} backlink must stay crawlable`)
+          .not.toContain("nofollow");
+        expect(footerAnchorTag(footer, entry.href), `${page.output}: the ${entry.href} anchor opens a new tab`)
+          .toContain('target="_blank"');
+        previous = entry.anchor;
+      }
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
@@ -1963,8 +2017,8 @@ describe("one unified footer on every content page", () => {
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
-  // text links, Issue #1099 the ToolPotion badge and Issue #1102 the Fazier
-  // badge last.
+  // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
+  // and Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1991,6 +2045,10 @@ describe("one unified footer on every content page", () => {
       "https://whatisaitools.com/",
       "https://toolpotion.ai/en/ai-agent/orbi",
       "https://fazier.com",
+      "https://turbo0.com/item/orbi",
+      "https://toolfame.com/item/orbi",
+      "https://dang.ai",
+      "https://launchigniter.com/product/orbi?ref=badge-orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

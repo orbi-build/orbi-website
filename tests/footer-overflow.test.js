@@ -233,11 +233,25 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const fazier = wrapper.querySelector('a[href="https://fazier.com"]');
           const fazierImage = fazier?.querySelector("img");
           const fazierRect = fazierImage?.getBoundingClientRect();
+          // Issue #1116: four directory badges close the row after the Fazier
+          // badge; dang.ai's verified badge replaced the Issue #1110 text link.
+          const turbo0 = wrapper.querySelector('a[href="https://turbo0.com/item/orbi"]');
+          const turbo0Image = turbo0?.querySelector("img");
+          const turbo0Rect = turbo0Image?.getBoundingClientRect();
+          const toolfame = wrapper.querySelector('a[href="https://toolfame.com/item/orbi"]');
+          const toolfameImage = toolfame?.querySelector("img");
+          const toolfameRect = toolfameImage?.getBoundingClientRect();
+          const dang = wrapper.querySelector('a[href="https://dang.ai"]');
+          const dangImage = dang?.querySelector("img");
+          const dangRect = dangImage?.getBoundingClientRect();
+          const launchigniter = wrapper.querySelector('a[href="https://launchigniter.com/product/orbi?ref=badge-orbi"]');
+          const launchigniterImage = launchigniter?.querySelector("img");
+          const launchigniterRect = launchigniterImage?.getBoundingClientRect();
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
           // spread inside every row that carries one of the new entries.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter].filter(Boolean);
           const rows = [];
           for (const node of [...wrapper.children]) {
             const box = node.getBoundingClientRect();
@@ -379,6 +393,48 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             fazierImageHeight: fazierRect?.height,
             fazierNaturalWidth: fazierImage?.naturalWidth,
             fazierNaturalHeight: fazierImage?.naturalHeight,
+            turbo0Target: turbo0?.getAttribute("target"),
+            turbo0Rel: turbo0?.getAttribute("rel"),
+            turbo0ImageSrc: turbo0Image?.getAttribute("src"),
+            turbo0ImageAlt: turbo0Image?.getAttribute("alt"),
+            turbo0DeclaredWidth: turbo0Image?.getAttribute("width"),
+            turbo0DeclaredHeight: turbo0Image?.getAttribute("height"),
+            turbo0ImageWidth: turbo0Rect?.width,
+            turbo0ImageHeight: turbo0Rect?.height,
+            turbo0NaturalWidth: turbo0Image?.naturalWidth,
+            turbo0NaturalHeight: turbo0Image?.naturalHeight,
+            toolfameTarget: toolfame?.getAttribute("target"),
+            toolfameRel: toolfame?.getAttribute("rel"),
+            toolfameImageSrc: toolfameImage?.getAttribute("src"),
+            toolfameImageAlt: toolfameImage?.getAttribute("alt"),
+            toolfameDeclaredWidth: toolfameImage?.getAttribute("width"),
+            toolfameDeclaredHeight: toolfameImage?.getAttribute("height"),
+            toolfameImageWidth: toolfameRect?.width,
+            toolfameImageHeight: toolfameRect?.height,
+            toolfameNaturalWidth: toolfameImage?.naturalWidth,
+            toolfameNaturalHeight: toolfameImage?.naturalHeight,
+            dangTarget: dang?.getAttribute("target"),
+            dangRel: dang?.getAttribute("rel"),
+            dangImageSrc: dangImage?.getAttribute("src"),
+            dangImageAlt: dangImage?.getAttribute("alt"),
+            dangDeclaredWidth: dangImage?.getAttribute("width"),
+            dangDeclaredHeight: dangImage?.getAttribute("height"),
+            dangText: dang?.textContent,
+            dangHasImage: Boolean(dangImage),
+            dangImageWidth: dangRect?.width,
+            dangImageHeight: dangRect?.height,
+            dangNaturalWidth: dangImage?.naturalWidth,
+            dangNaturalHeight: dangImage?.naturalHeight,
+            launchigniterTarget: launchigniter?.getAttribute("target"),
+            launchigniterRel: launchigniter?.getAttribute("rel"),
+            launchigniterImageSrc: launchigniterImage?.getAttribute("src"),
+            launchigniterImageAlt: launchigniterImage?.getAttribute("alt"),
+            launchigniterDeclaredWidth: launchigniterImage?.getAttribute("width"),
+            launchigniterDeclaredHeight: launchigniterImage?.getAttribute("height"),
+            launchigniterImageWidth: launchigniterRect?.width,
+            launchigniterImageHeight: launchigniterRect?.height,
+            launchigniterNaturalWidth: launchigniterImage?.naturalWidth,
+            launchigniterNaturalHeight: launchigniterImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -394,8 +450,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // The Startup Project text link (17 anchors), Issue #1094 the DevHub
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
-        // ToolPotion badge and Issue #1102 the Fazier badge: 24 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(24);
+        // ToolPotion badge, Issue #1102 the Fazier badge and Issue #1116 the
+        // turbo0 / toolfame / dang.ai / LaunchIgniter badges: 28 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(28);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -412,10 +469,84 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
-        // appended the ToolPotion badge and Issue #1102 the Fazier badge, so
-        // that is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the Fazier badge")
-          .toBe("https://fazier.com");
+        // appended the ToolPotion badge, Issue #1102 the Fazier badge and
+        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+        // so LaunchIgniter is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the LaunchIgniter badge")
+          .toBe("https://launchigniter.com/product/orbi?ref=badge-orbi");
+        // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
+        // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
+        // 482x161 placeholder makes that ratio assertable. The anchor keeps the
+        // vendor's target/rel and the link stays crawlable.
+        expect(result.turbo0Target, path + ": the turbo0 badge opens in a new tab").toBe("_blank");
+        expect(result.turbo0Rel, path + ": the turbo0 anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.turbo0Rel, path + ": the turbo0 backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.turbo0ImageSrc, path + ": turbo0 badge image src")
+          .toBe("https://img.turbo0.com/badge-listed-light.svg");
+        expect(result.turbo0ImageAlt, path + ": turbo0 badge image alt").toBe("Listed on Turbo0");
+        expect(result.turbo0DeclaredWidth, path + ": the turbo0 badge declares the 482px source width").toBe("482");
+        expect(result.turbo0DeclaredHeight, path + ": the turbo0 badge declares the 161px source height").toBe("161");
+        expect(result.turbo0NaturalWidth, path + ": the turbo0 placeholder is 482px wide").toBe(482);
+        expect(result.turbo0NaturalHeight, path + ": the turbo0 placeholder is 161px high").toBe(161);
+        expect(Math.abs(result.turbo0ImageHeight - 28), path + ": the turbo0 badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.turbo0ImageWidth / result.turbo0ImageHeight
+            - result.turbo0NaturalWidth / result.turbo0NaturalHeight),
+          path + ": the turbo0 badge must keep the 482x161 source ratio",
+        ).toBeLessThan(0.02);
+        // toolfame's SVG is 160x54 and the embed declares that source box.
+        expect(result.toolfameTarget, path + ": the toolfame badge opens in a new tab").toBe("_blank");
+        expect(result.toolfameRel, path + ": the toolfame anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.toolfameRel, path + ": the toolfame backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.toolfameImageSrc, path + ": toolfame badge image src").toBe("https://toolfame.com/badge-light.svg");
+        expect(result.toolfameImageAlt, path + ": toolfame badge image alt").toBe("Featured on toolfame.com");
+        expect(result.toolfameDeclaredWidth, path + ": the toolfame badge declares the 160px source width").toBe("160");
+        expect(result.toolfameDeclaredHeight, path + ": the toolfame badge declares the 54px source height").toBe("54");
+        expect(result.toolfameNaturalWidth, path + ": the toolfame placeholder is 160px wide").toBe(160);
+        expect(result.toolfameNaturalHeight, path + ": the toolfame placeholder is 54px high").toBe(54);
+        expect(Math.abs(result.toolfameImageHeight - 28), path + ": the toolfame badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.toolfameImageWidth / result.toolfameImageHeight
+            - result.toolfameNaturalWidth / result.toolfameNaturalHeight),
+          path + ": the toolfame badge must keep the 160x54 source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1116: dang.ai's verified badge replaced the Issue #1110 text
+        // link, so the same crawler-reachable anchor (new tab, no nofollow) now
+        // carries the 550x198 PNG in the shared 28px row.
+        expect(result.dangTarget, path + ": the Dang.ai badge opens in a new tab").toBe("_blank");
+        expect(result.dangRel, path + ": the Dang.ai anchor keeps rel=noopener").toBe("noopener");
+        expect(result.dangHasImage, path + ": the Dang.ai link is the verified badge").toBe(true);
+        expect(result.dangImageSrc, path + ": Dang.ai badge image src")
+          .toBe("https://assets.dang.ai/badges/dang-verified-dark.png");
+        expect(result.dangImageAlt, path + ": Dang.ai badge image alt").toBe("Verified on DANG!");
+        expect(result.dangDeclaredWidth, path + ": the Dang.ai badge declares the 550px source width").toBe("550");
+        expect(result.dangDeclaredHeight, path + ": the Dang.ai badge declares the 198px source height").toBe("198");
+        expect(result.dangNaturalWidth, path + ": the Dang.ai placeholder is 550px wide").toBe(550);
+        expect(result.dangNaturalHeight, path + ": the Dang.ai placeholder is 198px high").toBe(198);
+        expect(Math.abs(result.dangImageHeight - 28), path + ": the Dang.ai badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.dangImageWidth / result.dangImageHeight
+            - result.dangNaturalWidth / result.dangNaturalHeight),
+          path + ": the Dang.ai badge must keep the 550x198 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.dangRel, path + ": the Dang.ai backlink must stay crawlable").not.toContain("nofollow");
+        // LaunchIgniter's badge SVG declares its own 212x55 box.
+        expect(result.launchigniterTarget, path + ": the LaunchIgniter badge opens in a new tab").toBe("_blank");
+        expect(result.launchigniterRel, path + ": the LaunchIgniter anchor keeps rel=noopener").toBe("noopener");
+        expect(result.launchigniterRel, path + ": the LaunchIgniter backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.launchigniterImageSrc, path + ": LaunchIgniter badge image src")
+          .toBe("https://launchigniter.com/api/badge/orbi?theme=light");
+        expect(result.launchigniterImageAlt, path + ": LaunchIgniter badge image alt").toBe("Featured on LaunchIgniter");
+        expect(result.launchigniterDeclaredWidth, path + ": the LaunchIgniter badge declares 212px").toBe("212");
+        expect(result.launchigniterDeclaredHeight, path + ": the LaunchIgniter badge declares 55px").toBe("55");
+        expect(result.launchigniterNaturalWidth, path + ": the LaunchIgniter placeholder is 212px wide").toBe(212);
+        expect(result.launchigniterNaturalHeight, path + ": the LaunchIgniter placeholder is 55px high").toBe(55);
+        expect(Math.abs(result.launchigniterImageHeight - 28), path + ": the LaunchIgniter badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.launchigniterImageWidth / result.launchigniterImageHeight
+            - result.launchigniterNaturalWidth / result.launchigniterNaturalHeight),
+          path + ": the LaunchIgniter badge must keep the 212x55 source ratio",
+        ).toBeLessThan(0.02);
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -657,7 +788,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // one more Tab leaves the row, so the row is never a keyboard trap.
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
         // Startup Fast / Artificin badges and the two text links, Issue #1099
-        // through the ToolPotion badge, then leaves.
+        // through the ToolPotion badge, Issue #1102 through the Fazier badge
+        // and Issue #1116 through the turbo0 / toolfame / dang.ai /
+        // LaunchIgniter badges, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -669,6 +802,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://whatisaitools.com/",
           "https://toolpotion.ai/en/ai-agent/orbi",
           "https://fazier.com",
+          "https://turbo0.com/item/orbi",
+          "https://toolfame.com/item/orbi",
+          "https://dang.ai",
+          "https://launchigniter.com/product/orbi?ref=badge-orbi",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -693,7 +830,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from the Fazier badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the LaunchIgniter badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -736,6 +873,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://whatisaitools.com/",
     "https://toolpotion.ai/en/ai-agent/orbi",
     "https://fazier.com",
+    "https://turbo0.com/item/orbi",
+    "https://toolfame.com/item/orbi",
+    "https://dang.ai",
+    "https://launchigniter.com/product/orbi?ref=badge-orbi",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -774,9 +915,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const expectBadges = (badges, label) => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
-          // Artificin images, Issue #1099 the ToolPotion image and Issue #1102
-          // the Fazier image: 19 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(19);
+          // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
+          // the Fazier image and Issue #1116 the turbo0 / toolfame / dang.ai /
+          // LaunchIgniter images: 23 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(23);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -837,8 +979,17 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const phoneLayout = await page.evaluate(() => {
           const documentElement = document.documentElement;
           const badges = [...document.querySelectorAll("footer .footer-badges img")];
+          // Issue #1116: the Dang.ai verified badge wraps with the row instead
+          // of being clipped or dropping out of the footer on a phone.
+          const dangRect = document.querySelector('footer .footer-badges a[href="https://dang.ai"]')
+            ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
+            dangInside: Boolean(dangRect)
+              && dangRect.width > 0
+              && dangRect.height > 0
+              && dangRect.left >= 0
+              && dangRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -848,6 +999,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           };
         });
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
+        expect(phoneLayout.dangInside, path + " at 390px: the Dang.ai link stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
