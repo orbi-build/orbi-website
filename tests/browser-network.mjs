@@ -31,9 +31,9 @@
 // fazier.com 103x44 (SVG, Issue #1102 — the embed declares only the vendor's
 // 120px width, so the source ratio comes from the file itself); and on 2026-10-30
 // img.turbo0.com 482x161 (SVG viewBox 481.56x160.97, Issue #1116), toolfame.com
-// 160x54 (SVG, Issue #1116), assets.dang.ai 550x198 (PNG — the embed declares the
-// vendor's proportional 260x94, Issue #1116) and launchigniter.com 212x55 (SVG,
-// Issue #1116). Since Issue #1038
+// 160x54 (SVG, Issue #1116), assets.dang.ai 550x198 (PNG — the vendor's embed
+// declares the proportional 260x94, ours the PNG's own 550x198, Issue #1116) and
+// launchigniter.com 212x55 (SVG, Issue #1116). Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
 // (e.g. LaunchNest 205/36 * 28 = 159.44).
