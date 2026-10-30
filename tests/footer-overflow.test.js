@@ -247,11 +247,16 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const launchigniter = wrapper.querySelector('a[href="https://launchigniter.com/product/orbi?ref=badge-orbi"]');
           const launchigniterImage = launchigniter?.querySelector("img");
           const launchigniterRect = launchigniterImage?.getBoundingClientRect();
+          // Issue #1119: Scout Forge closes the row so the directory counts the
+          // badge's impressions.
+          const scoutforge = wrapper.querySelector('a[href="https://scoutforge.net/apps/orbi?ref=badge"]');
+          const scoutforgeImage = scoutforge?.querySelector("img");
+          const scoutforgeRect = scoutforgeImage?.getBoundingClientRect();
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
           // spread inside every row that carries one of the new entries.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge].filter(Boolean);
           const rows = [];
           for (const node of [...wrapper.children]) {
             const box = node.getBoundingClientRect();
@@ -435,6 +440,18 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             launchigniterImageHeight: launchigniterRect?.height,
             launchigniterNaturalWidth: launchigniterImage?.naturalWidth,
             launchigniterNaturalHeight: launchigniterImage?.naturalHeight,
+            scoutforgeTarget: scoutforge?.getAttribute("target"),
+            scoutforgeRel: scoutforge?.getAttribute("rel"),
+            scoutforgeHref: scoutforge?.getAttribute("href"),
+            scoutforgeImageSrc: scoutforgeImage?.getAttribute("src"),
+            scoutforgeImageAlt: scoutforgeImage?.getAttribute("alt"),
+            scoutforgeDeclaredWidth: scoutforgeImage?.getAttribute("width"),
+            scoutforgeDeclaredHeight: scoutforgeImage?.getAttribute("height"),
+            scoutforgeImageStyle: scoutforgeImage?.getAttribute("style"),
+            scoutforgeImageWidth: scoutforgeRect?.width,
+            scoutforgeImageHeight: scoutforgeRect?.height,
+            scoutforgeNaturalWidth: scoutforgeImage?.naturalWidth,
+            scoutforgeNaturalHeight: scoutforgeImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -450,9 +467,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // The Startup Project text link (17 anchors), Issue #1094 the DevHub
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
-        // ToolPotion badge, Issue #1102 the Fazier badge and Issue #1116 the
-        // turbo0 / toolfame / dang.ai / LaunchIgniter badges: 28 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(28);
+        // ToolPotion badge, Issue #1102 the Fazier badge, Issue #1116 the
+        // turbo0 / toolfame / dang.ai / LaunchIgniter badges and Issue #1119 the
+        // Scout Forge badge: 29 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(29);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -470,10 +488,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
         // appended the ToolPotion badge, Issue #1102 the Fazier badge and
-        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
-        // so LaunchIgniter is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the LaunchIgniter badge")
-          .toBe("https://launchigniter.com/product/orbi?ref=badge-orbi");
+        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges and
+        // Issue #1119 the Scout Forge badge, so Scout Forge is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the Scout Forge badge")
+          .toBe("https://scoutforge.net/apps/orbi?ref=badge");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -546,6 +564,32 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           Math.abs(result.launchigniterImageWidth / result.launchigniterImageHeight
             - result.launchigniterNaturalWidth / result.launchigniterNaturalHeight),
           path + ": the LaunchIgniter badge must keep the 212x55 source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1119: Scout Forge counts the badge's impressions from the
+        // image request itself, so the image must stay on scoutforge.net (never
+        // self-hosted) and the anchor must stay crawlable — no nofollow, plain
+        // server-rendered HTML. Its SVG is its own 300x72 box, which the embed
+        // declares; the branch snippet's inline style is dropped like DevHub's,
+        // because the shared 28px rule already decides the rendered box
+        // (300/72 * 28 = 116.7px wide).
+        expect(result.scoutforgeHref, path + ": the Scout Forge badge href")
+          .toBe("https://scoutforge.net/apps/orbi?ref=badge");
+        expect(result.scoutforgeTarget, path + ": the Scout Forge badge opens in a new tab").toBe("_blank");
+        expect(result.scoutforgeRel, path + ": the Scout Forge anchor keeps rel=noopener").toBe("noopener");
+        expect(result.scoutforgeRel, path + ": the Scout Forge backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.scoutforgeImageSrc, path + ": the Scout Forge badge must load from scoutforge.net")
+          .toBe("https://scoutforge.net/badge/orbi/image?theme=light");
+        expect(result.scoutforgeImageAlt, path + ": Scout Forge badge image alt").toBe("Orbi on Scout Forge");
+        expect(result.scoutforgeDeclaredWidth, path + ": the Scout Forge badge declares the 300px source width").toBe("300");
+        expect(result.scoutforgeDeclaredHeight, path + ": the Scout Forge badge declares the 72px source height").toBe("72");
+        expect(result.scoutforgeImageStyle, path + ": the Scout Forge badge carries no inline style").toBeNull();
+        expect(result.scoutforgeNaturalWidth, path + ": the Scout Forge placeholder is 300px wide").toBe(300);
+        expect(result.scoutforgeNaturalHeight, path + ": the Scout Forge placeholder is 72px high").toBe(72);
+        expect(Math.abs(result.scoutforgeImageHeight - 28), path + ": the Scout Forge badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.scoutforgeImageWidth / result.scoutforgeImageHeight
+            - result.scoutforgeNaturalWidth / result.scoutforgeNaturalHeight),
+          path + ": the Scout Forge badge must keep the 300x72 source ratio",
         ).toBeLessThan(0.02);
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
@@ -788,9 +832,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // one more Tab leaves the row, so the row is never a keyboard trap.
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
         // Startup Fast / Artificin badges and the two text links, Issue #1099
-        // through the ToolPotion badge, Issue #1102 through the Fazier badge
-        // and Issue #1116 through the turbo0 / toolfame / dang.ai /
-        // LaunchIgniter badges, then leaves.
+        // through the ToolPotion badge, Issue #1102 through the Fazier badge,
+        // Issue #1116 through the turbo0 / toolfame / dang.ai / LaunchIgniter
+        // badges and Issue #1119 through the Scout Forge badge, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -806,6 +850,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://toolfame.com/item/orbi",
           "https://dang.ai",
           "https://launchigniter.com/product/orbi?ref=badge-orbi",
+          "https://scoutforge.net/apps/orbi?ref=badge",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -830,7 +875,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the LaunchIgniter badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the Scout Forge badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -877,6 +922,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://toolfame.com/item/orbi",
     "https://dang.ai",
     "https://launchigniter.com/product/orbi?ref=badge-orbi",
+    "https://scoutforge.net/apps/orbi?ref=badge",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -916,9 +962,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
           // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
-          // the Fazier image and Issue #1116 the turbo0 / toolfame / dang.ai /
-          // LaunchIgniter images: 23 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(23);
+          // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai /
+          // LaunchIgniter images and Issue #1119 the Scout Forge image:
+          // 24 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(24);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -983,6 +1030,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // of being clipped or dropping out of the footer on a phone.
           const dangRect = document.querySelector('footer .footer-badges a[href="https://dang.ai"]')
             ?.getBoundingClientRect();
+          // Issue #1119: the Scout Forge badge, which closes the row, does the
+          // same on a phone.
+          const scoutforgeRect = document.querySelector('footer .footer-badges a[href="https://scoutforge.net/apps/orbi?ref=badge"]')
+            ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
             dangInside: Boolean(dangRect)
@@ -990,6 +1041,11 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
               && dangRect.height > 0
               && dangRect.left >= 0
               && dangRect.right <= documentElement.clientWidth,
+            scoutforgeInside: Boolean(scoutforgeRect)
+              && scoutforgeRect.width > 0
+              && scoutforgeRect.height > 0
+              && scoutforgeRect.left >= 0
+              && scoutforgeRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -1000,6 +1056,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         });
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
         expect(phoneLayout.dangInside, path + " at 390px: the Dang.ai link stays inside the footer").toBe(true);
+        expect(phoneLayout.scoutforgeInside, path + " at 390px: the Scout Forge badge stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {

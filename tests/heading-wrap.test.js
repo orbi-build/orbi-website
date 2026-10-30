@@ -162,6 +162,46 @@ describe("h1 wrapping (Issue #861)", () => {
   }, 60_000);
 });
 
+// Issue #1112: the shared h1 rule carried `text-wrap: balance`, which
+// equalises every line of a multi-line heading. On a 390px phone the ZH Pi
+// extensions post title ("Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展")
+// rendered as 239.4 / 241.9 / 241.9px inside a 342px box — three lines at
+// ~70% of the width, each ending ~4 glyphs early — while normal wrapping gives
+// 330.1 / 332.6 / 60.5px. `pretty` only fine-tunes the last line, so every
+// line but the last must fill the box: a line that broke only because the next
+// glyph did not fit is at least one 32px glyph (30.24px with the h1's
+// -0.055em letter-spacing) short of 342px, i.e. 91%, and balance's 70% cannot
+// pass this.
+const fillPages = ["/zh/blog/pi-extensions-in-production/", "/blog/pi-extensions-in-production/"];
+
+describe("h1 fills its container before wrapping (Issue #1112)", () => {
+  it("fills every line but the last at 390px", async () => {
+    const page = await guardedPage(browser, baseUrl);
+    try {
+      for (const path of fillPages) {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto(`${baseUrl}${path}`, { waitUntil: "load", timeout: 25_000 });
+        await page.evaluate(() => document.fonts.ready);
+        const box = await page.locator("h1").first().evaluate((heading) => heading.clientWidth);
+        const lines = await headingLines(page);
+        expect(lines.length, `${path} heading lines`).toBeGreaterThanOrEqual(2);
+        for (const line of lines.slice(0, -1)) {
+          expect(
+            line / box,
+            `${path} at 390px: line ${line.toFixed(1)}px of ${box}px box (${((line / box) * 100).toFixed(1)}%)`,
+          ).toBeGreaterThanOrEqual(0.9);
+        }
+        for (const line of lines) {
+          expect(line, `${path} at 390px: line ${line.toFixed(1)}px overflows the ${box}px box`)
+            .toBeLessThanOrEqual(box + 1);
+        }
+      }
+    } finally {
+      await page.close();
+    }
+  }, 60_000);
+});
+
 // Issue #1057: the three short H3s under "Claude Code alternatives" are
 // sub-headings of that section's copy column, not content headings. At 1440
 // they carried the H2 role class and its 26ch measure (deleted in this Issue,
