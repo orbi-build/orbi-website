@@ -1804,18 +1804,20 @@ describe("one unified footer on every content page", () => {
 
   // Issue #1096: the 2026-10-29 batch appends two badge embeds and two text
   // links after the DevHub badge, in the batch's order. Startup Fast's official
-  // embed declares 150x44 while the live SVG is 119x50, so the declared box
-  // follows the source image and cannot squash it; the Artificin PNG is
-  // 551x175, declared as the proportional 139x44. Both text links reuse the
-  // existing text-friend treatment. Every link opens a new tab, keeps the
-  // vendor's href/src/alt/title and stays crawlable — each directory verifies
-  // the backlink on review — and each ships exactly once per page.
+  // embed declares 150x44 while the live SVG is 119x50; Issue #1125 needs the
+  // badge rendered at least 150x44 px, so it declares the source's proportional
+  // 150x63 and its class lifts it off the shared 28px row (public/styles.css).
+  // The Artificin PNG is 551x175, declared as the proportional 139x44. Both
+  // text links reuse the existing text-friend treatment. Every link opens a
+  // new tab, keeps the vendor's href/src/alt/title and stays crawlable — each
+  // directory verifies the backlink on review — and each ships exactly once
+  // per page.
   it("carries the 2026-10-29 directory backlinks after the DevHub badge on every footer page", () => {
     const devhub = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
     const entries = [
       {
         anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
-        image: '<img src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="119" height="50" loading="lazy" />',
+        image: '<img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" />',
         href: "https://startupfa.st",
       },
       {
@@ -1848,6 +1850,31 @@ describe("one unified footer on every content page", () => {
           .not.toContain("nofollow");
         previous = entry.anchor;
       }
+    }
+  });
+
+  // Issue #1125: Startup Fast's free launch requires its badge on every page at
+  // least 150x44 px, linking exactly https://startupfa.st as a dofollow backlink
+  // and serving the image from startupfa.st. The badge keeps the source's own
+  // ratio, so its declared 150x63 is the 119x50 SVG rounded to whole pixels.
+  it("carries the Startup Fast badge at the vendor's minimum size on every footer page (Issue #1125)", () => {
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      const start = footer.indexOf('<a href="https://startupfa.st"');
+      const link = start < 0 ? "" : footer.slice(start, footer.indexOf("</a>", start) + "</a>".length);
+      const anchor = footerAnchorTag(footer, "https://startupfa.st");
+      expect(anchor, `${page.output}: the Startup Fast anchor must be exactly https://startupfa.st`)
+        .toContain('href="https://startupfa.st"');
+      expect(anchor, `${page.output}: the Startup Fast backlink must stay dofollow`).not.toContain("nofollow");
+      const image = link.match(/<img [^>]*>/)?.[0] ?? "";
+      expect(image, `${page.output}: the Startup Fast badge must load from startupfa.st`)
+        .toContain('src="https://startupfa.st/images/badges/powered-by-dark.svg"');
+      expect(Number(image.match(/width="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge width`)
+        .toBeGreaterThanOrEqual(150);
+      expect(Number(image.match(/height="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge height`)
+        .toBeGreaterThanOrEqual(44);
+      expect(countMatches(footer, /href="https:\/\/startupfa\.st"/g), `${page.output}: exactly one Startup Fast link`)
+        .toBe(1);
     }
   });
 
