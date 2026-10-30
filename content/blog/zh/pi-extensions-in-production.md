@@ -8,7 +8,7 @@ image: /img/blog-pi-extensions-card.png
 series: pi
 ---
 
-Pi 扩展（extension）是 [Pi 编程 agent](https://pi.dev) 启动时加载的 TypeScript 模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，每一条也都可能把你没选过的代码带进会话。
+Pi 扩展（extension）是 [Pi 编程 agent](https://pi.dev) 启动时加载的 TypeScript 模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，其中两条自动的路也可能把你没选过的代码带进会话。
 
 我是 Lawrence Liu，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令和配置就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。
 
@@ -96,13 +96,13 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
 | `orbi suggest` 的仓库摘要会话 | 只有 `--no-extensions`，外加 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
-第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 的两个会话传了 `--no-skills`；下面的澄清门禁以 `ticket` 会话跑，也没有传。
+第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 传了 `--no-skills`，它的两个会话（写建议的那个和写仓库摘要的那个）都传。下面的澄清门禁是一个 `ticket` 会话，区别只在扩展参数换成单独那一个 `--extension`，skill 的设置和 `ticket` 角色一样。
 
 ## 用一个扩展工具拿结构化裁决
 
 如果你想写一个 Pi 扩展又不知道拿来干什么，我最先会指给你看的是澄清门禁，因为它解决的问题和 MCP、工具链都没关系：怎么稳定地从模型那里拿到一个结构化的答案。
 
-门禁在 Orbi 开始交付之前跑。一个 Pi 会话读 Issue，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 `ai-needs-detail`，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在 Orbi Cloud 的测试环境上，门禁把提议全丢了：模型把 `kind` 和 `items` 放在顶层、和 `missing` 并列，解析器只读 `suggestion`，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（[Issue #1955](https://github.com/orbi-build/orbi/issues/1955)）。
+门禁在 Orbi 开始交付之前跑。一个 Pi 会话把 Issue 正文当提示词读进来，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 `ai-needs-detail`，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在 Orbi Cloud 的测试环境上，门禁把提议全丢了：模型把 `kind` 和 `items` 放在顶层、和 `missing` 并列，解析器只读 `suggestion`，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（[Issue #1955](https://github.com/orbi-build/orbi/issues/1955)）。
 
 修法是不再解析文本。从 Orbi v0.7.21（10 月 28 日）起，引擎自带 `src/orbi/extensions/clarify_verdict.ts`，一个只注册一个工具的扩展。下面是删节版：去掉了 `split` 那一种提议形状、导出的常量和注释，描述也缩短了；[完整文件](https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts) 138 行：
 
