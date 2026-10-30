@@ -1815,15 +1815,41 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1099: ToolPotion lists orbi.build in its AI-agent directory and
+  // grants the entry a dofollow return link once the site carries this badge,
+  // so the maintainer-supplied embed is appended after the What Is Ai Tools
+  // link as the last entry of the badge row. Anchor, target, rel, src, alt and
+  // the 250x54 box are the vendor's — the live SVG declares width="250"
+  // height="54" itself, so the declared box keeps its source ratio — and the
+  // link stays crawlable (no nofollow) so ToolPotion can verify it.
+  it("carries the ToolPotion badge with a crawlable backlink on every footer page (Issue #1099)", () => {
+    const anchor = '<a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener">';
+    const image = '<img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" />';
+    const whatisaitools = '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: ToolPotion badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: ToolPotion badge image drifted`).toContain(image);
+      expect(footer, `${page.output}: the ToolPotion anchor and image must sit together`)
+        .toContain(anchor + image);
+      expect(footer.indexOf(anchor), `${page.output}: the ToolPotion badge must follow the What Is Ai Tools link`)
+        .toBeGreaterThan(footer.indexOf(whatisaitools));
+      expect(countMatches(footer, /https:\/\/toolpotion\.ai\/badge\/30971\/top-ranked-detailed-gradient\.svg/g), `${page.output}: exactly one ToolPotion badge`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://toolpotion.ai/en/ai-agent/orbi"), `${page.output}: the ToolPotion backlink must stay crawlable`)
+        .not.toContain("nofollow");
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
   // Toolradar badge to that row, Issue #1012 the Altern badge after it,
   // Issue #1015 the SaaSpa.ge badge, Issue #1027 the Tooluck badge,
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
-  // Project text link, Issue #1094 the DevHub badge and Issue #1096 the
+  // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
-  // text links last.
+  // text links and Issue #1099 the ToolPotion badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1848,6 +1874,7 @@ describe("one unified footer on every content page", () => {
       "https://artificin.com",
       "https://aitooltrek.com",
       "https://whatisaitools.com/",
+      "https://toolpotion.ai/en/ai-agent/orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
