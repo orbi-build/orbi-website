@@ -2009,6 +2009,40 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1119: Scout Forge upgrades its listing's link to orbi.build to
+  // dofollow once its badge has been shown 50 times across at least 7 days, and
+  // it counts those impressions from requests for the badge image itself. So
+  // the footer carries the supplied embed as ordinary server-rendered HTML —
+  // no nofollow, no JavaScript — with the image still on scoutforge.net (a
+  // self-hosted copy would never reach their counter). It sits after the
+  // LaunchIgniter badge, so it closes the row, and declares the SVG's own
+  // 300x72 box for the shared 28px footer rule (Issue #1038).
+  it("carries the Scout Forge badge after the LaunchIgniter badge on every footer page (Issue #1119)", () => {
+    const launchigniter = '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">';
+    const anchor = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
+    const image = '<img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Scout Forge badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: the Scout Forge anchor and image must sit together`)
+        .toContain(anchor + image);
+      // Server-rendered, not injected later: the anchor is in the shipped bytes
+      // after the LaunchIgniter badge and before the wrapper closes.
+      expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the LaunchIgniter badge`)
+        .toBeGreaterThan(footer.indexOf(launchigniter));
+      expect(footer.slice(footer.indexOf(anchor) + (anchor + image).length), `${page.output}: the Scout Forge badge must close the badge row`)
+        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(countMatches(footer, /https:\/\/scoutforge\.net\/badge\/orbi\/image\?theme=light/g), `${page.output}: exactly one Scout Forge badge image`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://scoutforge.net/apps/orbi?ref=badge"), `${page.output}: the Scout Forge backlink must stay crawlable`)
+        .not.toContain("nofollow");
+      // Scout Forge counts the impression from the image request, so the
+      // shipped HTML must point at their host, never a copy in this repository.
+      expect(countMatches(footer, /src="\/img\/[^"]*scout[^"]*"/gi), `${page.output}: the Scout Forge badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
@@ -2018,7 +2052,8 @@ describe("one unified footer on every content page", () => {
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
-  // and Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges last.
+  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges and
+  // Issue #1119 the Scout Forge badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2049,6 +2084,7 @@ describe("one unified footer on every content page", () => {
       "https://toolfame.com/item/orbi",
       "https://dang.ai",
       "https://launchigniter.com/product/orbi?ref=badge-orbi",
+      "https://scoutforge.net/apps/orbi?ref=badge",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
