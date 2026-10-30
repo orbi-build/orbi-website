@@ -86,7 +86,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. `-e` takes more than a path: the help text says "file or builtin:<name>", but on Pi 1.2.0 `pi -ne -e npm:<package>@<version>` fetches the package from the npm registry (a wrong name fails with npm's own 404), which is how Orbi's `npm:` and `git:` sources reach Pi unchanged. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
+The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. `-e` takes more than a path: the help text says "file or `builtin:<name>`", but on Pi 1.2.0 `pi -ne -e npm:<package>@<version>` fetches the package from the npm registry (a wrong name fails with npm's own 404), which is how Orbi's `npm:` and `git:` sources reach Pi unchanged. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
 
 Not every Orbi session uses that list, though. These are the three shapes, and each is a different answer to "what should this session be able to do":
 

@@ -86,7 +86,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-实现者、评审者和 `ticket` 三个角色拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 builtin:<名字>」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
+实现者、评审者和 `ticket` 三个角色拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
 
 不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：
 
