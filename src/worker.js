@@ -1116,14 +1116,15 @@ async function handleFetch(request, env, ctx) {
     }
 
     const asset = await fetchAsset(request, env.ASSETS);
-    // The Assets binding answers a directory path without its trailing slash
-    // (/cloud) with a 307 to the slash form (/cloud/). That redirect is the
+    // The Assets binding answers a path it canonicalises (/cloud → /cloud/,
+    // //robots.txt → /robots.txt, /%2f → /) with a 307. That redirect is the
     // binding's own canonicalisation, not an unexpected asset redirect: pass
-    // it on as a 308 with our headers so the visitor lands on /cloud/ instead
-    // of the 500 guard below (production 2026-09-18: orbi.build/cloud → 500).
-    const slashRedirect = trailingSlashRedirect(asset, url);
-    if (slashRedirect !== null) {
-      return slashRedirect;
+    // it on as a 308 with our headers instead of the 500 guard below
+    // (production 2026-09-18: orbi.build/cloud → 500; 2026-10-30:
+    // orbi.build//robots.txt, //favicon.svg and /%2f → 500, Issue #1104).
+    const canonicalRedirect = normalizedPathRedirect(asset, url);
+    if (canonicalRedirect !== null) {
+      return canonicalRedirect;
     }
     // Issue #1079: the homepage's two snapshots are independent KV reads, so
     // they leave together — one round trip for the visitor instead of two.
@@ -1245,7 +1246,19 @@ async function engagementResponse(request, env, ctx) {
   return new Response(null, { status: 204, headers: SECURITY_HEADERS });
 }
 
-function trailingSlashRedirect(asset, url) {
+// The Assets binding folds %2f and repeated slashes into one path before it
+// serves it, and gives a directory its trailing slash; only those two
+// rewrites are accepted, so no other part of the path is decoded and no route
+// or permission semantics move here.
+function canonicalAssetPath(pathname) {
+  return pathname.replace(/%2f/gi, "/").replace(/\/{2,}/g, "/");
+}
+
+// One rule for the binding's path canonicalisation: the Location must be the
+// canonical form of the requested path (or that form as a directory), on our
+// own origin, and must move — anything else is still an unexpected asset
+// redirect and keeps hitting the 500 guard in assetResponse.
+function normalizedPathRedirect(asset, url) {
   if (![301, 307, 308].includes(asset.status)) return null;
   const location = asset.headers.get("Location");
   if (location === null) return null;
@@ -1255,7 +1268,10 @@ function trailingSlashRedirect(asset, url) {
   } catch {
     return null;
   }
-  if (target.origin !== url.origin || target.pathname !== `${url.pathname}/`) return null;
+  if (target.origin !== url.origin) return null;
+  const canonical = canonicalAssetPath(url.pathname);
+  if (target.pathname !== canonical && target.pathname !== `${canonical}/`) return null;
+  if (target.pathname === url.pathname) return null;
   return new Response(null, {
     status: 308,
     headers: { ...SECURITY_HEADERS, Location: `${target.pathname}${url.search}` },
@@ -1478,7 +1494,7 @@ function withAttribution(request, response, env, ctx) {
   return stamped;
 }
 
-export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect };
+export { assetResponse, cloudLoginResponse, fetchAsset, fillHomepageStats, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, normalizedPathRedirect };
 
 export default {
   // Third arg (ctx) carries waitUntil: the visit attribution report rides

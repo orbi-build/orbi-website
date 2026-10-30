@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
 import pricing from "../src/pricing.json";
-import worker, { assetResponse, cloudLoginResponse, fetchAsset, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse, trailingSlashRedirect } from "../src/worker.js";
+import worker, { assetResponse, cloudLoginResponse, fetchAsset, FOUNDING_AVATARS_KV_KEY, ghJson, githubHeaders, handleFetch, loadFoundingAvatars, loadStats, normalizedPathRedirect, PROD_HOSTS, STATS_KV_KEY, statsResponse, subscribeResponse } from "../src/worker.js";
 
 // Issue #917: the Worker reads its stats snapshot from the STATS_KV binding;
 // only the 5-minute cron (or, while KV is still empty, a single request)
@@ -148,11 +148,104 @@ describe("Worker request helpers", () => {
     }
   });
 
-  it("does not treat a cross-origin or non-slash redirect as canonicalisation", () => {
+  // Issue #1104: before it serves a path the Assets binding canonicalises it —
+  // %2f and repeated slashes fold into one path, a directory gains its slash —
+  // and answers that with a 307. Production 2026-10-30: //robots.txt,
+  // //favicon.svg and /%2f answered 500 on those redirects. The locations
+  // below are what the real binding answered for this repo's public/ (probed
+  // with wrangler dev --local, see .orbi/binding-probe.log).
+  const BINDING_CANONICALISATION = new Map([
+    ["//robots.txt", "/robots.txt"],
+    ["//favicon.svg", "/favicon.svg"],
+    ["/%2f", "/"],
+    ["/%2frobots.txt", "/robots.txt"],
+    ["/zh//blog//", "/zh/blog/"],
+    ["/blog//feed.xml", "/blog/feed.xml"],
+    ["/cloud", "/cloud/"],
+  ]);
+
+  function canonicalisingAssets() {
+    return {
+      fetch: async (request) => {
+        const url = new URL(request.url);
+        const target = BINDING_CANONICALISATION.get(url.pathname);
+        if (target !== undefined) {
+          return Response.redirect(`${url.origin}${target}${url.search}`, 307);
+        }
+        return new Response("ok", { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+      },
+    };
+  }
+
+  it("passes the Assets binding's path normalisation on as a safe same-site 308", async () => {
+    const assets = canonicalisingAssets();
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const [path, location] of [
+        ["//robots.txt", "/robots.txt"],
+        ["//favicon.svg", "/favicon.svg"],
+        ["/%2f", "/"],
+        ["/%2frobots.txt", "/robots.txt"],
+        ["/zh//blog//", "/zh/blog/"],
+        ["/blog//feed.xml", "/blog/feed.xml"],
+        ["//robots.txt?ref=x", "/robots.txt?ref=x"],
+      ]) {
+        for (const method of ["GET", "HEAD"]) {
+          const response = await handleFetch(
+            new Request(`https://orbi.build${path}`, { method }),
+            { ASSETS: assets, CLOUD_LOGIN_URL: "https://orbi.build/api/login" },
+          );
+          expect(response.status, `${method} ${path}`).toBe(308);
+          expect(response.headers.get("Location"), `${method} ${path}`).toBe(location);
+          expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+          expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+          // A same-site absolute path, never a protocol-relative URL.
+          expect(location.startsWith("/")).toBe(true);
+          expect(location.startsWith("//")).toBe(false);
+          // Following the redirect lands on a normal 200 — no redirect loop.
+          const followed = await handleFetch(
+            new Request(`https://orbi.build${location}`, { method }),
+            { ASSETS: assets, CLOUD_LOGIN_URL: "https://orbi.build/api/login" },
+          );
+          expect(followed.status, `follow ${location}`).toBe(200);
+        }
+      }
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("does not treat a cross-origin, unrelated or self redirect as canonicalisation", () => {
     const url = new URL("https://orbi.build/cloud");
-    expect(trailingSlashRedirect(Response.redirect("https://example.com/cloud/", 307), url)).toBeNull();
-    expect(trailingSlashRedirect(Response.redirect("https://orbi.build/other/", 307), url)).toBeNull();
-    expect(trailingSlashRedirect(new Response("ok", { status: 200 }), url)).toBeNull();
+    const redirect = (location) => new Response(null, { status: 307, headers: { Location: location } });
+    // Cross-origin stays rejected, including a protocol-relative Location.
+    expect(normalizedPathRedirect(redirect("https://example.com/cloud/"), url)).toBeNull();
+    expect(normalizedPathRedirect(redirect("//example.com/cloud/"), url)).toBeNull();
+    // Same origin, but not the normal form of the requested path.
+    expect(normalizedPathRedirect(redirect("https://orbi.build/other/"), url)).toBeNull();
+    expect(normalizedPathRedirect(redirect("/robots.txt"), url)).toBeNull();
+    // Missing or malformed Location, a non-redirect, and a self redirect.
+    expect(normalizedPathRedirect(new Response(null, { status: 307 }), url)).toBeNull();
+    expect(normalizedPathRedirect(redirect("http://[::1"), url)).toBeNull();
+    expect(normalizedPathRedirect(new Response("ok", { status: 200 }), url)).toBeNull();
+    expect(normalizedPathRedirect(redirect("/cloud"), url)).toBeNull();
+  });
+
+  it("accepts exactly the canonical form the Assets binding redirects to", () => {
+    const location = (from, to) => normalizedPathRedirect(
+      new Response(null, { status: 307, headers: { Location: to } }),
+      new URL(`https://orbi.build${from}`),
+    )?.headers.get("Location");
+    // Measured against the real binding (wrangler dev --local, this repo's public/).
+    expect(location("/%2F%2Frobots.txt", "/robots.txt")).toBe("/robots.txt");
+    expect(location("/%2f", "/")).toBe("/");
+    expect(location("/zh//blog//", "/zh/blog/")).toBe("/zh/blog/");
+    expect(location("/blog//feed.xml", "/blog/feed.xml")).toBe("/blog/feed.xml");
+    expect(location("/cloud", "/cloud/")).toBe("/cloud/");
+    // The binding 404s /robots.txt// rather than redirecting it; a Location that
+    // is not the canonical form must not be turned into one.
+    expect(location("/robots.txt//", "/robots.txt")).toBeUndefined();
   });
 
   it("falls back to an index asset for directory URLs", async () => {
