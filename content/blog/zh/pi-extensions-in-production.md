@@ -48,7 +48,7 @@ Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区�
 
 我机器上的 Orbi runner 是一个 systemd 用户服务。2026 年 9 月 4 日，一次运行什么都没做就停住了：Pi 进程活着，几分钟过去没有会话文件，也没有发给模型的请求。完整的记录和诊断脚本在[第一篇的事故一节](/zh/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi)，这里只说要紧的。
 
-runner 的 Pi 加载了我自己 `~/.pi/agent/settings.json` 里声明的包，其中一个是 `pi-mcp-adapter`。这个插件启动时初始化 `@napi-rs/keyring`，后者会通过 D-Bus 调一次 Secret Service。在 `systemd --user` 的服务上下文里，这个调用偶尔永远不返回，node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，自动发现又把它交给了无人值守的会话。把它从 `settings.json` 里拿掉，那次运行就好了：同一张 Issue 重新跑，15 秒内写出了会话文件、拿到了第一个模型响应。
+runner 的 Pi 加载了我自己 `~/.pi/agent/settings.json` 里声明的包，其中一个是 `pi-mcp-adapter`。这个插件启动时初始化 `@napi-rs/keyring`，后者会通过 D-Bus 调一次 Secret Service。在 `systemd --user` 的服务上下文里，这个调用偶尔永远不返回，node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，Pi 的默认加载（会读 `settings.json`）又把它交给了无人值守的会话。把它从 `settings.json` 里拿掉，那次运行就好了：同一张 Issue 重新跑，15 秒内写出了会话文件、拿到了第一个模型响应。
 
 我们知道的只有这一次，但一次就够了：跑 runner 的那个用户账号（在我机器上就是我）为交互使用装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 [Issue #249](https://github.com/orbi-build/orbi/issues/249)，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 `--no-extensions` 启动。第三个角色 `ticket`（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。
 
@@ -159,7 +159,7 @@ export default function (pi: ExtensionAPI) {
 
 schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议被悄悄丢掉。
 
-Pi 加载扩展时会把 `typebox` 指向它自己钉死的那份，所以这样的文件不需要自己的 `package.json`。想自己试一下这个形状：
+Pi 加载扩展时会把 `typebox` 指向它自己钉死的那份，所以这样的文件不需要自己的 `package.json`。想自己试一下这个形状，把上面的代码存成 `verdict.ts`，然后：
 
 ```bash
 out="$(mktemp -d)/verdict.json"   # 每次用新路径，免得读到上一次的结果
@@ -184,7 +184,7 @@ cat "$out"
 
 如果你跑 Pi 时键盘前没有人，这篇的短版是三个习惯：
 
-1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，版本钉死，缺了钉子就拒绝整份配置。
+1. 每个无人值守的 Pi 都用 `--no-extensions` 启动，再用 `-e` 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号、git 钉 commit SHA，缺了钉子就拒绝整份配置；记住 Orbi 的校验只查「有没有写 ref」，代码变没变它管不了。
 2. 要从模型拿结构化答案时，给它一个带 schema、带 `terminate: true` 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。
 3. 模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 `--tools`。
 

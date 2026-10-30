@@ -48,7 +48,7 @@ Then there is the switch that turns the first two off. From `pi --help` in 1.2.0
 
 Orbi's runner on my machine is a systemd user service. On 4 September 2026 a run stopped before it did anything: the Pi process was alive, but minutes went by with no session file and no request to the model. The full write-up, with the diagnosis script, is in [the first post's incident section](/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi); the short version is what matters here.
 
-The runner's Pi had loaded the packages declared in my own `~/.pi/agent/settings.json`, one of which was `pi-mcp-adapter`. That plugin initializes `@napi-rs/keyring` at startup, which makes a Secret Service call over D-Bus. Inside a `systemd --user` service that call occasionally never returns, and node waits on it before the first model request goes out. Nothing in the run had asked for MCP. The plugin was there because I had installed it for interactive use, and discovery handed it to the unattended session too. Removing it from `settings.json` fixed that run: restarted, the same issue got its session file and its first model response within 15 seconds.
+The runner's Pi had loaded the packages declared in my own `~/.pi/agent/settings.json`, one of which was `pi-mcp-adapter`. That plugin initializes `@napi-rs/keyring` at startup, which makes a Secret Service call over D-Bus. Inside a `systemd --user` service that call occasionally never returns, and node waits on it before the first model request goes out. Nothing in the run had asked for MCP. The plugin was there because I had installed it for interactive use, and Pi's default loading, which reads `settings.json`, handed it to the unattended session too. Removing it from `settings.json` fixed that run: restarted, the same issue got its session file and its first model response within 15 seconds.
 
 It happened once that we know of, and once was enough: a package the runner's own user account had installed for interactive use (on my machine, me) had stopped an unattended run, and nothing in Orbi's config said it was allowed in. The fix for that, [Issue #249](https://github.com/orbi-build/orbi/issues/249), merged on 7 September (UTC): Orbi declares the extensions a run may have, and starts the implementer and the reviewer with `--no-extensions`. The third role, `ticket`, the session that writes issue comments, followed a month later; that story is in the table below.
 
@@ -159,7 +159,7 @@ Three parts do the work. `parameters` is a TypeBox schema with `additionalProper
 
 What the schema protects against is a malformed verdict, not a missing one. A rejected call only fails that call; the model may try again. If the run ends with no file, because the model answered in prose or never got a call past the schema, the engine treats that exactly as it treats a model that is down: the gate fails open and the delivery starts without the check. A thin issue then goes through as it did before the gate existed; what no longer happens is a proposal silently lost.
 
-Pi aliases `typebox` to its own pinned copy when it loads an extension, so a file like this needs no `package.json` of its own. To try the shape yourself:
+Pi aliases `typebox` to its own pinned copy when it loads an extension, so a file like this needs no `package.json` of its own. To try the shape yourself, save the code above as `verdict.ts` and run:
 
 ```bash
 out="$(mktemp -d)/verdict.json"   # a fresh path each run, so you never read a previous result
@@ -184,7 +184,7 @@ The tool's name and parameter shape came from a community extension, `@juiceshar
 
 If you run Pi without a person at the keyboard, the short version of this post is three habits:
 
-1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin versions, and reject the config when a pin is missing.
+1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version and git sources to a commit, and reject the config when a pin is missing; remember that a check for "a ref is present" is all Orbi's validation does.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
 

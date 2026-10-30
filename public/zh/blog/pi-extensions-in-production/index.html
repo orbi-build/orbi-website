@@ -213,7 +213,7 @@ export default function (pi: ExtensionAPI) {
 <p><code class="post-code--single">--no-extensions</code> 关掉自动发现、<code class="post-code--single">settings.json</code> 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；<a href="https://pi.dev/docs/latest/cli">命令行文档</a>的原话是关掉「discovered, configured, and built-in extensions」。显式的 <code class="post-code--single">-e</code> 照样加载，内置扩展也可以用 <code class="post-code--spaced">-e builtin:&lt;名字&gt;</code> 单独点名：<code class="post-code--spaced">pi -ne -e builtin:mcp</code> 就是一个只有 MCP 这一个扩展的会话，把那个文件换成你自己的，就是只有你那个扩展的会话。要注意这个开关不管什么：Pi 的内置工具（<code class="post-code--single">read</code>、<code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code>）还在。关内置工具是另一个开关 <code class="post-code--single">--no-builtin-tools</code>，下面的澄清门禁两个都用。</p>
 <h2 id="一次-d-bus-卡死-让-orbi-不再信任扩展的自动发现">一次 D-Bus 卡死，让 Orbi 不再信任扩展的自动发现</h2>
 <p>我机器上的 Orbi runner 是一个 systemd 用户服务。2026 年 9 月 4 日，一次运行什么都没做就停住了：Pi 进程活着，几分钟过去没有会话文件，也没有发给模型的请求。完整的记录和诊断脚本在<a href="/zh/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi">第一篇的事故一节</a>，这里只说要紧的。</p>
-<p>runner 的 Pi 加载了我自己 <code class="post-code--single">~/.pi/agent/settings.json</code> 里声明的包，其中一个是 <code class="post-code--single">pi-mcp-adapter</code>。这个插件启动时初始化 <code class="post-code--single">@napi-rs/keyring</code>，后者会通过 D-Bus 调一次 Secret Service。在 <code class="post-code--spaced">systemd --user</code> 的服务上下文里，这个调用偶尔永远不返回，node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，自动发现又把它交给了无人值守的会话。把它从 <code class="post-code--single">settings.json</code> 里拿掉，那次运行就好了：同一张 Issue 重新跑，15 秒内写出了会话文件、拿到了第一个模型响应。</p>
+<p>runner 的 Pi 加载了我自己 <code class="post-code--single">~/.pi/agent/settings.json</code> 里声明的包，其中一个是 <code class="post-code--single">pi-mcp-adapter</code>。这个插件启动时初始化 <code class="post-code--single">@napi-rs/keyring</code>，后者会通过 D-Bus 调一次 Secret Service。在 <code class="post-code--spaced">systemd --user</code> 的服务上下文里，这个调用偶尔永远不返回，node 就在第一个模型请求发出之前一直等着。这次运行里没有任何东西要用 MCP。插件在那儿，是因为我交互使用时装了它，Pi 的默认加载（会读 <code class="post-code--single">settings.json</code>）又把它交给了无人值守的会话。把它从 <code class="post-code--single">settings.json</code> 里拿掉，那次运行就好了：同一张 Issue 重新跑，15 秒内写出了会话文件、拿到了第一个模型响应。</p>
 <p>我们知道的只有这一次，但一次就够了：跑 runner 的那个用户账号（在我机器上就是我）为交互使用装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 <a href="https://github.com/orbi-build/orbi/issues/249">Issue #249</a>，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 <code class="post-code--single">--no-extensions</code> 启动。第三个角色 <code class="post-code--single">ticket</code>（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。</p>
 <h2 id="orbi-用-no-extensions-加白名单加载-pi-扩展">Orbi 用 <code class="post-code--single">--no-extensions</code> 加白名单加载 Pi 扩展</h2>
 <p>Orbi 的 runner 读自己的配置文件 <code class="post-code--single">orbi.toml</code>（后面出现的 <code class="post-code--single">.github/orbi.toml</code> 是另一个文件，放在仓库里的 GitHub 侧设置）。扩展清单是里面一张可重复的表：</p>
@@ -320,7 +320,7 @@ export default function (pi: ExtensionAPI) {
 </code></pre>
 <p>起作用的有三处。<code class="post-code--single">parameters</code> 是一个每一层都带 <code class="post-code--spaced">additionalProperties: false</code> 的 TypeBox schema，Pi 在跑 <code class="post-code--single">execute</code> 之前就按它校验模型给的参数，所以顶层的 <code class="post-code--single">kind</code>、不认识的检查 id、（完整文件里）只有一项的 split，都到不了文件。<code class="post-code--single">execute</code> 把校验过的参数写到引擎放在 <code class="post-code--single">ORBI_CLARIFY_OUT</code> 里的那个路径，引擎读文件，不读 stdout。<code class="post-code--spaced">terminate: true</code> 让这次运行在工具调用上就结束，不再为下一轮付钱。会话用 <code class="post-code--spaced">--no-builtin-tools --no-extensions --extension &lt;这个文件&gt;</code> 启动：内置工具关、自动发现关、只开这一个扩展。</p>
 <p>schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议被悄悄丢掉。</p>
-<p>Pi 加载扩展时会把 <code class="post-code--single">typebox</code> 指向它自己钉死的那份，所以这样的文件不需要自己的 <code class="post-code--single">package.json</code>。想自己试一下这个形状：</p>
+<p>Pi 加载扩展时会把 <code class="post-code--single">typebox</code> 指向它自己钉死的那份，所以这样的文件不需要自己的 <code class="post-code--single">package.json</code>。想自己试一下这个形状，把上面的代码存成 <code class="post-code--single">verdict.ts</code>，然后：</p>
 <pre><code class="language-bash">out=&quot;$(mktemp -d)/verdict.json&quot;   # 每次用新路径，免得读到上一次的结果
 ORBI_CLARIFY_OUT=&quot;$out&quot; \
   pi -ne -e ./verdict.ts -nbt \
@@ -338,7 +338,7 @@ cat &quot;$out&quot;
 <h2 id="自己写-pi-扩展时可以照抄的">自己写 Pi 扩展时可以照抄的</h2>
 <p>如果你跑 Pi 时键盘前没有人，这篇的短版是三个习惯：</p>
 <ol>
-<li>每个无人值守的 Pi 都用 <code class="post-code--single">--no-extensions</code> 启动，再用 <code class="post-code--single">-e</code> 把你确实要的那几个扩展加回来。清单写在配置里，版本钉死，缺了钉子就拒绝整份配置。</li>
+<li>每个无人值守的 Pi 都用 <code class="post-code--single">--no-extensions</code> 启动，再用 <code class="post-code--single">-e</code> 把你确实要的那几个扩展加回来。清单写在配置里，npm 钉版本号、git 钉 commit SHA，缺了钉子就拒绝整份配置；记住 Orbi 的校验只查「有没有写 ref」，代码变没变它管不了。</li>
 <li>要从模型拿结构化答案时，给它一个带 schema、带 <code class="post-code--spaced">terminate: true</code> 的工具，结果写进文件，其他一律当没有回答。不要解析 stdout。</li>
 <li>模型必须产出一份东西时，让扩展里的那个工具成为唯一的写入口，通用的写工具别放进 <code class="post-code--single">--tools</code>。</li>
 </ol>
