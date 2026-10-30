@@ -70,7 +70,7 @@ source = "git:github.com/org/repo@v1"
 source = "extensions/local-check.ts"
 ```
 
-Orbi validates this at config load (`src/orbi/config.py`): an npm source without a concrete version, a git source with nothing after an `@`, a local path that does not exist, the same source twice, or two entries setting the same `env` name to different values, and the config is rejected before any run starts. At launch, the `env` tables of the enabled entries are merged into the environment of that Pi process only (`pi_extension_env` in `src/orbi/pi_session.py`); they are never logged. The git check is textual: the SSH form `git:git@host:org/repo` passes it, so write git sources as `git:<host>/<owner>/<repo>@<ref>`.
+`enabled` defaults to true. Orbi validates this at config load (`src/orbi/config.py`): an npm source without a concrete version, a git source with nothing after an `@`, a local path that does not exist, the same source twice, or two entries setting the same `env` name to different values, and the config is rejected before any run starts. At launch, the `env` tables of the enabled entries are merged into the environment of that Pi process only (`pi_extension_env` in `src/orbi/pi_session.py`); they are never logged. The git check is textual: the SSH form `git:git@host:org/repo` passes it, so write git sources as `git:<host>/<owner>/<repo>@<ref>`.
 
 Two limits of that validation are worth knowing. The `env` values are literals: `"$SOME_TOKEN"` is passed to Pi literally, not expanded, so a secret the extension needs should be read by the extension from the service's own environment, not written here. And a git ref can be a tag or a branch that moves; if you need the implementer and the reviewer, which are separate Pi processes, to run byte-identical extension code, pin a commit SHA or ship an unchanged file from the same repository revision.
 
@@ -179,6 +179,7 @@ The second of our Pi extensions is in Orbi Cloud, which hosts the same runner an
 pi --no-extensions --no-context-files --no-skills -e <draft extension> \
    --tools read,grep,find,ls,write_draft,ask_user_question \
    --session-dir <dir> --session-id <id>
+# the request is piped to stdin; with stdin not a terminal, pi runs non-interactively and exits
 ```
 
 so the allowlist rule holds here too. `--tools` is itself an allowlist: it replaces Pi's default tool selection, so `bash`, `edit` and `write` are not callable in this session. The extension registers the two tools at the end of that list:

@@ -70,7 +70,7 @@ source = "git:github.com/org/repo@v1"
 source = "extensions/local-check.ts"
 ```
 
-Orbi 在加载配置时校验（`src/orbi/config.py`）：npm 来源没有具体版本号、git 来源 `@` 后面没有东西、本地路径不存在、同一个来源写了两次、两条记录给同一个 `env` 名字设了不同的值，任何一条都会在运行开始前拒绝整份配置。启动 Pi 时，启用条目的 `env` 表合并进那一个 Pi 进程的环境（`src/orbi/pi_session.py` 里的 `pi_extension_env`），从不写进日志。git 那条检查只看字符串：SSH 形式的 `git:git@host:org/repo` 能过，所以 git 来源要写成 `git:<主机>/<owner>/<repo>@<ref>`。
+`enabled` 默认是 true。Orbi 在加载配置时校验（`src/orbi/config.py`）：npm 来源没有具体版本号、git 来源 `@` 后面没有东西、本地路径不存在、同一个来源写了两次、两条记录给同一个 `env` 名字设了不同的值，任何一条都会在运行开始前拒绝整份配置。启动 Pi 时，启用条目的 `env` 表合并进那一个 Pi 进程的环境（`src/orbi/pi_session.py` 里的 `pi_extension_env`），从不写进日志。git 那条检查只看字符串：SSH 形式的 `git:git@host:org/repo` 能过，所以 git 来源要写成 `git:<主机>/<owner>/<repo>@<ref>`。
 
 有两个边界要知道。`env` 的值是字面值：写 `"$SOME_TOKEN"`，传给 Pi 的就是这个字符串本身，不会展开，所以扩展要用的秘密应该由扩展自己从服务的环境里读，不要写在这里。另外 git 的 ref 可以是会动的 tag 或分支；如果你要实现者和评审者（两个独立的 Pi 进程）跑的扩展代码一个字节都不差，就钉 commit SHA，或者把同一个仓库修订版里的文件原样带上。
 
@@ -179,6 +179,7 @@ cat "$out"
 pi --no-extensions --no-context-files --no-skills -e <起草扩展> \
    --tools read,grep,find,ls,write_draft,ask_user_question \
    --session-dir <目录> --session-id <id>
+# 请求从标准输入喂进去；标准输入不是终端时，pi 非交互地跑完就退出
 ```
 
 白名单那条规矩在这里也成立。`--tools` 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 `bash`、`edit`、`write` 都调不到。扩展注册的就是列表末尾那两个工具：

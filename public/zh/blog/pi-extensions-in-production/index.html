@@ -229,7 +229,7 @@ source = &quot;git:github.com/org/repo@v1&quot;
 [[pi_extensions]]
 source = &quot;extensions/local-check.ts&quot;
 </code></pre>
-<p>Orbi 在加载配置时校验（<code class="post-code--single">src/orbi/config.py</code>）：npm 来源没有具体版本号、git 来源 <code class="post-code--single">@</code> 后面没有东西、本地路径不存在、同一个来源写了两次、两条记录给同一个 <code class="post-code--single">env</code> 名字设了不同的值，任何一条都会在运行开始前拒绝整份配置。启动 Pi 时，启用条目的 <code class="post-code--single">env</code> 表合并进那一个 Pi 进程的环境（<code class="post-code--single">src/orbi/pi_session.py</code> 里的 <code class="post-code--single">pi_extension_env</code>），从不写进日志。git 那条检查只看字符串：SSH 形式的 <code class="post-code--single">git:git@host:org/repo</code> 能过，所以 git 来源要写成 <code class="post-code--single">git:&lt;主机&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code>。</p>
+<p><code class="post-code--single">enabled</code> 默认是 true。Orbi 在加载配置时校验（<code class="post-code--single">src/orbi/config.py</code>）：npm 来源没有具体版本号、git 来源 <code class="post-code--single">@</code> 后面没有东西、本地路径不存在、同一个来源写了两次、两条记录给同一个 <code class="post-code--single">env</code> 名字设了不同的值，任何一条都会在运行开始前拒绝整份配置。启动 Pi 时，启用条目的 <code class="post-code--single">env</code> 表合并进那一个 Pi 进程的环境（<code class="post-code--single">src/orbi/pi_session.py</code> 里的 <code class="post-code--single">pi_extension_env</code>），从不写进日志。git 那条检查只看字符串：SSH 形式的 <code class="post-code--single">git:git@host:org/repo</code> 能过，所以 git 来源要写成 <code class="post-code--single">git:&lt;主机&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code>。</p>
 <p>有两个边界要知道。<code class="post-code--single">env</code> 的值是字面值：写 <code class="post-code--single">&quot;$SOME_TOKEN&quot;</code>，传给 Pi 的就是这个字符串本身，不会展开，所以扩展要用的秘密应该由扩展自己从服务的环境里读，不要写在这里。另外 git 的 ref 可以是会动的 tag 或分支；如果你要实现者和评审者（两个独立的 Pi 进程）跑的扩展代码一个字节都不差，就钉 commit SHA，或者把同一个仓库修订版里的文件原样带上。</p>
 <p>命令这边是 <code class="post-code--single">src/orbi/pi_command.py</code> 里的几行：</p>
 <pre><code class="language-python">def _pi_extension_args(config: RunnerConfig) -&gt; list[str]:
@@ -333,6 +333,7 @@ cat &quot;$out&quot;
 <pre><code class="language-bash">pi --no-extensions --no-context-files --no-skills -e &lt;起草扩展&gt; \
    --tools read,grep,find,ls,write_draft,ask_user_question \
    --session-dir &lt;目录&gt; --session-id &lt;id&gt;
+# 请求从标准输入喂进去；标准输入不是终端时，pi 非交互地跑完就退出
 </code></pre>
 <p>白名单那条规矩在这里也成立。<code class="post-code--single">--tools</code> 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 <code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code> 都调不到。扩展注册的就是列表末尾那两个工具：</p>
 <ul>
