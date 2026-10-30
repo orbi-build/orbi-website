@@ -441,9 +441,20 @@ h1 {
   margin-bottom: 24px;
   max-width: var(--hero-copy-width);
   line-height: 1.08;
-  /* Long headings wrap at wide viewports; balance keeps the last line from
-     dropping to one or two glyphs (Issue #861). */
-  text-wrap: balance;
+  /* Issue #1112: fill the container and wrap, the way normal text does. pretty
+     only fine-tunes the line a trailing word would drop to, and a browser
+     without it falls back to normal wrapping. balance (#861) equalised every
+     line instead, so a three-line phone title stopped at ~70% of the box. */
+  text-wrap: pretty;
+}
+
+/* Issue #1112: #861's balanced lines stay where they were measured — the
+   desktop layout, from 761px up, where a two-line headline would otherwise end
+   on a one-word line ("kill -9", measured 11% of the longest line against 100%
+   with balance). Below 761px the layout is the phone one and filling the width
+   is what the reader sees. */
+@media (min-width: 761px) {
+  h1 { text-wrap: balance; }
 }
 
 /* Issue #977: the homepage headline no longer carries a forced <br>. It fits
