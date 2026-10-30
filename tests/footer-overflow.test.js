@@ -688,10 +688,11 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.devhubNaturalWidth / result.devhubNaturalHeight),
           path + ": the DevHub badge must keep the 150x44 source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1096: the Startup Fast embed declares the source SVG's
-        // 119x50 instead of the vendor snippet's 150x44, so the badge cannot
-        // squash; the guard's placeholder is the same 119x50, and the 28px row
-        // therefore renders it 119/50 * 28 = 66.6px wide.
+        // Issue #1125: Startup Fast requires the badge rendered at least
+        // 150x44 px, so this one badge leaves the shared 28px row: it declares
+        // the source SVG's proportional 150x63 and its own rule sets width
+        // 150px / height auto, which renders 150/50 * 50/119 = 63px high in the
+        // 119x50 source ratio — wider than 150 and taller than 44, unsquashed.
         expect(result.startupfastHref, path + ": the Startup Fast badge href").toBe("https://startupfa.st");
         expect(result.startupfastTarget, path + ": the Startup Fast badge opens in a new tab").toBe("_blank");
         expect(result.startupfastRel, path + ": the Startup Fast anchor keeps rel=noopener").toBe("noopener");
@@ -700,12 +701,15 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.startupfastImageSrc, path + ": the Startup Fast badge image src")
           .toBe("https://startupfa.st/images/badges/powered-by-dark.svg");
         expect(result.startupfastImageAlt, path + ": the Startup Fast badge image alt").toBe("Powered by Startup Fast");
-        expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 119px source width").toBe("119");
-        expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 50px source height").toBe("50");
+        expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 150px width").toBe("150");
+        expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 63px height").toBe("63");
         expect(result.startupfastLoading, path + ": the Startup Fast badge loads lazily").toBe("lazy");
         expect(result.startupfastNaturalWidth, path + ": the Startup Fast placeholder is 119px wide").toBe(119);
         expect(result.startupfastNaturalHeight, path + ": the Startup Fast placeholder is 50px high").toBe(50);
-        expect(Math.abs(result.startupfastImageHeight - 28), path + ": the Startup Fast badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(result.startupfastImageWidth, path + ": the Startup Fast badge renders at least 150px wide")
+          .toBeGreaterThanOrEqual(150);
+        expect(result.startupfastImageHeight, path + ": the Startup Fast badge renders at least 44px high")
+          .toBeGreaterThanOrEqual(44);
         expect(
           Math.abs(result.startupfastImageWidth / result.startupfastImageHeight
             - result.startupfastNaturalWidth / result.startupfastNaturalHeight),
@@ -970,13 +974,24 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
             expect(
-              Math.abs(badge.height - 28),
-              label + ": " + badge.alt + " rendered height (28px, 1px rounding)",
-            ).toBeLessThanOrEqual(1);
-            expect(
               Math.abs(badge.width / badge.height - badge.naturalWidth / badge.naturalHeight),
               label + ": " + badge.alt + " must keep its source ratio",
             ).toBeLessThan(0.02);
+          }
+          // Issue #1125: Startup Fast requires its badge at least 150x44 px, so
+          // that one image leaves the 28px row (public/styles.css scopes the
+          // exception to its class); every other badge stays on the mark size.
+          const vendor = badges.filter((badge) => badge.alt === "Powered by Startup Fast");
+          expect(vendor, label + ": the Startup Fast badge").toHaveLength(1);
+          expect(vendor[0].width, label + ": the Startup Fast badge is at least 150px wide")
+            .toBeGreaterThanOrEqual(150);
+          expect(vendor[0].height, label + ": the Startup Fast badge is at least 44px high")
+            .toBeGreaterThanOrEqual(44);
+          for (const badge of badges.filter((candidate) => candidate !== vendor[0])) {
+            expect(
+              Math.abs(badge.height - 28),
+              label + ": " + badge.alt + " rendered height (28px, 1px rounding)",
+            ).toBeLessThanOrEqual(1);
           }
         };
 
@@ -984,8 +999,13 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const desktop = await measureBadges(page);
         expectBadges(desktop, path + " at 1440px");
         // At 28px high almost the whole row fits one line, so the boxes stay
-        // compact instead of each taking a line of its own.
-        expect(new Set(desktop.map((badge) => badge.top)).size, path + " at 1440px: the badges stay compact").toBeLessThanOrEqual(3);
+        // compact instead of each taking a line of its own. The taller Startup
+        // Fast badge (Issue #1125) centres in its own line, which shifts its
+        // row-mates by half the height difference, so it is measured apart.
+        expect(
+          new Set(desktop.filter((badge) => badge.alt !== "Powered by Startup Fast").map((badge) => badge.top)).size,
+          path + " at 1440px: the badges stay compact",
+        ).toBeLessThanOrEqual(3);
 
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-1440.png" });
 

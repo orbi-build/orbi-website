@@ -1949,6 +1949,14 @@ h2 {
   width: auto;
   height: 28px;
 }
+/* Issue #1125: Startup Fast's free launch requires its badge rendered at least
+   150x44 px, so this one badge leaves the 28px mark above and the rule stays
+   scoped to its class. The width sets the box and the 119x50 source sets the
+   height (150 * 50 / 119 = 63), so the badge grows without squashing. */
+.site-footer .footer-badges img.footer-badge-startup-fast {
+  width: 150px;
+  height: auto;
+}
 
 /* The hero keeps two columns far longer than the prose sections do: it needs
    ~913px (480px trace + 81px gap + 271px headline + 80px shell padding), so
