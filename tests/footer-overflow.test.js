@@ -233,11 +233,14 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const fazier = wrapper.querySelector('a[href="https://fazier.com"]');
           const fazierImage = fazier?.querySelector("img");
           const fazierRect = fazierImage?.getBoundingClientRect();
+          // Issue #1110: the Dang.ai backlink is a plain text anchor that
+          // closes the row after the Fazier badge.
+          const dang = wrapper.querySelector('a[href="https://dang.ai/"]');
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
           // spread inside every row that carries one of the new entries.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, dang].filter(Boolean);
           const rows = [];
           for (const node of [...wrapper.children]) {
             const box = node.getBoundingClientRect();
@@ -379,6 +382,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             fazierImageHeight: fazierRect?.height,
             fazierNaturalWidth: fazierImage?.naturalWidth,
             fazierNaturalHeight: fazierImage?.naturalHeight,
+            dangTarget: dang?.getAttribute("target"),
+            dangRel: dang?.getAttribute("rel"),
+            dangText: dang?.textContent,
+            dangHasImage: Boolean(dang?.querySelector("img")),
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -394,8 +401,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // The Startup Project text link (17 anchors), Issue #1094 the DevHub
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
-        // ToolPotion badge and Issue #1102 the Fazier badge: 24 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(24);
+        // ToolPotion badge, Issue #1102 the Fazier badge and Issue #1110 the
+        // Dang.ai text link: 25 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(25);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -412,10 +420,17 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
-        // appended the ToolPotion badge and Issue #1102 the Fazier badge, so
-        // that is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the Fazier badge")
-          .toBe("https://fazier.com");
+        // appended the ToolPotion badge, Issue #1102 the Fazier badge and
+        // Issue #1110 the Dang.ai text link, so that is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the Dang.ai link")
+          .toBe("https://dang.ai/");
+        // Issue #1110: the Dang.ai backlink is a text link — no image — that
+        // opens dang.ai in a new tab and stays crawlable (no rel=nofollow), so
+        // the directory can verify it.
+        expect(result.dangText, path + ": the Dang.ai link text").toBe("Featured on Dang.ai");
+        expect(result.dangTarget, path + ": the Dang.ai link opens in a new tab").toBe("_blank");
+        expect(result.dangHasImage, path + ": the Dang.ai link is a text link").toBe(false);
+        expect(result.dangRel ?? "", path + ": the Dang.ai backlink must stay crawlable").not.toContain("nofollow");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -657,7 +672,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // one more Tab leaves the row, so the row is never a keyboard trap.
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
         // Startup Fast / Artificin badges and the two text links, Issue #1099
-        // through the ToolPotion badge, then leaves.
+        // through the ToolPotion badge, Issue #1102 through the Fazier badge
+        // and Issue #1110 through the Dang.ai text link, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -669,6 +685,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://whatisaitools.com/",
           "https://toolpotion.ai/en/ai-agent/orbi",
           "https://fazier.com",
+          "https://dang.ai/",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -693,7 +710,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from the Fazier badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab from the Dang.ai link must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -736,6 +753,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://whatisaitools.com/",
     "https://toolpotion.ai/en/ai-agent/orbi",
     "https://fazier.com",
+    "https://dang.ai/",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -837,8 +855,17 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const phoneLayout = await page.evaluate(() => {
           const documentElement = document.documentElement;
           const badges = [...document.querySelectorAll("footer .footer-badges img")];
+          // Issue #1110: the Dang.ai text link wraps with the row instead of
+          // being clipped or dropping out of the footer on a phone.
+          const dangRect = document.querySelector('footer .footer-badges a[href="https://dang.ai/"]')
+            ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
+            dangInside: Boolean(dangRect)
+              && dangRect.width > 0
+              && dangRect.height > 0
+              && dangRect.left >= 0
+              && dangRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -848,6 +875,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           };
         });
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
+        expect(phoneLayout.dangInside, path + " at 390px: the Dang.ai link stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
