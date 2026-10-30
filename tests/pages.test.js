@@ -1841,6 +1841,25 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1102: Fazier's free launch listing requires orbi.build to carry
+  // their badge, so the maintainer-supplied embed closes the badge row. The
+  // live SVG is 103x44 (so the 120px declared width never decides the box —
+  // the shared 28px rule does), the anchor opens fazier.com in a new tab and
+  // the image keeps the vendor's src and alt verbatim.
+  it("carries the Fazier badge linking fazier.com on every footer page (Issue #1102)", () => {
+    const anchor = '<a href="https://fazier.com" target="_blank" rel="noopener">';
+    const image = '<img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Fazier badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: Fazier badge image drifted`).toContain(image);
+      expect(footer, `${page.output}: the Fazier anchor and image must sit together`)
+        .toContain(anchor + image);
+      expect(countMatches(footer, /https:\/\/fazier\.com\/api\/v1\/\/public\/badges\/launch_badges\.svg/g), `${page.output}: exactly one Fazier badge`)
+        .toBe(1);
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
@@ -1849,7 +1868,8 @@ describe("one unified footer on every content page", () => {
   // Issue #1092 the neeed.directory / zPlatform badges plus The Startup
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
-  // text links and Issue #1099 the ToolPotion badge last.
+  // text links, Issue #1099 the ToolPotion badge and Issue #1102 the Fazier
+  // badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -1875,6 +1895,7 @@ describe("one unified footer on every content page", () => {
       "https://aitooltrek.com",
       "https://whatisaitools.com/",
       "https://toolpotion.ai/en/ai-agent/orbi",
+      "https://fazier.com",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

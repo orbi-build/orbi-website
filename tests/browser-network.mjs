@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships eighteen footer badge images (site/partials/footer.html) plus
+// Every page ships nineteen footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -26,8 +26,10 @@
 // r2.direasy-multi-tenant.focusapps.app 150x44 (SVG, Issue #1094); and on
 // 2026-10-29 startupfa.st 119x50 (SVG, Issue #1096 — the live URL answers
 // 307 to www.startupfa.st, so both hosts are listed), artificin.com
-// 551x175 (PNG, Issue #1096) and toolpotion.ai 250x54 (SVG, Issue #1099 —
-// its own width/height match the embed's declared box). Since Issue #1038
+// 551x175 (PNG, Issue #1096), toolpotion.ai 250x54 (SVG, Issue #1099 —
+// its own width/height match the embed's declared box) and on 2026-10-30
+// fazier.com 103x44 (SVG, Issue #1102 — the embed declares only the vendor's
+// 120px width, so the source ratio comes from the file itself). Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
 // (e.g. LaunchNest 205/36 * 28 = 159.44).
@@ -46,6 +48,7 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "www.startupfa.st", width: 119, height: 50 },
   { host: "artificin.com", width: 551, height: 175 },
   { host: "toolpotion.ai", width: 250, height: 54 },
+  { host: "fazier.com", width: 103, height: 44 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
