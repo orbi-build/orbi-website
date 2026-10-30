@@ -13,6 +13,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
+import { collectExternalPages } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PUBLIC_DIR = join(ROOT, "public");
@@ -57,6 +58,7 @@ async function walkHtml(dir) {
 }
 
 let sitemapPaths; // URL paths from public/sitemap.xml, in file order
+let externalPaths; // Issue #1105: approved URLs this build does not render
 let htmlByPage; // canonical page path → shipped HTML
 let linksByPage; // canonical page path → Set of internal target paths
 
@@ -64,6 +66,13 @@ beforeAll(async () => {
   const sitemap = await readFile(join(PUBLIC_DIR, "sitemap.xml"), "utf8");
   sitemapPaths = [...sitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)].map(
     (match) => match[1],
+  );
+  // Issue #1105: the two approved delivery-summary URLs are rendered by the
+  // Cloud worker, so no file under public/ can be scanned for a link to them.
+  // The gate still applies to every other sitemap URL — the exemption is the
+  // exact approved list, never "anything under /proof/".
+  externalPaths = new Set(
+    (await collectExternalPages()).map((url) => canon(new URL(url).pathname)),
   );
   htmlByPage = new Map();
   for (const file of await walkHtml(PUBLIC_DIR)) {
@@ -77,6 +86,7 @@ describe("internal inbound links for every sitemap URL (Issue #611)", () => {
     const orphans = [];
     for (const sitemapPath of sitemapPaths) {
       const target = canon(sitemapPath);
+      if (externalPaths.has(target)) continue;
       const hasInbound = [...linksByPage].some(
         ([page, links]) => links.has(target) && page !== target && mirrorOf(page) !== target,
       );
