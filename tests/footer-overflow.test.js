@@ -230,6 +230,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const artificinRect = artificinImage?.getBoundingClientRect();
           const aitooltrek = wrapper.querySelector('a[href="https://aitooltrek.com"]');
           const whatisaitools = wrapper.querySelector('a[href="https://whatisaitools.com/"]');
+          const fazier = wrapper.querySelector('a[href="https://fazier.com"]');
+          const fazierImage = fazier?.querySelector("img");
+          const fazierRect = fazierImage?.getBoundingClientRect();
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
@@ -367,6 +370,15 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             whatisaitoolsTitle: whatisaitools?.getAttribute("title"),
             whatisaitoolsText: whatisaitools?.textContent?.trim(),
             whatisaitoolsHasImage: Boolean(whatisaitools?.querySelector("img")),
+            fazierTarget: fazier?.getAttribute("target"),
+            fazierRel: fazier?.getAttribute("rel"),
+            fazierImageSrc: fazierImage?.getAttribute("src"),
+            fazierImageAlt: fazierImage?.getAttribute("alt"),
+            fazierDeclaredWidth: fazierImage?.getAttribute("width"),
+            fazierImageWidth: fazierRect?.width,
+            fazierImageHeight: fazierRect?.height,
+            fazierNaturalWidth: fazierImage?.naturalWidth,
+            fazierNaturalHeight: fazierImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -381,9 +393,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1092 appended the neeed.directory and zPlatform badges plus
         // The Startup Project text link (17 anchors), Issue #1094 the DevHub
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
-        // AI Tool Trek / What Is Ai Tools text links and Issue #1099 the
-        // ToolPotion badge: 23 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(23);
+        // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
+        // ToolPotion badge and Issue #1102 the Fazier badge: 24 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(24);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -400,9 +412,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           path + ": the SaaSpa.ge badge must keep the source ratio",
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
-        // appends the ToolPotion badge, so that is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the ToolPotion badge")
-          .toBe("https://toolpotion.ai/en/ai-agent/orbi");
+        // appended the ToolPotion badge and Issue #1102 the Fazier badge, so
+        // that is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the Fazier badge")
+          .toBe("https://fazier.com");
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -554,6 +567,24 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.whatisaitoolsTitle, path + ": the What Is Ai Tools link title").toBe("What Is Ai Tools");
         expect(result.whatisaitoolsText, path + ": the What Is Ai Tools link text").toBe("What Is Ai Tools");
         expect(result.whatisaitoolsHasImage, path + ": What Is Ai Tools is a text link").toBe(false);
+        // Issue #1102: Fazier ships a 103x44 SVG whose only declared dimension
+        // is the vendor snippet's 120px width, so the shared 28px rule decides
+        // the box: 103/44 * 28 = 65.5px wide. The anchor opens fazier.com in a
+        // new tab and the image keeps the vendor's src and alt.
+        expect(result.fazierTarget, path + ": the Fazier badge opens in a new tab").toBe("_blank");
+        expect(result.fazierRel, path + ": the Fazier anchor keeps rel=noopener").toBe("noopener");
+        expect(result.fazierImageSrc, path + ": Fazier badge image src")
+          .toBe("https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light");
+        expect(result.fazierImageAlt, path + ": Fazier badge image alt").toBe("Fazier badge");
+        expect(result.fazierDeclaredWidth, path + ": the Fazier badge keeps the vendor's 120px width").toBe("120");
+        expect(result.fazierNaturalWidth, path + ": the Fazier placeholder is 103px wide").toBe(103);
+        expect(result.fazierNaturalHeight, path + ": the Fazier placeholder is 44px high").toBe(44);
+        expect(Math.abs(result.fazierImageHeight - 28), path + ": the Fazier badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.fazierImageWidth / result.fazierImageHeight
+            - result.fazierNaturalWidth / result.fazierNaturalHeight),
+          path + ": the Fazier badge must keep the 103x44 source ratio",
+        ).toBeLessThan(0.02);
         // Issue #1096: the badges and the text links share the row, so every
         // flex line carrying a new entry is centred (align-items:center) and
         // none of the four sticks out of the viewport.
@@ -637,6 +668,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://aitooltrek.com",
           "https://whatisaitools.com/",
           "https://toolpotion.ai/en/ai-agent/orbi",
+          "https://fazier.com",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -661,7 +693,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab from the ToolPotion badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab from the Fazier badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -703,6 +735,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://aitooltrek.com",
     "https://whatisaitools.com/",
     "https://toolpotion.ai/en/ai-agent/orbi",
+    "https://fazier.com",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -741,9 +774,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const expectBadges = (badges, label) => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
-          // Artificin images and Issue #1099 the ToolPotion image: 18 badge
-          // images in the row.
-          expect(badges, label + ": badge count").toHaveLength(18);
+          // Artificin images, Issue #1099 the ToolPotion image and Issue #1102
+          // the Fazier image: 19 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(19);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
