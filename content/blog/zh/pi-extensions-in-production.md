@@ -86,14 +86,14 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-实现者、评审者、`ticket` 角色，以及 `orbi suggest` 里写建议的那个会话，拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
+实现者、评审者、`ticket` 角色，以及 `orbi suggest` 里写建议的那个会话，拿到 `--no-extensions`，再按启用的条目各加一个 `--extension`。白名单靠的是这两样合在一起：`--no-extensions` 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。`-e` 接的不只是路径：帮助文本写的是「文件或 `builtin:<名字>`」，但在 Pi 1.2.0 上 `pi -ne -e npm:<包>@<版本>` 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），`-e git:<主机>/<owner>/<repo>@<ref>` 会去克隆，Orbi 配置里的 `npm:`、`git:` 来源就是这样原样交给 Pi 的。`pi_extensions` 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。
 
 不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：
 
 | 会话 | 扩展参数 | 为什么 |
 |---|---|---|
-| 实现者、评审者、写评论的 `ticket` 角色，以及 `orbi suggest` 里写建议的那个会话 | `--no-extensions` + 配置里的各条 `--extension` | 上面的白名单 |
-| `orbi suggest`（读仓库、提任务建议的命令）的仓库摘要会话 | 只有 `--no-extensions`，外加 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
+| 实现者、评审者、写评论的 `ticket` 角色，以及 `orbi suggest` 里写建议的那个会话 | `--no-extensions` + 配置里的各条 `--extension`（`orbi suggest` 那个会话另加 `--no-skills`） | 上面的白名单 |
+| `orbi suggest`（读仓库、提任务建议的命令）的仓库摘要会话 | `--no-extensions`，不带任何 `--extension`；其他参数是 `--tools read,ls,find --no-skills --no-context-files` | 它只读，连配置里的扩展都不需要 |
 | 澄清门禁（仓库的 `.github/orbi.toml` 里 `clarify_thin_tickets = true`） | `--no-builtin-tools --no-extensions --extension <clarify_verdict.ts>` | 只有一个工具，随引擎一起发布；别的都调不到 |
 
 第一行不是一直这么完整。2026 年 10 月 5 日之前，`ticket` 角色启动时完全不带扩展参数，用户装的扩展可以加载进写 Issue 评论的会话。[Issue #1558](https://github.com/orbi-build/orbi/issues/1558) 当天在 Orbi v0.6.2 修了。skill 是同一件事的另一半。skill 是 Pi 加载进提示词的一份 Markdown 指令文件，Pi 找 skill 的方式和找扩展一样。那边的隔离还不完整：实现者、评审者和 `ticket` 角色拿到 Orbi 自己的 `--skill`，但没有 `--no-skills`，所以系统用户装的 skill 可能加载进去。只有 `orbi suggest` 传了 `--no-skills`，它的两个会话（写建议的那个和写仓库摘要的那个）都传。下面的澄清门禁是一个 `ticket` 会话，扩展参数不同（单独那一个 `--extension`，而不是配置里的清单），skill 的设置和 `ticket` 角色一样。

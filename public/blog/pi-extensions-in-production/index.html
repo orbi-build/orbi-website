@@ -240,7 +240,7 @@ source = &quot;extensions/local-check.ts&quot;   # relative to the config file; 
             args.extend((&quot;--extension&quot;, extension[&quot;source&quot;]))
     return args
 </code></pre>
-<p>The implementer, the reviewer, the <code class="post-code--single">ticket</code> role, and the suggestion-writing session of <code class="post-code--spaced">orbi suggest</code> get <code class="post-code--single">--no-extensions</code> and one <code class="post-code--single">--extension</code> per enabled entry. The combination is what makes the allowlist work: <code class="post-code--single">--no-extensions</code> denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. <code class="post-code--single">-e</code> takes more than a path: the help text says &quot;file or <code class="post-code--single">builtin:&lt;name&gt;</code>&quot;, but on Pi 1.2.0 <code class="post-code--spaced">pi -ne -e npm:&lt;package&gt;@&lt;version&gt;</code> fetches the package from the npm registry (a wrong name fails with npm&#39;s own 404), which is how Orbi&#39;s <code class="post-code--single">npm:</code> and <code class="post-code--single">git:</code> sources reach Pi unchanged. An empty <code class="post-code--single">pi_extensions</code> list means a Pi with no extensions at all, which is Orbi&#39;s default.</p>
+<p>The implementer, the reviewer, the <code class="post-code--single">ticket</code> role, and the suggestion-writing session of <code class="post-code--spaced">orbi suggest</code> get <code class="post-code--single">--no-extensions</code> and one <code class="post-code--single">--extension</code> per enabled entry. The combination is what makes the allowlist work: <code class="post-code--single">--no-extensions</code> denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. <code class="post-code--single">-e</code> takes more than a path: the help text says &quot;file or <code class="post-code--single">builtin:&lt;name&gt;</code>&quot;, but on Pi 1.2.0 <code class="post-code--spaced">pi -ne -e npm:&lt;package&gt;@&lt;version&gt;</code> fetches the package from the npm registry (a wrong name fails with npm&#39;s own 404) and <code class="post-code--spaced">-e git:&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code> clones it, which is how Orbi&#39;s <code class="post-code--single">npm:</code> and <code class="post-code--single">git:</code> sources reach Pi unchanged. An empty <code class="post-code--single">pi_extensions</code> list means a Pi with no extensions at all, which is Orbi&#39;s default.</p>
 <p>Not every Orbi session uses that list, though. These are the three shapes, and each is a different answer to &quot;what should this session be able to do&quot;:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -252,12 +252,12 @@ source = &quot;extensions/local-check.ts&quot;   # relative to the config file; 
 </thead>
 <tbody><tr>
 <th scope="row">implementer, reviewer, the <code class="post-code--single">ticket</code> role that writes comments, and the suggestion-writing session of <code class="post-code--spaced">orbi suggest</code></th>
-<td><code class="post-code--single">--no-extensions</code> + the configured <code class="post-code--single">--extension</code> entries</td>
+<td><code class="post-code--single">--no-extensions</code> + the configured <code class="post-code--single">--extension</code> entries (the <code class="post-code--spaced">orbi suggest</code> session adds <code class="post-code--single">--no-skills</code>)</td>
 <td>the allowlist above</td>
 </tr>
 <tr>
 <th scope="row">the repository-summary session of <code class="post-code--spaced">orbi suggest</code> (the command that reads a repository and proposes tasks)</th>
-<td><code class="post-code--single">--no-extensions</code> and nothing else, with <code class="post-code--spaced">--tools read,ls,find --no-skills --no-context-files</code></td>
+<td><code class="post-code--single">--no-extensions</code> with no <code class="post-code--single">--extension</code> at all; its other flags are <code class="post-code--spaced">--tools read,ls,find --no-skills --no-context-files</code></td>
 <td>it only reads; it does not need even the configured extensions</td>
 </tr>
 <tr>

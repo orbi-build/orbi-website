@@ -240,7 +240,7 @@ source = &quot;extensions/local-check.ts&quot;   # 相对配置文件的路径�
             args.extend((&quot;--extension&quot;, extension[&quot;source&quot;]))
     return args
 </code></pre>
-<p>实现者、评审者、<code class="post-code--single">ticket</code> 角色，以及 <code class="post-code--spaced">orbi suggest</code> 里写建议的那个会话，拿到 <code class="post-code--single">--no-extensions</code>，再按启用的条目各加一个 <code class="post-code--single">--extension</code>。白名单靠的是这两样合在一起：<code class="post-code--single">--no-extensions</code> 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。<code class="post-code--single">-e</code> 接的不只是路径：帮助文本写的是「文件或 <code class="post-code--single">builtin:&lt;名字&gt;</code>」，但在 Pi 1.2.0 上 <code class="post-code--spaced">pi -ne -e npm:&lt;包&gt;@&lt;版本&gt;</code> 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），Orbi 配置里的 <code class="post-code--single">npm:</code>、<code class="post-code--single">git:</code> 来源就是这样原样交给 Pi 的。<code class="post-code--single">pi_extensions</code> 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。</p>
+<p>实现者、评审者、<code class="post-code--single">ticket</code> 角色，以及 <code class="post-code--spaced">orbi suggest</code> 里写建议的那个会话，拿到 <code class="post-code--single">--no-extensions</code>，再按启用的条目各加一个 <code class="post-code--single">--extension</code>。白名单靠的是这两样合在一起：<code class="post-code--single">--no-extensions</code> 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。<code class="post-code--single">-e</code> 接的不只是路径：帮助文本写的是「文件或 <code class="post-code--single">builtin:&lt;名字&gt;</code>」，但在 Pi 1.2.0 上 <code class="post-code--spaced">pi -ne -e npm:&lt;包&gt;@&lt;版本&gt;</code> 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），<code class="post-code--spaced">-e git:&lt;主机&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code> 会去克隆，Orbi 配置里的 <code class="post-code--single">npm:</code>、<code class="post-code--single">git:</code> 来源就是这样原样交给 Pi 的。<code class="post-code--single">pi_extensions</code> 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。</p>
 <p>不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -252,12 +252,12 @@ source = &quot;extensions/local-check.ts&quot;   # 相对配置文件的路径�
 </thead>
 <tbody><tr>
 <th scope="row">实现者、评审者、写评论的 <code class="post-code--single">ticket</code> 角色，以及 <code class="post-code--spaced">orbi suggest</code> 里写建议的那个会话</th>
-<td><code class="post-code--single">--no-extensions</code> + 配置里的各条 <code class="post-code--single">--extension</code></td>
+<td><code class="post-code--single">--no-extensions</code> + 配置里的各条 <code class="post-code--single">--extension</code>（<code class="post-code--spaced">orbi suggest</code> 那个会话另加 <code class="post-code--single">--no-skills</code>）</td>
 <td>上面的白名单</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--spaced">orbi suggest</code>（读仓库、提任务建议的命令）的仓库摘要会话</th>
-<td>只有 <code class="post-code--single">--no-extensions</code>，外加 <code class="post-code--spaced">--tools read,ls,find --no-skills --no-context-files</code></td>
+<td><code class="post-code--single">--no-extensions</code>，不带任何 <code class="post-code--single">--extension</code>；其他参数是 <code class="post-code--spaced">--tools read,ls,find --no-skills --no-context-files</code></td>
 <td>它只读，连配置里的扩展都不需要</td>
 </tr>
 <tr>
