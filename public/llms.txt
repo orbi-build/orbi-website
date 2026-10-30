@@ -253,6 +253,8 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- Pi extensions in production: isolate, then write one (English):
+  https://orbi.build/blog/pi-extensions-in-production/
 - Pi coding agent worktree: a failed recovery (English):
   https://orbi.build/blog/pi-coding-agent-worktree/
 - Pi coding agent worktree：失败的交付怎么继续 (Chinese):
