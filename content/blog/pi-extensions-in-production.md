@@ -86,7 +86,7 @@ def _pi_extension_args(config: RunnerConfig) -> list[str]:
     return args
 ```
 
-The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit paths are the only extensions the session can have. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
+The implementer, the reviewer, and the `ticket` role get `--no-extensions` and one `--extension` per enabled entry. The combination is what makes the allowlist work: `--no-extensions` denies discovery, settings, and built-ins, and the explicit entries are the only extensions the session can have. `-e` takes more than a path: the help text says "file or builtin:<name>", but on Pi 1.2.0 `pi -ne -e npm:<package>@<version>` fetches the package from the npm registry (a wrong name fails with npm's own 404), which is how Orbi's `npm:` and `git:` sources reach Pi unchanged. An empty `pi_extensions` list means a Pi with no extensions at all, which is Orbi's default.
 
 Not every Orbi session uses that list, though. These are the three shapes, and each is a different answer to "what should this session be able to do":
 
@@ -184,7 +184,7 @@ The tool's name and parameter shape came from a community extension, `@juiceshar
 
 If you run Pi without a person at the keyboard, the short version of this post is three habits:
 
-1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version and git sources to a commit, and reject the config when a pin is missing; remember that a check for "a ref is present" is all Orbi's validation does.
+1. Start every unattended Pi with `--no-extensions`, then add back exactly the Pi extensions you mean to load with `-e`. Keep the list in config, pin npm packages to a version and git sources to a commit, and reject the config when a pin is missing; remember that for git sources Orbi's validation only checks that a ref is present, not whether it can move.
 2. When you need a structured answer from the model, give it one tool with a schema and `terminate: true`, write the result to a file, and treat anything else as no answer. Do not parse stdout.
 3. When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of `--tools`.
 
