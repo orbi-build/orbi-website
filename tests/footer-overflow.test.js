@@ -691,8 +691,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1125: Startup Fast requires the badge rendered at least
         // 150x44 px, so this one badge leaves the shared 28px row: it declares
         // the source SVG's proportional 150x63 and its own rule sets width
-        // 150px / height auto, which renders 150/50 * 50/119 = 63px high in the
-        // 119x50 source ratio — wider than 150 and taller than 44, unsquashed.
+        // 150px / height auto, which renders 150 * 50 / 119 = 63px high in the
+        // 119x50 source ratio — exactly 150px wide and taller than the 44px
+        // floor, unsquashed.
         expect(result.startupfastHref, path + ": the Startup Fast badge href").toBe("https://startupfa.st");
         expect(result.startupfastTarget, path + ": the Startup Fast badge opens in a new tab").toBe("_blank");
         expect(result.startupfastRel, path + ": the Startup Fast anchor keeps rel=noopener").toBe("noopener");
