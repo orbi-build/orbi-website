@@ -162,11 +162,11 @@
           <h2>On this page</h2>
           <ol>
           <li><a class="post-toc-link" href="#what-pi-extensions-are-and-the-three-ways-pi-loads-them">What Pi extensions are, and the three ways Pi loads them</a></li>
-          <li><a class="post-toc-link" href="#the-d-bus-hang-that-made-orbi-stop-trusting-discovery">The D-Bus hang that made Orbi stop trusting discovery</a></li>
+          <li><a class="post-toc-link" href="#the-d-bus-hang-that-made-orbi-stop-trusting-pi-extension-discovery">The D-Bus hang that made Orbi stop trusting Pi extension discovery</a></li>
           <li><a class="post-toc-link" href="#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">How Orbi loads Pi extensions: --no-extensions plus a pinned allowlist</a></li>
           <li><a class="post-toc-link" href="#writing-a-pi-extension-so-the-model-can-answer-in-exactly-one-way">Writing a Pi extension so the model can answer in exactly one way</a></li>
-          <li><a class="post-toc-link" href="#an-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">An extension as the only write path: Orbi Cloud's draft tool</a></li>
-          <li><a class="post-toc-link" href="#what-to-copy">What to copy</a></li>
+          <li><a class="post-toc-link" href="#a-pi-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">A Pi extension as the only write path: Orbi Cloud's draft tool</a></li>
+          <li><a class="post-toc-link" href="#what-to-copy-for-your-own-pi-extensions">What to copy for your own Pi extensions</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </nav>
@@ -175,31 +175,30 @@
           <summary>On this page · 7 sections</summary>
           <ol>
           <li><a class="post-toc-link" href="#what-pi-extensions-are-and-the-three-ways-pi-loads-them">What Pi extensions are, and the three ways Pi loads them</a></li>
-          <li><a class="post-toc-link" href="#the-d-bus-hang-that-made-orbi-stop-trusting-discovery">The D-Bus hang that made Orbi stop trusting discovery</a></li>
+          <li><a class="post-toc-link" href="#the-d-bus-hang-that-made-orbi-stop-trusting-pi-extension-discovery">The D-Bus hang that made Orbi stop trusting Pi extension discovery</a></li>
           <li><a class="post-toc-link" href="#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">How Orbi loads Pi extensions: --no-extensions plus a pinned allowlist</a></li>
           <li><a class="post-toc-link" href="#writing-a-pi-extension-so-the-model-can-answer-in-exactly-one-way">Writing a Pi extension so the model can answer in exactly one way</a></li>
-          <li><a class="post-toc-link" href="#an-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">An extension as the only write path: Orbi Cloud's draft tool</a></li>
-          <li><a class="post-toc-link" href="#what-to-copy">What to copy</a></li>
+          <li><a class="post-toc-link" href="#a-pi-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">A Pi extension as the only write path: Orbi Cloud's draft tool</a></li>
+          <li><a class="post-toc-link" href="#what-to-copy-for-your-own-pi-extensions">What to copy for your own Pi extensions</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Pi extensions are TypeScript modules that the <a href="https://pi.dev">Pi coding agent</a> loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi finds them on its own in <code class="post-code--single">~/.pi/agent/extensions/</code> and in a project&#39;s <code class="post-code--single">.pi/extensions/</code>, loads whatever <code class="post-code--spaced">pi install</code> has added to <code class="post-code--single">settings.json</code>, and takes explicit paths with <code class="post-code--single">-e</code>. On a laptop, that is convenient. In a service that runs Pi with nobody watching, every one of those discovery paths is a way for code you did not choose to end up inside the session.</p>
-<p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The <a href="/guides/pi-coding-agent/">Pi hub</a> describes the runner around those sessions and <a href="/blog/orbi-on-pi-coding-agent/">the first post of this series</a> walks one issue through them. This post is about the extension part only: how Orbi loads Pi extensions, what went wrong before it did it this way, and two extensions we ended up writing ourselves. The commands and config below are what runs today, on Pi 1.2.0.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>Pi extensions are TypeScript modules that the <a href="https://pi.dev">Pi coding agent</a> loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi finds Pi extensions on its own in <code class="post-code--single">~/.pi/agent/extensions/</code> and in a project&#39;s <code class="post-code--single">.pi/extensions/</code>, loads whatever <code class="post-code--spaced">pi install</code> has added to <code class="post-code--single">settings.json</code>, and takes explicit paths with <code class="post-code--single">-e</code>. On a laptop, that is convenient. In a service that runs Pi with nobody watching, every one of those discovery paths is a way for code you did not choose to end up inside the session.</p>
+<p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The <a href="/guides/pi-coding-agent/">Pi hub</a> describes the runner around those sessions and <a href="/blog/orbi-on-pi-coding-agent/">the first post of this series</a> walks one issue through them. This post is about Pi extensions only: how Orbi loads them, what went wrong before it did it this way, and two Pi extensions we ended up writing ourselves. The commands and config below are what runs today, on Pi 1.2.0.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="what-pi-extensions-are-and-the-three-ways-pi-loads-them">What Pi extensions are, and the three ways Pi loads them</h2>
-<p>An extension is one file. The smallest one that does something looks like this, taken from Pi&#39;s <a href="https://pi.dev/docs/latest/extensions">extension documentation</a>:</p>
+<p>The simplest Pi extension is one file. This one, from Pi&#39;s <a href="https://pi.dev/docs/latest/extensions">extension documentation</a>, loads and does one thing:</p>
 <pre><code class="language-ts">import { type ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
 
 export default function (pi: ExtensionAPI) {
   pi.on(&quot;session_start&quot;, async (_event, ctx) =&gt; {
     ctx.ui.notify(&quot;Extension loaded!&quot;, &quot;info&quot;);
   });
-  pi.registerTool({ /* name, description, parameters, execute */ });
-  pi.registerCommand(&quot;hello&quot;, { /* ... */ });
 }
 </code></pre>
-<p>Pi loads extensions from three places, and the distinction matters for everything that follows:</p>
+<p>Tools and commands are registered from the same function (<code class="post-code--single">pi.registerTool</code>, <code class="post-code--single">pi.registerCommand</code>); a complete tool appears further down. An extension can also be a directory with an <code class="post-code--single">index.ts</code>, or a package whose <code class="post-code--single">package.json</code> declares its entry points.</p>
+<p>Pi loads Pi extensions from three places, and the distinction matters for everything that follows:</p>
 <ol>
-<li><strong>Discovery.</strong> Any <code class="post-code--single">*.ts</code> or <code class="post-code--single">*.js</code> under <code class="post-code--single">~/.pi/agent/extensions/</code> (global) or <code class="post-code--single">.pi/extensions/</code> (project-local) loads automatically.</li>
+<li><strong>Discovery.</strong> A <code class="post-code--single">*.ts</code> or <code class="post-code--single">*.js</code> file, a directory with <code class="post-code--single">index.ts</code>, or a package under <code class="post-code--single">~/.pi/agent/extensions/</code> (global) or <code class="post-code--single">.pi/extensions/</code> (project-local) loads automatically. Discovery goes one level deep, and project-local extensions load only after you have trusted the project.</li>
 <li><strong>Settings.</strong> <code class="post-code--spaced">pi install &lt;source&gt;</code> records an npm or git package in <code class="post-code--single">~/.pi/agent/settings.json</code>, and Pi loads it on every start. <code class="post-code--spaced">pi list</code> shows what is installed.</li>
 <li><strong>Explicit paths.</strong> <code class="post-code--spaced">pi -e ./review.ts</code> loads one file for this process only. The docs call this the way to test an extension quickly.</li>
 </ol>
@@ -208,35 +207,26 @@ export default function (pi: ExtensionAPI) {
 --no-extensions, -ne     Disable extension discovery and built-in extensions (explicit -e paths still work)
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
 </code></pre>
-<p><code class="post-code--single">--no-extensions</code> disables discovery, the settings packages, and Pi&#39;s own built-in extensions such as MCP support. Explicit <code class="post-code--single">-e</code> paths still load. So <code class="post-code--spaced">pi -ne -e builtin:mcp</code> is a session with exactly one extension, MCP, and nothing else; the same shape with your own file gives you a session that has exactly the tools you wrote. That combination is the whole basis of what Orbi does.</p>
-<h2 id="the-d-bus-hang-that-made-orbi-stop-trusting-discovery">The D-Bus hang that made Orbi stop trusting discovery</h2>
-<p>Orbi&#39;s runner on my machine is a systemd user service. In early September 2026 a run stopped before it did anything: the Pi process was alive, but minutes went by with no session file and no request to the model. The diagnosis that ended up in Orbi&#39;s <a href="https://docs.orbi.build/operations">operations guide</a> was four commands:</p>
-<pre><code class="language-bash"># 1. The process is alive but idle
-ps -o pid,stat,etime,cmd -p &quot;$PID&quot;
-# 2. No TCP connection to the model API: the request was never sent
-ss -tnp | grep &quot;$PID&quot;                    # empty
-# 3. The only socket is D-Bus
-ls -l /proc/&quot;$PID&quot;/fd | grep socket      # unix socket -&gt; /run/user/1000/bus
-# 4. The session file was never created
-ls -la &lt;task worktree&gt;/.pi-session/      # empty
-</code></pre>
-<p>The runner&#39;s Pi had loaded the packages declared in my own <code class="post-code--single">~/.pi/agent/settings.json</code>, one of which was <code class="post-code--single">pi-mcp-adapter</code>. That plugin initializes <code class="post-code--single">@napi-rs/keyring</code> at startup, which makes a Secret Service call over D-Bus. Inside a <code class="post-code--spaced">systemd --user</code> service that call occasionally never returns, and node sits in <code class="post-code--single">poll_schedule_timeout</code> before the first model request goes out. Nothing in the run had asked for MCP. The plugin was there because I had installed it for interactive use, and discovery handed it to the unattended session too.</p>
-<p>Removing the package from <code class="post-code--single">settings.json</code> fixed that run: the same issue resumed and reached its first model response in 15 seconds. The permanent fix was <a href="https://github.com/orbi-build/orbi/issues/249">Issue #249</a>, merged on 8 September: Orbi declares the extensions a run may have and starts every Pi with <code class="post-code--single">--no-extensions</code>. Whatever the OS user has installed for themselves stays out of the runner&#39;s sessions.</p>
+<p><code class="post-code--single">--no-extensions</code> disables discovery, the settings packages, and Pi&#39;s own built-in extensions such as MCP support. Explicit <code class="post-code--single">-e</code> paths still load. So <code class="post-code--spaced">pi -ne -e builtin:mcp</code> is a session whose only extension is MCP, and the same shape with your own file is a session whose only extension is yours. Note what that flag does not do: Pi&#39;s built-in tools (<code class="post-code--single">read</code>, <code class="post-code--single">bash</code>, <code class="post-code--single">edit</code>, <code class="post-code--single">write</code>) are still there. Turning those off is a separate switch, <code class="post-code--single">--no-builtin-tools</code>, and the clarification gate below uses both.</p>
+<h2 id="the-d-bus-hang-that-made-orbi-stop-trusting-pi-extension-discovery">The D-Bus hang that made Orbi stop trusting Pi extension discovery</h2>
+<p>Orbi&#39;s runner on my machine is a systemd user service. On 4 September 2026 a run stopped before it did anything: the Pi process was alive, but minutes went by with no session file and no request to the model. The full write-up, with the diagnosis script, is in <a href="/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi">the first post&#39;s incident section</a>; the short version is what matters here.</p>
+<p>The runner&#39;s Pi had loaded the packages declared in my own <code class="post-code--single">~/.pi/agent/settings.json</code>, one of which was <code class="post-code--single">pi-mcp-adapter</code>. That plugin initializes <code class="post-code--single">@napi-rs/keyring</code> at startup, which makes a Secret Service call over D-Bus. Inside a <code class="post-code--spaced">systemd --user</code> service that call occasionally never returns, and node waits on it before the first model request goes out. Nothing in the run had asked for MCP. The plugin was there because I had installed it for interactive use, and discovery handed it to the unattended session too. Removing it from <code class="post-code--single">settings.json</code> fixed that run: the same issue resumed and reached its first model response in 15 seconds.</p>
+<p>The permanent fix was <a href="https://github.com/orbi-build/orbi/issues/249">Issue #249</a>, merged on 7 September (UTC): Orbi declares the Pi extensions a run may have and starts the implementer and the reviewer with <code class="post-code--single">--no-extensions</code>. Whatever the OS user has installed for themselves stays out of those sessions.</p>
 <h2 id="how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">How Orbi loads Pi extensions: <code class="post-code--single">--no-extensions</code> plus a pinned allowlist</h2>
 <p>The config side is one repeatable table in <code class="post-code--single">orbi.toml</code>:</p>
 <pre><code class="language-toml">[[pi_extensions]]
 source = &quot;npm:some-extension@1.4.2&quot;   # npm sources must pin a version
 enabled = true                         # default
 [pi_extensions.env]
-SOME_TOKEN = &quot;$SOME_TOKEN&quot;             # injected only into this Pi child
+SOME_EXTENSION_MODE = &quot;unattended&quot;     # a literal, set only in this Pi child
 
 [[pi_extensions]]
-source = &quot;git:github.com/org/repo@v1&quot;  # git sources must pin a ref with @
+source = &quot;git:github.com/org/repo@v1&quot;  # git sources must name a ref after @
 
 [[pi_extensions]]
 source = &quot;extensions/local-check.ts&quot;   # relative to the config file; must exist
 </code></pre>
-<p>Orbi validates this at config load (<code class="post-code--single">src/orbi/config.py</code>): an npm source without a concrete semver, a git source without a ref, a local path that does not exist, or the same source twice, and the config is rejected before any run starts. The point of the pins is that the implementer and the reviewer, which are separate Pi processes, cannot drift to different versions of the same extension.</p>
+<p>Orbi validates this at config load (<code class="post-code--single">src/orbi/config.py</code>): an npm source without a concrete version, a git source without a ref, a local path that does not exist, the same source twice, or two entries setting the same <code class="post-code--single">env</code> name to different values, and the config is rejected before any run starts. Two limits of that validation are worth knowing. The <code class="post-code--single">env</code> values are literals: <code class="post-code--single">&quot;$SOME_TOKEN&quot;</code> is passed to Pi as those twelve characters, not expanded, so a secret the extension needs should be read by the extension from the service&#39;s own environment, not written here. And a git ref can be a tag or a branch that moves; if you need the implementer and the reviewer, which are separate Pi processes, to run byte-identical extension code, pin a commit SHA or ship the file in the repository.</p>
 <p>The command side is a few lines in <code class="post-code--single">src/orbi/pi_command.py</code>:</p>
 <pre><code class="language-python">def _pi_extension_args(config: RunnerConfig) -&gt; list[str]:
     &quot;&quot;&quot;Return the isolated extension flags for every Pi role.&quot;&quot;&quot;
@@ -246,8 +236,8 @@ source = &quot;extensions/local-check.ts&quot;   # relative to the config file; 
             args.extend((&quot;--extension&quot;, extension[&quot;source&quot;]))
     return args
 </code></pre>
-<p>Every role gets <code class="post-code--single">--no-extensions</code> first, then one <code class="post-code--single">--extension</code> per enabled entry. The order is what makes the allowlist work: <code class="post-code--single">--no-extensions</code> denies discovery, settings, and built-ins, and the explicit paths that follow are the only extensions the session can have. An empty <code class="post-code--single">pi_extensions</code> list means a Pi with no extensions at all, which is Orbi&#39;s default.</p>
-<p>Three Pi sessions in Orbi deliberately differ from that default, and each one is a different answer to &quot;what should this session be able to do&quot;:</p>
+<p>Every role gets <code class="post-code--single">--no-extensions</code> and one <code class="post-code--single">--extension</code> per enabled entry. The combination is what makes the allowlist work: <code class="post-code--single">--no-extensions</code> denies discovery, settings, and built-ins, and the explicit paths are the only Pi extensions the session can have. An empty <code class="post-code--single">pi_extensions</code> list means a Pi with no extensions at all, which is Orbi&#39;s default.</p>
+<p>Three kinds of Pi session in Orbi differ from that default, and each is a different answer to &quot;what should this session be able to do&quot;:</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -272,51 +262,81 @@ source = &quot;extensions/local-check.ts&quot;   # relative to the config file; 
 <td>exactly one tool, shipped with the engine; nothing else callable</td>
 </tr>
 </tbody></table></div>
-<p>The first row was not always complete. Until 5 October the <code class="post-code--single">ticket</code> role was started with no extension flags at all, so a user&#39;s installed extensions could load into the sessions that write issue comments. <a href="https://github.com/orbi-build/orbi/issues/1558">Issue #1558</a> fixed it in v0.6.2, and the Pi hub&#39;s note about that gap is out of date as of this post. Skills are the other half of the same picture, and there the isolation is still partial: Orbi passes its own <code class="post-code--single">--skill</code> entries but does not pass <code class="post-code--single">--no-skills</code>, so skills the OS user installed can load in every role.</p>
+<p>The first row was not always complete. Until 5 October the <code class="post-code--single">ticket</code> role was started with no extension flags at all, so a user&#39;s installed Pi extensions could load into the sessions that write issue comments. <a href="https://github.com/orbi-build/orbi/issues/1558">Issue #1558</a> fixed it in v0.6.2. Skills are the other half of the same picture, and there the isolation is still partial: the implementer, the reviewer, and the <code class="post-code--single">ticket</code> role get Orbi&#39;s own <code class="post-code--single">--skill</code> entries but not <code class="post-code--single">--no-skills</code>, so skills the OS user installed can load into them. Only the summary session passes <code class="post-code--single">--no-skills</code>.</p>
 <h2 id="writing-a-pi-extension-so-the-model-can-answer-in-exactly-one-way">Writing a Pi extension so the model can answer in exactly one way</h2>
 <p>If you want to write a Pi extension and are not sure what for, the clarification gate is the one I would point to first, because it solves a problem that has nothing to do with MCP or tooling: getting a structured answer out of a model reliably.</p>
-<p>The gate runs before Orbi starts a delivery. One Pi session reads the issue and judges it on three checks (does it state an observable result, an acceptance condition, and a single outcome), and if the issue is thin, the gate proposes a fix: split it into these tickets, or add these acceptance lines. The first version asked the model for JSON in free text and parsed stdout. On the beta that silently dropped every proposal: the model put <code class="post-code--single">kind</code> and <code class="post-code--single">items</code> at the top level next to <code class="post-code--single">missing</code>, the parser read only <code class="post-code--single">suggestion</code>, and the stop comment never showed a proposal (<a href="https://github.com/orbi-build/orbi/issues/1955">Issue #1955</a>).</p>
-<p>The fix was to stop parsing text. The engine now ships <code class="post-code--single">src/orbi/extensions/clarify_verdict.ts</code>, an extension that registers one tool. The parts that matter:</p>
+<p>The gate runs before Orbi starts a delivery. One Pi session reads the issue and judges it on three checks (does it state an observable result, an acceptance condition, and a single outcome), and if the issue is thin, the gate proposes a fix: split it into these tickets, or add these acceptance lines. Up to v0.7.20 the gate asked the model for JSON in free text and parsed stdout. On the beta that silently dropped every proposal: the model put <code class="post-code--single">kind</code> and <code class="post-code--single">items</code> at the top level next to <code class="post-code--single">missing</code>, the parser read only <code class="post-code--single">suggestion</code>, and the stop comment never showed a proposal (<a href="https://github.com/orbi-build/orbi/issues/1955">Issue #1955</a>).</p>
+<p>The fix was to stop parsing text. Since v0.7.21 (28 October) the engine ships <code class="post-code--single">src/orbi/extensions/clarify_verdict.ts</code>, a Pi extension that registers one tool. This is the file with the <code class="post-code--single">split</code> proposal shape cut out; the <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts">full file</a> is 138 lines:</p>
 <pre><code class="language-ts">import type { ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
 import { Type } from &quot;typebox&quot;;
 import { writeFileSync } from &quot;node:fs&quot;;
 
-export default function (pi: ExtensionAPI) {
-  pi.registerTool({
-    name: &quot;clarify_verdict&quot;,
-    description: &quot;Report the clarification verdict for this ticket.&quot;,
-    parameters: Type.Object({
-      missing: Type.Array(Type.Union([
+const parameters = Type.Object(
+  {
+    missing: Type.Array(
+      Type.Union([
         Type.Literal(&quot;observable_result&quot;),
         Type.Literal(&quot;acceptance_condition&quot;),
         Type.Literal(&quot;single_outcome&quot;),
-      ])),
-      // ...the proposal shape: a split with its items, or acceptance lines
-    }),
-    async execute(_toolCallId, args) {
-      writeFileSync(process.env.ORBI_CLARIFY_OUT!, JSON.stringify(args));
-      return { content: [{ type: &quot;text&quot;, text: &quot;recorded&quot; }], terminate: true };
+      ]),
+      { description: &quot;The failed checks; empty when all three checks pass&quot; },
+    ),
+    suggestion: Type.Optional(
+      Type.Object(
+        {
+          kind: Type.Literal(&quot;criteria&quot;),
+          items: Type.Array(Type.String(), { minItems: 1 }),
+          // the &quot;split&quot; variant (kind: &quot;split&quot;, at least two items) is omitted here
+        },
+        { additionalProperties: false },
+      ),
+    ),
+  },
+  { additionalProperties: false },
+);
+
+export default function (pi: ExtensionAPI) {
+  pi.registerTool({
+    name: &quot;clarify_verdict&quot;,
+    label: &quot;Clarify verdict&quot;,
+    description: &quot;Return the ticket-gate verdict. Call this exactly once.&quot;,
+    parameters,
+    async execute(_toolCallId: string, args: object) {
+      const out = process.env.ORBI_CLARIFY_OUT;
+      if (!out) throw new Error(&quot;ORBI_CLARIFY_OUT is not set&quot;);
+      writeFileSync(out, JSON.stringify(args), &quot;utf8&quot;);
+      return {
+        content: [{ type: &quot;text&quot; as const, text: &quot;Verdict recorded.&quot; }],
+        details: undefined,
+        terminate: true,
+      };
     },
   });
 }
 </code></pre>
-<p>Three things do the work. <code class="post-code--single">parameters</code> is a TypeBox schema, and Pi validates the model&#39;s arguments against it before <code class="post-code--single">execute</code> runs, so a top-level <code class="post-code--single">kind</code>, an unknown check id, or a split with one item never reaches the file. <code class="post-code--single">execute</code> writes the validated arguments to the path the engine put in <code class="post-code--single">ORBI_CLARIFY_OUT</code>, so the engine reads a file instead of stdout. And <code class="post-code--spaced">terminate: true</code> ends the run on the tool call, so there is no follow-up turn to pay for. The session is started with <code class="post-code--spaced">--no-builtin-tools --no-extensions --extension &lt;that file&gt;</code>: built-in tools off, discovery off, one extension on. The model can answer in exactly one way, and an unusable answer (no file, or a file the schema would not allow) is treated like an unavailable model: the gate fails open and the delivery proceeds. The whole file is 138 lines including comments, and it shipped in v0.7.21 on 28 October.</p>
-<p>Pi aliases <code class="post-code--single">typebox</code> to its own pinned copy when it loads an extension, so a file like this needs no <code class="post-code--single">package.json</code> of its own. To try the shape yourself: write the file, run <code class="post-code--spaced">pi -ne -e ./verdict.ts -nbt -p &quot;...&quot;</code> with a prompt that tells the model to call the tool, and read the output file. If the file is missing, the model did not call the tool; if Pi refused the call, the arguments did not match the schema.</p>
-<h2 id="an-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">An extension as the only write path: Orbi Cloud&#39;s draft tool</h2>
-<p>The second extension is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant&#39;s sandbox, started with <code class="post-code--spaced">pi -e &lt;draft extension&gt;</code> and <code class="post-code--spaced">--tools read,grep,find,ls,write_draft,ask_user_question</code>. The extension registers the two tools at the end of that list, and they are the only ways the model can produce output:</p>
+<p>Three things do the work. <code class="post-code--single">parameters</code> is a TypeBox schema with <code class="post-code--spaced">additionalProperties: false</code> at every level, and Pi validates the model&#39;s arguments against it before <code class="post-code--single">execute</code> runs, so a top-level <code class="post-code--single">kind</code>, an unknown check id, or (in the full file) a split with one item never reaches the file. <code class="post-code--single">execute</code> writes the validated arguments to the path the engine put in <code class="post-code--single">ORBI_CLARIFY_OUT</code>, so the engine reads a file instead of stdout. And <code class="post-code--spaced">terminate: true</code> ends the run on the tool call, so there is no follow-up turn to pay for. The session is started with <code class="post-code--spaced">--no-builtin-tools --no-extensions --extension &lt;that file&gt;</code>: built-in tools off, discovery off, one Pi extension on. The only thing the engine accepts as a verdict is that file; a model that answers in prose, or calls the tool with arguments the schema rejects, produces no file, and the gate treats that like an unavailable model and fails open.</p>
+<p>Pi aliases <code class="post-code--single">typebox</code> to its own pinned copy when it loads an extension, so a file like this needs no <code class="post-code--single">package.json</code> of its own. To try the shape yourself:</p>
+<pre><code class="language-bash">ORBI_CLARIFY_OUT=&quot;$PWD/verdict.json&quot; \
+  pi -ne -e ./verdict.ts -nbt \
+  -p &#39;Call clarify_verdict once with {&quot;missing&quot;:[]}.&#39;
+cat verdict.json
+</code></pre>
+<p>Three things can go wrong, and they look different. No file and no error: the model never called the tool. Pi reports a validation error on the call: the arguments did not match the schema. The tool throws: <code class="post-code--single">ORBI_CLARIFY_OUT</code> was not set or not writable.</p>
+<h2 id="a-pi-extension-as-the-only-write-path-orbi-cloud-s-draft-tool">A Pi extension as the only write path: Orbi Cloud&#39;s draft tool</h2>
+<p>The second Pi extension is in Orbi Cloud, which hosts the same runner and adds a page where you describe a change in a conversation and Orbi drafts the issue for you. That drafting run is a Pi session in the tenant&#39;s sandbox, started with <code class="post-code--spaced">pi -e &lt;draft extension&gt;</code> and <code class="post-code--spaced">--tools read,grep,find,ls,write_draft,ask_user_question</code>. The extension registers the two tools at the end of that list:</p>
 <ul>
-<li><code class="post-code--single">write_draft</code> takes the complete draft and its issue title and writes them to fixed files. There is no general write or edit tool in the session, so the model cannot touch the repository and cannot leave its reasoning in the draft. A second, read-only pass that checks the draft against the repository loads the same extension with only <code class="post-code--single">write_draft</code> enabled, and uses it as the hand-back channel.</li>
-<li><code class="post-code--single">ask_user_question</code> is for the case where the request is underspecified. The model asks one to four questions, each with two to four options, the recommended option first. The questions are written to a file next to the draft and the round ends there. When the person answers on the page, the next round resumes the same Pi session with that one message, so there is no resident process and no timeout. In <code class="post-code--spaced">pi -p</code> (non-interactive) mode the tool withdraws itself, because there is nobody at a terminal to answer.</li>
+<li><code class="post-code--single">write_draft</code> takes the complete draft and its issue title and writes them to fixed files. Those files are the only thing the page accepts as a draft, so whatever the model prints to the screen never becomes one. With that tool set, the session has no general write or edit tool, so it cannot change files in the repository. A second pass then checks the draft against what the person asked for; it loads the same extension with <code class="post-code--single">write_draft</code> as its only tool and hands the checked draft back through it.</li>
+<li><code class="post-code--single">ask_user_question</code> is for the case where the request is underspecified. The model asks one to four questions, each with two to four options, the recommended option first. The questions are written to a file next to the draft and the round ends there. When the person answers on the page, the next round resumes the same Pi session with that one message, so there is no resident process and no timeout.</li>
 </ul>
-<p>The tool&#39;s name and parameter shape came from a community extension, <code class="post-code--single">@juicesharp/rpiv-ask-user-question</code>, which does the same thing interactively. We did not take it as a dependency: its terminal UI is exactly the part an unattended run cannot use. Copying a tool&#39;s contract from an extension you cannot run as-is turned out to be the most useful way to read the extension catalog.</p>
-<h2 id="what-to-copy">What to copy</h2>
+<p>The tool&#39;s name and parameter shape came from a community Pi extension, <code class="post-code--single">@juicesharp/rpiv-ask-user-question</code>, which asks the questions in the terminal. We did not take it as a dependency: in <code class="post-code--spaced">pi -p</code>, the non-interactive mode Orbi always uses, that package withdraws its tool entirely, because there is nobody at a terminal to answer. Copying a tool&#39;s contract from an extension you cannot run as-is turned out to be the most useful way to read the extension catalog.</p>
+<h2 id="what-to-copy-for-your-own-pi-extensions">What to copy for your own Pi extensions</h2>
 <p>If you run Pi without a person at the keyboard, the short version of this post is three habits:</p>
 <ol>
-<li>Start every unattended Pi with <code class="post-code--single">--no-extensions</code>, then add back exactly the files you mean to load with <code class="post-code--single">-e</code>. Keep the list in config, pin package versions, and reject the config when a pin is missing.</li>
+<li>Start every unattended Pi with <code class="post-code--single">--no-extensions</code>, then add back exactly the Pi extensions you mean to load with <code class="post-code--single">-e</code>. Keep the list in config, pin versions, and reject the config when a pin is missing.</li>
 <li>When you need a structured answer from the model, give it one tool with a schema and <code class="post-code--spaced">terminate: true</code>, write the result to a file, and treat anything else as no answer. Do not parse stdout.</li>
 <li>When the model must produce an artifact, make the extension tool the only write path and leave the general write tools out of <code class="post-code--single">--tools</code>.</li>
 </ol>
-<p>And one thing we have not finished: skills do not get the <code class="post-code--single">--no-extensions</code> treatment yet, so an OS user&#39;s skills can still load into Orbi&#39;s sessions. That is the next isolation gap to close.</p>
+<p>And one thing we have not finished: skills do not get the same treatment yet, so an OS user&#39;s skills can still load into Orbi&#39;s implementer, reviewer, and <code class="post-code--single">ticket</code> sessions. That is the next isolation gap to close.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
