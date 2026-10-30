@@ -255,6 +255,8 @@ feed of the English posts: https://orbi.build/blog/feed.xml
 
 - Pi extensions in production: isolate, then write one (English):
   https://orbi.build/blog/pi-extensions-in-production/
+- Pi 扩展在生产环境里怎么用：先隔离，再自己写一个 (Chinese):
+  https://orbi.build/zh/blog/pi-extensions-in-production/
 - Pi coding agent worktree: a failed recovery (English):
   https://orbi.build/blog/pi-coding-agent-worktree/
 - Pi coding agent worktree：失败的交付怎么继续 (Chinese):
