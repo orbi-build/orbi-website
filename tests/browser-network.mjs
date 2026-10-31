@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships twenty-seven footer badge images (site/partials/footer.html) plus
+// Every page ships thirty-one footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -39,7 +39,13 @@
 // the live file, which the vendor's 175x55 snippet does not match, Issue #1129),
 // www.founder.best 1195x390 (SVG — its own width/height and viewBox match the
 // vendor's snippet, Issue #1132) and www.makeitla.st 252x76 (SVG — its own
-// width/height and viewBox match the vendor's snippet, Issue #1132).
+// width/height and viewBox match the vendor's snippet, Issue #1132); and on
+// 2026-10-31 aifordevelopers.org 220x48 (SVG, Issue #1134), uno.directory
+// 146x44 (SVG — the vendor's snippet declares 120x30, Issue #1134),
+// saascity.io 210x80 (SVG — the vendor's snippet declares 150x54, Issue #1134)
+// and launchvault.dev 139x44 (SVG — the live URL answers 307 to
+// www.launchvault.dev, which serves the same file, and the vendor's snippet
+// declares only a 54px height, Issue #1134).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -68,6 +74,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "findly.tools", width: 139, height: 44 },
   { host: "www.founder.best", width: 1195, height: 390 },
   { host: "www.makeitla.st", width: 252, height: 76 },
+  { host: "aifordevelopers.org", width: 220, height: 48 },
+  { host: "uno.directory", width: 146, height: 44 },
+  { host: "saascity.io", width: 210, height: 80 },
+  { host: "launchvault.dev", width: 139, height: 44 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
