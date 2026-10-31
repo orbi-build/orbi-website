@@ -252,11 +252,42 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const scoutforge = wrapper.querySelector('a[href="https://scoutforge.net/apps/orbi?ref=badge"]');
           const scoutforgeImage = scoutforge?.querySelector("img");
           const scoutforgeRect = scoutforgeImage?.getBoundingClientRect();
+          // Issue #1129: Findly.tools; its badge is the source SVG's own
+          // 139x44 box in the shared 28px row.
+          const findly = wrapper.querySelector('a[href="https://findly.tools/orbi?utm_source=orbi"]');
+          const findlyImage = findly?.querySelector("img");
+          const findlyRect = findlyImage?.getBoundingClientRect();
+          // Issue #1132: founder.best and makeitla.st close the row after the
+          // Findly.tools badge, each in its own source box (1195x390 and
+          // 252x76, both measured on the live SVG).
+          const founderBest = wrapper.querySelector('a[href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral"]');
+          const founderBestImage = founderBest?.querySelector("img");
+          const founderBestRect = founderBestImage?.getBoundingClientRect();
+          const makeitlast = wrapper.querySelector('a[href="https://www.makeitla.st/"]');
+          const makeitlastImage = makeitlast?.querySelector("img");
+          const makeitlastRect = makeitlastImage?.getBoundingClientRect();
+          // Issue #1134: the four directory badges that close the row after
+          // makeitla.st. Uno Directory and SaaSCity declare a box that is not
+          // their live SVG's own size (120x30 vs 146x44, 150x54 vs 210x80) and
+          // LaunchVault declares only a height, so the rendered box is where
+          // the intrinsic ratio shows up.
+          const aiForDevelopers = wrapper.querySelector('a[href="https://aifordevelopers.org"]');
+          const aiForDevelopersImage = aiForDevelopers?.querySelector("img");
+          const aiForDevelopersRect = aiForDevelopersImage?.getBoundingClientRect();
+          const unoDirectory = wrapper.querySelector('a[href="https://uno.directory"]');
+          const unoDirectoryImage = unoDirectory?.querySelector("img");
+          const unoDirectoryRect = unoDirectoryImage?.getBoundingClientRect();
+          const saascity = wrapper.querySelector('a[href="https://saascity.io"]');
+          const saascityImage = saascity?.querySelector("img");
+          const saascityRect = saascityImage?.getBoundingClientRect();
+          const launchvault = wrapper.querySelector('a[href="https://launchvault.dev"]');
+          const launchvaultImage = launchvault?.querySelector("img");
+          const launchvaultRect = launchvaultImage?.getBoundingClientRect();
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
           // spread inside every row that carries one of the new entries.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge, findly, founderBest, makeitlast, aiForDevelopers, unoDirectory, saascity, launchvault].filter(Boolean);
           const rows = [];
           for (const node of [...wrapper.children]) {
             const box = node.getBoundingClientRect();
@@ -452,6 +483,83 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             scoutforgeImageHeight: scoutforgeRect?.height,
             scoutforgeNaturalWidth: scoutforgeImage?.naturalWidth,
             scoutforgeNaturalHeight: scoutforgeImage?.naturalHeight,
+            findlyHref: findly?.getAttribute("href"),
+            findlyTarget: findly?.getAttribute("target"),
+            findlyRel: findly?.getAttribute("rel"),
+            findlyImageSrc: findlyImage?.getAttribute("src"),
+            findlyImageAlt: findlyImage?.getAttribute("alt"),
+            findlyDeclaredWidth: findlyImage?.getAttribute("width"),
+            findlyDeclaredHeight: findlyImage?.getAttribute("height"),
+            findlyImageWidth: findlyRect?.width,
+            findlyImageHeight: findlyRect?.height,
+            findlyNaturalWidth: findlyImage?.naturalWidth,
+            findlyNaturalHeight: findlyImage?.naturalHeight,
+            founderBestHref: founderBest?.getAttribute("href"),
+            founderBestTarget: founderBest?.getAttribute("target"),
+            founderBestRel: founderBest?.getAttribute("rel"),
+            founderBestImageSrc: founderBestImage?.getAttribute("src"),
+            founderBestImageAlt: founderBestImage?.getAttribute("alt"),
+            founderBestDeclaredWidth: founderBestImage?.getAttribute("width"),
+            founderBestDeclaredHeight: founderBestImage?.getAttribute("height"),
+            founderBestImageWidth: founderBestRect?.width,
+            founderBestImageHeight: founderBestRect?.height,
+            founderBestNaturalWidth: founderBestImage?.naturalWidth,
+            founderBestNaturalHeight: founderBestImage?.naturalHeight,
+            makeitlastHref: makeitlast?.getAttribute("href"),
+            makeitlastTitle: makeitlast?.getAttribute("title"),
+            makeitlastRel: makeitlast?.getAttribute("rel"),
+            makeitlastImageSrc: makeitlastImage?.getAttribute("src"),
+            makeitlastImageAlt: makeitlastImage?.getAttribute("alt"),
+            makeitlastDeclaredWidth: makeitlastImage?.getAttribute("width"),
+            makeitlastDeclaredHeight: makeitlastImage?.getAttribute("height"),
+            makeitlastImageWidth: makeitlastRect?.width,
+            makeitlastImageHeight: makeitlastRect?.height,
+            makeitlastNaturalWidth: makeitlastImage?.naturalWidth,
+            makeitlastNaturalHeight: makeitlastImage?.naturalHeight,
+            aiForDevelopersHref: aiForDevelopers?.getAttribute("href"),
+            aiForDevelopersTarget: aiForDevelopers?.getAttribute("target"),
+            aiForDevelopersRel: aiForDevelopers?.getAttribute("rel"),
+            aiForDevelopersImageSrc: aiForDevelopersImage?.getAttribute("src"),
+            aiForDevelopersImageAlt: aiForDevelopersImage?.getAttribute("alt"),
+            aiForDevelopersDeclaredWidth: aiForDevelopersImage?.getAttribute("width"),
+            aiForDevelopersDeclaredHeight: aiForDevelopersImage?.getAttribute("height"),
+            aiForDevelopersImageWidth: aiForDevelopersRect?.width,
+            aiForDevelopersImageHeight: aiForDevelopersRect?.height,
+            aiForDevelopersNaturalWidth: aiForDevelopersImage?.naturalWidth,
+            aiForDevelopersNaturalHeight: aiForDevelopersImage?.naturalHeight,
+            unoDirectoryHref: unoDirectory?.getAttribute("href"),
+            unoDirectoryTarget: unoDirectory?.getAttribute("target"),
+            unoDirectoryRel: unoDirectory?.getAttribute("rel"),
+            unoDirectoryImageSrc: unoDirectoryImage?.getAttribute("src"),
+            unoDirectoryImageAlt: unoDirectoryImage?.getAttribute("alt"),
+            unoDirectoryDeclaredWidth: unoDirectoryImage?.getAttribute("width"),
+            unoDirectoryDeclaredHeight: unoDirectoryImage?.getAttribute("height"),
+            unoDirectoryImageWidth: unoDirectoryRect?.width,
+            unoDirectoryImageHeight: unoDirectoryRect?.height,
+            unoDirectoryNaturalWidth: unoDirectoryImage?.naturalWidth,
+            unoDirectoryNaturalHeight: unoDirectoryImage?.naturalHeight,
+            saascityHref: saascity?.getAttribute("href"),
+            saascityTarget: saascity?.getAttribute("target"),
+            saascityRel: saascity?.getAttribute("rel"),
+            saascityImageSrc: saascityImage?.getAttribute("src"),
+            saascityImageAlt: saascityImage?.getAttribute("alt"),
+            saascityDeclaredWidth: saascityImage?.getAttribute("width"),
+            saascityDeclaredHeight: saascityImage?.getAttribute("height"),
+            saascityImageWidth: saascityRect?.width,
+            saascityImageHeight: saascityRect?.height,
+            saascityNaturalWidth: saascityImage?.naturalWidth,
+            saascityNaturalHeight: saascityImage?.naturalHeight,
+            launchvaultHref: launchvault?.getAttribute("href"),
+            launchvaultTarget: launchvault?.getAttribute("target"),
+            launchvaultRel: launchvault?.getAttribute("rel"),
+            launchvaultImageSrc: launchvaultImage?.getAttribute("src"),
+            launchvaultImageAlt: launchvaultImage?.getAttribute("alt"),
+            launchvaultDeclaredWidth: launchvaultImage?.getAttribute("width"),
+            launchvaultDeclaredHeight: launchvaultImage?.getAttribute("height"),
+            launchvaultImageWidth: launchvaultRect?.width,
+            launchvaultImageHeight: launchvaultRect?.height,
+            launchvaultNaturalWidth: launchvaultImage?.naturalWidth,
+            launchvaultNaturalHeight: launchvaultImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -468,9 +576,12 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
         // ToolPotion badge, Issue #1102 the Fazier badge, Issue #1116 the
-        // turbo0 / toolfame / dang.ai / LaunchIgniter badges and Issue #1119 the
-        // Scout Forge badge: 29 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(29);
+        // turbo0 / toolfame / dang.ai / LaunchIgniter badges, Issue #1119 the
+        // Scout Forge badge, Issue #1129 the Findly.tools badge, Issue #1132
+        // the founder.best / makeitla.st badges and Issue #1134 the
+        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges:
+        // 36 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(36);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -488,10 +599,13 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
         // appended the ToolPotion badge, Issue #1102 the Fazier badge and
-        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges and
-        // Issue #1119 the Scout Forge badge, so Scout Forge is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the Scout Forge badge")
-          .toBe("https://scoutforge.net/apps/orbi?ref=badge");
+        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+        // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge
+        // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
+        // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
+        // badges, so launchvault.dev is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the LaunchVault badge")
+          .toBe("https://launchvault.dev");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -591,6 +705,149 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.scoutforgeNaturalWidth / result.scoutforgeNaturalHeight),
           path + ": the Scout Forge badge must keep the 300x72 source ratio",
         ).toBeLessThan(0.02);
+        // Issue #1129: Findly.tools gets the same treatment — plain
+        // server-rendered markup, a new tab, a crawlable link to Orbi's
+        // listing, and the source SVG's own 139x44 box (the vendor snippet's
+        // 175x55 is not the file's size), so the shared 28px rule renders
+        // 139/44 * 28 = 88.5px wide, unsquashed.
+        expect(result.findlyHref, path + ": the Findly.tools badge href")
+          .toBe("https://findly.tools/orbi?utm_source=orbi");
+        expect(result.findlyTarget, path + ": the Findly.tools badge opens in a new tab").toBe("_blank");
+        expect(result.findlyRel, path + ": the Findly.tools anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.findlyRel, path + ": the Findly.tools backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.findlyImageSrc, path + ": the Findly.tools badge must load from findly.tools")
+          .toBe("https://findly.tools/badges/findly-tools-badge-light.svg");
+        expect(result.findlyImageAlt, path + ": Findly.tools badge image alt").toBe("Featured on Findly.tools");
+        expect(result.findlyDeclaredWidth, path + ": the Findly.tools badge declares the 139px source width").toBe("139");
+        expect(result.findlyDeclaredHeight, path + ": the Findly.tools badge declares the 44px source height").toBe("44");
+        expect(result.findlyNaturalWidth, path + ": the Findly.tools placeholder is 139px wide").toBe(139);
+        expect(result.findlyNaturalHeight, path + ": the Findly.tools placeholder is 44px high").toBe(44);
+        expect(Math.abs(result.findlyImageHeight - 28), path + ": the Findly.tools badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.findlyImageWidth / result.findlyImageHeight
+            - result.findlyNaturalWidth / result.findlyNaturalHeight),
+          path + ": the Findly.tools badge must keep the 139x44 source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1132: founder.best and makeitla.st close the row, copied
+        // verbatim from the vendors' snippets. founder.best keeps target/rel
+        // and declares the live SVG's own 1195x390; makeitla.st links exactly
+        // https://www.makeitla.st/ with the vendor's title and no rel at all
+        // (no nofollow, sponsored or ugc) and declares the live SVG's 252x76.
+        // Both render 28px high in their source ratio: 85.8px and 92.8px wide.
+        expect(result.founderBestHref, path + ": the founder.best badge href")
+          .toBe("https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral");
+        expect(result.founderBestTarget, path + ": the founder.best badge opens in a new tab").toBe("_blank");
+        expect(result.founderBestRel, path + ": the founder.best anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.founderBestRel, path + ": the founder.best backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.founderBestImageSrc, path + ": the founder.best badge must load from founder.best")
+          .toBe("https://www.founder.best/api/badge/featured/orbi");
+        expect(result.founderBestImageAlt, path + ": founder.best badge image alt").toBe("Orbi - Featured on Founder.best");
+        expect(result.founderBestDeclaredWidth, path + ": the founder.best badge declares the 1195px source width").toBe("1195");
+        expect(result.founderBestDeclaredHeight, path + ": the founder.best badge declares the 390px source height").toBe("390");
+        expect(result.founderBestNaturalWidth, path + ": the founder.best placeholder is 1195px wide").toBe(1195);
+        expect(result.founderBestNaturalHeight, path + ": the founder.best placeholder is 390px high").toBe(390);
+        expect(Math.abs(result.founderBestImageHeight - 28), path + ": the founder.best badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.founderBestImageWidth / result.founderBestImageHeight
+            - result.founderBestNaturalWidth / result.founderBestNaturalHeight),
+          path + ": the founder.best badge must keep the 1195x390 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.makeitlastHref, path + ": the makeitla.st badge href must be exactly the site root")
+          .toBe("https://www.makeitla.st/");
+        expect(result.makeitlastRel, path + ": the makeitla.st anchor carries no rel at all")
+          .toBeNull();
+        expect(result.makeitlastTitle, path + ": the makeitla.st badge keeps its tooltip").toBe("Featured on MakeItLast");
+        expect(result.makeitlastImageSrc, path + ": the makeitla.st badge must load from makeitla.st")
+          .toBe("https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3");
+        expect(result.makeitlastImageAlt, path + ": makeitla.st badge image alt").toBe("Featured on MakeItLast");
+        expect(result.makeitlastDeclaredWidth, path + ": the makeitla.st badge declares the 252px source width").toBe("252");
+        expect(result.makeitlastDeclaredHeight, path + ": the makeitla.st badge declares the 76px source height").toBe("76");
+        expect(result.makeitlastNaturalWidth, path + ": the makeitla.st placeholder is 252px wide").toBe(252);
+        expect(result.makeitlastNaturalHeight, path + ": the makeitla.st placeholder is 76px high").toBe(76);
+        expect(Math.abs(result.makeitlastImageHeight - 28), path + ": the makeitla.st badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.makeitlastImageWidth / result.makeitlastImageHeight
+            - result.makeitlastNaturalWidth / result.makeitlastNaturalHeight),
+          path + ": the makeitla.st badge must keep the 252x76 source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1134: AI for Developers, Uno Directory, SaaSCity and
+        // LaunchVault close the row after makeitla.st, copied verbatim from the
+        // Issue. Its snippet gives AI for Developers no rel at all, the other
+        // three rel=noopener; none of the four may carry nofollow, sponsored or
+        // ugc, or the directory refuses the listing. The declared boxes are the
+        // snippet's (Uno Directory 120x30 and SaaSCity 150x54 differ from the
+        // live SVGs' 146x44 and 210x80, LaunchVault declares only a 54px
+        // height), which is why the rendered box matters: every one keeps its
+        // source ratio at the shared 28px height.
+        expect(result.aiForDevelopersHref, path + ": the AI for Developers badge href")
+          .toBe("https://aifordevelopers.org");
+        expect(result.aiForDevelopersTarget, path + ": the AI for Developers badge opens in a new tab").toBe("_blank");
+        expect(result.aiForDevelopersRel, path + ": the AI for Developers anchor carries no rel at all")
+          .toBeNull();
+        expect(result.aiForDevelopersImageSrc, path + ": the AI for Developers badge must load from aifordevelopers.org")
+          .toBe("https://aifordevelopers.org/assets/badge.svg");
+        expect(result.aiForDevelopersImageAlt, path + ": AI for Developers badge image alt").toBe("Featured on AI for Developers");
+        expect(result.aiForDevelopersDeclaredWidth, path + ": the AI for Developers badge declares 220px").toBe("220");
+        expect(result.aiForDevelopersDeclaredHeight, path + ": the AI for Developers badge declares 48px").toBe("48");
+        expect(result.aiForDevelopersNaturalWidth, path + ": the AI for Developers placeholder is 220px wide").toBe(220);
+        expect(result.aiForDevelopersNaturalHeight, path + ": the AI for Developers placeholder is 48px high").toBe(48);
+        expect(Math.abs(result.aiForDevelopersImageHeight - 28), path + ": the AI for Developers badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.aiForDevelopersImageWidth / result.aiForDevelopersImageHeight
+            - result.aiForDevelopersNaturalWidth / result.aiForDevelopersNaturalHeight),
+          path + ": the AI for Developers badge must keep the 220x48 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.unoDirectoryHref, path + ": the Uno Directory badge href").toBe("https://uno.directory");
+        expect(result.unoDirectoryTarget, path + ": the Uno Directory badge opens in a new tab").toBe("_blank");
+        expect(result.unoDirectoryRel, path + ": the Uno Directory anchor keeps rel=noopener").toBe("noopener");
+        expect(result.unoDirectoryRel, path + ": the Uno Directory backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.unoDirectoryImageSrc, path + ": the Uno Directory badge must load from uno.directory")
+          .toBe("https://uno.directory/uno-directory.svg");
+        expect(result.unoDirectoryImageAlt, path + ": Uno Directory badge image alt").toBe("Listed on Uno Directory");
+        expect(result.unoDirectoryDeclaredWidth, path + ": the Uno Directory badge keeps the snippet's 120px width").toBe("120");
+        expect(result.unoDirectoryDeclaredHeight, path + ": the Uno Directory badge keeps the snippet's 30px height").toBe("30");
+        expect(result.unoDirectoryNaturalWidth, path + ": the Uno Directory placeholder is its live 146px width").toBe(146);
+        expect(result.unoDirectoryNaturalHeight, path + ": the Uno Directory placeholder is its live 44px height").toBe(44);
+        expect(Math.abs(result.unoDirectoryImageHeight - 28), path + ": the Uno Directory badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.unoDirectoryImageWidth / result.unoDirectoryImageHeight
+            - result.unoDirectoryNaturalWidth / result.unoDirectoryNaturalHeight),
+          path + ": the Uno Directory badge must keep the live 146x44 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.saascityHref, path + ": the SaaSCity badge href").toBe("https://saascity.io");
+        expect(result.saascityTarget, path + ": the SaaSCity badge opens in a new tab").toBe("_blank");
+        expect(result.saascityRel, path + ": the SaaSCity anchor keeps rel=noopener").toBe("noopener");
+        expect(result.saascityRel, path + ": the SaaSCity backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.saascityImageSrc, path + ": the SaaSCity badge must load from saascity.io")
+          .toBe("https://saascity.io/badges/featured-dark.svg");
+        expect(result.saascityImageAlt, path + ": SaaSCity badge image alt").toBe("Featured on SaaSCity");
+        expect(result.saascityDeclaredWidth, path + ": the SaaSCity badge keeps the snippet's 150px width").toBe("150");
+        expect(result.saascityDeclaredHeight, path + ": the SaaSCity badge keeps the snippet's 54px height").toBe("54");
+        expect(result.saascityNaturalWidth, path + ": the SaaSCity placeholder is its live 210px width").toBe(210);
+        expect(result.saascityNaturalHeight, path + ": the SaaSCity placeholder is its live 80px height").toBe(80);
+        expect(Math.abs(result.saascityImageHeight - 28), path + ": the SaaSCity badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.saascityImageWidth / result.saascityImageHeight
+            - result.saascityNaturalWidth / result.saascityNaturalHeight),
+          path + ": the SaaSCity badge must keep the live 210x80 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.launchvaultHref, path + ": the LaunchVault badge href").toBe("https://launchvault.dev");
+        expect(result.launchvaultTarget, path + ": the LaunchVault badge opens in a new tab").toBe("_blank");
+        expect(result.launchvaultRel, path + ": the LaunchVault anchor keeps rel=noopener").toBe("noopener");
+        expect(result.launchvaultRel, path + ": the LaunchVault backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.launchvaultImageSrc, path + ": the LaunchVault badge must load from launchvault.dev")
+          .toBe("https://launchvault.dev/images/badges/launch-valut-badge.svg");
+        expect(result.launchvaultImageAlt, path + ": LaunchVault badge image alt").toBe("Featured on LaunchVault");
+        expect(result.launchvaultDeclaredWidth, path + ": the LaunchVault snippet declares no width").toBeNull();
+        expect(result.launchvaultDeclaredHeight, path + ": the LaunchVault badge declares the snippet's 54px height").toBe("54");
+        expect(result.launchvaultNaturalWidth, path + ": the LaunchVault placeholder is 139px wide").toBe(139);
+        expect(result.launchvaultNaturalHeight, path + ": the LaunchVault placeholder is 44px high").toBe(44);
+        expect(Math.abs(result.launchvaultImageHeight - 28), path + ": the LaunchVault badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.launchvaultImageWidth / result.launchvaultImageHeight
+            - result.launchvaultNaturalWidth / result.launchvaultNaturalHeight),
+          path + ": the LaunchVault badge must keep the 139x44 source ratio",
+        ).toBeLessThan(0.02);
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
         expect(result.tooluckImageSrc, path + ": Tooluck badge image src")
@@ -688,10 +945,12 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.devhubNaturalWidth / result.devhubNaturalHeight),
           path + ": the DevHub badge must keep the 150x44 source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1096: the Startup Fast embed declares the source SVG's
-        // 119x50 instead of the vendor snippet's 150x44, so the badge cannot
-        // squash; the guard's placeholder is the same 119x50, and the 28px row
-        // therefore renders it 119/50 * 28 = 66.6px wide.
+        // Issue #1125: Startup Fast requires the badge rendered at least
+        // 150x44 px, so this one badge leaves the shared 28px row: it declares
+        // the source SVG's proportional 150x63 and its own rule sets width
+        // 150px / height auto, which renders 150 * 50 / 119 = 63px high in the
+        // 119x50 source ratio — exactly 150px wide and taller than the 44px
+        // floor, unsquashed.
         expect(result.startupfastHref, path + ": the Startup Fast badge href").toBe("https://startupfa.st");
         expect(result.startupfastTarget, path + ": the Startup Fast badge opens in a new tab").toBe("_blank");
         expect(result.startupfastRel, path + ": the Startup Fast anchor keeps rel=noopener").toBe("noopener");
@@ -700,12 +959,15 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         expect(result.startupfastImageSrc, path + ": the Startup Fast badge image src")
           .toBe("https://startupfa.st/images/badges/powered-by-dark.svg");
         expect(result.startupfastImageAlt, path + ": the Startup Fast badge image alt").toBe("Powered by Startup Fast");
-        expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 119px source width").toBe("119");
-        expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 50px source height").toBe("50");
+        expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 150px width").toBe("150");
+        expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 63px height").toBe("63");
         expect(result.startupfastLoading, path + ": the Startup Fast badge loads lazily").toBe("lazy");
         expect(result.startupfastNaturalWidth, path + ": the Startup Fast placeholder is 119px wide").toBe(119);
         expect(result.startupfastNaturalHeight, path + ": the Startup Fast placeholder is 50px high").toBe(50);
-        expect(Math.abs(result.startupfastImageHeight - 28), path + ": the Startup Fast badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(result.startupfastImageWidth, path + ": the Startup Fast badge renders at least 150px wide")
+          .toBeGreaterThanOrEqual(150);
+        expect(result.startupfastImageHeight, path + ": the Startup Fast badge renders at least 44px high")
+          .toBeGreaterThanOrEqual(44);
         expect(
           Math.abs(result.startupfastImageWidth / result.startupfastImageHeight
             - result.startupfastNaturalWidth / result.startupfastNaturalHeight),
@@ -834,7 +1096,11 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Startup Fast / Artificin badges and the two text links, Issue #1099
         // through the ToolPotion badge, Issue #1102 through the Fazier badge,
         // Issue #1116 through the turbo0 / toolfame / dang.ai / LaunchIgniter
-        // badges and Issue #1119 through the Scout Forge badge, then leaves.
+        // badges, Issue #1119 through the Scout Forge badge, Issue #1129
+        // through the Findly.tools badge, Issue #1132 through the
+        // founder.best / makeitla.st badges and Issue #1134 through the
+        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
+        // then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -851,6 +1117,13 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://dang.ai",
           "https://launchigniter.com/product/orbi?ref=badge-orbi",
           "https://scoutforge.net/apps/orbi?ref=badge",
+          "https://findly.tools/orbi?utm_source=orbi",
+          "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+          "https://www.makeitla.st/",
+          "https://aifordevelopers.org",
+          "https://uno.directory",
+          "https://saascity.io",
+          "https://launchvault.dev",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -875,7 +1148,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the Scout Forge badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the LaunchVault badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -923,6 +1196,13 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://dang.ai",
     "https://launchigniter.com/product/orbi?ref=badge-orbi",
     "https://scoutforge.net/apps/orbi?ref=badge",
+    "https://findly.tools/orbi?utm_source=orbi",
+    "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+    "https://www.makeitla.st/",
+    "https://aifordevelopers.org",
+    "https://uno.directory",
+    "https://saascity.io",
+    "https://launchvault.dev",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -963,20 +1243,34 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
           // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
           // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai /
-          // LaunchIgniter images and Issue #1119 the Scout Forge image:
-          // 24 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(24);
+          // LaunchIgniter images, Issue #1119 the Scout Forge image,
+          // Issue #1129 the Findly.tools image, Issue #1132 the
+          // founder.best / makeitla.st images and Issue #1134 the
+          // AI for Developers / Uno Directory / SaaSCity / LaunchVault
+          // images: 31 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(31);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
             expect(
-              Math.abs(badge.height - 28),
-              label + ": " + badge.alt + " rendered height (28px, 1px rounding)",
-            ).toBeLessThanOrEqual(1);
-            expect(
               Math.abs(badge.width / badge.height - badge.naturalWidth / badge.naturalHeight),
               label + ": " + badge.alt + " must keep its source ratio",
             ).toBeLessThan(0.02);
+          }
+          // Issue #1125: Startup Fast requires its badge at least 150x44 px, so
+          // that one image leaves the 28px row (public/styles.css scopes the
+          // exception to its class); every other badge stays on the mark size.
+          const vendor = badges.filter((badge) => badge.alt === "Powered by Startup Fast");
+          expect(vendor, label + ": the Startup Fast badge").toHaveLength(1);
+          expect(vendor[0].width, label + ": the Startup Fast badge is at least 150px wide")
+            .toBeGreaterThanOrEqual(150);
+          expect(vendor[0].height, label + ": the Startup Fast badge is at least 44px high")
+            .toBeGreaterThanOrEqual(44);
+          for (const badge of badges.filter((candidate) => candidate !== vendor[0])) {
+            expect(
+              Math.abs(badge.height - 28),
+              label + ": " + badge.alt + " rendered height (28px, 1px rounding)",
+            ).toBeLessThanOrEqual(1);
           }
         };
 
@@ -984,8 +1278,13 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         const desktop = await measureBadges(page);
         expectBadges(desktop, path + " at 1440px");
         // At 28px high almost the whole row fits one line, so the boxes stay
-        // compact instead of each taking a line of its own.
-        expect(new Set(desktop.map((badge) => badge.top)).size, path + " at 1440px: the badges stay compact").toBeLessThanOrEqual(3);
+        // compact instead of each taking a line of its own. The taller Startup
+        // Fast badge (Issue #1125) centres in its own line, which shifts its
+        // row-mates by half the height difference, so it is measured apart.
+        expect(
+          new Set(desktop.filter((badge) => badge.alt !== "Powered by Startup Fast").map((badge) => badge.top)).size,
+          path + " at 1440px: the badges stay compact",
+        ).toBeLessThanOrEqual(3);
 
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-1440.png" });
 
@@ -1034,6 +1333,25 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // same on a phone.
           const scoutforgeRect = document.querySelector('footer .footer-badges a[href="https://scoutforge.net/apps/orbi?ref=badge"]')
             ?.getBoundingClientRect();
+          // Issue #1129: the Findly.tools badge does the same on a phone.
+          const findlyRect = document.querySelector('footer .footer-badges a[href="https://findly.tools/orbi?utm_source=orbi"]')
+            ?.getBoundingClientRect();
+          // Issue #1132: so do the founder.best and makeitla.st badges, which
+          // close the row.
+          const founderBestRect = document.querySelector('footer .footer-badges a[href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral"]')
+            ?.getBoundingClientRect();
+          const makeitlastRect = document.querySelector('footer .footer-badges a[href="https://www.makeitla.st/"]')
+            ?.getBoundingClientRect();
+          // Issue #1134: the four badges closing the row stay inside the footer
+          // at 390px as well.
+          const aiForDevelopersRect = document.querySelector('footer .footer-badges a[href="https://aifordevelopers.org"]')
+            ?.getBoundingClientRect();
+          const unoDirectoryRect = document.querySelector('footer .footer-badges a[href="https://uno.directory"]')
+            ?.getBoundingClientRect();
+          const saascityRect = document.querySelector('footer .footer-badges a[href="https://saascity.io"]')
+            ?.getBoundingClientRect();
+          const launchvaultRect = document.querySelector('footer .footer-badges a[href="https://launchvault.dev"]')
+            ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
             dangInside: Boolean(dangRect)
@@ -1046,6 +1364,41 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
               && scoutforgeRect.height > 0
               && scoutforgeRect.left >= 0
               && scoutforgeRect.right <= documentElement.clientWidth,
+            findlyInside: Boolean(findlyRect)
+              && findlyRect.width > 0
+              && findlyRect.height > 0
+              && findlyRect.left >= 0
+              && findlyRect.right <= documentElement.clientWidth,
+            founderBestInside: Boolean(founderBestRect)
+              && founderBestRect.width > 0
+              && founderBestRect.height > 0
+              && founderBestRect.left >= 0
+              && founderBestRect.right <= documentElement.clientWidth,
+            makeitlastInside: Boolean(makeitlastRect)
+              && makeitlastRect.width > 0
+              && makeitlastRect.height > 0
+              && makeitlastRect.left >= 0
+              && makeitlastRect.right <= documentElement.clientWidth,
+            aiForDevelopersInside: Boolean(aiForDevelopersRect)
+              && aiForDevelopersRect.width > 0
+              && aiForDevelopersRect.height > 0
+              && aiForDevelopersRect.left >= 0
+              && aiForDevelopersRect.right <= documentElement.clientWidth,
+            unoDirectoryInside: Boolean(unoDirectoryRect)
+              && unoDirectoryRect.width > 0
+              && unoDirectoryRect.height > 0
+              && unoDirectoryRect.left >= 0
+              && unoDirectoryRect.right <= documentElement.clientWidth,
+            saascityInside: Boolean(saascityRect)
+              && saascityRect.width > 0
+              && saascityRect.height > 0
+              && saascityRect.left >= 0
+              && saascityRect.right <= documentElement.clientWidth,
+            launchvaultInside: Boolean(launchvaultRect)
+              && launchvaultRect.width > 0
+              && launchvaultRect.height > 0
+              && launchvaultRect.left >= 0
+              && launchvaultRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -1057,6 +1410,13 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
         expect(phoneLayout.dangInside, path + " at 390px: the Dang.ai link stays inside the footer").toBe(true);
         expect(phoneLayout.scoutforgeInside, path + " at 390px: the Scout Forge badge stays inside the footer").toBe(true);
+        expect(phoneLayout.findlyInside, path + " at 390px: the Findly.tools badge stays inside the footer").toBe(true);
+        expect(phoneLayout.founderBestInside, path + " at 390px: the founder.best badge stays inside the footer").toBe(true);
+        expect(phoneLayout.makeitlastInside, path + " at 390px: the makeitla.st badge stays inside the footer").toBe(true);
+        expect(phoneLayout.aiForDevelopersInside, path + " at 390px: the AI for Developers badge stays inside the footer").toBe(true);
+        expect(phoneLayout.unoDirectoryInside, path + " at 390px: the Uno Directory badge stays inside the footer").toBe(true);
+        expect(phoneLayout.saascityInside, path + " at 390px: the SaaSCity badge stays inside the footer").toBe(true);
+        expect(phoneLayout.launchvaultInside, path + " at 390px: the LaunchVault badge stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {

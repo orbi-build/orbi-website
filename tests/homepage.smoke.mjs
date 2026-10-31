@@ -813,12 +813,14 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  // Issue #899: the hero's links are the Cloud CTA and the note's self-host
-  // text link — two, each with its own reported data-cta.
-  if (await hero.locator("a").count() !== 2
+  // Issue #899: the hero's two reported links are the Cloud CTA and the note's
+  // self-host text link, each with its own data-cta. Issue #1127 adds the
+  // LaunchIgniter badge anchor, which reports nothing (no data-cta) — three
+  // anchors, still exactly the two reported ones.
+  if (await hero.locator("a").count() !== 3
     || await hero.locator('[data-cta="cloud-start"]').count() !== 1
     || await hero.locator('[data-cta="hero-github"]').count() !== 1) {
-    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links`);
+    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links plus the LaunchIgniter badge`);
   }
   if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
     throw new Error(`${path}: removed film control remains in the hero`);
@@ -1056,6 +1058,13 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   const view = `${path} ${size.width}x${size.height}`;
   if (size.width >= 1000 && ctaTop >= 450) {
     throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
+  }
+  // Issue #1127: LaunchIgniter verifies its free listing against the homepage
+  // first screen, so the badge's whole box — not just its top edge — has to sit
+  // inside the viewport, at the ticket's own 1280x800 desktop size too.
+  const badgeBox = await page.locator(".hero .hero-badge").boundingBox();
+  if (!badgeBox || badgeBox.y < 0 || badgeBox.y + badgeBox.height > size.height) {
+    throw new Error(`${view}: the LaunchIgniter badge is outside the first screen: ${JSON.stringify(badgeBox)}`);
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.close();
@@ -2529,6 +2538,9 @@ async function main() {
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
     await assertHeroAboveFold(browser, "/", { width: 1366, height: 768 }, "hero-fold-en-laptop.png");
+    // Issue #1127's own acceptance viewport: the LaunchIgniter badge must be
+    // visible above the fold at 1280x800 on the English homepage.
+    await assertHeroAboveFold(browser, "/", { width: 1280, height: 800 }, "hero-fold-en-1280x800.png");
     await assertHeroAboveFold(browser, "/", { width: 390, height: 844 }, "hero-fold-en-phone.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 1366, height: 768 }, "hero-fold-zh-laptop.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 390, height: 844 }, "hero-fold-zh-phone.png");

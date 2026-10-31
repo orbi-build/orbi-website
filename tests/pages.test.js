@@ -11,14 +11,13 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildPages, collectExternalPages, collectGuides, collectPosts, insertInlinePostCta, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
+import { buildPages, collectGuides, collectPosts, insertInlinePostCta, loadPages, pathToHref, postFromSource, renderLlms, validateRenderedPostBody, wrapRenderedTables } from "../scripts/build-pages.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 let builtDir;
 let pages;
 let posts; // the posts collectPosts() derives from content/blog/**
 let guides; // the guides collectGuides() derives from content/guides/**
-let externalPages; // Issue #1105: the approved indexable URLs this build does not render
 let shipped; // output path -> bytes of public/<path>
 let generatedSitemap;
 let shippedSitemap;
@@ -40,7 +39,6 @@ beforeAll(async () => {
   pages = await loadPages();
   posts = await collectPosts();
   guides = await collectGuides();
-  externalPages = await collectExternalPages();
   shipped = new Map();
   for (const page of pages) {
     shipped.set(page.output, await readFile(join(ROOT, "public", page.output), "utf8"));
@@ -1323,7 +1321,7 @@ describe("build output is committed (npm run build ran)", () => {
     );
     expect(generatedSitemap).toBe(shippedSitemap);
     expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(
-      pagesForSitemap.length + posts.length + guides.length + externalPages.length,
+      pagesForSitemap.length + posts.length + guides.length,
     );
     // Issue #1065: the sitemap carries the URL and its hreflang alternates
     // only. lastmod, changefreq and priority are optional in the protocol, and
@@ -1341,14 +1339,10 @@ describe("build output is committed (npm run build ran)", () => {
     const locs = [...shippedSitemap.matchAll(/<loc>https:\/\/orbi\.build(\/[^<]*)<\/loc>/g)].map((match) => match[1]);
     expect(locs.length).toBeGreaterThan(0);
     const failures = [];
-    // Issue #1105: two delivery-summary pages are rendered by the Cloud worker,
-    // not by this build, so they have no local HTML to read a canonical from.
-    // They pass only by being one of the approved URLs in
-    // site/data/external-pages.json — any other /proof/ URL still has to show
-    // its own HTML and canonical here, so a scanned or hand-added entry fails.
-    const approved = new Set(externalPages);
+    // Issue #1123: there is no exemption list any more. The delivery-summary
+    // pages under /proof/ belong to the Cloud worker's own sitemap, so every
+    // loc the website ships must be a page this build rendered.
     for (const href of locs) {
-      if (approved.has(`https://orbi.build${href}`)) continue;
       const output = href === "/" ? "index.html" : `${href.slice(1)}index.html`;
       const html = shipped.get(output);
       if (!html) {
@@ -1374,86 +1368,32 @@ describe("build output is committed (npm run build ran)", () => {
   });
 });
 
-// Issue #1105: two delivery-summary pages on orbi.build are rendered by the
-// Cloud worker (/proof/<owner>/<repo>), so the build cannot discover them by
-// walking site/**. They join the sitemap only through the explicit approved
-// list in site/data/external-pages.json — never by scanning /proof/, and with
-// no invented language variants (the same path picks its language per request).
-describe("approved external pages in the sitemap (Issue #1105)", () => {
-  const APPROVED = [
-    "https://orbi.build/proof/orbi-build/orbi",
-    "https://orbi.build/proof/orbi-build/orbi-website",
-  ];
+// Issue #1123: the delivery-summary pages under /proof/ are rendered by the
+// Cloud worker, which now publishes their sitemap at /proof/sitemap.xml. The
+// website sitemap stopped listing them — one URL announced in one place — and
+// robots.txt points crawlers at both sitemaps.
+describe("the delivery-summary sitemap lives with the Cloud worker (Issue #1123)", () => {
   const locs = () => [...shippedSitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 
-  it("ships exactly the two approved delivery-summary URLs, each as a bare loc", () => {
-    expect(externalPages).toEqual(APPROVED);
-    for (const url of APPROVED) {
-      const entry = [...shippedSitemap.matchAll(/<url>[\s\S]*?<\/url>/g)]
-        .map((match) => match[0])
-        .find((candidate) => candidate.includes("<loc>" + url + "</loc>"));
-      // loc only: these pages carry no translated copy, so any hreflang here
-      // would promise an alternate URL that does not exist.
-      expect(entry, url + ": a <url> carrying only its <loc>").toBe("<url>\n    <loc>" + url + "</loc>\n  </url>");
-    }
+  it("lists no /proof/ URL in the website sitemap", () => {
+    const proof = locs().filter((loc) => loc.startsWith("https://orbi.build/proof/"));
+    expect(proof, "/proof/ pages come from the Cloud worker's own sitemap").toEqual([]);
   });
 
-  it("leaves every other entry exactly as the built pages produce it", () => {
-    // The same filter renderSitemap applies to the pages it builds; the
-    // approved external URLs are the only locs the build cannot see.
-    const built = [
-      ...pages
-        .filter((page) => !page.standalone && page.body.includes('<link rel="canonical" href="https://orbi.build' + pathToHref(page.output) + '">'))
-        .map((page) => "https://orbi.build" + pathToHref(page.output)),
-      ...posts.map((post) => "https://orbi.build" + post.href),
-      ...guides.map((guide) => "https://orbi.build" + guide.href),
-    ];
-    expect(locs().filter((loc) => !APPROVED.includes(loc))).toEqual(built);
+  it("points robots.txt at the website sitemap and the delivery-summary sitemap", async () => {
+    const robots = await readFile(join(ROOT, "public", "robots.txt"), "utf8");
+    expect(robots.split("\n").filter((line) => line.startsWith("Sitemap:"))).toEqual([
+      "Sitemap: https://orbi.build/sitemap.xml",
+      "Sitemap: https://orbi.build/proof/sitemap.xml",
+    ]);
   });
 
-  it("keeps the sitemap duplicate-free and made of canonical production URLs", () => {
+  it("keeps the website sitemap duplicate-free with no /proof/ URL", () => {
     const all = locs();
     expect(new Set(all).size, "duplicate <loc>").toBe(all.length);
     for (const loc of all) {
       expect(loc, loc + ": a sitemap URL is fixed, no query and no fragment").not.toMatch(/[?#]/);
-      if (loc.includes("/proof/")) {
-        expect(APPROVED, loc + ": /proof/ URLs come only from the approved list").toContain(loc);
-      }
-    }
-  });
-
-  it("keeps unapproved /proof/ pages, ticket pages and assets out", () => {
-    for (const rejected of [
-      "https://orbi.build/proof/orbi-build/orbi/1510",
-      "https://orbi.build/proof/orbi-build/orbi-website/1105",
-      "https://orbi.build/proof/orbi-build/other-repo",
-      "https://orbi.build/proof/other-owner/orbi",
-      "https://orbi.build/proof/orbi-build/orbi?ref=sitemap",
-      "https://orbi.build/zh/proof/orbi-build/orbi",
-    ]) {
-      expect(shippedSitemap, rejected + " must not be in the sitemap").not.toContain(rejected);
-    }
-  });
-
-  it("rejects an approved-list entry that is not a fixed canonical production URL", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "orbi-external-pages-"));
-    const file = join(dir, "external-pages.json");
-    try {
-      for (const [bad, message] of [
-        ["https://beta.orbi.build/proof/orbi-build/orbi", /not an absolute https:\/\/orbi\.build\/ URL/],
-        ["http://orbi.build/proof/orbi-build/orbi", /not an absolute https:\/\/orbi\.build\/ URL/],
-        ["/proof/orbi-build/orbi", /not an absolute https:\/\/orbi\.build\/ URL/],
-        ["https://orbi.build/proof/orbi-build/orbi?ref=sitemap", /query or fragment/],
-        ["https://orbi.build/proof/orbi-build/orbi#top", /query or fragment/],
-      ]) {
-        await writeFile(file, JSON.stringify({ pages: [bad] }));
-        await expect(collectExternalPages(file), JSON.stringify(bad)).rejects.toThrow(message);
-      }
-      const twice = "https://orbi.build/proof/orbi-build/orbi";
-      await writeFile(file, JSON.stringify({ pages: [twice, twice] }));
-      await expect(collectExternalPages(file)).rejects.toThrow(/listed twice/);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
+      expect(loc, loc + ": /proof/ belongs to the Cloud worker's sitemap").not.toContain("/proof/");
     }
   });
 });
@@ -1864,18 +1804,20 @@ describe("one unified footer on every content page", () => {
 
   // Issue #1096: the 2026-10-29 batch appends two badge embeds and two text
   // links after the DevHub badge, in the batch's order. Startup Fast's official
-  // embed declares 150x44 while the live SVG is 119x50, so the declared box
-  // follows the source image and cannot squash it; the Artificin PNG is
-  // 551x175, declared as the proportional 139x44. Both text links reuse the
-  // existing text-friend treatment. Every link opens a new tab, keeps the
-  // vendor's href/src/alt/title and stays crawlable — each directory verifies
-  // the backlink on review — and each ships exactly once per page.
+  // embed declares 150x44 while the live SVG is 119x50; Issue #1125 needs the
+  // badge rendered at least 150x44 px, so it declares the source's proportional
+  // 150x63 and its class lifts it off the shared 28px row (public/styles.css).
+  // The Artificin PNG is 551x175, declared as the proportional 139x44. Both
+  // text links reuse the existing text-friend treatment. Every link opens a
+  // new tab, keeps the vendor's href/src/alt/title and stays crawlable — each
+  // directory verifies the backlink on review — and each ships exactly once
+  // per page.
   it("carries the 2026-10-29 directory backlinks after the DevHub badge on every footer page", () => {
     const devhub = '<a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer">';
     const entries = [
       {
         anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
-        image: '<img src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="119" height="50" loading="lazy" />',
+        image: '<img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" />',
         href: "https://startupfa.st",
       },
       {
@@ -1908,6 +1850,31 @@ describe("one unified footer on every content page", () => {
           .not.toContain("nofollow");
         previous = entry.anchor;
       }
+    }
+  });
+
+  // Issue #1125: Startup Fast's free launch requires its badge on every page at
+  // least 150x44 px, linking exactly https://startupfa.st as a dofollow backlink
+  // and serving the image from startupfa.st. The badge keeps the source's own
+  // ratio, so its declared 150x63 is the 119x50 SVG rounded to whole pixels.
+  it("carries the Startup Fast badge at the vendor's minimum size on every footer page (Issue #1125)", () => {
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      const start = footer.indexOf('<a href="https://startupfa.st"');
+      const link = start < 0 ? "" : footer.slice(start, footer.indexOf("</a>", start) + "</a>".length);
+      const anchor = footerAnchorTag(footer, "https://startupfa.st");
+      expect(anchor, `${page.output}: the Startup Fast anchor must be exactly https://startupfa.st`)
+        .toContain('href="https://startupfa.st"');
+      expect(anchor, `${page.output}: the Startup Fast backlink must stay dofollow`).not.toContain("nofollow");
+      const image = link.match(/<img [^>]*>/)?.[0] ?? "";
+      expect(image, `${page.output}: the Startup Fast badge must load from startupfa.st`)
+        .toContain('src="https://startupfa.st/images/badges/powered-by-dark.svg"');
+      expect(Number(image.match(/width="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge width`)
+        .toBeGreaterThanOrEqual(150);
+      expect(Number(image.match(/height="(\d+)"/)?.[1]), `${page.output}: the Startup Fast badge height`)
+        .toBeGreaterThanOrEqual(44);
+      expect(countMatches(footer, /href="https:\/\/startupfa\.st"/g), `${page.output}: exactly one Startup Fast link`)
+        .toBe(1);
     }
   });
 
@@ -2015,12 +1982,13 @@ describe("one unified footer on every content page", () => {
   // the footer carries the supplied embed as ordinary server-rendered HTML —
   // no nofollow, no JavaScript — with the image still on scoutforge.net (a
   // self-hosted copy would never reach their counter). It sits after the
-  // LaunchIgniter badge, so it closes the row, and declares the SVG's own
-  // 300x72 box for the shared 28px footer rule (Issue #1038).
+  // LaunchIgniter badge — Issue #1129 then appends the Findly.tools badge — and
+  // declares the SVG's own 300x72 box for the shared 28px footer rule (#1038).
   it("carries the Scout Forge badge after the LaunchIgniter badge on every footer page (Issue #1119)", () => {
     const launchigniter = '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">';
     const anchor = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
     const image = '<img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" />';
+    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Scout Forge badge anchor drifted`).toContain(anchor);
@@ -2030,8 +1998,8 @@ describe("one unified footer on every content page", () => {
       // after the LaunchIgniter badge and before the wrapper closes.
       expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the LaunchIgniter badge`)
         .toBeGreaterThan(footer.indexOf(launchigniter));
-      expect(footer.slice(footer.indexOf(anchor) + (anchor + image).length), `${page.output}: the Scout Forge badge must close the badge row`)
-        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(footer.indexOf(findly), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
+        .toBeGreaterThan(footer.indexOf(anchor));
       expect(countMatches(footer, /https:\/\/scoutforge\.net\/badge\/orbi\/image\?theme=light/g), `${page.output}: exactly one Scout Forge badge image`)
         .toBe(1);
       expect(footerAnchorTag(footer, "https://scoutforge.net/apps/orbi?ref=badge"), `${page.output}: the Scout Forge backlink must stay crawlable`)
@@ -2039,6 +2007,153 @@ describe("one unified footer on every content page", () => {
       // Scout Forge counts the impression from the image request, so the
       // shipped HTML must point at their host, never a copy in this repository.
       expect(countMatches(footer, /src="\/img\/[^"]*scout[^"]*"/gi), `${page.output}: the Scout Forge badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+  // Issue #1129: Findly.tools grants orbi.build a free listing once the site
+  // carries its badge, so the supplied embed follows the Scout Forge badge
+  // (Issue #1132 then appends the founder.best and makeitla.st badges after
+  // it). Anchor, target, rel, src and alt are the vendor's; the
+  // declared box is the source SVG's own 139x44 (measured on the live file,
+  // whose snippet says 175x55) like every other footer badge, so the shared
+  // 28px rule (Issue #1038) keeps the true source ratio — 139/44 * 28 = 88.5px
+  // wide. The link stays crawlable and points at Orbi's listing.
+  it("carries the Findly.tools badge linking Orbi's listing on every footer page (Issue #1129)", () => {
+    const anchor = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
+    const image = '<img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" />';
+    const scoutforge = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
+    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Findly.tools badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: Findly.tools badge image drifted`).toContain(image);
+      expect(footer, `${page.output}: the Findly.tools anchor and image must sit together`)
+        .toContain(anchor + image);
+      expect(footer.indexOf(anchor), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
+        .toBeGreaterThan(footer.indexOf(scoutforge));
+      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
+        .toBeGreaterThan(footer.indexOf(anchor));
+      expect(countMatches(footer, /https:\/\/findly\.tools\/badges\/findly-tools-badge-light\.svg/g), `${page.output}: exactly one Findly.tools badge image`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://findly.tools/orbi?utm_source=orbi"), `${page.output}: the Findly.tools backlink must stay crawlable`)
+        .not.toContain("nofollow");
+      // The vendor counts the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at findly.tools, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*findly[^"]*"/gi), `${page.output}: the Findly.tools badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+
+  // Issue #1132: founder.best and makeitla.st both grant orbi.build a free,
+  // dofollow listing once the site carries their badge, so the two supplied
+  // embeds close the badge row after the Findly.tools badge — founder.best
+  // first, makeitla.st last. Both are copied verbatim: the anchors keep the
+  // vendors' own href/rel/title and carry no nofollow, sponsored or ugc, and
+  // each image declares the source file's own box (1195x390 and 252x76, both
+  // measured on the live SVG on 2026-10-31) so the shared 28px rule (Issue
+  // #1038) keeps the true source ratio. makeitla.st links exactly
+  // https://www.makeitla.st/ and re-checks the badge weekly — a badge that
+  // disappears drops the link to nofollow — so the embed must not drift.
+  it("carries the founder.best and makeitla.st badges closing the badge row on every footer page (Issue #1132)", () => {
+    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
+    const founderBestImage = '<img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" />';
+    const makeitlastAnchor = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
+    const makeitlastImage = '<img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/>';
+    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: founder.best badge anchor drifted`).toContain(founderBestAnchor);
+      expect(footer, `${page.output}: founder.best badge image drifted`).toContain(founderBestImage);
+      expect(footer, `${page.output}: the founder.best anchor and image must sit together`)
+        .toContain(founderBestAnchor + founderBestImage);
+      expect(footer, `${page.output}: makeitla.st badge anchor drifted`).toContain(makeitlastAnchor);
+      expect(footer, `${page.output}: makeitla.st badge image drifted`).toContain(makeitlastImage);
+      expect(footer, `${page.output}: the makeitla.st anchor and image must sit together`)
+        .toContain(makeitlastAnchor + makeitlastImage);
+      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
+        .toBeGreaterThan(footer.indexOf(findly));
+      expect(footer.indexOf(makeitlastAnchor), `${page.output}: the makeitla.st badge must follow the founder.best badge`)
+        .toBeGreaterThan(footer.indexOf(founderBestAnchor));
+      expect(footer.indexOf('<a href="https://aifordevelopers.org"'), `${page.output}: the Issue #1134 badges must follow the makeitla.st badge`)
+        .toBeGreaterThan(footer.indexOf(makeitlastAnchor));
+      // Both directories verify the backlink from the shipped bytes, so each
+      // embed ships exactly once per page and stays crawlable: no nofollow, no
+      // sponsored, no ugc.
+      expect(countMatches(footer, /https:\/\/www\.founder\.best\/api\/badge\/featured\/orbi/g), `${page.output}: exactly one founder.best badge image`)
+        .toBe(1);
+      expect(countMatches(footer, /https:\/\/www\.makeitla\.st\/badge\/makeitlast-badge-dark\.svg\?v=3/g), `${page.output}: exactly one makeitla.st badge image`)
+        .toBe(1);
+      expect(countMatches(footer, /<a href="https:\/\/www\.makeitla\.st\/"/g), `${page.output}: exactly one makeitla.st anchor`)
+        .toBe(1);
+      for (const href of [
+        "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+        "https://www.makeitla.st/",
+      ]) {
+        const anchor = footerAnchorTag(footer, href);
+        expect(anchor, `${page.output}: the ${href} backlink must stay crawlable`).not.toContain("nofollow");
+        expect(anchor, `${page.output}: the ${href} backlink must not be sponsored`).not.toContain("sponsored");
+        expect(anchor, `${page.output}: the ${href} backlink must not be ugc`).not.toContain("ugc");
+      }
+      // The vendors count the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at their hosts, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*(founder|makeitla)[^"]*"/gi), `${page.output}: the Issue #1132 badges must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+  // Issue #1134: AI for Developers, Uno Directory, SaaSCity and LaunchVault
+  // each grant orbi.build a free directory listing once the site carries their
+  // badge, so the four maintainer-supplied embeds close the badge row after
+  // makeitla.st, in the Issue's order. Both anchors and images ship verbatim as
+  // the Issue wrote them — only Uno Directory and SaaSCity declare a box that is
+  // not their live SVG's own size (120x30 vs 146x44 and 150x54 vs 210x80), and
+  // the shared 28px rule (Issue #1038) renders each badge from the file's
+  // intrinsic ratio, so the declared box neither squashes nor crops them (the
+  // footer-overflow suite pins the rendered 28px ratio). None of the four links
+  // may carry nofollow, sponsored or ugc — the directories treat such a link as
+  // unverifiable and refuse the listing.
+  it("carries the AI for Developers, Uno Directory, SaaSCity and LaunchVault badges closing the badge row on every footer page (Issue #1134)", () => {
+    const badges = [
+      '<a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>',
+      '<a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>',
+      '<a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>',
+      '<a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>',
+    ];
+    const hrefs = [
+      "https://aifordevelopers.org",
+      "https://uno.directory",
+      "https://saascity.io",
+      "https://launchvault.dev",
+    ];
+    const makeitlast = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      for (const [index, badge] of badges.entries()) {
+        expect(footer, `${page.output}: the ${hrefs[index]} badge drifted`).toContain(badge);
+        expect(countMatches(footer, new RegExp(`<a href="${hrefs[index]}"`, "g")), `${page.output}: exactly one ${hrefs[index]} anchor`)
+          .toBe(1);
+        expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the makeitla.st badge`)
+          .toBeGreaterThan(footer.indexOf(makeitlast));
+        if (index > 0) {
+          expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the ${hrefs[index - 1]} badge`)
+            .toBeGreaterThan(footer.indexOf(badges[index - 1]));
+        }
+        const anchor = footerAnchorTag(footer, hrefs[index]);
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must stay crawlable`).not.toContain("nofollow");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
+        // Issue #1116: the row ends with these four embeds, so the launchvault.dev
+        // badge is the last anchor inside the badge wrapper.
+        if (index === badges.length - 1) {
+          expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the LaunchVault badge must close the badge row`)
+            .toMatch(/^\s*<\/div>/);
+        }
+      }
+      // The directories count the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at their hosts, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*(aifordevelopers|uno-directory|saascity|launch-valut)[^"]*"/gi), `${page.output}: the Issue #1134 badges must not be self-hosted`)
         .toBe(0);
     }
   });
@@ -2052,8 +2167,10 @@ describe("one unified footer on every content page", () => {
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
-  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges and
-  // Issue #1119 the Scout Forge badge last.
+  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+  // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge,
+  // Issue #1132 the founder.best / makeitla.st badges and Issue #1134 the
+  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2085,6 +2202,13 @@ describe("one unified footer on every content page", () => {
       "https://dang.ai",
       "https://launchigniter.com/product/orbi?ref=badge-orbi",
       "https://scoutforge.net/apps/orbi?ref=badge",
+      "https://findly.tools/orbi?utm_source=orbi",
+      "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+      "https://www.makeitla.st/",
+      "https://aifordevelopers.org",
+      "https://uno.directory",
+      "https://saascity.io",
+      "https://launchvault.dev",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

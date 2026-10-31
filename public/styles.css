@@ -579,6 +579,15 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   .hero-cta-note > span:last-child { display: block; }
   .hero-cta-note-separator { display: none; }
 }
+/* Issue #1127: LaunchIgniter verifies its free listing against the homepage
+   first screen, so its badge closes the hero copy under the CTA note at the
+   vendor's declared 212x55 — not the footer's shared 28px mark (Issue #1038),
+   which would render the badge's own label too small to read. */
+.hero-badge {
+  display: inline-block;
+  margin-top: 18px;
+}
+.hero-badge-img { display: block; }
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
   max-width: 22rem;
@@ -1948,6 +1957,14 @@ h2 {
   display: block;
   width: auto;
   height: 28px;
+}
+/* Issue #1125: Startup Fast's free launch requires its badge rendered at least
+   150x44 px, so this one badge leaves the 28px mark above and the rule stays
+   scoped to its class. The width sets the box and the 119x50 source sets the
+   height (150 * 50 / 119 = 63), so the badge grows without squashing. */
+.site-footer .footer-badges img.footer-badge-startup-fast {
+  width: 150px;
+  height: auto;
 }
 
 /* The hero keeps two columns far longer than the prose sections do: it needs
