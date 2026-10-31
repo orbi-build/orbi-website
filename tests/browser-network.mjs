@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships twenty-five footer badge images (site/partials/footer.html) plus
+// Every page ships twenty-seven footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -36,7 +36,10 @@
 // launchigniter.com 212x55 (SVG, Issue #1116); and on 2026-10-30
 // scoutforge.net 300x72 (SVG — its own width/height match the embed's declared
 // box, Issue #1119); and on 2026-10-31 findly.tools 139x44 (SVG — measured on
-// the live file, which the vendor's 175x55 snippet does not match, Issue #1129).
+// the live file, which the vendor's 175x55 snippet does not match, Issue #1129),
+// www.founder.best 1195x390 (SVG — its own width/height and viewBox match the
+// vendor's snippet, Issue #1132) and www.makeitla.st 252x76 (SVG — its own
+// width/height and viewBox match the vendor's snippet, Issue #1132).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -63,6 +66,8 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "launchigniter.com", width: 212, height: 55 },
   { host: "scoutforge.net", width: 300, height: 72 },
   { host: "findly.tools", width: 139, height: 44 },
+  { host: "www.founder.best", width: 1195, height: 390 },
+  { host: "www.makeitla.st", width: 252, height: 76 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
