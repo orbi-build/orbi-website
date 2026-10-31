@@ -5,6 +5,12 @@ import { describe, expect, it } from "vitest";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (path) => readFile(`${ROOT}${path}`, "utf8");
 
+// Issue #1127: LaunchIgniter grants the free listing only while its badge is
+// visible in the homepage first screen, so the hero copy closes with it. The
+// vendor's own embed, plus the rel=noopener every badge anchor here carries;
+// the link stays dofollow (no nofollow) and the image stays on their host.
+const HERO_BADGE = '<a class="hero-badge" href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img class="hero-badge-img" src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>';
+
 // Issue #977: the hero now leads with what Orbi delivers, keeps the Cloud and
 // the self-host entries apart, and names the GitHub authorization before the
 // click. The free-delivery count still comes from the Worker's placeholder.
@@ -18,6 +24,7 @@ const cases = [
     href: "/cloud/login",
     button: "Try Orbi Cloud free →",
     note: '<span class="hero-cta-note-first">GitHub authorization and App installation required. __FREE_DELIVERIES__ deliveries free, no credit card</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">Open source · Self-host ↗</a></span>',
+    badge: HERO_BADGE,
   },
   {
     source: "site/pages/zh/index.html",
@@ -28,6 +35,7 @@ const cases = [
     href: "/zh/cloud/login",
     button: "免费试用 Orbi Cloud →",
     note: '<span class="hero-cta-note-first">需 GitHub 授权并安装 App 前 __FREE_DELIVERIES__ 次交付免费，不用绑卡</span> <span class="hero-cta-note-separator" aria-hidden="true">·</span> <span><a href="https://github.com/orbi-build/orbi" data-cta="hero-github">开源自托管 ↗</a></span>',
+    badge: HERO_BADGE,
   },
 ];
 
@@ -41,13 +49,15 @@ function expectedCopy(item) {
     `<p class="hero-lede">${item.lede}</p>`,
     `<a class="button button-signal hero-cta" data-cta="cloud-start" href="${item.href}">${item.button}</a>`,
     `<p class="hero-cta-note">${item.note}</p>`,
+    item.badge,
   ].join("\n");
 }
 
 const normalizeIndent = (value) => value.split("\n").map((line) => line.trim()).join("\n");
+const count = (html, pattern) => [...html.matchAll(pattern)].length;
 
 describe("homepage hero CTA (Issues #704, #899)", () => {
-  it("renders exactly the five requested hero-copy elements in both languages", async () => {
+  it("renders exactly the six requested hero-copy elements in both languages", async () => {
     for (const item of cases) {
       for (const path of [item.source, item.built]) {
         const html = await read(path);
@@ -56,7 +66,9 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
         // the two data-cta values are what the cta_click beacon reports apart.
         const ctas = [...hero(html).matchAll(/data-cta="([^"]+)"/g)].map((match) => match[1]);
         expect(ctas, `${path}: hero CTAs`).toEqual(["cloud-start", "hero-github"]);
-        expect(hero(html).match(/<a\b/g), `${path}: hero links`).toHaveLength(2);
+        // Issue #1127 adds the LaunchIgniter badge anchor to the two data-cta
+        // links: the hero carries three anchors, still two reported data-cta.
+        expect(hero(html).match(/<a\b/g), `${path}: hero links`).toHaveLength(3);
         expect(hero(html), `${path}: film entry removed`).not.toContain('data-cta="film-play"');
       }
     }
@@ -148,5 +160,72 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
       expect(nav).toContain('class="nav-apply"');
       expect(nav).not.toContain("button-signal");
     }
+  });
+});
+
+// Issue #1127: LaunchIgniter's free listing is verified against the homepage
+// first screen, so the hero copy closes with their badge — the vendor's embed
+// unmodified, eager (no loading attribute: it sits in the first screen and a
+// lazy image would arrive after the fold), on their host, and dofollow so the
+// directory can read the backlink from the shipped bytes. Turbo0's listing
+// needs its badge present in the homepage HTML; the shared footer badge row
+// carries it (Issue #1116), and this pins that the homepage still does.
+describe("homepage LaunchIgniter and Turbo0 badges (Issue #1127)", () => {
+  const homepages = [
+    ["site/pages/index.html", "EN source"],
+    ["public/index.html", "EN build"],
+    ["site/pages/zh/index.html", "ZH source"],
+    ["public/zh/index.html", "ZH build"],
+  ];
+
+  it("closes the homepage hero copy with the vendor's LaunchIgniter badge", async () => {
+    for (const [path, label] of homepages) {
+      const html = await read(path);
+      const copy = normalizeIndent(heroCopy(html));
+      expect(copy.split("\n").at(-1), `${path} (${label}): the badge is the hero copy's last element`)
+        .toBe(HERO_BADGE);
+      const anchor = hero(html).match(new RegExp(`<a class="hero-badge"[^>]*>`))?.[0] ?? "";
+      expect(anchor, `${path} (${label}): the hero badge anchor`)
+        .toBe('<a class="hero-badge" href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">');
+      // The directory verifies a crawlable backlink, so neither the hero nor
+      // any other copy of the badge may carry nofollow.
+      expect(anchor, `${path} (${label}): the hero badge backlink must stay dofollow`)
+        .not.toContain("nofollow");
+      const image = hero(html).match(/<img class="hero-badge-img"[^>]*>/)?.[0] ?? "";
+      expect(image, `${path} (${label}): the badge image`)
+        .toBe('<img class="hero-badge-img" src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" />');
+      // Above the fold means loaded with the page: a lazy badge is a badge the
+      // reviewer never sees in the first screen.
+      expect(image, `${path} (${label}): the first-screen badge must load eagerly`)
+        .not.toContain("loading=");
+      // The vendor counts the impression from the image request, so the badge
+      // must stay on launchigniter.com rather than a self-hosted copy.
+      expect(count(html, /src="\/img\/[^"]*launchigniter[^"]*"/gi), `${path} (${label}): the badge must not be self-hosted`)
+        .toBe(0);
+      expect(count(hero(html), /class="hero-badge"/g), `${path} (${label}): exactly one hero badge`)
+        .toBe(1);
+    }
+  });
+
+  it("keeps the Turbo0 badge in the homepage footer badge row", async () => {
+    // The badge lives in the shared footer partial, so the built homepages and
+    // that partial are where Turbo0's listing requirement is met.
+    for (const [path, label] of [
+      ["site/partials/footer.html", "shared footer"],
+      ["public/index.html", "EN build"],
+      ["public/zh/index.html", "ZH build"],
+    ]) {
+      const html = await read(path);
+      expect(html, `${path} (${label}): the Turbo0 badge`)
+        .toContain('<a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" />');
+    }
+  });
+
+  it("sizes the hero badge itself, outside the footer's shared 28px mark", async () => {
+    const css = await read("public/styles.css");
+    const rule = css.match(/\.hero-badge \{([\s\S]*?)\n\}/)?.[1] ?? "";
+    expect(rule, "the hero badge needs its own spacing under the CTA note").toContain("margin-top: 18px;");
+    expect(css, "the badge image must not add a line-box descender inside the anchor")
+      .toContain(".hero-badge-img { display: block; }");
   });
 });

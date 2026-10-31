@@ -579,6 +579,15 @@ html[lang="zh-CN"] .hero-lede { margin-bottom: 22px; }
   .hero-cta-note > span:last-child { display: block; }
   .hero-cta-note-separator { display: none; }
 }
+/* Issue #1127: LaunchIgniter verifies its free listing against the homepage
+   first screen, so its badge closes the hero copy under the CTA note at the
+   vendor's declared 212x55 — not the footer's shared 28px mark (Issue #1038),
+   which would render the badge's own label too small to read. */
+.hero-badge {
+  display: inline-block;
+  margin-top: 18px;
+}
+.hero-badge-img { display: block; }
 .hero-primary { display: flex; flex-direction: column; gap: 9px; }
 .hero-primary .orbi-hero-primary-p {
   max-width: 22rem;
