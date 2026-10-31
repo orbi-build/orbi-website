@@ -2076,8 +2076,8 @@ describe("one unified footer on every content page", () => {
         .toBeGreaterThan(footer.indexOf(findly));
       expect(footer.indexOf(makeitlastAnchor), `${page.output}: the makeitla.st badge must follow the founder.best badge`)
         .toBeGreaterThan(footer.indexOf(founderBestAnchor));
-      expect(footer.slice(footer.indexOf(makeitlastAnchor) + (makeitlastAnchor + makeitlastImage).length), `${page.output}: the makeitla.st badge must close the badge row`)
-        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(footer.indexOf('<a href="https://aifordevelopers.org"'), `${page.output}: the Issue #1134 badges must follow the makeitla.st badge`)
+        .toBeGreaterThan(footer.indexOf(makeitlastAnchor));
       // Both directories verify the backlink from the shipped bytes, so each
       // embed ships exactly once per page and stays crawlable: no nofollow, no
       // sponsored, no ugc.
@@ -2103,6 +2103,61 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1134: AI for Developers, Uno Directory, SaaSCity and LaunchVault
+  // each grant orbi.build a free directory listing once the site carries their
+  // badge, so the four maintainer-supplied embeds close the badge row after
+  // makeitla.st, in the Issue's order. Both anchors and images ship verbatim as
+  // the Issue wrote them — only Uno Directory and SaaSCity declare a box that is
+  // not their live SVG's own size (120x30 vs 146x44 and 150x54 vs 210x80), and
+  // the shared 28px rule (Issue #1038) renders each badge from the file's
+  // intrinsic ratio, so the declared box neither squashes nor crops them (the
+  // footer-overflow suite pins the rendered 28px ratio). None of the four links
+  // may carry nofollow, sponsored or ugc — the directories treat such a link as
+  // unverifiable and refuse the listing.
+  it("carries the AI for Developers, Uno Directory, SaaSCity and LaunchVault badges closing the badge row on every footer page (Issue #1134)", () => {
+    const badges = [
+      '<a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>',
+      '<a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>',
+      '<a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>',
+      '<a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>',
+    ];
+    const hrefs = [
+      "https://aifordevelopers.org",
+      "https://uno.directory",
+      "https://saascity.io",
+      "https://launchvault.dev",
+    ];
+    const makeitlast = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      for (const [index, badge] of badges.entries()) {
+        expect(footer, `${page.output}: the ${hrefs[index]} badge drifted`).toContain(badge);
+        expect(countMatches(footer, new RegExp(`<a href="${hrefs[index]}"`, "g")), `${page.output}: exactly one ${hrefs[index]} anchor`)
+          .toBe(1);
+        expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the makeitla.st badge`)
+          .toBeGreaterThan(footer.indexOf(makeitlast));
+        if (index > 0) {
+          expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the ${hrefs[index - 1]} badge`)
+            .toBeGreaterThan(footer.indexOf(badges[index - 1]));
+        }
+        const anchor = footerAnchorTag(footer, hrefs[index]);
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must stay crawlable`).not.toContain("nofollow");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
+        // Issue #1116: the row ends with these four embeds, so the launchvault.dev
+        // badge is the last anchor inside the badge wrapper.
+        if (index === badges.length - 1) {
+          expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the LaunchVault badge must close the badge row`)
+            .toMatch(/^\s*<\/div>/);
+        }
+      }
+      // The directories count the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at their hosts, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*(aifordevelopers|uno-directory|saascity|launch-valut)[^"]*"/gi), `${page.output}: the Issue #1134 badges must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
   // Issue #805: the directory badges take their own bottom row, so they live
   // in one wrapper that is the last child of footer-friends, after the text
   // friends (the Friends label + the text links). Issue #832 appends the
@@ -2113,8 +2168,9 @@ describe("one unified footer on every content page", () => {
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
   // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
-  // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge and
-  // Issue #1132 the founder.best / makeitla.st badges last.
+  // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge,
+  // Issue #1132 the founder.best / makeitla.st badges and Issue #1134 the
+  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2149,6 +2205,10 @@ describe("one unified footer on every content page", () => {
       "https://findly.tools/orbi?utm_source=orbi",
       "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
       "https://www.makeitla.st/",
+      "https://aifordevelopers.org",
+      "https://uno.directory",
+      "https://saascity.io",
+      "https://launchvault.dev",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
