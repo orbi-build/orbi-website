@@ -2012,8 +2012,9 @@ describe("one unified footer on every content page", () => {
   });
 
   // Issue #1129: Findly.tools grants orbi.build a free listing once the site
-  // carries its badge, so the supplied embed closes the badge row after the
-  // Scout Forge badge. Anchor, target, rel, src and alt are the vendor's; the
+  // carries its badge, so the supplied embed follows the Scout Forge badge
+  // (Issue #1132 then appends the founder.best and makeitla.st badges after
+  // it). Anchor, target, rel, src and alt are the vendor's; the
   // declared box is the source SVG's own 139x44 (measured on the live file,
   // whose snippet says 175x55) like every other footer badge, so the shared
   // 28px rule (Issue #1038) keeps the true source ratio — 139/44 * 28 = 88.5px
@@ -2022,6 +2023,7 @@ describe("one unified footer on every content page", () => {
     const anchor = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
     const image = '<img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" />';
     const scoutforge = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
+    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Findly.tools badge anchor drifted`).toContain(anchor);
@@ -2030,8 +2032,8 @@ describe("one unified footer on every content page", () => {
         .toContain(anchor + image);
       expect(footer.indexOf(anchor), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
         .toBeGreaterThan(footer.indexOf(scoutforge));
-      expect(footer.slice(footer.indexOf(anchor) + (anchor + image).length), `${page.output}: the Findly.tools badge must close the badge row`)
-        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
+        .toBeGreaterThan(footer.indexOf(anchor));
       expect(countMatches(footer, /https:\/\/findly\.tools\/badges\/findly-tools-badge-light\.svg/g), `${page.output}: exactly one Findly.tools badge image`)
         .toBe(1);
       expect(footerAnchorTag(footer, "https://findly.tools/orbi?utm_source=orbi"), `${page.output}: the Findly.tools backlink must stay crawlable`)
@@ -2039,6 +2041,64 @@ describe("one unified footer on every content page", () => {
       // The vendor counts the listing's badge from requests for the image
       // itself, so the shipped HTML must point at findly.tools, never a copy.
       expect(countMatches(footer, /src="\/img\/[^"]*findly[^"]*"/gi), `${page.output}: the Findly.tools badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+
+  // Issue #1132: founder.best and makeitla.st both grant orbi.build a free,
+  // dofollow listing once the site carries their badge, so the two supplied
+  // embeds close the badge row after the Findly.tools badge — founder.best
+  // first, makeitla.st last. Both are copied verbatim: the anchors keep the
+  // vendors' own href/rel/title and carry no nofollow, sponsored or ugc, and
+  // each image declares the source file's own box (1195x390 and 252x76, both
+  // measured on the live SVG on 2026-10-31) so the shared 28px rule (Issue
+  // #1038) keeps the true source ratio. makeitla.st links exactly
+  // https://www.makeitla.st/ and re-checks the badge weekly — a badge that
+  // disappears drops the link to nofollow — so the embed must not drift.
+  it("carries the founder.best and makeitla.st badges closing the badge row on every footer page (Issue #1132)", () => {
+    const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
+    const founderBestImage = '<img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" />';
+    const makeitlastAnchor = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
+    const makeitlastImage = '<img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/>';
+    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: founder.best badge anchor drifted`).toContain(founderBestAnchor);
+      expect(footer, `${page.output}: founder.best badge image drifted`).toContain(founderBestImage);
+      expect(footer, `${page.output}: the founder.best anchor and image must sit together`)
+        .toContain(founderBestAnchor + founderBestImage);
+      expect(footer, `${page.output}: makeitla.st badge anchor drifted`).toContain(makeitlastAnchor);
+      expect(footer, `${page.output}: makeitla.st badge image drifted`).toContain(makeitlastImage);
+      expect(footer, `${page.output}: the makeitla.st anchor and image must sit together`)
+        .toContain(makeitlastAnchor + makeitlastImage);
+      expect(footer.indexOf(founderBestAnchor), `${page.output}: the founder.best badge must follow the Findly.tools badge`)
+        .toBeGreaterThan(footer.indexOf(findly));
+      expect(footer.indexOf(makeitlastAnchor), `${page.output}: the makeitla.st badge must follow the founder.best badge`)
+        .toBeGreaterThan(footer.indexOf(founderBestAnchor));
+      expect(footer.slice(footer.indexOf(makeitlastAnchor) + (makeitlastAnchor + makeitlastImage).length), `${page.output}: the makeitla.st badge must close the badge row`)
+        .toMatch(/^<\/a>\s*<\/div>/);
+      // Both directories verify the backlink from the shipped bytes, so each
+      // embed ships exactly once per page and stays crawlable: no nofollow, no
+      // sponsored, no ugc.
+      expect(countMatches(footer, /https:\/\/www\.founder\.best\/api\/badge\/featured\/orbi/g), `${page.output}: exactly one founder.best badge image`)
+        .toBe(1);
+      expect(countMatches(footer, /https:\/\/www\.makeitla\.st\/badge\/makeitlast-badge-dark\.svg\?v=3/g), `${page.output}: exactly one makeitla.st badge image`)
+        .toBe(1);
+      expect(countMatches(footer, /<a href="https:\/\/www\.makeitla\.st\/"/g), `${page.output}: exactly one makeitla.st anchor`)
+        .toBe(1);
+      for (const href of [
+        "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+        "https://www.makeitla.st/",
+      ]) {
+        const anchor = footerAnchorTag(footer, href);
+        expect(anchor, `${page.output}: the ${href} backlink must stay crawlable`).not.toContain("nofollow");
+        expect(anchor, `${page.output}: the ${href} backlink must not be sponsored`).not.toContain("sponsored");
+        expect(anchor, `${page.output}: the ${href} backlink must not be ugc`).not.toContain("ugc");
+      }
+      // The vendors count the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at their hosts, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*(founder|makeitla)[^"]*"/gi), `${page.output}: the Issue #1132 badges must not be self-hosted`)
         .toBe(0);
     }
   });
@@ -2053,8 +2113,8 @@ describe("one unified footer on every content page", () => {
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
   // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
-  // Issue #1119 the Scout Forge badge and Issue #1129 the Findly.tools badge
-  // last.
+  // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge and
+  // Issue #1132 the founder.best / makeitla.st badges last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2087,6 +2147,8 @@ describe("one unified footer on every content page", () => {
       "https://launchigniter.com/product/orbi?ref=badge-orbi",
       "https://scoutforge.net/apps/orbi?ref=badge",
       "https://findly.tools/orbi?utm_source=orbi",
+      "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+      "https://www.makeitla.st/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");

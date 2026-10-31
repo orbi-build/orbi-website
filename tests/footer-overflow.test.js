@@ -252,16 +252,25 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           const scoutforge = wrapper.querySelector('a[href="https://scoutforge.net/apps/orbi?ref=badge"]');
           const scoutforgeImage = scoutforge?.querySelector("img");
           const scoutforgeRect = scoutforgeImage?.getBoundingClientRect();
-          // Issue #1129: Findly.tools closes the row; its badge is the source
-          // SVG's own 139x44 box in the shared 28px row.
+          // Issue #1129: Findly.tools; its badge is the source SVG's own
+          // 139x44 box in the shared 28px row.
           const findly = wrapper.querySelector('a[href="https://findly.tools/orbi?utm_source=orbi"]');
           const findlyImage = findly?.querySelector("img");
           const findlyRect = findlyImage?.getBoundingClientRect();
+          // Issue #1132: founder.best and makeitla.st close the row after the
+          // Findly.tools badge, each in its own source box (1195x390 and
+          // 252x76, both measured on the live SVG).
+          const founderBest = wrapper.querySelector('a[href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral"]');
+          const founderBestImage = founderBest?.querySelector("img");
+          const founderBestRect = founderBestImage?.getBoundingClientRect();
+          const makeitlast = wrapper.querySelector('a[href="https://www.makeitla.st/"]');
+          const makeitlastImage = makeitlast?.querySelector("img");
+          const makeitlastRect = makeitlastImage?.getBoundingClientRect();
           // Issue #1096: two image badges and two text links share the row, so
           // the flex line must centre each of them. Group the wrapper's direct
           // children into rows by their vertical centre and report the worst
           // spread inside every row that carries one of the new entries.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge, findly].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge, findly, founderBest, makeitlast].filter(Boolean);
           const rows = [];
           for (const node of [...wrapper.children]) {
             const box = node.getBoundingClientRect();
@@ -468,6 +477,28 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             findlyImageHeight: findlyRect?.height,
             findlyNaturalWidth: findlyImage?.naturalWidth,
             findlyNaturalHeight: findlyImage?.naturalHeight,
+            founderBestHref: founderBest?.getAttribute("href"),
+            founderBestTarget: founderBest?.getAttribute("target"),
+            founderBestRel: founderBest?.getAttribute("rel"),
+            founderBestImageSrc: founderBestImage?.getAttribute("src"),
+            founderBestImageAlt: founderBestImage?.getAttribute("alt"),
+            founderBestDeclaredWidth: founderBestImage?.getAttribute("width"),
+            founderBestDeclaredHeight: founderBestImage?.getAttribute("height"),
+            founderBestImageWidth: founderBestRect?.width,
+            founderBestImageHeight: founderBestRect?.height,
+            founderBestNaturalWidth: founderBestImage?.naturalWidth,
+            founderBestNaturalHeight: founderBestImage?.naturalHeight,
+            makeitlastHref: makeitlast?.getAttribute("href"),
+            makeitlastTitle: makeitlast?.getAttribute("title"),
+            makeitlastRel: makeitlast?.getAttribute("rel"),
+            makeitlastImageSrc: makeitlastImage?.getAttribute("src"),
+            makeitlastImageAlt: makeitlastImage?.getAttribute("alt"),
+            makeitlastDeclaredWidth: makeitlastImage?.getAttribute("width"),
+            makeitlastDeclaredHeight: makeitlastImage?.getAttribute("height"),
+            makeitlastImageWidth: makeitlastRect?.width,
+            makeitlastImageHeight: makeitlastRect?.height,
+            makeitlastNaturalWidth: makeitlastImage?.naturalWidth,
+            makeitlastNaturalHeight: makeitlastImage?.naturalHeight,
           };
         });
         expect(result.wrapper, path + ": .footer-badges missing").toBe(true);
@@ -485,8 +516,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
         // ToolPotion badge, Issue #1102 the Fazier badge, Issue #1116 the
         // turbo0 / toolfame / dang.ai / LaunchIgniter badges, Issue #1119 the
-        // Scout Forge badge and Issue #1129 the Findly.tools badge: 30 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(30);
+        // Scout Forge badge, Issue #1129 the Findly.tools badge and Issue #1132
+        // the founder.best / makeitla.st badges: 32 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(32);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -505,10 +537,11 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
         // appended the ToolPotion badge, Issue #1102 the Fazier badge and
         // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
-        // Issue #1119 the Scout Forge badge and Issue #1129 the Findly.tools
-        // badge, so Findly.tools is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the Findly.tools badge")
-          .toBe("https://findly.tools/orbi?utm_source=orbi");
+        // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge
+        // and Issue #1132 the founder.best / makeitla.st badges, so makeitla.st
+        // is the last entry now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the makeitla.st badge")
+          .toBe("https://www.makeitla.st/");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -608,8 +641,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             - result.scoutforgeNaturalWidth / result.scoutforgeNaturalHeight),
           path + ": the Scout Forge badge must keep the 300x72 source ratio",
         ).toBeLessThan(0.02);
-        // Issue #1129: Findly.tools closes the row with the same treatment —
-        // plain server-rendered markup, a new tab, a crawlable link to Orbi's
+        // Issue #1129: Findly.tools gets the same treatment — plain
+        // server-rendered markup, a new tab, a crawlable link to Orbi's
         // listing, and the source SVG's own 139x44 box (the vendor snippet's
         // 175x55 is not the file's size), so the shared 28px rule renders
         // 139/44 * 28 = 88.5px wide, unsquashed.
@@ -630,6 +663,48 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           Math.abs(result.findlyImageWidth / result.findlyImageHeight
             - result.findlyNaturalWidth / result.findlyNaturalHeight),
           path + ": the Findly.tools badge must keep the 139x44 source ratio",
+        ).toBeLessThan(0.02);
+        // Issue #1132: founder.best and makeitla.st close the row, copied
+        // verbatim from the vendors' snippets. founder.best keeps target/rel
+        // and declares the live SVG's own 1195x390; makeitla.st links exactly
+        // https://www.makeitla.st/ with the vendor's title and no rel at all
+        // (no nofollow, sponsored or ugc) and declares the live SVG's 252x76.
+        // Both render 28px high in their source ratio: 85.8px and 92.8px wide.
+        expect(result.founderBestHref, path + ": the founder.best badge href")
+          .toBe("https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral");
+        expect(result.founderBestTarget, path + ": the founder.best badge opens in a new tab").toBe("_blank");
+        expect(result.founderBestRel, path + ": the founder.best anchor keeps noopener noreferrer").toBe("noopener noreferrer");
+        expect(result.founderBestRel, path + ": the founder.best backlink must stay crawlable").not.toContain("nofollow");
+        expect(result.founderBestImageSrc, path + ": the founder.best badge must load from founder.best")
+          .toBe("https://www.founder.best/api/badge/featured/orbi");
+        expect(result.founderBestImageAlt, path + ": founder.best badge image alt").toBe("Orbi - Featured on Founder.best");
+        expect(result.founderBestDeclaredWidth, path + ": the founder.best badge declares the 1195px source width").toBe("1195");
+        expect(result.founderBestDeclaredHeight, path + ": the founder.best badge declares the 390px source height").toBe("390");
+        expect(result.founderBestNaturalWidth, path + ": the founder.best placeholder is 1195px wide").toBe(1195);
+        expect(result.founderBestNaturalHeight, path + ": the founder.best placeholder is 390px high").toBe(390);
+        expect(Math.abs(result.founderBestImageHeight - 28), path + ": the founder.best badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.founderBestImageWidth / result.founderBestImageHeight
+            - result.founderBestNaturalWidth / result.founderBestNaturalHeight),
+          path + ": the founder.best badge must keep the 1195x390 source ratio",
+        ).toBeLessThan(0.02);
+        expect(result.makeitlastHref, path + ": the makeitla.st badge href must be exactly the site root")
+          .toBe("https://www.makeitla.st/");
+        expect(result.makeitlastRel, path + ": the makeitla.st anchor carries no rel at all")
+          .toBeNull();
+        expect(result.makeitlastTitle, path + ": the makeitla.st badge keeps its tooltip").toBe("Featured on MakeItLast");
+        expect(result.makeitlastImageSrc, path + ": the makeitla.st badge must load from makeitla.st")
+          .toBe("https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3");
+        expect(result.makeitlastImageAlt, path + ": makeitla.st badge image alt").toBe("Featured on MakeItLast");
+        expect(result.makeitlastDeclaredWidth, path + ": the makeitla.st badge declares the 252px source width").toBe("252");
+        expect(result.makeitlastDeclaredHeight, path + ": the makeitla.st badge declares the 76px source height").toBe("76");
+        expect(result.makeitlastNaturalWidth, path + ": the makeitla.st placeholder is 252px wide").toBe(252);
+        expect(result.makeitlastNaturalHeight, path + ": the makeitla.st placeholder is 76px high").toBe(76);
+        expect(Math.abs(result.makeitlastImageHeight - 28), path + ": the makeitla.st badge renders 28px high").toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(result.makeitlastImageWidth / result.makeitlastImageHeight
+            - result.makeitlastNaturalWidth / result.makeitlastNaturalHeight),
+          path + ": the makeitla.st badge must keep the 252x76 source ratio",
         ).toBeLessThan(0.02);
         expect(result.tooluckTarget, path + ": the Tooluck badge opens in a new tab").toBe("_blank");
         expect(result.tooluckRel, path + ": the Tooluck anchor keeps noopener noreferrer").toBe("noopener noreferrer");
@@ -879,8 +954,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Startup Fast / Artificin badges and the two text links, Issue #1099
         // through the ToolPotion badge, Issue #1102 through the Fazier badge,
         // Issue #1116 through the turbo0 / toolfame / dang.ai / LaunchIgniter
-        // badges, Issue #1119 through the Scout Forge badge and Issue #1129
-        // through the Findly.tools badge, then leaves.
+        // badges, Issue #1119 through the Scout Forge badge, Issue #1129
+        // through the Findly.tools badge and Issue #1132 through the
+        // founder.best / makeitla.st badges, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -898,6 +974,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://launchigniter.com/product/orbi?ref=badge-orbi",
           "https://scoutforge.net/apps/orbi?ref=badge",
           "https://findly.tools/orbi?utm_source=orbi",
+          "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+          "https://www.makeitla.st/",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -922,7 +1000,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the Findly.tools badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the makeitla.st badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -971,6 +1049,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://launchigniter.com/product/orbi?ref=badge-orbi",
     "https://scoutforge.net/apps/orbi?ref=badge",
     "https://findly.tools/orbi?utm_source=orbi",
+    "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
+    "https://www.makeitla.st/",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -1011,9 +1091,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
           // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
           // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai /
-          // LaunchIgniter images, Issue #1119 the Scout Forge image and
-          // Issue #1129 the Findly.tools image: 25 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(25);
+          // LaunchIgniter images, Issue #1119 the Scout Forge image,
+          // Issue #1129 the Findly.tools image and Issue #1132 the
+          // founder.best / makeitla.st images: 27 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(27);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1098,9 +1179,14 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // same on a phone.
           const scoutforgeRect = document.querySelector('footer .footer-badges a[href="https://scoutforge.net/apps/orbi?ref=badge"]')
             ?.getBoundingClientRect();
-          // Issue #1129: the Findly.tools badge, which closes the row, does the
-          // same on a phone.
+          // Issue #1129: the Findly.tools badge does the same on a phone.
           const findlyRect = document.querySelector('footer .footer-badges a[href="https://findly.tools/orbi?utm_source=orbi"]')
+            ?.getBoundingClientRect();
+          // Issue #1132: so do the founder.best and makeitla.st badges, which
+          // close the row.
+          const founderBestRect = document.querySelector('footer .footer-badges a[href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral"]')
+            ?.getBoundingClientRect();
+          const makeitlastRect = document.querySelector('footer .footer-badges a[href="https://www.makeitla.st/"]')
             ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
@@ -1119,6 +1205,16 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
               && findlyRect.height > 0
               && findlyRect.left >= 0
               && findlyRect.right <= documentElement.clientWidth,
+            founderBestInside: Boolean(founderBestRect)
+              && founderBestRect.width > 0
+              && founderBestRect.height > 0
+              && founderBestRect.left >= 0
+              && founderBestRect.right <= documentElement.clientWidth,
+            makeitlastInside: Boolean(makeitlastRect)
+              && makeitlastRect.width > 0
+              && makeitlastRect.height > 0
+              && makeitlastRect.left >= 0
+              && makeitlastRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -1131,6 +1227,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.dangInside, path + " at 390px: the Dang.ai link stays inside the footer").toBe(true);
         expect(phoneLayout.scoutforgeInside, path + " at 390px: the Scout Forge badge stays inside the footer").toBe(true);
         expect(phoneLayout.findlyInside, path + " at 390px: the Findly.tools badge stays inside the footer").toBe(true);
+        expect(phoneLayout.founderBestInside, path + " at 390px: the founder.best badge stays inside the footer").toBe(true);
+        expect(phoneLayout.makeitlastInside, path + " at 390px: the makeitla.st badge stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
