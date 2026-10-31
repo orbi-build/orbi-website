@@ -1982,12 +1982,13 @@ describe("one unified footer on every content page", () => {
   // the footer carries the supplied embed as ordinary server-rendered HTML —
   // no nofollow, no JavaScript — with the image still on scoutforge.net (a
   // self-hosted copy would never reach their counter). It sits after the
-  // LaunchIgniter badge, so it closes the row, and declares the SVG's own
-  // 300x72 box for the shared 28px footer rule (Issue #1038).
+  // LaunchIgniter badge — Issue #1129 then appends the Findly.tools badge — and
+  // declares the SVG's own 300x72 box for the shared 28px footer rule (#1038).
   it("carries the Scout Forge badge after the LaunchIgniter badge on every footer page (Issue #1119)", () => {
     const launchigniter = '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">';
     const anchor = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
     const image = '<img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" />';
+    const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Scout Forge badge anchor drifted`).toContain(anchor);
@@ -1997,8 +1998,8 @@ describe("one unified footer on every content page", () => {
       // after the LaunchIgniter badge and before the wrapper closes.
       expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the LaunchIgniter badge`)
         .toBeGreaterThan(footer.indexOf(launchigniter));
-      expect(footer.slice(footer.indexOf(anchor) + (anchor + image).length), `${page.output}: the Scout Forge badge must close the badge row`)
-        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(footer.indexOf(findly), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
+        .toBeGreaterThan(footer.indexOf(anchor));
       expect(countMatches(footer, /https:\/\/scoutforge\.net\/badge\/orbi\/image\?theme=light/g), `${page.output}: exactly one Scout Forge badge image`)
         .toBe(1);
       expect(footerAnchorTag(footer, "https://scoutforge.net/apps/orbi?ref=badge"), `${page.output}: the Scout Forge backlink must stay crawlable`)
@@ -2006,6 +2007,38 @@ describe("one unified footer on every content page", () => {
       // Scout Forge counts the impression from the image request, so the
       // shipped HTML must point at their host, never a copy in this repository.
       expect(countMatches(footer, /src="\/img\/[^"]*scout[^"]*"/gi), `${page.output}: the Scout Forge badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+  // Issue #1129: Findly.tools grants orbi.build a free listing once the site
+  // carries its badge, so the supplied embed closes the badge row after the
+  // Scout Forge badge. Anchor, target, rel, src and alt are the vendor's; the
+  // declared box is the source SVG's own 139x44 (measured on the live file,
+  // whose snippet says 175x55) like every other footer badge, so the shared
+  // 28px rule (Issue #1038) keeps the true source ratio — 139/44 * 28 = 88.5px
+  // wide. The link stays crawlable and points at Orbi's listing.
+  it("carries the Findly.tools badge linking Orbi's listing on every footer page (Issue #1129)", () => {
+    const anchor = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
+    const image = '<img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" />';
+    const scoutforge = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Findly.tools badge anchor drifted`).toContain(anchor);
+      expect(footer, `${page.output}: Findly.tools badge image drifted`).toContain(image);
+      expect(footer, `${page.output}: the Findly.tools anchor and image must sit together`)
+        .toContain(anchor + image);
+      expect(footer.indexOf(anchor), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
+        .toBeGreaterThan(footer.indexOf(scoutforge));
+      expect(footer.slice(footer.indexOf(anchor) + (anchor + image).length), `${page.output}: the Findly.tools badge must close the badge row`)
+        .toMatch(/^<\/a>\s*<\/div>/);
+      expect(countMatches(footer, /https:\/\/findly\.tools\/badges\/findly-tools-badge-light\.svg/g), `${page.output}: exactly one Findly.tools badge image`)
+        .toBe(1);
+      expect(footerAnchorTag(footer, "https://findly.tools/orbi?utm_source=orbi"), `${page.output}: the Findly.tools backlink must stay crawlable`)
+        .not.toContain("nofollow");
+      // The vendor counts the listing's badge from requests for the image
+      // itself, so the shipped HTML must point at findly.tools, never a copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*findly[^"]*"/gi), `${page.output}: the Findly.tools badge must not be self-hosted`)
         .toBe(0);
     }
   });
@@ -2019,8 +2052,9 @@ describe("one unified footer on every content page", () => {
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
-  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges and
-  // Issue #1119 the Scout Forge badge last.
+  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+  // Issue #1119 the Scout Forge badge and Issue #1129 the Findly.tools badge
+  // last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2052,6 +2086,7 @@ describe("one unified footer on every content page", () => {
       "https://dang.ai",
       "https://launchigniter.com/product/orbi?ref=badge-orbi",
       "https://scoutforge.net/apps/orbi?ref=badge",
+      "https://findly.tools/orbi?utm_source=orbi",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
