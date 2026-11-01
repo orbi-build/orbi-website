@@ -1,14 +1,14 @@
 ---
 title: Pi coding agent 和 Claude Code 对比：同一模型实测
 date: 2026-11-01
-summary: 让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量落在 Pi 的范围内。
+summary: 让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-pi-vs-claude-code-card.png
 series: pi
 ---
 
-我是 Lawrence Liu，Orbi 的创始人。Pi 和 Claude Code 主要在模型选择、内置功能和权限控制上有差别。这次实测中，Pi 在默认配置下更省输入 token。我让两边用同一个 DeepSeek V4.1 Flash，各跑相同的两个小编程任务。放开执行权限后，每次运行都通过了测试；默认 Claude Code 每次发送的输入 token 是 Pi 的 7–8×。加上 `claude -p --bare` 后，用量在 Pi 的范围内，有时高些，有时低些。
+我是 Lawrence Liu，Orbi 的创始人。Pi 和 Claude Code 主要在模型选择、内置功能和权限控制上有差别。我让两边用同一个 DeepSeek V4.1 Flash，各跑相同的两个小编程任务。放开执行权限后，每次运行都通过了测试；默认 Claude Code 每次发送的输入 token 是 Pi 的 7–8×。加上 `claude -p --bare` 后，用量和 Pi 接近：六组配对里五组低于 Pi，一组高于 Pi。
 
 默认 Claude Code 多出的输入，大部分来自它的 21 个工具定义。拿 API key 跑脚本时，用不用 `--bare` 对用量的影响，和换一套 harness 差不多。
 
@@ -68,7 +68,7 @@ series: pi
 | Claude Code 默认，任务 B | 3/3 | 5, 5, 5 | 91,062 / 91,218 / 92,033 | 6.6 / 7.0 / 8.0 s |
 | Claude Code `--bare`，任务 B | 3/3 | 5, 4, 4 | 10,735 / 7,740 / 7,804 | 7.8 / 6.0 / 5.5 s |
 
-逐次配对比较，默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量在 Pi 的范围内。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。
+逐次配对比较，默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。
 
 这些输入大部分是缓存读取。任务 A 首次运行时，Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。
 
@@ -144,15 +144,15 @@ env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/an
 
 ## Orbi 换 harness 时踩过的坑
 
-Orbi 最早的提交里就有 Pi，[当时没有做过对比](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)。更难任务的结果见 [harness 测评](/zh/blog/searching-for-orbis-harness/)：Opus 5.5 经 Claude Code 桥接，在三版 Orbi harness 上分别是 1/3、2/3 和 3/4；`deepseek-flash` 经 Pi，在原版 harness 上是 6/15，后来的版本是 9/9。
+Orbi 最早的提交里就有 Pi，[当时没有做过对比](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)。更难任务的结果见 [harness 测评](/zh/blog/searching-for-orbis-harness/)：Opus 5.5 经 Claude Code 桥接，在 Orbi harness 的 v1、v5、v11 三个版本上分别是 1/3、2/3 和 3/4；`deepseek-flash` 经 Pi，在原版 harness 上是 6/15，到 v15 是 9/9。
 
-这几组测试的模型和 prompt 版本不同，运行次数又少，不能据此给 harness 排名。Orbi 的桥接代码还漏传了 Pi 的 `--skill` 列表，直到 9 月 29 日才修好，所以那些 Opus 测试都没带 Orbi 的 skills。这是 Orbi 适配器的 bug，不该归到 Claude Code 上。换 harness 时，要逐个检查参数有没有传过去，也要检查 init 事件里的工具和 skill 清单。
+这几组测试的模型和 prompt 版本不同，运行次数又少，不能据此给 harness 排名。Orbi 的桥接代码负责把 Pi 的参数翻译成 Claude Code 的参数，翻译时漏掉了 `--skill` 列表，直到 9 月 29 日才修好，所以那些 Opus 测试都没带 Orbi 的 skills。这是 Orbi 适配器的 bug，不该归到 Claude Code 上。换 harness 时，要逐个检查参数有没有传过去，也要检查 init 事件里的工具和 skill 清单。
 
 ## Pi 和 Claude Code 怎么选
 
 已经有调度器的话，我会根据想用的模型和权限需求来选。需要自由选模型，我会用 Pi，自己准备沙箱。用 Anthropic 订阅，又希望工具自带子代理、计划模式和默认拒绝的权限控制，Claude Code 更合适。
 
-这次的小任务中，默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍，加上 `--bare` 后，用量在 Pi 的范围内。用 Claude Code 跑 API 脚本时，优先用 `--bare`，至少也要用 `--tools` 限制工具，因为大部分额外输入来自工具清单。还要明确设置 `--allowedTools` 或权限模式，并检查 `permission_denials`。
+这次的小任务中，默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍，加上 `--bare` 后，用量和 Pi 接近，多数更低。用 Claude Code 跑 API 脚本时，优先用 `--bare`，至少也要用 `--tools` 限制工具，因为大部分额外输入来自工具清单。还要明确设置 `--allowedTools` 或权限模式，并检查 `permission_denials`。
 
 Orbi 在 `pi --print` 外面做调度、评审和合并检查，[Cloud](/zh/cloud/?ref=blog-pi-vs-cc)也提供这些功能。
 

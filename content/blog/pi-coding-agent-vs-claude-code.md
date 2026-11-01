@@ -1,14 +1,14 @@
 ---
 title: Pi coding agent vs Claude Code: same model, measured
 date: 2026-11-01
-summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.
+summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi, mostly below.
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-vs-claude-code-card.png
 series: pi
 ---
 
-I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using `claude -p --bare` brought its input-token use close to Pi's, with some runs above and some below. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.
+I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using `claude -p --bare` brought its input-token use close to Pi's: below Pi in five of six paired runs, above it in one. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.
 
 I'm Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as `pi --print`.
 
@@ -64,7 +64,7 @@ I ran Pi, default Claude Code and bare Claude Code 3 times per task on `deepseek
 | Claude Code default, task B | 3/3 | 5, 5, 5 | 91,062 / 91,218 / 92,033 | 6.6 / 7.0 / 8.0 s |
 | Claude Code `--bare`, task B | 3/3 | 5, 4, 4 | 10,735 / 7,740 / 7,804 | 7.8 / 6.0 / 5.5 s |
 
-Default Claude Code used 7.2 to 8.1 times Pi's input tokens in each paired run. Request counts were about the same; the gap came from overhead on each request, which re-sends the tool definitions. Bare used a similar number of input tokens to Pi, above it in one of six paired runs and below it in the other five.
+Default Claude Code used 7.2 to 8.1 times Pi's input tokens in each paired run. Request counts were about the same; the gap came from overhead on each request, which re-sends the tool definitions. Bare came close to Pi: above it in one of six paired runs and below it in the other five.
 
 Most input tokens were cache reads. In task A's first run, they accounted for 6,912 of Pi's 9,081 and 53,760 of default Claude Code's 72,382. DeepSeek automatically caches repeated prefixes. Cache reads cost less than uncached input, so the input-token ratio alone cannot tell you the cost ratio.
 
@@ -136,13 +136,13 @@ For coding runs, make one fresh git repository per task with only that task's tw
 
 ## Switching Orbi's harness
 
-Pi was in Orbi's first commits, [chosen without a comparison](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi). In the [harness benchmark](/blog/searching-for-orbis-harness/), which used harder tasks, Opus 5.5 through a Claude Code bridge scored 1/3, 2/3 and 3/4 on three Orbi harness versions. With `deepseek-flash` through Pi, the score went from 6/15 on the original harness to 9/9 on a later one.
+Pi was in Orbi's first commits, [chosen without a comparison](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi). In the [harness benchmark](/blog/searching-for-orbis-harness/), which used harder tasks, Opus 5.5 through a Claude Code bridge scored 1/3, 2/3 and 3/4 on Orbi harness versions v1, v5 and v11. With `deepseek-flash` through Pi, the score went from 6/15 on the original harness to 9/9 on v15.
 
-Those runs used different models and prompt versions, with too few runs to rank the harnesses. Until 29 September, Orbi's bridge dropped Pi's `--skill` list, so the Opus runs had no Orbi skills. Orbi's adapter caused that bug. When switching harnesses, check that every flag reaches the new harness, including the tool/skill list in the init event.
+Those runs used different models and prompt versions, with too few runs to rank the harnesses. Orbi's bridge translated Pi's flags into Claude Code's, and until 29 September it dropped the `--skill` list on the way, so the Opus runs had no Orbi skills. Orbi's adapter caused that bug. When switching harnesses, check that every flag reaches the new harness, including the tool/skill list in the init event.
 
 ## Which one I'd use
 
-For scheduled jobs, I'd use Pi for model choice and provide a sandbox. Claude Code fits Anthropic subscription users who want built-in subagents, plan mode and deny-by-default permissions. On these tasks, default Claude Code used 7 to 8 times Pi's input tokens; `--bare` used about as many as Pi. For API scripts, I'd use `--bare` or at least restrict `--tools`, since the tool list accounts for most of the overhead. Set explicit `--allowedTools` or a permission mode, and check `permission_denials`.
+For scheduled jobs, I'd use Pi for model choice and provide a sandbox. Claude Code fits Anthropic subscription users who want built-in subagents, plan mode and deny-by-default permissions. On these tasks, default Claude Code used 7 to 8 times Pi's input tokens; `--bare` came close to Pi, mostly below it. For API scripts, I'd use `--bare` or at least restrict `--tools`, since the tool list accounts for most of the overhead. Set explicit `--allowedTools` or a permission mode, and check `permission_denials`.
 
 Orbi adds scheduling, review and merge gates around `pi --print`, available through [Cloud](/cloud/?ref=blog-pi-vs-cc).
 
