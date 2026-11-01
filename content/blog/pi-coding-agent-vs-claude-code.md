@@ -1,7 +1,7 @@
 ---
 title: Pi coding agent vs Claude Code: same model, measured
 date: 2026-11-01
-summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi, mostly below.
+summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi.
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-vs-claude-code-card.png

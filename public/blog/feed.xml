@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/pi-coding-agent-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-vs-claude-code/</guid>
       <pubDate>Sun, 01 Nov 2026 00:00:00 GMT</pubDate>
-      <description>With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi, mostly below.</description>
+      <description>With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi.</description>
     </item>
     <item>
       <title>Pi extensions in production: isolate, then write one</title>
