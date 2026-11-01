@@ -581,7 +581,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // the founder.best / makeitla.st badges and Issue #1134 the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges:
         // 36 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(36);
+        expect(result.badgeCount, path + ": the footer badges").toBe(37);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -604,8 +604,8 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
         // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
         // badges, so launchvault.dev is the last entry now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the LaunchVault badge")
-          .toBe("https://launchvault.dev");
+        expect(result.lastBadgeHref, path + ": the footer badges end with the Findstack badge")
+          .toBe("https://findstack.com/products/orbi/reviews");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -1124,6 +1124,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://uno.directory",
           "https://saascity.io",
           "https://launchvault.dev",
+          "https://findstack.com/products/orbi/reviews",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1148,7 +1149,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the LaunchVault badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the Findstack badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -1203,6 +1204,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://uno.directory",
     "https://saascity.io",
     "https://launchvault.dev",
+    "https://findstack.com/products/orbi/reviews",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -1248,7 +1250,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // founder.best / makeitla.st images and Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault
           // images: 31 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(31);
+          expect(badges, label + ": badge count").toHaveLength(32);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
