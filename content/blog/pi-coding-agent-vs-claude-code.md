@@ -12,7 +12,7 @@ I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two
 
 I'm Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as `pi --print`.
 
-## How I ran Pi coding agent vs Claude Code
+## Pi coding agent vs Claude Code: the test setup
 
 Both used DeepSeek V4.1 Flash (`deepseek-flash`). Pi used its built-in `deepseek` provider, `--provider deepseek --model deepseek-flash`, and `DEEPSEEK_API_KEY`. Claude Code used `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`, `ANTHROPIC_AUTH_TOKEN=<deepseek key>` and `ANTHROPIC_MODEL=deepseek-flash`, following [DeepSeek's endpoint documentation](https://api-docs.deepseek.com/guides/anthropic_api).
 
@@ -35,7 +35,7 @@ The prompt was `Reply with exactly OK`. Each run made a single model request. I 
 | Claude Code same 4 tools + `--system-prompt="You are a coding assistant."` | 2,072 |
 | Claude Code `--bare`: Bash, Edit, Read | 1,265 |
 
-This is where the Pi vs Claude Code token usage gap is easiest to see. For this single-request prompt, default Claude Code used about 10.6× Pi's input. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
+For this single-request prompt, default Claude Code used about 10.6× Pi's input. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
 
 The init event in the clean environment listed 21 default tools. I checked it 2 times and got the same list: Task, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write. The init event calls the subagent tool `Task`; the tool definitions sent to the model and the docs call it `Agent`.
 
