@@ -2,7 +2,7 @@
   {
     "slug": "pi-coding-agent-vs-claude-code",
     "title": "Pi coding agent vs Claude Code: same model, measured",
-    "summary": "Same model, two small tasks, all permitted runs passed. Default Claude Code used about 7 to 8 times Pi's input tokens; with --bare it landed in Pi's range.",
+    "summary": "Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.",
     "zhSlug": "pi-coding-agent-vs-claude-code",
     "zhTitle": "Pi coding agent 和 Claude Code 对比：同一模型实测",
     "related": []
