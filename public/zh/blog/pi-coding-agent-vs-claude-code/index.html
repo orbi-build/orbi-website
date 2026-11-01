@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pi coding agent 和 Claude Code 对比：同一模型实测 | Orbi</title>
+  <meta name="description" content="让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Pi coding agent 和 Claude Code 对比：同一模型实测">
+  <meta property="og:description" content="让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/">
+  <meta property="og:image" content="https://orbi.build/img/blog-pi-vs-claude-code-card.png">
+  <meta property="og:image:alt" content="Pi coding agent 和 Claude Code 对比：同一模型实测">
+  <meta property="article:published_time" content="2026-11-01">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent 和 Claude Code 对比：同一模型实测","datePublished":"2026-11-01","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/","image":"https://orbi.build/img/blog-pi-vs-claude-code-card.png","inLanguage":"zh-CN","description":"让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。","url":"https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Pi coding agent 和 Claude Code 对比：同一模型实测</h1>
+          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-11-01">2026-11-01</time></p>
+          <p class="post-series">系列：<a href="/zh/guides/pi-coding-agent/">Orbi 怎么搭在 Pi coding agent 上</a></p>
+          <p class="hero-lede">让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#pi-和-claude-code-的测试配置">Pi 和 Claude Code 的测试配置</a></li>
+          <li><a class="post-toc-link" href="#不调用工具时的启动用量">不调用工具时的启动用量</a></li>
+          <li><a class="post-toc-link" href="#两个编程任务的结果">两个编程任务的结果</a></li>
+          <li><a class="post-toc-link" href="#无人值守时-退出码-0-不代表修改成功">无人值守时，退出码 0 不代表修改成功</a></li>
+          <li><a class="post-toc-link" href="#命令行参数对照">命令行参数对照</a></li>
+          <li><a class="post-toc-link" href="#配置目录之外的上下文文件">配置目录之外的上下文文件</a></li>
+          <li><a class="post-toc-link" href="#复现命令">复现命令</a></li>
+          <li><a class="post-toc-link" href="#orbi-换-harness-时踩过的坑">Orbi 换 harness 时踩过的坑</a></li>
+          <li><a class="post-toc-link" href="#pi-和-claude-code-怎么选">Pi 和 Claude Code 怎么选</a></li>
+          <li><a class="post-toc-link" href="#测试范围">测试范围</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 11 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#pi-和-claude-code-的测试配置">Pi 和 Claude Code 的测试配置</a></li>
+          <li><a class="post-toc-link" href="#不调用工具时的启动用量">不调用工具时的启动用量</a></li>
+          <li><a class="post-toc-link" href="#两个编程任务的结果">两个编程任务的结果</a></li>
+          <li><a class="post-toc-link" href="#无人值守时-退出码-0-不代表修改成功">无人值守时，退出码 0 不代表修改成功</a></li>
+          <li><a class="post-toc-link" href="#命令行参数对照">命令行参数对照</a></li>
+          <li><a class="post-toc-link" href="#配置目录之外的上下文文件">配置目录之外的上下文文件</a></li>
+          <li><a class="post-toc-link" href="#复现命令">复现命令</a></li>
+          <li><a class="post-toc-link" href="#orbi-换-harness-时踩过的坑">Orbi 换 harness 时踩过的坑</a></li>
+          <li><a class="post-toc-link" href="#pi-和-claude-code-怎么选">Pi 和 Claude Code 怎么选</a></li>
+          <li><a class="post-toc-link" href="#测试范围">测试范围</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>我是 Lawrence Liu，Orbi 的创始人。Pi 和 Claude Code 主要在模型选择、内置功能和权限控制上有差别。我让两边用同一个 DeepSeek V4.1 Flash，各跑相同的两个小编程任务。放开执行权限后，每次运行都通过了测试；默认 Claude Code 每次发送的输入 token 是 Pi 的 7–8×。加上 <code class="post-code--spaced">claude -p --bare</code> 后，用量和 Pi 接近：六组配对里五组低于 Pi，一组高于 Pi。</p>
+<p>默认 Claude Code 多出的输入，大部分来自它的 21 个工具定义。拿 API key 跑脚本时，用不用 <code class="post-code--single">--bare</code> 对用量的影响，和换一套 harness 差不多。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>这次测试在 2026 年 11 月 1 日完成，用的是我的 Linux 机器，版本分别是 Pi 1.2.0 和 Claude Code 2.1.281。Orbi 做实现和评审时，都用 <code class="post-code--spaced">pi --print</code> 启动会话。</p>
+<h2 id="pi-和-claude-code-的测试配置">Pi 和 Claude Code 的测试配置</h2>
+<p>两边都用 DeepSeek V4.1 Flash（<code class="post-code--single">deepseek-flash</code>）。Pi 用内置的 <code class="post-code--single">deepseek</code> provider，参数是 <code class="post-code--spaced">--provider deepseek --model deepseek-flash</code>，密钥放在 <code class="post-code--single">DEEPSEEK_API_KEY</code>。Claude Code 按 <a href="https://api-docs.deepseek.com/guides/anthropic_api">DeepSeek 的端点文档</a>设置：<code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>、<code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;deepseek key&gt;</code>、<code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>。</p>
+<p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic 明确说</a>，不支持用任何 gateway 让 Claude Code 调用非 Claude 模型。我这里只用这套接法做测量，不建议把它当作日常使用的路由方案。Pi 用 OpenAI-compatible API，Claude Code 用 Anthropic-compatible API。两边的模型和 tokenizer 相同，网络上传输的请求格式不同。</p>
+<p>每次运行前，我都把 <code class="post-code--single">HOME</code> 指向空目录，用最小环境（<code class="post-code--spaced">env -i</code>）。空操作在空目录里跑；每个编程任务各用一个新建的 git 仓库，里面只有该任务的两个文件。这些目录都在 <code class="post-code--single">/var/tmp</code> 下，上级目录里也都没有 AGENTS.md 或 CLAUDE.md。这样测到的是工具开箱启动时的开销，没有加载我的配置。Pi 会把工作目录路径写进 prompt，所以路径长短会让计数变动几个 token：换一个更短的路径，计数就从 1,641 变成了 1,634。我检查了每次重跑的会话记录，没有一份出现真实家目录下的路径。</p>
+<p>输入总量包含缓存读取和写入。Pi 按 assistant 消息累加 <code class="post-code--spaced">usage.input + cacheRead + cacheWrite</code>。Claude Code 按请求累加，子代理的请求也算，再与 JSON 输出里的 <code class="post-code--single">modelUsage</code> 核对。</p>
+<h2 id="不调用工具时的启动用量">不调用工具时的启动用量</h2>
+<p>先给一个不用工具的 prompt：<code class="post-code--spaced">Reply with exactly OK</code>，每次只向模型发一次请求。表里每种配置跑 3 次，同一配置的输入计数完全相同。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">配置</th>
+<th scope="col">每次请求的输入 token</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Pi 默认：read、bash、edit、write</th>
+<td>1,641</td>
+</tr>
+<tr>
+<th scope="row">Pi <code class="post-code--single">--no-tools</code></th>
+<td>466</td>
+</tr>
+<tr>
+<th scope="row">Claude Code 默认：21 个工具</th>
+<td>17,398</td>
+</tr>
+<tr>
+<th scope="row">Claude Code <code class="post-code--single">--tools=Bash,Read,Edit,Write</code></th>
+<td>3,316</td>
+</tr>
+<tr>
+<th scope="row">Claude Code 使用相同的 4 个工具，并用 <code class="post-code--spaced">--system-prompt=&quot;You are a coding assistant.&quot;</code> 替换默认 system prompt</th>
+<td>2,072</td>
+</tr>
+<tr>
+<th scope="row">Claude Code <code class="post-code--single">--bare</code>：Bash、Edit、Read</th>
+<td>1,265</td>
+</tr>
+</tbody></table></div>
+<p>这个任务只请求一次模型，默认 Claude Code 的输入约为 Pi 的 10.6×。空操作的请求全是固定开销，所以这个比例比下面编程任务按整次运行算的比例高。把工具限制为与 Pi 相同的四个后，用量降到 3,316，约为 Pi 的 2×。去掉其余 17 个工具，就从默认的 17,398 个输入 token 里省下了约 14,000 个。再换掉 system prompt，又少了约 1,240 个。<code class="post-code--single">--bare</code> 用了 1,265，低于 Pi 默认的 1,641；Pi 完全不带工具时是 466。</p>
+<p>在干净环境里，init 事件列出了这 21 个默认工具。2 次检查的清单相同：Task、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。init 事件把子代理工具记作 <code class="post-code--single">Task</code>；模型实际收到的工具定义里叫 <code class="post-code--single">Agent</code>，文档里也这么叫。</p>
+<p><a href="https://code.claude.com/docs/en/headless">headless 文档</a>建议脚本和 SDK 调用使用 <code class="post-code--single">--bare</code>，并说以后的版本会把它设为 <code class="post-code--single">-p</code> 的默认行为。它会跳过 hooks、skills、插件、MCP 服务器、自动记忆和 CLAUDE.md 的自动发现，只提供 Bash、文件读取和编辑工具。认证要用 <code class="post-code--single">ANTHROPIC_API_KEY</code> 或 <code class="post-code--single">apiKeyHelper</code>，OAuth 和订阅登录会被忽略。测 bare 时，我把 DeepSeek key 放在了 <code class="post-code--single">ANTHROPIC_API_KEY</code>。</p>
+<p>我还单独用订阅里的 Claude Haiku 4.5 跑了相同的空操作：<code class="post-code--spaced">--model haiku</code>，同样清空 HOME，只复制登录凭据。2 次运行分别用了 20,787 和 20,660 个输入 token。tokenizer 不同，这组数字不能直接拿来比较。Claude 自家的模型同样有默认启动开销。我没有 Anthropic API key，也没有 OpenRouter 余额，所以没测 Pi 跑 Claude。</p>
+<h2 id="两个编程任务的结果">两个编程任务的结果</h2>
+<p>任务 A 是修 <code class="post-code--single">duration.py</code> 的 bug。<code class="post-code--single">format_duration</code> 把分钟和秒交换了，导致 <code class="post-code--single">test_duration.py</code> 里的测试失败。prompt 原文是：</p>
+<blockquote>
+<p>The tests in test_duration.py fail. Fix the bug in duration.py so that python3 -m unittest passes. Do not edit the tests.</p>
+</blockquote>
+<p>任务 B 要在 <code class="post-code--single">words.py</code> 里实现 <code class="post-code--spaced">top_words(text, n)</code>，替换 <code class="post-code--single">NotImplementedError</code>。测试检查大小写、标点、同频词按字母排序、撇号、n &gt; vocabulary 和空输入。prompt 是：</p>
+<blockquote>
+<p>Implement top_words in words.py so that python3 -m unittest passes. Do not edit the tests.</p>
+</blockquote>
+<p>每种配置都在 <code class="post-code--single">deepseek-flash</code> 上跑，每个任务各跑 3 次。任务 A 和任务 B 各用一个新建的 git 仓库，里面只有该任务的两个文件。跑完后，我自己执行 <code class="post-code--spaced">python3 -m unittest</code>，再检查测试文件的 <code class="post-code--spaced">git diff</code>。测试文件都没改过。</p>
+<p>这里的 Claude Code 编程测试，包括 bare，全部加了 <code class="post-code--single">--dangerously-skip-permissions</code>。表里的“默认”指默认工具和常规启动方式，执行权限已经放开，方便和 Pi 比较。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">运行组</th>
+<th scope="col">成功次数</th>
+<th scope="col">每次运行的模型请求数</th>
+<th scope="col">每次运行的输入 token</th>
+<th scope="col">每次运行的实际耗时</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">Pi，任务 A</th>
+<td>3/3</td>
+<td>4, 5, 4</td>
+<td>9,081 / 11,788 / 8,962</td>
+<td>3.8 / 5.2 / 4.3 s</td>
+</tr>
+<tr>
+<th scope="row">Claude Code 默认，任务 A</th>
+<td>3/3</td>
+<td>4, 5, 4</td>
+<td>72,382 / 92,756 / 72,622</td>
+<td>6.0 / 8.3 / 6.1 s</td>
+</tr>
+<tr>
+<th scope="row">Claude Code <code class="post-code--single">--bare</code>，任务 A</th>
+<td>3/3</td>
+<td>5, 5, 4</td>
+<td>10,475 / 10,799 / 8,127</td>
+<td>6.3 / 5.7 / 4.7 s</td>
+</tr>
+<tr>
+<th scope="row">Pi，任务 B</th>
+<td>3/3</td>
+<td>5, 5, 5</td>
+<td>12,650 / 11,834 / 11,894</td>
+<td>6.2 / 5.6 / 6.5 s</td>
+</tr>
+<tr>
+<th scope="row">Claude Code 默认，任务 B</th>
+<td>3/3</td>
+<td>5, 5, 5</td>
+<td>91,062 / 91,218 / 92,033</td>
+<td>6.6 / 7.0 / 8.0 s</td>
+</tr>
+<tr>
+<th scope="row">Claude Code <code class="post-code--single">--bare</code>，任务 B</th>
+<td>3/3</td>
+<td>5, 4, 4</td>
+<td>10,735 / 7,740 / 7,804</td>
+<td>7.8 / 6.0 / 5.5 s</td>
+</tr>
+</tbody></table></div>
+<p>按运行顺序配对（第 1 次对第 1 次，依此类推），默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。这不是工具数相同的对比：bare 只有 3 个工具（没有 Write），prompt 也更短。工具相同、system prompt 换掉时，Claude Code 的空操作是 2,072，Pi 是 1,641。</p>
+<p>这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。</p>
+<p>我另外测了订阅版 Claude Haiku 4.5，加上 <code class="post-code--single">--dangerously-skip-permissions</code> 后，任务 A 的 2 次运行都通过了。输入分别是 174,693 和 174,630 个 token，各请求 7 次，耗时分别是 19.6 和 18.2 s。这组换了模型，tokenizer 也不同，不要拿它和 DeepSeek 那几行比。</p>
+<h2 id="无人值守时-退出码-0-不代表修改成功">无人值守时，退出码 0 不代表修改成功</h2>
+<p>我还跑了一组权限对照：用默认的 <code class="post-code--spaced">claude -p</code> 跑任务 A，不传权限参数。它发了 9 次请求，连同子代理在内共用了 169,247 个输入 token，耗时 19.1 s。JSON 的 <code class="post-code--single">permission_denials</code> 按顺序列出 6 次调用：Edit、Bash、Bash、Edit、Bash、Write。</p>
+<p>跑完后，测试仍然失败，进程退出码却是 0。最终回复的开头是：</p>
+<blockquote>
+<p>I found the bug, but every write/edit tool call is being denied by the permission system in this session, so I can&#39;t apply the change.</p>
+</blockquote>
+<p>用脚本跑任务，要检查 JSON 的 <code class="post-code--single">permission_denials</code>，也要自己验证结果。进程正常退出，不等于文件已经改好了。</p>
+<p><a href="https://code.claude.com/docs/en/headless">headless 文档</a>说，在 Manual-mode 下运行 <code class="post-code--spaced">claude -p</code> 时，需要审批的调用没获批准就会被拒绝。文档列出的设置方式包括 <code class="post-code--spaced">--allowedTools &quot;Bash,Read,Edit&quot;</code>、<code class="post-code--spaced">--permission-mode acceptEdits|auto|dontAsk</code> 和 <code class="post-code--spaced">--permission-prompts none</code>。权限怎么选，见<a href="/zh/blog/run-claude-code-unattended/">无人值守指南</a>和 <a href="/zh/blog/claude-code-yolo-mode/">YOLO mode 指南</a>。</p>
+<p><a href="https://pi.dev">Pi</a> 没有权限弹窗。它的 README 写明，内置机制不会限制对文件系统、进程、网络或凭据的访问。Pi 建议用容器，或者用扩展加上确认步骤。用 Pi 要自己准备沙箱；用 Claude Code 跑无人值守任务，要明确放开所需权限。</p>
+<h2 id="命令行参数对照">命令行参数对照</h2>
+<p>下表的命令行选项都与 Pi 1.2.0 和 Claude Code 2.1.281 的 <code class="post-code--single">--help</code> 输出核对过。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">需求</th>
+<th scope="col">Pi</th>
+<th scope="col">Claude Code</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">单次运行</th>
+<td><code class="post-code--single">--print</code> / <code class="post-code--single">-p</code></td>
+<td><code class="post-code--single">-p</code></td>
+</tr>
+<tr>
+<th scope="row">结构化输出</th>
+<td><code class="post-code--spaced">--mode json</code> / <code class="post-code--single">rpc</code></td>
+<td><code class="post-code--spaced">--output-format json</code> / <code class="post-code--single">stream-json</code></td>
+</tr>
+<tr>
+<th scope="row">服务商与模型</th>
+<td><code class="post-code--single">--provider</code>、<code class="post-code--single">--model</code>；在 <code class="post-code--single">models.json</code> 中配置自定义服务商</td>
+<td><code class="post-code--single">--model</code>、<code class="post-code--single">ANTHROPIC_BASE_URL</code>；Anthropic 仅支持 Claude 模型</td>
+</tr>
+<tr>
+<th scope="row">工具控制</th>
+<td><code class="post-code--spaced">--tools read,bash</code>、<code class="post-code--single">--no-tools</code>、<code class="post-code--single">--exclude-tools</code></td>
+<td><code class="post-code--single">--tools</code>、<code class="post-code--single">--allowedTools</code>、<code class="post-code--single">--disallowedTools</code></td>
+</tr>
+<tr>
+<th scope="row">替换或追加系统提示词</th>
+<td><code class="post-code--single">--system-prompt</code>、<code class="post-code--single">--append-system-prompt</code></td>
+<td>参数相同</td>
+</tr>
+<tr>
+<th scope="row">技能</th>
+<td><code class="post-code--spaced">--skill &lt;path&gt;</code>、<code class="post-code--single">--no-skills</code></td>
+<td>自动查找 <code class="post-code--single">.claude/skills</code>；<code class="post-code--single">--bare</code> 会跳过</td>
+</tr>
+<tr>
+<th scope="row">扩展与插件</th>
+<td><code class="post-code--spaced">-e &lt;path&gt;</code>、<code class="post-code--single">--no-extensions</code></td>
+<td><code class="post-code--single">--plugin-dir</code>、设置中的 hooks</td>
+</tr>
+<tr>
+<th scope="row">跳过上下文文件</th>
+<td><code class="post-code--single">--no-context-files</code></td>
+<td><code class="post-code--single">--bare</code> 跳过 CLAUDE.md</td>
+</tr>
+<tr>
+<th scope="row">会话</th>
+<td><code class="post-code--single">--session-dir</code>、<code class="post-code--single">--no-session</code></td>
+<td><code class="post-code--single">--no-session-persistence</code>、<code class="post-code--spaced">--resume &lt;id&gt;</code></td>
+</tr>
+<tr>
+<th scope="row">权限</th>
+<td>无权限弹窗</td>
+<td><code class="post-code--single">--permission-mode</code>、<code class="post-code--single">--dangerously-skip-permissions</code></td>
+</tr>
+<tr>
+<th scope="row">子代理与计划模式</th>
+<td>没有内置支持，可用扩展添加</td>
+<td>内置支持（Agent 工具）</td>
+</tr>
+<tr>
+<th scope="row">许可证</th>
+<td>MIT (<code class="post-code--single">earendil-works/pi</code>)</td>
+<td>专有许可，Anthropic PBC</td>
+</tr>
+</tbody></table></div>
+<h2 id="配置目录之外的上下文文件">配置目录之外的上下文文件</h2>
+<p>我最初只把 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 和 <code class="post-code--single">CLAUDE_CONFIG_DIR</code> 指向空文件夹，两边却仍然加载了我的文件。Pi 读了 <code class="post-code--single">~/AGENTS.md</code>、上级目录的 <code class="post-code--single">AGENTS.md</code>，以及 <code class="post-code--single">~/.agents/skills</code> 下的 8 个 skill。Claude Code 读了 <code class="post-code--single">~/.claude/CLAUDE.md</code> 和上级目录的 <code class="post-code--single">CLAUDE.md</code>。两位独立评审读会话文件时发现了这个问题。我丢弃了那一轮的数字；清理后的空操作计数是 Pi 1,641，默认 Claude Code 17,398。</p>
+<p>自己测 harness 时，要把 <code class="post-code--single">HOME</code> 指向空目录，确保工作目录的上级没有 AGENTS.md 或 CLAUDE.md，再用 grep 查会话记录里有没有真实家目录的路径。Pi 的 <code class="post-code--single">--no-context-files</code>、<code class="post-code--single">--no-skills</code> 和 Claude Code 的 <code class="post-code--single">--bare</code> 能处理其中一部分。重跑时，我用了空 HOME 和最小环境，工作目录的上级也没有上下文文件。</p>
+<h2 id="复现命令">复现命令</h2>
+<p>用 bash 执行下面的命令。在我的机器上，它们的输入用量与前面的空操作计数只差几个 token：Pi 是 1,634，默认 Claude Code 是 17,381，<code class="post-code--single">--bare</code> 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。<code class="post-code--spaced">env -i</code> 会清掉 shell 里导出的其他变量，比如 <code class="post-code--single">PI_CODING_AGENT_DIR</code>、<code class="post-code--single">CLAUDE_CONFIG_DIR</code>，否则这些变量会把真实配置目录带回来。</p>
+<pre><code class="language-bash">export DEEPSEEK_API_KEY=...
+CLEAN=$(mktemp -d)        # empty HOME: no ~/AGENTS.md, ~/.agents/skills, ~/.claude/CLAUDE.md
+cd &quot;$(mktemp -d)&quot;         # no AGENTS.md or CLAUDE.md in any parent directory
+# env -i drops everything else you exported, such as PI_CODING_AGENT_DIR or CLAUDE_CONFIG_DIR
+
+# Pi: one usage line per assistant message
+env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; DEEPSEEK_API_KEY=&quot;$DEEPSEEK_API_KEY&quot; \
+  pi --print --mode json --no-session --provider deepseek --model deepseek-flash \
+  &quot;Reply with exactly OK&quot; \
+  | jq -c &#39;select(.type==&quot;message_end&quot;) | .message | select(.role==&quot;assistant&quot;) | .usage | {input, cacheRead, cacheWrite}&#39;
+
+# Claude Code on the same model (unsupported by Anthropic; measurement only)
+env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
+  ANTHROPIC_AUTH_TOKEN=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash \
+  claude -p --output-format json &quot;Reply with exactly OK&quot; | jq &#39;.modelUsage&#39;
+
+# Claude Code --bare reads ANTHROPIC_API_KEY instead of ANTHROPIC_AUTH_TOKEN
+env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
+  ANTHROPIC_API_KEY=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash \
+  claude -p --bare --output-format json &quot;Reply with exactly OK&quot; | jq &#39;.modelUsage&#39;
+</code></pre>
+<p>测编程任务时，按上面的描述自己写两个任务的文件；文件和我的不会逐字节相同，token 数也会不同。每个任务各建一个 git 仓库，只放该任务的两个文件，先把有 bug 的状态提交一次（<code class="post-code--spaced">git init &amp;&amp; git add -A &amp;&amp; git commit -m broken</code>），这样 <code class="post-code--spaced">git checkout -- .</code> 和 <code class="post-code--spaced">git diff</code> 才有比较的基准。把 <code class="post-code--spaced">Reply with exactly OK</code> 换成任务 prompt，给 Claude Code 命令加上 <code class="post-code--single">--dangerously-skip-permissions</code>。跑完后，自己再跑 <code class="post-code--spaced">python3 -m unittest</code> 和 <code class="post-code--spaced">git diff -- &lt;test file&gt;</code>。每次编程测试前，用 <code class="post-code--spaced">git checkout -- .</code> 把文件恢复到有 bug 的状态。要复现表中四个工具的那一行，在默认 Claude Code 那条命令（用 <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 的那条）上加 <code class="post-code--single">--tools=Bash,Read,Edit,Write</code>。Pi 在每条 assistant 消息里输出用量，要自己累加；Claude Code 的 <code class="post-code--single">modelUsage</code> 已经加总了全部请求，包括子代理。</p>
+<h2 id="orbi-换-harness-时踩过的坑">Orbi 换 harness 时踩过的坑</h2>
+<p>Orbi 最早的提交里就有 Pi，<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E7%9B%B4%E7%94%A8-pi">当时没有做过对比</a>。更难任务的结果见 <a href="/zh/blog/searching-for-orbis-harness/">harness 测评</a>：Opus 5.5 经 Claude Code 桥接，在 Orbi harness 的 v1、v5、v11 三个版本上分别是 1/3、2/3 和 3/4（通过次数 / 运行次数，跨三个仓库）；<code class="post-code--single">deepseek-flash</code> 经 Pi，在原版 harness 上是 6/15，到 v15 是 9/9。</p>
+<p>这几组测试的模型和 prompt 版本不同，运行次数又少，不能据此给 harness 排名。Orbi 的桥接代码负责把 Pi 的参数翻译成 Claude Code 的参数，翻译时漏掉了 <code class="post-code--single">--skill</code> 列表，直到 9 月 29 日才修好，所以那些 Opus 测试都没带 Orbi 的 skills。这是 Orbi 适配器的 bug，不该归到 Claude Code 上。换 harness 时，要逐个检查参数有没有传过去，也要检查 init 事件里的工具和 skill 清单。</p>
+<h2 id="pi-和-claude-code-怎么选">Pi 和 Claude Code 怎么选</h2>
+<p>已经有调度器的话，我会根据想用的模型和权限需求来选。需要自由选模型，我会用 Pi，自己准备沙箱。用 Anthropic 订阅，又希望工具自带子代理、计划模式和默认拒绝的权限控制，Claude Code 更合适。</p>
+<p>这次的小任务中，默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍，加上 <code class="post-code--single">--bare</code> 后，用量和 Pi 接近，多数更低。用 Claude Code 跑 API 脚本时，优先用 <code class="post-code--single">--bare</code>，至少也要用 <code class="post-code--single">--tools</code> 限制工具，因为大部分额外输入来自工具清单。还要明确设置 <code class="post-code--single">--allowedTools</code> 或权限模式，并检查 <code class="post-code--single">permission_denials</code>。</p>
+<p>Orbi 在 <code class="post-code--spaced">pi --print</code> 外面做调度、评审和合并检查，<a href="/zh/cloud/?ref=blog-pi-vs-cc">Cloud</a>也提供这些功能。</p>
+<h2 id="测试范围">测试范围</h2>
+<p>这次只测了两个简单的 Python 任务，DeepSeek 的每种配置、每个任务各跑 3 次，bare 在两个任务上都测了。Haiku（各 2 次）和权限对照（1 次）是额外的补充。受控对比只用了一个模型、一台机器、一天，以及上面列出的版本。难任务的成功率、长会话和 compaction 的表现，都还不能从这组测试里判断。这里也没测 Pi 跑 Claude。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p><a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>收录了 Orbi 的 Pi 系列文章。要看 CLI 外面那层 runner，见 <a href="/zh/compare/claude-code/">Claude Code 对比</a>和 <a href="/zh/cloud/?ref=blog-pi-vs-cc">Cloud</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/pi-coding-agent-vs-claude-code/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
+        <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+        <a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">
+          <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
+        </a>
+        <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+        </a>
+        <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
+        <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
+        <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
+        <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
+        <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
+        <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
+        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
+        <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
+        <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
+        <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
+        <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+        <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
+        <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
