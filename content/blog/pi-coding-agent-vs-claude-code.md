@@ -1,7 +1,7 @@
 ---
 title: Pi coding agent vs Claude Code: same model, measured
 date: 2026-11-01
-summary: Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.
+summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-vs-claude-code-card.png
@@ -12,7 +12,7 @@ I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two
 
 I'm Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as `pi --print`.
 
-## Pi coding agent vs Claude Code setup
+## How I ran Pi coding agent vs Claude Code
 
 Both used DeepSeek V4.1 Flash (`deepseek-flash`). Pi used its built-in `deepseek` provider, `--provider deepseek --model deepseek-flash`, and `DEEPSEEK_API_KEY`. Claude Code used `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`, `ANTHROPIC_AUTH_TOKEN=<deepseek key>` and `ANTHROPIC_MODEL=deepseek-flash`, following [DeepSeek's endpoint documentation](https://api-docs.deepseek.com/guides/anthropic_api).
 
@@ -22,7 +22,7 @@ Each run had `HOME` set to an empty directory and a minimal environment (`env -i
 
 Input totals include cache reads and writes. For Pi, I summed `usage.input + cacheRead + cacheWrite` over assistant messages. For Claude Code, I summed every request, including subagents, and cross-checked against `modelUsage` in the JSON output.
 
-## Pi vs Claude Code token usage without tool calls
+## Token use on a no-op prompt
 
 The prompt was `Reply with exactly OK`. Each run made a single model request. I ran each setup 3 times, and its input count stayed the same.
 
@@ -35,7 +35,7 @@ The prompt was `Reply with exactly OK`. Each run made a single model request. I 
 | Claude Code same 4 tools + `--system-prompt="You are a coding assistant."` | 2,072 |
 | Claude Code `--bare`: Bash, Edit, Read | 1,265 |
 
-For this single-request prompt, default Claude Code used about 10.6× Pi's input. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
+This is where the Pi vs Claude Code token usage gap is easiest to see. For this single-request prompt, default Claude Code used about 10.6× Pi's input. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
 
 The init event in the clean environment listed 21 default tools. I checked it 2 times and got the same list: Task, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write. The init event calls the subagent tool `Task`; the tool definitions sent to the model and the docs call it `Agent`.
 
@@ -43,7 +43,7 @@ The [headless docs](https://code.claude.com/docs/en/headless) recommend `--bare`
 
 I also checked Claude Haiku 4.5 through my subscription (`--model haiku`, the same clean HOME with only the login copied in). It used 20,787 and 20,660 input tokens for the same no-op in 2 runs. Those counts use a different tokenizer and cannot be compared directly with the DeepSeek counts, but Claude's own model also had default overhead. I could not test Pi on Claude because I had no Anthropic API key or OpenRouter credit.
 
-## Pi vs Claude Code benchmark: small coding tasks
+## Two small coding tasks
 
 Task A was a bug fix in `duration.py`: `format_duration` swapped minutes and seconds, causing tests in `test_duration.py` to fail. My prompt was:
 
@@ -107,7 +107,7 @@ When benchmarking harnesses, set `HOME` to an empty directory and run outside an
 
 ## Reproduce the no-op comparison
 
-Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for `--bare`. The small differences came from the longer working-directory path.
+Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for `--bare`. The small differences came from the shorter working-directory path.
 
 ```bash
 export DEEPSEEK_API_KEY=...
@@ -140,7 +140,7 @@ Pi was in Orbi's first commits, [chosen without a comparison](/blog/orbi-on-pi-c
 
 Those runs used different models and prompt versions, with too few runs to rank the harnesses. Until 29 September, Orbi's bridge dropped Pi's `--skill` list, so the Opus runs had no Orbi skills. Orbi's adapter caused that bug. When switching harnesses, check that every flag reaches the new harness, including the tool/skill list in the init event.
 
-## Claude Code vs Pi: which one I'd use
+## Which one I'd use
 
 For scheduled jobs, I'd use Pi for model choice and provide a sandbox. Claude Code fits Anthropic subscription users who want built-in subagents, plan mode and deny-by-default permissions. On these tasks, default Claude Code used 7 to 8 times Pi's input tokens; `--bare` used about as many as Pi. For API scripts, I'd use `--bare` or at least restrict `--tools`, since the tool list accounts for most of the overhead. Set explicit `--allowedTools` or a permission mode, and check `permission_denials`.
 

@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi coding agent vs Claude Code: same model, measured | Orbi</title>
-  <meta name="description" content="Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.">
+  <meta name="description" content="With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.">
   <link rel="canonical" href="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/pi-coding-agent-vs-claude-code/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Pi coding agent vs Claude Code: same model, measured">
-  <meta property="og:description" content="Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.">
+  <meta property="og:description" content="With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.">
   <meta property="og:url" content="https://orbi.build/blog/pi-coding-agent-vs-claude-code/">
   <meta property="og:image" content="https://orbi.build/img/blog-pi-vs-claude-code-card.png">
   <meta property="og:image:alt" content="Pi coding agent vs Claude Code: same model, measured">
   <meta property="article:published_time" content="2026-11-01">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent vs Claude Code: same model, measured","datePublished":"2026-11-01","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-coding-agent-vs-claude-code/","image":"https://orbi.build/img/blog-pi-vs-claude-code-card.png","inLanguage":"en","description":"Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.","url":"https://orbi.build/blog/pi-coding-agent-vs-claude-code/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent vs Claude Code: same model, measured","datePublished":"2026-11-01","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-coding-agent-vs-claude-code/","image":"https://orbi.build/img/blog-pi-vs-claude-code-card.png","inLanguage":"en","description":"With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.","url":"https://orbi.build/blog/pi-coding-agent-vs-claude-code/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Pi coding agent vs Claude Code: same model, measured</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-11-01">2026-11-01</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">Both passed all permitted runs on two small tasks with one model. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.</p>
+          <p class="hero-lede">With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare was in Pi's range.</p>
         </section>
       </div>
     </div>
@@ -164,15 +164,15 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#pi-coding-agent-vs-claude-code-setup">Pi coding agent vs Claude Code setup</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-claude-code-token-usage-without-tool-calls">Pi vs Claude Code token usage without tool calls</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-claude-code-benchmark-small-coding-tasks">Pi vs Claude Code benchmark: small coding tasks</a></li>
+          <li><a class="post-toc-link" href="#how-i-ran-pi-coding-agent-vs-claude-code">How I ran Pi coding agent vs Claude Code</a></li>
+          <li><a class="post-toc-link" href="#token-use-on-a-no-op-prompt">Token use on a no-op prompt</a></li>
+          <li><a class="post-toc-link" href="#two-small-coding-tasks">Two small coding tasks</a></li>
           <li><a class="post-toc-link" href="#permission-denials-with-exit-code-0">Permission denials with exit code 0</a></li>
           <li><a class="post-toc-link" href="#cli-options">CLI options</a></li>
           <li><a class="post-toc-link" href="#isolating-config-and-context-files">Isolating config and context files</a></li>
           <li><a class="post-toc-link" href="#reproduce-the-no-op-comparison">Reproduce the no-op comparison</a></li>
           <li><a class="post-toc-link" href="#switching-orbi-s-harness">Switching Orbi's harness</a></li>
-          <li><a class="post-toc-link" href="#claude-code-vs-pi-which-one-i-d-use">Claude Code vs Pi: which one I'd use</a></li>
+          <li><a class="post-toc-link" href="#which-one-i-d-use">Which one I'd use</a></li>
           <li><a class="post-toc-link" href="#limits">Limits</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
@@ -181,27 +181,27 @@
         <details class="post-toc-inline">
           <summary>On this page · 11 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#pi-coding-agent-vs-claude-code-setup">Pi coding agent vs Claude Code setup</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-claude-code-token-usage-without-tool-calls">Pi vs Claude Code token usage without tool calls</a></li>
-          <li><a class="post-toc-link" href="#pi-vs-claude-code-benchmark-small-coding-tasks">Pi vs Claude Code benchmark: small coding tasks</a></li>
+          <li><a class="post-toc-link" href="#how-i-ran-pi-coding-agent-vs-claude-code">How I ran Pi coding agent vs Claude Code</a></li>
+          <li><a class="post-toc-link" href="#token-use-on-a-no-op-prompt">Token use on a no-op prompt</a></li>
+          <li><a class="post-toc-link" href="#two-small-coding-tasks">Two small coding tasks</a></li>
           <li><a class="post-toc-link" href="#permission-denials-with-exit-code-0">Permission denials with exit code 0</a></li>
           <li><a class="post-toc-link" href="#cli-options">CLI options</a></li>
           <li><a class="post-toc-link" href="#isolating-config-and-context-files">Isolating config and context files</a></li>
           <li><a class="post-toc-link" href="#reproduce-the-no-op-comparison">Reproduce the no-op comparison</a></li>
           <li><a class="post-toc-link" href="#switching-orbi-s-harness">Switching Orbi's harness</a></li>
-          <li><a class="post-toc-link" href="#claude-code-vs-pi-which-one-i-d-use">Claude Code vs Pi: which one I'd use</a></li>
+          <li><a class="post-toc-link" href="#which-one-i-d-use">Which one I'd use</a></li>
           <li><a class="post-toc-link" href="#limits">Limits</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
 <p>I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using <code class="post-code--spaced">claude -p --bare</code> brought its input-token use close to Pi&#39;s, with some runs above and some below. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.</p>
 <p>I&#39;m Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as <code class="post-code--spaced">pi --print</code>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<h2 id="pi-coding-agent-vs-claude-code-setup">Pi coding agent vs Claude Code setup</h2>
+<h2 id="how-i-ran-pi-coding-agent-vs-claude-code">How I ran Pi coding agent vs Claude Code</h2>
 <p>Both used DeepSeek V4.1 Flash (<code class="post-code--single">deepseek-flash</code>). Pi used its built-in <code class="post-code--single">deepseek</code> provider, <code class="post-code--spaced">--provider deepseek --model deepseek-flash</code>, and <code class="post-code--single">DEEPSEEK_API_KEY</code>. Claude Code used <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>, <code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;deepseek key&gt;</code> and <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>, following <a href="https://api-docs.deepseek.com/guides/anthropic_api">DeepSeek&#39;s endpoint documentation</a>.</p>
 <p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic says</a> it &quot;doesn&#39;t support routing Claude Code to non-Claude models through any gateway&quot;. I used that route only for measurement and do not recommend it. Pi used the OpenAI-compatible API; Claude Code used the Anthropic-compatible API. Both had the same model and tokenizer, but different wire formats.</p>
 <p>Each run had <code class="post-code--single">HOME</code> set to an empty directory and a minimal environment (<code class="post-code--spaced">env -i</code>). The no-op runs used an empty directory; each coding run used a fresh git repository holding only that task&#39;s two files. All of them sat under <code class="post-code--single">/var/tmp</code>, with no AGENTS.md or CLAUDE.md in any parent directory. The counts therefore reflect each tool&#39;s default overhead, with none of my files loaded. Pi includes the working directory path in its prompt, so the count varies by a few tokens with path length (1,634 from a shorter path, instead of 1,641). I checked every rerun&#39;s session transcript and found no paths from my real home directory.</p>
 <p>Input totals include cache reads and writes. For Pi, I summed <code class="post-code--spaced">usage.input + cacheRead + cacheWrite</code> over assistant messages. For Claude Code, I summed every request, including subagents, and cross-checked against <code class="post-code--single">modelUsage</code> in the JSON output.</p>
-<h2 id="pi-vs-claude-code-token-usage-without-tool-calls">Pi vs Claude Code token usage without tool calls</h2>
+<h2 id="token-use-on-a-no-op-prompt">Token use on a no-op prompt</h2>
 <p>The prompt was <code class="post-code--spaced">Reply with exactly OK</code>. Each run made a single model request. I ran each setup 3 times, and its input count stayed the same.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -235,11 +235,11 @@
 <td>1,265</td>
 </tr>
 </tbody></table></div>
-<p>For this single-request prompt, default Claude Code used about 10.6× Pi&#39;s input. Restricting it to Pi&#39;s four tools brought the count to 3,316, about 2× Pi&#39;s. Removing the other 17 tools cut about 14,000 of the default&#39;s 17,398 input tokens. Replacing the system prompt removed about 1,240 more. <code class="post-code--single">--bare</code> used 1,265, below Pi&#39;s default of 1,641. Pi with no tools used 466.</p>
+<p>This is where the Pi vs Claude Code token usage gap is easiest to see. For this single-request prompt, default Claude Code used about 10.6× Pi&#39;s input. Restricting it to Pi&#39;s four tools brought the count to 3,316, about 2× Pi&#39;s. Removing the other 17 tools cut about 14,000 of the default&#39;s 17,398 input tokens. Replacing the system prompt removed about 1,240 more. <code class="post-code--single">--bare</code> used 1,265, below Pi&#39;s default of 1,641. Pi with no tools used 466.</p>
 <p>The init event in the clean environment listed 21 default tools. I checked it 2 times and got the same list: Task, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write. The init event calls the subagent tool <code class="post-code--single">Task</code>; the tool definitions sent to the model and the docs call it <code class="post-code--single">Agent</code>.</p>
 <p>The <a href="https://code.claude.com/docs/en/headless">headless docs</a> recommend <code class="post-code--single">--bare</code> for scripted and SDK calls and say it will become the default for <code class="post-code--single">-p</code> in a future release. It skips auto-discovery of hooks, skills, plugins, MCP servers, auto memory and CLAUDE.md. It includes Bash, file read and file edit tools. Authentication requires <code class="post-code--single">ANTHROPIC_API_KEY</code> or <code class="post-code--single">apiKeyHelper</code>; OAuth/subscription login is ignored. For the bare measurements, I set <code class="post-code--single">ANTHROPIC_API_KEY</code> to the DeepSeek key.</p>
 <p>I also checked Claude Haiku 4.5 through my subscription (<code class="post-code--spaced">--model haiku</code>, the same clean HOME with only the login copied in). It used 20,787 and 20,660 input tokens for the same no-op in 2 runs. Those counts use a different tokenizer and cannot be compared directly with the DeepSeek counts, but Claude&#39;s own model also had default overhead. I could not test Pi on Claude because I had no Anthropic API key or OpenRouter credit.</p>
-<h2 id="pi-vs-claude-code-benchmark-small-coding-tasks">Pi vs Claude Code benchmark: small coding tasks</h2>
+<h2 id="two-small-coding-tasks">Two small coding tasks</h2>
 <p>Task A was a bug fix in <code class="post-code--single">duration.py</code>: <code class="post-code--single">format_duration</code> swapped minutes and seconds, causing tests in <code class="post-code--single">test_duration.py</code> to fail. My prompt was:</p>
 <blockquote>
 <p>The tests in test_duration.py fail. Fix the bug in duration.py so that python3 -m unittest passes. Do not edit the tests.</p>
@@ -385,7 +385,7 @@
 <p>In my first round, I pointed <code class="post-code--single">PI_CODING_AGENT_DIR</code> and <code class="post-code--single">CLAUDE_CONFIG_DIR</code> at empty folders. Both tools still picked up my own files: Pi read <code class="post-code--single">~/AGENTS.md</code>, a parent directory&#39;s <code class="post-code--single">AGENTS.md</code> and 8 skills from <code class="post-code--single">~/.agents/skills</code>; Claude Code read <code class="post-code--single">~/.claude/CLAUDE.md</code> and a parent directory&#39;s <code class="post-code--single">CLAUDE.md</code>. Two independent reviewers caught this in the session files. I discarded that round&#39;s numbers. The clean no-op counts are 1,641 for Pi and 17,398 for default Claude Code.</p>
 <p>When benchmarking harnesses, set <code class="post-code--single">HOME</code> to an empty directory and run outside any tree with AGENTS.md/CLAUDE.md above it. Before using the counts, grep the session transcript for paths from your real home. Pi&#39;s <code class="post-code--single">--no-context-files</code> and <code class="post-code--single">--no-skills</code>, and Claude Code&#39;s <code class="post-code--single">--bare</code>, cover part of this. For my rerun, I used an empty HOME, a minimal environment and a working directory with no context files above it.</p>
 <h2 id="reproduce-the-no-op-comparison">Reproduce the no-op comparison</h2>
-<p>Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for <code class="post-code--single">--bare</code>. The small differences came from the longer working-directory path.</p>
+<p>Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for <code class="post-code--single">--bare</code>. The small differences came from the shorter working-directory path.</p>
 <pre><code class="language-bash">export DEEPSEEK_API_KEY=...
 CLEAN=$(mktemp -d)        # empty HOME: no ~/AGENTS.md, ~/.agents/skills, ~/.claude/CLAUDE.md
 cd &quot;$(mktemp -d)&quot;         # no AGENTS.md or CLAUDE.md in any parent directory
@@ -411,7 +411,7 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
 <h2 id="switching-orbi-s-harness">Switching Orbi&#39;s harness</h2>
 <p>Pi was in Orbi&#39;s first commits, <a href="/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi">chosen without a comparison</a>. In the <a href="/blog/searching-for-orbis-harness/">harness benchmark</a>, which used harder tasks, Opus 5.5 through a Claude Code bridge scored 1/3, 2/3 and 3/4 on three Orbi harness versions. With <code class="post-code--single">deepseek-flash</code> through Pi, the score went from 6/15 on the original harness to 9/9 on a later one.</p>
 <p>Those runs used different models and prompt versions, with too few runs to rank the harnesses. Until 29 September, Orbi&#39;s bridge dropped Pi&#39;s <code class="post-code--single">--skill</code> list, so the Opus runs had no Orbi skills. Orbi&#39;s adapter caused that bug. When switching harnesses, check that every flag reaches the new harness, including the tool/skill list in the init event.</p>
-<h2 id="claude-code-vs-pi-which-one-i-d-use">Claude Code vs Pi: which one I&#39;d use</h2>
+<h2 id="which-one-i-d-use">Which one I&#39;d use</h2>
 <p>For scheduled jobs, I&#39;d use Pi for model choice and provide a sandbox. Claude Code fits Anthropic subscription users who want built-in subagents, plan mode and deny-by-default permissions. On these tasks, default Claude Code used 7 to 8 times Pi&#39;s input tokens; <code class="post-code--single">--bare</code> used about as many as Pi. For API scripts, I&#39;d use <code class="post-code--single">--bare</code> or at least restrict <code class="post-code--single">--tools</code>, since the tool list accounts for most of the overhead. Set explicit <code class="post-code--single">--allowedTools</code> or a permission mode, and check <code class="post-code--single">permission_denials</code>.</p>
 <p>Orbi adds scheduling, review and merge gates around <code class="post-code--spaced">pi --print</code>, available through <a href="/cloud/?ref=blog-pi-vs-cc">Cloud</a>.</p>
 <h2 id="limits">Limits</h2>
