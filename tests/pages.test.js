@@ -2147,14 +2147,23 @@ describe("one unified footer on every content page", () => {
         // Issue #1116: the row ends with these four embeds, so the launchvault.dev
         // badge is the last anchor inside the badge wrapper.
         if (index === badges.length - 1) {
-          expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the LaunchVault badge must close the badge row`)
-            .toMatch(/^\s*<\/div>/);
+          expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Findstack badge must follow LaunchVault`)
+            .toMatch(/^\s*<a target="_blank" rel="noopener" href="https:\/\/findstack\.com\/products\/orbi\/reviews">/);
         }
       }
       // The directories count the listing's badge from requests for the image
       // itself, so the shipped HTML must point at their hosts, never a copy.
       expect(countMatches(footer, /src="\/img\/[^"]*(aifordevelopers|uno-directory|saascity|launch-valut)[^"]*"/gi), `${page.output}: the Issue #1134 badges must not be self-hosted`)
         .toBe(0);
+    }
+  });
+  it("carries the Findstack badge verbatim, closing the badge row on every footer page", () => {
+    const badge = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: Findstack badge drifted`).toContain(badge);
+      expect(countMatches(footer, /findstack\.com\/products\/orbi\/reviews/g)).toBe(1);
+      expect(footer.slice(footer.indexOf(badge) + badge.length)).toMatch(/^\s*<\/div>/);
     }
   });
 
@@ -4590,4 +4599,5 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
       expect(region(html, '<p class="hero-lede">', "</p>"), `${output}: definition under the H1`).toContain(definition);
     });
   }
+
 });
