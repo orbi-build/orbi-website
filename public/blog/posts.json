@@ -1,5 +1,13 @@
 [
   {
+    "slug": "pi-coding-agent-vs-claude-code",
+    "title": "Pi coding agent vs Claude Code: same model, measured",
+    "summary": "Same model, two small tasks, all 3 runs passed on both tools, but default Claude Code used 3 to 6.5 times Pi's input tokens; --bare used fewer than Pi.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "pi-extensions-in-production",
     "title": "Pi extensions in production: isolate, then write one",
     "summary": "How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.",
