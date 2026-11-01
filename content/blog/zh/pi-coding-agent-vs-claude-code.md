@@ -26,7 +26,7 @@ series: pi
 
 ## 不调用工具时的启动用量
 
-先给一个不用工具的 prompt：`Reply with exactly OK`，每次只向模型发一次请求。每种配置跑 3 次，同一配置的输入计数完全相同。
+先给一个不用工具的 prompt：`Reply with exactly OK`，每次只向模型发一次请求。表里每种配置跑 3 次，同一配置的输入计数完全相同。
 
 | 配置 | 每次请求的输入 token |
 |---|---|
@@ -34,10 +34,10 @@ series: pi
 | Pi `--no-tools` | 466 |
 | Claude Code 默认：21 个工具 | 17,398 |
 | Claude Code `--tools=Bash,Read,Edit,Write` | 3,316 |
-| Claude Code 使用相同的 4 个工具，并设置 `--system-prompt="You are a coding assistant."` | 2,072 |
+| Claude Code 使用相同的 4 个工具，并用 `--system-prompt="You are a coding assistant."` 替换默认 system prompt | 2,072 |
 | Claude Code `--bare`：Bash、Edit、Read | 1,265 |
 
-这个任务只请求一次模型，默认 Claude Code 的输入约为 Pi 的 10.6×。把工具限制为与 Pi 相同的四个后，用量降到 3,316，约为 Pi 的 2×。去掉其余 17 个工具，就从默认的 17,398 个输入 token 里省下了约 14,000 个。再换掉 system prompt，又少了约 1,240 个。`--bare` 用了 1,265，低于 Pi 默认的 1,641；Pi 完全不带工具时是 466。
+这个任务只请求一次模型，默认 Claude Code 的输入约为 Pi 的 10.6×。空操作的请求全是固定开销，所以这个比例比下面编程任务按整次运行算的比例高。把工具限制为与 Pi 相同的四个后，用量降到 3,316，约为 Pi 的 2×。去掉其余 17 个工具，就从默认的 17,398 个输入 token 里省下了约 14,000 个。再换掉 system prompt，又少了约 1,240 个。`--bare` 用了 1,265，低于 Pi 默认的 1,641；Pi 完全不带工具时是 466。
 
 在干净环境里，init 事件列出了这 21 个默认工具。2 次检查的清单相同：Task、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。init 事件把子代理工具记作 `Task`；模型实际收到的工具定义里叫 `Agent`，文档里也这么叫。
 
@@ -68,11 +68,11 @@ series: pi
 | Claude Code 默认，任务 B | 3/3 | 5, 5, 5 | 91,062 / 91,218 / 92,033 | 6.6 / 7.0 / 8.0 s |
 | Claude Code `--bare`，任务 B | 3/3 | 5, 4, 4 | 10,735 / 7,740 / 7,804 | 7.8 / 6.0 / 5.5 s |
 
-逐次配对比较，默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。
+按运行顺序配对（第 1 次对第 1 次，依此类推），默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。这不是工具数相同的对比：bare 只有 3 个工具（没有 Write），prompt 也更短。工具相同、system prompt 换掉时，Claude Code 的空操作是 2,072，Pi 是 1,641。
 
-这些输入大部分是缓存读取。任务 A 首次运行时，Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。
+这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。
 
-我另外测了订阅版 Claude Haiku 4.5，加上 `--dangerously-skip-permissions` 后，任务 A 的 2 次运行都通过了。输入分别是 174,693 和 174,630 个 token，各请求 7 次，耗时分别是 19.6 和 18.2 s。这组用的是另一个模型。
+我另外测了订阅版 Claude Haiku 4.5，加上 `--dangerously-skip-permissions` 后，任务 A 的 2 次运行都通过了。输入分别是 174,693 和 174,630 个 token，各请求 7 次，耗时分别是 19.6 和 18.2 s。这组换了模型，tokenizer 也不同，不要拿它和 DeepSeek 那几行比。
 
 ## 无人值守时，退出码 0 不代表修改成功
 
@@ -115,7 +115,7 @@ series: pi
 
 ## 复现命令
 
-用 bash 执行下面的命令。在我的机器上，它们的输入用量与前面的空操作计数只差几个 token：Pi 是 1,634，默认 Claude Code 是 17,381，`--bare` 是 1,258。这几个 token 的差别来自工作目录路径的长短。`env -i` 会清掉 shell 里导出的其他变量，比如 `PI_CODING_AGENT_DIR`、`CLAUDE_CONFIG_DIR`，否则这些变量会把真实配置目录带回来。
+用 bash 执行下面的命令。在我的机器上，它们的输入用量与前面的空操作计数只差几个 token：Pi 是 1,634，默认 Claude Code 是 17,381，`--bare` 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。`env -i` 会清掉 shell 里导出的其他变量，比如 `PI_CODING_AGENT_DIR`、`CLAUDE_CONFIG_DIR`，否则这些变量会把真实配置目录带回来。
 
 ```bash
 export DEEPSEEK_API_KEY=...
@@ -140,11 +140,11 @@ env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/an
   claude -p --bare --output-format json "Reply with exactly OK" | jq '.modelUsage'
 ```
 
-测编程任务时，每个任务各建一个 git 仓库，只放该任务的两个文件。把 `Reply with exactly OK` 换成任务 prompt，给 Claude Code 命令加上 `--dangerously-skip-permissions`。跑完后，自己再跑 `python3 -m unittest` 和 `git diff -- <test file>`。每次编程测试前，用 `git checkout -- .` 把文件恢复到有 bug 的状态。要复现表中四个工具的那一行，加上 `--tools=Bash,Read,Edit,Write`。Pi 在每条 assistant 消息里输出用量，要自己累加；Claude Code 的 `modelUsage` 已经加总了全部请求，包括子代理。
+测编程任务时，按上面的描述自己写两个任务的文件；文件和我的不会逐字节相同，token 数也会不同。每个任务各建一个 git 仓库，只放该任务的两个文件，先把有 bug 的状态提交一次（`git init && git add -A && git commit -m broken`），这样 `git checkout -- .` 和 `git diff` 才有比较的基准。把 `Reply with exactly OK` 换成任务 prompt，给 Claude Code 命令加上 `--dangerously-skip-permissions`。跑完后，自己再跑 `python3 -m unittest` 和 `git diff -- <test file>`。每次编程测试前，用 `git checkout -- .` 把文件恢复到有 bug 的状态。要复现表中四个工具的那一行，在默认 Claude Code 那条命令（用 `ANTHROPIC_AUTH_TOKEN` 的那条）上加 `--tools=Bash,Read,Edit,Write`。Pi 在每条 assistant 消息里输出用量，要自己累加；Claude Code 的 `modelUsage` 已经加总了全部请求，包括子代理。
 
 ## Orbi 换 harness 时踩过的坑
 
-Orbi 最早的提交里就有 Pi，[当时没有做过对比](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)。更难任务的结果见 [harness 测评](/zh/blog/searching-for-orbis-harness/)：Opus 5.5 经 Claude Code 桥接，在 Orbi harness 的 v1、v5、v11 三个版本上分别是 1/3、2/3 和 3/4；`deepseek-flash` 经 Pi，在原版 harness 上是 6/15，到 v15 是 9/9。
+Orbi 最早的提交里就有 Pi，[当时没有做过对比](/zh/blog/orbi-on-pi-coding-agent/#为什么一直用-pi)。更难任务的结果见 [harness 测评](/zh/blog/searching-for-orbis-harness/)：Opus 5.5 经 Claude Code 桥接，在 Orbi harness 的 v1、v5、v11 三个版本上分别是 1/3、2/3 和 3/4（通过次数 / 运行次数，跨三个仓库）；`deepseek-flash` 经 Pi，在原版 harness 上是 6/15，到 v15 是 9/9。
 
 这几组测试的模型和 prompt 版本不同，运行次数又少，不能据此给 harness 排名。Orbi 的桥接代码负责把 Pi 的参数翻译成 Claude Code 的参数，翻译时漏掉了 `--skill` 列表，直到 9 月 29 日才修好，所以那些 Opus 测试都没带 Orbi 的 skills。这是 Orbi 适配器的 bug，不该归到 Claude Code 上。换 harness 时，要逐个检查参数有没有传过去，也要检查 init 事件里的工具和 skill 清单。
 
@@ -158,7 +158,7 @@ Orbi 在 `pi --print` 外面做调度、评审和合并检查，[Cloud](/zh/clou
 
 ## 测试范围
 
-这次只测了两个简单的 Python 任务，每种配置、每个任务各跑 3 次，bare 在两个任务上都测了。受控对比只用了一个模型、一台机器、一天，以及上面列出的版本。难任务的成功率、长会话和 compaction 的表现，都还不能从这组测试里判断。这里也没测 Pi 跑 Claude。
+这次只测了两个简单的 Python 任务，DeepSeek 的每种配置、每个任务各跑 3 次，bare 在两个任务上都测了。Haiku（各 2 次）和权限对照（1 次）是额外的补充。受控对比只用了一个模型、一台机器、一天，以及上面列出的版本。难任务的成功率、长会话和 compaction 的表现，都还不能从这组测试里判断。这里也没测 Pi 跑 Claude。
 
 ## 相关
 

@@ -24,7 +24,7 @@ Input totals include cache reads and writes. For Pi, I summed `usage.input + cac
 
 ## Token use on a no-op prompt
 
-The prompt was `Reply with exactly OK`. Each run made a single model request. I ran each setup 3 times, and its input count stayed the same.
+The prompt was `Reply with exactly OK`. Each run made a single model request. I ran each setup in the table 3 times, and its input count stayed the same.
 
 | Setup | Input tokens per request |
 |---|---|
@@ -32,10 +32,10 @@ The prompt was `Reply with exactly OK`. Each run made a single model request. I 
 | Pi `--no-tools` | 466 |
 | Claude Code default: 21 tools | 17,398 |
 | Claude Code `--tools=Bash,Read,Edit,Write` | 3,316 |
-| Claude Code same 4 tools + `--system-prompt="You are a coding assistant."` | 2,072 |
+| Claude Code same 4 tools, default system prompt replaced with `--system-prompt="You are a coding assistant."` | 2,072 |
 | Claude Code `--bare`: Bash, Edit, Read | 1,265 |
 
-For this single-request prompt, default Claude Code used about 10.6× Pi's input. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
+For this single-request prompt, default Claude Code used about 10.6× Pi's input. A no-op request is nothing but fixed overhead, so this ratio is higher than the per-run ratio in the coding tasks below. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
 
 The init event in the clean environment listed 21 default tools. I checked it 2 times and got the same list: Task, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write. The init event calls the subagent tool `Task`; the tool definitions sent to the model and the docs call it `Agent`.
 
@@ -64,11 +64,11 @@ I ran Pi, default Claude Code and bare Claude Code 3 times per task on `deepseek
 | Claude Code default, task B | 3/3 | 5, 5, 5 | 91,062 / 91,218 / 92,033 | 6.6 / 7.0 / 8.0 s |
 | Claude Code `--bare`, task B | 3/3 | 5, 4, 4 | 10,735 / 7,740 / 7,804 | 7.8 / 6.0 / 5.5 s |
 
-Default Claude Code used 7.2 to 8.1 times Pi's input tokens in each paired run. Request counts were about the same; the gap came from overhead on each request, which re-sends the tool definitions. Bare came close to Pi: above it in one of six paired runs and below it in the other five.
+Default Claude Code used 7.2 to 8.1 times Pi's input tokens in each paired run. Request counts were about the same; the gap came from overhead on each request, which re-sends the tool definitions. I paired runs by their order (first with first, and so on). Bare came close to Pi: above it in one of six paired runs and below it in the other five. It is not an equal-tools comparison: bare has three tools (no Write) and a shorter prompt. With the same four tools and a replaced system prompt, Claude Code's no-op was 2,072 against Pi's 1,641.
 
-Most input tokens were cache reads. In task A's first run, they accounted for 6,912 of Pi's 9,081 and 53,760 of default Claude Code's 72,382. DeepSeek automatically caches repeated prefixes. Cache reads cost less than uncached input, so the input-token ratio alone cannot tell you the cost ratio.
+Most input tokens were cache reads. In the first of the three task A runs, they accounted for 6,912 of Pi's 9,081 and 53,760 of default Claude Code's 72,382. DeepSeek automatically caches repeated prefixes. Cache reads cost less than uncached input, so the input-token ratio alone cannot tell you the cost ratio.
 
-Through my subscription, Claude Haiku 4.5 with `--dangerously-skip-permissions` passed task A in both of 2 runs. It used 174,693 and 174,630 input tokens, with 7 requests each, and took 19.6 and 18.2 s, respectively. These runs used a different model from the controlled comparison.
+Through my subscription, Claude Haiku 4.5 with `--dangerously-skip-permissions` passed task A in both of 2 runs. It used 174,693 and 174,630 input tokens, with 7 requests each, and took 19.6 and 18.2 s, respectively. These runs used a different model and tokenizer, so don't compare their counts with the DeepSeek rows.
 
 ## Permission denials with exit code 0
 
@@ -107,7 +107,7 @@ When benchmarking harnesses, set `HOME` to an empty directory and run outside an
 
 ## Reproduce the no-op comparison
 
-Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for `--bare`. The small differences came from the shorter working-directory path.
+Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for `--bare`. Both tools put the working-directory path in their prompt, and the temporary directory had a shorter path than my test directories.
 
 ```bash
 export DEEPSEEK_API_KEY=...
@@ -132,11 +132,11 @@ env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/an
   claude -p --bare --output-format json "Reply with exactly OK" | jq '.modelUsage'
 ```
 
-For coding runs, make one fresh git repository per task with only that task's two files. Use the task prompt instead of `Reply with exactly OK`, add `--dangerously-skip-permissions` to the Claude Code commands, and afterwards run `python3 -m unittest` and `git diff -- <test file>` yourself. Reset the files to their broken state (`git checkout -- .`) before every coding run. For the four-tool row, add `--tools=Bash,Read,Edit,Write`. Pi prints usage per assistant message; add them up. Claude Code's `modelUsage` already totals all requests including subagents.
+For coding runs, write your own versions of the two tasks from the descriptions above; your token counts will differ from mine, since the files won't match byte for byte. Make one fresh git repository per task with only that task's two files and commit the broken state first (`git init && git add -A && git commit -m broken`), so `git checkout -- .` and `git diff` have something to compare against. Use the task prompt instead of `Reply with exactly OK`, add `--dangerously-skip-permissions` to the Claude Code commands, and afterwards run `python3 -m unittest` and `git diff -- <test file>` yourself. Reset the files to their broken state (`git checkout -- .`) before every coding run. For the four-tool row, add `--tools=Bash,Read,Edit,Write` to the default Claude Code command (the one with `ANTHROPIC_AUTH_TOKEN`). Pi prints usage per assistant message; add them up. Claude Code's `modelUsage` already totals all requests including subagents.
 
 ## Switching Orbi's harness
 
-Pi was in Orbi's first commits, [chosen without a comparison](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi). In the [harness benchmark](/blog/searching-for-orbis-harness/), which used harder tasks, Opus 5.5 through a Claude Code bridge scored 1/3, 2/3 and 3/4 on Orbi harness versions v1, v5 and v11. With `deepseek-flash` through Pi, the score went from 6/15 on the original harness to 9/9 on v15.
+Pi was in Orbi's first commits, [chosen without a comparison](/blog/orbi-on-pi-coding-agent/#why-we-stay-on-pi). In the [harness benchmark](/blog/searching-for-orbis-harness/), which used harder tasks, Opus 5.5 through a Claude Code bridge scored 1/3, 2/3 and 3/4 (passes / runs, across three repositories) on Orbi harness versions v1, v5 and v11. With `deepseek-flash` through Pi, the score went from 6/15 on the original harness to 9/9 on v15.
 
 Those runs used different models and prompt versions, with too few runs to rank the harnesses. Orbi's bridge translated Pi's flags into Claude Code's, and until 29 September it dropped the `--skill` list on the way, so the Opus runs had no Orbi skills. Orbi's adapter caused that bug. When switching harnesses, check that every flag reaches the new harness, including the tool/skill list in the init event.
 
@@ -148,7 +148,7 @@ Orbi adds scheduling, review and merge gates around `pi --print`, available thro
 
 ## Limits
 
-I used two toy Python tasks, with 3 runs per setup per task, and tested bare on both. The controlled comparison used one model, one machine, one day and the versions above. These results do not tell us how either tool performs on hard tasks, in long sessions or during compaction. I have no Pi-on-Claude measurements.
+I used two toy Python tasks, with 3 runs per DeepSeek setup per task, and tested bare on both. The Haiku runs (2 each) and the permission control (1 run) were extra checks. The controlled comparison used one model, one machine, one day and the versions above. These results do not tell us how either tool performs on hard tasks, in long sessions or during compaction. I have no Pi-on-Claude measurements.
 
 ## Related
 
