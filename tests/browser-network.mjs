@@ -78,6 +78,7 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "uno.directory", width: 146, height: 44 },
   { host: "saascity.io", width: 210, height: 80 },
   { host: "launchvault.dev", width: 139, height: 44 },
+  { host: "findstack.com", width: 180, height: 56 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
