@@ -581,7 +581,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // the founder.best / makeitla.st badges and Issue #1134 the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges:
         // 36 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(37);
+        expect(result.badgeCount, path + ": the footer badges").toBe(40);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -1120,6 +1120,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://findly.tools/orbi?utm_source=orbi",
           "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
           "https://www.makeitla.st/",
+          "https://postmake.io",
+          "https://auraplusplus.com",
+          "https://earlyhunt.com",
           "https://aifordevelopers.org",
           "https://uno.directory",
           "https://saascity.io",
@@ -1200,6 +1203,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://findly.tools/orbi?utm_source=orbi",
     "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
     "https://www.makeitla.st/",
+    "https://postmake.io",
+    "https://auraplusplus.com",
+    "https://earlyhunt.com",
     "https://aifordevelopers.org",
     "https://uno.directory",
     "https://saascity.io",
@@ -1250,7 +1256,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // founder.best / makeitla.st images and Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault
           // images: 31 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(32);
+          expect(badges, label + ": badge count").toHaveLength(34);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1286,7 +1292,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(
           new Set(desktop.filter((badge) => badge.alt !== "Powered by Startup Fast").map((badge) => badge.top)).size,
           path + " at 1440px: the badges stay compact",
-        ).toBeLessThanOrEqual(3);
+        ).toBeLessThanOrEqual(4); // Postmake / Aura++ / EarlyHunt (#1140, #1142) add a fourth line
 
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-1440.png" });
 
