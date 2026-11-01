@@ -164,7 +164,7 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#pi-coding-agent-vs-claude-code-the-test-setup">Pi coding agent vs Claude Code: the test setup</a></li>
+          <li><a class="post-toc-link" href="#setting-up-pi-coding-agent-vs-claude-code-on-one-model">Setting up Pi coding agent vs Claude Code on one model</a></li>
           <li><a class="post-toc-link" href="#token-use-on-a-no-op-prompt">Token use on a no-op prompt</a></li>
           <li><a class="post-toc-link" href="#two-small-coding-tasks">Two small coding tasks</a></li>
           <li><a class="post-toc-link" href="#permission-denials-with-exit-code-0">Permission denials with exit code 0</a></li>
@@ -181,7 +181,7 @@
         <details class="post-toc-inline">
           <summary>On this page · 11 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#pi-coding-agent-vs-claude-code-the-test-setup">Pi coding agent vs Claude Code: the test setup</a></li>
+          <li><a class="post-toc-link" href="#setting-up-pi-coding-agent-vs-claude-code-on-one-model">Setting up Pi coding agent vs Claude Code on one model</a></li>
           <li><a class="post-toc-link" href="#token-use-on-a-no-op-prompt">Token use on a no-op prompt</a></li>
           <li><a class="post-toc-link" href="#two-small-coding-tasks">Two small coding tasks</a></li>
           <li><a class="post-toc-link" href="#permission-denials-with-exit-code-0">Permission denials with exit code 0</a></li>
@@ -196,7 +196,7 @@
         </details>
 <p>I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using <code class="post-code--spaced">claude -p --bare</code> brought its input-token use close to Pi&#39;s: below Pi in five of six paired runs, above it in one. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.</p>
 <p>I&#39;m Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as <code class="post-code--spaced">pi --print</code>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<h2 id="pi-coding-agent-vs-claude-code-the-test-setup">Pi coding agent vs Claude Code: the test setup</h2>
+<h2 id="setting-up-pi-coding-agent-vs-claude-code-on-one-model">Setting up Pi coding agent vs Claude Code on one model</h2>
 <p>Both used DeepSeek V4.1 Flash (<code class="post-code--single">deepseek-flash</code>). Pi used its built-in <code class="post-code--single">deepseek</code> provider, <code class="post-code--spaced">--provider deepseek --model deepseek-flash</code>, and <code class="post-code--single">DEEPSEEK_API_KEY</code>. Claude Code used <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>, <code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;deepseek key&gt;</code> and <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>, following <a href="https://api-docs.deepseek.com/guides/anthropic_api">DeepSeek&#39;s endpoint documentation</a>.</p>
 <p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic says</a> it &quot;doesn&#39;t support routing Claude Code to non-Claude models through any gateway&quot;. I used that route only for measurement and do not recommend it. Pi used the OpenAI-compatible API; Claude Code used the Anthropic-compatible API. Both had the same model and tokenizer, but different wire formats.</p>
 <p>Each run had <code class="post-code--single">HOME</code> set to an empty directory and a minimal environment (<code class="post-code--spaced">env -i</code>). The no-op runs used an empty directory; each coding run used a fresh git repository holding only that task&#39;s two files. All of them sat under <code class="post-code--single">/var/tmp</code>, with no AGENTS.md or CLAUDE.md in any parent directory. The counts therefore reflect each tool&#39;s default overhead, with none of my files loaded. Pi includes the working directory path in its prompt, so the count varies by a few tokens with path length (1,634 from a shorter path, instead of 1,641). I checked every rerun&#39;s session transcript and found no paths from my real home directory.</p>
