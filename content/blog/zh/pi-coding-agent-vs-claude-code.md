@@ -18,9 +18,9 @@ series: pi
 
 两边都用 DeepSeek V4.1 Flash（`deepseek-flash`）。Pi 用内置的 `deepseek` provider，参数是 `--provider deepseek --model deepseek-flash`，密钥放在 `DEEPSEEK_API_KEY`。Claude Code 按 [DeepSeek 的端点文档](https://api-docs.deepseek.com/guides/anthropic_api)设置：`ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`、`ANTHROPIC_AUTH_TOKEN=<deepseek key>`、`ANTHROPIC_MODEL=deepseek-flash`。
 
-[Anthropic 明确说](https://code.claude.com/docs/en/llm-gateway)，不支持用任何 gateway 让 Claude Code 调用非 Claude 模型。我这里只用这套接法做测量，不建议把它当作日常使用的路由方案。Pi 用 OpenAI-compatible API，Claude Code 用 Anthropic-compatible API。两边的模型和 tokenizer 相同，网络上传输的请求格式不同。
+[Anthropic 明确说](https://code.claude.com/docs/en/llm-gateway)，不支持用任何 gateway 让 Claude Code 调用非 Claude 模型。我这里只用这套接法做测量，不建议把它当作日常使用的路由方案。Pi 走 DeepSeek 的 [OpenAI-compatible API](https://api-docs.deepseek.com/)，Claude Code 走 DeepSeek 的 [Anthropic-compatible API](https://api-docs.deepseek.com/guides/anthropic_api)。两边用的是同一个模型，只是请求格式不同。
 
-每次运行前，我都把 `HOME` 指向空目录，用最小环境（`env -i`）。空操作在空目录里跑；每个编程任务各用一个新建的 git 仓库，里面只有该任务的两个文件。这些目录都在 `/var/tmp` 下，上级目录里也都没有 AGENTS.md 或 CLAUDE.md。这样测到的是工具开箱启动时的开销，没有加载我的配置。Pi 会把工作目录路径写进 prompt，所以路径长短会让计数变动几个 token：换一个更短的路径，计数就从 1,641 变成了 1,634。我检查了每次重跑的会话记录，没有一份出现真实家目录下的路径。
+每次运行前，我都把 `HOME` 指向空目录，用最小环境（`env -i`）。空操作在空目录里跑；每个编程任务各用一个新建的 git 仓库，里面只有该任务的两个文件。这些目录都在 `/var/tmp` 下，上级目录里也都没有 AGENTS.md 或 CLAUDE.md。这样测到的是工具开箱启动时的开销，没有加载我的配置。Pi 会把工作目录路径写进 prompt，所以路径长短会让计数变动几个 token：在下文复现用的较短临时路径里，计数从 1,641 变成了 1,635。我检查了每次重跑的会话记录，没有一份出现真实家目录下的路径。
 
 输入总量包含缓存读取和写入。Pi 按 assistant 消息累加 `usage.input + cacheRead + cacheWrite`。Claude Code 按请求累加，子代理的请求也算，再与 JSON 输出里的 `modelUsage` 核对。
 
@@ -39,11 +39,11 @@ series: pi
 
 这个任务只请求一次模型，默认 Claude Code 的输入约为 Pi 的 10.6×。空操作的请求全是固定开销，所以这个比例比下面编程任务按整次运行算的比例高。把工具限制为与 Pi 相同的四个后，用量降到 3,316，约为 Pi 的 2×。去掉其余 17 个工具，就从默认的 17,398 个输入 token 里省下了约 14,000 个。再换掉 system prompt，又少了约 1,240 个。`--bare` 用了 1,265，低于 Pi 默认的 1,641；Pi 完全不带工具时是 466。
 
-在干净环境里，init 事件列出了这 21 个默认工具。2 次检查的清单相同：Task、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。init 事件把子代理工具记作 `Task`；模型实际收到的工具定义里叫 `Agent`，文档里也这么叫。
+在干净环境里，Claude Code 发给模型的工具定义里有 21 个默认工具，3 次空操作的清单完全相同：Agent、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。
 
 [headless 文档](https://code.claude.com/docs/en/headless)建议脚本和 SDK 调用使用 `--bare`，并说以后的版本会把它设为 `-p` 的默认行为。它会跳过 hooks、skills、插件、MCP 服务器、自动记忆和 CLAUDE.md 的自动发现，只提供 Bash、文件读取和编辑工具。认证要用 `ANTHROPIC_API_KEY` 或 `apiKeyHelper`，OAuth 和订阅登录会被忽略。测 bare 时，我把 DeepSeek key 放在了 `ANTHROPIC_API_KEY`。
 
-我还单独用订阅里的 Claude Haiku 4.5 跑了相同的空操作：`--model haiku`，同样清空 HOME，只复制登录凭据。2 次运行分别用了 20,787 和 20,660 个输入 token。tokenizer 不同，这组数字不能直接拿来比较。Claude 自家的模型同样有默认启动开销。我没有 Anthropic API key，也没有 OpenRouter 余额，所以没测 Pi 跑 Claude。
+我还单独用订阅里的 Claude Haiku 4.5（`claude-haiku-4-5-20251001`）跑了相同的空操作：`--model haiku`，同样清空 HOME，只复制登录凭据。2 次运行分别用了 20,787 和 20,660 个输入 token。登录会把我账号里的 13 个技能带进提示词，那次会话列出的工具是 11 个，所以这组数不是纯默认开销。tokenizer 不同，这组数字不能直接拿来比较。Claude 自家的模型同样有默认启动开销。我没有 Anthropic API key，也没有 OpenRouter 余额，所以没测 Pi 跑 Claude。
 
 ## 两个编程任务的结果
 
@@ -70,7 +70,7 @@ series: pi
 
 按运行顺序配对（第 1 次对第 1 次，依此类推），默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。这不是工具数相同的对比：bare 只有 3 个工具（没有 Write），prompt 也更短。工具相同、system prompt 换掉时，Claude Code 的空操作是 2,072，Pi 是 1,641。
 
-这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。
+这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek [默认缓存重复前缀](https://api-docs.deepseek.com/guides/kv_cache)，[命中缓存的输入价格远低于未命中的](https://api-docs.deepseek.com/quick_start/pricing)，所以输入 token 的比例不能直接当作账单比例。
 
 我另外测了订阅版 Claude Haiku 4.5，加上 `--dangerously-skip-permissions` 后，任务 A 的 2 次运行都通过了。输入分别是 174,693 和 174,630 个 token，各请求 7 次，耗时分别是 19.6 和 18.2 s。这组换了模型，tokenizer 也不同，不要拿它和 DeepSeek 那几行比。
 
@@ -86,7 +86,7 @@ series: pi
 
 [headless 文档](https://code.claude.com/docs/en/headless)说，在 Manual-mode 下运行 `claude -p` 时，需要审批的调用没获批准就会被拒绝。文档列出的设置方式包括 `--allowedTools "Bash,Read,Edit"`、`--permission-mode acceptEdits|auto|dontAsk` 和 `--permission-prompts none`。权限怎么选，见[无人值守指南](/zh/blog/run-claude-code-unattended/)和 [YOLO mode 指南](/zh/blog/claude-code-yolo-mode/)。
 
-[Pi](https://pi.dev) 没有权限弹窗。它的 README 写明，内置机制不会限制对文件系统、进程、网络或凭据的访问。Pi 建议用容器，或者用扩展加上确认步骤。用 Pi 要自己准备沙箱；用 Claude Code 跑无人值守任务，要明确放开所需权限。
+[Pi](https://pi.dev) 没有权限弹窗。它的 [README](https://github.com/earendil-works/pi) 写明，内置机制不会限制对文件系统、进程、网络或凭据的访问。Pi 建议用容器，或者用扩展加上确认步骤。用 Pi 要自己准备沙箱；用 Claude Code 跑无人值守任务，要明确放开所需权限。
 
 ## 命令行参数对照
 
@@ -105,7 +105,7 @@ series: pi
 | 会话 | `--session-dir`、`--no-session` | `--no-session-persistence`、`--resume <id>` |
 | 权限 | 无权限弹窗 | `--permission-mode`、`--dangerously-skip-permissions` |
 | 子代理与计划模式 | 没有内置支持，可用扩展添加 | 内置支持（Agent 工具） |
-| 许可证 | MIT (`earendil-works/pi`) | 专有许可，Anthropic PBC |
+| 许可证 | [MIT](https://github.com/earendil-works/pi/blob/main/LICENSE) | [专有许可，Anthropic PBC](https://github.com/anthropics/claude-code/blob/main/LICENSE.md) |
 
 ## 配置目录之外的上下文文件
 
@@ -115,7 +115,7 @@ series: pi
 
 ## 复现命令
 
-用 bash 执行下面的命令。在我的机器上，它们的输入用量与前面的空操作计数只差几个 token：Pi 是 1,634，默认 Claude Code 是 17,381，`--bare` 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。`env -i` 会清掉 shell 里导出的其他变量，比如 `PI_CODING_AGENT_DIR`、`CLAUDE_CONFIG_DIR`，否则这些变量会把真实配置目录带回来。
+用 bash 执行下面的命令，`claude` 要指向 npm 安装的程序本身（会清掉 `ANTHROPIC_*` 或依赖 `HOME` 的包装脚本在这里会直接失败）。2026 年 11 月 1 日我在自己机器上这样跑了一遍（Pi 1.2.0、Claude Code 2.1.281），输入用量与前面的空操作计数只差几个 token：Pi 是 1,635，默认 Claude Code 是 17,379，`--bare` 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。`env -i` 会清掉 shell 里导出的其他变量，比如 `PI_CODING_AGENT_DIR`、`CLAUDE_CONFIG_DIR`，否则这些变量会把真实配置目录带回来。
 
 ```bash
 export DEEPSEEK_API_KEY=...
@@ -131,12 +131,12 @@ env -i HOME="$CLEAN" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
 
 # Claude Code on the same model (unsupported by Anthropic; measurement only)
 env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --output-format json "Reply with exactly OK" | jq '.modelUsage'
 
 # Claude Code --bare reads ANTHROPIC_API_KEY instead of ANTHROPIC_AUTH_TOKEN
 env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --bare --output-format json "Reply with exactly OK" | jq '.modelUsage'
 ```
 

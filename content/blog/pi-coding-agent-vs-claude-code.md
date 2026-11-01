@@ -16,9 +16,9 @@ I'm Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 
 
 Both used DeepSeek V4.1 Flash (`deepseek-flash`). Pi used its built-in `deepseek` provider, `--provider deepseek --model deepseek-flash`, and `DEEPSEEK_API_KEY`. Claude Code used `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`, `ANTHROPIC_AUTH_TOKEN=<deepseek key>` and `ANTHROPIC_MODEL=deepseek-flash`, following [DeepSeek's endpoint documentation](https://api-docs.deepseek.com/guides/anthropic_api).
 
-[Anthropic says](https://code.claude.com/docs/en/llm-gateway) it "doesn't support routing Claude Code to non-Claude models through any gateway". I used that route only for measurement and do not recommend it. Pi used the OpenAI-compatible API; Claude Code used the Anthropic-compatible API. Both had the same model and tokenizer, but different wire formats.
+[Anthropic says](https://code.claude.com/docs/en/llm-gateway) it "doesn't support routing Claude Code to non-Claude models through any gateway". I used that route only for measurement and do not recommend it. Pi used DeepSeek's [OpenAI-compatible API](https://api-docs.deepseek.com/); Claude Code used DeepSeek's [Anthropic-compatible API](https://api-docs.deepseek.com/guides/anthropic_api). Both reached the same model through different wire formats.
 
-Each run had `HOME` set to an empty directory and a minimal environment (`env -i`). The no-op runs used an empty directory; each coding run used a fresh git repository holding only that task's two files. All of them sat under `/var/tmp`, with no AGENTS.md or CLAUDE.md in any parent directory. The counts therefore reflect each tool's default overhead, with none of my files loaded. Pi includes the working directory path in its prompt, so the count varies by a few tokens with path length (1,634 from a shorter path, instead of 1,641). I checked every rerun's session transcript and found no paths from my real home directory.
+Each run had `HOME` set to an empty directory and a minimal environment (`env -i`). The no-op runs used an empty directory; each coding run used a fresh git repository holding only that task's two files. All of them sat under `/var/tmp`, with no AGENTS.md or CLAUDE.md in any parent directory. The counts therefore reflect each tool's default overhead, with none of my files loaded. Pi includes the working directory path in its prompt, so the count varies by a few tokens with path length (1,635 from the shorter temporary path in the reproduction below, instead of 1,641). I checked every rerun's session transcript and found no paths from my real home directory.
 
 Input totals include cache reads and writes. For Pi, I summed `usage.input + cacheRead + cacheWrite` over assistant messages. For Claude Code, I summed every request, including subagents, and cross-checked against `modelUsage` in the JSON output.
 
@@ -37,11 +37,11 @@ The prompt was `Reply with exactly OK`. Each run made a single model request. I 
 
 For this single-request prompt, default Claude Code used about 10.6× Pi's input. A no-op request is nothing but fixed overhead, so this ratio is higher than the per-run ratio in the coding tasks below. Restricting it to Pi's four tools brought the count to 3,316, about 2× Pi's. Removing the other 17 tools cut about 14,000 of the default's 17,398 input tokens. Replacing the system prompt removed about 1,240 more. `--bare` used 1,265, below Pi's default of 1,641. Pi with no tools used 466.
 
-The init event in the clean environment listed 21 default tools. I checked it 2 times and got the same list: Task, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write. The init event calls the subagent tool `Task`; the tool definitions sent to the model and the docs call it `Agent`.
+In the clean environment, the tool definitions Claude Code sent to the model listed 21 default tools, the same list in all 3 no-op runs: Agent, Bash, CronCreate, CronDelete, CronList, DesignSync, Edit, EnterWorktree, ExitWorktree, ListAgents, NotebookEdit, Read, ReportFindings, ScheduleWakeup, SendMessage, Skill, TaskStop, WebFetch, WebSearch, Workflow, Write.
 
 The [headless docs](https://code.claude.com/docs/en/headless) recommend `--bare` for scripted and SDK calls and say it will become the default for `-p` in a future release. It skips auto-discovery of hooks, skills, plugins, MCP servers, auto memory and CLAUDE.md. It includes Bash, file read and file edit tools. Authentication requires `ANTHROPIC_API_KEY` or `apiKeyHelper`; OAuth/subscription login is ignored. For the bare measurements, I set `ANTHROPIC_API_KEY` to the DeepSeek key.
 
-I also checked Claude Haiku 4.5 through my subscription (`--model haiku`, the same clean HOME with only the login copied in). It used 20,787 and 20,660 input tokens for the same no-op in 2 runs. Those counts use a different tokenizer and cannot be compared directly with the DeepSeek counts, but Claude's own model also had default overhead. I could not test Pi on Claude because I had no Anthropic API key or OpenRouter credit.
+I also checked Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) through my subscription (`--model haiku`, the same clean HOME with only the login copied in). It used 20,787 and 20,660 input tokens for the same no-op in 2 runs. The login brought my account's 13 skills into the prompt, and that session listed 11 tools, so this is not a defaults-only count. Those counts use a different tokenizer and cannot be compared directly with the DeepSeek counts, but Claude's own model also had default overhead. I could not test Pi on Claude because I had no Anthropic API key or OpenRouter credit.
 
 ## Two small coding tasks
 
@@ -66,7 +66,7 @@ I ran Pi, default Claude Code and bare Claude Code 3 times per task on `deepseek
 
 Default Claude Code used 7.2 to 8.1 times Pi's input tokens in each paired run. Request counts were about the same; the gap came from overhead on each request, which re-sends the tool definitions. I paired runs by their order (first with first, and so on). Bare came close to Pi: above it in one of six paired runs and below it in the other five. It is not an equal-tools comparison: bare has three tools (no Write) and a shorter prompt. With the same four tools and a replaced system prompt, Claude Code's no-op was 2,072 against Pi's 1,641.
 
-Most input tokens were cache reads. In the first of the three task A runs, they accounted for 6,912 of Pi's 9,081 and 53,760 of default Claude Code's 72,382. DeepSeek automatically caches repeated prefixes. Cache reads cost less than uncached input, so the input-token ratio alone cannot tell you the cost ratio.
+Most input tokens were cache reads. In the first of the three task A runs, they accounted for 6,912 of Pi's 9,081 and 53,760 of default Claude Code's 72,382. DeepSeek [caches repeated prefixes by default](https://api-docs.deepseek.com/guides/kv_cache), and [cache-hit input is billed far below cache-miss input](https://api-docs.deepseek.com/quick_start/pricing), so the input-token ratio alone cannot tell you the cost ratio.
 
 Through my subscription, Claude Haiku 4.5 with `--dangerously-skip-permissions` passed task A in both of 2 runs. It used 174,693 and 174,630 input tokens, with 7 requests each, and took 19.6 and 18.2 s, respectively. These runs used a different model and tokenizer, so don't compare their counts with the DeepSeek rows.
 
@@ -78,7 +78,7 @@ The tests still failed afterwards. The process exited 0, and its final text bega
 
 The [headless docs](https://code.claude.com/docs/en/headless) say approval-requiring calls are denied in Manual-mode `claude -p` runs unless approved. Documented controls include `--allowedTools "Bash,Read,Edit"`, `--permission-mode acceptEdits|auto|dontAsk`, and `--permission-prompts none`. The [unattended guide](/blog/run-claude-code-unattended/) and [YOLO-mode guide](/blog/claude-code-yolo-mode/) cover permission choices.
 
-[Pi](https://pi.dev) has no permission popups. Its README says it has no built-in permission system restricting filesystem, process, network or credential access, and suggests a container or an extension that asks for confirmation. You have to provide Pi's sandbox yourself. For unattended Claude Code runs, you have to configure which tool calls are allowed.
+[Pi](https://pi.dev) has no permission popups. Its [README](https://github.com/earendil-works/pi) says it has no built-in permission system restricting filesystem, process, network or credential access, and suggests a container or an extension that asks for confirmation. You have to provide Pi's sandbox yourself. For unattended Claude Code runs, you have to configure which tool calls are allowed.
 
 ## CLI options
 
@@ -97,7 +97,7 @@ These CLI options were checked against the `--help` output of Pi 1.2.0 and Claud
 | Sessions | `--session-dir`, `--no-session` | `--no-session-persistence`, `--resume <id>` |
 | Permissions | No prompts | `--permission-mode`, `--dangerously-skip-permissions` |
 | Subagents/plan mode | Not built in; use extensions | Built in (Agent tool) |
-| License | MIT (`earendil-works/pi`) | Proprietary, Anthropic PBC |
+| License | [MIT](https://github.com/earendil-works/pi/blob/main/LICENSE) | [Proprietary, Anthropic PBC](https://github.com/anthropics/claude-code/blob/main/LICENSE.md) |
 
 ## Isolating config and context files
 
@@ -107,7 +107,7 @@ When benchmarking harnesses, set `HOME` to an empty directory and run outside an
 
 ## Reproduce the no-op comparison
 
-Run these commands in bash. On my machine, they reproduced the no-op counts within a few tokens: 1,634 for Pi, 17,381 for default Claude Code and 1,258 for `--bare`. Both tools put the working-directory path in their prompt, and the temporary directory had a shorter path than my test directories.
+Run these commands in bash, with `claude` resolving to the npm-installed program (a wrapper script that resets `ANTHROPIC_*` or depends on `HOME` will fail here). Run that way on my machine on 1 November 2026 (Pi 1.2.0, Claude Code 2.1.281), they gave 1,635 for Pi, 17,379 for default Claude Code and 1,258 for `--bare`, within a few tokens of the counts above. Both tools put the working-directory path in their prompt, and the temporary directory had a shorter path than my test directories.
 
 ```bash
 export DEEPSEEK_API_KEY=...
@@ -123,12 +123,12 @@ env -i HOME="$CLEAN" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
 
 # Claude Code on the same model (unsupported by Anthropic; measurement only)
 env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --output-format json "Reply with exactly OK" | jq '.modelUsage'
 
 # Claude Code --bare reads ANTHROPIC_API_KEY instead of ANTHROPIC_AUTH_TOKEN
 env -i HOME="$CLEAN" PATH="$PATH" ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --bare --output-format json "Reply with exactly OK" | jq '.modelUsage'
 ```
 

@@ -199,8 +199,8 @@
 <p>这次测试在 2026 年 11 月 1 日完成，用的是我的 Linux 机器，版本分别是 Pi 1.2.0 和 Claude Code 2.1.281。Orbi 做实现和评审时，都用 <code class="post-code--spaced">pi --print</code> 启动会话。</p>
 <h2 id="pi-和-claude-code-的测试配置">Pi 和 Claude Code 的测试配置</h2>
 <p>两边都用 DeepSeek V4.1 Flash（<code class="post-code--single">deepseek-flash</code>）。Pi 用内置的 <code class="post-code--single">deepseek</code> provider，参数是 <code class="post-code--spaced">--provider deepseek --model deepseek-flash</code>，密钥放在 <code class="post-code--single">DEEPSEEK_API_KEY</code>。Claude Code 按 <a href="https://api-docs.deepseek.com/guides/anthropic_api">DeepSeek 的端点文档</a>设置：<code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>、<code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;deepseek key&gt;</code>、<code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>。</p>
-<p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic 明确说</a>，不支持用任何 gateway 让 Claude Code 调用非 Claude 模型。我这里只用这套接法做测量，不建议把它当作日常使用的路由方案。Pi 用 OpenAI-compatible API，Claude Code 用 Anthropic-compatible API。两边的模型和 tokenizer 相同，网络上传输的请求格式不同。</p>
-<p>每次运行前，我都把 <code class="post-code--single">HOME</code> 指向空目录，用最小环境（<code class="post-code--spaced">env -i</code>）。空操作在空目录里跑；每个编程任务各用一个新建的 git 仓库，里面只有该任务的两个文件。这些目录都在 <code class="post-code--single">/var/tmp</code> 下，上级目录里也都没有 AGENTS.md 或 CLAUDE.md。这样测到的是工具开箱启动时的开销，没有加载我的配置。Pi 会把工作目录路径写进 prompt，所以路径长短会让计数变动几个 token：换一个更短的路径，计数就从 1,641 变成了 1,634。我检查了每次重跑的会话记录，没有一份出现真实家目录下的路径。</p>
+<p><a href="https://code.claude.com/docs/en/llm-gateway">Anthropic 明确说</a>，不支持用任何 gateway 让 Claude Code 调用非 Claude 模型。我这里只用这套接法做测量，不建议把它当作日常使用的路由方案。Pi 走 DeepSeek 的 <a href="https://api-docs.deepseek.com/">OpenAI-compatible API</a>，Claude Code 走 DeepSeek 的 <a href="https://api-docs.deepseek.com/guides/anthropic_api">Anthropic-compatible API</a>。两边用的是同一个模型，只是请求格式不同。</p>
+<p>每次运行前，我都把 <code class="post-code--single">HOME</code> 指向空目录，用最小环境（<code class="post-code--spaced">env -i</code>）。空操作在空目录里跑；每个编程任务各用一个新建的 git 仓库，里面只有该任务的两个文件。这些目录都在 <code class="post-code--single">/var/tmp</code> 下，上级目录里也都没有 AGENTS.md 或 CLAUDE.md。这样测到的是工具开箱启动时的开销，没有加载我的配置。Pi 会把工作目录路径写进 prompt，所以路径长短会让计数变动几个 token：在下文复现用的较短临时路径里，计数从 1,641 变成了 1,635。我检查了每次重跑的会话记录，没有一份出现真实家目录下的路径。</p>
 <p>输入总量包含缓存读取和写入。Pi 按 assistant 消息累加 <code class="post-code--spaced">usage.input + cacheRead + cacheWrite</code>。Claude Code 按请求累加，子代理的请求也算，再与 JSON 输出里的 <code class="post-code--single">modelUsage</code> 核对。</p>
 <h2 id="不调用工具时的启动用量">不调用工具时的启动用量</h2>
 <p>先给一个不用工具的 prompt：<code class="post-code--spaced">Reply with exactly OK</code>，每次只向模型发一次请求。表里每种配置跑 3 次，同一配置的输入计数完全相同。</p>
@@ -237,9 +237,9 @@
 </tr>
 </tbody></table></div>
 <p>这个任务只请求一次模型，默认 Claude Code 的输入约为 Pi 的 10.6×。空操作的请求全是固定开销，所以这个比例比下面编程任务按整次运行算的比例高。把工具限制为与 Pi 相同的四个后，用量降到 3,316，约为 Pi 的 2×。去掉其余 17 个工具，就从默认的 17,398 个输入 token 里省下了约 14,000 个。再换掉 system prompt，又少了约 1,240 个。<code class="post-code--single">--bare</code> 用了 1,265，低于 Pi 默认的 1,641；Pi 完全不带工具时是 466。</p>
-<p>在干净环境里，init 事件列出了这 21 个默认工具。2 次检查的清单相同：Task、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。init 事件把子代理工具记作 <code class="post-code--single">Task</code>；模型实际收到的工具定义里叫 <code class="post-code--single">Agent</code>，文档里也这么叫。</p>
+<p>在干净环境里，Claude Code 发给模型的工具定义里有 21 个默认工具，3 次空操作的清单完全相同：Agent、Bash、CronCreate、CronDelete、CronList、DesignSync、Edit、EnterWorktree、ExitWorktree、ListAgents、NotebookEdit、Read、ReportFindings、ScheduleWakeup、SendMessage、Skill、TaskStop、WebFetch、WebSearch、Workflow、Write。</p>
 <p><a href="https://code.claude.com/docs/en/headless">headless 文档</a>建议脚本和 SDK 调用使用 <code class="post-code--single">--bare</code>，并说以后的版本会把它设为 <code class="post-code--single">-p</code> 的默认行为。它会跳过 hooks、skills、插件、MCP 服务器、自动记忆和 CLAUDE.md 的自动发现，只提供 Bash、文件读取和编辑工具。认证要用 <code class="post-code--single">ANTHROPIC_API_KEY</code> 或 <code class="post-code--single">apiKeyHelper</code>，OAuth 和订阅登录会被忽略。测 bare 时，我把 DeepSeek key 放在了 <code class="post-code--single">ANTHROPIC_API_KEY</code>。</p>
-<p>我还单独用订阅里的 Claude Haiku 4.5 跑了相同的空操作：<code class="post-code--spaced">--model haiku</code>，同样清空 HOME，只复制登录凭据。2 次运行分别用了 20,787 和 20,660 个输入 token。tokenizer 不同，这组数字不能直接拿来比较。Claude 自家的模型同样有默认启动开销。我没有 Anthropic API key，也没有 OpenRouter 余额，所以没测 Pi 跑 Claude。</p>
+<p>我还单独用订阅里的 Claude Haiku 4.5（<code class="post-code--single">claude-haiku-4-5-20251001</code>）跑了相同的空操作：<code class="post-code--spaced">--model haiku</code>，同样清空 HOME，只复制登录凭据。2 次运行分别用了 20,787 和 20,660 个输入 token。登录会把我账号里的 13 个技能带进提示词，那次会话列出的工具是 11 个，所以这组数不是纯默认开销。tokenizer 不同，这组数字不能直接拿来比较。Claude 自家的模型同样有默认启动开销。我没有 Anthropic API key，也没有 OpenRouter 余额，所以没测 Pi 跑 Claude。</p>
 <h2 id="两个编程任务的结果">两个编程任务的结果</h2>
 <p>任务 A 是修 <code class="post-code--single">duration.py</code> 的 bug。<code class="post-code--single">format_duration</code> 把分钟和秒交换了，导致 <code class="post-code--single">test_duration.py</code> 里的测试失败。prompt 原文是：</p>
 <blockquote>
@@ -305,7 +305,7 @@
 </tr>
 </tbody></table></div>
 <p>按运行顺序配对（第 1 次对第 1 次，依此类推），默认 Claude Code 的输入 token 是 Pi 的 7.2 到 8.1 倍。请求次数差不多，差距主要来自每次请求的开销，因为工具定义每次都会重新发送。bare 的用量和 Pi 接近。把 bare 的每次运行与 Pi 的对应运行配对，六组里有一组的 bare 用量高于 Pi，其余五组低于 Pi。这不是工具数相同的对比：bare 只有 3 个工具（没有 Write），prompt 也更短。工具相同、system prompt 换掉时，Claude Code 的空操作是 2,072，Pi 是 1,641。</p>
-<p>这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek 会自动缓存重复前缀，读取缓存比未缓存输入便宜，所以输入 token 的比例不能直接当作账单比例。</p>
+<p>这些输入大部分是缓存读取。任务 A 的三次运行里，第 1 次中Pi 的 9,081 个输入 token 里有 6,912 个来自缓存，默认 Claude Code 的 72,382 个里有 53,760 个。DeepSeek <a href="https://api-docs.deepseek.com/guides/kv_cache">默认缓存重复前缀</a>，<a href="https://api-docs.deepseek.com/quick_start/pricing">命中缓存的输入价格远低于未命中的</a>，所以输入 token 的比例不能直接当作账单比例。</p>
 <p>我另外测了订阅版 Claude Haiku 4.5，加上 <code class="post-code--single">--dangerously-skip-permissions</code> 后，任务 A 的 2 次运行都通过了。输入分别是 174,693 和 174,630 个 token，各请求 7 次，耗时分别是 19.6 和 18.2 s。这组换了模型，tokenizer 也不同，不要拿它和 DeepSeek 那几行比。</p>
 <h2 id="无人值守时-退出码-0-不代表修改成功">无人值守时，退出码 0 不代表修改成功</h2>
 <p>我还跑了一组权限对照：用默认的 <code class="post-code--spaced">claude -p</code> 跑任务 A，不传权限参数。它发了 9 次请求，连同子代理在内共用了 169,247 个输入 token，耗时 19.1 s。JSON 的 <code class="post-code--single">permission_denials</code> 按顺序列出 6 次调用：Edit、Bash、Bash、Edit、Bash、Write。</p>
@@ -315,7 +315,7 @@
 </blockquote>
 <p>用脚本跑任务，要检查 JSON 的 <code class="post-code--single">permission_denials</code>，也要自己验证结果。进程正常退出，不等于文件已经改好了。</p>
 <p><a href="https://code.claude.com/docs/en/headless">headless 文档</a>说，在 Manual-mode 下运行 <code class="post-code--spaced">claude -p</code> 时，需要审批的调用没获批准就会被拒绝。文档列出的设置方式包括 <code class="post-code--spaced">--allowedTools &quot;Bash,Read,Edit&quot;</code>、<code class="post-code--spaced">--permission-mode acceptEdits|auto|dontAsk</code> 和 <code class="post-code--spaced">--permission-prompts none</code>。权限怎么选，见<a href="/zh/blog/run-claude-code-unattended/">无人值守指南</a>和 <a href="/zh/blog/claude-code-yolo-mode/">YOLO mode 指南</a>。</p>
-<p><a href="https://pi.dev">Pi</a> 没有权限弹窗。它的 README 写明，内置机制不会限制对文件系统、进程、网络或凭据的访问。Pi 建议用容器，或者用扩展加上确认步骤。用 Pi 要自己准备沙箱；用 Claude Code 跑无人值守任务，要明确放开所需权限。</p>
+<p><a href="https://pi.dev">Pi</a> 没有权限弹窗。它的 <a href="https://github.com/earendil-works/pi">README</a> 写明，内置机制不会限制对文件系统、进程、网络或凭据的访问。Pi 建议用容器，或者用扩展加上确认步骤。用 Pi 要自己准备沙箱；用 Claude Code 跑无人值守任务，要明确放开所需权限。</p>
 <h2 id="命令行参数对照">命令行参数对照</h2>
 <p>下表的命令行选项都与 Pi 1.2.0 和 Claude Code 2.1.281 的 <code class="post-code--single">--help</code> 输出核对过。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -383,15 +383,15 @@
 </tr>
 <tr>
 <th scope="row">许可证</th>
-<td>MIT (<code class="post-code--single">earendil-works/pi</code>)</td>
-<td>专有许可，Anthropic PBC</td>
+<td><a href="https://github.com/earendil-works/pi/blob/main/LICENSE">MIT</a></td>
+<td><a href="https://github.com/anthropics/claude-code/blob/main/LICENSE.md">专有许可，Anthropic PBC</a></td>
 </tr>
 </tbody></table></div>
 <h2 id="配置目录之外的上下文文件">配置目录之外的上下文文件</h2>
 <p>我最初只把 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 和 <code class="post-code--single">CLAUDE_CONFIG_DIR</code> 指向空文件夹，两边却仍然加载了我的文件。Pi 读了 <code class="post-code--single">~/AGENTS.md</code>、上级目录的 <code class="post-code--single">AGENTS.md</code>，以及 <code class="post-code--single">~/.agents/skills</code> 下的 8 个 skill。Claude Code 读了 <code class="post-code--single">~/.claude/CLAUDE.md</code> 和上级目录的 <code class="post-code--single">CLAUDE.md</code>。两位独立评审读会话文件时发现了这个问题。我丢弃了那一轮的数字；清理后的空操作计数是 Pi 1,641，默认 Claude Code 17,398。</p>
 <p>自己测 harness 时，要把 <code class="post-code--single">HOME</code> 指向空目录，确保工作目录的上级没有 AGENTS.md 或 CLAUDE.md，再用 grep 查会话记录里有没有真实家目录的路径。Pi 的 <code class="post-code--single">--no-context-files</code>、<code class="post-code--single">--no-skills</code> 和 Claude Code 的 <code class="post-code--single">--bare</code> 能处理其中一部分。重跑时，我用了空 HOME 和最小环境，工作目录的上级也没有上下文文件。</p>
 <h2 id="复现命令">复现命令</h2>
-<p>用 bash 执行下面的命令。在我的机器上，它们的输入用量与前面的空操作计数只差几个 token：Pi 是 1,634，默认 Claude Code 是 17,381，<code class="post-code--single">--bare</code> 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。<code class="post-code--spaced">env -i</code> 会清掉 shell 里导出的其他变量，比如 <code class="post-code--single">PI_CODING_AGENT_DIR</code>、<code class="post-code--single">CLAUDE_CONFIG_DIR</code>，否则这些变量会把真实配置目录带回来。</p>
+<p>用 bash 执行下面的命令，<code class="post-code--single">claude</code> 要指向 npm 安装的程序本身（会清掉 <code class="post-code--single">ANTHROPIC_*</code> 或依赖 <code class="post-code--single">HOME</code> 的包装脚本在这里会直接失败）。2026 年 11 月 1 日我在自己机器上这样跑了一遍（Pi 1.2.0、Claude Code 2.1.281），输入用量与前面的空操作计数只差几个 token：Pi 是 1,635，默认 Claude Code 是 17,379，<code class="post-code--single">--bare</code> 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。<code class="post-code--spaced">env -i</code> 会清掉 shell 里导出的其他变量，比如 <code class="post-code--single">PI_CODING_AGENT_DIR</code>、<code class="post-code--single">CLAUDE_CONFIG_DIR</code>，否则这些变量会把真实配置目录带回来。</p>
 <pre><code class="language-bash">export DEEPSEEK_API_KEY=...
 CLEAN=$(mktemp -d)        # empty HOME: no ~/AGENTS.md, ~/.agents/skills, ~/.claude/CLAUDE.md
 cd &quot;$(mktemp -d)&quot;         # no AGENTS.md or CLAUDE.md in any parent directory
@@ -405,12 +405,12 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; DEEPSEEK_API_KEY=&quot;$DE
 
 # Claude Code on the same model (unsupported by Anthropic; measurement only)
 env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_AUTH_TOKEN=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_AUTH_TOKEN=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --output-format json &quot;Reply with exactly OK&quot; | jq &#39;.modelUsage&#39;
 
 # Claude Code --bare reads ANTHROPIC_API_KEY instead of ANTHROPIC_AUTH_TOKEN
 env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
-  ANTHROPIC_API_KEY=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash \
+  ANTHROPIC_API_KEY=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --bare --output-format json &quot;Reply with exactly OK&quot; | jq &#39;.modelUsage&#39;
 </code></pre>
 <p>测编程任务时，按上面的描述自己写两个任务的文件；文件和我的不会逐字节相同，token 数也会不同。每个任务各建一个 git 仓库，只放该任务的两个文件，先把有 bug 的状态提交一次（<code class="post-code--spaced">git init &amp;&amp; git add -A &amp;&amp; git commit -m broken</code>），这样 <code class="post-code--spaced">git checkout -- .</code> 和 <code class="post-code--spaced">git diff</code> 才有比较的基准。把 <code class="post-code--spaced">Reply with exactly OK</code> 换成任务 prompt，给 Claude Code 命令加上 <code class="post-code--single">--dangerously-skip-permissions</code>。跑完后，自己再跑 <code class="post-code--spaced">python3 -m unittest</code> 和 <code class="post-code--spaced">git diff -- &lt;test file&gt;</code>。每次编程测试前，用 <code class="post-code--spaced">git checkout -- .</code> 把文件恢复到有 bug 的状态。要复现表中四个工具的那一行，在默认 Claude Code 那条命令（用 <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 的那条）上加 <code class="post-code--single">--tools=Bash,Read,Edit,Write</code>。Pi 在每条 assistant 消息里输出用量，要自己累加；Claude Code 的 <code class="post-code--single">modelUsage</code> 已经加总了全部请求，包括子代理。</p>
