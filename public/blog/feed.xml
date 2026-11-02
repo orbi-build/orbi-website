@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>OpenCode vs Claude Code: same model, headless</title>
+      <link>https://orbi.build/blog/opencode-vs-claude-code/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-claude-code/</guid>
+      <pubDate>Mon, 02 Nov 2026 00:00:00 GMT</pubDate>
+      <description>On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.</description>
+    </item>
+    <item>
       <title>Pi coding agent vs Claude Code: same model, measured</title>
       <link>https://orbi.build/blog/pi-coding-agent-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-vs-claude-code/</guid>
