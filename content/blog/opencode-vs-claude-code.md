@@ -5,6 +5,7 @@ summary: On three small tasks with DeepSeek, both tools passed every run. Defaul
 lang: en
 author: Lawrence Liu
 image: /img/blog-opencode-vs-claude-code-card.png
+mirror: opencode-vs-claude-code
 ---
 
 I measured OpenCode vs Claude Code on my Linux machine on 2 November 2026, using OpenCode 2.2.5 and Claude Code 2.1.281 with the same DeepSeek V4.1 Flash model (`deepseek-flash`). With execution permissions open, all 27 controlled coding runs passed the supplied tests. Default Claude Code used 1.9-3.0× OpenCode's input tokens per run; Claude Code `--bare` used 0.21-0.36× as many.
