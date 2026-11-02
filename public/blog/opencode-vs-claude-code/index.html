@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OpenCode vs Claude Code: same model, headless | Orbi</title>
-  <meta name="description" content="On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.">
+  <meta name="description" content="On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.">
   <link rel="canonical" href="https://orbi.build/blog/opencode-vs-claude-code/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/opencode-vs-claude-code/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/opencode-vs-claude-code/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/opencode-vs-claude-code/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="OpenCode vs Claude Code: same model, headless">
-  <meta property="og:description" content="On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.">
+  <meta property="og:description" content="On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.">
   <meta property="og:url" content="https://orbi.build/blog/opencode-vs-claude-code/">
   <meta property="og:image" content="https://orbi.build/img/blog-opencode-vs-claude-code-card.png">
   <meta property="og:image:alt" content="OpenCode vs Claude Code: same model, headless">
   <meta property="article:published_time" content="2026-11-02">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode vs Claude Code: same model, headless","datePublished":"2026-11-02","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/opencode-vs-claude-code/","image":"https://orbi.build/img/blog-opencode-vs-claude-code-card.png","inLanguage":"en","description":"On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.","url":"https://orbi.build/blog/opencode-vs-claude-code/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode vs Claude Code: same model, headless","datePublished":"2026-11-02","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/opencode-vs-claude-code/","image":"https://orbi.build/img/blog-opencode-vs-claude-code-card.png","inLanguage":"en","description":"On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.","url":"https://orbi.build/blog/opencode-vs-claude-code/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">OpenCode vs Claude Code: same model, headless</h1>
           <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-11-02">2026-11-02</time></p>
 
-          <p class="hero-lede">On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.</p>
+          <p class="hero-lede">On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.</p>
         </section>
       </div>
     </div>
@@ -164,7 +164,7 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
-          <li><a class="post-toc-link" href="#setting-up-opencode-vs-claude-code">Setting up OpenCode vs Claude Code</a></li>
+          <li><a class="post-toc-link" href="#how-i-ran-opencode-vs-claude-code-on-one-model">How I ran OpenCode vs Claude Code on one model</a></li>
           <li><a class="post-toc-link" href="#unattended-behavior-blocked-work-still-exited-0">Unattended behavior: blocked work still exited 0</a></li>
           <li><a class="post-toc-link" href="#token-usage-on-a-no-op-prompt">Token usage on a no-op prompt</a></li>
           <li><a class="post-toc-link" href="#three-small-coding-tasks">Three small coding tasks</a></li>
@@ -182,7 +182,7 @@
         <details class="post-toc-inline">
           <summary>On this page · 12 sections</summary>
           <ol>
-          <li><a class="post-toc-link" href="#setting-up-opencode-vs-claude-code">Setting up OpenCode vs Claude Code</a></li>
+          <li><a class="post-toc-link" href="#how-i-ran-opencode-vs-claude-code-on-one-model">How I ran OpenCode vs Claude Code on one model</a></li>
           <li><a class="post-toc-link" href="#unattended-behavior-blocked-work-still-exited-0">Unattended behavior: blocked work still exited 0</a></li>
           <li><a class="post-toc-link" href="#token-usage-on-a-no-op-prompt">Token usage on a no-op prompt</a></li>
           <li><a class="post-toc-link" href="#three-small-coding-tasks">Three small coding tasks</a></li>
@@ -198,7 +198,7 @@
         </details>
 <p>I measured OpenCode vs Claude Code on my Linux machine on 2 November 2026, using OpenCode 2.2.5 and Claude Code 2.1.281 with the same DeepSeek V4.1 Flash model (<code class="post-code--single">deepseek-flash</code>). With execution permissions open, all 27 controlled coding runs passed the supplied tests. Default Claude Code used 1.9-3.0× OpenCode&#39;s input tokens per run; Claude Code <code class="post-code--single">--bare</code> used 0.21-0.36× as many.</p>
 <p>I&#39;m Lawrence Liu, the creator of Orbi. Orbi uses Pi agents to deliver GitHub Issues, including implementation and a separate review.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<h2 id="setting-up-opencode-vs-claude-code">Setting up OpenCode vs Claude Code</h2>
+<h2 id="how-i-ran-opencode-vs-claude-code-on-one-model">How I ran OpenCode vs Claude Code on one model</h2>
 <p>OpenCode 2.2.5 is the <code class="post-code--single">@opencode/cli</code> npm package. The older <code class="post-code--single">opencode-ai</code> package was V1, at 1.19.5 when I checked.</p>
 <p>OpenCode used its built-in <code class="post-code--single">deepseek</code> provider: <code class="post-code--spaced">-m deepseek/deepseek-flash</code>. Claude Code used <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>, <code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;DeepSeek key&gt;</code> and <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>. For <code class="post-code--single">--bare</code>, the key went in <code class="post-code--single">ANTHROPIC_API_KEY</code>.</p>
 <p>These reached the same backend model through different API formats. The counts cover each complete setup, including its tool serialization.</p>
@@ -357,8 +357,8 @@
 <td>5-6</td>
 </tr>
 </tbody></table></div>
-<p>All 27 runs passed my subsequent <code class="post-code--spaced">python3 -m unittest</code> check. No run edited the tests. These toy tasks do not separate the tools on correctness. This is not a benchmark.</p>
-<p>Pairing repetitions by order, default Claude Code used 1.9-3.0× OpenCode&#39;s input; bare used 0.21-0.36×. This pairing simply describes these runs. OpenCode made 5-7 requests, including the title request, against default Claude Code&#39;s 4-5. Bare made 4-6.</p>
+<p>All 27 runs passed my subsequent <code class="post-code--spaced">python3 -m unittest</code> check. No run edited the tests. These toy tasks do not separate the tools on correctness, so treat them as an overhead measurement, not a benchmark.</p>
+<p>Pairing repetitions by order, default Claude Code used 1.9-3.0× OpenCode&#39;s input; bare used 0.21-0.36×. OpenCode made 5-7 requests, including the title request, against default Claude Code&#39;s 4-5. Bare made 4-6.</p>
 <h2 id="project-rules-claude-md-and-agents-md">Project rules: CLAUDE.md and AGENTS.md</h2>
 <p>In my runs of 2.2.5, OpenCode ignored an instruction to append <code class="post-code--single">ZEBRA-MARKER</code> in project <code class="post-code--single">CLAUDE.md</code> and <code class="post-code--single">~/.claude/CLAUDE.md</code>. The reply stayed <code class="post-code--single">OK</code>. Main-request counts were 5,376 with the home file and 5,378 with the project file, against 5,376 in the clean no-op.</p>
 <p>A project <code class="post-code--single">AGENTS.md</code> worked as a positive control: OpenCode appended <code class="post-code--single">ZEBRA-MARKER</code>. Claude Code followed the project <code class="post-code--single">CLAUDE.md</code> instruction too. If you move from Claude Code to OpenCode 2, put project rules in <code class="post-code--single">AGENTS.md</code>.</p>
@@ -379,7 +379,7 @@
 </code></pre>
 <p>With <code class="post-code--spaced">-m local/thinkingcap:27b</code>, OpenCode answered the no-op in 10.2 s and passed task 1 in 12.1 s.</p>
 <p>Claude Code used <code class="post-code--single">ANTHROPIC_BASE_URL=http://127.0.0.1:8080</code> and <code class="post-code--single">ANTHROPIC_MODEL=thinkingcap:27b</code>. It failed with HTTP 500 after about 3 minutes, both with regular startup and bare. The server supported Anthropic Messages; this model&#39;s chat template rejected the request with &quot;System message must be at the beginning&quot;.</p>
-<p>With this model and template, it did not work. That is no general rule for local models: <a href="https://docs.ollama.com/integrations/claude-code">Ollama documents <code class="post-code--spaced">ollama launch claude</code></a>. Try your model before relying on it.</p>
+<p>With this model and template, it did not work. Other local models may behave differently: <a href="https://docs.ollama.com/integrations/claude-code">Ollama documents <code class="post-code--spaced">ollama launch claude</code></a>. Try your model before relying on it.</p>
 <h2 id="how-this-compares-with-another-measurement">How this compares with another measurement</h2>
 <p><a href="https://systima.ai/blog/claude-code-vs-opencode-token-overhead">Systima measured a 4.7× gap</a> with Claude Sonnet 4.5, Claude Code 2.1.207 and OpenCode 1.17.18. My per-request no-op gap was 3.2×. Different versions and models prevent a direct comparison.</p>
 <h2 id="reproduce-the-no-op">Reproduce the no-op</h2>
@@ -404,9 +404,9 @@ env -i HOME=&quot;$(mktemp -d)&quot; PATH=&quot;$PATH&quot; \
 <p>OpenCode&#39;s own <code class="post-code--single">step_finish</code> numbers exclude the title request. Add input and cache read/write counts for the main request; capturing the title requires logging at the provider boundary as I did.</p>
 <p>To repeat bare, add <code class="post-code--single">--bare</code> to the Claude Code command and replace <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> with <code class="post-code--single">ANTHROPIC_API_KEY</code>.</p>
 <h2 id="which-one-i-d-use">Which one I&#39;d use</h2>
-<p>I&#39;d use Claude Code with a Claude subscription when I want deny-by-default behavior for approval-requiring calls in <code class="post-code--single">-p</code>. Reading <code class="post-code--single">.env</code> was allowed, so that does not mean every sensitive action is blocked.</p>
+<p>I&#39;d use Claude Code if I had a Claude subscription and wanted calls that need approval to be denied by default in <code class="post-code--single">-p</code>, as they were in my runs. Reading <code class="post-code--single">.env</code> was allowed, so that does not mean every sensitive action is blocked.</p>
 <p>I&#39;d use OpenCode for model choice and local models. For scripts, I&#39;d redirect stdin with <code class="post-code--spaced">&lt; /dev/null</code> and configure explicit deny rules. Either way, check the tests and diff instead of trusting exit 0; inspect Claude Code&#39;s <code class="post-code--single">permission_denials</code> too.</p>
-<p>In <a href="/cloud/?ref=blog-oc-vs-cc">Orbi Cloud</a>, Pi implements the Issue, tests check the change, a separate Pi session reviews it independently, and merge gates decide whether it can land.</p>
+<p>In <a href="/cloud/?ref=blog-oc-vs-cc">Orbi Cloud</a>, Pi implements the Issue, a second Pi session reviews it, and merge gates that include the tests decide whether it lands.</p>
 <h2 id="limits">Limits</h2>
 <p>The controlled comparison covered one machine, one day, one model through DeepSeek, and toy tasks with 3 runs per setup. There was no Claude-model run. The commands reproduce the no-op; the coding fixtures are not published here. Counts apply to these versions and do not predict hard-task correctness or long sessions.</p>
 <aside class="post-cta">

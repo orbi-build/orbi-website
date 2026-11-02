@@ -1,7 +1,7 @@
 ---
 title: OpenCode vs Claude Code: same model, headless
 date: 2026-11-02
-summary: On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.
+summary: On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.
 lang: en
 author: Lawrence Liu
 image: /img/blog-opencode-vs-claude-code-card.png
@@ -12,7 +12,7 @@ I measured OpenCode vs Claude Code on my Linux machine on 2 November 2026, using
 
 I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi agents to deliver GitHub Issues, including implementation and a separate review.
 
-## Setting up OpenCode vs Claude Code
+## How I ran OpenCode vs Claude Code on one model
 
 OpenCode 2.2.5 is the `@opencode/cli` npm package. The older `opencode-ai` package was V1, at 1.19.5 when I checked.
 
@@ -97,9 +97,9 @@ I ran each task 3 times with OpenCode, default Claude Code and bare Claude Code.
 | Shop / Claude Code | 93,353 / 93,358 / 92,717 | 5 |
 | Shop / Claude Code `--bare` | 11,626 / 13,248 / 11,790 | 5-6 |
 
-All 27 runs passed my subsequent `python3 -m unittest` check. No run edited the tests. These toy tasks do not separate the tools on correctness. This is not a benchmark.
+All 27 runs passed my subsequent `python3 -m unittest` check. No run edited the tests. These toy tasks do not separate the tools on correctness, so treat them as an overhead measurement, not a benchmark.
 
-Pairing repetitions by order, default Claude Code used 1.9-3.0× OpenCode's input; bare used 0.21-0.36×. This pairing simply describes these runs. OpenCode made 5-7 requests, including the title request, against default Claude Code's 4-5. Bare made 4-6.
+Pairing repetitions by order, default Claude Code used 1.9-3.0× OpenCode's input; bare used 0.21-0.36×. OpenCode made 5-7 requests, including the title request, against default Claude Code's 4-5. Bare made 4-6.
 
 ## Project rules: CLAUDE.md and AGENTS.md
 
@@ -133,7 +133,7 @@ With `-m local/thinkingcap:27b`, OpenCode answered the no-op in 10.2 s and passe
 
 Claude Code used `ANTHROPIC_BASE_URL=http://127.0.0.1:8080` and `ANTHROPIC_MODEL=thinkingcap:27b`. It failed with HTTP 500 after about 3 minutes, both with regular startup and bare. The server supported Anthropic Messages; this model's chat template rejected the request with "System message must be at the beginning".
 
-With this model and template, it did not work. That is no general rule for local models: [Ollama documents `ollama launch claude`](https://docs.ollama.com/integrations/claude-code). Try your model before relying on it.
+With this model and template, it did not work. Other local models may behave differently: [Ollama documents `ollama launch claude`](https://docs.ollama.com/integrations/claude-code). Try your model before relying on it.
 
 ## How this compares with another measurement
 
@@ -169,11 +169,11 @@ To repeat bare, add `--bare` to the Claude Code command and replace `ANTHROPIC_A
 
 ## Which one I'd use
 
-I'd use Claude Code with a Claude subscription when I want deny-by-default behavior for approval-requiring calls in `-p`. Reading `.env` was allowed, so that does not mean every sensitive action is blocked.
+I'd use Claude Code if I had a Claude subscription and wanted calls that need approval to be denied by default in `-p`, as they were in my runs. Reading `.env` was allowed, so that does not mean every sensitive action is blocked.
 
 I'd use OpenCode for model choice and local models. For scripts, I'd redirect stdin with `< /dev/null` and configure explicit deny rules. Either way, check the tests and diff instead of trusting exit 0; inspect Claude Code's `permission_denials` too.
 
-In [Orbi Cloud](/cloud/?ref=blog-oc-vs-cc), Pi implements the Issue, tests check the change, a separate Pi session reviews it independently, and merge gates decide whether it can land.
+In [Orbi Cloud](/cloud/?ref=blog-oc-vs-cc), Pi implements the Issue, a second Pi session reviews it, and merge gates that include the tests decide whether it lands.
 
 ## Limits
 

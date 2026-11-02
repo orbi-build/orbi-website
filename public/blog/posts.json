@@ -2,7 +2,7 @@
   {
     "slug": "opencode-vs-claude-code",
     "title": "OpenCode vs Claude Code: same model, headless",
-    "summary": "On three small tasks with DeepSeek, both tools passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; --bare used 0.21-0.36x as many.",
+    "summary": "On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.",
     "zhSlug": "opencode-vs-claude-code",
     "zhTitle": "OpenCode vs Claude Code：同一模型，无人值守实测",
     "related": []

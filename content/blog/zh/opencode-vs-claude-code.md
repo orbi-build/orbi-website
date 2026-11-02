@@ -1,7 +1,7 @@
 ---
 title: OpenCode vs Claude Code：同一模型，无人值守实测
 date: 2026-11-02
-summary: 27 次全通过；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。
+summary: 27 次编程运行均通过测试；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。
 lang: zh
 author: Lawrence Liu
 image: /img/blog-opencode-vs-claude-code-card.png
@@ -18,7 +18,7 @@ OpenCode 2.2.5 对应的 npm 包是 `@opencode/cli`。旧包 `opencode-ai` 属�
 
 OpenCode 用内置的 `deepseek` provider，参数是 `-m deepseek/deepseek-flash`。Claude Code 用 `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`、`ANTHROPIC_AUTH_TOKEN=<DeepSeek key>` 和 `ANTHROPIC_MODEL=deepseek-flash`。测 `--bare` 时，密钥放在 `ANTHROPIC_API_KEY`。下文的 bare 都指加上 `--bare` 的 Claude Code；这次配置提供 Bash、Edit 和 Read，没有 Write 工具。
 
-两边通过不同的 API 格式调用同一个后端模型。计数覆盖各自的完整配置，包括工具定义的序列化。
+两边通过不同的 API 格式调用同一个后端模型。token 计数包含各自完整的请求内容，包括序列化后的工具定义。
 
 [Anthropic 表示](https://code.claude.com/docs/en/llm-gateway)，它 "doesn't support routing Claude Code to non-Claude models through any gateway"。我只用这条路由做测量，不推荐这样用。我没有 Anthropic API key，也没有 OpenRouter 余额，所以这里没有 Claude 模型的测试。
 
@@ -26,7 +26,7 @@ OpenCode 用内置的 `deepseek` provider，参数是 `-m deepseek/deepseek-flas
 
 我在 `api.deepseek.com` 前面放了一个小型日志代理，记录两个工具的每次模型请求，以及 DeepSeek 返回的用量。输入总量包含缓存 token。下文比较的是输入 token，不能据此得出账单比例。
 
-## 无人值守：操作被拦，退出码仍是 0
+## 非交互运行时的权限与退出码
 
 我分别让两个工具打印 `.env` 里的敏感值，以及用 `rm` 删除 `scratch.txt`。每种设置各试 1 次。
 
@@ -99,7 +99,7 @@ OpenCode 会另发一次不带工具的请求，为会话起标题。那条 syst
 
 27 次运行都通过了我随后执行的 `python3 -m unittest` 检查，没有一次修改测试。这些小任务无法区分两个工具在正确性上的差别，也不构成 benchmark。
 
-按运行顺序逐次配对，默认 Claude Code 的输入是 OpenCode 的 1.9–3.0 倍，bare 为 0.21–0.36 倍。这样配对只是在描述这批运行。OpenCode 每次发出 5-7 次请求，包含标题请求；默认 Claude Code 为 4-5 次，bare 为 4-6 次。
+按运行顺序逐次配对，默认 Claude Code 的输入是 OpenCode 的 1.9–3.0 倍，bare 为 0.21–0.36 倍。逐次配对只描述这批运行，不是统计结论。OpenCode 每次发出 5-7 次请求，包含标题请求；默认 Claude Code 为 4-5 次，bare 为 4-6 次。
 
 ## 项目规则：CLAUDE.md 和 AGENTS.md
 
@@ -133,7 +133,7 @@ OpenCode 在 [PR 18186，"anthropic legal requests"](https://github.com/anomalyc
 
 Claude Code 用 `ANTHROPIC_BASE_URL=http://127.0.0.1:8080` 和 `ANTHROPIC_MODEL=thinkingcap:27b`。常规启动和 bare 都在约 3 分钟后以 HTTP 500 失败。服务器支持 Anthropic Messages，但这个模型的 chat template 拒绝了请求，报错 "System message must be at the beginning"。
 
-这套模型和模板没跑通，不能推广到所有本地模型：[Ollama 的文档提供了 `ollama launch claude` 用法](https://docs.ollama.com/integrations/claude-code)。依赖它之前，先用自己的模型试一次。
+这套模型和模板没跑通，换别的本地模型结果可能不同：[Ollama 的文档提供了 `ollama launch claude` 用法](https://docs.ollama.com/integrations/claude-code)。依赖它之前，先用自己的模型试一次。
 
 ## 和另一份测量有什么差别？
 
@@ -169,11 +169,11 @@ OpenCode 自己输出的 `step_finish` 计数不包含标题请求。主请求�
 
 ## 我会怎么选
 
-用 Claude 订阅，又希望 `-p` 中需要审批的调用默认被拒绝时，我会选 Claude Code。不过，读取 `.env` 是允许的，这不代表所有敏感操作都会被拦住。
+如果手上有 Claude 订阅，又希望 `-p` 里需要审批的调用默认被拒（我的测试里就是这样），我会选 Claude Code。不过，读取 `.env` 是允许的，这不代表所有敏感操作都会被拦住。
 
 想自由选模型或使用本地模型，我会选 OpenCode。放进脚本时，我会用 `< /dev/null` 重定向 stdin，并配置显式拒绝规则。无论选哪个，都要检查测试和 diff，不能只信退出码 0；Claude Code 的 `permission_denials` 也要看。
 
-在 [Orbi Cloud](/zh/cloud/?ref=blog-oc-vs-cc) 中，Pi 实现 Issue，测试检查改动，另一个 Pi 会话独立评审，再由合并门禁决定能否合入。
+在 [Orbi Cloud](/zh/cloud/?ref=blog-oc-vs-cc) 中，Pi 实现 Issue，另一个 Pi 会话做评审，再由包含测试在内的合并门禁决定能否合入。
 
 ## 测试范围
 
