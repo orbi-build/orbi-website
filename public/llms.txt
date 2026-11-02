@@ -253,6 +253,8 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- OpenCode vs Claude Code: same model, headless (English):
+  https://orbi.build/blog/opencode-vs-claude-code/
 - Pi coding agent vs Claude Code: same model, measured (English):
   https://orbi.build/blog/pi-coding-agent-vs-claude-code/
 - Pi coding agent 和 Claude Code 对比：同一模型实测 (Chinese):
