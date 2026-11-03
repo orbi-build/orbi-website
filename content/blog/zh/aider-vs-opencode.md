@@ -3,7 +3,7 @@ title: Aider vs OpenCode：上下文、提交和测试怎么选
 date: 2026-10-20
 summary: 比较 Aider 与 OpenCode 2 的文件上下文、Git 提交、测试和权限。用同一起始提交检查改动，避免自动提交后漏看代码，也别把本地 commit 当成测试通过。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-aider-vs-opencode-card.png
 mirror: aider-vs-opencode
 ---
@@ -12,7 +12,7 @@ mirror: aider-vs-opencode
 
 OpenCode 现在分 V1 和 V2 文档。本文比较的是 [OpenCode 2](https://opencode.ai/v2/docs/)，资料核对日期为 2026 年 10 月 20 日。照旧教程配置前，先看 [V2 迁移说明](https://opencode.ai/v2/docs/migrate-v1/)：两个版本使用同一个 `opencode` 命令名，安装 V2 可能替换原来的命令，配置格式也有变化。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 使用 Pi 编码和评审，没有把 Aider 或 OpenCode 当作引擎。下面按两者公开文档里的工作方式比较；代码质量和费用，可以用后面的试用方法在自己的任务上核对。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 使用 Pi 编码和评审，没有把 Aider 或 OpenCode 当作引擎。下面按两者公开文档里的工作方式比较；代码质量和费用，可以用后面的试用方法在自己的任务上核对。
 
 ## Aider vs OpenCode：按工作方式选
 

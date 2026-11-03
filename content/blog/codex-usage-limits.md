@@ -3,7 +3,7 @@ title: How to check and reset Codex usage limits
 date: 2026-10-17
 summary: Codex usage limits use five-hour and weekly windows set by plan. Check them on the Usage page or with /status, see when they reset, and keep runs going.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-codex-usage-card.png
 mirror: codex-usage-limits
 ---
@@ -88,7 +88,7 @@ codex login status
 codex exec --skip-git-repo-check -m gpt-6-luna "Reply with the single word OK" </dev/null
 ```
 
-I'm Lawrence Liu, the creator of Orbi. On 17 October 2026 I ran this on Linux with Codex CLI 0.163.0, with a made-up key, because I did not want to bill a real one for a test:
+I'm Larry 🍀 Orbi, the creator of Orbi. On 17 October 2026 I ran this on Linux with Codex CLI 0.163.0, with a made-up key, because I did not want to bill a real one for a test:
 
 - With `OPENAI_API_KEY` unset or empty, the script stopped at the third line with exit code 1.
 - Without the `mkdir`, Codex refused to start because the `CODEX_HOME` directory did not exist.

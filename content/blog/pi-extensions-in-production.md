@@ -3,14 +3,14 @@ title: Pi extensions in production: isolate, then write one
 date: 2026-10-30
 summary: How Orbi runs Pi coding agent extensions unattended: a declared --no-extensions allowlist, the D-Bus hang behind it, and two extensions we wrote ourselves.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-extensions-card.png
 series: pi
 ---
 
 Pi extensions are TypeScript (or JavaScript) modules that the [Pi coding agent](https://pi.dev) loads at startup: each one exports a function that receives the extension API, and with it the module can register tools the model may call, add commands, and subscribe to session events. Pi has several ways of finding Pi extensions, and on a laptop every one of them is convenient. In a service that runs Pi with nobody watching, the two automatic ones are also a way for code you did not choose to end up inside the session.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The [Pi hub](/guides/pi-coding-agent/) describes the runner around those sessions and [the first post of this series](/blog/orbi-on-pi-coding-agent/) walks one issue through them. This post is about Pi extensions only: how Orbi loads them, what went wrong before it did it this way, and two extensions we ended up writing ourselves. The commands below, and the shape of the config, are what runs today on Pi 1.2.0; the Orbi version numbers are the open-source engine's releases.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi unattended: it takes a GitHub issue, starts Pi to write the change, starts another Pi to review it, and merges when the review and CI pass. The [Pi hub](/guides/pi-coding-agent/) describes the runner around those sessions and [the first post of this series](/blog/orbi-on-pi-coding-agent/) walks one issue through them. This post is about Pi extensions only: how Orbi loads them, what went wrong before it did it this way, and two extensions we ended up writing ourselves. The commands below, and the shape of the config, are what runs today on Pi 1.2.0; the Orbi version numbers are the open-source engine's releases.
 
 ## What Pi extensions are, and the three ways Pi loads them
 

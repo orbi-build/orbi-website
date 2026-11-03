@@ -3,7 +3,7 @@ title: Cursor vs Claude Code: workflow, plans and usage
 date: 2026-10-18
 summary: Choose Cursor vs Claude Code by workflow, execution environment and billing. Compare current plans, Claude access and a simple task evaluation checklist.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-cursor-vs-claude-code-card.png
 mirror: cursor-vs-claude-code
 ---
@@ -78,7 +78,7 @@ Choose the tool whose workflow and allowance fit the tasks you actually do. One 
 
 ## Where Orbi fits
 
-I'm Lawrence Liu, the creator of Orbi. Orbi uses the Pi coding agent, not Claude Code or Cursor. Its runner takes an Issue through implementation and a fresh review session, then checks CI and PR state before merging; releases use their own workflow. [The Issue-to-release guide](/guides/issue-to-release/) describes those steps.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi uses the Pi coding agent, not Claude Code or Cursor. Its runner takes an Issue through implementation and a fresh review session, then checks CI and PR state before merging; releases use their own workflow. [The Issue-to-release guide](/guides/issue-to-release/) describes those steps.
 
 ## Related
 

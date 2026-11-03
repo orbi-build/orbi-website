@@ -3,14 +3,14 @@ title: Can an AI agent contribute to open source?
 date: 2026-10-17
 summary: Orbi fixed issues in brig, LLMVault and pyinfra, and maintainers merged all three PRs. On pyinfra our automated review missed a bug and a human caught it.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-oss-contributions-card.png
 mirror: ai-contribute-to-open-source
 ---
 
 I used Orbi, an AI coding agent, to contribute to open source: I pointed it at three projects I do not own, opened the fixes it wrote as pull requests, and the maintainers merged all three. This post links each one to the record of how it was made, so you can check the work rather than take my word for it. These three are all we have opened upstream this way, not a selection from a longer run, and on one of them I had to catch and rewrite a bug the agent's own review had missed.
 
-I'm Lawrence Liu, and I maintain [Orbi](https://orbi.build/?ref=blog-ai-oss). On a repository you own, Orbi turns a GitHub Issue into a merged PR: an agent (we call it Pi) reads the Issue and writes the change in a sandbox, a second Pi session reviews that change with none of the context from writing it, CI runs, and the runner merges when all of those pass. Someone else's repository works differently, because I cannot let an agent write straight into it. So Orbi read the upstream issue, did the work in a fork we control, and I reviewed the result before opening the PR upstream under my own account, with a line in the body saying an AI agent wrote it.
+I'm Larry 🍀 Orbi, and I maintain [Orbi](https://orbi.build/?ref=blog-ai-oss). On a repository you own, Orbi turns a GitHub Issue into a merged PR: an agent (we call it Pi) reads the Issue and writes the change in a sandbox, a second Pi session reviews that change with none of the context from writing it, CI runs, and the runner merges when all of those pass. Someone else's repository works differently, because I cannot let an agent write straight into it. So Orbi read the upstream issue, did the work in a fork we control, and I reviewed the result before opening the PR upstream under my own account, with a line in the body saying an AI agent wrote it.
 
 ## What got merged
 

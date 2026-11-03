@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:alt" content="Pi coding agent worktree: a failed recovery">
   <meta property="article:published_time" content="2026-10-26">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent worktree: a failed recovery","datePublished":"2026-10-26","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-coding-agent-worktree/","image":"https://orbi.build/img/og.png","inLanguage":"en","description":"A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.","url":"https://orbi.build/blog/pi-coding-agent-worktree/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent worktree: a failed recovery","datePublished":"2026-10-26","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/pi-coding-agent-worktree/","image":"https://orbi.build/img/og.png","inLanguage":"en","description":"A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.","url":"https://orbi.build/blog/pi-coding-agent-worktree/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
           <h1 id="post-title">Pi coding agent worktree: a failed recovery</h1>
-          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-26">2026-10-26</time></p>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-26">2026-10-26</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
           <p class="hero-lede">A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.</p>
         </section>
@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>A Pi coding agent worktree gives a delivery attempt its own checkout. To continue after a failure, Orbi also has to find the work that attempt already pushed. On 10 October 2026, that second part failed: a branch survived a GitHub connection error, but Orbi repeatedly refused to resume it. Three other ready issues waited behind it. The <a href="https://github.com/orbi-build/orbi/pull/1596">fix</a> merged on 11 October, at 00:42 UTC+8.</p>
-<p>I&#39;m Lawrence Liu, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the <a href="/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi architecture series</a>; the incident below happened in Orbi&#39;s runner, before it could hand the interrupted work back to Pi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the <a href="/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi architecture series</a>; the incident below happened in Orbi&#39;s runner, before it could hand the interrupted work back to Pi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="a-branch-without-a-pull-request">A branch without a pull request</h2>
 <p>The <a href="https://github.com/orbi-build/orbi/issues/1594">incident record</a> describes a run that stopped after a temporary GitHub connection failure. It left one commit on the remote delivery branch and no open pull request. After a person put the issue back into the ready queue, the runner should have continued implementation on that branch.</p>
 <p>Instead, each attempt logged <code class="post-code--single">claim_yield</code> with the reason <code class="post-code--single">stable_branch_appeared</code>. That message means the runner is yielding to work that may have appeared while it was preparing to claim the issue. The branch had been there before the scan.</p>
@@ -423,6 +423,18 @@
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
         <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
+        <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
+        <a href="https://webtech.tools" title="WebTech">WebTech</a>
+        <a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>
+        <a href="https://aixlist.com/">AIXList</a>
+        <a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>
+        <a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>
+        <a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>
+        <a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>
+        <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
+        <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
+        <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
       </div>
     </nav>
     <p class="footer-legal">© 2026 Low Code, LLC</p>

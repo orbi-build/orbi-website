@@ -3,7 +3,7 @@ title: Cursor 与 Claude Code 对比：工作流、套餐和用量
 date: 2026-10-18
 summary: Cursor 和 Claude Code 都能在编辑器、终端和云端使用。选哪款要看账号额度、运行环境和手上的任务；两者的 Claude 用量计费也不同。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-cursor-vs-claude-code-card.png
 mirror: cursor-vs-claude-code
 ---
@@ -78,7 +78,7 @@ Cursor 的 [Cloud Agents 文档](https://cursor.com/docs/cloud-agent)描述了�
 
 ## Orbi 接的是哪一段工作
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 用编程 agent Pi，不使用 Claude Code 或 Cursor。runner 会把 Issue 交给实现会话，再启动独立评审会话，检查 CI 和 PR 状态后才合并；发版走单独流程。[Issue 到发版指南](/zh/guides/issue-to-release/)说明了这些步骤。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用编程 agent Pi，不使用 Claude Code 或 Cursor。runner 会把 Issue 交给实现会话，再启动独立评审会话，检查 CI 和 PR 状态后才合并；发版走单独流程。[Issue 到发版指南](/zh/guides/issue-to-release/)说明了这些步骤。
 
 ## 相关
 

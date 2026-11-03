@@ -3,7 +3,7 @@ title: Claude Code subagents 怎么配、什么时候用
 date: 2026-10-17
 summary: Claude Code subagents 在各自独立的上下文里处理委派任务。配一个专注的代码评审 subagent，给它清楚的输入，再判断什么时候该委派出去。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-cc-subagents-card.png
 mirror: claude-code-subagents
 ---
@@ -82,7 +82,7 @@ Anthropic 的[调研建议](https://code.claude.com/docs/en/best-practices#use-s
 
 ## Orbi 里的独立评审
 
-我是 Lawrence Liu，Orbi 的创始人。上面那个评审 subagent 把报告交回主会话，由你来处理。当你想让一张 Issue 自己走完实现、评审、合并，你需要的就不是单次委派的任务，而是一个 runner——这和本文配的只读评审 subagent 是两种需求。Orbi 用编排 Pi 进程来做这件事：上面那个 agent 文件属于 Claude Code，Orbi 不跑它。一个值得点明的区别：Orbi 的评审会话可以修代码，而这里的 Claude Code 评审 subagent 被限制在只读工具。
+我是 Larry 🍀 Orbi，Orbi 的创始人。上面那个评审 subagent 把报告交回主会话，由你来处理。当你想让一张 Issue 自己走完实现、评审、合并，你需要的就不是单次委派的任务，而是一个 runner——这和本文配的只读评审 subagent 是两种需求。Orbi 用编排 Pi 进程来做这件事：上面那个 agent 文件属于 Claude Code，Orbi 不跑它。一个值得点明的区别：Orbi 的评审会话可以修代码，而这里的 Claude Code 评审 subagent 被限制在只读工具。
 
 Orbi Cloud 里每张 Issue 的交付跑在一个独立的 git worktree 和一个实现会话里，评审在另一个单独的 Pi 会话里跑，runner 看评审结论、CI 结果和 PR 状态，再决定合不合并。[Pi 架构指南](/zh/guides/pi-coding-agent/?ref=blog-cc-subagents)讲清楚了这些闸门，[Issue 到发版指南](/zh/guides/issue-to-release/?ref=blog-cc-subagents)把这条线从实现、评审一直走到合并和发版。
 

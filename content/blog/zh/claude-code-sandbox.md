@@ -3,14 +3,14 @@ title: Claude Code 沙箱实测：跳过权限时，哪种配置拦得住越界
 date: 2026-10-11
 summary: 开着 --dangerously-skip-permissions 实测 Claude Code 沙箱：只开沙箱、其余默认时，四项越界最终都成功了。加固设置配禁止规则，或者用 sandbox runtime（srt）包住整个进程，这次四项都拦住了；读密钥和联网只用 Bash 测过。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-sandbox-card.png
 mirror: claude-code-sandbox
 ---
 
 Claude Code 沙箱（`/sandbox`）给 Claude 执行的 shell 命令套一层操作系统级的隔离。在 Linux 上靠的是 bubblewrap：命令只能写项目目录和一个临时目录，联网要经过一个按域名放行的代理。Claude 自己的 Read、Write、Edit、WebFetch 工具都不归它管。开着 `--dangerously-skip-permissions` 跳过权限、只打开沙箱、其余保持默认时，我试的四次越界最终都成功了。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 把 GitHub Issue 一路做到合并、发版，中间没有人工逐条点批准。Orbi 用的是开源编程 agent Pi，不是 Claude Code。两者在无人值守时都得限定 agent 能碰什么。Claude Code 的沙箱和权限规则这两层控制都有文档，我就拿它来实测。`claude -p` 放进 cron 要加哪些参数、退出码怎么查，写在[《Claude Code headless 模式下操作被拒，退出码还是 0》](/zh/blog/run-claude-code-unattended/)里。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 把 GitHub Issue 一路做到合并、发版，中间没有人工逐条点批准。Orbi 用的是开源编程 agent Pi，不是 Claude Code。两者在无人值守时都得限定 agent 能碰什么。Claude Code 的沙箱和权限规则这两层控制都有文档，我就拿它来实测。`claude -p` 放进 cron 要加哪些参数、退出码怎么查，写在[《Claude Code headless 模式下操作被拒，退出码还是 0》](/zh/blog/run-claude-code-unattended/)里。
 
 ## 怎么测的
 

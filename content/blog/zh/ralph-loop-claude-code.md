@@ -3,7 +3,7 @@ title: Ralph loop 跑完之后，谁来评审和合并
 date: 2026-10-10
 summary: Ralph loop 把同一段提示词反复喂给编程 agent，常见做法是让 agent 自己宣布做完。我实测了一次，第 4 轮测试全过，agent 写下 DONE；换一个会话评审，却发现 slugify 会把破折号直接删掉。搜索靠前的十几个页面里，只有 Huntley 的原文讲了合并交给谁：交给循环自己。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-ralph-loop-card.png
 mirror: ralph-loop-claude-code
 ---
@@ -18,7 +18,7 @@ while :; do cat PROMPT.md | claude-code ; done
 
 Huntley 说这适合从零起的新项目，「预期做到九成」。他说自己绝不会用在现有代码库上，还提醒你「时不时醒来会发现代码库编译不过」。写提示词的建议是每轮只让它做一件事。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 是一座软件黑灯工厂：一张 GitHub Issue 进去，编程 agent 写代码，另一个会话评审，然后合并，多数时候不用人守着。调度这一切的程序叫 runner，runner 本身也是一个循环。我一直想知道，最朴素的 Ralph loop 会在哪出问题、最后由谁收尾。10 月 10 日我用 Claude Code 跑了一次，对象是一个很小的 Python 库。第 4 轮测试全绿，agent 写下了 DONE。之后我另开一个会话评审，花了 0.11 美元，它找出一处不符合规格的地方，结论是不能合并。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是一座软件黑灯工厂：一张 GitHub Issue 进去，编程 agent 写代码，另一个会话评审，然后合并，多数时候不用人守着。调度这一切的程序叫 runner，runner 本身也是一个循环。我一直想知道，最朴素的 Ralph loop 会在哪出问题、最后由谁收尾。10 月 10 日我用 Claude Code 跑了一次，对象是一个很小的 Python 库。第 4 轮测试全绿，agent 写下了 DONE。之后我另开一个会话评审，花了 0.11 美元，它找出一处不符合规格的地方，结论是不能合并。
 
 ## 官方 ralph-loop 插件默认不设轮数上限
 

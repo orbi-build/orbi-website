@@ -3,7 +3,7 @@ title: OpenCode 替代方案：PR 之后那条线归谁
 date: 2026-10-19
 summary: OpenCode 能把一个 Issue 跑到开好 PR、留下评审就停了。下面这些 OpenCode 替代方案的分别，在于 PR 之后的合并和发版归谁。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-opencode-alternatives-card.png
 mirror: opencode-alternatives
 ---
@@ -12,7 +12,7 @@ OpenCode 的流程停在 PR，找替代方案前先认清这一点。OpenCode �
 
 它不做的是合并和发版。OpenCode 的 GitHub 文档讲到提交一个带改动的 PR 就停了，没有哪一步去合并这个 PR 或者打 tag。所以挑替代方案时，真正要问的是：PR 开出来、评审过了之后，谁来判断它能不能合、谁对那个发版 tag 负责？这几个工具的分别就在这里。
 
-我是 Lawrence Liu，Orbi 的创始人。下面每个工具，包括 Orbi 在内，我都在 2026 年 10 月 19 日对着它自己的官方文档核过，用同一把尺子量。
+我是 Larry 🍀 Orbi，Orbi 的创始人。下面每个工具，包括 Orbi 在内，我都在 2026 年 10 月 19 日对着它自己的官方文档核过，用同一把尺子量。
 
 ## 怎么比较
 

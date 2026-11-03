@@ -3,14 +3,14 @@ title: OpenCode vs Claude Code：同一模型，无人值守实测
 date: 2026-11-02
 summary: 27 次编程运行均通过测试；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-opencode-vs-claude-code-card.png
 mirror: opencode-vs-claude-code
 ---
 
 OpenCode vs Claude Code 这次实测在 2026 年 11 月 2 日完成，用的是我的 Linux 机器、OpenCode 2.2.5 和 Claude Code 2.1.281，模型同为 DeepSeek V4.1 Flash（`deepseek-flash`）。OpenCode 用默认权限、Claude Code 加 `--dangerously-skip-permissions`，27 次受控编程运行全部通过了给定的测试。默认 Claude Code 每次运行的输入 token 是 OpenCode 的 1.9–3.0 倍；加上 `--bare` 后，为 0.21–0.36 倍。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。
 
 ## OpenCode vs Claude Code 的测试配置
 

@@ -3,7 +3,7 @@ title: Ralph loop's code passed 28 tests, then failed review
 date: 2026-10-10
 summary: A Ralph loop reruns one prompt. Mine wrote code that passed all 28 tests, including 13 it never saw, yet a separate review session found a spec violation.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-ralph-loop-card.png
 mirror: ralph-loop-claude-code
 ---
@@ -18,7 +18,7 @@ Each round starts a fresh session, so the only record of how far the last round 
 
 Huntley pitches it for bootstrapping greenfield projects "with the expectation you'll get 90% done". He says he would never use it on an existing codebase, warns that you'll "wake up to a broken codebase that doesn't compile from time to time", and advises asking for one thing per loop.
 
-I'm Lawrence Liu, and I built Orbi. Orbi takes a GitHub Issue, has a coding agent write the change, puts it through a separate review session and merges it, usually with nobody at the keyboard. Orbi's runner, the program that moves each Issue through those steps, is a loop too, so I wanted to see where a plain Ralph loop stops. On 10 October I ran one with Claude Code on a small Python library. After four rounds every test passed and the agent wrote DONE. A separate review session, costing 11 cents, then found a spec violation and said not to merge.
+I'm Larry 🍀 Orbi, and I built Orbi. Orbi takes a GitHub Issue, has a coding agent write the change, puts it through a separate review session and merges it, usually with nobody at the keyboard. Orbi's runner, the program that moves each Issue through those steps, is a loop too, so I wanted to see where a plain Ralph loop stops. On 10 October I ran one with Claude Code on a small Python library. After four rounds every test passed and the agent wrote DONE. A separate review session, costing 11 cents, then found a spec violation and said not to merge.
 
 ## Anthropic's ralph-loop plugin has no round limit by default
 

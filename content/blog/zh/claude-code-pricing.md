@@ -3,7 +3,7 @@ title: Claude Code 价格：Pro、Max 和 API 怎么付费
 date: 2026-10-18
 summary: Claude Code 月付订阅从 Pro 的 20 美元起。分清订阅额度、额外用量、API 账单和 Max 附赠额度，再决定是否升级。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-claude-code-pricing-card.png
 mirror: claude-code-pricing
 ---
@@ -85,7 +85,7 @@ API 用户去 Console 对账；订阅用户检查剩余额度，以及是否开�
 
 ## 如果你核算的是 Issue 交付成本
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 使用编程 agent Pi，把 GitHub Issue 交给实现会话，再经过独立评审、合并检查与发版流程。Orbi Cloud 默认使用 DeepSeek，不消耗 Claude Code 订阅额度。[Orbi 成本页](/zh/cost/?ref=blog-cc-pricing)统计的是另一种 agent 和交付流程，不能拿它预测 Claude Code 账单。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 使用编程 agent Pi，把 GitHub Issue 交给实现会话，再经过独立评审、合并检查与发版流程。Orbi Cloud 默认使用 DeepSeek，不消耗 Claude Code 订阅额度。[Orbi 成本页](/zh/cost/?ref=blog-cc-pricing)统计的是另一种 agent 和交付流程，不能拿它预测 Claude Code 账单。
 
 ## 相关
 

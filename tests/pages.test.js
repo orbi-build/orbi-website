@@ -2157,13 +2157,77 @@ describe("one unified footer on every content page", () => {
         .toBe(0);
     }
   });
-  it("carries the Findstack badge verbatim, closing the badge row on every footer page", () => {
+  it("carries the Findstack badge verbatim on every footer page", () => {
     const badge = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Findstack badge drifted`).toContain(badge);
       expect(countMatches(footer, /findstack\.com\/products\/orbi\/reviews/g)).toBe(1);
-      expect(footer.slice(footer.indexOf(badge) + badge.length)).toMatch(/^\s*<\/div>/);
+      // Issue #1160 appended twelve directory badges after it, so it is no
+      // longer the row's last entry; the goodsaas.xyz badge follows it.
+      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Issue #1160 badges must follow the Findstack badge`)
+        .toMatch(/^\s*<a href="https:\/\/goodsaas\.xyz\/saas\/orbi"/);
+    }
+  });
+
+  // Issue #1160: twelve more directory sites grant orbi.build a free, dofollow
+  // backlink once the site carries their badge or link, so the Issue's snippets
+  // are appended verbatim after the Findstack badge, in the Issue's order. Some
+  // of them keep the directory's own spelling ("Diresctory") because the
+  // directory re-checks the page against the snippet it handed out, so the copy
+  // must not be corrected. None of the twelve may carry nofollow, sponsored or
+  // ugc — the directories treat such a link as unverifiable and drop the
+  // listing. bestaitool.app now closes the badge row.
+  it("carries the twelve Issue #1160 directory badges and links, closing the badge row on every footer page", () => {
+    const badges = [
+      '<a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>',
+      '<a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>',
+      '<a href="https://webtech.tools" title="WebTech">WebTech</a>',
+      '<a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>',
+      '<a href="https://aixlist.com/">AIXList</a>',
+      '<a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>',
+      '<a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>',
+      '<a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>',
+      '<a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>',
+      '<a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>',
+      '<a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>',
+      '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>',
+    ];
+    const hrefs = [
+      "https://goodsaas.xyz/saas/orbi",
+      "https://101aitools.com",
+      "https://webtech.tools",
+      "https://t0ai.com",
+      "https://aixlist.com/",
+      "https://hiaitools.com",
+      "https://aitooli.com/",
+      "https://okeiai.com/",
+      "https://vibedonalds.com",
+      "https://minylist.com",
+      "https://toolsify.ai/",
+      "https://bestaitool.app/",
+    ];
+    const findstack = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      for (const [index, badge] of badges.entries()) {
+        expect(footer, `${page.output}: the ${hrefs[index]} badge drifted`).toContain(badge);
+        expect(countMatches(footer, new RegExp(`<a href="${escapeRegExp(hrefs[index])}"`, "g")), `${page.output}: exactly one ${hrefs[index]} anchor`)
+          .toBe(1);
+        expect(footer.indexOf(badge), `${page.output}: the ${hrefs[index]} badge must follow the ${index === 0 ? "Findstack" : hrefs[index - 1]} badge`)
+          .toBeGreaterThan(footer.indexOf(index === 0 ? findstack : badges[index - 1]));
+        const anchor = footerAnchorTag(footer, hrefs[index]);
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must stay crawlable`).not.toContain("nofollow");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
+        expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
+      }
+      // The row ends at bestaitool.app, so its closing tag follows that badge.
+      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the bestaitool.app badge must close the badge row`)
+        .toMatch(/^\s*<\/div>/);
+      // The four vendor-hosted images must stay on the directories' hosts, so
+      // each verifier counts the badge from its own file.
+      expect(countMatches(footer, /src="\/img\/[^"]*(goodsaas|101aitools|vibedonalds|minylist)[^"]*"/gi), `${page.output}: the Issue #1160 badges must not be self-hosted`)
+        .toBe(0);
     }
   });
 
@@ -2178,8 +2242,9 @@ describe("one unified footer on every content page", () => {
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
   // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
   // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge,
-  // Issue #1132 the founder.best / makeitla.st badges and Issue #1134 the
-  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges last.
+  // Issue #1132 the founder.best / makeitla.st badges, Issue #1134 the
+  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges and
+  // Issue #1160 twelve more directory badges and links last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2221,6 +2286,21 @@ describe("one unified footer on every content page", () => {
       "https://uno.directory",
       "https://saascity.io",
       "https://launchvault.dev",
+      // Issue #1160: twelve directory badges and links, appended after the
+      // Findstack anchor (which this list cannot match — its href is not the
+      // anchor's first attribute).
+      "https://goodsaas.xyz/saas/orbi",
+      "https://101aitools.com",
+      "https://webtech.tools",
+      "https://t0ai.com",
+      "https://aixlist.com/",
+      "https://hiaitools.com",
+      "https://aitooli.com/",
+      "https://okeiai.com/",
+      "https://vibedonalds.com",
+      "https://minylist.com",
+      "https://toolsify.ai/",
+      "https://bestaitool.app/",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
@@ -2453,7 +2533,7 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
       "zh/cost/index.html",
       "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
       "blog/index.html",
-      "about/lawrence-liu/index.html",
+      "about/larry-orbi/index.html",
     ]);
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
@@ -3425,7 +3505,7 @@ describe("Article publish and update dates (Issue #889)", () => {
       expect(article, `${output}: missing Article`).toBeTruthy();
       expect(article.datePublished, `${output}: datePublished`).toBe(published);
       expect(article.dateModified, `${output}: dateModified`).toBe(modified);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Larry 🍀 Orbi" });
       expect(article.publisher, output).toEqual(PUBLISHER);
     }
   });
@@ -3988,7 +4068,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       expect(html, `${output}: missing output`).toBeTruthy();
       const article = articleOf(html);
       expect(article.author["@type"], output).toBe("Person");
-      expect(article.author.name, output).toBe("Lawrence Liu");
+      expect(article.author.name, output).toBe("Larry 🍀 Orbi");
       expect(article.publisher, output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -4185,7 +4265,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/fixture.png
 ---
 
@@ -4447,7 +4527,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/fixture.png
 ---
 

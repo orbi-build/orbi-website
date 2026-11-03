@@ -3,7 +3,7 @@ title: Claude Code pricing: Pro, Max and API billing
 date: 2026-10-18
 summary: Compare Claude Code pricing for Pro, Max and API access. Check shared limits, extra usage, API credit exclusions and which account pays before you upgrade.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-claude-code-pricing-card.png
 mirror: claude-code-pricing
 ---
@@ -85,7 +85,7 @@ At monthly web prices, Pro to Max 5x adds $80 to the base charge; Max 5x to Max 
 
 ## When your budget is for delivered Issues
 
-I'm Lawrence Liu, the creator of Orbi. Orbi runs the Pi coding agent and takes GitHub Issues through implementation, a separate review session, merge checks and release workflows. Orbi Cloud uses DeepSeek by default and does not consume your Claude Code subscription allowance. Its [cost page](/cost/?ref=blog-cc-pricing) measures a different agent and workflow, so those figures cannot predict your Claude Code bill.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs the Pi coding agent and takes GitHub Issues through implementation, a separate review session, merge checks and release workflows. Orbi Cloud uses DeepSeek by default and does not consume your Claude Code subscription allowance. Its [cost page](/cost/?ref=blog-cc-pricing) measures a different agent and workflow, so those figures cannot predict your Claude Code bill.
 
 ## Related
 

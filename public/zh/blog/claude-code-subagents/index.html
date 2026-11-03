@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-cc-subagents-card.png">
   <meta property="og:image:alt" content="Claude Code subagents 怎么配、什么时候用">
   <meta property="article:published_time" content="2026-10-17">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code subagents 怎么配、什么时候用","datePublished":"2026-10-17","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-code-subagents/","image":"https://orbi.build/img/blog-cc-subagents-card.png","inLanguage":"zh-CN","description":"Claude Code subagents 在各自独立的上下文里处理委派任务。配一个专注的代码评审 subagent，给它清楚的输入，再判断什么时候该委派出去。","url":"https://orbi.build/zh/blog/claude-code-subagents/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code subagents 怎么配、什么时候用","datePublished":"2026-10-17","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/claude-code-subagents/","image":"https://orbi.build/img/blog-cc-subagents-card.png","inLanguage":"zh-CN","description":"Claude Code subagents 在各自独立的上下文里处理委派任务。配一个专注的代码评审 subagent，给它清楚的输入，再判断什么时候该委派出去。","url":"https://orbi.build/zh/blog/claude-code-subagents/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">Claude Code subagents 怎么配、什么时候用</h1>
-          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-17">2026-10-17</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-17">2026-10-17</time></p>
 
           <p class="hero-lede">Claude Code subagents 在各自独立的上下文里处理委派任务。配一个专注的代码评审 subagent，给它清楚的输入，再判断什么时候该委派出去。</p>
         </section>
@@ -233,7 +233,7 @@ Diff：[粘贴这些文件的 patch]
 <p>依赖当前讨论进度的小改动，留在主会话里做。委派之前，先试着把任务和预期的返回写出来。如果这两样你都说不清，先把任务收窄。把一个说不清的请求拆给好几个 agent，只会留下好几份都说不清的任务。</p>
 <p>这个评审 subagent 和主会话共用工作目录；它的独立上下文并不会冻结文件。要独立的 Git 工作目录，Claude Code 支持 <a href="https://code.claude.com/docs/en/sub-agents#frontmatter-reference"><code class="post-code--spaced">isolation: worktree</code></a>，上面的例子没有用它。</p>
 <h2 id="orbi-里的独立评审">Orbi 里的独立评审</h2>
-<p>我是 Lawrence Liu，Orbi 的创始人。上面那个评审 subagent 把报告交回主会话，由你来处理。当你想让一张 Issue 自己走完实现、评审、合并，你需要的就不是单次委派的任务，而是一个 runner——这和本文配的只读评审 subagent 是两种需求。Orbi 用编排 Pi 进程来做这件事：上面那个 agent 文件属于 Claude Code，Orbi 不跑它。一个值得点明的区别：Orbi 的评审会话可以修代码，而这里的 Claude Code 评审 subagent 被限制在只读工具。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。上面那个评审 subagent 把报告交回主会话，由你来处理。当你想让一张 Issue 自己走完实现、评审、合并，你需要的就不是单次委派的任务，而是一个 runner——这和本文配的只读评审 subagent 是两种需求。Orbi 用编排 Pi 进程来做这件事：上面那个 agent 文件属于 Claude Code，Orbi 不跑它。一个值得点明的区别：Orbi 的评审会话可以修代码，而这里的 Claude Code 评审 subagent 被限制在只读工具。</p>
 <p>Orbi Cloud 里每张 Issue 的交付跑在一个独立的 git worktree 和一个实现会话里，评审在另一个单独的 Pi 会话里跑，runner 看评审结论、CI 结果和 PR 状态，再决定合不合并。<a href="/zh/guides/pi-coding-agent/?ref=blog-cc-subagents">Pi 架构指南</a>讲清楚了这些闸门，<a href="/zh/guides/issue-to-release/?ref=blog-cc-subagents">Issue 到发版指南</a>把这条线从实现、评审一直走到合并和发版。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
@@ -359,6 +359,18 @@ Diff：[粘贴这些文件的 patch]
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
         <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
+        <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
+        <a href="https://webtech.tools" title="WebTech">WebTech</a>
+        <a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>
+        <a href="https://aixlist.com/">AIXList</a>
+        <a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>
+        <a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>
+        <a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>
+        <a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>
+        <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
+        <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
+        <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
       </div>
     </nav>
     <p class="footer-legal">© 2026 Low Code, LLC</p>

@@ -3,7 +3,7 @@ title: Claude Code headless 模式下操作被拒，退出码还是 0
 date: 2026-10-01
 summary: Claude Code 的 headless 模式就是 claude -p。没预先放行的操作被拒后，运行照样算成功，脚本得自己查 permission_denials 才知道。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-headless-card.png
 mirror: run-claude-code-unattended
 ---
@@ -23,7 +23,7 @@ claude -p "修复 tests/test_auth.py 里失败的测试" \
 
 `auto` 也不是总能用。模型不支持、设置里关掉了、Anthropic 在服务端关掉，会话都会改从 Manual 模式（即 `--permission-mode default`）启动，没预先放行的写入都会被拒。所以夜间任务我用 `dontAsk` 加白名单，它不依赖 `auto` 能不能用，下文的检查脚本就是这么配的。在 headless 下，`dontAsk` 放行的范围和 `default` 加同一份白名单一样；区别是[官方文档](https://code.claude.com/docs/zh-CN/permission-modes)把它定位成 CI 用的锁定模式，连显式的 `ask` 规则和 AskUserQuestion 都直接拒，会话从不等人输入。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 会把 GitHub Issue 一路做到合并和发版。Orbi 用的 agent 是开源的 Pi，不是 Claude Code，但后半篇讲的认领、评审、合并，用 Claude Code 搭循环一样绕不开。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 会把 GitHub Issue 一路做到合并和发版。Orbi 用的 agent 是开源的 Pi，不是 Claude Code，但后半篇讲的认领、评审、合并，用 Claude Code 搭循环一样绕不开。
 
 ## headless 模式怎么用
 
