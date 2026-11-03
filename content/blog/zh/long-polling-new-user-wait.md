@@ -3,7 +3,7 @@ title: 新用户连上仓库要等一两分钟，我们压到 10 秒：长轮询
 date: 2026-10-12
 summary: 有个用户在环境已经准备好之后走了，因为页面还没告诉他。我们改用长轮询消掉排队，再抠掉几处准备时间：以前要等一两分钟，现在测试环境上 10 秒左右，机器一台没加。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
 video_name: 新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒｜Orbi Cloud
@@ -152,7 +152,7 @@ WantedBy=multi-user.target
 
 ## 活是谁干的
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 接一张打了 `ai-ready` 标签的 GitHub Issue，用它的编程 agent Pi 写代码，另开一个会话评审，合并，再发版。这次的 31 张票都是这么走完的。Claude Code 和我一起写票，每个改动合并前它都读一遍。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 接一张打了 `ai-ready` 标签的 GitHub Issue，用它的编程 agent Pi 写代码，另开一个会话评审，合并，再发版。这次的 31 张票都是这么走完的。Claude Code 和我一起写票，每个改动合并前它都读一遍。
 
 我做的事情就三件：判断什么重要；问了两个问题，「为什么不基于消息？」和「能不能再薄一点？」；还有，放过了那个 bug。
 

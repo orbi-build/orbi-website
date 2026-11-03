@@ -3,7 +3,7 @@ title: Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9
 date: 2026-10-06
 summary: I ran Pi three ways (pi --print, the AI SDK's HarnessAgent, Cloudflare's PiHarness) and killed each mid-task. What came back, and why.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-agent-harness-card.png
 mirror: pi-agent-harness
 series: pi
@@ -11,7 +11,7 @@ series: pi
 
 The Pi agent harness is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records each step in a session file, and repeats until the model stops asking for tools. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
 
-I'm Lawrence Liu, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). This post compares three ways to run Pi without a person at the keyboard by doing the same thing to each: start a task, kill the process partway through, and see what comes back.
+I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). This post compares three ways to run Pi without a person at the keyboard by doing the same thing to each: start a task, kill the process partway through, and see what comes back.
 
 ## What is the Pi agent harness?
 

@@ -3,14 +3,14 @@ title: Pi coding agent vs OpenCode：同一模型，无人值守实测
 date: 2026-11-03
 summary: 28 次 DeepSeek 和 12 次本地模型编程运行全过；DeepSeek 上 OpenCode 平均输入 token 为 Pi 的 2.3–3.9 倍。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-opencode-card.png
 mirror: pi-coding-agent-vs-opencode
 ---
 
 Pi coding agent vs OpenCode 这次实测在 2026 年 11 月 3 日完成，用的是我的 Linux 机器：Pi 1.5.0（`@earendil-works/pi-coding-agent`，11 月 2 日发布）和 OpenCode 2.2.5（`@opencode/cli`），模型同为 DeepSeek V4.1 Flash（`deepseek-flash`）。28 次 DeepSeek 编程运行和 12 次本地模型编程运行全部通过测试。按每个任务的平均输入 token 计算，DeepSeek 上 OpenCode 的用量约为 Pi 的 2.3–3.9 倍。无人值守时，我最关心的差别在退出码和权限，下面会展开。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 把 GitHub Issue 交给 Pi，再由另一个 Pi 会话评审结果，全程无人值守，所以我尤其在意下面这些行为。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 把 GitHub Issue 交给 Pi，再由另一个 Pi 会话评审结果，全程无人值守，所以我尤其在意下面这些行为。
 
 ## 测试配置：同一模型、同一个代理
 

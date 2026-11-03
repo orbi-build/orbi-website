@@ -3,14 +3,14 @@ title: YOLO mode Claude Code vs auto mode: what I measured
 date: 2026-10-13
 summary: YOLO mode in Claude Code is --dangerously-skip-permissions. I tested it against auto mode and the safer modes on 2.1.287: what runs, what stops injection.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
 Search "YOLO mode Claude Code" and you're after one flag: `--dangerously-skip-permissions`, which runs every tool call without asking. The reason to reach for it is real. On a long task the permission prompts pile up, and after the tenth "allow this command?" you stop reading them. But the flag's own name warns you, and the docs only let you turn it on inside "isolated environments like containers, VMs, or dev containers without internet access."
 
-I'm Lawrence Liu, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs coding agents unattended all day, so "how do I stop the prompts without handing over the keys" is a question I have to answer for real. This post is what I found when I tested YOLO mode against the four other permission modes, including the newer **auto mode**, which reviews each action with a second model instead of asking you. Auto mode handles most of what people open YOLO mode for, and the thing that actually stopped a data-exfiltration attempt in my tests was the model itself, not the permission mode.
 
 All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on `claude-sonnet-5-5`, run non-interactively with `claude -p` (auto mode's classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the `claude-sonnet-5-5` the agent runs on). Every number below comes from those runs, recorded per action.
 

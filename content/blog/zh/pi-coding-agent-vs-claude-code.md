@@ -3,12 +3,12 @@ title: Pi coding agent 和 Claude Code 对比：同一模型实测
 date: 2026-11-01
 summary: 让同一模型跑两个小编程任务，放开权限后全部通过。默认 Claude Code 的输入 token 是 Pi 的 7 到 8 倍；加 --bare 后，用量和 Pi 接近，多数更低。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-claude-code-card.png
 series: pi
 ---
 
-我是 Lawrence Liu，Orbi 的创始人。Pi 和 Claude Code 主要在模型选择、内置功能和权限控制上有差别。我让两边用同一个 DeepSeek V4.1 Flash，各跑相同的两个小编程任务。放开执行权限后，每次运行都通过了测试；默认 Claude Code 每次发送的输入 token 是 Pi 的 7–8×。加上 `claude -p --bare` 后，用量和 Pi 接近：六组配对里五组低于 Pi，一组高于 Pi。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Pi 和 Claude Code 主要在模型选择、内置功能和权限控制上有差别。我让两边用同一个 DeepSeek V4.1 Flash，各跑相同的两个小编程任务。放开执行权限后，每次运行都通过了测试；默认 Claude Code 每次发送的输入 token 是 Pi 的 7–8×。加上 `claude -p --bare` 后，用量和 Pi 接近：六组配对里五组低于 Pi，一组高于 Pi。
 
 默认 Claude Code 多出的输入，大部分来自它的 21 个工具定义。拿 API key 跑脚本时，用不用 `--bare` 对用量的影响，和换一套 harness 差不多。
 

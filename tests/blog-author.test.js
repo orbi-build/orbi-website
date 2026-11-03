@@ -120,8 +120,8 @@ describe("author pages (Issue #887)", () => {
       const html = shipped.get(authorPageOutput(lang));
       const canonical = `https://orbi.build${authorPageHref(lang)}`;
       expect(html, `${authorPageOutput(lang)}: canonical`).toContain(`<link rel="canonical" href="${canonical}">`);
-      expect(html, `${authorPageOutput(lang)}: EN alternate`).toContain('hreflang="en" href="https://orbi.build/about/lawrence-liu/"');
-      expect(html, `${authorPageOutput(lang)}: ZH alternate`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/about/lawrence-liu/"');
+      expect(html, `${authorPageOutput(lang)}: EN alternate`).toContain('hreflang="en" href="https://orbi.build/about/larry-orbi/"');
+      expect(html, `${authorPageOutput(lang)}: ZH alternate`).toContain('hreflang="zh-CN" href="https://orbi.build/zh/about/larry-orbi/"');
       expect(sitemap, `${authorPageOutput(lang)}: sitemap`).toContain(`<loc>${canonical}</loc>`);
     }
   });
@@ -181,7 +181,7 @@ describe("the author record (Issue #887)", () => {
       const complete = { name: AUTHOR.name, slug: AUTHOR.slug, sameAs: PROFILES };
       await write({ name: AUTHOR.name, slug: AUTHOR.slug });
       await expect(loadAuthor(file)).rejects.toThrow(/missing "sameAs"/);
-      await write({ name: AUTHOR.name, slug: "Lawrence Liu", sameAs: PROFILES });
+      await write({ name: AUTHOR.name, slug: "Larry 🍀 Orbi", sameAs: PROFILES });
       await expect(loadAuthor(file)).rejects.toThrow(/"slug" is not URL-safe/);
       await write({ name: "  ", slug: AUTHOR.slug, sameAs: PROFILES });
       await expect(loadAuthor(file)).rejects.toThrow(/missing "name"/);
@@ -208,8 +208,8 @@ describe("the Worker serves the new routes (Issue #887)", () => {
 
   it("answers both author pages and the posts that link them with 200", async () => {
     const paths = [
-      "/about/lawrence-liu/",
-      "/zh/about/lawrence-liu/",
+      "/about/larry-orbi/",
+      "/zh/about/larry-orbi/",
       "/blog/k8e-rejected-then-merged/",
       "/zh/blog/k8e-rejected-then-merged/",
     ];
@@ -220,7 +220,7 @@ describe("the Worker serves the new routes (Issue #887)", () => {
       });
       expect(response.status, path).toBe(200);
       expect(response.headers.get("content-type"), path).toMatch(/^text\/html/);
-      expect(await response.text(), path).toContain("Lawrence Liu");
+      expect(await response.text(), path).toContain("Larry 🍀 Orbi");
     }
   });
 });

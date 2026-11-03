@@ -1214,7 +1214,7 @@ function renderGuide(guide, template, posts, guidesData) {
     url,
     datePublished: guide.published,
     dateModified: guide.updated,
-    author: { "@type": "Person", name: "Lawrence Liu" },
+    author: { "@type": "Person", name: "Larry 🍀 Orbi" },
     publisher: {
       "@type": "Organization",
       name: "Orbi",

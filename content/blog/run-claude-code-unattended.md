@@ -3,7 +3,7 @@ title: Claude Code headless mode exits 0 despite denials
 date: 2026-10-01
 summary: In Claude Code headless mode, a claude -p run with denied tool calls still exits 0. Use --output-format json and check permission_denials to catch it.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-headless-card.png
 mirror: run-claude-code-unattended
 ---
@@ -21,7 +21,7 @@ Run on its own, that command won't tell you a call was denied: add `--output-for
 
 `auto` isn't always available either. If the model doesn't support it, or a settings file or Anthropic turns it off, the session starts in Manual mode (`--permission-mode default`), and any write you didn't pre-approve is denied. So for a nightly job I use `dontAsk` with an allowlist, which doesn't depend on `auto` at all; the check script below is set up that way. In a headless run `dontAsk` allows the same things as `default` with the same allowlist. The difference is that the [docs](https://code.claude.com/docs/en/permission-modes) make it the locked-down mode for CI: it denies even explicit `ask` rules and AskUserQuestion, and the session never waits for input.
 
-I'm Lawrence Liu, the creator of Orbi, which takes GitHub Issues through to merged, released changes. Orbi's agent is Pi, an open-source coding agent, not Claude Code, but the second half of this post applies to a Claude Code loop just as much.
+I'm Larry 🍀 Orbi, the creator of Orbi, which takes GitHub Issues through to merged, released changes. Orbi's agent is Pi, an open-source coding agent, not Claude Code, but the second half of this post applies to a Claude Code loop just as much.
 
 ## Claude Code headless mode flags for cron and CI
 

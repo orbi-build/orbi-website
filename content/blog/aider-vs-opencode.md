@@ -3,7 +3,7 @@ title: Aider vs OpenCode: context, commits and checks
 date: 2026-10-20
 summary: Compare Aider vs OpenCode 2 by file context, Git commits, tests and permissions. Use the same starting commit to inspect what each agent actually changes.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-aider-vs-opencode-card.png
 mirror: aider-vs-opencode
 ---
@@ -12,7 +12,7 @@ For Aider vs OpenCode, try Aider first if you want to work with a small set of f
 
 OpenCode now has separate V1 and V2 documentation. This comparison uses [OpenCode 2](https://opencode.ai/v2/docs/), checked on 20 October 2026. Before following an older tutorial, check the [V2 migration guide](https://opencode.ai/v2/docs/migrate-v1/): installing V2 can replace the same `opencode` command, and its configuration differs from V1.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi for coding and review; it does not run Aider or OpenCode as its engine. This comparison covers documented workflows. Use the trial below to measure results and cost on your own tasks.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi uses Pi for coding and review; it does not run Aider or OpenCode as its engine. This comparison covers documented workflows. Use the trial below to measure results and cost on your own tasks.
 
 ## Aider vs OpenCode: which workflow fits?
 

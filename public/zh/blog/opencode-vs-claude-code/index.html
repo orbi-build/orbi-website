@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-opencode-vs-claude-code-card.png">
   <meta property="og:image:alt" content="OpenCode vs Claude Code：同一模型，无人值守实测">
   <meta property="article:published_time" content="2026-11-02">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode vs Claude Code：同一模型，无人值守实测","datePublished":"2026-11-02","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/opencode-vs-claude-code/","image":"https://orbi.build/img/blog-opencode-vs-claude-code-card.png","inLanguage":"zh-CN","description":"27 次编程运行均通过测试；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。","url":"https://orbi.build/zh/blog/opencode-vs-claude-code/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"OpenCode vs Claude Code：同一模型，无人值守实测","datePublished":"2026-11-02","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/opencode-vs-claude-code/","image":"https://orbi.build/img/blog-opencode-vs-claude-code-card.png","inLanguage":"zh-CN","description":"27 次编程运行均通过测试；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。","url":"https://orbi.build/zh/blog/opencode-vs-claude-code/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">OpenCode vs Claude Code：同一模型，无人值守实测</h1>
-          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-11-02">2026-11-02</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-02">2026-11-02</time></p>
 
           <p class="hero-lede">27 次编程运行均通过测试；默认 Claude Code 输入 token 为 OpenCode 的 1.9–3.0 倍，--bare 为 0.21–0.36 倍。</p>
         </section>
@@ -197,7 +197,7 @@
           </ol>
         </details>
 <p>OpenCode vs Claude Code 这次实测在 2026 年 11 月 2 日完成，用的是我的 Linux 机器、OpenCode 2.2.5 和 Claude Code 2.1.281，模型同为 DeepSeek V4.1 Flash（<code class="post-code--single">deepseek-flash</code>）。OpenCode 用默认权限、Claude Code 加 <code class="post-code--single">--dangerously-skip-permissions</code>，27 次受控编程运行全部通过了给定的测试。默认 Claude Code 每次运行的输入 token 是 OpenCode 的 1.9–3.0 倍；加上 <code class="post-code--single">--bare</code> 后，为 0.21–0.36 倍。</p>
-<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 用开源的编程 agent 命令行工具 Pi，把 GitHub Issue 做成合并进仓库的改动，每次改动再由另一个 Pi 会话评审。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="opencode-vs-claude-code-的测试配置">OpenCode vs Claude Code 的测试配置</h2>
 <p>OpenCode 2.2.5 对应的 npm 包是 <code class="post-code--single">@opencode/cli</code>。旧包 <code class="post-code--single">opencode-ai</code> 属于 V1，我检查时的版本是 1.19.5。</p>
 <p>OpenCode 用内置的 <code class="post-code--single">deepseek</code> provider，参数是 <code class="post-code--spaced">-m deepseek/deepseek-flash</code>。Claude Code 用 <code class="post-code--single">ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic</code>、<code class="post-code--spaced">ANTHROPIC_AUTH_TOKEN=&lt;DeepSeek key&gt;</code> 和 <code class="post-code--single">ANTHROPIC_MODEL=deepseek-flash</code>。测 <code class="post-code--single">--bare</code> 时，密钥放在 <code class="post-code--single">ANTHROPIC_API_KEY</code>。下文的 bare 都指加上 <code class="post-code--single">--bare</code> 的 Claude Code。按<a href="https://code.claude.com/docs/en/headless">官方文档</a>，<code class="post-code--single">--bare</code> 不再自动加载 hooks、skills、插件、MCP 服务器、自动记忆和 CLAUDE.md；我的测试里它只给模型 Bash、Edit 和 Read，没有 Write。它是能力更少的轻量配置，不是同一配置变便宜了。</p>

@@ -3,7 +3,7 @@ title: Codex 额度怎么查、何时重置、用完了怎么办
 date: 2026-10-17
 summary: Codex 用量限制按套餐分 5 小时窗口和每周窗口。在 Usage 页面和 /status 查剩余额度，弄清额度何时重置，长时间无人值守跑 Codex 时也不被额度卡住。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-codex-usage-card.png
 mirror: codex-usage-limits
 ---
@@ -88,7 +88,7 @@ codex login status
 codex exec --skip-git-repo-check -m gpt-6-luna "Reply with the single word OK" </dev/null
 ```
 
-我是 Lawrence Liu，Orbi 的创始人。2026 年 10 月 17 日，我在 Linux 上用 Codex CLI 0.163.0 跑了这段脚本。为了不在测试上花真钱，我用的是一个编造的 key：
+我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 10 月 17 日，我在 Linux 上用 Codex CLI 0.163.0 跑了这段脚本。为了不在测试上花真钱，我用的是一个编造的 key：
 
 - `OPENAI_API_KEY` 没设置或为空时，脚本停在第三行，退出码 1。
 - 去掉 `mkdir` 那一行，Codex 会因为 `CODEX_HOME` 目录不存在而拒绝启动。

@@ -77,6 +77,19 @@ describe("Worker request helpers", () => {
       expect(new URL(response.headers.get("location")).search).toBe("?ref=x");
     }
   });
+  it("301 redirects the old author page URL to the new one on both languages", async () => {
+    const assets = { fetch: () => Promise.resolve(new Response("missing", { status: 404 })) };
+    for (const [oldPath, newPath] of [
+      ["/about/lawrence-liu", "/about/larry-orbi/"],
+      ["/about/lawrence-liu/", "/about/larry-orbi/"],
+      ["/zh/about/lawrence-liu/", "/zh/about/larry-orbi/"],
+    ]) {
+      const response = await handleFetch(new Request(`https://beta.orbi.build${oldPath}?ref=x`), { ASSETS: assets });
+      expect(response.status, oldPath).toBe(301);
+      expect(new URL(response.headers.get("location")).pathname, oldPath).toBe(newPath);
+      expect(new URL(response.headers.get("location")).search, oldPath).toBe("?ref=x");
+    }
+  });
   it("serves the ai-ready browser page and badge while preserving curl install", async () => {
     const assets = {
       fetch: async (request) => {

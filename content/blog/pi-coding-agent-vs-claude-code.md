@@ -3,14 +3,14 @@ title: Pi coding agent vs Claude Code: same model, measured
 date: 2026-11-01
 summary: With permissions open, both passed every run on two small tasks. Default Claude Code used about 7 to 8 times Pi's input tokens; --bare came close to Pi.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-claude-code-card.png
 series: pi
 ---
 
 I tested Pi coding agent vs Claude Code with DeepSeek V4.1 Flash on the same two small coding tasks. With execution permissions open for the coding comparison, both passed every run. Default Claude Code sent 7–8× as many input tokens per run as Pi. Using `claude -p --bare` brought its input-token use close to Pi's: below Pi in five of six paired runs, above it in one. Most of the extra input in default Claude Code came from its 21 tool definitions. For scripts using an API key, that one flag changed input-token use about as much as switching harnesses did.
 
-I'm Lawrence Liu, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as `pi --print`.
+I'm Larry 🍀 Orbi, the creator of Orbi. I measured this on my Linux machine on 1 November 2026, with Pi 1.2.0 and Claude Code 2.1.281. Orbi runs its implementer and reviewer sessions as `pi --print`.
 
 ## Setting up Pi coding agent vs Claude Code on one model
 

@@ -3,7 +3,7 @@ title: Write a request: Orbi Cloud drafts your GitHub Issue
 date: 2026-10-09
 summary: Write a request in Orbi Cloud: describe a change, review a GitHub Issue draft, answer open questions, and hand it off. See merge controls and trial costs.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-write-request-card.png
 mirror: write-a-request
 video_name: Write a request in Orbi Cloud: one sentence to a merged PR in 15 minutes
@@ -18,7 +18,7 @@ Orbi is a lights-out software factory for the agent era: GitHub Issues go in; re
 
 Instead of writing the Issue yourself, you describe the change in a sentence or two. Orbi reads your repository, drafts the Issue, and turns the open choices it spots into questions for you. Nothing is created on GitHub until you read the draft and hand it off.
 
-I'm Lawrence Liu, the creator of Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository `xqliu/orbi-e2e-2609260042` on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The [Write a request docs page](https://cloud-docs.orbi.build/write-a-requirement) is the short reference.
+I'm Larry 🍀 Orbi, the creator of Orbi. This post walks through the feature with screenshots from real runs on October 8 and 9, in our test repository `xqliu/orbi-e2e-2609260042` on beta.orbi.build, where each release is tested before it reaches orbi.build. The feature is live on both. It follows three requests, not in the order they ran: one that needed no change, one that went from a sentence to a merged pull request, and one we set up to get stuck. The [Write a request docs page](https://cloud-docs.orbi.build/write-a-requirement) is the short reference.
 
 If you'd rather watch first, the 72-second video below follows a fourth request, separate from the three in the screenshots. On the evening of October 9, on orbi.build itself, I opened another test repository, `orbi-build/orbi-e2e-prod`, a small to-do list web app. I typed one sentence: refresh the page and all the to-dos are gone. I didn't say which file to change. Orbi read the code and saw that the list lived only in memory. Then it asked me two multiple-choice questions: should the filter and sort order be remembered too, and what should the page do if it can't read local storage or the saved data is corrupted? I kept both recommended answers (save only the to-dos; start with an empty list, no error) and handed it off. The pull request merged 15 minutes after my first sentence: about 4 minutes of drafting and answering, about 11 after the hand-off. The screens are re-rendered from that run's saved draft, questions and timestamps, with the waits sped up, and translated, since I wrote the request in Chinese. The repository is private, so there is no Issue to link.
 

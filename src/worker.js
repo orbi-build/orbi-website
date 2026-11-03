@@ -75,7 +75,7 @@ const ZH_CLOUD_LOGIN_ROUTE = "/zh/cloud/login";
 const APPLY_ROUTE = "/cloud/apply";
 const SUBSCRIBE_ROUTE = "/subscribe";
 const ENGAGEMENT_ROUTE = "/cloud/e";
-const GUIDE_REDIRECTS = new Map([
+const PATH_REDIRECTS = new Map([
   ["/issue-to-release", "/guides/issue-to-release/"],
   ["/autonomous-coding-agent", "/guides/autonomous-coding-agent/"],
   ["/self-hosted-coding-agent", "/guides/self-hosted-coding-agent/"],
@@ -84,6 +84,10 @@ const GUIDE_REDIRECTS = new Map([
   ["/zh/autonomous-coding-agent", "/zh/guides/autonomous-coding-agent/"],
   ["/zh/self-hosted-coding-agent", "/zh/guides/self-hosted-coding-agent/"],
   ["/zh/codex-github-issues", "/zh/guides/codex-github-issues/"],
+  // Issue #964: the author page moved with the author name. The old slug lives
+  // here and nowhere else, so every external link to it still reaches the page.
+  ["/about/lawrence-liu", "/about/larry-orbi/"],
+  ["/zh/about/lawrence-liu", "/zh/about/larry-orbi/"],
 ]);
 const ENGAGEMENT_KINDS = new Set(["visit", "engaged", "cta_click", "scroll_depth", "section_view"]);
 const ENGAGEMENT_DETAIL = /^[a-z0-9-]{1,40}$/;
@@ -1017,9 +1021,9 @@ async function handleFetch(request, env, ctx) {
       return engagementResponse(request, env, ctx);
     }
 
-    const guideRedirect = GUIDE_REDIRECTS.get(url.pathname.endsWith("/") ? url.pathname.slice(0, -1) : url.pathname);
-    if (guideRedirect) {
-      return Response.redirect(`https://${url.hostname}${guideRedirect}${url.search}`, 301);
+    const pathRedirect = PATH_REDIRECTS.get(url.pathname.endsWith("/") ? url.pathname.slice(0, -1) : url.pathname);
+    if (pathRedirect) {
+      return Response.redirect(`https://${url.hostname}${pathRedirect}${url.search}`, 301);
     }
 
     // Issue #174: aiready.sh is the curl install entry. Accept-negotiate on

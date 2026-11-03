@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-oss-contributions-card.png">
   <meta property="og:image:alt" content="AI 能不能给开源项目提 PR？">
   <meta property="article:published_time" content="2026-10-17">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 能不能给开源项目提 PR？","datePublished":"2026-10-17","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/ai-contribute-to-open-source/","image":"https://orbi.build/img/blog-oss-contributions-card.png","inLanguage":"zh-CN","description":"我让 Orbi 修了 brig、LLMVault、pyinfra 三个项目的 issue，维护者把三个 PR 都合并了。pyinfra 那次 agent 初版有个 emoji 对齐的回归，我提交上游前复核时发现并重做了修复。这个过程也写进了 PR。","url":"https://orbi.build/zh/blog/ai-contribute-to-open-source/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI 能不能给开源项目提 PR？","datePublished":"2026-10-17","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/ai-contribute-to-open-source/","image":"https://orbi.build/img/blog-oss-contributions-card.png","inLanguage":"zh-CN","description":"我让 Orbi 修了 brig、LLMVault、pyinfra 三个项目的 issue，维护者把三个 PR 都合并了。pyinfra 那次 agent 初版有个 emoji 对齐的回归，我提交上游前复核时发现并重做了修复。这个过程也写进了 PR。","url":"https://orbi.build/zh/blog/ai-contribute-to-open-source/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">AI 能不能给开源项目提 PR？</h1>
-          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-17">2026-10-17</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-17">2026-10-17</time></p>
 
           <p class="hero-lede">我让 Orbi 修了 brig、LLMVault、pyinfra 三个项目的 issue，维护者把三个 PR 都合并了。pyinfra 那次 agent 初版有个 emoji 对齐的回归，我提交上游前复核时发现并重做了修复。这个过程也写进了 PR。</p>
         </section>
@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>我让一个 AI 编程 agent 去修三个开源项目里的 issue，这些项目都不归我们管，我把它写的修复提了上去，三个维护者都合并了。这篇把每条都链到它是怎么做出来的记录，你可以自己核，不用听我一面之词。这三条就是我们到目前为止用这种方式提给上游的全部，不是从一长串里挑出来的。其中一条里有个 bug 是 agent 的评审漏掉的，我发现后重写了修复，后面会讲到。</p>
-<p>我是 Lawrence Liu，Orbi 的创始人（<a href="https://orbi.build/?ref=blog-ai-oss">Orbi</a>）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人（<a href="https://orbi.build/?ref=blog-ai-oss">Orbi</a>）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="合了什么">合了什么</h2>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
