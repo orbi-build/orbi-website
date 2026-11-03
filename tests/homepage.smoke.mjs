@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { mkdir, readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
-import { BADGE_PLACEHOLDER_SIZES, placeholderSvg } from "./browser-network.mjs";
+import { placeholderSvg } from "./browser-network.mjs";
 
 const port = 4173;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -15,17 +15,32 @@ const artifacts = ".orbi";
 // tests/browser-network.mjs (Issue #871); this standalone suite used to leave
 // them to the real hosts, so a badge host could decide it. On 2026-10-19 the
 // Tooluck badge (Issue #1027) failed from the CI runner and reddened /cloud/
-// even though the page was correct. Answer the same table of hosts here, with
-// the same placeholder, so no footer badge host can turn this suite red.
+// even though the page was correct.
+//
+// Issue #1160 review, 2026-11-03: answering only the hosts named in
+// BADGE_PLACEHOLDER_SIZES was not enough. The same failure came back on
+// /privacy/ because the table lists the hosts whose source size the footer
+// tests assert, not every host the footer embeds: nicklaunches.com — in the
+// footer since before this Issue, absent from the table — stopped answering
+// from the runner, the opened image request stayed in flight, and the
+// `networkidle` navigation timed out twice in a row. So answer EVERY
+// third-party image here, at the tabled size when one is known and with the
+// 1x1 fallback otherwise (the same rule guardBrowserRequests applies to the
+// vitest suites). No badge host can redden this suite, whatever the footer
+// embeds next. Non-image third-party requests keep their own handlers (the
+// beacon, /stats, the contributor avatars) and otherwise continue as before.
 async function newSmokePage(target, options) {
   const page = await target.newPage(options);
+  const pageHost = new URL(targetURL).hostname;
   await page.route(
-    (url) => BADGE_PLACEHOLDER_SIZES.some((badge) => badge.host === url.hostname),
-    (route) => route.fulfill({
-      status: 200,
-      contentType: "image/svg+xml",
-      body: placeholderSvg(route.request().url()),
-    }),
+    (url) => url.hostname !== pageHost && (url.protocol === "http:" || url.protocol === "https:"),
+    (route) => (route.request().resourceType() === "image"
+      ? route.fulfill({
+        status: 200,
+        contentType: "image/svg+xml",
+        body: placeholderSvg(route.request().url()),
+      })
+      : route.fallback()),
   );
   return page;
 }
