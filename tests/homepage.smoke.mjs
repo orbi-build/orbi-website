@@ -2394,8 +2394,25 @@ async function assertLegalPage(browser, path, expectedHeading, expectedAddress, 
     if (message.type() === "error") errors.push(message.text());
   });
   page.on("requestfailed", (request) => failures.push(request.url()));
+  // Diagnosability (review of #1160): when this navigation never goes idle,
+  // the timeout alone says nothing about which request was still open. Record
+  // every request and its settlement so the failure names the culprit.
+  const open = new Map();
+  const seen = [];
+  page.on("request", (request) => {
+    open.set(request, `${request.resourceType()} ${request.url()}`);
+    seen.push(`${request.resourceType()} ${request.url()}`);
+  });
+  page.on("requestfinished", (request) => open.delete(request));
+  page.on("requestfailed", (request) => open.delete(request));
   try {
-    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" });
+    const response = await page.goto(`${targetURL}${path}`, { waitUntil: "networkidle" }).catch((error) => {
+      throw new Error(
+        `${path} at ${size.width}px never went network-idle: ${error.message.split("\n")[0]}; `
+        + `still open: ${JSON.stringify([...open.values()])}; `
+        + `requests seen: ${JSON.stringify(seen)}; failures: ${JSON.stringify(failures)}`,
+      );
+    });
     if (!response || response.status() !== 200) {
       throw new Error(`${path} returned ${response?.status() ?? "no response"}`);
     }
