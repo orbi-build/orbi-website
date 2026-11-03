@@ -31,16 +31,25 @@ const artifacts = ".orbi";
 // beacon, /stats, the contributor avatars) and otherwise continue as before.
 async function newSmokePage(target, options) {
   const page = await target.newPage(options);
-  const pageHost = new URL(targetURL).hostname;
+  // "Our own image" is decided against the page's own origin, not against
+  // targetURL: the vitest suite reuses this helper for a stub server and sets
+  // process.env.BASE_URL to "/", so targetURL is not a parseable URL there.
+  const isOwnImage = (request) => {
+    const self = page.url();
+    if (self === "about:blank") return false;
+    return new URL(request.url()).origin === new URL(self).origin;
+  };
   await page.route(
-    (url) => url.hostname !== pageHost && (url.protocol === "http:" || url.protocol === "https:"),
-    (route) => (route.request().resourceType() === "image"
-      ? route.fulfill({
+    (url) => url.protocol === "http:" || url.protocol === "https:",
+    (route) => {
+      const request = route.request();
+      if (request.resourceType() !== "image" || isOwnImage(request)) return route.fallback();
+      return route.fulfill({
         status: 200,
         contentType: "image/svg+xml",
-        body: placeholderSvg(route.request().url()),
-      })
-      : route.fallback()),
+        body: placeholderSvg(request.url()),
+      });
+    },
   );
   return page;
 }
