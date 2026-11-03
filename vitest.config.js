@@ -25,6 +25,7 @@ import { defineConfig } from "vitest/config";
 const BROWSER_SUITES = [
   "tests/blog-step-images.test.js",
   "tests/blog-table-overflow.test.js",
+  "tests/chat-widget-launcher.test.js",
   "tests/cloud-layout.test.js",
   "tests/compare-cloud-cta.test.js",
   "tests/film-dialog.test.js",

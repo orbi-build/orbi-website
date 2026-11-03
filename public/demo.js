@@ -549,7 +549,35 @@
     if (wrapper.firstElementChild) observer.observe(wrapper.firstElementChild);
   }
 
+  // Issue #1156: the chat.sh pages carry data-launcher="none", so no corner
+  // bubble covers the page and the entry in the contact information is the way
+  // into the messenger. It stays hidden until the widget's window.chatSh exists:
+  // a script that never loads (offline, blocked) must not leave a dead control
+  // on the page, and the visitor keeps the Telegram group and email above it.
+  function bootChatEntry(entries) {
+    const widget = document.getElementById("chat-sh-widget");
+    function reveal() {
+      if (!window.chatSh) return;
+      entries.forEach(function (entry) {
+        entry.hidden = false;
+      });
+    }
+    reveal();
+    // chat.sh/widget.js is async and may run before or after this file, so both
+    // the already-loaded case above and its load event are covered; a failed
+    // load fires none of them and the entry stays hidden.
+    if (widget) widget.addEventListener("load", reveal);
+
+    document.addEventListener("click", function (event) {
+      const trigger = event.target.closest("[data-chat-open]");
+      if (!trigger || !window.chatSh) return;
+      window.chatSh.open();
+    });
+  }
+
   document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);
+  const chatEntries = Array.from(document.querySelectorAll("[data-chat-entry]"));
+  if (chatEntries.length > 0) bootChatEntry(chatEntries);
   document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
