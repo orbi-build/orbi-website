@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/pi-coding-agent-vs-opencode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-vs-opencode/</guid>
       <pubDate>Tue, 03 Nov 2026 00:00:00 GMT</pubDate>
-      <description>All 28 DeepSeek and 12 local-model coding runs passed. On DeepSeek, OpenCode used 2.3-3.9x Pi's mean input tokens; permissions and error exits differed.</description>
+      <description>All 40 coding runs passed; on DeepSeek, OpenCode used 2.3-3.9× Pi's mean input tokens. With a bad API key, Pi --mode json exited 0 and OpenCode exited 1.</description>
     </item>
     <item>
       <title>OpenCode vs Claude Code: same model, headless</title>

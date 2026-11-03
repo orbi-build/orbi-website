@@ -2,7 +2,7 @@
   {
     "slug": "pi-coding-agent-vs-opencode",
     "title": "Pi coding agent vs OpenCode: same model, headless",
-    "summary": "All 28 DeepSeek and 12 local-model coding runs passed. On DeepSeek, OpenCode used 2.3-3.9x Pi's mean input tokens; permissions and error exits differed.",
+    "summary": "All 40 coding runs passed; on DeepSeek, OpenCode used 2.3-3.9× Pi's mean input tokens. With a bad API key, Pi --mode json exited 0 and OpenCode exited 1.",
     "zhSlug": "pi-coding-agent-vs-opencode",
     "zhTitle": "Pi coding agent vs OpenCode：同一模型，无人值守实测",
     "related": []
