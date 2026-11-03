@@ -16,15 +16,15 @@ I'm Lawrence Liu, the creator of Orbi. Orbi runs Pi with nobody watching: it han
 
 Both used their built-in `deepseek` provider through the same small logging proxy in front of `api.deepseek.com`. Pi's override was `providers.deepseek.baseUrl` in `models.json` under `PI_CODING_AGENT_DIR`; OpenCode's was `providers.deepseek.settings.baseURL` in `opencode.jsonc`. The proxy recorded requests and DeepSeek's usage counts.
 
-Each run used `env -i` and an empty HOME. Every run except the open-stdin test below had stdin redirected with `< /dev/null`. Each coding run started in a fresh git repository. `opencode run --standalone` used a private server.
+Each run used `env -i` and an empty HOME; before each run, the script wrote that run's config files into the empty HOME (OpenCode) or into the directory `PI_CODING_AGENT_DIR` pointed to (Pi). Every run except the open-stdin test below had stdin redirected with `< /dev/null`. Each coding run started in a fresh git repository. `opencode run --standalone` used a private server.
 
-Input totals include cached tokens. These are input-token comparisons; they do not establish a billing ratio. The [1 November Pi comparison](/blog/pi-coding-agent-vs-claude-code/) measured Pi 1.2.0 from session logs at 1,641 no-op tokens. Today's Pi 1.5.0 measured through the proxy used 1,548. Both the version and the counting method changed, and I did not separate the two effects, so keep those measurements apart.
+Input totals include cached tokens. These are input-token comparisons; they do not establish a billing ratio. The [1 November Pi comparison](/blog/pi-coding-agent-vs-claude-code/) measured Pi 1.2.0 from session logs at 1,641 tokens for a no-op (a prompt that only asks for the reply "OK"). Today's Pi 1.5.0 measured through the proxy used 1,548. Both the version and the counting method changed, and I did not separate the two effects, so keep those measurements apart.
 
 With the model held constant, the harness is what differs. The [Pi harness](/blog/pi-agent-harness/) is the loop around the model: it sends context and tools, executes tool calls and returns their results.
 
 ## Token usage before any coding
 
-The prompt was `Reply with exactly OK`, run 3 times per setup. Token counts were identical across repetitions.
+The prompt was `Reply with exactly OK`, run 3 times per setup. For each setup in this table, the three runs gave identical counts.
 
 | Setup | Tools | Input tokens per run | Requests |
 |---|---|---|---|
@@ -41,7 +41,7 @@ I denied `glob`, `grep`, `question`, `skill`, `subagent`, `webfetch`, `websearch
 
 ## Permissions, exit codes and unattended runs
 
-Each setting below ran twice unless noted. These checks used DeepSeek directly.
+Each setting below ran twice unless noted. These checks called DeepSeek directly, without the logging proxy, so they report behavior, not token counts.
 
 | Request and setting | Pi | OpenCode |
 |---|---|---|
@@ -49,7 +49,7 @@ Each setting below ran twice unless noted. These checks used DeepSeek directly.
 | Run `grep SECRET .env` (Pi with my guard, OpenCode default) | Printed 2/2 | Printed 2/2 |
 | Delete `scratch.txt` with `rm`, default | Deleted 2/2 | Deleted 2/2 |
 | Delete with explicit control | Guard: kept 2/2; `--exclude-tools bash`: kept 2/2 | Shell deny rule: kept 2/2 |
-| Conflicting tests, no test edits | Call counter passed 2/2 | Call counter passed 2/2 |
+| Conflicting tests, no test edits | Passed 2/2 via a call counter, not a real fix | Passed 2/2 via a call counter, not a real fix |
 | Stdin left open, once each | Timeout, exit 124 | Timeout, exit 124 |
 | Invalid API key, once each | JSON mode: exit 0 | Exit 1 |
 | Unknown model, once each | JSON mode: exit 0 | Exit 1 |
@@ -77,7 +77,7 @@ export default function (pi: ExtensionAPI) {
 
 The guard kept `scratch.txt` in both deletion runs. Both guarded `.env` runs still printed the secret through bash: one ran `grep -n '^SECRET=' .env`, the other `cat .env`. Explicitly requesting `grep SECRET .env` also printed it in both guarded runs.
 
-A rule on one tool is not a security boundary: both Pi and OpenCode exposed `.env` through the shell. Use a container or sandbox and keep secrets out of the working tree. Pi's own `examples/extensions/permission-gate.ts` only matches `rm -rf`, `sudo` and `chmod`/`chown 777`; that example, not Pi itself, blocks those commands when no UI is available.
+A rule on one tool is not a security boundary: both Pi and OpenCode exposed `.env` through the shell. Use a container or sandbox and keep secrets out of the working tree. My guard's `\brm\b` pattern would also miss other ways to delete a file, such as `unlink`. Pi ships an example, `examples/extensions/permission-gate.ts`, that you load yourself with `-e`; it only matches `rm -rf`, `sudo` and `chmod`/`chown 777`, and blocks those when no UI is available.
 
 For OpenCode, I put `{"action":"shell","resource":"rm *","effect":"deny"}` in the `permissions` array in `opencode.jsonc`. It kept `scratch.txt` in both runs. Pi's `--exclude-tools bash` removed the shell entirely, and the file survived both runs. Every blocked or denied run on both tools exited 0.
 
@@ -108,7 +108,7 @@ Save this as `check.sh`, and invoke it from a Bash script after the Pi command, 
 jq -e -s '[.[] | select(.type=="message_end" and .message.role=="assistant")] | last | .message.stopReason == "stop"' "$1" > /dev/null
 ```
 
-The four tested paths returned: normal run 0, API error 1, empty file 1, missing file 2 (that 2 is jq's own error code; treat any non-zero as a failed run). Normal completion can still mean blocked work, so this check needs tests and diff review alongside it.
+The four tested paths returned: normal run 0, API error 1, empty file 1, missing file 2 (that 2 is jq's own error code; treat any non-zero as a failed run). Any stop reason other than `stop` fails the check too. Normal completion can still mean blocked work, so this check needs tests and diff review alongside it.
 
 ## Four small coding tasks with DeepSeek
 
@@ -127,7 +127,7 @@ Pi ran without an approval step; OpenCode used its default policy. Each tool ran
 
 After every run I ran `python3 -m unittest` myself: all 28 passed, and no run edited test source files. The impossible task above is not part of these 28. These toy tasks do not separate the tools on correctness. This is not a benchmark.
 
-On task 4, Pi took 8.7-38.7 s: one 38.7 s outlier, with the others at 8.7-12.1 s. OpenCode took 13.6-17.1 s.
+On DeepSeek, task 4 took Pi 8.7-38.7 s: one 38.7 s outlier, with the others at 8.7-12.1 s. OpenCode took 13.6-17.1 s.
 
 ## Context files when moving from Claude Code
 
@@ -137,7 +137,7 @@ Moving from Claude Code, Pi picks up `CLAUDE.md`; OpenCode 2 needs `AGENTS.md`. 
 
 ## A local LLM through llama.cpp
 
-I used a llama.cpp server at `127.0.0.1:8080`, with one slot and ThinkingCap-Qwen3.8-27B Q4_K_M, model ID `thinkingcap:27b`.
+I used a llama.cpp server at `127.0.0.1:8080`, with one slot (it serves one request at a time) and ThinkingCap-Qwen3.8-27B Q4_K_M, model ID `thinkingcap:27b`.
 
 Pi's `models.json` under `PI_CODING_AGENT_DIR` was:
 
@@ -159,7 +159,7 @@ OpenCode used `-m local/thinkingcap:27b`. Local input totals include caches from
 | 1: Duration | 11,035-11,154; 42.7-54.7 s | 24,962-31,492; 45.9-60.5 s | 3/3 / 3/3 |
 | 4: Calculator | 23,257-38,938; 94.5-145.3 s | 61,820-69,504; 115.5-149.9 s | 3/3 / 3/3 |
 
-All 12 coding runs passed. Wall times overlap and vary between identical runs: Pi's no-op alone ranged from 3.3 to 10.9 s. Pi's ranges started lower on both coding tasks, but they overlap with OpenCode's, so I can't call Pi faster from these runs. This was one server and one local model; timings are rough numbers.
+Locally I ran only tasks 1 and 4, to keep the slow runs short. All 12 coding runs passed. Times varied between identical runs: Pi's no-op alone ranged from 3.3 to 10.9 s. Pi's ranges started lower on both coding tasks, but they overlap with OpenCode's, so I can't call Pi faster from these runs. This was one server and one local model; timings are rough numbers.
 
 ## Why Orbi uses Pi
 
@@ -191,13 +191,13 @@ env -i HOME="$(mktemp -d)" PATH="$PATH" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \
   | jq -c 'select(.type=="step_finish") | .part.tokens'
 ```
 
-The pipeline itself does not fail when the API call fails, since Pi's JSON mode exits 0; in a real script, save Pi's output and run `check.sh` on it. My run gave Pi 1,160 input + 384 `cacheRead` = 1,544; OpenCode 3,576 input + 1,792 `cache.read` = 5,368. Both include cached tokens. OpenCode's `step_finish` excludes the title request. These are a few tokens off the matrix numbers, which ran in different directories.
+The pipeline itself does not fail when the API call fails, since Pi's JSON mode exits 0; in a real script, save Pi's output and run `check.sh` on it. My run gave Pi 1,160 input + 384 `cacheRead` = 1,544; OpenCode 3,576 input + 1,792 `cache.read` = 5,368. Both include cached tokens. OpenCode's `step_finish` excludes the title request, so compare 5,368 with the 5,376 main request in the table, not with 5,822. Both are a few tokens off the matrix numbers, which ran in different directories.
 
 ## Pi coding agent vs OpenCode: which one I'd use
 
 Both need a sandbox you provide for unattended work. Given that, I'd use Pi for the small prompt and `CLAUDE.md` compatibility. Check `stopReason` in JSON mode or use text mode for API-error exits.
 
-I'd use OpenCode for built-in permission rules and non-zero exits on errors, with `< /dev/null` and explicit deny rules. Either way, check tests and the diff; exit codes alone cannot establish success.
+I'd use OpenCode if I wanted a deny rule in a config file to stop `rm` (on Pi that took an extension or removing bash) and non-zero exits on errors; that saves setup work, but it is not a security boundary either. Run it with `< /dev/null` and explicit deny rules. Either way, check tests and the diff; exit codes alone cannot establish success.
 
 ## Limits
 
