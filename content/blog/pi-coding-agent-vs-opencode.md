@@ -5,7 +5,6 @@ summary: All 28 DeepSeek and 12 local-model coding runs passed. On DeepSeek, Ope
 lang: en
 author: Lawrence Liu
 image: /img/blog-pi-vs-opencode-card.png
-mirror: pi-coding-agent-vs-opencode
 ---
 
 I measured Pi coding agent vs OpenCode on my Linux machine on 3 November 2026: Pi 1.5.0 (`@earendil-works/pi-coding-agent`, released 2 November) against OpenCode 2.2.5 (`@opencode/cli`), using the same DeepSeek V4.1 Flash model (`deepseek-flash`). All 28 DeepSeek coding runs and all 12 local-model coding runs passed. On DeepSeek, OpenCode used about 2.3-3.9× Pi's input tokens per task, comparing means. The most important unattended difference was in exit codes and permissions, covered below.
