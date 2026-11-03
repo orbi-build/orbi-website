@@ -1871,10 +1871,6 @@ h2 {
 .button-outline { border-color: var(--ink); color: var(--ink); }
 .button-outline:hover { background: rgba(16, 41, 44, 0.06); }
 .text-link { margin-left: 12px; font-size: 0.88rem; font-weight: 600; text-underline-offset: 4px; }
-/* Issue #1156: the chat entry is a button — it opens the messenger in place
-   instead of navigating — so it reads as part of the sentence it sits in
-   rather than as a new button style. */
-.chat-entry { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 
 .site-footer {
   display: grid;
