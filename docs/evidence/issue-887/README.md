@@ -41,14 +41,15 @@
 四叶草本身单独量过：8 个组合里 `🍀` 的渲染宽度是 40px，而缺失字形画成方框时是 32px，
 所以图里画的是真字形，不是豆腐块。
 
-复现命令（`.orbi/evidence-887.mjs` 是 run 产物，不入库）：
+复现步骤（`.orbi/evidence-887.mjs` 是 run 产物，不入库）：
 
 ```bash
-# 沙箱里 Chromium 的系统库与字体都在仓库外，按这两个环境变量跑
-LD_LIBRARY_PATH=/home/orbi-orbi-build--orbi-w-9a5184e1/pwlibs/usr/lib \
-FONTCONFIG_FILE=$PWD/.orbi/fonts.conf \
 node .orbi/evidence-887.mjs   # 打印上面这些读数并把 8 张图写进本目录
 ```
+
+沙箱里 Chromium 的动态库和字体都在仓库外：跑之前要在环境变量里把 `LD_LIBRARY_PATH`
+指向它的系统库，并用一份含 CJK 与 emoji 字形的 `FONTCONFIG_FILE` 覆盖字体配置，
+否则四叶草会画成方框。这两个文件也是 run 产物，路径随机器而变，不写进仓库。
 
 ## 这些图能证明什么、不能证明什么
 
