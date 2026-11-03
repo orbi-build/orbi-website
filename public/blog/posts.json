@@ -1,5 +1,13 @@
 [
   {
+    "slug": "pi-coding-agent-vs-opencode",
+    "title": "Pi coding agent vs OpenCode: same model, headless",
+    "summary": "All 28 DeepSeek and 12 local-model coding runs passed. On DeepSeek, OpenCode used 2.3-3.9x Pi's mean input tokens; permissions and error exits differed.",
+    "zhSlug": "pi-coding-agent-vs-opencode",
+    "zhTitle": "Pi coding agent vs OpenCode：同一模型，无人值守实测",
+    "related": []
+  },
+  {
     "slug": "opencode-vs-claude-code",
     "title": "OpenCode vs Claude Code: same model, headless",
     "summary": "On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.",

@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Pi coding agent vs OpenCode: same model, headless</title>
+      <link>https://orbi.build/blog/pi-coding-agent-vs-opencode/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-vs-opencode/</guid>
+      <pubDate>Tue, 03 Nov 2026 00:00:00 GMT</pubDate>
+      <description>All 28 DeepSeek and 12 local-model coding runs passed. On DeepSeek, OpenCode used 2.3-3.9x Pi's mean input tokens; permissions and error exits differed.</description>
+    </item>
+    <item>
       <title>OpenCode vs Claude Code: same model, headless</title>
       <link>https://orbi.build/blog/opencode-vs-claude-code/</link>
       <guid isPermaLink="true">https://orbi.build/blog/opencode-vs-claude-code/</guid>
