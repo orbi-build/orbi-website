@@ -3,7 +3,7 @@ title: OpenCode alternatives: who merges and releases?
 date: 2026-10-19
 summary: OpenCode takes an Issue to an open PR and a review, then stops. The OpenCode alternatives below differ in who owns the merge and release after the PR.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-opencode-alternatives-card.png
 mirror: opencode-alternatives
 ---
@@ -12,7 +12,7 @@ If you are looking for OpenCode alternatives, the line to compare them against i
 
 What it does not do is merge or release. OpenCode's GitHub docs stop at submitting a PR, with no step that merges it or cuts a tag. Once a PR is open and reviewed, who decides it is safe to merge, and who owns the tagged release? That is where these tools differ.
 
-I'm Lawrence Liu, the creator of Orbi. I checked each tool below, Orbi included, against its own documentation on 19 October 2026, and held them all to the same yardstick.
+I'm Larry 🍀 Orbi, the creator of Orbi. I checked each tool below, Orbi included, against its own documentation on 19 October 2026, and held them all to the same yardstick.
 
 ## The yardstick
 

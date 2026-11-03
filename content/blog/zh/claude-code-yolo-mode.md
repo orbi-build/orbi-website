@@ -3,14 +3,14 @@ title: Claude Code 的 YOLO 模式和 auto 模式：我实测了一遍
 date: 2026-10-13
 summary: YOLO 模式就是 --dangerously-skip-permissions。我在 2.1.287 上把它和 auto 等五种模式一起实测，看各自放过什么。挡住注入的其实是模型，不是任何一种权限模式。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-yolo-card.png
 mirror: claude-code-yolo-mode
 ---
 
 搜「Claude Code YOLO mode」，你要找的是一个参数：`--dangerously-skip-permissions`，它让每一次工具调用都不再问你、直接执行。想用它的理由很实在：长任务里权限弹窗越积越多，问到第十次「允许这条命令吗」，你已经不看就点同意了。但这个参数的名字本身就在警告你，官方文档也只建议在「隔离环境里，比如没有联网的容器、虚拟机或开发容器」里打开它。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 **auto 模式**，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次数据外传，真正挡住它的是模型本身，不是任何一种权限模式。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 整天在无人值守地跑编码 agent，所以「怎么让它别一直问、又不至于把钥匙全交出去」是我必须真刀真枪回答的问题。这篇写的是我把 YOLO 模式和另外四种权限模式放在一起实测的结果，其中包括较新的 **auto 模式**，它不问你，而是用第二个模型逐个审查动作。你想开 YOLO 多半是为了不被弹窗烦，而 auto 模式已经做到了这点，多数人其实不必开 YOLO；至于我测试里那次数据外传，真正挡住它的是模型本身，不是任何一种权限模式。
 
 下面所有数字来自 Claude Code 2.1.287（2026-10-13 的 stable 版），跑任务的主模型是 `claude-sonnet-5-5`，用 `claude -p` 无头运行（auto 模式的分类器是另一个模型，默认 Sonnet 5）。下面每个数字都来自这些运行，按动作逐条记录。
 

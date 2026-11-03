@@ -3,7 +3,7 @@ title: Pi coding agent worktree: a failed recovery
 date: 2026-10-26
 summary: A surviving branch stalled Orbi's queue after a failed run. How Pi sessions, worktrees and a stable branch help recover work before a pull request exists.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/og.png
 mirror: pi-coding-agent-worktree
 series: pi
@@ -11,7 +11,7 @@ series: pi
 
 A Pi coding agent worktree gives a delivery attempt its own checkout. To continue after a failure, Orbi also has to find the work that attempt already pushed. On 10 October 2026, that second part failed: a branch survived a GitHub connection error, but Orbi repeatedly refused to resume it. Three other ready issues waited behind it. The [fix](https://github.com/orbi-build/orbi/pull/1596) merged on 11 October, at 00:42 UTC+8.
 
-I'm Lawrence Liu, the creator of [Orbi](https://github.com/orbi-build/orbi). Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the [Pi architecture series](/guides/pi-coding-agent/?ref=blog-pi-worktree); the incident below happened in Orbi's runner, before it could hand the interrupted work back to Pi.
+I'm Larry 🍀 Orbi, the creator of [Orbi](https://github.com/orbi-build/orbi). Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the [Pi architecture series](/guides/pi-coding-agent/?ref=blog-pi-worktree); the incident below happened in Orbi's runner, before it could hand the interrupted work back to Pi.
 
 ## A branch without a pull request
 

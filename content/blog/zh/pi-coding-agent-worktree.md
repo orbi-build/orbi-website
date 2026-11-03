@@ -3,7 +3,7 @@ title: Pi coding agent worktree：失败的交付怎么继续
 date: 2026-10-26
 summary: 一次 GitHub 连接失败后，代码已经推到远端，PR 还没开出来。Orbi 恢复任务时误判了已有分支，反复让出执行，后面三张任务也跟着等。这篇从那次故障讲起，说明 Pi 会话、worktree 和交付分支怎样配合，以及回归测试为什么要覆盖到真正消费状态的那一步。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/og.png
 mirror: pi-coding-agent-worktree
 series: pi
@@ -11,7 +11,7 @@ series: pi
 
 Pi coding agent worktree 能让一次交付在独立的工作目录里改代码。任务失败后，还得找回已经推到远端的工作。2026 年 10 月 10 日，Orbi 就卡在这里：GitHub 连接中断，远端留下了代码分支，PR 还没开出来。任务重新入队后，Orbi 一直拒绝继续，后面三张待执行的 Issue 也跟着等。修复于 10 月 11 日 00:42（UTC+8）[合入](https://github.com/orbi-build/orbi/pull/1596)。
 
-我是 Lawrence Liu，Orbi 的创始人。[Orbi](https://github.com/orbi-build/orbi) 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 [Pi 架构系列](/zh/guides/pi-coding-agent/?ref=blog-pi-worktree)。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。
+我是 Larry 🍀 Orbi，Orbi 的创始人。[Orbi](https://github.com/orbi-build/orbi) 从 GitHub Issue 开始，让 Pi 写代码，另起会话评审，通过后合并；发版由发版 Issue 驱动。这篇属于 [Pi 架构系列](/zh/guides/pi-coding-agent/?ref=blog-pi-worktree)。这次出问题的是 Orbi 的调度程序 runner，任务还没重新交到 Pi 手里。
 
 ## 分支在，PR 不在
 

@@ -3,14 +3,14 @@ title: Codex YOLO mode 会放开什么权限
 date: 2026-10-16
 summary: Codex YOLO mode 会跳过审批和本地沙箱。本文用 Linux 实测它放开了哪些操作，并说明 Codex auto mode 是什么、旧 full-auto 命令怎样迁移。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-codex-yolo-card.png
 mirror: codex-yolo-mode
 ---
 
 Codex YOLO mode 指的是 `--yolo`，它是 `--dangerously-bypass-approvals-and-sandbox` 的别名。开启后，Codex 不再询问审批，也不再使用自身的本地沙箱。运行它的环境必须另有隔离，例如一次性虚拟机或限制过权限的 CI runner。只想让 agent 自动修改仓库、保留沙箱，可以先用 `codex -a never exec --sandbox workspace-write "<任务>"`。Codex auto mode 是另一个预设，遇到审批仍会停下来等人，[下文](#codex-auto-mode-与已删除的-full-auto-命令)有详细说明。
 
-我是 Lawrence Liu，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 运行的是编码 agent Pi，Codex 接入走 Pi 的 `openai-codex` provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
+我是 Larry 🍀 Orbi，[Orbi](https://github.com/orbi-build/orbi) 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 运行的是编码 agent Pi，Codex 接入走 Pi 的 `openai-codex` provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。
 
 ## 怎样启动 Codex YOLO mode
 

@@ -3,14 +3,14 @@ title: Pi 扩展在生产环境里怎么用：隔离加载，两个自写扩展
 date: 2026-10-30
 summary: Orbi 无人值守跑 Pi 时怎么处理扩展：--no-extensions 加一份显式的白名单，一次 D-Bus 卡死逼出来的做法，以及我们自己写的两个扩展。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-extensions-card.png
 series: pi
 ---
 
 Pi 扩展（extension）是 [Pi 编程 agent](https://pi.dev) 启动时加载的 TypeScript（或 JavaScript）模块：每个扩展导出一个函数，拿到扩展 API，就能注册模型可以调用的工具、加命令、订阅会话事件。Pi 找扩展有好几条路，在自己的笔记本上每一条都方便。在一个没人盯着的服务里，其中两条自动的路也可能把你没选过的代码带进会话。
 
-我是 Lawrence Liu，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。
+我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。[Pi 专题页](/zh/guides/pi-coding-agent/)讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），[系列第一篇](/zh/blog/orbi-on-pi-coding-agent/)跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。
 
 ## Pi 扩展是什么，Pi 从哪三个地方加载它
 

@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-pi-vs-opencode-card.png">
   <meta property="og:image:alt" content="Pi coding agent vs OpenCode：同一模型，无人值守实测">
   <meta property="article:published_time" content="2026-11-03">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent vs OpenCode：同一模型，无人值守实测","datePublished":"2026-11-03","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/zh/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/pi-coding-agent-vs-opencode/","image":"https://orbi.build/img/blog-pi-vs-opencode-card.png","inLanguage":"zh-CN","description":"28 次 DeepSeek 和 12 次本地模型编程运行全过；DeepSeek 上 OpenCode 平均输入 token 为 Pi 的 2.3–3.9 倍。","url":"https://orbi.build/zh/blog/pi-coding-agent-vs-opencode/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi coding agent vs OpenCode：同一模型，无人值守实测","datePublished":"2026-11-03","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/pi-coding-agent-vs-opencode/","image":"https://orbi.build/img/blog-pi-vs-opencode-card.png","inLanguage":"zh-CN","description":"28 次 DeepSeek 和 12 次本地模型编程运行全过；DeepSeek 上 OpenCode 平均输入 token 为 Pi 的 2.3–3.9 倍。","url":"https://orbi.build/zh/blog/pi-coding-agent-vs-opencode/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">博客</p>
           <h1 id="post-title">Pi coding agent vs OpenCode：同一模型，无人值守实测</h1>
-          <p class="post-byline"><a href="/zh/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-11-03">2026-11-03</time></p>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-03">2026-11-03</time></p>
 
           <p class="hero-lede">28 次 DeepSeek 和 12 次本地模型编程运行全过；DeepSeek 上 OpenCode 平均输入 token 为 Pi 的 2.3–3.9 倍。</p>
         </section>
@@ -195,7 +195,7 @@
           </ol>
         </details>
 <p>Pi coding agent vs OpenCode 这次实测在 2026 年 11 月 3 日完成，用的是我的 Linux 机器：Pi 1.5.0（<code class="post-code--single">@earendil-works/pi-coding-agent</code>，11 月 2 日发布）和 OpenCode 2.2.5（<code class="post-code--single">@opencode/cli</code>），模型同为 DeepSeek V4.1 Flash（<code class="post-code--single">deepseek-flash</code>）。28 次 DeepSeek 编程运行和 12 次本地模型编程运行全部通过测试。按每个任务的平均输入 token 计算，DeepSeek 上 OpenCode 的用量约为 Pi 的 2.3–3.9 倍。无人值守时，我最关心的差别在退出码和权限，下面会展开。</p>
-<p>我是 Lawrence Liu，Orbi 的创始人。Orbi 把 GitHub Issue 交给 Pi，再由另一个 Pi 会话评审结果，全程无人值守，所以我尤其在意下面这些行为。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 把 GitHub Issue 交给 Pi，再由另一个 Pi 会话评审结果，全程无人值守，所以我尤其在意下面这些行为。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="测试配置-同一模型-同一个代理">测试配置：同一模型、同一个代理</h2>
 <p>两边都用内置的 <code class="post-code--single">deepseek</code> provider，通过同一个小型日志代理访问 <code class="post-code--single">api.deepseek.com</code>。Pi 在 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 下的 <code class="post-code--single">models.json</code> 里用 <code class="post-code--single">providers.deepseek.baseUrl</code> 改地址；OpenCode 则在 <code class="post-code--single">opencode.jsonc</code> 里用 <code class="post-code--single">providers.deepseek.settings.baseURL</code>。代理记录请求和 DeepSeek 返回的用量。</p>
 <p>每次运行都用 <code class="post-code--spaced">env -i</code>，把 HOME 指向空目录，运行前由脚本把这次的配置文件写进那个空 HOME（OpenCode）或 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 指向的目录（Pi）；除了下文专门测 stdin 不关的那组，其余都用 <code class="post-code--spaced">&lt; /dev/null</code> 重定向 stdin。每次编程运行都从新建的 git 仓库开始。<code class="post-code--spaced">opencode run --standalone</code> 使用独立服务器。</p>

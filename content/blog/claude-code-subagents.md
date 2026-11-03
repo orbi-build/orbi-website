@@ -3,7 +3,7 @@ title: Claude Code subagents setup and when to use them
 date: 2026-10-17
 summary: Claude Code subagents handle delegated tasks in separate contexts. Configure a focused reviewer, give it clear inputs, and decide when delegation helps.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-cc-subagents-card.png
 mirror: claude-code-subagents
 ---
@@ -82,7 +82,7 @@ This reviewer shares the main session's working directory; its separate context 
 
 ## Independent review in Orbi
 
-I'm Lawrence Liu, the creator of Orbi. Orbi uses Pi as its coding agent, with a runner that assigns work and manages the resulting pull requests. Each Issue delivery run gets a git worktree and an implementation session. Review runs in a fresh Pi session that can also fix the code. The runner checks the review verdict, CI results and pull request state before merging. [The Pi architecture guide](/guides/pi-coding-agent/?ref=blog-cc-subagents) explains those gates.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi uses Pi as its coding agent, with a runner that assigns work and manages the resulting pull requests. Each Issue delivery run gets a git worktree and an implementation session. Review runs in a fresh Pi session that can also fix the code. The runner checks the review verdict, CI results and pull request state before merging. [The Pi architecture guide](/guides/pi-coding-agent/?ref=blog-cc-subagents) explains those gates.
 
 The reviewer above hands its report back to the main session, and you act on it. When you want an Issue to move through implementation, review and merge on its own, you need a runner rather than a single delegated task. Orbi fills that by orchestrating Pi processes: the agent file above belongs to Claude Code, and Orbi does not run it. Orbi's review session can edit code; the reviewer above is read-only.
 

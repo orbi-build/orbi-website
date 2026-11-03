@@ -2533,7 +2533,7 @@ describe("fixed monthly Cloud pricing copy (Issue #481)", () => {
       "zh/cost/index.html",
       "blog/deepseek-coding-agent-cost-per-merged-pr/index.html",
       "blog/index.html",
-      "about/lawrence-liu/index.html",
+      "about/larry-orbi/index.html",
     ]);
     for (const [output, html] of shipped) {
       if (!output.endsWith(".html")) continue;
@@ -3505,7 +3505,7 @@ describe("Article publish and update dates (Issue #889)", () => {
       expect(article, `${output}: missing Article`).toBeTruthy();
       expect(article.datePublished, `${output}: datePublished`).toBe(published);
       expect(article.dateModified, `${output}: dateModified`).toBe(modified);
-      expect(article.author, output).toEqual({ "@type": "Person", name: "Lawrence Liu" });
+      expect(article.author, output).toEqual({ "@type": "Person", name: "Larry 🍀 Orbi" });
       expect(article.publisher, output).toEqual(PUBLISHER);
     }
   });
@@ -4068,7 +4068,7 @@ describe("blog rich metadata and safe media (Issue #328)", () => {
       expect(html, `${output}: missing output`).toBeTruthy();
       const article = articleOf(html);
       expect(article.author["@type"], output).toBe("Person");
-      expect(article.author.name, output).toBe("Lawrence Liu");
+      expect(article.author.name, output).toBe("Larry 🍀 Orbi");
       expect(article.publisher, output).toEqual({
         "@type": "Organization",
         name: "Orbi",
@@ -4265,7 +4265,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/fixture.png
 ---
 
@@ -4527,7 +4527,7 @@ title: ${title}
 date: ${date}
 summary: ${summary}
 lang: ${lang}${mirror === undefined ? "" : `\nmirror: ${mirror}`}
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/fixture.png
 ---
 

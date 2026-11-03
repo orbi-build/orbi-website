@@ -3,7 +3,7 @@ title: New users waited 1–2 min; long polling made it 10 s
 date: 2026-10-12
 summary: One new user left our preparing page after their workspace was already ready. Long polling and a handful of small fixes cut the wait to about 10 seconds.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-longpoll-card.png
 mirror: long-polling-new-user-wait
 video_name: How long new users wait after connecting a repo: 1–2 min before, ~12 s after | Orbi Cloud
@@ -153,7 +153,7 @@ The new code is in production now; the production numbers will come when real us
 
 ## Who did the work
 
-I'm Lawrence Liu, the creator of Orbi. Orbi takes a GitHub Issue labelled `ai-ready`, writes the change with its coding agent, Pi, reviews it in a separate session, merges it and cuts the release. All 31 tickets in this story went through Orbi that way. Claude Code, the AI assistant I plan work with, wrote the tickets with me and read every change before it merged.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi takes a GitHub Issue labelled `ai-ready`, writes the change with its coding agent, Pi, reviews it in a separate session, merges it and cuts the release. All 31 tickets in this story went through Orbi that way. Claude Code, the AI assistant I plan work with, wrote the tickets with me and read every change before it merged.
 
 I did three things: decided what mattered; asked two questions, "why isn't this message-based?" and "can it be thinner?"; and let that bug through.
 

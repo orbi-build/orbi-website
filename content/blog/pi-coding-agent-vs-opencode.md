@@ -3,14 +3,14 @@ title: Pi coding agent vs OpenCode: same model, headless
 date: 2026-11-03
 summary: All 40 coding runs passed; on DeepSeek, OpenCode used 2.3-3.9× Pi's mean input tokens. With a bad API key, Pi --mode json exited 0 and OpenCode exited 1.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-pi-vs-opencode-card.png
 mirror: pi-coding-agent-vs-opencode
 ---
 
 I ran this Pi coding agent vs OpenCode comparison on my Linux machine on 3 November 2026: Pi 1.5.0 (`@earendil-works/pi-coding-agent`, released 2 November) against OpenCode 2.2.5 (`@opencode/cli`), using the same DeepSeek V4.1 Flash model (`deepseek-flash`). All 28 DeepSeek coding runs and all 12 local-model coding runs passed. On DeepSeek, OpenCode used about 2.3-3.9× Pi's input tokens per task, comparing means. For unattended runs, the bigger difference was exit codes: with an invalid API key, `pi --mode json` exited 0 and OpenCode exited 1.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi runs Pi with nobody watching: it hands Pi a GitHub Issue and a separate Pi session reviews the result, so the unattended behavior below is the part I care about most.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi with nobody watching: it hands Pi a GitHub Issue and a separate Pi session reviews the result, so the unattended behavior below is the part I care about most.
 
 ## Setup: one model, one proxy
 

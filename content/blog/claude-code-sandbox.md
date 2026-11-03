@@ -3,14 +3,14 @@ title: Claude Code sandbox: what each setup blocks
 date: 2026-10-11
 summary: Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-sandbox-card.png
 mirror: claude-code-sandbox
 ---
 
 The Claude Code sandbox (`/sandbox`) wraps the shell commands Claude runs in an operating-system boundary. On Linux that's bubblewrap: commands can write only to the project and a temp directory, and their network traffic goes through a proxy that checks each host. It doesn't cover Claude's own Read, Write, Edit and WebFetch tools. In my runs with `--dangerously-skip-permissions`, the default settings didn't stop any of the four escape attempts I threw at them.
 
-I'm Lawrence Liu, the creator of Orbi, which takes GitHub Issues through to merged, released changes with no human approving each step. Orbi's agent is Pi, an open-source coding agent, not Claude Code, but the question "what can an unattended agent reach?" is the same, so I measured it on Claude Code, where the controls are documented. For the flags and exit-code checks you need to run `claude -p` from cron, see [Claude Code headless mode exits 0 despite denials](/blog/run-claude-code-unattended/).
+I'm Larry 🍀 Orbi, the creator of Orbi, which takes GitHub Issues through to merged, released changes with no human approving each step. Orbi's agent is Pi, an open-source coding agent, not Claude Code, but the question "what can an unattended agent reach?" is the same, so I measured it on Claude Code, where the controls are documented. For the flags and exit-code checks you need to run `claude -p` from cron, see [Claude Code headless mode exits 0 despite denials](/blog/run-claude-code-unattended/).
 
 ## How I tested
 

@@ -3,7 +3,7 @@ title: 写需求：说一句话，Orbi Cloud 替你写好 GitHub Issue
 date: 2026-10-09
 summary: 在 Orbi Cloud 里说一句想改什么，Orbi 先读你的仓库，写出 Issue 草稿，要你决定的地方用选择题问你，你确认后才开始做。每一步都配了截图。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-write-request-card.png
 mirror: write-a-request
 video_name: Orbi 写需求：描述一个问题，15 分钟后合进代码
@@ -18,7 +18,7 @@ Orbi Cloud 新上的「写需求」，让你不用自己写 Issue：用一两句
 
 Orbi 是 agent 时代的软件黑灯工厂。给 Issue 打上 `ai-ready` 标签送进去，出来的是评审过、已经合并的改动，中间没人守着。编程 agent 只占其中一个工位，在隔离的工作区里写代码；评审交给另一个没碰过这段代码的 AI 会话；认领、开 PR、合并这一整条线归 Orbi 管。要发版，另开一张发版票，Orbi 会把已合并的改动打成带 tag 的版本。Orbi Cloud 就是我们替你开着的这座工厂。CI 和评审通过后，Orbi 默认自己合并；在 GitHub 上给分支设成合并前需要 1 个批准，它就会等你批准再合。
 
-我是 Lawrence Liu，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。除了下面的视频，[英文版](/blog/write-a-request/)里还有一个从一句话走到合并的例子（新增 bug 反馈模板）。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
+我是 Larry 🍀 Orbi，Orbi 的创始人。截图是 10 月 8 日和 9 日在 beta.orbi.build 的测试仓库 `xqliu/orbi-e2e-2609260042` 里实拍的，来自几个不同的需求，图注写了来源；功能在 orbi.build 上也已上线。除了下面的视频，[英文版](/blog/write-a-request/)里还有一个从一句话走到合并的例子（新增 bug 反馈模板）。只想查用法，看文档里的[写需求](https://cloud-docs.orbi.build/zh/write-a-requirement)一页。
 
 下面这段 65 秒的视频讲的是另一个需求，不是截图里那几个。10 月 9 日晚上，我在正式站 orbi.build 上用另一个测试仓库 `orbi-build/orbi-e2e-prod`（一个小的待办清单网页），只写了一句「刷新一下页面，待办就全没了」，没说改哪个文件。Orbi 读了代码，看出待办只存在内存里，然后问了我两道选择题：筛选和排序要不要一起记住；浏览器读不到本地存储、或者存下的数据坏了，页面该怎么办。两题我都留着推荐项：只保存待办内容，读不到时直接以空列表启动、不报错，然后交了出去。写草稿加答题约 4 分钟，交出后约 11 分钟合并，从写下那句话算起一共约 15 分钟。视频里的界面按那次运行存下的草稿、问题和时间戳重新渲染，文字照原样，等待的部分快进了。这个测试仓库是私有的，所以没法附上 Issue 链接。
 

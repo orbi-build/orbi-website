@@ -3,14 +3,14 @@ title: OpenCode vs Claude Code: same model, headless
 date: 2026-11-02
 summary: On three small tasks with DeepSeek, both passed every run. Default Claude Code used 1.9-3.0x OpenCode's input tokens; Claude Code --bare used 0.21-0.36x.
 lang: en
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-opencode-vs-claude-code-card.png
 mirror: opencode-vs-claude-code
 ---
 
 I measured OpenCode vs Claude Code on my Linux machine on 2 November 2026, using OpenCode 2.2.5 and Claude Code 2.1.281 with the same DeepSeek V4.1 Flash model (`deepseek-flash`). With OpenCode's default permissions and Claude Code's `--dangerously-skip-permissions`, all 27 controlled coding runs passed the supplied tests. Default Claude Code used 1.9-3.0× OpenCode's input tokens per run; Claude Code `--bare` used 0.21-0.36× as many.
 
-I'm Lawrence Liu, the creator of Orbi. Orbi runs Pi, an open-source coding agent CLI, to turn GitHub Issues into merged changes, with a separate Pi session reviewing each one.
+I'm Larry 🍀 Orbi, the creator of Orbi. Orbi runs Pi, an open-source coding agent CLI, to turn GitHub Issues into merged changes, with a separate Pi session reviewing each one.
 
 ## How I ran OpenCode vs Claude Code on one model
 

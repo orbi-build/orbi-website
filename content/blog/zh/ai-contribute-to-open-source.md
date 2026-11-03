@@ -3,14 +3,14 @@ title: AI 能不能给开源项目提 PR？
 date: 2026-10-17
 summary: 我让 Orbi 修了 brig、LLMVault、pyinfra 三个项目的 issue，维护者把三个 PR 都合并了。pyinfra 那次 agent 初版有个 emoji 对齐的回归，我提交上游前复核时发现并重做了修复。这个过程也写进了 PR。
 lang: zh
-author: Lawrence Liu
+author: Larry 🍀 Orbi
 image: /img/blog-oss-contributions-card.png
 mirror: ai-contribute-to-open-source
 ---
 
 我让一个 AI 编程 agent 去修三个开源项目里的 issue，这些项目都不归我们管，我把它写的修复提了上去，三个维护者都合并了。这篇把每条都链到它是怎么做出来的记录，你可以自己核，不用听我一面之词。这三条就是我们到目前为止用这种方式提给上游的全部，不是从一长串里挑出来的。其中一条里有个 bug 是 agent 的评审漏掉的，我发现后重写了修复，后面会讲到。
 
-我是 Lawrence Liu，Orbi 的创始人（[Orbi](https://orbi.build/?ref=blog-ai-oss)）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。
+我是 Larry 🍀 Orbi，Orbi 的创始人（[Orbi](https://orbi.build/?ref=blog-ai-oss)）。在你自己的仓库里，Orbi 把 GitHub Issue 做成可合并的 PR：一个 agent（我们叫它 Pi）读 Issue、在沙箱里写改动，另一个 Pi 会话评审这次改动、而且拿不到写代码那次的上下文，CI 跑完，runner 在这几道都通过时合并。别人的仓库不一样，因为我不能让 agent 直接往里写。所以 Orbi 读的是上游已经报出来的 issue，在一个我们自己控制的 fork 里把改动做好，我复核之后才用我本人的账号向上游提 PR，正文里写明是 AI agent 写的。
 
 ## 合了什么
 

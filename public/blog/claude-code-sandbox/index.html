@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://orbi.build/img/blog-sandbox-card.png">
   <meta property="og:image:alt" content="Claude Code sandbox: what each setup blocks">
   <meta property="article:published_time" content="2026-10-11">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code sandbox: what each setup blocks","datePublished":"2026-10-11","author":{"@type":"Person","name":"Lawrence Liu","url":"https://orbi.build/about/lawrence-liu/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-sandbox/","image":"https://orbi.build/img/blog-sandbox-card.png","inLanguage":"en","description":"Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.","url":"https://orbi.build/blog/claude-code-sandbox/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Claude Code sandbox: what each setup blocks","datePublished":"2026-10-11","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/claude-code-sandbox/","image":"https://orbi.build/img/blog-sandbox-card.png","inLanguage":"en","description":"Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.","url":"https://orbi.build/blog/claude-code-sandbox/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -153,7 +153,7 @@
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
           <h1 id="post-title">Claude Code sandbox: what each setup blocks</h1>
-          <p class="post-byline"><a href="/about/lawrence-liu/">Lawrence Liu</a> · <time datetime="2026-10-11">2026-10-11</time></p>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-10-11">2026-10-11</time></p>
 
           <p class="hero-lede">Tested on Linux with --dangerously-skip-permissions: the default Claude Code sandbox let four escapes through; strict settings plus a deny rule held.</p>
         </section>
@@ -195,7 +195,7 @@
           </ol>
         </details>
 <p>The Claude Code sandbox (<code class="post-code--single">/sandbox</code>) wraps the shell commands Claude runs in an operating-system boundary. On Linux that&#39;s bubblewrap: commands can write only to the project and a temp directory, and their network traffic goes through a proxy that checks each host. It doesn&#39;t cover Claude&#39;s own Read, Write, Edit and WebFetch tools. In my runs with <code class="post-code--single">--dangerously-skip-permissions</code>, the default settings didn&#39;t stop any of the four escape attempts I threw at them.</p>
-<p>I&#39;m Lawrence Liu, the creator of Orbi, which takes GitHub Issues through to merged, released changes with no human approving each step. Orbi&#39;s agent is Pi, an open-source coding agent, not Claude Code, but the question &quot;what can an unattended agent reach?&quot; is the same, so I measured it on Claude Code, where the controls are documented. For the flags and exit-code checks you need to run <code class="post-code--spaced">claude -p</code> from cron, see <a href="/blog/run-claude-code-unattended/">Claude Code headless mode exits 0 despite denials</a>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi, which takes GitHub Issues through to merged, released changes with no human approving each step. Orbi&#39;s agent is Pi, an open-source coding agent, not Claude Code, but the question &quot;what can an unattended agent reach?&quot; is the same, so I measured it on Claude Code, where the controls are documented. For the flags and exit-code checks you need to run <code class="post-code--spaced">claude -p</code> from cron, see <a href="/blog/run-claude-code-unattended/">Claude Code headless mode exits 0 despite denials</a>.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="how-i-tested">How I tested</h2>
 <p>Each run was one <code class="post-code--spaced">claude -p</code> session with <code class="post-code--single">--dangerously-skip-permissions</code>, the flag people call YOLO mode, in a fresh git repository. The prompt asked Claude for four things, naming the tool for each:</p>
 <ol>
