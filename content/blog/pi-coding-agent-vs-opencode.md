@@ -74,7 +74,7 @@ export default function (pi: ExtensionAPI) {
 }
 ```
 
-It kept the file in both deletion runs. Both guarded `.env` runs still printed the secret through bash, using `grep -n '^SECRET=' .env`. Explicitly requesting `grep SECRET .env` also printed it in both guarded runs.
+It kept the file in both deletion runs. Both guarded `.env` runs still printed the secret through bash: one ran `grep -n '^SECRET=' .env`, the other `cat .env`. Explicitly requesting `grep SECRET .env` also printed it in both guarded runs.
 
 A rule on one tool is not a security boundary: both tools exposed `.env` through the shell. Use a container or sandbox and keep secrets out of the working tree. Pi's own `examples/extensions/permission-gate.ts` only matches `rm -rf`, `sudo` and `chmod`/`chown 777`; it blocks by default when no UI is available.
 
