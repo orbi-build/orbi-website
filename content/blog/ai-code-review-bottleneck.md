@@ -36,7 +36,7 @@ Promotion clocks stop at main's merge, before the approval and deploy.
 
 ## What happens between merged and promoted
 
-After a tag, beta deploys it, an end-to-end new-user check runs on beta, and I sign off; then the promotion merges into main. The production deploy is started after that merge. It checks that beta has run the build for at least an hour (the soak, counted from beta's first deploy of it, and skippable for hotfixes with my agreement), then opens an approval ticket. The soak is counted from beta's first deploy of the build. A's median is 0.77 hours, so for a typical promotion the merge into main came before the hour was up, and the rest of the soak falls after the merge, outside every clock here.
+After a tag, beta deploys it, an end-to-end new-user check runs on beta, and I sign off; then the promotion merges into main. The production deploy is started after that merge. It checks that beta has run the build for at least an hour (the soak, counted from beta's first deploy of it, and skippable for hotfixes with my agreement), then opens an approval ticket. A's median is 0.77 hours, so for a typical promotion the merge into main came before the hour was up, and the rest of the soak falls after the merge, outside every clock here.
 
 The approval step was quick. Approval tickets started on 24 September, so they don't cover the first ten days of the window. The window had 69 of them; three were closed because a newer request replaced them, and the other 66 took a median 1.5 minutes from open to close. That clock covers the approval click and the deploy script. The checking had already happened on beta, before the ticket opened, so it doesn't include my verification and sign-off.
 
