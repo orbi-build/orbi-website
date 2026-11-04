@@ -1,5 +1,13 @@
 [
   {
+    "slug": "ai-code-review-bottleneck",
+    "title": "AI code review bottleneck? Our PRs wait after merge",
+    "summary": "847 agent PRs merged in a median 21 minutes, yet the oldest change in each production promotion had waited a median 3.4 hours on beta, once 169 hours.",
+    "zhSlug": null,
+    "zhTitle": null,
+    "related": []
+  },
+  {
     "slug": "pi-coding-agent-vs-opencode",
     "title": "Pi coding agent vs OpenCode: same model, headless",
     "summary": "All 40 coding runs passed; on DeepSeek, OpenCode used 2.3-3.9× Pi's mean input tokens. With a bad API key, Pi --mode json exited 0 and OpenCode exited 1.",
