@@ -2177,8 +2177,9 @@ describe("one unified footer on every content page", () => {
   // directory re-checks the page against the snippet it handed out, so the copy
   // must not be corrected. None of the twelve may carry nofollow, sponsored or
   // ugc — the directories treat such a link as unverifiable and drop the
-  // listing. bestaitool.app now closes the badge row.
-  it("carries the twelve Issue #1160 directory badges and links, closing the badge row on every footer page", () => {
+  // listing. Issue #1165 appends the doforai.tools badge after them, so
+  // bestaitool.app no longer closes the row.
+  it("carries the twelve Issue #1160 directory badges and links on every footer page", () => {
     const badges = [
       '<a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>',
       '<a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>',
@@ -2221,12 +2222,43 @@ describe("one unified footer on every content page", () => {
         expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
         expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
       }
-      // The row ends at bestaitool.app, so its closing tag follows that badge.
-      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the bestaitool.app badge must close the badge row`)
-        .toMatch(/^\s*<\/div>/);
+      // Issue #1165 appended the doforai.tools badge after them, so the closing
+      // tag of the row follows that badge now.
+      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the doforai.tools badge must close the badge row`)
+        .toMatch(/^\s*<a href="https:\/\/doforai\.tools"/);
       // The four vendor-hosted images must stay on the directories' hosts, so
       // each verifier counts the badge from its own file.
       expect(countMatches(footer, /src="\/img\/[^"]*(goodsaas|101aitools|vibedonalds|minylist)[^"]*"/gi), `${page.output}: the Issue #1160 badges must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+  // Issue #1165: the free doforai.tools listing is granted only while the site
+  // carries the doforai.tools badge — its submission form checks for a public
+  // doforai badge or link before it accepts an entry, so the vendor's embed goes
+  // in verbatim (white theme, 172x54 declared box) as the row's last entry and
+  // the anchor stays crawlable: nofollow, sponsored or ugc would make the
+  // listing unverifiable and doforai.tools delists a badge that disappears.
+  it("carries the doforai.tools badge closing the badge row on every footer page (Issue #1165)", () => {
+    const badge = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>';
+    const bestaitool = '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: doforai.tools badge drifted`).toContain(badge);
+      expect(countMatches(footer, /<a href="https:\/\/doforai\.tools"/g), `${page.output}: exactly one doforai.tools anchor`)
+        .toBe(1);
+      expect(footer.indexOf(badge), `${page.output}: the doforai.tools badge must follow the bestaitool.app link`)
+        .toBeGreaterThan(footer.indexOf(bestaitool));
+      const anchor = footerAnchorTag(footer, "https://doforai.tools");
+      expect(anchor, `${page.output}: the doforai.tools backlink must keep its rel`).toContain('rel="noopener noreferrer"');
+      expect(anchor, `${page.output}: the doforai.tools backlink must stay crawlable`).not.toContain("nofollow");
+      expect(anchor, `${page.output}: the doforai.tools backlink must not be sponsored`).not.toContain("sponsored");
+      expect(anchor, `${page.output}: the doforai.tools backlink must not be ugc`).not.toContain("ugc");
+      // The row ends at doforai.tools, so its closing tag follows that badge.
+      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the doforai.tools badge must close the badge row`)
+        .toMatch(/^\s*<\/div>/);
+      // The badge must stay on the directory's host, so their checker counts it.
+      expect(countMatches(footer, /src="\/img\/[^"]*doforai[^"]*"/gi), `${page.output}: the doforai.tools badge must not be self-hosted`)
         .toBe(0);
     }
   });
@@ -2243,8 +2275,9 @@ describe("one unified footer on every content page", () => {
   // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
   // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge,
   // Issue #1132 the founder.best / makeitla.st badges, Issue #1134 the
-  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges and
-  // Issue #1160 twelve more directory badges and links last.
+  // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
+  // Issue #1160 twelve more directory badges and links and Issue #1165 the
+  // doforai.tools badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2301,6 +2334,8 @@ describe("one unified footer on every content page", () => {
       "https://minylist.com",
       "https://toolsify.ai/",
       "https://bestaitool.app/",
+      // Issue #1165: the doforai.tools badge, appended after bestaitool.app.
+      "https://doforai.tools",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
