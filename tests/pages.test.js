@@ -2222,10 +2222,11 @@ describe("one unified footer on every content page", () => {
         expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be sponsored`).not.toContain("sponsored");
         expect(anchor, `${page.output}: the ${hrefs[index]} backlink must not be ugc`).not.toContain("ugc");
       }
-      // Issue #1165 appended the doforai.tools badge after them, so the closing
-      // tag of the row follows that badge now.
-      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the doforai.tools badge must close the badge row`)
-        .toMatch(/^\s*<a href="https:\/\/doforai\.tools"/);
+      // Issue #1165 appended the doforai.tools badge after them, Issue #1168 the
+      // Startup Fame badge and Issue #1169 the ScrollLaunch badge, so the row now
+      // closes after those three, in order.
+      expect(footer.slice(footer.indexOf(badges.at(-1)) + badges.at(-1).length), `${page.output}: the doforai.tools, Startup Fame and ScrollLaunch badges must close the badge row`)
+        .toMatch(/^\s*<a href="https:\/\/doforai\.tools"[\s\S]*?<a href="https:\/\/startupfa\.me\/s\/orbi\?utm_source=orbi\.build"[\s\S]*?<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"[\s\S]*?<\/div>/);
       // The four vendor-hosted images must stay on the directories' hosts, so
       // each verifier counts the badge from its own file.
       expect(countMatches(footer, /src="\/img\/[^"]*(goodsaas|101aitools|vibedonalds|minylist)[^"]*"/gi), `${page.output}: the Issue #1160 badges must not be self-hosted`)
@@ -2239,8 +2240,8 @@ describe("one unified footer on every content page", () => {
   // in verbatim (white theme, 172x54 declared box) after bestaitool.app and the
   // anchor stays crawlable: nofollow, sponsored or ugc would make the
   // listing unverifiable and doforai.tools delists a badge that disappears.
-  // Issue #1168 appends the Startup Fame badge after it, so it no longer closes
-  // the row.
+  // Issue #1168 appends the Startup Fame badge after it and Issue #1169 the
+  // ScrollLaunch badge after that, so it no longer closes the row.
   it("carries the doforai.tools badge on every footer page (Issue #1165)", () => {
     const badge = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>';
     const bestaitool = '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>';
@@ -2256,8 +2257,9 @@ describe("one unified footer on every content page", () => {
       expect(anchor, `${page.output}: the doforai.tools backlink must stay crawlable`).not.toContain("nofollow");
       expect(anchor, `${page.output}: the doforai.tools backlink must not be sponsored`).not.toContain("sponsored");
       expect(anchor, `${page.output}: the doforai.tools backlink must not be ugc`).not.toContain("ugc");
-      // Issue #1168 appends the Startup Fame badge after it, so doforai.tools
-      // is no longer the row's last entry.
+      // Issue #1168 appends the Startup Fame badge after it and Issue #1169 the
+      // ScrollLaunch badge after that, so doforai.tools is no longer the row's
+      // last entry.
       expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Startup Fame badge must follow doforai.tools`)
         .toMatch(/^\s*<a href="https:\/\/startupfa\.me\/s\/orbi\?utm_source=orbi\.build"/);
       // The badge must stay on the directory's host, so their checker counts it.
@@ -2272,7 +2274,7 @@ describe("one unified footer on every content page", () => {
   // must point exactly at the listing URL with the utm_source the vendor's
   // submission handed out, and it must stay crawlable — nofollow, sponsored or
   // ugc would make the badge unverifiable and fail the "Verify now" check.
-  it("carries the Startup Fame badge closing the badge row on every footer page (Issue #1168)", () => {
+  it("carries the Startup Fame badge on every footer page (Issue #1168)", () => {
     const href = "https://startupfa.me/s/orbi?utm_source=orbi.build";
     const badge = '<a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>';
     const doforai = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer">';
@@ -2289,12 +2291,46 @@ describe("one unified footer on every content page", () => {
       expect(anchor, `${page.output}: the Startup Fame backlink must stay crawlable`).not.toContain("nofollow");
       expect(anchor, `${page.output}: the Startup Fame backlink must not be sponsored`).not.toContain("sponsored");
       expect(anchor, `${page.output}: the Startup Fame backlink must not be ugc`).not.toContain("ugc");
-      // The row ends at this badge, so its closing tag follows it.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the Startup Fame badge must close the badge row`)
-        .toMatch(/^\s*<\/div>/);
+      // Issue #1169 appends the ScrollLaunch badge after it, so it is no longer
+      // the row's last entry.
+      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the ScrollLaunch badge must follow Startup Fame`)
+        .toMatch(/^\s*<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"/);
       // Startup Fame's checker looks for the badge on its own host, so the
       // image must never be copied into /img/.
       expect(countMatches(footer, /src="\/img\/[^"]*startupfa[^"]*"/gi), `${page.output}: the Startup Fame badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
+  // Issue #1169: ScrollLaunch grants orbi.build the free listing only while the
+  // site carries their badge in the server-rendered HTML, and it re-checks that
+  // weekly — a removed badge delists. The vendor's product editor page hands out
+  // the embed, so it goes in verbatim as the badge row's last entry: the
+  // `?ref=badge` query is ScrollLaunch's own attribution and must survive (it is
+  // not an UTM), the 220x48 box is the badge's own viewBox, and the anchor stays
+  // crawlable — nofollow, sponsored or ugc would make the badge unverifiable.
+  it("carries the ScrollLaunch badge closing the badge row on every footer page (Issue #1169)", () => {
+    const badge = '<a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>';
+    const startupfame = '<a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank">';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: ScrollLaunch badge drifted`).toContain(badge);
+      expect(countMatches(footer, /<a href="https:\/\/www\.scrolllaunch\.com\/products\/orbi\?ref=badge"/g), `${page.output}: exactly one ScrollLaunch anchor`)
+        .toBe(1);
+      expect(footer.indexOf(badge), `${page.output}: the ScrollLaunch badge must follow the Startup Fame badge`)
+        .toBeGreaterThan(footer.indexOf(startupfame));
+      const anchor = footerAnchorTag(footer, "https://www.scrolllaunch.com/products/orbi?ref=badge");
+      expect(anchor, `${page.output}: the ScrollLaunch backlink must open in a new tab`).toContain('target="_blank"');
+      expect(anchor, `${page.output}: the ScrollLaunch backlink must keep its rel`).toContain('rel="noopener"');
+      expect(anchor, `${page.output}: the ScrollLaunch backlink must stay crawlable`).not.toContain("nofollow");
+      expect(anchor, `${page.output}: the ScrollLaunch backlink must not be sponsored`).not.toContain("sponsored");
+      expect(anchor, `${page.output}: the ScrollLaunch backlink must not be ugc`).not.toContain("ugc");
+      // The row ends at ScrollLaunch, so the wrapper's closing tag follows it.
+      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the ScrollLaunch badge must close the badge row`)
+        .toMatch(/^\s*<\/div>/);
+      // The badge must stay on the vendor's host: ScrollLaunch verifies the
+      // embed against its own file, so a self-hosted copy would not count.
+      expect(countMatches(footer, /src="\/img\/[^"]*scrolllaunch[^"]*"/gi), `${page.output}: the ScrollLaunch badge must not be self-hosted`)
         .toBe(0);
     }
   });
@@ -2313,7 +2349,8 @@ describe("one unified footer on every content page", () => {
   // Issue #1132 the founder.best / makeitla.st badges, Issue #1134 the
   // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
   // Issue #1160 twelve more directory badges and links, Issue #1165 the
-  // doforai.tools badge and Issue #1168 the Startup Fame badge last.
+  // doforai.tools badge, Issue #1168 the Startup Fame badge and Issue #1169 the
+  // ScrollLaunch badge last.
   it("keeps the directory badges in their own wrapper after the text friends (Issue #805)", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
@@ -2374,6 +2411,8 @@ describe("one unified footer on every content page", () => {
       "https://doforai.tools",
       // Issue #1168: the Startup Fame badge, appended after doforai.tools.
       "https://startupfa.me/s/orbi?utm_source=orbi.build",
+      // Issue #1169: the ScrollLaunch badge, appended after Startup Fame.
+      "https://www.scrolllaunch.com/products/orbi?ref=badge",
     ];
     for (const page of content()) {
       const nav = region(shipped.get(page.output), '<nav class="footer-friends"', "</nav>");
