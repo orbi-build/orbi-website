@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships forty footer badge images (site/partials/footer.html) plus
+// Every page ships forty-one footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -52,7 +52,11 @@
 // vibedonalds.com 240x60 (SVG, our snippet's declared 240x60) and
 // minylist.com 176x60 (SVG, our snippet's declared 176x60); and on 2026-11-04
 // doforai.tools 538x169 (webp — its own pixels, which the vendor's 172x54
-// snippet matches within 0.2%, Issue #1165); and on 2026-11-04
+// snippet matches within 0.2%, Issue #1165); and on 2026-11-04 startupfa.me
+// 468x148 (webp — measured on the Internet Archive's 2026-10-26 snapshot of
+// the file, because Vercel's security checkpoint answers the live host with
+// HTTP 429 from the delivery sandbox; the vendor's 171x54 embed box keeps
+// that ratio within 0.14%, Issue #1168); and on 2026-11-04
 // www.scrolllaunch.com 220x48 (SVG — its own width/height and its viewBox
 // 0 0 220 48, the same box the vendor's embed declares, Issue #1169).
 // Since Issue #1038
@@ -93,6 +97,7 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "vibedonalds.com", width: 240, height: 60 },
   { host: "minylist.com", width: 176, height: 60 },
   { host: "doforai.tools", width: 538, height: 169 },
+  { host: "startupfa.me", width: 468, height: 148 },
   { host: "www.scrolllaunch.com", width: 220, height: 48 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
