@@ -580,9 +580,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Scout Forge badge, Issue #1129 the Findly.tools badge, Issue #1132
         // the founder.best / makeitla.st badges, Issue #1134 the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
-        // Issue #1160 twelve directory badges and links and Issue #1165 the
-        // doforai.tools badge: 53 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(53);
+        // Issue #1160 twelve directory badges and links, Issue #1165 the
+        // doforai.tools badge and Issue #1169 the ScrollLaunch badge: 54 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(54);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -605,10 +605,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
         // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
         // badges, so LaunchVault was the last entry, Issue #1160 appended
-        // twelve more and Issue #1165 the doforai.tools badge, so it closes the
-        // row now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the doforai.tools link")
-          .toBe("https://doforai.tools");
+        // twelve more, Issue #1165 the doforai.tools badge and Issue #1169 the
+        // ScrollLaunch badge, so it closes the row now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the ScrollLaunch link")
+          .toBe("https://www.scrolllaunch.com/products/orbi?ref=badge");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -1103,8 +1103,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // through the Findly.tools badge, Issue #1132 through the
         // founder.best / makeitla.st badges, Issue #1134 through the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
-        // Issue #1160 through twelve more directory badges and links and
-        // Issue #1165 through the doforai.tools badge, then leaves.
+        // Issue #1160 through twelve more directory badges and links,
+        // Issue #1165 through the doforai.tools badge and Issue #1169 through
+        // the ScrollLaunch badge, then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
           "https://zplatform.ai/",
@@ -1145,6 +1146,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://toolsify.ai/",
           "https://bestaitool.app/",
           "https://doforai.tools",
+          "https://www.scrolllaunch.com/products/orbi?ref=badge",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1169,7 +1171,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the doforai.tools badge must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the ScrollLaunch badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -1246,6 +1248,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     // Issue #1165: the doforai.tools badge, appended after bestaitool.app. Its
     // 538x169 source is the only webp in the row.
     "https://doforai.tools",
+    // Issue #1169: the ScrollLaunch badge, appended after doforai.tools.
+    "https://www.scrolllaunch.com/products/orbi?ref=badge",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -1291,9 +1295,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // founder.best / makeitla.st images, Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault images,
           // the Findstack image, Issue #1160 the goodsaas.xyz /
-          // 101aitools.com / vibedonalds.com / minylist.com images and
-          // Issue #1165 the doforai.tools image: 39 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(39);
+          // 101aitools.com / vibedonalds.com / minylist.com images,
+          // Issue #1165 the doforai.tools image and Issue #1169 the
+          // ScrollLaunch image: 40 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(40);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1402,11 +1407,14 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
             ?.getBoundingClientRect();
           // Issue #1160: the twelve badges and links appended after Findstack
           // stay inside the footer at 390px too — checked at both ends of the
-          // run, the first entry and the link that closes the row, the
-          // doforai.tools badge (Issue #1165).
+          // run, the first entry and the last ones before the row closes, the
+          // doforai.tools badge (Issue #1165) and the ScrollLaunch badge
+          // (Issue #1169), which closes it.
           const goodsaasRect = document.querySelector('footer .footer-badges a[href="https://goodsaas.xyz/saas/orbi"]')
             ?.getBoundingClientRect();
           const doforaiRect = document.querySelector('footer .footer-badges a[href="https://doforai.tools"]')
+            ?.getBoundingClientRect();
+          const scrolllaunchRect = document.querySelector('footer .footer-badges a[href="https://www.scrolllaunch.com/products/orbi?ref=badge"]')
             ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
@@ -1465,6 +1473,11 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
               && doforaiRect.height > 0
               && doforaiRect.left >= 0
               && doforaiRect.right <= documentElement.clientWidth,
+            scrolllaunchInside: Boolean(scrolllaunchRect)
+              && scrolllaunchRect.width > 0
+              && scrolllaunchRect.height > 0
+              && scrolllaunchRect.left >= 0
+              && scrolllaunchRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -1485,6 +1498,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.launchvaultInside, path + " at 390px: the LaunchVault badge stays inside the footer").toBe(true);
         expect(phoneLayout.goodsaasInside, path + " at 390px: the goodsaas.xyz badge stays inside the footer").toBe(true);
         expect(phoneLayout.doforaiInside, path + " at 390px: the doforai.tools badge stays inside the footer").toBe(true);
+        expect(phoneLayout.scrolllaunchInside, path + " at 390px: the ScrollLaunch badge stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
