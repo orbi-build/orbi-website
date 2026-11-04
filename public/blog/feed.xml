@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>AI code review bottleneck? Our PRs wait after merge</title>
+      <link>https://orbi.build/blog/ai-code-review-bottleneck/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/ai-code-review-bottleneck/</guid>
+      <pubDate>Wed, 04 Nov 2026 00:00:00 GMT</pubDate>
+      <description>847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.</description>
+    </item>
+    <item>
       <title>Pi coding agent vs OpenCode: same model, headless</title>
       <link>https://orbi.build/blog/pi-coding-agent-vs-opencode/</link>
       <guid isPermaLink="true">https://orbi.build/blog/pi-coding-agent-vs-opencode/</guid>

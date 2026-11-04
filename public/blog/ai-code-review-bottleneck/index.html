@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI code review bottleneck? Our PRs wait after merge | Orbi</title>
+  <meta name="description" content="847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.">
+  <link rel="canonical" href="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AI code review bottleneck? Our PRs wait after merge">
+  <meta property="og:description" content="847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.">
+  <meta property="og:url" content="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <meta property="og:image" content="https://orbi.build/img/blog-merge-wait-card.png">
+  <meta property="og:image:alt" content="AI code review bottleneck? Our PRs wait after merge">
+  <meta property="article:published_time" content="2026-11-04">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI code review bottleneck? Our PRs wait after merge","datePublished":"2026-11-04","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-code-review-bottleneck/","image":"https://orbi.build/img/blog-merge-wait-card.png","inLanguage":"en","description":"847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.","url":"https://orbi.build/blog/ai-code-review-bottleneck/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" data-label-open="Open navigation" data-label-close="Close navigation" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation" aria-label="Primary navigation" data-primary-nav>
+        <a href="/#system">How it works</a>
+        <a href="/cloud/#pricing">Pricing</a>
+        <a href="https://cloud-docs.orbi.build/?ref=nav">Docs</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/cloud/login">Try Cloud with GitHub</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">Blog</p>
+          <h1 id="post-title">AI code review bottleneck? Our PRs wait after merge</h1>
+          <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-04">2026-11-04</time></p>
+
+          <p class="hero-lede">847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#measuring-the-ai-code-review-bottleneck">Measuring the AI code review bottleneck</a></li>
+          <li><a class="post-toc-link" href="#what-happens-between-merged-and-promoted">What happens between merged and promoted</a></li>
+          <li><a class="post-toc-link" href="#12-october-the-player-was-ready-before-the-clips">12 October: the player was ready before the clips</a></li>
+          <li><a class="post-toc-link" href="#21-october-162-prs-arrived-together">21 October: 162 PRs arrived together</a></li>
+          <li><a class="post-toc-link" href="#drift-alerts-and-the-next-step">Drift alerts and the next step</a></li>
+          <li><a class="post-toc-link" href="#how-this-compares-with-larger-samples">How this compares with larger samples</a></li>
+          <li><a class="post-toc-link" href="#working-in-small-batches-past-the-pr">Working in small batches past the PR</a></li>
+          <li><a class="post-toc-link" href="#measure-merge-wait-in-your-repository">Measure merge wait in your repository</a></li>
+          <li><a class="post-toc-link" href="#limits">Limits</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>On this page · 10 sections</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#measuring-the-ai-code-review-bottleneck">Measuring the AI code review bottleneck</a></li>
+          <li><a class="post-toc-link" href="#what-happens-between-merged-and-promoted">What happens between merged and promoted</a></li>
+          <li><a class="post-toc-link" href="#12-october-the-player-was-ready-before-the-clips">12 October: the player was ready before the clips</a></li>
+          <li><a class="post-toc-link" href="#21-october-162-prs-arrived-together">21 October: 162 PRs arrived together</a></li>
+          <li><a class="post-toc-link" href="#drift-alerts-and-the-next-step">Drift alerts and the next step</a></li>
+          <li><a class="post-toc-link" href="#how-this-compares-with-larger-samples">How this compares with larger samples</a></li>
+          <li><a class="post-toc-link" href="#working-in-small-batches-past-the-pr">Working in small batches past the PR</a></li>
+          <li><a class="post-toc-link" href="#measure-merge-wait-in-your-repository">Measure merge wait in your repository</a></li>
+          <li><a class="post-toc-link" href="#limits">Limits</a></li>
+          <li><a class="post-toc-link" href="#related">Related</a></li>
+          </ol>
+        </details>
+<p>The AI code review bottleneck isn&#39;t where Orbi&#39;s own pipeline loses time: from 14 September 00:00 to 22 October 00:00 2026 (+08), 847 pull requests the Orbi runner opened in Orbi Cloud&#39;s repository merged into <code class="post-code--single">beta</code> in a median 21 minutes (20.6), including CI and every agent review round. Counting every PR that the window&#39;s promotions carried into <code class="post-code--single">main</code>, the production branch, a PR waited a median 5.9 hours on beta after its merge; one in ten waited more than 62 hours, and the longest wait was 168 hours. The slow part was after merge, while finished work waited to be released and promoted. The PR clock starts when a PR opens, so the time an agent spends between taking an Issue and opening the PR isn&#39;t in any of these numbers.</p>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi Cloud, the hosted product, is itself built by Orbi: an agent takes each GitHub Issue, opens a pull request into <code class="post-code--single">beta</code>, and a separate agent session reviews it. It merges when review and CI pass.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>Work is grouped into milestones named after versions; when a milestone&#39;s tickets are done, a release ticket tags that version on beta. A promotion then merges the tag into <code class="post-code--single">main</code>, the production branch, and a production deploy follows after a one-click human approval. The orbi-cloud repository is private, so I show aggregate numbers without repository links.</p>
+<h2 id="measuring-the-ai-code-review-bottleneck">Measuring the AI code review bottleneck</h2>
+<p>I counted PRs and promotions merged during the window separately. A promotion is a merge on main&#39;s first-parent line whose second parent is on beta, identified by ancestry, regardless of title. The window had 110; two were version-only releases that brought in no PR, so the table uses the other 108. B looks only at PR merges on beta&#39;s first-parent line, the moment each PR landed there; release and chore commits don&#39;t count. B measures each promotion&#39;s oldest wait, so its denominator is promotions, not PRs. The per-PR row counts every PR that a promotion in the window carried (912): the runner&#39;s and anyone else&#39;s, including a few merged into beta before 14 September. Big batches weigh more there, which is why its median is higher than B&#39;s. The script further down reproduces B, not the per-PR row.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Clock</th>
+<th scope="col">Definition</th>
+<th scope="col">Sample</th>
+<th scope="col">Median</th>
+<th scope="col">p90</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">PR open to merge</th>
+<td>Runner PR opened → merged into beta, including CI and all review/fix rounds</td>
+<td>847 PRs</td>
+<td>20.6 min</td>
+<td>79.1 min</td>
+</tr>
+<tr>
+<th scope="row">Per PR after merge</th>
+<td>PR merged into beta → the promotion that carried it merges into main</td>
+<td>912 PRs</td>
+<td>5.89 h</td>
+<td>62.65 h</td>
+</tr>
+<tr>
+<th scope="row">A: newest tag</th>
+<td>Newest tag the promotion carried → merge into main</td>
+<td>108 promotions</td>
+<td>0.77 h</td>
+<td>4.95 h</td>
+</tr>
+<tr>
+<th scope="row">C: oldest tag</th>
+<td>Oldest tag the promotion carried → merge into main</td>
+<td>108 promotions</td>
+<td>1.04 h</td>
+<td>8.43 h</td>
+</tr>
+<tr>
+<th scope="row">B: oldest PR</th>
+<td>Oldest PR merged into beta but not yet in main → merge into main</td>
+<td>108 promotions</td>
+<td>2.88 h</td>
+<td>12.85 h</td>
+</tr>
+</tbody></table></div>
+<p>The runner PRs had a median size of 116 changed lines, counting additions plus deletions; 87% changed at most 500 lines. The runner opened 415 of them as the Orbi GitHub App and 432 through my GitHub account; all 432 carry the engine&#39;s run marker, and 389 also say &quot;Built by Orbi&quot;.</p>
+<p>A and C approximate waiting after a release is cut, using tagged commits&#39; committer times; adding back the two version-only promotions leaves both medians unchanged. B adds pre-release waiting. When a promotion brought no new tag, A and C use the latest tag reachable from the promoted commit.</p>
+<p>B reached 168.48 hours, about a week, and exceeded 24 hours five times. PRs per promotion had a median of 4, p90 of 15, and a maximum of 162. The 108 promotions carried 159 release tags between them (v0.6.0 to v0.8.11); 27 brought in two or more, and 6 brought in no new tag.</p>
+<p>Promotion clocks stop at main&#39;s merge, before the approval and deploy.</p>
+<h2 id="what-happens-between-merged-and-promoted">What happens between merged and promoted</h2>
+<p>After a tag, beta deploys it, an end-to-end new-user check runs on beta, and I sign off; then the promotion merges into main. The production deploy is started after that merge. It checks that beta has run the build for at least an hour (the soak, counted from beta&#39;s first deploy of it, and skippable for hotfixes with my agreement), then opens an approval ticket. The soak is counted from beta&#39;s first deploy of the build. A&#39;s median is 0.77 hours, so for a typical promotion the merge into main came before the hour was up, and the rest of the soak falls after the merge, outside every clock here.</p>
+<p>The approval step was quick. Approval tickets started on 24 September, so they don&#39;t cover the first ten days of the window. The window had 69 of them; three were closed because a newer request replaced them, and the other 66 took a median 1.5 minutes from open to close. That clock covers the approval click and the deploy script. The checking had already happened on beta, before the ticket opened, so it doesn&#39;t include my verification and sign-off.</p>
+<p>The approval click is the only step I timed on its own; the new-user check and my sign-off happen before the promotion and sit inside its clocks without a separate number. What the clocks do show is that finished PRs pile up behind these steps, and when one thing holds a promotion, everything in the batch waits with it.</p>
+<h2 id="12-october-the-player-was-ready-before-the-clips">12 October: the player was ready before the clips</h2>
+<p>At 16:39 (+08) on 12 October, a video player for the onboarding help popup merged into beta. The six how-to clips it plays were a separate step, to be added to the website repository.</p>
+<p>The next release ticket, v0.7.31, made promotion conditional on all six clips being live on orbi.build: &quot;if missing, ship the website first, then promote Cloud&quot;.</p>
+<p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">Time</th>
+<th scope="col">Event</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row">17:23</th>
+<td>v0.7.31 tagged</td>
+</tr>
+<tr>
+<th scope="row">18:22</th>
+<td>v0.7.32 tagged</td>
+</tr>
+<tr>
+<th scope="row">20:32</th>
+<td>v0.7.33 tagged</td>
+</tr>
+<tr>
+<th scope="row">22:17</th>
+<td>v0.7.34 tagged</td>
+</tr>
+<tr>
+<th scope="row">22:25</th>
+<td>Clips landed in the website repository</td>
+</tr>
+<tr>
+<th scope="row">23:02</th>
+<td>All four versions promoted into main together</td>
+</tr>
+</tbody></table></div>
+<p>Every tag contained the player, so the same condition held all four. By promotion, the first tag had waited 5.66 hours (clock C), and the player PR itself had been on beta for 6.4 hours. I don&#39;t have the minute the clips went live on orbi.build; the promotion came 37 minutes after they reached the website repository. Other changes waited in the same batch, including a checkout fix. The <a href="/blog/watch-the-six-steps/">setup video</a> shows the flow those clips help explain.</p>
+<h2 id="21-october-162-prs-arrived-together">21 October: 162 PRs arrived together</h2>
+<p>On 21 October, a promotion brought 162 PRs and 12 tags into main: v0.7.41, v0.8.0 to v0.8.3 and v0.8.5 to v0.8.11 (v0.8.4 was never tagged). Its oldest PR had waited 168 hours.</p>
+<p>Production also had v0.7.40 promoted on 14 October and a hotfix on 17 October. Beta was shipping the v0.8 series; milestone v0.8.5 alone contained 102 tickets. I haven&#39;t traced a single item that held that week&#39;s promotion.</p>
+<h2 id="drift-alerts-and-the-next-step">Drift alerts and the next step</h2>
+<p>A scheduled check opens an issue when the oldest commit on beta that main doesn&#39;t have is more than 24 hours old and closes it automatically when that clears. Three such backlog alerts opened in the window (a fourth alert, for a database migration mismatch, isn&#39;t counted here). Their median lifetime was 16.2 hours; the longest lasted 143 hours, from 16 October 00:58 to 22 October 00:14 (+08). The check is scheduled every six hours (GitHub often starts scheduled runs late), so that alert closed at its first run after the 21 October promotion.</p>
+<p>An alert only opens once the oldest commit is already 24 hours old, and closes at the first run after the drift clears, so its lifetime is a lower bound on how long the drift lasted. It cannot establish whether anyone acted while it was open.</p>
+<p>A time threshold says &quot;behind&quot; without saying what is stuck. The check I want is event-based: once the oldest unpromoted tag is more than 2 hours old, it has to name what it is waiting for (which deploy, when the soak ends, whose sign-off), and if nobody can, it is stuck. I haven&#39;t backtested the 2-hour line on this data.</p>
+<h2 id="how-this-compares-with-larger-samples">How this compares with larger samples</h2>
+<p>The <a href="https://dora.dev/research/2024/dora-report/2024-dora-accelerate-state-of-devops-report.pdf">DORA 2024 report, page 40</a>, estimates &quot;a 7.2% reduction&quot; in delivery stability and &quot;a 1.5% reduction&quot; in delivery throughput &quot;for every 25% increase in AI adoption&quot;. DORA hypothesizes that changelists are growing. The result is correlational.</p>
+<p>DORA&#39;s throughput measures delivery (how often and how fast changes reach production), so it can fall while PR counts rise. <a href="https://www.faros.ai/blog/ai-software-engineering">Faros AI&#39;s 2025 study</a>, covering over 10,000 developers across 1,255 teams, reports 98% more merged PRs, 91% longer PR review time, and 154% larger PRs with high AI adoption. Those are individual and team numbers; at the company level it found no significant correlation between AI adoption and improvement.</p>
+<p>In this pipeline each ticket is a small change and a separate agent reviews it, so review stays short. The oldest-PR waits run hours past the PR clock: the batching happens downstream, at release and promotion. This single pipeline proves nothing about those studies&#39; samples.</p>
+<h2 id="working-in-small-batches-past-the-pr">Working in small batches past the PR</h2>
+<p>DORA&#39;s <a href="https://dora.dev/capabilities/working-in-small-batches/">working in small batches capability page</a> says: &quot;Any batch of code that takes longer than a week to complete and check is too big&quot;. It also warns that AI tools tempt developers into massive pull requests, and that regrouping small batches before release delays feedback.</p>
+<p>Here the PRs were already small. What grew was the set of changes that reached production together.</p>
+<p>Looking at the second half of the window, the 39 milestones released from v0.7.14 through v0.8.11 had a median of 3 tickets, and 31 had 7 or fewer. The outliers were v0.7.29 with 78 tickets and v0.8.5 with 102. The promotion that carried v0.7.29 had an oldest-PR wait of 43.3 hours.</p>
+<p>I&#39;ll try two rules next; neither is in force yet:</p>
+<ol>
+<li>A milestone must be a batch that can go to production on its own.</li>
+<li>Don&#39;t merge code that needs something that isn&#39;t live yet: assets, configuration, or another repository&#39;s change. Ship the dependency first, and connect the UI entry point last.</li>
+</ol>
+<p>Rule 2 differs from what happened on 12 October. There the player merged first and the check sat at promotion, so every later release queued behind it; under rule 2 the clips would have shipped before the player merged, and nothing would have queued. It follows Martin Fowler&#39;s <a href="https://martinfowler.com/bliki/KeystoneInterface.html">Keystone Interface</a>: &quot;Build all the back-end code, integrate, but don&#39;t build the user-interface.&quot;</p>
+<p>I&#39;ll check the rules with the median and p90 from the script below over the next four weeks. Since 23 October Orbi promotes by creating a new commit instead of a merge, so that check needs a query adapted to the new style.</p>
+<h2 id="measure-merge-wait-in-your-repository">Measure merge wait in your repository</h2>
+<p>The script below assumes promotions are merge commits on the production branch&#39;s first-parent line and that the promoted branch takes PRs as merge commits. With squash-merged PRs or promotions made as new commits it finds nothing and exits 1. Orbi&#39;s own promotions switched to new commits on 23 October, which is why my window ends at midnight going into 22 October.</p>
+<p>Save this as <code class="post-code--single">~/merge-wait.sh</code>, outside the repository so it doesn&#39;t end up in a commit:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# How long had the oldest merged PR in each promotion been waiting?
+# Usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]
+#   e.g. TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
+# Window: from since 00:00 up to and including until 00:00, local time; default until is now.
+# A promotion is a merge on the production branch&#39;s first-parent line whose second
+# parent is on the promoted branch (hotfix merges from elsewhere are skipped).
+# For each one that brought in at least one merge from the promoted branch&#39;s
+# first-parent line (one per PR, if that branch takes PRs as merge commits),
+# prints its date, how many it brought and how long the oldest had been waiting,
+# then median, p90 and max.
+set -euo pipefail
+export LC_ALL=C   # keep &quot;.&quot; as the decimal point for awk and sort
+usage=&#39;usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]&#39;
+branch=${1:?$usage}
+promoted=${2:?$usage}
+since=${3:?$usage}
+until=${4:-}
+for ref in &quot;$branch&quot; &quot;$promoted&quot;; do
+  git rev-parse --verify -q &quot;$ref^{commit}&quot; &gt;/dev/null || { echo &quot;unknown ref: $ref&quot; &gt;&amp;2; exit 2; }
+done
+range=(--since=&quot;${since}T00:00:00&quot;)
+[ -z &quot;$until&quot; ] || range+=(--until=&quot;${until}T00:00:00&quot;)
+
+rows=$(git log &quot;$branch&quot; --first-parent --merges &quot;${range[@]}&quot; --format=&#39;%H %ct&#39; |
+  while read -r h ct; do
+    git merge-base --is-ancestor &quot;$h^2&quot; &quot;$promoted&quot; || continue
+    times=$(git log --first-parent --merges --format=%ct &quot;$h^1..$h^2&quot;)
+    [ -n &quot;$times&quot; ] || continue
+    oldest=$(printf &#39;%s\n&#39; &quot;$times&quot; | sort -n | awk &#39;NR==1&#39;)
+    printf &#39;%s\t%s\t%s\n&#39; &quot;$(git log -1 --format=%cs &quot;$h&quot;)&quot; &quot;$(printf &#39;%s\n&#39; &quot;$times&quot; | wc -l | tr -d &#39; &#39;)&quot; \
+      &quot;$(awk -v a=&quot;$ct&quot; -v b=&quot;$oldest&quot; &#39;BEGIN{printf &quot;%.1f&quot;, (a-b)/3600}&#39;)&quot;
+  done)
+[ -n &quot;$rows&quot; ] || { echo &quot;no merge-commit promotions carrying PR merges in that window&quot; \
+  &quot;(squash-merged PRs and promotions made as new commits are not supported)&quot; &gt;&amp;2; exit 1; }
+printf &#39;date\tmerged_prs\toldest_wait_h\n%s\n&#39; &quot;$rows&quot;
+printf &#39;%s\n&#39; &quot;$rows&quot; | cut -f3 | sort -n |
+  awk &#39;{v[NR]=$1} END{m=(NR%2)?v[(NR+1)/2]:(v[NR/2]+v[NR/2+1])/2;
+       printf &quot;promotions=%d median_h=%.1f p90_h=%.1f max_h=%.1f\n&quot;, NR, m, v[int(0.9*(NR-1)+0.5)+1], v[NR]}&#39;
+</code></pre>
+<p>Make it executable, fetch, and run it from the repository root with the production branch, the branch you promote from, a start date and an optional end date:</p>
+<pre><code class="language-bash">chmod +x ~/merge-wait.sh
+git fetch
+TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
+</code></pre>
+<p>Both dates mean midnight in the shell&#39;s time zone. Git&#39;s <code class="post-code--single">--until</code> includes a merge made exactly at that midnight, so <code class="post-code--single">2026-10-22</code> covers 21 October plus any merge stamped 00:00:00 on the 22nd (my window had none). <code class="post-code--single">TZ=Asia/Shanghai</code> makes that midnight +08, as in my window; without an end date the window runs to now. The script prints one row per promotion that brought in at least one PR (date, how many PRs, the oldest one&#39;s wait in hours) and a summary line. Merges into main whose second parent isn&#39;t on the promoted branch, such as hotfixes, are skipped. It exits 0 on success, 1 for a missing argument or when no matching promotion is found, and 2 for an unknown branch. Run it on a full clone: in a shallow clone, promotions beyond the clone&#39;s depth are missing and the summary comes out low without an error (on orbi-cloud, <code class="post-code--spaced">--depth 300</code> gave 81 promotions instead of 108). It needs git, awk and the usual coreutils (sort, head, cut, wc, tr). p90 is the value at rank round(0.9 × (n − 1)) + 1, the same rule as the table; tools that interpolate can give a slightly different number.</p>
+<p>On orbi-cloud, for this window, the summary line matches the table (the script rounds to one decimal, so 12.85 shows as 12.8):</p>
+<pre><code class="language-text">promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
+</code></pre>
+<p>Squash-merged PRs, tag-only release flows, and promotions recreated as new commits need a different query. If you merge main back into the promoted branch, those merges sit on its first-parent line too and will be counted as PRs; filter them out first.</p>
+<p>To see what&#39;s waiting right now in a repository that promotes this way:</p>
+<pre><code class="language-bash">git rev-list --count origin/main..origin/beta
+git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origin/beta | sort -n | head -1
+</code></pre>
+<p>The first line counts commits on beta that main doesn&#39;t have. The second prints the oldest PR merge still waiting (merges from main back into beta would show up here too). No output means no PR is waiting, though release or chore commits may be; a 0 from the first command means nothing is waiting at all. Sort on the epoch seconds in the first field: sorting ISO dates as strings gives the wrong order when commits carry different time zone offsets. I made that mistake in a one-off query while measuring; the script and the table use epoch seconds.</p>
+<h2 id="limits">Limits</h2>
+<p>This is one agent-built product, one maintainer, and about five weeks. I use the time of each PR&#39;s merge commit on beta as &quot;landed on beta&quot;; tag clocks use the tagged commit&#39;s committer time. Main&#39;s merge time precedes deployment. The approval-ticket and drift-alert numbers depend on this team&#39;s process.</p>
+<aside class="post-cta">
+  <h2>Orbi takes your Issues all the way to a release.</h2>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
+</aside><h2 id="related">Related</h2>
+<p><a href="/blog/claude-code-github-actions-who-merges/">Who presses merge after Claude Code runs in Actions</a>, <a href="/blog/long-polling-new-user-wait/">the long-polling new-user wait</a> and <a href="/blog/searching-for-orbis-harness/">the search for Orbi&#39;s harness</a> cover other parts of the same pipeline. <a href="/cloud/?ref=blog-merge-wait">Orbi Cloud</a> runs this loop on your GitHub repositories (Issue → agent PR → separate agent review → merge on green CI), and the <a href="/compare/">comparisons</a> set it next to other coding agents.</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">One real delivery, every week</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="Subscribed" data-invalid="That email address doesn't look right" data-unavailable="Subscription is temporarily unavailable. Please try again.">
+    <label class="sr-only" for="subscribe-email-en">Email address</label>
+    <input id="subscribe-email-en" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+    <input type="hidden" name="lang" value="en">
+    <button class="button button-ghost" type="submit">Subscribe</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">One email a week about one real delivery. Unsubscribe anytime.</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/" aria-label="Orbi home">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">Software production that survives the session.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <div class="footer-group">
+        <h2>Product</h2>
+        <ul><li><a href="/cloud/">Cloud</a></li><li><a href="/cloud/#pricing">Pricing</a></li><li><a href="/#system">How it works</a></li><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="https://github.com/orbi-build/orbi/releases">Releases</a></li><li><a href="https://status.orbi.build">Status</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Resources</h2>
+        <ul><li><a href="/evidence/">Orbi builds Orbi</a></li><li><a href="/benchmark/">How we test the harness</a></li><li><a href="/guides/pi-coding-agent/">Pi series: how Orbi is built</a></li><li><a href="/cost/">Cost per merged PR</a></li><li><a href="/aiready/">ai-ready: 12 factors</a></li><li><a href="/compare/">Orbi vs alternatives</a></li><li><a href="/blog/">Blog</a></li><li><a href="/blog/ai-contribute-to-open-source/">Open source contributions</a></li><li><a href="https://docs.orbi.build">Self-hosted Docs</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud Docs</a></li><li><a href="/#faq">FAQ</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>Guides</h2>
+        <ul><li><a href="/guides/">Guides</a></li><li><a href="/guides/issue-to-release/">Issue to release</a></li><li><a href="/guides/ci-gates/">CI gates</a></li><li><a href="/guides/auto-merge-ai-prs/">Auto-merge AI PRs</a></li><li><a href="/guides/autonomous-coding-agent/">Autonomous coding agent</a></li><li><a href="/guides/self-hosted-coding-agent/">Self-hosted coding agent</a></li><li><a href="/guides/codex-github-issues/">Codex on GitHub Issues</a></li><li><a href="https://aiready.sh/">ai-ready: 12 factors</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>Compare</h2>
+        <ul><li><a href="/compare/orca/">Orbi vs Orca</a></li><li><a href="/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/compare/devin/">Orbi vs Devin</a></li><li><a href="/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/compare/">All comparisons</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>Company</h2>
+        <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/ai-code-review-bottleneck/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
+        <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+        <a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">
+          <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
+        </a>
+        <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+        </a>
+        <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
+        <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
+        <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
+        <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
+        <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
+        <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
+        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
+        <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
+        <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
+        <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
+        <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+        <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
+        <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
+        <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
+        <a href="https://webtech.tools" title="WebTech">WebTech</a>
+        <a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>
+        <a href="https://aixlist.com/">AIXList</a>
+        <a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>
+        <a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>
+        <a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>
+        <a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>
+        <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
+        <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
+        <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
