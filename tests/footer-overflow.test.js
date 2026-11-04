@@ -579,9 +579,11 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // turbo0 / toolfame / dang.ai / LaunchIgniter badges, Issue #1119 the
         // Scout Forge badge, Issue #1129 the Findly.tools badge, Issue #1132
         // the founder.best / makeitla.st badges, Issue #1134 the
-        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges and
-        // Issue #1160 twelve directory badges and links: 52 now.
-        expect(result.badgeCount, path + ": the footer badges").toBe(52);
+        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
+        // Issue #1160 twelve directory badges and links, Issue #1165 the
+        // doforai.tools badge, Issue #1168 the Startup Fame badge and
+        // Issue #1169 the ScrollLaunch badge: 55 now.
+        expect(result.badgeCount, path + ": the footer badges").toBe(55);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -603,10 +605,12 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge
         // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
         // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
-        // badges, so LaunchVault was the last entry, and Issue #1160 appends
-        // twelve more, so bestaitool.app closes the row now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the bestaitool.app link")
-          .toBe("https://bestaitool.app/");
+        // badges, so LaunchVault was the last entry, Issue #1160 appended
+        // twelve more, Issue #1165 the doforai.tools badge, Issue #1168 the
+        // Startup Fame badge and Issue #1169 the ScrollLaunch badge, so it
+        // closes the row now.
+        expect(result.lastBadgeHref, path + ": the footer badges end with the ScrollLaunch link")
+          .toBe("https://www.scrolllaunch.com/products/orbi?ref=badge");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -1100,8 +1104,10 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
         // badges, Issue #1119 through the Scout Forge badge, Issue #1129
         // through the Findly.tools badge, Issue #1132 through the
         // founder.best / makeitla.st badges, Issue #1134 through the
-        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges
-        // and Issue #1160 through twelve more directory badges and links,
+        // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
+        // Issue #1160 through twelve more directory badges and links,
+        // Issue #1165 through the doforai.tools badge, Issue #1168 through the
+        // Startup Fame badge and Issue #1169 through the ScrollLaunch badge,
         // then leaves.
         const newBadgeHrefs = [
           "https://neeed.directory/products/orbi?utm_source=orbi",
@@ -1142,6 +1148,9 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
           "https://minylist.com",
           "https://toolsify.ai/",
           "https://bestaitool.app/",
+          "https://doforai.tools",
+          "https://startupfa.me/s/orbi?utm_source=orbi.build",
+          "https://www.scrolllaunch.com/products/orbi?ref=badge",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1166,7 +1175,7 @@ describe("footer directory badges get their own bottom row (Issue #805)", () => 
             inBadges: Boolean(active?.closest(".footer-badges")),
           };
         });
-        expect(afterStartup.inBadges, path + ": Tab after the bestaitool.app link must leave the badge row").toBe(false);
+        expect(afterStartup.inBadges, path + ": Tab after the ScrollLaunch badge must leave the badge row").toBe(false);
         await footer.screenshot({ path: ".orbi/footer-badges-" + name + "-1440.png" });
         await page.setViewportSize({ width: 390, height: 900 });
         await page.waitForTimeout(150);
@@ -1240,6 +1249,15 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://minylist.com",
     "https://toolsify.ai/",
     "https://bestaitool.app/",
+    // Issue #1165: the doforai.tools badge, appended after bestaitool.app. Its
+    // 538x169 source is one of the row's two webp files.
+    "https://doforai.tools",
+    // Issue #1168: the Startup Fame badge, appended after doforai.tools; its
+    // source is a 468x148 webp, declared as the vendor's 171x54 box.
+    "https://startupfa.me/s/orbi?utm_source=orbi.build",
+    // Issue #1169: the ScrollLaunch badge closes the row; its source is the
+    // vendor's 220x48 SVG, declared in that same box.
+    "https://www.scrolllaunch.com/products/orbi?ref=badge",
   ];
 
   // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
@@ -1284,10 +1302,12 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1129 the Findly.tools image, Issue #1132 the
           // founder.best / makeitla.st images, Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault images,
-          // the Findstack image and Issue #1160 the goodsaas.xyz /
-          // 101aitools.com / vibedonalds.com / minylist.com images:
-          // 38 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(38);
+          // the Findstack image, Issue #1160 the goodsaas.xyz /
+          // 101aitools.com / vibedonalds.com / minylist.com images,
+          // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
+          // image and Issue #1169 the ScrollLaunch image: 41 badge images in
+          // the row.
+          expect(badges, label + ": badge count").toHaveLength(41);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1396,10 +1416,19 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
             ?.getBoundingClientRect();
           // Issue #1160: the twelve badges and links appended after Findstack
           // stay inside the footer at 390px too — checked at both ends of the
-          // run, the first entry and the link that closes the row.
+          // run, the first entry and the last ones before the row closes, the
+          // doforai.tools badge (Issue #1165), the Startup Fame badge
+          // (Issue #1168) and the ScrollLaunch badge (Issue #1169), which
+          // closes it.
           const goodsaasRect = document.querySelector('footer .footer-badges a[href="https://goodsaas.xyz/saas/orbi"]')
             ?.getBoundingClientRect();
-          const bestaitoolRect = document.querySelector('footer .footer-badges a[href="https://bestaitool.app/"]')
+          const doforaiRect = document.querySelector('footer .footer-badges a[href="https://doforai.tools"]')
+            ?.getBoundingClientRect();
+          // Issue #1168 / #1169: the Startup Fame badge and the ScrollLaunch
+          // badge that closes the row are the run's last entries checked here.
+          const startupfameRect = document.querySelector('footer .footer-badges a[href="https://startupfa.me/s/orbi?utm_source=orbi.build"]')
+            ?.getBoundingClientRect();
+          const scrolllaunchRect = document.querySelector('footer .footer-badges a[href="https://www.scrolllaunch.com/products/orbi?ref=badge"]')
             ?.getBoundingClientRect();
           return {
             overflow: documentElement.scrollWidth - documentElement.clientWidth,
@@ -1453,11 +1482,21 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
               && goodsaasRect.height > 0
               && goodsaasRect.left >= 0
               && goodsaasRect.right <= documentElement.clientWidth,
-            bestaitoolInside: Boolean(bestaitoolRect)
-              && bestaitoolRect.width > 0
-              && bestaitoolRect.height > 0
-              && bestaitoolRect.left >= 0
-              && bestaitoolRect.right <= documentElement.clientWidth,
+            doforaiInside: Boolean(doforaiRect)
+              && doforaiRect.width > 0
+              && doforaiRect.height > 0
+              && doforaiRect.left >= 0
+              && doforaiRect.right <= documentElement.clientWidth,
+            startupfameInside: Boolean(startupfameRect)
+              && startupfameRect.width > 0
+              && startupfameRect.height > 0
+              && startupfameRect.left >= 0
+              && startupfameRect.right <= documentElement.clientWidth,
+            scrolllaunchInside: Boolean(scrolllaunchRect)
+              && scrolllaunchRect.width > 0
+              && scrolllaunchRect.height > 0
+              && scrolllaunchRect.left >= 0
+              && scrolllaunchRect.right <= documentElement.clientWidth,
             clipped: badges
               .filter((badge) => {
                 const rect = badge.getBoundingClientRect();
@@ -1477,7 +1516,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.saascityInside, path + " at 390px: the SaaSCity badge stays inside the footer").toBe(true);
         expect(phoneLayout.launchvaultInside, path + " at 390px: the LaunchVault badge stays inside the footer").toBe(true);
         expect(phoneLayout.goodsaasInside, path + " at 390px: the goodsaas.xyz badge stays inside the footer").toBe(true);
-        expect(phoneLayout.bestaitoolInside, path + " at 390px: the bestaitool.app link stays inside the footer").toBe(true);
+        expect(phoneLayout.doforaiInside, path + " at 390px: the doforai.tools badge stays inside the footer").toBe(true);
+        expect(phoneLayout.startupfameInside, path + " at 390px: the Startup Fame badge stays inside the footer").toBe(true);
+        expect(phoneLayout.scrolllaunchInside, path + " at 390px: the ScrollLaunch badge stays inside the footer").toBe(true);
         expect(phoneLayout.clipped, path + " at 390px: badges stay inside the viewport").toEqual([]);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {

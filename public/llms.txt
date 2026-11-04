@@ -253,6 +253,10 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
+- AI code review bottleneck? Our PRs wait after merge (English):
+  https://orbi.build/blog/ai-code-review-bottleneck/
+- AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后 (Chinese):
+  https://orbi.build/zh/blog/ai-code-review-bottleneck/
 - Pi coding agent vs OpenCode: same model, headless (English):
   https://orbi.build/blog/pi-coding-agent-vs-opencode/
 - Pi coding agent vs OpenCode：同一模型，无人值守实测 (Chinese):
