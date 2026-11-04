@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/ai-code-review-bottleneck/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-code-review-bottleneck/</guid>
       <pubDate>Wed, 04 Nov 2026 00:00:00 GMT</pubDate>
-      <description>847 agent PRs merged in a median 21 minutes, yet the oldest change in each production promotion had waited a median 3.4 hours on beta, once 169 hours.</description>
+      <description>847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.</description>
     </item>
     <item>
       <title>Pi coding agent vs OpenCode: same model, headless</title>
