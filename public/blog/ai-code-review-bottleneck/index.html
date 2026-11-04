@@ -4,16 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI code review bottleneck? Our PRs wait after merge | Orbi</title>
-  <meta name="description" content="847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.">
+  <meta name="description" content="847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.">
   <link rel="canonical" href="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-code-review-bottleneck/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-code-review-bottleneck/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="AI code review bottleneck? Our PRs wait after merge">
-  <meta property="og:description" content="847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.">
+  <meta property="og:description" content="847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.">
   <meta property="og:url" content="https://orbi.build/blog/ai-code-review-bottleneck/">
   <meta property="og:image" content="https://orbi.build/img/blog-merge-wait-card.png">
   <meta property="og:image:alt" content="AI code review bottleneck? Our PRs wait after merge">
   <meta property="article:published_time" content="2026-11-04">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI code review bottleneck? Our PRs wait after merge","datePublished":"2026-11-04","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-code-review-bottleneck/","image":"https://orbi.build/img/blog-merge-wait-card.png","inLanguage":"en","description":"847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.","url":"https://orbi.build/blog/ai-code-review-bottleneck/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI code review bottleneck? Our PRs wait after merge","datePublished":"2026-11-04","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/ai-code-review-bottleneck/","image":"https://orbi.build/img/blog-merge-wait-card.png","inLanguage":"en","description":"847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.","url":"https://orbi.build/blog/ai-code-review-bottleneck/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,7 +155,7 @@
           <h1 id="post-title">AI code review bottleneck? Our PRs wait after merge</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-04">2026-11-04</time></p>
 
-          <p class="hero-lede">847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.</p>
+          <p class="hero-lede">847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.</p>
         </section>
       </div>
     </div>
@@ -189,11 +192,11 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>The AI code review bottleneck looks different in our pipeline: from 14 September to 21 October 2026 (+08), 847 pull requests the Orbi runner opened in Orbi Cloud&#39;s repository merged into <code class="post-code--single">beta</code> in a median 21 minutes (20.6), including CI and every agent review round. Yet the oldest PR in each promotion to production had waited a median 2.9 hours on beta, 12.9 hours at the 90th percentile, and once 168 hours. The slow part was after merge, while finished work waited to be released and promoted.</p>
+<p>The AI code review bottleneck isn&#39;t where Orbi&#39;s own pipeline loses time: from 14 September 00:00 to 22 October 00:00 2026 (+08), 847 pull requests the Orbi runner opened in Orbi Cloud&#39;s repository merged into <code class="post-code--single">beta</code> in a median 21 minutes (20.6), including CI and every agent review round. Counting every PR that the window&#39;s promotions carried into <code class="post-code--single">main</code>, the production branch, a PR waited a median 5.9 hours on beta after its merge; one in ten waited more than 62 hours, and the longest wait was 168 hours. The slow part was after merge, while finished work waited to be released and promoted. The PR clock starts when a PR opens, so the time an agent spends between taking an Issue and opening the PR isn&#39;t in any of these numbers.</p>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. Orbi Cloud, the hosted product, is itself built by Orbi: an agent takes each GitHub Issue, opens a pull request into <code class="post-code--single">beta</code>, and a separate agent session reviews it. It merges when review and CI pass.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<p>A release ticket tags a version on beta. After a soak on beta, a promotion merges the tag into <code class="post-code--single">main</code>, the production branch. The production deploy waits for a one-click human approval. The orbi-cloud repository is private, so I show aggregate numbers without repository links.</p>
+<p>Work is grouped into milestones named after versions; when a milestone&#39;s tickets are done, a release ticket tags that version on beta. A promotion then merges the tag into <code class="post-code--single">main</code>, the production branch, and a production deploy follows after a one-click human approval. The orbi-cloud repository is private, so I show aggregate numbers without repository links.</p>
 <h2 id="measuring-the-ai-code-review-bottleneck">Measuring the AI code review bottleneck</h2>
-<p>I counted PRs and promotions merged during the window separately. A promotion is a merge on main&#39;s first-parent line whose second parent is on beta, identified by ancestry, regardless of title. The window had 110; two were version-only releases that carried no PR, so the table uses the other 108 (A and C over all 110 have the same medians). B looks only at PR merges on beta&#39;s first-parent line, the moment each PR landed there; release and chore commits don&#39;t count. It measures each promotion&#39;s oldest wait, so its denominator is promotions, not PRs.</p>
+<p>I counted PRs and promotions merged during the window separately. A promotion is a merge on main&#39;s first-parent line whose second parent is on beta, identified by ancestry, regardless of title. The window had 110; two were version-only releases that brought in no PR, so the table uses the other 108. B looks only at PR merges on beta&#39;s first-parent line, the moment each PR landed there; release and chore commits don&#39;t count. B measures each promotion&#39;s oldest wait, so its denominator is promotions, not PRs. The per-PR row counts every PR that a promotion in the window carried (912): the runner&#39;s and anyone else&#39;s, including a few merged into beta before 14 September. Big batches weigh more there, which is why its median is higher than B&#39;s. The script further down reproduces B, not the per-PR row.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
@@ -212,15 +215,22 @@
 <td>79.1 min</td>
 </tr>
 <tr>
+<th scope="row">Per PR after merge</th>
+<td>PR merged into beta → the promotion that carried it merges into main</td>
+<td>912 PRs</td>
+<td>5.89 h</td>
+<td>62.65 h</td>
+</tr>
+<tr>
 <th scope="row">A: newest tag</th>
-<td>Newest release&#39;s tagged commit → merge into main</td>
+<td>Newest tag the promotion carried → merge into main</td>
 <td>108 promotions</td>
 <td>0.77 h</td>
 <td>4.95 h</td>
 </tr>
 <tr>
 <th scope="row">C: oldest tag</th>
-<td>Oldest unpromoted release&#39;s tagged commit → merge into main</td>
+<td>Oldest tag the promotion carried → merge into main</td>
 <td>108 promotions</td>
 <td>1.04 h</td>
 <td>8.43 h</td>
@@ -233,16 +243,16 @@
 <td>12.85 h</td>
 </tr>
 </tbody></table></div>
-<p>The runner PRs had a median size of 116 changed lines, counting additions plus deletions; 87% changed at most 500 lines. About half were opened under my GitHub account; all of those carry the engine&#39;s run marker, and 389 of the 432 also say &quot;Built by Orbi&quot;.</p>
-<p>A and C approximate waiting after a release is cut, using tagged commits&#39; committer times. B adds pre-release waiting. Without a new tag, A and C use the latest reachable tag.</p>
-<p>B reached 168.48 hours and exceeded 24 hours five times. PRs per promotion had a median of 4, p90 of 15, and a maximum of 162. Of the 108 promotions, 27 carried two or more tags.</p>
+<p>The runner PRs had a median size of 116 changed lines, counting additions plus deletions; 87% changed at most 500 lines. The runner opened 415 of them as the Orbi GitHub App and 432 through my GitHub account; all 432 carry the engine&#39;s run marker, and 389 also say &quot;Built by Orbi&quot;.</p>
+<p>A and C approximate waiting after a release is cut, using tagged commits&#39; committer times; adding back the two version-only promotions leaves both medians unchanged. B adds pre-release waiting. When a promotion brought no new tag, A and C use the latest tag reachable from the promoted commit.</p>
+<p>B reached 168.48 hours, about a week, and exceeded 24 hours five times. PRs per promotion had a median of 4, p90 of 15, and a maximum of 162. The 108 promotions carried 159 release tags between them (v0.6.0 to v0.8.11); 27 brought in two or more, and 6 brought in no new tag.</p>
 <p>Promotion clocks stop at main&#39;s merge, before the approval and deploy.</p>
 <h2 id="what-happens-between-merged-and-promoted">What happens between merged and promoted</h2>
-<p>The release process calls for a release ticket to tag beta, a beta deploy, a one-hour soak, an end-to-end new-user check and my sign-off, then promotion and the production approval click.</p>
-<p>The approval step was quick. The window had 69 approval tickets; three were closed because a newer request replaced them, and the other 66 took a median 1.5 minutes from open to close. That clock covers the approval click and the deploy script. The checking had already happened on beta, before the ticket opened, so it leaves my verification and sign-off time unmeasured.</p>
-<p>Each step is reasonable. Changes queue behind them in batches, and when one thing holds a promotion, everything behind it waits.</p>
+<p>After a tag, beta deploys it, an end-to-end new-user check runs on beta, and I sign off; then the promotion merges into main. The production deploy is started after that merge. It checks that beta has run the build for at least an hour (the soak, counted from beta&#39;s first deploy of it, and skippable for hotfixes with my agreement), then opens an approval ticket. The soak is counted from beta&#39;s first deploy of the build. A&#39;s median is 0.77 hours, so for a typical promotion the merge into main came before the hour was up, and the rest of the soak falls after the merge, outside every clock here.</p>
+<p>The approval step was quick. Approval tickets started on 24 September, so they don&#39;t cover the first ten days of the window. The window had 69 of them; three were closed because a newer request replaced them, and the other 66 took a median 1.5 minutes from open to close. That clock covers the approval click and the deploy script. The checking had already happened on beta, before the ticket opened, so it doesn&#39;t include my verification and sign-off.</p>
+<p>The approval click is the only step I timed on its own; the new-user check and my sign-off happen before the promotion and sit inside its clocks without a separate number. What the clocks do show is that finished PRs pile up behind these steps, and when one thing holds a promotion, everything in the batch waits with it.</p>
 <h2 id="12-october-the-player-was-ready-before-the-clips">12 October: the player was ready before the clips</h2>
-<p>At 16:39 (+08) on 12 October, a change to the onboarding help popup merged into beta. It played new how-to clips, which were a separate step in the website repository.</p>
+<p>At 16:39 (+08) on 12 October, a video player for the onboarding help popup merged into beta. The six how-to clips it plays were a separate step, to be added to the website repository.</p>
 <p>The next release ticket, v0.7.31, made promotion conditional on all six clips being live on orbi.build: &quot;if missing, ship the website first, then promote Cloud&quot;.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -276,35 +286,36 @@
 <td>All four versions promoted into main together</td>
 </tr>
 </tbody></table></div>
-<p>Every tag contained the player. By promotion, the first tag had waited 5.7 hours (5.66). Other changes waited in the same batch, including a checkout fix. The <a href="/blog/watch-the-six-steps/">setup video</a> shows the flow those clips help explain.</p>
+<p>Every tag contained the player, so the same condition held all four. By promotion, the first tag had waited 5.66 hours (clock C), and the player PR itself had been on beta for 6.4 hours. I don&#39;t have the minute the clips went live on orbi.build; the promotion came 37 minutes after they reached the website repository. Other changes waited in the same batch, including a checkout fix. The <a href="/blog/watch-the-six-steps/">setup video</a> shows the flow those clips help explain.</p>
 <h2 id="21-october-162-prs-arrived-together">21 October: 162 PRs arrived together</h2>
 <p>On 21 October, a promotion brought 162 PRs and 12 tags into main: v0.7.41, v0.8.0 to v0.8.3 and v0.8.5 to v0.8.11 (v0.8.4 was never tagged). Its oldest PR had waited 168 hours.</p>
-<p>Production also had v0.7.40 promoted on 14 October and a hotfix on 17 October. Beta was shipping the v0.8 series; milestone v0.8.5 alone contained 102 tickets.</p>
+<p>Production also had v0.7.40 promoted on 14 October and a hotfix on 17 October. Beta was shipping the v0.8 series; milestone v0.8.5 alone contained 102 tickets. I haven&#39;t traced a single item that held that week&#39;s promotion.</p>
 <h2 id="drift-alerts-and-the-next-step">Drift alerts and the next step</h2>
-<p>A scheduled check opens an issue when beta is more than 24 hours ahead of main and closes it automatically when that clears. Three such backlog alerts opened in the window (a fourth alert, for a database migration mismatch, isn&#39;t counted here). Their median lifetime was 16.2 hours; the longest lasted 143 hours, from 16 October 00:58 to 22 October 00:14 (+08).</p>
-<p>An alert&#39;s lifetime measures how long the drift lasted. It cannot establish whether anyone acted while it was open.</p>
-<p>A time threshold says &quot;behind&quot; without identifying what is stuck. I&#39;d rather check an event: the oldest unpromoted tag is over 2 hours old, and nobody can name the next step. I need the pending deploy, soak end time, or sign-off named.</p>
+<p>A scheduled check opens an issue when the oldest commit on beta that main doesn&#39;t have is more than 24 hours old and closes it automatically when that clears. Three such backlog alerts opened in the window (a fourth alert, for a database migration mismatch, isn&#39;t counted here). Their median lifetime was 16.2 hours; the longest lasted 143 hours, from 16 October 00:58 to 22 October 00:14 (+08). The check is scheduled every six hours (GitHub often starts scheduled runs late), so that alert closed at its first run after the 21 October promotion.</p>
+<p>An alert only opens once the oldest commit is already 24 hours old, and closes at the first run after the drift clears, so its lifetime is a lower bound on how long the drift lasted. It cannot establish whether anyone acted while it was open.</p>
+<p>A time threshold says &quot;behind&quot; without saying what is stuck. The check I want is event-based: once the oldest unpromoted tag is more than 2 hours old, it has to name what it is waiting for (which deploy, when the soak ends, whose sign-off), and if nobody can, it is stuck. I haven&#39;t backtested the 2-hour line on this data.</p>
 <h2 id="how-this-compares-with-larger-samples">How this compares with larger samples</h2>
-<p>The <a href="https://dora.dev/research/2024/dora-report/2024-dora-accelerate-state-of-devops-report.pdf">DORA 2024 report, page 40</a>, estimates a 7.2% drop in delivery stability and a 1.5% drop in throughput for every 25% increase in AI adoption. DORA hypothesizes that changelists are growing. The result is correlational.</p>
-<p><a href="https://www.faros.ai/blog/ai-software-engineering">Faros AI&#39;s 2025 study</a>, covering over 10,000 developers across 1,255 teams, reports 98% more merged PRs, 91% longer PR review time, and 154% larger PRs with high AI adoption. It found no significant correlation with company-level improvement.</p>
-<p>In this pipeline, each ticket is a small change and a separate agent reviews it. The oldest-PR waits run hours past the PR clock; the batch moved downstream. This single pipeline proves nothing about those studies&#39; samples.</p>
+<p>The <a href="https://dora.dev/research/2024/dora-report/2024-dora-accelerate-state-of-devops-report.pdf">DORA 2024 report, page 40</a>, estimates &quot;a 7.2% reduction&quot; in delivery stability and &quot;a 1.5% reduction&quot; in delivery throughput &quot;for every 25% increase in AI adoption&quot;. DORA hypothesizes that changelists are growing. The result is correlational.</p>
+<p>DORA&#39;s throughput measures delivery (how often and how fast changes reach production), so it can fall while PR counts rise. <a href="https://www.faros.ai/blog/ai-software-engineering">Faros AI&#39;s 2025 study</a>, covering over 10,000 developers across 1,255 teams, reports 98% more merged PRs, 91% longer PR review time, and 154% larger PRs with high AI adoption. Those are individual and team numbers; at the company level it found no significant correlation between AI adoption and improvement.</p>
+<p>In this pipeline each ticket is a small change and a separate agent reviews it, so review stays short. The oldest-PR waits run hours past the PR clock: the batching happens downstream, at release and promotion. This single pipeline proves nothing about those studies&#39; samples.</p>
 <h2 id="working-in-small-batches-past-the-pr">Working in small batches past the PR</h2>
 <p>DORA&#39;s <a href="https://dora.dev/capabilities/working-in-small-batches/">working in small batches capability page</a> says: &quot;Any batch of code that takes longer than a week to complete and check is too big&quot;. It also warns that AI tools tempt developers into massive pull requests, and that regrouping small batches before release delays feedback.</p>
-<p>I need to apply that past the PR. The batch that matters is what reaches production together.</p>
-<p>The 39 milestones released from v0.7.14 through v0.8.11 had a median of 3 tickets, and 31 had 7 or fewer. The outliers were v0.7.29 with 78 tickets and v0.8.5 with 102. The promotion that carried v0.7.29 had an oldest-PR wait of 43.3 hours.</p>
+<p>Here the PRs were already small. What grew was the set of changes that reached production together.</p>
+<p>Looking at the second half of the window, the 39 milestones released from v0.7.14 through v0.8.11 had a median of 3 tickets, and 31 had 7 or fewer. The outliers were v0.7.29 with 78 tickets and v0.8.5 with 102. The promotion that carried v0.7.29 had an oldest-PR wait of 43.3 hours.</p>
 <p>I&#39;ll try two rules next; neither is in force yet:</p>
 <ol>
 <li>A milestone must be a batch that can go to production on its own.</li>
 <li>Don&#39;t merge code that needs something that isn&#39;t live yet: assets, configuration, or another repository&#39;s change. Ship the dependency first, and connect the UI entry point last.</li>
 </ol>
-<p>The second follows Martin Fowler&#39;s <a href="https://martinfowler.com/bliki/KeystoneInterface.html">Keystone Interface</a>: &quot;Build all the back-end code, integrate, but don&#39;t build the user-interface.&quot; The visible entry point completes the feature after its dependencies are ready.</p>
-<p>I&#39;ll check the rules with the median and p90 from the script below over the next four weeks. Since our promotions changed shape on 23 October (see below), that check needs a query adapted to the new style.</p>
+<p>Rule 2 differs from what happened on 12 October. There the player merged first and the check sat at promotion, so every later release queued behind it; under rule 2 the clips would have shipped before the player merged, and nothing would have queued. It follows Martin Fowler&#39;s <a href="https://martinfowler.com/bliki/KeystoneInterface.html">Keystone Interface</a>: &quot;Build all the back-end code, integrate, but don&#39;t build the user-interface.&quot;</p>
+<p>I&#39;ll check the rules with the median and p90 from the script below over the next four weeks. Since 23 October Orbi promotes by creating a new commit instead of a merge, so that check needs a query adapted to the new style.</p>
 <h2 id="measure-merge-wait-in-your-repository">Measure merge wait in your repository</h2>
-<p>Save this as <code class="post-code--single">merge-wait.sh</code>:</p>
+<p>The script below assumes promotions are merge commits on the production branch&#39;s first-parent line and that the promoted branch takes PRs as merge commits. With squash-merged PRs or promotions made as new commits it finds nothing and exits 1. Orbi&#39;s own promotions switched to new commits on 23 October, which is why my window ends at midnight going into 22 October.</p>
+<p>Save this as <code class="post-code--single">~/merge-wait.sh</code>, outside the repository so it doesn&#39;t end up in a commit:</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
 # How long had the oldest merged PR in each promotion been waiting?
 # Usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]
-#   e.g. TZ=Asia/Shanghai ./merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
+#   e.g. TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
 # Window: from since 00:00 up to and including until 00:00, local time; default until is now.
 # A promotion is a merge on the production branch&#39;s first-parent line whose second
 # parent is on the promoted branch (hotfix merges from elsewhere are skipped).
@@ -313,6 +324,7 @@
 # prints its date, how many it brought and how long the oldest had been waiting,
 # then median, p90 and max.
 set -euo pipefail
+export LC_ALL=C   # keep &quot;.&quot; as the decimal point for awk and sort
 usage=&#39;usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]&#39;
 branch=${1:?$usage}
 promoted=${2:?$usage}
@@ -329,31 +341,32 @@ rows=$(git log &quot;$branch&quot; --first-parent --merges &quot;${range[@]}&quo
     git merge-base --is-ancestor &quot;$h^2&quot; &quot;$promoted&quot; || continue
     times=$(git log --first-parent --merges --format=%ct &quot;$h^1..$h^2&quot;)
     [ -n &quot;$times&quot; ] || continue
-    oldest=$(printf &#39;%s\n&#39; &quot;$times&quot; | sort -n | head -n 1)
+    oldest=$(printf &#39;%s\n&#39; &quot;$times&quot; | sort -n | awk &#39;NR==1&#39;)
     printf &#39;%s\t%s\t%s\n&#39; &quot;$(git log -1 --format=%cs &quot;$h&quot;)&quot; &quot;$(printf &#39;%s\n&#39; &quot;$times&quot; | wc -l | tr -d &#39; &#39;)&quot; \
       &quot;$(awk -v a=&quot;$ct&quot; -v b=&quot;$oldest&quot; &#39;BEGIN{printf &quot;%.1f&quot;, (a-b)/3600}&#39;)&quot;
   done)
-[ -n &quot;$rows&quot; ] || { echo &quot;no promotions with merges into $branch in that window&quot; &gt;&amp;2; exit 1; }
+[ -n &quot;$rows&quot; ] || { echo &quot;no merge-commit promotions carrying PR merges in that window&quot; \
+  &quot;(squash-merged PRs and promotions made as new commits are not supported)&quot; &gt;&amp;2; exit 1; }
 printf &#39;date\tmerged_prs\toldest_wait_h\n%s\n&#39; &quot;$rows&quot;
 printf &#39;%s\n&#39; &quot;$rows&quot; | cut -f3 | sort -n |
   awk &#39;{v[NR]=$1} END{m=(NR%2)?v[(NR+1)/2]:(v[NR/2]+v[NR/2+1])/2;
        printf &quot;promotions=%d median_h=%.1f p90_h=%.1f max_h=%.1f\n&quot;, NR, m, v[int(0.9*(NR-1)+0.5)+1], v[NR]}&#39;
 </code></pre>
 <p>Make it executable, fetch, and run it from the repository root with the production branch, the branch you promote from, a start date and an optional end date:</p>
-<pre><code class="language-bash">chmod +x merge-wait.sh
+<pre><code class="language-bash">chmod +x ~/merge-wait.sh
 git fetch
-TZ=Asia/Shanghai ./merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
+TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
 </code></pre>
-<p>Both dates mean midnight in the shell&#39;s time zone. Git&#39;s <code class="post-code--single">--until</code> includes a merge made exactly at that midnight, so <code class="post-code--single">2026-10-22</code> covers 21 October plus any merge stamped 00:00:00 on the 22nd (my window had none). <code class="post-code--single">TZ=Asia/Shanghai</code> makes that midnight +08, as in my window; without an end date the window runs to now. The script prints one row per promotion that brought in at least one PR (date, how many PRs, the oldest one&#39;s wait in hours) and a summary line. Merges into main whose second parent isn&#39;t on the promoted branch, such as hotfixes, are skipped. It exits 0 on success, 1 for a missing argument or an empty window, and 2 for an unknown branch. It needs only git, sort and awk.</p>
-<p>On orbi-cloud the summary line matches the table:</p>
+<p>Both dates mean midnight in the shell&#39;s time zone. Git&#39;s <code class="post-code--single">--until</code> includes a merge made exactly at that midnight, so <code class="post-code--single">2026-10-22</code> covers 21 October plus any merge stamped 00:00:00 on the 22nd (my window had none). <code class="post-code--single">TZ=Asia/Shanghai</code> makes that midnight +08, as in my window; without an end date the window runs to now. The script prints one row per promotion that brought in at least one PR (date, how many PRs, the oldest one&#39;s wait in hours) and a summary line. Merges into main whose second parent isn&#39;t on the promoted branch, such as hotfixes, are skipped. It exits 0 on success, 1 for a missing argument or when no matching promotion is found, and 2 for an unknown branch; if git itself fails (a shallow clone, say), git&#39;s exit code comes through. It needs git, awk and the usual coreutils (sort, head, cut, wc, tr). p90 is the value at rank round(0.9 × (n − 1)) + 1, the same rule as the table; tools that interpolate can give a slightly different number.</p>
+<p>On orbi-cloud, for this window, the summary line matches the table (the script rounds to one decimal, so 12.85 shows as 12.8):</p>
 <pre><code class="language-text">promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
 </code></pre>
-<p>It assumes promotions are merge commits on the production branch&#39;s first-parent line, and that the branch being promoted takes PRs as merge commits. Squash-merged PRs, tag-only release flows, and promotions recreated as new commits need a different query. Our pipeline switched to that last style on 23 October, which is why this window stops on 21 October.</p>
+<p>Squash-merged PRs, tag-only release flows, and promotions recreated as new commits need a different query. If you merge main back into the promoted branch, those merges sit on its first-parent line too and will be counted as PRs; filter them out first.</p>
 <p>To see what&#39;s waiting right now in a repository that promotes this way:</p>
 <pre><code class="language-bash">git rev-list --count origin/main..origin/beta
 git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origin/beta | sort -n | head -1
 </code></pre>
-<p>The first line counts commits on beta that main doesn&#39;t have. The second prints the oldest PR merge still waiting. No output means no PR is waiting, though release or chore commits may be; a 0 from the first command means nothing is waiting at all. Sort on the epoch seconds in the first field: sorting ISO dates as strings gives the wrong order when commits carry different time zone offsets, a mistake I made while measuring.</p>
+<p>The first line counts commits on beta that main doesn&#39;t have. The second prints the oldest PR merge still waiting (merges from main back into beta would show up here too). No output means no PR is waiting, though release or chore commits may be; a 0 from the first command means nothing is waiting at all. Sort on the epoch seconds in the first field: sorting ISO dates as strings gives the wrong order when commits carry different time zone offsets. I made that mistake in a one-off query while measuring; the script and the table use epoch seconds.</p>
 <h2 id="limits">Limits</h2>
 <p>This is one agent-built product, one maintainer, and about five weeks. I use the time of each PR&#39;s merge commit on beta as &quot;landed on beta&quot;; tag clocks use the tagged commit&#39;s committer time. Main&#39;s merge time precedes deployment. The approval-ticket and drift-alert numbers depend on this team&#39;s process.</p>
 <aside class="post-cta">
@@ -413,7 +426,7 @@ git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origi
         <ul><li><a href="/support/">Support</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">Roadmap</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
       </div>
     </nav>
-    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
+    <div class="footer-language language" role="group" aria-label="Language"><span aria-current="page">EN</span><a href="/zh/blog/ai-code-review-bottleneck/" lang="zh-CN" aria-label="简体中文">ZH</a></div>
     <nav class="footer-friends" aria-label="Friends">
       <span>Friends</span>
       <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>

@@ -363,6 +363,15 @@
   </url>
   <url>
     <loc>https://orbi.build/blog/ai-code-review-bottleneck/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-code-review-bottleneck/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-code-review-bottleneck/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-code-review-bottleneck/"/>
+  </url>
+  <url>
+    <loc>https://orbi.build/zh/blog/ai-code-review-bottleneck/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orbi.build/blog/ai-code-review-bottleneck/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/ai-code-review-bottleneck/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/ai-code-review-bottleneck/"/>
   </url>
   <url>
     <loc>https://orbi.build/blog/pi-coding-agent-vs-opencode/</loc>

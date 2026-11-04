@@ -2,9 +2,9 @@
   {
     "slug": "ai-code-review-bottleneck",
     "title": "AI code review bottleneck? Our PRs wait after merge",
-    "summary": "847 agent PRs merged in a median 21 minutes, yet the oldest PR in each production promotion had waited a median 2.9 hours on beta, and once 168 hours.",
-    "zhSlug": null,
-    "zhTitle": null,
+    "summary": "847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.",
+    "zhSlug": "ai-code-review-bottleneck",
+    "zhTitle": "AI 代码评审是瓶颈吗？我们的 PR 卡在合并之后",
     "related": []
   },
   {
