@@ -1,10 +1,10 @@
 [
   {
     "slug": "best-pi-extensions",
-    "title": "Best Pi extensions for unattended runs: 15 tested",
-    "summary": "I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.",
+    "title": "Best Pi extensions for unattended runs: 20 tested",
+    "summary": "20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.",
     "zhSlug": "best-pi-extensions",
-    "zhTitle": "Pi 扩展推荐：15 个扩展的无人值守实测",
+    "zhTitle": "Pi 扩展推荐：20 个扩展的无人值守实测",
     "related": []
   },
   {

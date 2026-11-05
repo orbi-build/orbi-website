@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Best Pi extensions for unattended runs: 15 tested | Orbi</title>
-  <meta name="description" content="I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.">
+  <title>Best Pi extensions for unattended runs: 20 tested | Orbi</title>
+  <meta name="description" content="20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.">
   <link rel="canonical" href="https://orbi.build/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-pi-extensions/">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Best Pi extensions for unattended runs: 15 tested">
-  <meta property="og:description" content="I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.">
+  <meta property="og:title" content="Best Pi extensions for unattended runs: 20 tested">
+  <meta property="og:description" content="20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.">
   <meta property="og:url" content="https://orbi.build/blog/best-pi-extensions/">
   <meta property="og:image" content="https://orbi.build/img/blog-best-pi-extensions-card.png">
-  <meta property="og:image:alt" content="Best Pi extensions for unattended runs: 15 tested">
+  <meta property="og:image:alt" content="Best Pi extensions for unattended runs: 20 tested">
   <meta property="article:published_time" content="2026-11-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Best Pi extensions for unattended runs: 15 tested","datePublished":"2026-11-05","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/best-pi-extensions/","image":"https://orbi.build/img/blog-best-pi-extensions-card.png","inLanguage":"en","description":"I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.","url":"https://orbi.build/blog/best-pi-extensions/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Best Pi extensions for unattended runs: 20 tested","datePublished":"2026-11-05","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/blog/best-pi-extensions/","image":"https://orbi.build/img/blog-best-pi-extensions-card.png","inLanguage":"en","description":"20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.","url":"https://orbi.build/blog/best-pi-extensions/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -152,10 +152,10 @@
       <div class="post-grid">
         <section class="post-hero" aria-labelledby="post-title">
           <p class="eyebrow">Blog</p>
-          <h1 id="post-title">Best Pi extensions for unattended runs: 15 tested</h1>
+          <h1 id="post-title">Best Pi extensions for unattended runs: 20 tested</h1>
           <p class="post-byline"><a href="/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-05">2026-11-05</time></p>
           <p class="post-series">Part of: <a href="/guides/pi-coding-agent/">How Orbi is built on the Pi coding agent</a></p>
-          <p class="hero-lede">I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.</p>
+          <p class="hero-lede">20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.</p>
         </section>
       </div>
     </div>
@@ -164,217 +164,319 @@
         <nav class="post-toc" aria-label="On this page">
           <h2>On this page</h2>
           <ol>
+          <li><a class="post-toc-link" href="#which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-mcp-extensions">Pi MCP extensions</a></li>
+              <li><a class="post-toc-link" href="#pi-web-search-extensions">Pi web search extensions</a></li>
+              <li><a class="post-toc-link" href="#pi-subagents">Pi subagents</a></li>
+              <li><a class="post-toc-link" href="#tasks-and-command-guards">Tasks and command guards</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#how-to-install-and-try-pi-extensions">How to install and try Pi extensions</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-extension-or-skill">Pi extension or skill?</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#all-20-pi-extensions-by-use-case">All 20 Pi extensions by use case</a></li>
           <li><a class="post-toc-link" href="#how-i-tested-the-pi-coding-agent-extensions">How I tested the Pi coding agent extensions</a></li>
-          <li><a class="post-toc-link" href="#results-by-job">Results by job</a></li>
-          <li><a class="post-toc-link" href="#the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session's MCP settings</a></li>
-          <li><a class="post-toc-link" href="#a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</a></li>
-          <li><a class="post-toc-link" href="#asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</a></li>
-          <li><a class="post-toc-link" href="#permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</a></li>
-          <li><a class="post-toc-link" href="#npm-skipped-install-scripts">npm skipped install scripts</a></li>
-          <li><a class="post-toc-link" href="#state-extends-beyond-the-agent-directory">State extends beyond the agent directory</a></li>
-          <li><a class="post-toc-link" href="#the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</a></li>
-          <li><a class="post-toc-link" href="#test-a-package-before-keeping-it">Test a package before keeping it</a></li>
-          <li><a class="post-toc-link" href="#which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</a></li>
+          <li><a class="post-toc-link" href="#what-breaks-when-pi-runs-unattended">What breaks when Pi runs unattended</a>
+            <ol>
+              <li><a class="post-toc-link" href="#the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session's MCP settings</a></li>
+              <li><a class="post-toc-link" href="#a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</a></li>
+              <li><a class="post-toc-link" href="#asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</a></li>
+              <li><a class="post-toc-link" href="#permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</a></li>
+              <li><a class="post-toc-link" href="#npm-skipped-install-scripts">npm skipped install scripts</a></li>
+              <li><a class="post-toc-link" href="#state-extends-beyond-the-agent-directory">State extends beyond the agent directory</a></li>
+              <li><a class="post-toc-link" href="#the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#pin-the-extensions-you-keep-in-orbi">Pin the extensions you keep in Orbi</a></li>
+          <li><a class="post-toc-link" href="#test-a-package-before-keeping-it">Test a package before keeping it</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </nav>
       <article class="post-body">
         <details class="post-toc-inline">
-          <summary>On this page · 13 sections</summary>
+          <summary>On this page · 8 sections</summary>
           <ol>
+          <li><a class="post-toc-link" href="#which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-mcp-extensions">Pi MCP extensions</a></li>
+              <li><a class="post-toc-link" href="#pi-web-search-extensions">Pi web search extensions</a></li>
+              <li><a class="post-toc-link" href="#pi-subagents">Pi subagents</a></li>
+              <li><a class="post-toc-link" href="#tasks-and-command-guards">Tasks and command guards</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#how-to-install-and-try-pi-extensions">How to install and try Pi extensions</a>
+            <ol>
+              <li><a class="post-toc-link" href="#pi-extension-or-skill">Pi extension or skill?</a></li>
+            </ol></li>
+          <li><a class="post-toc-link" href="#all-20-pi-extensions-by-use-case">All 20 Pi extensions by use case</a></li>
           <li><a class="post-toc-link" href="#how-i-tested-the-pi-coding-agent-extensions">How I tested the Pi coding agent extensions</a></li>
-          <li><a class="post-toc-link" href="#results-by-job">Results by job</a></li>
-          <li><a class="post-toc-link" href="#the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session's MCP settings</a></li>
-          <li><a class="post-toc-link" href="#a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</a></li>
-          <li><a class="post-toc-link" href="#asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</a></li>
-          <li><a class="post-toc-link" href="#permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</a></li>
-          <li><a class="post-toc-link" href="#npm-skipped-install-scripts">npm skipped install scripts</a></li>
-          <li><a class="post-toc-link" href="#state-extends-beyond-the-agent-directory">State extends beyond the agent directory</a></li>
-          <li><a class="post-toc-link" href="#the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</a></li>
-          <li><a class="post-toc-link" href="#test-a-package-before-keeping-it">Test a package before keeping it</a></li>
-          <li><a class="post-toc-link" href="#which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</a></li>
+          <li><a class="post-toc-link" href="#what-breaks-when-pi-runs-unattended">What breaks when Pi runs unattended</a>
+            <ol>
+              <li><a class="post-toc-link" href="#the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session's MCP settings</a></li>
+              <li><a class="post-toc-link" href="#a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</a></li>
+              <li><a class="post-toc-link" href="#asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</a></li>
+              <li><a class="post-toc-link" href="#permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</a></li>
+              <li><a class="post-toc-link" href="#npm-skipped-install-scripts">npm skipped install scripts</a></li>
+              <li><a class="post-toc-link" href="#state-extends-beyond-the-agent-directory">State extends beyond the agent directory</a></li>
+              <li><a class="post-toc-link" href="#the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</a></li>
+            </ol></li>
           <li><a class="post-toc-link" href="#pin-the-extensions-you-keep-in-orbi">Pin the extensions you keep in Orbi</a></li>
+          <li><a class="post-toc-link" href="#test-a-package-before-keeping-it">Test a package before keeping it</a></li>
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 15 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even <code class="post-code--spaced">ls -la</code>, and an MCP adapter changed settings that affected the next session.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. For Pi in CI or a systemd service, I care about which tools reach the model and what the extensions leave behind. Extension versions change quickly, so these results apply to the versions below and the date of the tests.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<p>For unattended runs, I&#39;d use <code class="post-code--single">pi-mcp-extension</code> for MCP (or <code class="post-code--single">pi-mcp-adapter</code> with a fresh agent directory per run). For web search, I&#39;d choose <code class="post-code--single">pi-web-access</code> or <code class="post-code--single">pi-web-search</code>. Either subagent package worked. I&#39;d keep <code class="post-code--single">rpiv-todo</code> for task lists and <code class="post-code--single">cc-safety-net</code> as a command guard, and use <code class="post-code--single">pi-permission-system</code> only with an explicit configuration. The results below explain those choices. You can test any package yourself with the script later in the post.</p>
+<p>Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even <code class="post-code--spaced">ls -la</code>, and an MCP adapter changed settings that affected the next session.</p>
+<p><strong>Quick picks for unattended Pi runs</strong></p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<ul>
+<li>Web search: <code class="post-code--single">pi-web-access</code> or <code class="post-code--single">pi-web-search</code>, the two that worked without a search key.</li>
+<li>Subagents: <code class="post-code--single">pi-subagents</code>, <code class="post-code--single">@tintinweb/pi-subagents</code> and <code class="post-code--single">pi-ptc-subagents</code> all returned a result; <code class="post-code--single">pi-subagent-manager</code> needs a session directory.</li>
+<li>MCP candidates: <code class="post-code--single">pi-mcp-extension</code> or <code class="post-code--single">@fitchmultz/pi-mcp-adapter</code>, or <code class="post-code--single">pi-mcp-adapter</code> with a fresh agent directory per run. I did not test server calls with these adapters.</li>
+<li>Task lists: <code class="post-code--single">rpiv-todo</code>.</li>
+<li>Command guards: <code class="post-code--single">cc-safety-net</code>; use <code class="post-code--single">pi-permission-system</code> only with an explicit configuration.</li>
+</ul>
+<p>The results below explain those choices. You can test any package yourself with the script later in the post.</p>
+<h2 id="which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</h2>
+<h3 id="pi-mcp-extensions">Pi MCP extensions</h3>
+<p>For MCP, my candidates for unattended use are <code class="post-code--single">pi-mcp-extension</code> or <code class="post-code--single">@fitchmultz/pi-mcp-adapter</code>, or <code class="post-code--single">pi-mcp-adapter</code> with an agent directory rewritten per run. I didn&#39;t connect any of them to a server, so the only difference I measured in what they leave behind is the settings side effect: <code class="post-code--single">pi-mcp-adapter</code> rewrote settings, the other two didn&#39;t.</p>
+<h3 id="pi-web-search-extensions">Pi web search extensions</h3>
+<p>For web search, <code class="post-code--single">pi-web-access</code> worked without a search key and reported &quot;Provider: exa&quot;; its README says that with no keys it searches through Exa&#39;s MCP endpoint, so your queries go to Exa. <code class="post-code--single">pi-web-search</code> also worked; its README says it searches through the currently selected model. <code class="post-code--single">@zeldrisho/pi-web-search</code> and <code class="post-code--single">pi-wsearch</code> loaded fine but returned an error until you give them their own search key (Brave for the first).</p>
+<h3 id="pi-subagents">Pi subagents</h3>
+<p>Three subagent packages returned <code class="post-code--single">PONG</code>, though Pi-subagents needed a retry after the model guessed an agent name. <code class="post-code--single">pi-subagent-manager</code> failed to spawn under <code class="post-code--single">--no-session</code> and worked once Pi had a session directory, which a runner like Orbi gives every session anyway.</p>
+<h3 id="tasks-and-command-guards">Tasks and command guards</h3>
+<p>I&#39;d keep <code class="post-code--single">rpiv-todo</code> for task lists and use <code class="post-code--single">cc-safety-net</code> as a command guard. I&#39;d use permission-system only with an explicit configuration.</p>
+<p>I did not test OAuth MCP servers, paid search keys or long runs. These results cover Linux, with no Windows or macOS tests.</p>
+<h2 id="how-to-install-and-try-pi-extensions">How to install and try Pi extensions</h2>
+<ul>
+<li>Try once: <code class="post-code--spaced">pi -e npm:&lt;package&gt;@&lt;version&gt;</code> loads the extension for this run only; configuration changes the extension writes can persist.</li>
+<li>Install for ongoing use: <code class="post-code--spaced">pi install npm:&lt;package&gt;@&lt;version&gt;</code>. Use <code class="post-code--spaced">pi list</code> to view installed packages and <code class="post-code--spaced">pi remove</code> to remove one; Pi 1.5.0&#39;s <code class="post-code--spaced">pi --help</code> lists these subcommands.</li>
+<li>For unattended runs, pin versions and test packages with the script later in this post first.</li>
+</ul>
+<h3 id="pi-extension-or-skill">Pi extension or skill?</h3>
 <p>Pi coding agent extensions are code that Pi loads at startup from local files, npm packages or git repositories. Most Pi agent extensions register tools the model can call. A skill contains instructions in a <code class="post-code--single">SKILL.md</code> file. The <a href="/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them">production post&#39;s first section</a> explains the distinction and how Pi loads extensions.</p>
-<h2 id="how-i-tested-the-pi-coding-agent-extensions">How I tested the Pi coding agent extensions</h2>
-<p>I used Pi 1.5.0, Node v22.23.1, <code class="post-code--single">/usr/bin/npm</code> 12.0.2 and Linux 6.18. DeepSeek&#39;s <code class="post-code--single">deepseek-flash</code> ran through a local logging proxy that recorded the tools sent to the model.</p>
-<p>For E2 (no session bus), I used <code class="post-code--spaced">env -i</code>, <code class="post-code--spaced">setsid -w</code>, stdin from <code class="post-code--single">/dev/null</code>, a fresh HOME and a fresh agent directory (Pi&#39;s config and state directory, <code class="post-code--single">~/.pi/agent</code> by default, moved with <code class="post-code--single">PI_CODING_AGENT_DIR</code>), <code class="post-code--spaced">-ne -e npm:&lt;pkg&gt;@&lt;version&gt;</code> and <code class="post-code--spaced">timeout 120</code>. These extension flags load only the explicitly named package. I supplied the model-provider key without a separate search-provider key. The load prompt was &quot;Reply with the single word OK.&quot; I then asked each extension to perform a task, starting each use probe from a copy of the installed E2 HOME.</p>
-<p>For E1, I added a private session bus on which <code class="post-code--single">blackhole.py</code> (listed further down) owns <code class="post-code--single">org.freedesktop.secrets</code>, logs every call and never replies. Each E1 run started from a copy of the corresponding E2 HOME. All 15 extensions ran in both; every one got the same tools and the same probe result in E1 as in E2, so the table shows one row each and the Secret Service calls get their own section below. E1 timings include a second of bus startup, and the E1 control (no extension, same bus) took 1.2 s to its first model request.</p>
-<p>The no-extension control exposed exactly <code class="post-code--single">read,bash,edit,write</code>. A <code class="post-code--single">busctl</code> call to the black hole timed out after 5 s; a homemade extension reading the keyring at load reached it in 3 of 3 runs.</p>
-<h2 id="results-by-job">Results by job</h2>
+<h2 id="all-20-pi-extensions-by-use-case">All 20 Pi extensions by use case</h2>
 <p>Downloads are npm&#39;s last-month package totals, queried on 5 November 2026. The tools listed are additions to the control tools. I compared files in the throwaway HOME and the test repository; <code class="post-code--single">/tmp</code> and system directories were outside that comparison. &quot;None observed&quot; excludes Pi&#39;s common <code class="post-code--single">auth.json</code> and <code class="post-code--single">models-store.json</code>, npm caches and the package installation. The verdicts apply to these load and use probes.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
 <tr>
 <th scope="col">Extension@version</th>
+<th scope="col">Unattended verdict</th>
 <th scope="col">Job</th>
-<th scope="col">License</th>
-<th scope="col">Downloads last month</th>
 <th scope="col">Added tools in <code class="post-code--spaced">pi -p</code></th>
 <th scope="col">Use probe</th>
 <th scope="col">Extra files in HOME or repo</th>
-<th scope="col">Unattended verdict</th>
+<th scope="col">Downloads last month</th>
+<th scope="col">License</th>
 </tr>
 </thead>
 <tbody><tr>
 <th scope="row"><code class="post-code--single">pi-mcp-adapter@7.0.1</code></th>
+<td>Works; rewrites settings</td>
 <td>MCP</td>
-<td>MIT</td>
-<td>1,408,674</td>
 <td><code class="post-code--single">mcp</code></td>
 <td>Listed no servers</td>
 <td>Agent <code class="post-code--single">settings.json</code>, <code class="post-code--single">mcp-onboarding.json</code></td>
-<td>Works; rewrites settings</td>
+<td>1,408,674</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-mcp-extension@1.13.0</code></th>
+<td>Status works; no server configured</td>
 <td>MCP</td>
-<td>MIT</td>
-<td>823,848</td>
 <td><code class="post-code--single">mcp_status</code>, <code class="post-code--single">mcp_connect</code>, <code class="post-code--single">mcp_list_resources</code>, <code class="post-code--single">mcp_read_resource</code></td>
 <td>Status returned <code class="post-code--single">[]</code></td>
 <td>None observed</td>
-<td>Status works; no server configured</td>
+<td>823,848</td>
+<td>MIT</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@fitchmultz/pi-mcp-adapter@8.0.30</code></th>
+<td>Works; no settings change</td>
+<td>MCP</td>
+<td><code class="post-code--single">mcp_search</code></td>
+<td>Search returned no tools (no server configured)</td>
+<td>None observed</td>
+<td>5,684</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-web-access@0.47.0</code></th>
+<td>Search worked without search key</td>
 <td>Web search</td>
-<td>MIT</td>
-<td>1,116,299</td>
 <td><code class="post-code--single">web_search</code>, <code class="post-code--single">source_check</code>, <code class="post-code--single">fetch_content</code>, <code class="post-code--single">get_search_content</code></td>
 <td>Search returned Pi catalog</td>
 <td>None observed</td>
-<td>Search worked without search key</td>
+<td>1,116,299</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-web-search@1.7.0</code></th>
+<td>Worked with selected model</td>
 <td>Web search</td>
-<td>MIT</td>
-<td>75,116</td>
 <td><code class="post-code--single">web_search</code></td>
 <td>Search returned a result</td>
 <td>None observed</td>
-<td>Worked with selected model</td>
+<td>75,116</td>
+<td>MIT</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@zeldrisho/pi-web-search@0.14.5</code></th>
+<td>Needs a Brave key</td>
+<td>Web search</td>
+<td><code class="post-code--single">web_search</code></td>
+<td>Error: <code class="post-code--spaced">BRAVE_SEARCH_API_KEY is required</code></td>
+<td>None observed</td>
+<td>1,875</td>
+<td>MIT</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-wsearch@0.6.0</code></th>
+<td>Needs a search key</td>
+<td>Web search</td>
+<td><code class="post-code--single">WebSearch</code>, <code class="post-code--single">WebFetch</code></td>
+<td>&quot;No search engine keys configured&quot;</td>
+<td>None observed</td>
+<td>1,830</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-subagents@0.84.0</code></th>
+<td>Worked after retry</td>
 <td>Subagents</td>
-<td>MIT</td>
-<td>726,352</td>
 <td><code class="post-code--single">subagent</code>, <code class="post-code--single">contact_supervisor</code>, <code class="post-code--single">bg_wait</code>, <code class="post-code--single">subagent_supervisor</code></td>
 <td><code class="post-code--single">PONG</code> after name retry</td>
 <td>Agent <code class="post-code--single">missions/</code> JSON</td>
-<td>Worked after retry</td>
+<td>726,352</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">@tintinweb/pi-subagents@0.23.1</code></th>
+<td>Worked; persisted child session</td>
 <td>Subagents</td>
-<td>MIT</td>
-<td>47,391</td>
 <td><code class="post-code--single">Agent</code>, <code class="post-code--single">SubagentWorkflow</code>, <code class="post-code--single">get_subagent_result</code>, <code class="post-code--single">steer_subagent</code></td>
 <td>Returned <code class="post-code--single">PONG</code></td>
 <td>Agent <code class="post-code--single">sessions/</code> JSONL</td>
-<td>Worked; persisted child session</td>
+<td>47,391</td>
+<td>MIT</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-ptc-subagents@7.9.3</code></th>
+<td>Worked</td>
+<td>Subagents</td>
+<td><code class="post-code--single">ptc_run_code</code>, <code class="post-code--single">ptc_workflow</code></td>
+<td>Returned <code class="post-code--single">PONG</code></td>
+<td>None observed</td>
+<td>6,902</td>
+<td>Apache-2.0</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-subagent-manager@1.6.1</code></th>
+<td>Needs a session directory</td>
+<td>Subagents</td>
+<td><code class="post-code--single">agent_types</code>, <code class="post-code--single">agent_spawn</code>, <code class="post-code--single">agent_wait</code>, <code class="post-code--single">agent_steer</code>, <code class="post-code--single">agent_status</code>, <code class="post-code--single">agent_update</code>, <code class="post-code--single">agent_pause</code>, <code class="post-code--single">agent_stop</code>, <code class="post-code--single">agent_output</code></td>
+<td>Spawn failed with <code class="post-code--single">--no-session</code> (<code class="post-code--spaced">ENOENT: mkdir &#39;&#39;</code>); replied with a session directory</td>
+<td>None observed</td>
+<td>8,070</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">@juicesharp/rpiv-ask-user-question@2.15.0</code></th>
+<td>Inactive without UI</td>
 <td>Ask user</td>
-<td>MIT</td>
-<td>151,853</td>
 <td>None (removed without a UI)</td>
 <td>Model said <code class="post-code--single">NO-TOOL</code></td>
 <td>None observed</td>
-<td>Inactive without UI</td>
+<td>151,853</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">@plannotator/pi-extension@0.28.49</code></th>
+<td>Inactive without UI</td>
 <td>Plan review</td>
-<td>MIT OR Apache-2.0</td>
-<td>89,716</td>
 <td>None (removed without a UI)</td>
 <td>Model said <code class="post-code--single">NO-TOOL</code></td>
 <td>None observed</td>
-<td>Inactive without UI</td>
+<td>89,716</td>
+<td>MIT OR Apache-2.0</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">@juicesharp/rpiv-todo@2.15.0</code></th>
+<td>Worked</td>
 <td>Tasks</td>
-<td>MIT</td>
-<td>87,414</td>
 <td><code class="post-code--single">todo</code></td>
 <td>Added/listed &quot;write tests&quot;</td>
 <td>None observed</td>
-<td>Worked</td>
+<td>87,414</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-background-tasks@2.6.10</code></th>
+<td>Worked; leaves output</td>
 <td>Tasks</td>
-<td>ISC</td>
-<td>18,054</td>
 <td><code class="post-code--single">fusion_reason</code>, <code class="post-code--single">fusion_investigate</code>, <code class="post-code--single">fusion_research</code>, <code class="post-code--single">fusion_validate</code>, <code class="post-code--single">bg_delegate</code>, <code class="post-code--single">bg_result</code>, <code class="post-code--single">bg_run</code>, <code class="post-code--single">bg_run_pi_attested</code>, <code class="post-code--single">bg_status</code>, <code class="post-code--single">bg_logs</code>, <code class="post-code--single">bg_kill</code></td>
 <td>Returned <code class="post-code--single">hi-from-bg</code></td>
 <td>Repository <code class="post-code--single">.pi/tasks/</code></td>
-<td>Worked; leaves output</td>
+<td>18,054</td>
+<td>ISC</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">@gotgenes/pi-permission-system@42.0.0</code></th>
+<td>Needs configuration</td>
 <td>Safety</td>
-<td>MIT</td>
-<td>46,073</td>
 <td>None (checks bash calls)</td>
 <td>Bash approval rejected</td>
 <td>Agent permission-review log</td>
-<td>Needs configuration</td>
+<td>46,073</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">cc-safety-net@2.7.3</code></th>
+<td>Guard worked</td>
 <td>Safety</td>
-<td>MIT</td>
-<td>114,610</td>
 <td>None (checks bash calls)</td>
 <td>Blocked <code class="post-code--spaced">git reset --hard</code></td>
 <td><code class="post-code--single">~/.cc-safety-net/logs/</code></td>
-<td>Guard worked</td>
+<td>114,610</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">context-mode@2.1.0</code></th>
+<td>Worked; retains database</td>
 <td>Context</td>
-<td>Elastic-2.0</td>
-<td>103,931</td>
 <td><code class="post-code--single">ctx_execute</code>, <code class="post-code--single">ctx_batch</code>, <code class="post-code--single">ctx_index</code>, <code class="post-code--single">ctx_search</code>, <code class="post-code--single">ctx_resume</code>, <code class="post-code--single">ctx_stats</code>, <code class="post-code--single">ctx_doctor</code>, <code class="post-code--single">ctx_upgrade</code>, <code class="post-code--single">ctx_purge</code></td>
 <td>Returned <code class="post-code--single">hi-from-ctx</code></td>
 <td><code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code></td>
-<td>Worked; retains database</td>
+<td>103,931</td>
+<td>Elastic-2.0</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-lens@4.4.8</code></th>
+<td>Worked; first call downloaded tools</td>
 <td>Code feedback</td>
-<td>MIT</td>
-<td>86,632</td>
 <td><code class="post-code--single">lens_diagnostics</code>, <code class="post-code--single">symbol_search</code>, <code class="post-code--single">effective_config</code>, <code class="post-code--single">project_report</code>, <code class="post-code--single">module_report</code>, <code class="post-code--single">read_symbol</code>, <code class="post-code--single">read_enclosing</code>, <code class="post-code--single">pi_lens_activate_tools</code></td>
 <td>README diagnostics clean</td>
 <td><code class="post-code--single">~/.pi-lens/</code>, downloaded binaries</td>
-<td>Worked; first call downloaded tools</td>
+<td>86,632</td>
+<td>MIT</td>
 </tr>
 <tr>
 <th scope="row"><code class="post-code--single">pi-hermes-memory@0.10.0</code></th>
+<td>Worked; retains memory</td>
 <td>Memory</td>
-<td>MIT</td>
-<td>25,570</td>
 <td><code class="post-code--single">memory_add</code>, <code class="post-code--single">memory_replace</code>, <code class="post-code--single">memory_remove</code>, <code class="post-code--single">skill_manage</code>, <code class="post-code--single">session_search</code>, <code class="post-code--single">memory_search</code></td>
 <td>Saved test colour</td>
 <td>Agent <code class="post-code--single">MEMORY.md</code>, SQLite files</td>
-<td>Worked; retains memory</td>
+<td>25,570</td>
+<td>MIT</td>
 </tr>
 </tbody></table></div>
 <p><code class="post-code--single">cc-safety-net</code> is a guard published for several coding agents; its npm keywords include <code class="post-code--single">claude-code</code>, <code class="post-code--single">opencode</code> and <code class="post-code--single">pi-package</code>, and it loads into Pi as an ordinary extension. <code class="post-code--single">context-mode</code> uses Elastic-2.0, a source-available license outside OSI open source.</p>
-<h2 id="the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session&#39;s MCP settings</h2>
+<h2 id="how-i-tested-the-pi-coding-agent-extensions">How I tested the Pi coding agent extensions</h2>
+<p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. For Pi in CI or a systemd service, I care about which tools reach the model and what the extensions leave behind. Extension versions change quickly, so these results apply to the versions in the table above and the date of the tests.</p>
+<p>I used Pi 1.5.0, Node v22.23.1, <code class="post-code--single">/usr/bin/npm</code> 12.0.2 and Linux 6.18. DeepSeek&#39;s <code class="post-code--single">deepseek-flash</code> ran through a local logging proxy that recorded the tools sent to the model.</p>
+<p>For E2 (no session bus), I used <code class="post-code--spaced">env -i</code>, <code class="post-code--spaced">setsid -w</code>, stdin from <code class="post-code--single">/dev/null</code>, a fresh HOME and a fresh agent directory (Pi&#39;s config and state directory, <code class="post-code--single">~/.pi/agent</code> by default, moved with <code class="post-code--single">PI_CODING_AGENT_DIR</code>), <code class="post-code--spaced">-ne -e npm:&lt;pkg&gt;@&lt;version&gt;</code> and <code class="post-code--spaced">timeout 120</code>. These extension flags load only the explicitly named package. I supplied the model-provider key without a separate search-provider key. The load prompt was &quot;Reply with the single word OK.&quot; I then asked each extension to perform a task, starting each use probe from a copy of the installed E2 HOME.</p>
+<p>For E1, I added a private session bus on which <code class="post-code--single">blackhole.py</code> (listed further down) owns <code class="post-code--single">org.freedesktop.secrets</code>, logs every call and never replies. Each E1 run started from a copy of the corresponding E2 HOME. All 20 extensions ran in both; every one got the same tools and the same probe result in E1 as in E2, so the table shows one row each and the Secret Service calls get their own section below. E1 timings include a second of bus startup, and the E1 control (no extension, same bus) took 1.2 s to its first model request.</p>
+<p>The no-extension control exposed exactly <code class="post-code--single">read,bash,edit,write</code>. A <code class="post-code--single">busctl</code> call to the black hole timed out after 5 s; a homemade extension reading the keyring at load reached it in 3 of 3 runs.</p>
+<h2 id="what-breaks-when-pi-runs-unattended">What breaks when Pi runs unattended</h2>
+<h3 id="the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session&#39;s MCP settings</h3>
 <p><code class="post-code--single">pi-mcp-adapter@7.0.1</code> wrote this on its first load, even through a one-off <code class="post-code--single">-e</code>:</p>
 <pre><code class="language-json">{&quot;extensions&quot;:[&quot;-builtin:mcp&quot;]}
 </code></pre>
@@ -385,31 +487,31 @@
 <p>The <code class="post-code--single">command</code> path is where I installed the server on the test machine; point it at your own copy.</p>
 <p>Started without <code class="post-code--single">-ne</code>, Pi&#39;s built-in MCP connected to it: the model got a <code class="post-code--single">codemode</code> tool and Pi wrote <code class="post-code--single">mcp.log</code>. I copied the same <code class="post-code--single">mcp.json</code> into the agent directory the adapter had used, and started Pi again without <code class="post-code--single">-ne</code> and without the adapter. No <code class="post-code--single">codemode</code>, no <code class="post-code--single">mcp.log</code>: the <code class="post-code--single">-builtin:mcp</code> line in that directory&#39;s <code class="post-code--single">settings.json</code> kept the built-in MCP off. Leaving out <code class="post-code--single">-ne</code> does not bring it back. When I emptied the <code class="post-code--single">extensions</code> list in that <code class="post-code--single">settings.json</code> and ran again, <code class="post-code--single">codemode</code> and <code class="post-code--single">mcp.log</code> were back. These MCP-server runs only tested this side effect. The MCP probes in the table did not connect to any server.</p>
 <p>For a service, use a separate writable agent directory per session, or rewrite <code class="post-code--single">settings.json</code> each run.</p>
-<h2 id="a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</h2>
+<h3 id="a-misspelled-package-can-exit-successfully">A misspelled package can exit successfully</h3>
 <p>Pi 1.5.0 prints <code class="post-code--spaced">Warning: Extension package &quot;...&quot;: failed to install (...)</code> and carries on with exit code 0. I ran the same command with Pi 1.2.0 (<code class="post-code--single">/usr/bin/pi</code>), and it exited 1. The <a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">Pi changelog</a> records the change in the 1.5.0 section, with <a href="https://github.com/earendil-works/pi/pull/11304">PR #11304</a>.</p>
 <p>A typo can leave an unattended run without the intended extension, so the script below checks for that warning. When an extension threw during loading, Pi 1.5.0 still exited 1.</p>
-<h2 id="asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</h2>
+<h3 id="asking-the-user-and-reviewing-plans-need-a-ui">Asking the user and reviewing plans need a UI</h3>
 <p><code class="post-code--single">rpiv-ask-user-question</code>&#39;s <code class="post-code--single">reconcile.ts</code> strips <code class="post-code--single">ask_user_question</code> when <code class="post-code--single">!ctx.hasUI</code>. Plannotator&#39;s <code class="post-code--single">index.ts</code> deactivates its tool under the same condition. Both loaded safely in these tests. Neither offered its tool in <code class="post-code--spaced">pi -p</code>, and the model answered <code class="post-code--single">NO-TOOL</code> when asked to use them.</p>
-<h2 id="permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</h2>
+<h3 id="permission-defaults-can-stop-ordinary-work">Permission defaults can stop ordinary work</h3>
 <p>With no configuration, <code class="post-code--single">pi-permission-system@42.0.0</code> rejected every attempted bash call, including <code class="post-code--spaced">ls -la</code>:</p>
 <blockquote>
 <p>This &#39;bash&#39; call requires approval, but no interactive UI is available.</p>
 </blockquote>
 <p>The probe asked for <code class="post-code--spaced">mkdir -p scratch &amp;&amp; rm -rf scratch &amp;&amp; echo removed</code>; without the extension, the control ran it and printed <code class="post-code--single">removed</code>. With no way to get approval, the extension says no. For unattended use it needs a configuration that allows the work; I did not test one.</p>
 <p><code class="post-code--single">cc-safety-net@2.7.3</code> added no tools and blocked <code class="post-code--spaced">git reset --hard</code> with <code class="post-code--spaced">BLOCKED by CC Safety Net</code> and rule <code class="post-code--single">git.reset-hard</code>. Without the extension, the control ran it in the throwaway repository and it exited 0. The extension wrote logs under <code class="post-code--single">~/.cc-safety-net/</code>.</p>
-<h2 id="npm-skipped-install-scripts">npm skipped install scripts</h2>
+<h3 id="npm-skipped-install-scripts">npm skipped install scripts</h3>
 <p>npm 12 blocked install scripts by default in this environment:</p>
 <pre><code class="language-text">npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
 </code></pre>
-<p>Each install blocked one package, so three installs: Plannotator&#39;s <code class="post-code--single">node-pty</code> and permission-system&#39;s <code class="post-code--single">tree-sitter-bash</code>, along with the postinstall for pi-lens&#39;s <code class="post-code--single">@ast-grep/cli</code>. The permission probe still rejected bash as described, and <code class="post-code--single">lens_diagnostics</code> reported <code class="post-code--spaced">clean=1, unavailable=0, failed=0</code> (and <code class="post-code--spaced">Primary LSP (marksman): confirmed clean</code> on a repeat), so the parts I probed ran. I can&#39;t tell from this whether anything else in those packages lost a native piece. Plannotator&#39;s tool was absent without a UI, so that probe could not show how skipping those scripts affected its behavior.</p>
-<h2 id="state-extends-beyond-the-agent-directory">State extends beyond the agent directory</h2>
+<p>Three installs each blocked one package&#39;s scripts: Plannotator&#39;s <code class="post-code--single">node-pty</code> and permission-system&#39;s <code class="post-code--single">tree-sitter-bash</code>, along with the postinstall for pi-lens&#39;s <code class="post-code--single">@ast-grep/cli</code>. The permission probe still rejected bash as described, and <code class="post-code--single">lens_diagnostics</code> reported <code class="post-code--spaced">clean=1, unavailable=0, failed=0</code> (and <code class="post-code--spaced">Primary LSP (marksman): confirmed clean</code> on a repeat), so the parts I probed ran. I can&#39;t tell from this whether anything else in those packages lost a native piece. Plannotator&#39;s tool was absent without a UI, so that probe could not show how skipping those scripts affected its behavior.</p>
+<h3 id="state-extends-beyond-the-agent-directory">State extends beyond the agent directory</h3>
 <p>Some state stays outside the agent directory even if you change <code class="post-code--single">PI_CODING_AGENT_DIR</code>. Context-mode wrote <code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code>. Pi-lens wrote <code class="post-code--single">~/.pi-lens/</code>; on its first diagnostics call, it downloaded <code class="post-code--single">marksman</code> and <code class="post-code--single">typos-lsp</code> into its <code class="post-code--single">bin/</code> directory. That first run took 41.2 s. With the binaries already present, the same probe took 11.3 s (E2) and 11.8 s (E1).</p>
 <p>Background-tasks left output and metadata in the repository&#39;s <code class="post-code--single">.pi/tasks/</code>. Tintinweb&#39;s subagent saved a session under the agent directory despite the parent&#39;s <code class="post-code--single">--no-session</code>. Hermes-memory wrote <code class="post-code--single">MEMORY.md</code> and SQLite files there; sharing that directory carries saved memory between runs.</p>
-<h2 id="the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</h2>
+<h3 id="the-keyring-test-did-not-reproduce-the-september-hang">The keyring test did not reproduce the September hang</h3>
 <p>For the systemd background, see <a href="/blog/orbi-on-pi-coding-agent/#two-incidents-that-shaped-how-we-run-pi">the 4 September incident</a> and <a href="/blog/pi-extensions-in-production/#the-d-bus-hang-that-made-orbi-stop-trusting-pi-s-default-extension-loading">the production post</a>.</p>
 <p>With no MCP servers configured, <code class="post-code--single">pi-mcp-adapter@7.0.1</code> made zero calls to the never-answering Secret Service at startup or during its <code class="post-code--single">mcp</code> call. I did not exercise OAuth or bearer-token storage.</p>
 <p>My homemade extension read the keyring through <code class="post-code--single">@napi-rs/keyring</code> at load, and the black hole recorded it in 3 of 3 runs. First model requests arrived at 3.2 s, compared with 1.2 s for the control. Both timings include the same second of bus startup. The probe added about 2 s, then Pi carried on; it did not hang. I did not find which layer gives up after about 2 s; <code class="post-code--single">busctl</code>, with its timeout set to 5 s, waited the full 5 s on the same black hole.</p>
-<p>Apart from my probe, the only Secret Service call among the 15 extensions came from pi-lens, 2.3 s after the bus was up, during its first diagnostics and binary download. That was after its first model request had already gone out at 1.3 s (the E1 control: 1.2 s), so it could not delay startup. A call made at load time, like my probe&#39;s, sits in front of the first request; one made during a tool call does not. The first run also downloaded those two binaries, so I did not measure what the call itself cost. With the binaries already present, the same probe in E1 took 11.8 s and the black hole recorded no call.</p>
+<p>Apart from my probe, the only Secret Service call among the 20 extensions came from pi-lens, 2.3 s after the bus was up, during its first diagnostics and binary download. That was after its first model request had already gone out at 1.3 s (the E1 control: 1.2 s), so it could not delay startup. A call made at load time, like my probe&#39;s, sits in front of the first request; one made during a tool call does not. The first run also downloaded those two binaries, so I did not measure what the call itself cost. With the binaries already present, the same probe in E1 took 11.8 s and the black hole recorded no call.</p>
 <p>This setup detects Secret Service access; it did not reproduce the earlier hang. Save the code verbatim as <code class="post-code--single">blackhole.py</code>. It needs dbus-python and PyGObject. It exits 1 if something already owns <code class="post-code--single">org.freedesktop.secrets</code> on the bus, because a real keyring answering in its place would make every test look clean:</p>
 <pre><code class="language-python">#!/usr/bin/env python3
 &quot;&quot;&quot;A Secret Service that never answers: owns org.freedesktop.secrets on the
@@ -443,6 +545,22 @@ GLib.MainLoop().run()
 <pre><code class="language-bash">dbus-run-session -- bash -c &#39;rm -f calls.log; python3 blackhole.py calls.log &amp; for i in $(seq 50); do grep -q &quot; ready &quot; calls.log 2&gt;/dev/null &amp;&amp; break; sleep 0.1; done; grep -q &quot; ready &quot; calls.log || exit 1; KEEP_BUS=1 ./try-pi-extension.sh npm:&lt;pkg&gt;@&lt;version&gt;&#39;
 </code></pre>
 <p>Any line with <code class="post-code--single">call</code> in <code class="post-code--single">calls.log</code> is a Secret Service request that never got an answer. With my keyring probe, that run logged one <code class="post-code--single">org.freedesktop.Secret.Service.OpenSession</code> call; the same command without <code class="post-code--single">KEEP_BUS=1</code> logged none, because Pi never saw the bus.</p>
+<h2 id="pin-the-extensions-you-keep-in-orbi">Pin the extensions you keep in Orbi</h2>
+<p>In <code class="post-code--single">orbi.toml</code>:</p>
+<pre><code class="language-toml">[[pi_extensions]]
+source = &quot;npm:pi-web-access@0.47.0&quot;
+
+[[pi_extensions]]
+source = &quot;npm:@tintinweb/pi-subagents@0.23.1&quot;
+
+[[pi_extensions]]
+source = &quot;npm:@juicesharp/rpiv-todo@2.15.0&quot;
+
+[[pi_extensions]]
+source = &quot;npm:cc-safety-net@2.7.3&quot;
+</code></pre>
+<p>Orbi&#39;s validator at <code class="post-code--spaced">origin/main f5de8082</code>, <code class="post-code--single">src/orbi/config.py</code>, accepted these sources. It rejected <code class="post-code--single">npm:pi-web-access</code>, <code class="post-code--single">npm:pi-web-access@latest</code> and <code class="post-code--single">npm:@tintinweb/pi-subagents</code> with &quot;npm source must pin a version&quot;.</p>
+<p>Pi 1.5.0&#39;s changelog says an unpinned <code class="post-code--spaced">-e npm:</code> package is reinstalled when the registry has a newer matching version. The <a href="/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">production post&#39;s loading section</a> explains how Orbi passes the configured extensions to Pi.</p>
 <h2 id="test-a-package-before-keeping-it">Test a package before keeping it</h2>
 <p>Save this verbatim as <code class="post-code--single">try-pi-extension.sh</code>, then <code class="post-code--spaced">chmod +x try-pi-extension.sh</code>. Have Pi, Node, npm, jq, setsid and timeout on PATH, and export your provider key. It defaults to <code class="post-code--single">DEEPSEEK_API_KEY</code>, provider <code class="post-code--single">deepseek</code> and model <code class="post-code--single">deepseek-flash</code>; <code class="post-code--single">KEYVAR</code> selects another key variable, with provider and model as optional arguments. Run it as a script, not pasted into an interactive shell.</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
@@ -540,27 +658,6 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
 </code></pre>
 <p>The list the script prints is every tool the model got, Pi&#39;s four built-ins included; the table above lists only the additions. The first <code class="post-code--single">exit=</code> is the status of the timeout-wrapped Pi run (124 when <code class="post-code--single">timeout</code> killed it); the number after <code class="post-code--spaced">FAILED (exit</code> is the script&#39;s classification, and the text in parentheses is the same legend every time. In <code class="post-code--spaced">--mode json</code>, Pi 1.5.0 exited 0 both for the bad key and for the missing package, which is why the script checks the last assistant message and the install warning itself. Every failure makes the script exit 1, and so do a missing argument or a missing key, before Pi starts. A local path such as <code class="post-code--single">./bad.ts</code> is turned into an absolute path first, because the script runs Pi from a scratch directory.</p>
 <p>After the load check, test an actual tool call. The asking-user package passed this script even though the model received only the control tools.</p>
-<h2 id="which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</h2>
-<p>For MCP, the best Pi extensions I&#39;d consider for unattended use are <code class="post-code--single">pi-mcp-extension</code> or the adapter with an agent directory rewritten per run. I didn&#39;t connect either to a server, so the only difference I measured in what they leave behind is the settings side effect, and <code class="post-code--single">pi-mcp-extension</code> had none.</p>
-<p>For web search, <code class="post-code--single">pi-web-access</code> worked without a search key and reported &quot;Provider: exa&quot;; its README says that with no keys it searches through Exa&#39;s MCP endpoint, so your queries go to Exa. <code class="post-code--single">pi-web-search</code> also worked; its README says it searches through the currently selected model.</p>
-<p>Both subagent packages returned <code class="post-code--single">PONG</code>, though Pi-subagents needed a retry after the model guessed an agent name. I&#39;d keep <code class="post-code--single">rpiv-todo</code> for task lists and use <code class="post-code--single">cc-safety-net</code> as a command guard. I&#39;d use permission-system only with an explicit configuration.</p>
-<p>I did not test OAuth MCP servers, paid search keys or long runs. These results cover Linux, with no Windows or macOS tests.</p>
-<h2 id="pin-the-extensions-you-keep-in-orbi">Pin the extensions you keep in Orbi</h2>
-<p>In <code class="post-code--single">orbi.toml</code>:</p>
-<pre><code class="language-toml">[[pi_extensions]]
-source = &quot;npm:pi-web-access@0.47.0&quot;
-
-[[pi_extensions]]
-source = &quot;npm:@tintinweb/pi-subagents@0.23.1&quot;
-
-[[pi_extensions]]
-source = &quot;npm:@juicesharp/rpiv-todo@2.15.0&quot;
-
-[[pi_extensions]]
-source = &quot;npm:cc-safety-net@2.7.3&quot;
-</code></pre>
-<p>Orbi&#39;s validator at <code class="post-code--spaced">origin/main f5de8082</code>, <code class="post-code--single">src/orbi/config.py</code>, accepted these sources. It rejected <code class="post-code--single">npm:pi-web-access</code>, <code class="post-code--single">npm:pi-web-access@latest</code> and <code class="post-code--single">npm:@tintinweb/pi-subagents</code> with &quot;npm source must pin a version&quot;.</p>
-<p>Pi 1.5.0&#39;s changelog says an unpinned <code class="post-code--spaced">-e npm:</code> package is reinstalled when the registry has a newer matching version. The <a href="/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">production post&#39;s loading section</a> explains how Orbi passes the configured extensions to Pi.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
   <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
