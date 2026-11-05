@@ -1,5 +1,13 @@
 [
   {
+    "slug": "best-pi-extensions",
+    "title": "Best Pi extensions for unattended runs: 15 tested",
+    "summary": "I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.",
+    "zhSlug": "best-pi-extensions",
+    "zhTitle": "Pi 扩展推荐：15 个扩展的无人值守实测",
+    "related": []
+  },
+  {
     "slug": "ai-code-review-bottleneck",
     "title": "AI code review bottleneck? Our PRs wait after merge",
     "summary": "847 agent PRs merged into beta in a median 21 minutes. The PRs promoted in the same weeks then waited a median 5.9 hours to reach main, at most 168 h.",

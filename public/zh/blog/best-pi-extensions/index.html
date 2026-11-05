@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pi 扩展推荐：15 个扩展的无人值守实测 | Orbi</title>
+  <meta name="description" content="实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。">
+  <link rel="canonical" href="https://orbi.build/zh/blog/best-pi-extensions/">
+  <link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-pi-extensions/">
+  <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-pi-extensions/">
+  <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-pi-extensions/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Pi 扩展推荐：15 个扩展的无人值守实测">
+  <meta property="og:description" content="实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。">
+  <meta property="og:url" content="https://orbi.build/zh/blog/best-pi-extensions/">
+  <meta property="og:image" content="https://orbi.build/img/blog-best-pi-extensions-card.png">
+  <meta property="og:image:alt" content="Pi 扩展推荐：15 个扩展的无人值守实测">
+  <meta property="article:published_time" content="2026-11-05">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi 扩展推荐：15 个扩展的无人值守实测","datePublished":"2026-11-05","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/best-pi-extensions/","image":"https://orbi.build/img/blog-best-pi-extensions-card.png","inLanguage":"zh-CN","description":"实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。","url":"https://orbi.build/zh/blog/best-pi-extensions/"}</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#06151b">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    /* Blog-only layout: the shared .shell/.compare-hero rules stay unchanged. */
+    .post-grid { max-width: 52rem; margin: 0 auto; padding: 0 24px; }
+    .post-hero { padding: 84px 0 68px; }
+    /* Issue #860: the body text column is wider than --hero-copy-width, so the
+       hero fills it and the h1/lede right edge lands on the body text. */
+    .post-hero h1, .post-hero .hero-lede { max-width: none; }
+    .post-body { padding-top: 12px; padding-bottom: 30px; }
+    .post-body h2, .post-body .related-links h2 { font-family: var(--display); font-size: 1.5rem; line-height: 1.25; margin: 42px 0 10px; scroll-margin-top: 24px; }
+    .post-body .related-links { margin: 0; }
+    .post-cta {
+      margin: 42px 0 12px;
+      padding: 30px;
+      border-radius: var(--radius-card);
+      background: var(--night);
+      color: #edf5f0;
+      text-align: center;
+    }
+    .post-cta h2 { margin: 0 0 18px; color: #edf5f0; font-family: var(--display); font-size: 1.5rem; line-height: 1.25; }
+    .post-cta .button { margin: 0 auto; color: var(--night); text-decoration: none; }
+    .post-cta-note { margin: 10px 0 18px; color: #aec2bd; font-size: 0.9rem; }
+    .post-cta .post-cta-link { color: #edf5f0; font-size: 0.9rem; text-underline-offset: 3px; }
+    .post-cta .post-cta-link:hover { color: #fff; }
+    .post-cta-inline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 28px 0;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--paper-2);
+    }
+    .post-cta-inline span { color: var(--ink); font-size: 0.95rem; }
+    .post-cta-inline .button { flex: 0 0 auto; min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+    .post-toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; align-self: start; padding-top: 26px; }
+    .post-toc h2 { margin: 0 0 10px; padding: 0; font: 500 0.75rem/1.5rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .post-toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .post-toc ol ol { border-left: 0; }
+    .post-body .post-toc-inline ol { margin: 0; padding-left: 2.2em; }
+    .post-body .post-toc-inline ol ol { list-style: none; padding-left: 1em; margin-top: 0; }
+    .post-toc li { margin: 0; }
+    .post-toc-inline li { margin: 6px 0; }
+    .post-toc-link { display: block; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; text-decoration: none; overflow-wrap: anywhere; }
+    .post-toc .post-toc-link { padding: 6px 0 6px 15px; margin-left: -1px; border-left: 1px solid transparent; font-size: 0.875rem; line-height: 1.25rem; }
+    .post-toc ol ol .post-toc-link { padding-left: 27px; }
+    .post-toc-link:hover, .post-toc-link.is-current { color: var(--ink); }
+    .post-toc .post-toc-link.is-current { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+    .post-toc-inline { display: none; margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: 12px 16px; }
+    .post-toc-inline summary { cursor: pointer; font-weight: 600; }
+    .post-toc-inline ol { margin-top: 12px; }
+
+    .post-body h3 { font-family: var(--display); font-size: 1.13rem; line-height: 1.3; margin: 30px 0 6px; }
+    .post-body p { margin: 14px 0; }
+    /* Issue #833: this line sits on the dark .night hero, so it uses the dark-band secondary color. */
+    .post-series { margin: 10px 0 6px; color: #9aada9; font-size: 0.95rem; }
+    .post-series a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    /* Issue #887: the byline sits between the title and the lede on the same
+       dark hero, so it carries the dark-band secondary color and the mono
+       label type the rest of the post metadata uses. */
+    .post-byline { margin: 0 0 24px; color: #9aada9; font-family: var(--mono); font-size: 0.85rem; }
+    .post-byline a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .post-byline a:hover { color: #edf5f0; }
+    .post-body ul, .post-body ol { margin: 14px 0; padding-left: 22px; }
+    .post-body li { margin: 6px 0; }
+    .post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.88em; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 1px 5px; white-space: nowrap; display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: bottom; }
+    .post-body code.post-code--spaced { white-space: normal; display: inline; }
+    .post-body pre { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 14px 16px; overflow-x: auto; margin: 18px 0; }
+    .post-body pre code, .post-body pre code.post-code--spaced, .post-body pre code.post-code--single { background: none; border: none; padding: 0; font-size: 0.85rem; white-space: pre; overflow-wrap: normal; display: inline; max-width: none; overflow: visible; }
+    .post-table-scroll { overflow-x: auto; }
+    .post-body table { width: 100%; border-collapse: collapse; }
+    .post-body th, .post-body td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .post-body th { background: var(--paper-2); }
+    .post-body strong { font-weight: 600; }
+    .post-media { margin: 24px 0; }
+    .post-body svg { max-width: 100%; height: auto; }
+    .post-media img, .post-media iframe, .post-media svg { display: block; width: 100%; border: 0; border-radius: var(--radius-card); }
+    .post-media img, .post-media svg { height: auto; }
+    .post-media iframe { aspect-ratio: 16 / 9; }
+    .post-media figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    @media (min-width: 1200px) {
+      .post-grid { display: grid; grid-template-columns: minmax(0, 52rem) 200px; column-gap: 56px; max-width: calc(52rem + 256px); padding: 0; }
+      .post-hero, .post-body { grid-column: 1; padding-left: 16px; padding-right: 16px; }
+      .post-toc { grid-column: 2; grid-row: 1; }
+    }
+    @media (max-width: 1199px) {
+      .post-toc { display: none; }
+      .post-toc-inline { display: block; }
+    }
+    @media (max-width: 760px) {
+      .post-hero { padding-top: 64px; padding-bottom: 48px; }
+      .post-cta { padding: 24px 18px; }
+      .post-cta .button { width: 100%; }
+      .post-cta-inline { align-items: stretch; flex-direction: column; gap: 10px; }
+      .post-cta-inline .button { width: 100%; }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <div class="night nav-shell">
+    <header class="site-header">
+      <a class="wordmark" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark-on-dark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-zh" aria-label="打开导航菜单" data-label-open="打开导航菜单" data-label-close="关闭导航菜单" data-menu-toggle>
+        <span aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <nav id="primary-navigation-zh" aria-label="主导航" data-primary-nav>
+        <a href="/zh/#system">产品怎么运作</a>
+        <a href="/zh/cloud/#pricing">价格</a>
+        <a href="https://cloud-docs.orbi.build/zh/?ref=nav">文档</a>
+        <a data-cta="nav-github" href="https://github.com/orbi-build/orbi">GitHub</a>
+        <a class="nav-apply" data-cta="nav-start" href="/zh/cloud/login">用 GitHub 试用 Cloud</a>
+      </nav>
+    </header>
+  </div>
+
+  <main id="main-content">
+    <div class="night">
+      <div class="post-grid">
+        <section class="post-hero" aria-labelledby="post-title">
+          <p class="eyebrow">博客</p>
+          <h1 id="post-title">Pi 扩展推荐：15 个扩展的无人值守实测</h1>
+          <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-05">2026-11-05</time></p>
+          <p class="post-series">系列：<a href="/zh/guides/pi-coding-agent/">Orbi 怎么搭在 Pi coding agent 上</a></p>
+          <p class="hero-lede">实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="post-grid">
+        <nav class="post-toc" aria-label="本页目录">
+          <h2>本页目录</h2>
+          <ol>
+          <li><a class="post-toc-link" href="#这次-pi-扩展怎么测">这次 Pi 扩展怎么测</a></li>
+          <li><a class="post-toc-link" href="#按用途看-15-个扩展的结果">按用途看 15 个扩展的结果</a></li>
+          <li><a class="post-toc-link" href="#mcp-适配器改的设置会影响下次会话">MCP 适配器改的设置会影响下次会话</a></li>
+          <li><a class="post-toc-link" href="#包名拼错-pi-也可能以-0-退出">包名拼错，Pi 也可能以 0 退出</a></li>
+          <li><a class="post-toc-link" href="#提问和计划评审工具需要-ui">提问和计划评审工具需要 UI</a></li>
+          <li><a class="post-toc-link" href="#默认权限配置会拦住普通操作">默认权限配置会拦住普通操作</a></li>
+          <li><a class="post-toc-link" href="#npm-跳过了安装脚本">npm 跳过了安装脚本</a></li>
+          <li><a class="post-toc-link" href="#状态文件不全在-agent-目录里">状态文件不全在 agent 目录里</a></li>
+          <li><a class="post-toc-link" href="#钥匙串测试没有复现-9-月的卡死">钥匙串测试没有复现 9 月的卡死</a></li>
+          <li><a class="post-toc-link" href="#留下一个扩展之前-自己跑一次">留下一个扩展之前，自己跑一次</a></li>
+          <li><a class="post-toc-link" href="#无人值守时-我会留下哪些-pi-扩展">无人值守时，我会留下哪些 Pi 扩展？</a></li>
+          <li><a class="post-toc-link" href="#在-orbi-里固定选中的扩展版本">在 Orbi 里固定选中的扩展版本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </nav>
+      <article class="post-body">
+        <details class="post-toc-inline">
+          <summary>本页目录 · 13 节</summary>
+          <ol>
+          <li><a class="post-toc-link" href="#这次-pi-扩展怎么测">这次 Pi 扩展怎么测</a></li>
+          <li><a class="post-toc-link" href="#按用途看-15-个扩展的结果">按用途看 15 个扩展的结果</a></li>
+          <li><a class="post-toc-link" href="#mcp-适配器改的设置会影响下次会话">MCP 适配器改的设置会影响下次会话</a></li>
+          <li><a class="post-toc-link" href="#包名拼错-pi-也可能以-0-退出">包名拼错，Pi 也可能以 0 退出</a></li>
+          <li><a class="post-toc-link" href="#提问和计划评审工具需要-ui">提问和计划评审工具需要 UI</a></li>
+          <li><a class="post-toc-link" href="#默认权限配置会拦住普通操作">默认权限配置会拦住普通操作</a></li>
+          <li><a class="post-toc-link" href="#npm-跳过了安装脚本">npm 跳过了安装脚本</a></li>
+          <li><a class="post-toc-link" href="#状态文件不全在-agent-目录里">状态文件不全在 agent 目录里</a></li>
+          <li><a class="post-toc-link" href="#钥匙串测试没有复现-9-月的卡死">钥匙串测试没有复现 9 月的卡死</a></li>
+          <li><a class="post-toc-link" href="#留下一个扩展之前-自己跑一次">留下一个扩展之前，自己跑一次</a></li>
+          <li><a class="post-toc-link" href="#无人值守时-我会留下哪些-pi-扩展">无人值守时，我会留下哪些 Pi 扩展？</a></li>
+          <li><a class="post-toc-link" href="#在-orbi-里固定选中的扩展版本">在 Orbi 里固定选中的扩展版本</a></li>
+          <li><a class="post-toc-link" href="#相关">相关</a></li>
+          </ol>
+        </details>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 <code class="post-code--spaced">ls -la</code> 都拒绝，MCP 适配器则改了配置，影响到了下次会话。</p>
+<p>Pi 在 CI 或 systemd 服务里运行时，我关心模型拿到了哪些工具，扩展运行后又留下了什么。扩展版本更新很快，这些结论只适用于下表的版本和这次测试的日期。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>按这次无人值守测试的结果，我的 Pi 扩展推荐是：MCP 用 <code class="post-code--single">pi-mcp-extension</code>，或者每次运行都新建 agent 目录，再用 <code class="post-code--single">pi-mcp-adapter</code>。网页搜索可以选 <code class="post-code--single">pi-web-access</code> 或 <code class="post-code--single">pi-web-search</code>，两个子 agent 包也都能用。任务清单我会选 <code class="post-code--single">rpiv-todo</code>，命令拦截用 <code class="post-code--single">cc-safety-net</code>。<code class="post-code--single">pi-permission-system</code> 要先写明确的权限配置。其中 MCP 只测了没有配置服务器时的状态查询。下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。</p>
+<p>Pi agent 扩展是 Pi 启动时加载的代码，可以来自本地文件、npm 包或 git 仓库。多数扩展会注册模型可以调用的工具，本文说的 Pi 插件也指这类扩展。skill 是写在 <code class="post-code--single">SKILL.md</code> 里的指令。<a href="/zh/blog/pi-extensions-in-production/#pi-%E6%89%A9%E5%B1%95%E6%98%AF%E4%BB%80%E4%B9%88-pi-%E4%BB%8E%E5%93%AA%E4%B8%89%E4%B8%AA%E5%9C%B0%E6%96%B9%E5%8A%A0%E8%BD%BD%E5%AE%83">生产环境那篇的第一节</a>介绍了两者的区别，以及 Pi 怎样加载扩展。</p>
+<h2 id="这次-pi-扩展怎么测">这次 Pi 扩展怎么测</h2>
+<p>测试环境是 Pi 1.5.0、Node v22.23.1、<code class="post-code--single">/usr/bin/npm</code> 12.0.2 和 Linux 6.18。模型用 DeepSeek 的 <code class="post-code--single">deepseek-flash</code>，我通过一个本地日志代理记录发给模型的工具清单。</p>
+<p>E2 没有会话总线。我用 <code class="post-code--spaced">env -i</code> 清空环境变量，用 <code class="post-code--spaced">setsid -w</code> 脱离终端，stdin 接 <code class="post-code--single">/dev/null</code>，HOME 和 agent 目录都是新建的。agent 目录存放 Pi 的配置和状态，默认在 <code class="post-code--single">~/.pi/agent</code>，可用 <code class="post-code--single">PI_CODING_AGENT_DIR</code> 更改位置。扩展参数是 <code class="post-code--spaced">-ne -e npm:&lt;pkg&gt;@&lt;version&gt;</code>，运行时加上 <code class="post-code--spaced">timeout 120</code>。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 &quot;Reply with the single word OK.&quot;。加载后，我再要求每个扩展实际完成一次操作，每次调用测试都从已装好扩展的 E2 HOME 副本开始。</p>
+<p>E1 多了一条私有会话总线，由下方的 <code class="post-code--single">blackhole.py</code> 占用 <code class="post-code--single">org.freedesktop.secrets</code>，记录每次调用但永不应答。每次 E1 运行都从对应的 E2 HOME 副本开始。15 个扩展都在 E1 和 E2 中测过，每个扩展在两种环境里提供的工具和调用测试结果都相同，所以表格中每个扩展只列一行，Secret Service 调用另放在后面的专节。E1 计时包含 1 秒的总线启动时间；同一总线下不加载扩展的 E1 对照组，在 1.2 秒时发出了首次模型请求。</p>
+<p>不加载扩展的对照组恰好只有 <code class="post-code--single">read,bash,edit,write</code> 四个工具。用 <code class="post-code--single">busctl</code> 调用黑洞，5 秒后超时；另一个自写扩展在加载时读取钥匙串，3 次运行中 3 次都访问到了黑洞。</p>
+<h2 id="按用途看-15-个扩展的结果">按用途看 15 个扩展的结果</h2>
+<p>表格按用途分组，推荐依据是这次调用结果。下载量是 2026 年 11 月 5 日查询的 npm 上月包下载总量，工具一列只列出对照组之外新增的工具。我只比较了临时 HOME 和测试仓库里的文件变化，不包含 <code class="post-code--single">/tmp</code> 或系统目录。「未观察到」不计 Pi 通常会写的 <code class="post-code--single">auth.json</code>、<code class="post-code--single">models-store.json</code>、npm 缓存和包的安装文件。每行结论只适用于「调用测试」列的操作，钥匙串访问和计时结果见后面的专节。</p>
+<p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
+<thead>
+<tr>
+<th scope="col">扩展@版本</th>
+<th scope="col">用途</th>
+<th scope="col">许可证</th>
+<th scope="col">上月下载量</th>
+<th scope="col"><code class="post-code--spaced">pi -p</code> 新增工具</th>
+<th scope="col">调用测试</th>
+<th scope="col">HOME 或仓库中的额外文件</th>
+<th scope="col">无人值守结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<th scope="row"><code class="post-code--single">pi-mcp-adapter@7.0.1</code></th>
+<td>MCP</td>
+<td>MIT</td>
+<td>1,408,674</td>
+<td><code class="post-code--single">mcp</code></td>
+<td>列出的服务器为空</td>
+<td>agent 目录中的 <code class="post-code--single">settings.json</code>、<code class="post-code--single">mcp-onboarding.json</code></td>
+<td>空服务器列表查询完成；会改写设置</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-mcp-extension@1.13.0</code></th>
+<td>MCP</td>
+<td>MIT</td>
+<td>823,848</td>
+<td><code class="post-code--single">mcp_status</code>, <code class="post-code--single">mcp_connect</code>, <code class="post-code--single">mcp_list_resources</code>, <code class="post-code--single">mcp_read_resource</code></td>
+<td>状态返回 <code class="post-code--single">[]</code></td>
+<td>未观察到</td>
+<td>状态查询能用；未配置服务器</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-web-access@0.47.0</code></th>
+<td>网页搜索</td>
+<td>MIT</td>
+<td>1,116,299</td>
+<td><code class="post-code--single">web_search</code>, <code class="post-code--single">source_check</code>, <code class="post-code--single">fetch_content</code>, <code class="post-code--single">get_search_content</code></td>
+<td>搜索返回 Pi 扩展目录</td>
+<td>未观察到</td>
+<td>没有搜索 key 也搜到了结果</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-web-search@1.7.0</code></th>
+<td>网页搜索</td>
+<td>MIT</td>
+<td>75,116</td>
+<td><code class="post-code--single">web_search</code></td>
+<td>搜索返回结果</td>
+<td>未观察到</td>
+<td>用当前选定的模型能搜到结果</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-subagents@0.84.0</code></th>
+<td>子 agent</td>
+<td>MIT</td>
+<td>726,352</td>
+<td><code class="post-code--single">subagent</code>, <code class="post-code--single">contact_supervisor</code>, <code class="post-code--single">bg_wait</code>, <code class="post-code--single">subagent_supervisor</code></td>
+<td>模型猜错 agent 名称，重试后返回 <code class="post-code--single">PONG</code></td>
+<td>agent 目录中 <code class="post-code--single">missions/</code> 下的 JSON</td>
+<td>名称修正后能用</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@tintinweb/pi-subagents@0.23.1</code></th>
+<td>子 agent</td>
+<td>MIT</td>
+<td>47,391</td>
+<td><code class="post-code--single">Agent</code>, <code class="post-code--single">SubagentWorkflow</code>, <code class="post-code--single">get_subagent_result</code>, <code class="post-code--single">steer_subagent</code></td>
+<td>返回 <code class="post-code--single">PONG</code></td>
+<td>agent 目录中 <code class="post-code--single">sessions/</code> 下的 JSONL</td>
+<td>能用；会保存子会话</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@juicesharp/rpiv-ask-user-question@2.15.0</code></th>
+<td>向用户提问</td>
+<td>MIT</td>
+<td>151,853</td>
+<td>无（没有 UI 时被移除）</td>
+<td>模型回答 <code class="post-code--single">NO-TOOL</code></td>
+<td>未观察到</td>
+<td>没有 UI 时不启用</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@plannotator/pi-extension@0.28.49</code></th>
+<td>计划评审</td>
+<td>MIT OR Apache-2.0</td>
+<td>89,716</td>
+<td>无（没有 UI 时被移除）</td>
+<td>模型回答 <code class="post-code--single">NO-TOOL</code></td>
+<td>未观察到</td>
+<td>没有 UI 时不启用</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@juicesharp/rpiv-todo@2.15.0</code></th>
+<td>任务管理</td>
+<td>MIT</td>
+<td>87,414</td>
+<td><code class="post-code--single">todo</code></td>
+<td>添加并列出 &quot;write tests&quot;</td>
+<td>未观察到</td>
+<td>能用</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-background-tasks@2.6.10</code></th>
+<td>任务管理</td>
+<td>ISC</td>
+<td>18,054</td>
+<td><code class="post-code--single">fusion_reason</code>, <code class="post-code--single">fusion_investigate</code>, <code class="post-code--single">fusion_research</code>, <code class="post-code--single">fusion_validate</code>, <code class="post-code--single">bg_delegate</code>, <code class="post-code--single">bg_result</code>, <code class="post-code--single">bg_run</code>, <code class="post-code--single">bg_run_pi_attested</code>, <code class="post-code--single">bg_status</code>, <code class="post-code--single">bg_logs</code>, <code class="post-code--single">bg_kill</code></td>
+<td>返回 <code class="post-code--single">hi-from-bg</code></td>
+<td>仓库中的 <code class="post-code--single">.pi/tasks/</code></td>
+<td>能用；会留下输出</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">@gotgenes/pi-permission-system@42.0.0</code></th>
+<td>安全</td>
+<td>MIT</td>
+<td>46,073</td>
+<td>无（检查 bash 调用）</td>
+<td>Bash 审批被拒绝</td>
+<td>agent 目录中的权限审查日志</td>
+<td>需要配置</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">cc-safety-net@2.7.3</code></th>
+<td>安全</td>
+<td>MIT</td>
+<td>114,610</td>
+<td>无（检查 bash 调用）</td>
+<td>拦下 <code class="post-code--spaced">git reset --hard</code></td>
+<td><code class="post-code--single">~/.cc-safety-net/logs/</code></td>
+<td>命令拦截生效</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">context-mode@2.1.0</code></th>
+<td>上下文</td>
+<td>Elastic-2.0</td>
+<td>103,931</td>
+<td><code class="post-code--single">ctx_execute</code>, <code class="post-code--single">ctx_batch</code>, <code class="post-code--single">ctx_index</code>, <code class="post-code--single">ctx_search</code>, <code class="post-code--single">ctx_resume</code>, <code class="post-code--single">ctx_stats</code>, <code class="post-code--single">ctx_doctor</code>, <code class="post-code--single">ctx_upgrade</code>, <code class="post-code--single">ctx_purge</code></td>
+<td>返回 <code class="post-code--single">hi-from-ctx</code></td>
+<td><code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code></td>
+<td>能用；会保留数据库</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-lens@4.4.8</code></th>
+<td>代码反馈</td>
+<td>MIT</td>
+<td>86,632</td>
+<td><code class="post-code--single">lens_diagnostics</code>, <code class="post-code--single">symbol_search</code>, <code class="post-code--single">effective_config</code>, <code class="post-code--single">project_report</code>, <code class="post-code--single">module_report</code>, <code class="post-code--single">read_symbol</code>, <code class="post-code--single">read_enclosing</code>, <code class="post-code--single">pi_lens_activate_tools</code></td>
+<td>README 诊断未报问题</td>
+<td><code class="post-code--single">~/.pi-lens/</code>、下载的二进制文件</td>
+<td>能用；首次调用会下载工具</td>
+</tr>
+<tr>
+<th scope="row"><code class="post-code--single">pi-hermes-memory@0.10.0</code></th>
+<td>记忆</td>
+<td>MIT</td>
+<td>25,570</td>
+<td><code class="post-code--single">memory_add</code>, <code class="post-code--single">memory_replace</code>, <code class="post-code--single">memory_remove</code>, <code class="post-code--single">skill_manage</code>, <code class="post-code--single">session_search</code>, <code class="post-code--single">memory_search</code></td>
+<td>保存了测试用的颜色</td>
+<td>agent 目录中的 <code class="post-code--single">MEMORY.md</code>、SQLite 文件</td>
+<td>能用；会保留记忆</td>
+</tr>
+</tbody></table></div>
+<p><code class="post-code--single">cc-safety-net</code> 支持多个 coding agent，它的 npm 关键词包含 <code class="post-code--single">claude-code</code>、<code class="post-code--single">opencode</code> 和 <code class="post-code--single">pi-package</code>，在 Pi 中可以作为普通扩展加载。<code class="post-code--single">context-mode</code> 使用的 Elastic-2.0 允许查看源码，但不属于 OSI 认可的开源许可证。</p>
+<h2 id="mcp-适配器改的设置会影响下次会话">MCP 适配器改的设置会影响下次会话</h2>
+<p>即使只用一次性的 <code class="post-code--single">-e</code>，<code class="post-code--single">pi-mcp-adapter@7.0.1</code> 第一次加载时也写入了这份配置：</p>
+<pre><code class="language-json">{&quot;extensions&quot;:[&quot;-builtin:mcp&quot;]}
+</code></pre>
+<p>它还写了 <code class="post-code--single">mcp-onboarding.json</code>。Pi 的 <code class="post-code--single">docs/mcp.md</code> 第 268 行说明了扩展替代内置 MCP 的情况，并记录了用这项设置禁用内置 MCP 的方法。</p>
+<p>为了确认这项设置的影响，我在新的 agent 目录里放了下面这份 <code class="post-code--single">mcp.json</code>，指向本地已安装的 <code class="post-code--single">@modelcontextprotocol/server-everything</code>：</p>
+<pre><code class="language-json">{&quot;mcpServers&quot;:{&quot;everything&quot;:{&quot;command&quot;:&quot;/var/tmp/pex/mcpsrv/node_modules/.bin/mcp-server-everything&quot;,&quot;args&quot;:[&quot;stdio&quot;]}}}
+</code></pre>
+<p><code class="post-code--single">command</code> 里是测试机上的安装路径，照做时换成你自己装的位置。</p>
+<p>启动时不带 <code class="post-code--single">-ne</code>，Pi 的内置 MCP 就连接了这台服务器：模型拿到了 <code class="post-code--single">codemode</code> 工具，Pi 也写出了 <code class="post-code--single">mcp.log</code>。我把同一份 <code class="post-code--single">mcp.json</code> 复制到适配器用过的 agent 目录，再次启动 Pi，仍然不带 <code class="post-code--single">-ne</code>，也不加载适配器。这次 <code class="post-code--single">codemode</code> 和 <code class="post-code--single">mcp.log</code> 都没有出现，因为该目录的 <code class="post-code--single">settings.json</code> 中仍有 <code class="post-code--single">-builtin:mcp</code>，内置 MCP 依然被禁用。省略 <code class="post-code--single">-ne</code> 不能恢复它。我把这份 <code class="post-code--single">settings.json</code> 里的 <code class="post-code--single">extensions</code> 列表清空后再跑，<code class="post-code--single">codemode</code> 和 <code class="post-code--single">mcp.log</code> 都回来了。这几次连接 MCP 服务器的运行只用于验证配置副作用，表格里的 MCP 调用测试没有连接任何服务器。</p>
+<p>在服务里运行时，可以为每次会话准备独立、可写的 agent 目录，或者每次运行都重写 <code class="post-code--single">settings.json</code>。</p>
+<h2 id="包名拼错-pi-也可能以-0-退出">包名拼错，Pi 也可能以 0 退出</h2>
+<p>Pi 1.5.0 会打印 <code class="post-code--spaced">Warning: Extension package &quot;...&quot;: failed to install (...)</code>，然后继续运行，退出码为 0。我用 Pi 1.2.0（<code class="post-code--single">/usr/bin/pi</code>）跑了同一条命令，退出码是 1。<a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">Pi 更新日志</a>的 1.5.0 一节记录了这项变化，对应 <a href="https://github.com/earendil-works/pi/pull/11304">PR #11304</a>。</p>
+<p>无人值守时，拼错包名可能让运行缺少预期扩展，却不报失败，所以下方脚本会检查这条警告。如果扩展在加载时抛异常，Pi 1.5.0 仍以 1 退出。</p>
+<h2 id="提问和计划评审工具需要-ui">提问和计划评审工具需要 UI</h2>
+<p><code class="post-code--single">rpiv-ask-user-question</code> 的 <code class="post-code--single">reconcile.ts</code> 在 <code class="post-code--single">!ctx.hasUI</code> 时移除 <code class="post-code--single">ask_user_question</code>。Plannotator 的 <code class="post-code--single">index.ts</code> 在同样的条件下停用工具。这次两者都顺利加载，在 <code class="post-code--spaced">pi -p</code> 下却都没提供工具。要求模型调用时，它回答 <code class="post-code--single">NO-TOOL</code>。</p>
+<h2 id="默认权限配置会拦住普通操作">默认权限配置会拦住普通操作</h2>
+<p>没写配置时，<code class="post-code--single">pi-permission-system@42.0.0</code> 拒绝了每一次 bash 调用尝试，连 <code class="post-code--spaced">ls -la</code> 也一样：</p>
+<blockquote>
+<p>This &#39;bash&#39; call requires approval, but no interactive UI is available.</p>
+</blockquote>
+<p>测试要求执行 <code class="post-code--spaced">mkdir -p scratch &amp;&amp; rm -rf scratch &amp;&amp; echo removed</code>，不加载扩展的对照组执行后输出了 <code class="post-code--single">removed</code>。扩展在无法获得批准时会拒绝调用。无人值守时，需要配置好任务所需的权限；这次没有测试这样的配置。</p>
+<p><code class="post-code--single">cc-safety-net@2.7.3</code> 没加工具，用 <code class="post-code--spaced">BLOCKED by CC Safety Net</code> 和规则 <code class="post-code--single">git.reset-hard</code> 拦下了 <code class="post-code--spaced">git reset --hard</code>。不加载扩展的对照组在临时仓库里执行了这条命令，退出码为 0。扩展把日志写到了 <code class="post-code--single">~/.cc-safety-net/</code>。</p>
+<h2 id="npm-跳过了安装脚本">npm 跳过了安装脚本</h2>
+<p>这套环境中的 npm 12 默认阻止安装脚本：</p>
+<pre><code class="language-text">npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+</code></pre>
+<p>三次安装各有一个包的脚本被阻止：Plannotator 的 <code class="post-code--single">node-pty</code>、permission-system 的 <code class="post-code--single">tree-sitter-bash</code>，以及 pi-lens 的 <code class="post-code--single">@ast-grep/cli</code> postinstall。权限扩展仍按前文所述拒绝 bash 调用，<code class="post-code--single">lens_diagnostics</code> 返回了 <code class="post-code--spaced">clean=1, unavailable=0, failed=0</code>，重跑时还报告 <code class="post-code--spaced">Primary LSP (marksman): confirmed clean</code>，所以这次测到的部分能运行。但这些包的其他部分是否缺了原生组件，无法由此判断。Plannotator 因为没有 UI 而不提供工具，这次测试也就无法说明跳过安装脚本会怎样影响它的行为。</p>
+<h2 id="状态文件不全在-agent-目录里">状态文件不全在 agent 目录里</h2>
+<p>只改 <code class="post-code--single">PI_CODING_AGENT_DIR</code>，有些状态文件仍会留在别处。Context-mode 写了 <code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code>。Pi-lens 写了 <code class="post-code--single">~/.pi-lens/</code>，第一次诊断时还把 <code class="post-code--single">marksman</code> 和 <code class="post-code--single">typos-lsp</code> 下载到它的 <code class="post-code--single">bin/</code> 目录。第一次用了 41.2 秒；二进制文件已经在时，同一个调用测试在 E2 用了 11.3 秒，在 E1 用了 11.8 秒。</p>
+<p>Background-tasks 在仓库的 <code class="post-code--single">.pi/tasks/</code> 留下了输出和元数据。Tintinweb 的子 agent 在 agent 目录里保存了会话，父会话带了 <code class="post-code--single">--no-session</code> 也一样。Hermes-memory 在同一个 agent 目录里写了 <code class="post-code--single">MEMORY.md</code> 和 SQLite 文件，多次运行共用这个目录就会沿用保存的记忆。</p>
+<h2 id="钥匙串测试没有复现-9-月的卡死">钥匙串测试没有复现 9 月的卡死</h2>
+<p>9 月 4 日曾发生过一次与 systemd 运行环境有关的卡死，记录见<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%A4%E6%AC%A1%E4%BA%8B%E6%95%85">当时的事故</a>和<a href="/zh/blog/pi-extensions-in-production/#%E4%B8%80%E6%AC%A1-d-bus-%E5%8D%A1%E6%AD%BB-%E8%AE%A9-orbi-%E4%B8%8D%E5%86%8D%E4%BF%A1%E4%BB%BB-pi-%E7%9A%84%E9%BB%98%E8%AE%A4%E5%8A%A0%E8%BD%BD">生产环境那篇</a>。</p>
+<p>没有配置 MCP 服务器时，<code class="post-code--single">pi-mcp-adapter@7.0.1</code> 无论启动还是调用 <code class="post-code--single">mcp</code>，都没有访问永不应答的 Secret Service。我没测 OAuth 或 bearer token 存储。</p>
+<p>我的自写扩展在加载时通过 <code class="post-code--single">@napi-rs/keyring</code> 读取钥匙串，3 次运行中 3 次都被黑洞记录到了。首次模型请求在 3.2 秒发出，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间，首次请求时间相差约 2 秒，之后 Pi 继续运行，没有卡死。我没查明是哪一层在约 2 秒后放弃等待；<code class="post-code--single">busctl</code> 对同一个黑洞设置了 5 秒超时，就等满了 5 秒。</p>
+<p>除自写测试扩展外，15 个扩展里唯一记录到的 Secret Service 调用来自 pi-lens，发生在总线启动后的 2.3 秒，当时它正在做第一次诊断和下载二进制文件。它的首次模型请求早在 1.3 秒时就已发出（E1 对照组是 1.2 秒），因此这次调用不可能拖慢启动。自写扩展在加载时访问钥匙串，会挡在首次模型请求之前；pi-lens 在工具调用期间访问，首次请求已经发出。那次运行同时还在下载这两个二进制文件，所以我没有单独测出这次调用本身的耗时。二进制文件已经在时，E1 里同一个调用测试用了 11.8 秒，黑洞没有记录到调用。</p>
+<p>这套测试能检测 Secret Service 访问，这次没有复现之前的卡死；上面的 3 次验证用的是我的自写钥匙串扩展。将下方黑洞服务的代码原样保存为 <code class="post-code--single">blackhole.py</code>，需要 dbus-python 和 PyGObject。如果总线上已有服务占用了 <code class="post-code--single">org.freedesktop.secrets</code>，脚本会以 1 退出，因为正常钥匙串替它应答会让所有测试看起来都没问题：</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;A Secret Service that never answers: owns org.freedesktop.secrets on the
+current session bus, logs every method call addressed to it, and never replies.
+Usage: blackhole.py &lt;logfile&gt;&quot;&quot;&quot;
+import sys, time
+import dbus, dbus.bus, dbus.lowlevel, dbus.mainloop.glib
+from gi.repository import GLib
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+bus = dbus.SessionBus()
+NAME = &quot;org.freedesktop.secrets&quot;
+if bus.request_name(NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE) != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+    sys.exit(f&quot;{NAME} is already owned on this bus: a real keyring is running, nothing would be tested&quot;)
+me = bus.get_unique_name()
+log = open(sys.argv[1], &quot;a&quot;, buffering=1)
+log.write(f&quot;{time.time():.3f} ready {NAME} as {me}\n&quot;)
+
+
+def on_message(_conn, msg):
+    if msg.get_type() == 1 and msg.get_destination() in (NAME, me):
+        log.write(f&quot;{time.time():.3f} call {msg.get_interface()}.{msg.get_member()} {msg.get_path()} from {msg.get_sender()}\n&quot;)
+        return dbus.lowlevel.HANDLER_RESULT_HANDLED  # swallow: no reply ever
+    return dbus.lowlevel.HANDLER_RESULT_NOT_YET_HANDLED
+
+
+bus.add_message_filter(on_message)
+GLib.MainLoop().run()
+</code></pre>
+<p>下方的测试脚本会清空环境变量，默认不传入总线。设置 <code class="post-code--single">KEEP_BUS=1</code> 才会把当前会话总线传给 Pi；把黑洞和测试脚本一起放进私有总线里启动：</p>
+<pre><code class="language-bash">dbus-run-session -- bash -c &#39;rm -f calls.log; python3 blackhole.py calls.log &amp; for i in $(seq 50); do grep -q &quot; ready &quot; calls.log 2&gt;/dev/null &amp;&amp; break; sleep 0.1; done; grep -q &quot; ready &quot; calls.log || exit 1; KEEP_BUS=1 ./try-pi-extension.sh npm:&lt;pkg&gt;@&lt;version&gt;&#39;
+</code></pre>
+<p><code class="post-code--single">calls.log</code> 中每条带 <code class="post-code--single">call</code> 的行，都是一次没有得到应答的 Secret Service 请求。用我的钥匙串测试扩展运行时，日志记录了一次 <code class="post-code--single">org.freedesktop.Secret.Service.OpenSession</code> 调用；同一条命令去掉 <code class="post-code--single">KEEP_BUS=1</code> 后没有记录到调用，因为 Pi 看不到总线。</p>
+<h2 id="留下一个扩展之前-自己跑一次">留下一个扩展之前，自己跑一次</h2>
+<p>把下面代码原样保存为 <code class="post-code--single">try-pi-extension.sh</code>，再执行 <code class="post-code--spaced">chmod +x try-pi-extension.sh</code>。PATH 中需要有 Pi、Node、npm、jq、setsid 和 timeout，运行前还要导出模型服务商的 key。脚本默认读取 <code class="post-code--single">DEEPSEEK_API_KEY</code>，provider 为 <code class="post-code--single">deepseek</code>，模型为 <code class="post-code--single">deepseek-flash</code>。可以用 <code class="post-code--single">KEYVAR</code> 选择其他 key 变量，通过可选参数传入 provider 和模型。请保存成脚本运行，不要直接粘贴到交互式 shell 里。</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# try-pi-extension.sh &lt;source&gt; [provider] [model]
+# Starts Pi once the way a service would: no terminal, no desktop session bus,
+# stdin closed, a throwaway HOME, only this one extension. Exits non-zero if
+# Pi fails, times out, or never builds a system prompt.
+set -euo pipefail
+src=${1:?usage: try-pi-extension.sh npm:&lt;package&gt;@&lt;version&gt; [provider] [model]}
+[ -e &quot;$src&quot; ] &amp;&amp; src=$(realpath &quot;$src&quot;)  # local file: Pi runs from another directory
+provider=${2:-deepseek}
+model=${3:-deepseek-flash}
+keyvar=${KEYVAR:-DEEPSEEK_API_KEY}
+key=${!keyvar:?export $keyvar first}
+bus=()  # KEEP_BUS=1 passes the current session bus through (to test with blackhole.py)
+if [ &quot;${KEEP_BUS:-0}&quot; = 1 ]; then
+  bus=(&quot;DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:?KEEP_BUS=1 needs a session bus}&quot;)
+fi
+work=$(mktemp -d)
+mkdir -p &quot;$work/agent&quot; &quot;$work/repo&quot;
+start=$(date +%s)
+set +e
+(cd &quot;$work/repo&quot; &amp;&amp; env -i HOME=&quot;$work&quot; PATH=&quot;$PATH&quot; PI_CODING_AGENT_DIR=&quot;$work/agent&quot; &quot;$keyvar=$key&quot; &quot;${bus[@]}&quot; \
+  setsid -w timeout &quot;${TIMEOUT:-120}&quot; pi -p --mode json --no-session \
+  --provider &quot;$provider&quot; --model &quot;$model&quot; -ne -e &quot;$src&quot; \
+  &quot;Reply with the single word OK.&quot; &lt; /dev/null &gt; &quot;$work/out.jsonl&quot; 2&gt; &quot;$work/err&quot;)
+rc=$?
+set -e
+echo &quot;exit=$rc seconds=$(( $(date +%s) - start )) workdir=$work&quot;
+tools=$(jq -r &#39;select(.type==&quot;message_start&quot; and .message.role==&quot;system&quot;)
+  | .message.toolsAdded[]?.name&#39; &quot;$work/out.jsonl&quot; 2&gt;/dev/null | sort -u || true)
+# Pi 1.5.0 skips an npm or git extension that fails to install and still exits 0.
+if [ &quot;$rc&quot; -eq 0 ] &amp;&amp; grep -qE &#39;Extension package &quot;.*&quot;: failed to install&#39; &quot;$work/err&quot;; then
+  rc=3
+fi
+# In --mode json, a failed model request (bad key, provider down) also exits 0.
+stop=$(jq -rs &#39;[.[] | select(.type==&quot;message_end&quot; and .message.role==&quot;assistant&quot;)]
+  | last | .message.stopReason // &quot;none&quot;&#39; &quot;$work/out.jsonl&quot; 2&gt;/dev/null || echo none)
+if [ &quot;$rc&quot; -eq 0 ] &amp;&amp; { [ &quot;$stop&quot; = error ] || [ &quot;$stop&quot; = aborted ] || [ &quot;$stop&quot; = none ]; }; then
+  rc=4
+  jq -rs &#39;[.[] | select(.type==&quot;message_end&quot; and .message.role==&quot;assistant&quot;)]
+    | last | .message.errorMessage // empty&#39; &quot;$work/out.jsonl&quot; 2&gt;/dev/null &gt;&gt; &quot;$work/err&quot; || true
+fi
+if [ &quot;$rc&quot; -ne 0 ] || [ -z &quot;$tools&quot; ]; then
+  echo &quot;FAILED (exit $rc: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:&quot;
+  tail -n 20 &quot;$work/err&quot;
+  exit 1
+fi
+echo &quot;tools the model was given:&quot;
+echo &quot;$tools&quot;
+echo &quot;files left behind, outside the extension&#39;s own install:&quot;
+(cd &quot;$work&quot; &amp;&amp; find . -type f -not -path &#39;./agent/tmp/*&#39; -not -path &#39;./.npm/*&#39; \
+  -not -name out.jsonl -not -name err | sort)
+</code></pre>
+<p>例如，导出 <code class="post-code--single">DEEPSEEK_API_KEY</code> 后：</p>
+<pre><code class="language-text">$ ./try-pi-extension.sh npm:pi-web-access@0.47.0
+exit=0 seconds=3 workdir=/tmp/tmp.9hlvXJ1bBX
+tools the model was given:
+bash
+edit
+fetch_content
+get_search_content
+read
+source_check
+web_search
+write
+files left behind, outside the extension&#39;s own install:
+./agent/auth.json
+./agent/models-store.json
+</code></pre>
+<p>我用最终版脚本跑过下面这些失败情况。<code class="post-code--single">bad.ts</code> 是一个三行扩展，Pi 加载它时就抛异常：</p>
+<pre><code class="language-ts">export default function () {
+  throw new Error(&quot;boom at load&quot;);
+}
+</code></pre>
+<pre><code class="language-text">$ DEEPSEEK_API_KEY=sk-invalid ./try-pi-extension.sh npm:@juicesharp/rpiv-todo@2.15.0
+exit=0 seconds=1 workdir=/tmp/tmp.rRQOCMjdmz
+FAILED (exit 4: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+401: {&quot;message&quot;:&quot;Authentication Fails, Your api key: ****alid is invalid (...)&quot;,&quot;type&quot;:&quot;authentication_error&quot;,&quot;param&quot;:null,&quot;code&quot;:&quot;invalid_request_error&quot;}
+
+$ ./try-pi-extension.sh npm:no-such-pi-extension-xyz@1.0.0
+exit=0 seconds=1 workdir=/tmp/tmp.pRpGIwtQ0o
+FAILED (exit 3: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+Warning: Extension package &quot;npm:no-such-pi-extension-xyz@1.0.0&quot;: failed to install (npm install no-such-pi-extension-xyz@1.0.0 --prefix /tmp/tmp.pRpGIwtQ0o/agent/tmp/extensions/npm/f35b2129 --legacy-peer-deps --no-audit --no-fund failed with code 1). Check the source and try again.
+
+$ ./try-pi-extension.sh ./bad.ts
+exit=1 seconds=0 workdir=/tmp/tmp.9PqJAU0PEu
+FAILED (exit 1: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+Error: Failed to load extension &quot;/var/tmp/pex/bad.ts&quot;: Failed to load extension: boom at load
+Hint: Start without extensions using &quot;pi -ne&quot;.
+
+$ TIMEOUT=2 ./try-pi-extension.sh npm:pi-lens@4.4.8
+exit=124 seconds=2 workdir=/tmp/tmp.MZuYKgOPSZ
+FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+</code></pre>
+<p>脚本列出的是模型拿到的全部工具，包含 Pi 内置的四个工具；上面的表格只列新增工具。第一行的 <code class="post-code--single">exit=</code> 是执行 Pi 命令时得到的退出状态，其中 124 来自外层的 <code class="post-code--single">timeout</code>；<code class="post-code--spaced">FAILED (exit</code> 后的数字是脚本检查后的分类，括号里的说明每次都一样，列出各分类的含义。Pi 1.5.0 在 <code class="post-code--spaced">--mode json</code> 下，遇到错误 key 或不存在的包都以 0 退出，因此脚本还要自己检查最后一条 assistant 消息和安装警告。上面每种失败都会让脚本以 1 退出；缺少参数或 key 也一样，在 Pi 启动前就退出。<code class="post-code--single">./bad.ts</code> 这样的本地路径会先转成绝对路径，因为脚本会换到临时目录里运行 Pi。</p>
+<p>加载检查通过后，还要实际调用一次工具。提问扩展就能通过这个脚本，模型拿到的却只有对照组那四个工具。</p>
+<h2 id="无人值守时-我会留下哪些-pi-扩展">无人值守时，我会留下哪些 Pi 扩展？</h2>
+<p>需要 MCP 时，<code class="post-code--single">pi-mcp-extension</code> 会进我的必装清单；也可以用适配器，每次运行前重建 agent 目录。这次两个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用，<code class="post-code--single">pi-mcp-extension</code> 没有留下这类改动。</p>
+<p>网页搜索方面，<code class="post-code--single">pi-web-access</code> 没有搜索 key 也能用，报告的 provider 是 &quot;Provider: exa&quot;；它的 README 说明，没有 key 时会通过 Exa 的 MCP 端点搜索，因此查询会发给 Exa。<code class="post-code--single">pi-web-search</code> 也能用，它的 README 说搜索通过当前选定的模型完成。</p>
+<p>两个子 agent 包都返回了 <code class="post-code--single">PONG</code>，其中 Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。任务清单我会保留 <code class="post-code--single">rpiv-todo</code>，用 <code class="post-code--single">cc-safety-net</code> 拦截命令。permission-system 要有明确配置才会用。</p>
+<p>我没测 OAuth MCP 服务器、付费搜索 key 或长时间运行。测试环境是 Linux，没有测 Windows 和 macOS。</p>
+<h2 id="在-orbi-里固定选中的扩展版本">在 Orbi 里固定选中的扩展版本</h2>
+<p>用 Orbi 运行 Pi 时，在 <code class="post-code--single">orbi.toml</code> 里写：</p>
+<pre><code class="language-toml">[[pi_extensions]]
+source = &quot;npm:pi-web-access@0.47.0&quot;
+
+[[pi_extensions]]
+source = &quot;npm:@tintinweb/pi-subagents@0.23.1&quot;
+
+[[pi_extensions]]
+source = &quot;npm:@juicesharp/rpiv-todo@2.15.0&quot;
+
+[[pi_extensions]]
+source = &quot;npm:cc-safety-net@2.7.3&quot;
+</code></pre>
+<p>Orbi 的 <code class="post-code--spaced">origin/main f5de8082</code> 中，<code class="post-code--single">src/orbi/config.py</code> 的校验器接受了这些来源。它拒绝了 <code class="post-code--single">npm:pi-web-access</code>、<code class="post-code--single">npm:pi-web-access@latest</code> 和 <code class="post-code--single">npm:@tintinweb/pi-subagents</code>，报错为 &quot;npm source must pin a version&quot;。</p>
+<p>Pi 1.5.0 <a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">更新日志</a>的 1.5.0 一节提到，<code class="post-code--spaced">-e npm:</code> 指定的包如果没有固定版本，npm 包仓库里出现更新的匹配版本时会重新安装。<a href="/zh/blog/pi-extensions-in-production/#orbi-%E7%94%A8-no-extensions-%E5%8A%A0%E7%99%BD%E5%90%8D%E5%8D%95%E5%8A%A0%E8%BD%BD-pi-%E6%89%A9%E5%B1%95">生产环境那篇的加载一节</a>解释了 Orbi 怎样把配置中的扩展传给 Pi。</p>
+<aside class="post-cta">
+  <h2>Orbi 把你的 Issue 一路做到发版。</h2>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
+  <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
+</aside><h2 id="相关">相关</h2>
+<p><a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>收录了整个系列。<a href="/zh/blog/pi-extensions-in-production/">Pi 扩展在生产环境里怎么用</a>讲隔离和自写扩展；<a href="/zh/blog/orbi-on-pi-coding-agent/">Orbi 跑 Pi</a>跟着 runner 看运行过程和事故记录。也可以浏览 <a href="https://pi.dev/packages">Pi 扩展目录</a>，查看 <a href="/zh/compare/claude-code/?ref=blog-pi-ext">Orbi 与 Claude Code 对比</a>或 <a href="/zh/cloud/?ref=blog-pi-ext">Orbi Cloud</a>。Orbi 源码在 <a href="https://github.com/orbi-build/orbi">orbi-build/orbi</a>。</p>
+
+<!--orbi:related-posts-->
+      </article>
+    </div>
+  </main>
+
+<section class="subscribe-box shell" aria-labelledby="subscribe-title">
+  <h2 class="subscribe-title" id="subscribe-title">每周一个真实交付</h2>
+  <form class="subscribe-form" action="/subscribe" method="post" data-subscribe-form data-success="已订阅" data-invalid="邮箱格式不对" data-unavailable="暂时无法订阅，请重试。">
+    <label class="sr-only" for="subscribe-email-zh">邮箱地址</label>
+    <input id="subscribe-email-zh" type="email" name="email" autocomplete="email" required placeholder="你的邮箱">
+    <input type="hidden" name="lang" value="zh">
+    <button class="button button-ghost" type="submit">订阅</button>
+    <p class="subscribe-status" data-subscribe-status aria-live="polite"></p>
+  </form>
+  <p class="subscribe-note">每周一封，讲一次真实交付。随时退订。</p>
+</section>
+
+  <script src="/subscribe.js" defer></script>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand">
+      <a class="wordmark wordmark-footer" href="/zh/" aria-label="Orbi 首页">
+        <img class="wordmark-mark" src="/logo-mark.svg" width="28" height="28" alt="">
+        <span>Orbi</span>
+      </a>
+      <p class="orbi-site-footer-p">不会随 Session 消失的软件生产。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      <div class="footer-group">
+        <h2>产品</h2>
+        <ul><li><a href="/zh/cloud/">Cloud</a></li><li><a href="/zh/cloud/#pricing">价格</a></li><li><a href="/zh/#system">产品怎么运作</a></li><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="https://github.com/orbi-build/orbi/releases">发布记录</a></li><li><a href="https://status.orbi.build">状态</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>资源</h2>
+        <ul><li><a href="/zh/evidence/">Orbi 交付自己的记录</a></li><li><a href="/zh/benchmark/">我们怎么测 harness</a></li><li><a href="/zh/guides/pi-coding-agent/">Pi 系列：Orbi 是怎么实现的</a></li><li><a href="/zh/cost/">每个 PR 花多少钱</a></li><li><a href="/aiready/zh/">ai-ready 12 要素</a></li><li><a href="/zh/compare/">与同类工具对比</a></li><li><a href="/zh/blog/">博客</a></li><li><a href="/zh/blog/ai-contribute-to-open-source/">开源贡献</a></li><li><a href="https://docs.orbi.build/zh">自托管文档</a></li><li><a href="https://cloud-docs.orbi.build/?ref=footer">Cloud 文档</a></li><li><a href="/zh/#faq">常见问题</a></li></ul>
+      </div>
+      <div class="footer-group footer-guides">
+        <h2>指南</h2>
+        <ul><li><a href="/zh/guides/">指南</a></li><li><a href="/zh/guides/issue-to-release/">Issue 到发版</a></li><li><a href="/zh/guides/ci-gates/">CI 门禁</a></li><li><a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR</a></li><li><a href="/zh/guides/autonomous-coding-agent/">自主编程 agent</a></li><li><a href="/zh/guides/self-hosted-coding-agent/">自托管编程 agent</a></li><li><a href="/zh/guides/codex-github-issues/">Codex 处理 GitHub Issue</a></li><li><a href="https://aiready.sh/zh/">ai-ready 十二要素</a></li></ul>
+      </div>
+      <div class="footer-group footer-compare">
+        <h2>对比</h2>
+        <ul><li><a href="/zh/compare/orca/">Orbi vs Orca</a></li><li><a href="/zh/compare/openclaw/">Orbi vs OpenClaw</a></li><li><a href="/zh/compare/github-copilot-coding-agent/">Orbi vs GitHub Copilot cloud agent</a></li><li><a href="/zh/compare/managed-agents/">Orbi vs Claude Managed Agents</a></li><li><a href="/zh/compare/claude-code/">Orbi vs Claude Code</a></li><li><a href="/zh/compare/openhands/">Orbi vs OpenHands</a></li><li><a href="/zh/compare/hermes-agent/">Orbi vs Hermes Agent</a></li><li><a href="/zh/compare/keelen/">Orbi vs Keelen</a></li><li><a href="/zh/compare/codex/">Orbi vs OpenAI Codex</a></li><li><a href="/zh/compare/devin/">Orbi vs Devin</a></li><li><a href="/zh/compare/jules/">Orbi vs Google Jules</a></li><li><a href="/zh/compare/cursor/">Orbi vs Cursor Cloud Agents</a></li><li><a href="/zh/compare/">全部对比</a></li></ul>
+      </div>
+      <div class="footer-group">
+        <h2>公司</h2>
+        <ul><li><a href="/zh/support/">支持</a></li><li><a href="https://github.com/orbi-build/orbi/milestones">路线图</a></li><li><a href="/zh/privacy/">隐私政策</a></li><li><a href="/zh/terms/">服务条款</a></li><li><a href="https://github.com/orbi-build/orbi">GitHub</a></li><li><a href="https://x.com/xqliu" rel="me">X</a></li><li><a href="https://www.youtube.com/@orbibuild" rel="me">YouTube</a></li></ul>
+      </div>
+    </nav>
+    <div class="footer-language language" role="group" aria-label="语言"><span aria-current="page">ZH</span><a href="/blog/best-pi-extensions/" lang="en" aria-label="English">EN</a></div>
+    <nav class="footer-friends" aria-label="Friends">
+      <span>Friends</span>
+      <a href="https://www.opensourcealternatives.to/" rel="noopener">Open Source Alternatives</a>
+      <a href="https://agentic.ai/best/free-coding-agents" rel="noopener">Agentic.ai</a>
+      <div class="footer-badges">
+        <a href="https://launchnest.io/p/orbi" rel="dofollow" title="orbi.build — Domain Rating by LaunchNest">
+          <img src="https://launchnest.io/api/badge/dr?domain=orbi.build&style=small&shape=round&color=dark" alt="orbi.build Domain Rating" width="240" />
+        </a>
+        <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
+          <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
+        </a>
+        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        </a>
+        <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
+          <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
+        </a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
+        <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
+        <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
+          <img src="https://data.altern.ai/alternbadge.png" alt="Featured on Altern" width="150" />
+        </a>
+        <a href="https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb" target="_blank" rel="nofollow">
+          <img src="https://saaspa.ge/api/embed/product/cmvdfiyyk000mjq06rc8auynb/badge.png?theme=black" alt="Featured on Saaspa.ge" width="200" height="60" />
+        </a>
+        <a href="https://www.tooluck.org/item/orbi" target="_blank" rel="noopener noreferrer">
+          <img src="https://www.tooluck.org/badges/tooluck-badge-dark.svg" alt="Featured on Tooluck.org" width="210" height="55" />
+        </a>
+        <a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">
+          <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
+        </a>
+        <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+        </a>
+        <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
+        <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
+        <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
+        <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
+        <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
+        <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
+        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
+        <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
+        <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
+        <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
+        <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+        <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
+        <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
+        <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
+        <a href="https://webtech.tools" title="WebTech">WebTech</a>
+        <a href="https://t0ai.com" title="T0 AI Tools Directory">T0 AI Tools Directory</a>
+        <a href="https://aixlist.com/">AIXList</a>
+        <a href="https://hiaitools.com" title="The latest AI Tools Directory">The latest AI Tools Diresctory</a>
+        <a href="https://aitooli.com/" title="Aitooli AI Tools Directory">Aitooli AI Tools Directory</a>
+        <a href="https://okeiai.com/" title="Okei AI Tools Directory" target="_blank"> Okei AI Tools </a>
+        <a href="https://vibedonalds.com" target="_blank" rel="noopener"><img src="https://vibedonalds.com/badge/featured-on-vibedonalds.svg" alt="Featured on Vibedonalds" width="240" height="60"></a>
+        <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
+        <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
+        <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+      </div>
+    </nav>
+    <p class="footer-legal">© 2026 Low Code, LLC</p>
+  </footer>
+
+  <script src="/demo.js" defer></script>
+
+<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script><script>(()=>{
+  const endpoint="/cloud/e", start=Date.now();
+  let visible=document.visibilityState!=="hidden", visibleAt=visible?start:0, visibleMs=0, interacted=false, engagedSent=false, depthSent=false, maxDepth=0;
+  const send=(kind,detail,extra)=>{const body={kind,path:location.pathname};if(detail!==undefined)body.detail=String(detail);if(extra)Object.assign(body,extra);try{if(!navigator.sendBeacon(endpoint,new Blob([JSON.stringify(body)],{type:"application/json"})))console.warn("engagement_report_failed","sendBeacon returned false");}catch(error){console.warn("engagement_report_failed",error);}};
+  send("visit",undefined,{search:location.search,referrer:document.referrer});
+  const elapsed=()=>visibleMs+(visible?Date.now()-visibleAt:0);
+  const check=()=>{if(!engagedSent&&interacted&&elapsed()>=10000){engagedSent=true;send("engaged");}};
+  const schedule=()=>setTimeout(check,Math.max(0,10000-elapsed()));
+  const markInteraction=()=>{interacted=true;check();};
+  ["scroll","pointerdown","keydown","touchstart"].forEach(type=>addEventListener(type,markInteraction,{passive:true}));
+  const depth=()=>{const height=document.documentElement.scrollHeight;maxDepth=Math.max(maxDepth,height<=0?100:Math.min(100,Math.floor((scrollY+innerHeight)/height*100)));};
+  addEventListener("scroll",depth,{passive:true});
+  schedule();
+  const hide=()=>{depth();if(visible){visibleMs+=Date.now()-visibleAt;visible=false;}check();if(!depthSent){depthSent=true;send("scroll_depth",Math.max(25,Math.min(100,Math.floor(maxDepth/25)*25)));}};
+  const show=()=>{if(!visible){visible=true;visibleAt=Date.now();schedule();}};
+  addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?hide():show());
+  addEventListener("pagehide",hide);
+  addEventListener("click",event=>{const link=event.target.closest?.("[data-cta]");if(link)send("cta_click",link.dataset.cta);},{passive:true});
+  const sectionViews=new Set();
+  const sectionDetail=section=>section.id||section.classList?.[0];
+  if(typeof IntersectionObserver!=="undefined"){
+    const sections=[...document.querySelectorAll("main section")].filter(section=>!section.parentElement?.closest("section"));
+    const thresholds=[.3,...sections.map(section=>{const height=section.getBoundingClientRect().height;return height>0?Math.min(.3,innerHeight*.5/height):.3;})];
+    const sectionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{
+      const detail=sectionDetail(entry.target);
+      if(detail&&!sectionViews.has(entry.target)&&((entry.intersectionRatio||0)>=.3||(entry.intersectionRect?.height||0)>=innerHeight*.5)){
+        sectionViews.add(entry.target);send("section_view",detail);sectionObserver.unobserve(entry.target);
+      }
+    });},{threshold:thresholds});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "44c2c3310e2e46b7955bb09f04c93fd1"}'></script></body>
+</html>
