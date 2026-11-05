@@ -2452,8 +2452,8 @@ describe("one unified footer on every content page", () => {
         .toMatch(/<button class="footer-badges-toggle"[^>]*data-footer-badges-toggle[^>]*>[^<]*<\/button>\s*<\/nav>$/);
       // Every link on the strip appears exactly once in the footer — the
       // directory reviewers check the source, so a duplicate is a defect.
-      // (Scoped to the footer: the homepage hero carries its own
-      // LaunchIgniter badge, a separate placement Issue #1173 does not touch.)
+      // (Scoped to the footer: Issue #1173 owns this strip alone, and
+      // Issue #1184 removed the homepage hero's separate LaunchIgniter badge.)
       const footer = footerRegion(html);
       for (const href of stripHrefs) {
         expect(
