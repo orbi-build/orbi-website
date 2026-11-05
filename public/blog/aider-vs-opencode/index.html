@@ -226,16 +226,16 @@
 <p>Aider&#39;s <a href="https://aider.chat/docs/git.html">Git integration</a> normally commits its edits. It can also commit pre-existing changes before working on a dirty file. Its automatic commits can be disabled. OpenCode can run Git commands through its tools; whether a task leaves commits or uncommitted edits depends on the instructions and actions taken.</p>
 <p>This makes plain <code class="post-code--spaced">git diff</code> a poor comparison: after an agent commits, it can print nothing even though the task changed code.</p>
 <p>Use separate clean checkouts of the same starting commit for the two trials. In each checkout, run this in Bash before starting the tool:</p>
-<pre><code class="language-bash">git status --short
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>git status --short
 trial_base=$(git rev-parse HEAD)
-</code></pre>
+</code></pre></div>
 <p>If status shows existing changes, prepare a clean trial checkout first. Keep this terminal open. After the agent finishes, run these commands in that same Bash session:</p>
-<pre><code class="language-bash">git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
 git status --short &amp;&amp;
 git diff --stat &quot;$trial_base&quot; -- &amp;&amp;
 git diff &quot;$trial_base&quot; -- &amp;&amp;
 git log --oneline &quot;$trial_base&quot;..HEAD
-</code></pre>
+</code></pre></div>
 <p>The diff against <code class="post-code--single">trial_base</code> includes tracked changes whether they have been committed, staged or left unstaged. Status also identifies untracked files, marked <code class="post-code--single">??</code>; their contents are absent from this diff, so inspect them separately. The log shows commits added after the starting point.</p>
 <p>These Git commands were checked in an isolated repository with committed and uncommitted edits, plus an untracked file. That checks the inspection method, not either agent&#39;s coding performance.</p>
 <h2 id="check-what-ran-before-accepting-the-change">Check what ran before accepting the change</h2>

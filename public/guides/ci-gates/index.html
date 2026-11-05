@@ -96,9 +96,9 @@
       <p class="section-tag">THE MECHANISM</p>
       <h2 class="orbi-compare-section-h2" id="mechanism-title">Two gates, one input: check-run conclusions</h2>
       <p class="section-lede">The <strong>review gate</strong> holds a clean review against the PR head's check runs before anything merges; the <strong>release gate</strong> holds the release against the release commit's check runs before Orbi freezes the SHA and cuts the tag. Both ask GitHub's Checks API for the commit's check runs and decide on the <code>conclusion</code> field — quoted here verbatim from the delivery engine, <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener"><code>src/orbi/runner.py</code></a> (<code>check_review_ci</code>) and <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener"><code>src/orbi/release.py</code></a> (<code>check_release_gates</code>):</p>
-      <figure class="code-block">
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><figure class="code-block">
         <figcaption>src/orbi/runner.py — check_review_ci (the review gate)</figcaption>
-<pre><code>failed = [
+<pre><code data-copy-source>failed = [
     check for check in check_runs
     if check.get("conclusion") not in ("success", "neutral", "skipped")
 ]
@@ -111,10 +111,10 @@ if failed:
     )
 if not check_runs:
     evidence = f"CI on review head {commit}: no check runs (nothing to gate)"</code></pre>
-      </figure>
-      <figure class="code-block">
+      </figure></div>
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><figure class="code-block">
         <figcaption>src/orbi/release.py — check_release_gates (the release gate)</figcaption>
-<pre><code>for check in check_runs:
+<pre><code data-copy-source>for check in check_runs:
     name = check.get("name")
     status = check.get("status")
     conclusion = check.get("conclusion")
@@ -125,7 +125,7 @@ if not check_runs:
             f"release gate: CI check '{name}' is {status}/{conclusion} "
             f"on the release commit {release_commit}"
         )</code></pre>
-      </figure>
+      </figure></div>
       <p class="src-note">Both quotes verbatim, verified 2026-09-12. Pending checks are never judged early: each gate polls until every check run completes, and a wait that exceeds the budget fails the gate — a queued suite blocks, it does not pass. The <code>conclusion</code> values are GitHub's own enum (<a class="orbi-src-note-a" href="https://docs.github.com/en/rest/checks/runs" rel="noopener">Checks API</a>): <code>success, failure, neutral, cancelled, skipped, timed_out, action_required, stale</code>; the gates' pass set is the subset <code>success, neutral, skipped</code>.</p>
       <p class="thesis-punch">The gate never sees a test name, a framework, or a coverage number. It sees one bit per check run — pass or not — which is why the contents of your CI, not Orbi, define the guarantee.</p>
     </section>
@@ -153,9 +153,9 @@ if not check_runs:
       <p class="section-tag">COPY, PASTE, DONE</p>
       <h2 class="orbi-compare-section-h2" id="workflows-title">Two complete workflows, ready to commit</h2>
       <p class="section-lede">Full files, not fragments — either one is a complete <code>.github/workflows/*.yml</code>. Each triggers on <code>pull_request</code> (so the review gate sees the PR head) and on <code>push</code> to the delivery branch (so the release gate sees the release commit). <code>push.branches</code> must include the branch Orbi delivers to; the Playwright file assumes your <code>playwright.config</code> starts the app itself (<code>webServer</code>) — the Playwright docs own that part.</p>
-      <figure class="code-block">
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><figure class="code-block">
         <figcaption>.github/workflows/ci.yml — pytest</figcaption>
-<pre><code>name: CI
+<pre><code data-copy-source>name: CI
 
 on:
   pull_request:
@@ -174,10 +174,10 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: pytest</code></pre>
-      </figure>
-      <figure class="code-block">
+      </figure></div>
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><figure class="code-block">
         <figcaption>.github/workflows/e2e.yml — Playwright business flows</figcaption>
-<pre><code>name: E2E
+<pre><code data-copy-source>name: E2E
 
 on:
   pull_request:
@@ -197,7 +197,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test</code></pre>
-      </figure>
+      </figure></div>
       <p class="src-note">From the next delivery on, Orbi checks these runs on every PR head and every release commit — and refuses to merge or tag past a red one. What running them costs per delivery is measured, not guessed: <a class="orbi-src-note-a" href="/cost/">the cost page</a> puts the mean delivery at about $0.06–0.12 at DeepSeek list prices.</p>
     </section>
 

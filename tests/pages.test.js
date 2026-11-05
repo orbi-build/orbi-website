@@ -3451,6 +3451,10 @@ describe("canonical install one-liner (Issue #186)", () => {
   const canonical = "curl -fsSL https://aiready.sh | sh";
 
   const snippetOf = (html) => html.match(/<code data-copy-source>([^<]*)<\/code>/)?.[1] ?? null;
+  // Issue #1181: the homepage no longer hand-writes the copy button, so the
+  // build is what marks the block it makes copyable. The source still has to
+  // carry the same one-liner as its first code block.
+  const sourceSnippetOf = (html) => html.match(/<pre><code>([^<]*)<\/code><\/pre>/)?.[1] ?? null;
 
   it("uses aiready.sh on the English and Chinese homepages", () => {
     for (const output of ["index.html", "zh/index.html"]) {
@@ -3462,7 +3466,7 @@ describe("canonical install one-liner (Issue #186)", () => {
   it("keeps homepage sources on the same command", async () => {
     for (const rel of ["site/pages/index.html", "site/pages/zh/index.html"]) {
       const html = await readFile(join(ROOT, rel), "utf8");
-      expect(snippetOf(html), `${rel}: missing copyable install snippet`).toBe(canonical);
+      expect(sourceSnippetOf(html), `${rel}: missing install snippet`).toBe(canonical);
     }
   });
 });

@@ -269,7 +269,7 @@
 <p>Orbi had already started building that when I asked whether it could be thinner.</p>
 <p>Looking again at the existing provisioning script, we didn&#39;t need a new program at all. Two copies of it can run at once; the refresh is one block that can be skipped; and the new endpoint returns exactly what the old list did. So the script got one flag, <code class="post-code--single">--claim-only</code>: skip the refresh, wait on the long poll instead, and run the same provisioning code as before. One round, then exit.</p>
 <p>systemd does the looping. This is the whole unit:</p>
-<pre><code class="language-ini">[Unit]
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-ini" data-copy-source>[Unit]
 Description=Orbi Cloud provisioning fast claim (long-poll)
 # Restarting is the whole point, so turn off the default
 # start limit (5 starts in 10 s) that would stop the unit
@@ -287,7 +287,7 @@ RestartSec=1
 
 [Install]
 WantedBy=multi-user.target
-</code></pre>
+</code></pre></div>
 <p>The script exits after every round and systemd starts it again a second later. Each round reads the script fresh from disk, so shipping a new version needs no restart logic; the next round just runs the new code. The one catch: deploy by writing a temporary file and renaming it into place, never by overwriting a script while it&#39;s running.</p>
 <figure class="post-media">
 <img src="/img/diagrams/longpoll-loop.svg" alt="The host runs provisioner.sh --claim-only under systemd with Restart=always and RestartSec=1. Each round asks Cloud for work; Cloud checks once a second for up to 20 seconds and hands out only new requests. The host picks up the request, prepares the workspace and exits, and systemd starts the next round a second later. The once-a-minute job still refreshes credentials and handles retries." width="720" height="380">

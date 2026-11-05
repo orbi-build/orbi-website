@@ -291,15 +291,14 @@
       <div class="midway">
         <p class="orbi-midway-p">在你自己的仓库上跑一次</p>
         <div class="install-block">
-          <button class="install-copy" type="button" data-copy aria-label="复制安装命令" data-copied-label="已复制">复制</button>
-          <pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre>
+          <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre></div>
           <p class="install-needs orbi-midway-p">需要 Python 3.14、git、gh、systemd 和一个模型端点。缺什么，<code>orbi doctor</code> 会直接点出来。</p>
           <details class="install-manual">
             <summary>想手动执行这四步命令</summary>
-            <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+            <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code data-copy-source>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
 uv tool install --force --reinstall --editable --python /usr/bin/python3 .
 cp .orbi.example.toml orbi.toml
-orbi setup --config orbi.toml</code></pre>
+orbi setup --config orbi.toml</code></pre></div>
           </details>
         </div>
         <a class="button button-signal" data-cta="midway-cloud" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>

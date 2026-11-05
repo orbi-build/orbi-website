@@ -238,14 +238,14 @@
 <h2 id="为什么开始">为什么开始</h2>
 <p>9 月 28 日，Orbi 在三个开源项目的 fork 里各修了一个 issue：<a href="https://github.com/orbi-build/pyinfra/pull/3">pyinfra</a>、<a href="https://github.com/orbi-build/chainloop/pull/3">chainloop</a>、<a href="https://github.com/orbi-build/fedify/pull/3">fedify</a>。三个都过了测试和 Orbi 自己的评审。往上游提之前我们手工复查了一遍，两个是错的。</p>
 <p>chainloop 那个是密钥脱敏器。原 issue 说：JWT 后面紧跟一个转义引号时，反斜杠会跟着 JWT 一起被脱敏。Orbi 的修法是剥掉每条命中结果末尾的反斜杠。JWT 修好了，另外两处坏了：</p>
-<pre><code class="post-code--spaced">输入：DB_PASSWORD=Zq8mLp2Vx9rT\n next
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>输入：DB_PASSWORD=Zq8mLp2Vx9rT\n next
 输出：DB_PASSWORD=[REDACTED:generic-password]\n next
 
 输入：password: s
       Host: services.example.com
 输出：pa[REDACTED][REDACTED]word: [REDACTED]
       Ho[REDACTED]t: [REDACTED]ervice[REDACTED].example.com
-</code></pre>
+</code></pre></div>
 <p>（第二例把占位符缩写了。）第一例里，检测器认定的密码是 <code class="post-code--single">Zq8mLp2Vx9rT\n</code>，结尾是字面的反斜杠加 <code class="post-code--single">n</code>。修复把这两个字符从命中结果里剥掉，它们就以明文留在了日志里。第二例的密钥只有一个字符，脱敏器干脆把正文里所有的 <code class="post-code--single">s</code> 都换掉了。</p>
 <p>pyinfra 那个是中日韩文字把结果表格挤歪了。修复把宽字符按两列算，issue 里的例子对齐了，👍🏽 和分解形式的「が」却比修之前更歪。</p>
 <p>两个交付上，Orbi 写在 fork issue 里的评审意见全文都是 <code class="post-code--spaced">review: pass, no findings</code>。评审跑了测试，核对了 issue 里的例子，例子确实过了。回归藏在没人试过的输入里。</p>
@@ -280,13 +280,13 @@
 <p>v5 要求输入由程序按整类批量生成（文本类：ASCII、中日韩与全角、组合字符、emoji 修饰符、零宽序列、ANSI 码；语法类：转义、奇偶数个反斜杠、引号、分隔符），并把数量写进 <code class="post-code--single">.orbi/regression.md</code>，方便评审核对。此后的运行动辄生成上千个输入：v5 有一次给脱敏器生成了 2756 个；后来一次 Opus 运行给表格生成了 119 万个字符单元，是我们见过最多的。v5 四次全过。</p>
 <h3 id="v9-与-v11-判据不能是改动本身">v9 与 v11：判据不能是改动本身</h3>
 <p>接着一个强模型让我们看到，光生成输入还不够。下面摘自 <code class="post-code--single">gpt-5.6-sol</code> 在 pyinfra 上一次运行自己写的回归报告：</p>
-<pre><code class="post-code--spaced">The comparison uses an independent reference formatter implementing that rule
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>The comparison uses an independent reference formatter implementing that rule
 ...
 - inputs: 1,200
 - head wrong: 0
 - base wrong: 1,111
 - head wrong but base right (regressions): 0
-</code></pre>
+</code></pre></div>
 <p>它说的「that rule」，就是修复刚实现的那条规则：东亚宽字符按两列算。这个「独立」的参考实现只是把修复重写了一遍，当然处处对得上。👍🏽 的回归还在。</p>
 <p>v11 要求判据独立于补丁：现成的库、修改前行为中本来正确的部分，或者某个不变量。它还要求 agent 先列出依赖树，参考实现往往已经装在环境里。</p>
 <h3 id="v11-工具进-path-以及我们自己文本里的-bug">v11：工具进 <code class="post-code--single">PATH</code>，以及我们自己文本里的 bug</h3>

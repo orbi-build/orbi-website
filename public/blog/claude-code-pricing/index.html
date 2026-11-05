@@ -269,13 +269,13 @@
 <h2 id="check-your-account-before-a-long-run">Check your account before a long run</h2>
 <p>In Claude Code, run <code class="post-code--single">/status</code> to inspect the account and <code class="post-code--single">/usage</code> to inspect subscription usage. The <a href="https://code.claude.com/docs/en/authentication">authentication reference</a> explains how subscription and Console access differ.</p>
 <p>Also check the shell that will launch the job. This command reports only whether relevant environment variables exist; it never prints their values:</p>
-<pre><code class="language-bash">python3 - &lt;&lt;&#39;PY&#39;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>python3 - &lt;&lt;&#39;PY&#39;
 import os
 for name in (&quot;ANTHROPIC_API_KEY&quot;, &quot;ANTHROPIC_AUTH_TOKEN&quot;,
              &quot;ANTHROPIC_BASE_URL&quot;, &quot;CLAUDE_CODE_OAUTH_TOKEN&quot;):
     print(f&quot;{name}: {&#39;set&#39; if os.environ.get(name) else &#39;unset&#39;}&quot;)
 PY
-</code></pre>
+</code></pre></div>
 <p>This is a diagnostic, not proof of the final billing route: settings and credential helpers can also affect authentication. Anthropic specifically warns that an <code class="post-code--single">ANTHROPIC_API_KEY</code> environment variable can make Claude Code use API billing instead of the Pro or Max allowance. Its <a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan">subscription setup guide</a> covers that case and account switching.</p>
 <p>A remote shell, cron job or CI runner may inherit different credentials from your interactive terminal. Check the actual job environment before starting unattended work. The <a href="/blog/run-claude-code-unattended/">headless guide</a> shows how to preserve the run&#39;s result and detect denied tools; a successful exit code alone does not prove the requested change happened.</p>
 <h3 id="does-cost-show-what-i-owe">Does <code class="post-code--single">/cost</code> show what I owe?</h3>

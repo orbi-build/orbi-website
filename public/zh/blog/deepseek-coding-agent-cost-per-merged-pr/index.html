@@ -198,7 +198,7 @@
 <h2 id="自托管-orbi-怎么接-deepseek">自托管 Orbi 怎么接 DeepSeek</h2>
 <p>Orbi 跑在 Pi 上，模型可以接 OpenAI 兼容 API 或 Codex 订阅，<strong>不支持 Claude Code</strong>。Orbi 以 AGPL-3.0 开源。</p>
 <p>模板 <a href="https://github.com/orbi-build/orbi/blob/main/templates/pi-providers/deepseek.json"><code class="post-code--single">templates/pi-providers/deepseek.json</code></a> 里的 provider 块是：</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{
   &quot;providers&quot;: {
     &quot;deepseek&quot;: {
       &quot;baseUrl&quot;: &quot;https://api.deepseek.com/v1&quot;,
@@ -210,10 +210,10 @@
     }
   }
 }
-</code></pre>
+</code></pre></div>
 <p>启动 agent 前设置环境变量：</p>
-<pre><code class="language-bash">export DEEPSEEK_API_KEY=&quot;your-key&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>export DEEPSEEK_API_KEY=&quot;your-key&quot;
+</code></pre></div>
 <p>剩下的自托管步骤看 <a href="https://github.com/orbi-build/orbi/blob/main/docs/providers.mdx">provider 文档</a>。不要把 key 写进会提交到仓库的配置文件。</p>
 <h2 id="可以带走的两个判断">可以带走的两个判断</h2>
 <p>第一，记账时用每个合并 PR，而不是只看一次模型调用；第二，把缓存命中率保持在九成以上，并在队列允许时避开高峰。无人值守编程智能体的完整成本路径，是 GitHub Issue → PR → 独立评审 → 合并 → 打 tag 发 Release。Orbi 自己的这 20 个 PR 都留有公开记录，完整表格在<a href="/zh/cost/">成本页</a>。</p>

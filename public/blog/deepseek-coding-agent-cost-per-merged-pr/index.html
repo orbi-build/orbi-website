@@ -198,7 +198,7 @@
 <h2 id="connect-deepseek-to-a-self-hosted-orbi">Connect DeepSeek to a self-hosted Orbi</h2>
 <p>Orbi runs on Pi. Its engine can use an OpenAI-compatible API or a Codex subscription; it does <strong>not</strong> support Claude Code. Orbi is open source under AGPL-3.0.</p>
 <p>The provider template in <a href="https://github.com/orbi-build/orbi/blob/main/templates/pi-providers/deepseek.json"><code class="post-code--single">templates/pi-providers/deepseek.json</code></a> is:</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{
   &quot;providers&quot;: {
     &quot;deepseek&quot;: {
       &quot;baseUrl&quot;: &quot;https://api.deepseek.com/v1&quot;,
@@ -210,10 +210,10 @@
     }
   }
 }
-</code></pre>
+</code></pre></div>
 <p>Set the key before starting the agent:</p>
-<pre><code class="language-bash">export DEEPSEEK_API_KEY=&quot;your-key&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>export DEEPSEEK_API_KEY=&quot;your-key&quot;
+</code></pre></div>
 <p>Use the <a href="https://github.com/orbi-build/orbi/blob/main/docs/providers.mdx">provider documentation</a> for the rest of the self-hosted setup. Never put the key in a checked-in config file.</p>
 <h2 id="what-to-take-away">What to take away</h2>
 <p>Measure cost per merged PR, keep the cache-hit rate above 90%, and move unattended work outside peak hours when that fits your queue. The important unit is not a model call in isolation: it is the complete path from GitHub Issue to PR, independent review, merge, and tagged release. Orbi&#39;s own 20-PR sample makes that path inspectable, and the <a href="/cost/">cost page</a> keeps the full table in one place.</p>

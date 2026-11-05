@@ -204,9 +204,9 @@
         </details>
 <p>Issue <a href="https://github.com/orbi-build/orbi/issues/1031">#1031</a> asked for a straightforward fix: publish the container built by <code class="post-code--single">3rd/docker/Dockerfile</code>, so a Docker search returns an image people can pull. The workflow now publishes on every release and on a manual dispatch: <code class="post-code--single">linux/amd64</code> and <code class="post-code--single">linux/arm64</code>, tagged with the release version and <code class="post-code--single">latest</code>, to both <code class="post-code--single">ghcr.io/orbi-build/orbi</code> and <code class="post-code--single">docker.io/orbibuild/orbi</code>.</p>
 <p>Pull the published image:</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
-<pre><code class="language-bash">docker pull ghcr.io/orbi-build/orbi:latest
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>docker pull ghcr.io/orbi-build/orbi:latest
 docker pull docker.io/orbibuild/orbi:latest
-</code></pre>
+</code></pre></div>
 <p>The docs walk from pull to a first delivered Issue: <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>. The Hub overview lives at <a href="https://hub.docker.com/r/orbibuild/orbi">hub.docker.com/r/orbibuild/orbi</a>.</p>
 <h2 id="three-failures-three-different-causes">Three failures, three different causes</h2>
 <p>All of this happened on 2026-09-17, the day the workflow shipped with release v0.5.17. Each failure left a fix behind, and each fix is a public pull request.</p>

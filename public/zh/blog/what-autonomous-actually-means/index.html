@@ -235,7 +235,7 @@ agent 干的是打字那部分。</p>
 凌晨三点，所有人都在睡觉。</p>
 <h2 id="自己试">自己试</h2>
 <p>整条流水线是一个容器。systemd 在里面当 PID 1，那几行 cgroup 挂载就是为了这个：</p>
-<pre><code class="language-bash">docker run -d --name orbi \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>docker run -d --name orbi \
   --stop-signal SIGRTMIN+3 \
   --tmpfs /run --tmpfs /tmp \
   --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
@@ -248,7 +248,7 @@ agent 干的是打字那部分。</p>
   -e ORBI_PI_BASE_URL=https://api.deepseek.com \
   -e ORBI_PI_API_KEY=&quot;sk-xxx&quot; \
   ghcr.io/orbi-build/orbi:latest
-</code></pre>
+</code></pre></div>
 <p>引擎就是那四个变量指向的模型。给一张 Issue 打上 <code class="post-code--single">ai-ready</code>，下一次 tick 就会认领它。
 评审跑在独立的会话里，对的是冻结的 head；那个会话不放行，就不会合并。
 完整步骤见 <a href="https://docs.orbi.build/docker">docs.orbi.build/docker</a>。</p>

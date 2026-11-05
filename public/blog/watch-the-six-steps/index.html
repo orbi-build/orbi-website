@@ -202,8 +202,8 @@
 <p>Steps one through six are setup and delivery: you are handing Orbi the things it cannot infer: an identity, an installation, a repository, a runtime, an Issue, and a release. Step seven is where you opt into the Managed Cloud plan after the <code class="post-code--single">__FREE_DELIVERIES__</code> free deliveries.</p>
 <p>The release step still requires your decision: <em>you decide the version, Orbi never increments it for you.</em> The runner will bump the version file, create the tag and publish the Release. It will not choose the number. A version is a claim about what changed and who should care. That is a product decision, and reading it off a counter would be pretending otherwise. The release scope comes from the Milestone carrying that exact title; without one, the release stops at scope derivation and tells you why.</p>
 <p>Step five is one label, and you can add it without leaving the terminal:</p>
-<pre><code class="language-bash">gh issue edit &lt;number&gt; --add-label ai-ready
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh issue edit &lt;number&gt; --add-label ai-ready
+</code></pre></div>
 <h2 id="what-you-are-actually-looking-at">What you are actually looking at</h2>
 <p>Every screen in the video is the product rendering, not a mockup: the sign-in card, the connect form with its repository and base-branch fields, the progress bar counting the step you are on, the connected-repository table with its provisioning status, the release form with the version box, and the subscription step. The GitHub App page is the real one at <a href="https://github.com/apps/orbi-build">github.com/apps/orbi-build</a>.</p>
 <p>If you want to read instead of watch, the same path is in the docs: <a href="https://docs.orbi.build">docs.orbi.build</a>. If you want to run the whole thing on your own machine instead of ours, that is the same product, <a href="https://github.com/orbi-build/orbi">free to self-host</a>.</p>

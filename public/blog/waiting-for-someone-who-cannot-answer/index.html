@@ -251,18 +251,18 @@ The value comes from <code class="post-code--single">config.active_milestone</co
 <p>So the control plane can create a release ticket while the sandbox still
 believes nothing is in flight. Two systems, two answers, no reconciliation. In
 our production logs, every tick, for the repository we had just walked through:</p>
-<pre><code class="post-code--spaced">INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
+</code></pre></div>
 <p>Then we looked at how a field gets from the control plane into that file, and
 found there is no general mechanism at all. There are four separate
 hand-written sync functions: <code class="post-code--single">sync_orbi_toml_engine_track</code>,
 <code class="post-code--single">sync_orbi_toml_providers</code>, <code class="post-code--single">sync_orbi_toml_oauth</code>, plus the initial render.
 Each one was added for a single field, and each stages a temp file before
 swapping it atomically. The comments record the accretion:</p>
-<pre><code class="language-bash"># Issue #116: the connect-time base branch rides the payload and must reach
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source># Issue #116: the connect-time base branch rides the payload and must reach
 #             the rendered orbi.toml
 # Issue #770: attribution_footer rides the same way
-</code></pre>
+</code></pre></div>
 <p>Adding one field means editing four files. Which is why nobody added
 <code class="post-code--single">active_milestone</code>: <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code>
 returns nothing. The control plane does not know the field exists.</p>
@@ -270,7 +270,7 @@ returns nothing. The control plane does not know the field exists.</p>
 <p>One design question resolved itself once we looked at the filesystem.</p>
 <p>We were about to specify merge semantics for &quot;what if the tenant edited a managed
 field by hand&quot;. Then we checked:</p>
-<pre><code class="language-console">$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-console" data-copy-source>$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
 -rw------- 1 orbi-... orbi-... 926 Sep 22 06:39 orbi.toml
 
 $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
@@ -278,7 +278,7 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 -rw-r--r-- ... id_ed25519.pub
 -rw------- ... known_hosts
                                 # no authorized_keys
-</code></pre>
+</code></pre></div>
 <p>Mode 0600, owned by the sandbox user, and no <code class="post-code--single">authorized_keys</code>. The tenant
 cannot SSH in. There is no hand-editing to reconcile.</p>
 <p>That makes the design simpler than we assumed. The control plane is the sole
@@ -306,9 +306,9 @@ asks on a schedule) versus push (the control plane triggers a refresh).</p>
 to one refresh interval. The usual move is to weigh latency against attack
 surface.</p>
 <p>Except the interval is already one minute:</p>
-<pre><code class="language-console">$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-console" data-copy-source>$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
 OnUnitActiveSec=1min
-</code></pre>
+</code></pre></div>
 <p>And the refresh endpoint&#39;s query is <code class="post-code--spaced">WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>
 for every live sandbox, every minute, not just pending ones. So a pull costs at
 most sixty seconds, on an action that already waits for the engine&#39;s next claim.
@@ -317,17 +317,17 @@ a minute.</p>
 <p>Measuring the thing before arguing about it took two commands.</p>
 <h2 id="a-wrong-diagnosis-corrected-by-the-database">A wrong diagnosis, corrected by the database</h2>
 <p>While reading production logs we found 288 identical errors in six hours:</p>
-<pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
-</code></pre>
+</code></pre></div>
 <p>The obvious read was credential rot, so that is what we wrote down. Reproducing
 it inside the sandbox gave <code class="post-code--spaced">401 Bad credentials</code>, which seemed to confirm it,
 especially since the repository is public and readable with a maintainer token.</p>
 <p>Then we checked the database, and the diagnosis collapsed:</p>
-<pre><code class="post-code--spaced">login=cdredfox    tenant=inactive  codeduck          repo=inactive
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>login=cdredfox    tenant=inactive  codeduck          repo=inactive
 login=zzuu080603  tenant=active    VCPToolBox-macOS  repo=inactive   ← failing
 login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← fine
-</code></pre>
+</code></pre></div>
 <p>Both failing sandboxes belong to <strong>inactive</strong> repositories. The refresh endpoint
 filters on <code class="post-code--spaced">status = &#39;active&#39;</code>, so those tokens are never refreshed by design,
 correctly. The same tenant&#39;s active repository works perfectly. That is the

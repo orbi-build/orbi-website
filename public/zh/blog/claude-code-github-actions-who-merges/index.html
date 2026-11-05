@@ -197,8 +197,8 @@
 <li><strong>base 是最新的</strong>。PR 必须包含最新的 main，用普通 merge 吸收，不用 rebase，因为 rebase 会改写被评审过的那些提交。</li>
 </ul>
 <p>落到命令上就是一行，关键在那个 pin：</p>
-<pre><code class="language-bash">gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_HEAD&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_HEAD&quot;
+</code></pre></div>
 <p>评审之后远端的 head 要是动过，这条命令直接失败，而不是把没人看过的东西合进去。三条都过，才按评审过的那个 commit 合进去。任何一条不过，票要么等下一跳，要么停下来等人。没有一条路径是「看起来没问题」就合的。</p>
 <p>这三条本身很普通，任何团队在代码评审时都会念叨。区别只在于它们是状态机里的三行代码，不是某个人脑子里的三个习惯，所以第九十个 PR 在凌晨三点也照样生效。</p>
 <h2 id="人还剩下什么活">人还剩下什么活</h2>

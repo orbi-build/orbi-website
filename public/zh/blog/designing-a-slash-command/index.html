@@ -245,8 +245,8 @@
 每一个维护者永远付下去。一次通知不值得在语法里留一个永久的分叉。</p>
 <h2 id="一个正则-三个决定">一个正则，三个决定</h2>
 <p>行首锚定，带多行标志：</p>
-<pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>(?mi)^/milestone[\t ]+(\S+)[\t ]*$
+</code></pre></div>
 <p>Prow 用 Go 写成这样，bors 把评论按行切开再逐行锚定，用 Elixir。两套毫不相关的实现，
 同一个选择，这通常说明这个选择是承重的。</p>
 <p>它一次买到三样：</p>
@@ -264,10 +264,10 @@
 正则看到的就是一行以 <code class="post-code--single">/hold</code> 开头的文本，于是真的触发。</p>
 <p>Prow 知道这件事。它有一个专门的函数 <code class="post-code--single">DropCodeBlock</code>，在 <code class="post-code--single">pkg/markdown/code_block.go</code>，
 版权头写着 2025。于是我们查了它被用在哪：</p>
-<pre><code class="post-code--spaced">$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
 pkg/plugins/trigger/generic-comment.go:66
 pkg/markdown/code_block.go:25   （定义本身）
-</code></pre>
+</code></pre></div>
 <p><strong>一个调用点。五十多个插件里的一个。</strong> 今天在 Prow 上把 <code class="post-code--single">/hold</code> 写进围栏代码块，它照样触发。</p>
 <p>这不是在批评 Prow 的工程师，而是正则放置位置带来的结构性后果。Prow 给每个插件自己的
 正则，<code class="post-code--single">pkg/plugins/hold/hold.go:41</code> 里就地写着 <code class="post-code--single">(?mi)^/hold(\s.*)?$</code>。那个约定是全仓的，
@@ -286,11 +286,11 @@ pkg/markdown/code_block.go:25   （定义本身）
 把每条命令映射到 <code class="post-code--single">:none</code> / <code class="post-code--single">:member</code> / <code class="post-code--single">:reviewer</code>。然后 <code class="post-code--single">run/1</code>（<code class="post-code--single">command.ex:337-354</code>）
 取一条评论里所有命令中<strong>最严的那一级</strong>，在执行任何一条之前检查一次。这个形状是对的。</p>
 <p>但 <code class="post-code--single">run/2</code> 可以被直接到达，而 <code class="post-code--single">command.ex:513-516</code> 正是这么做的：</p>
-<pre><code class="language-elixir">def run(c, :retry) do
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-elixir" data-copy-source>def run(c, :retry) do
   {commenter, cmd} = Logging.most_recent_cmd(c.patch)
   run(%{c | commenter: commenter}, cmd)
 end
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">:retry</code> 只要求 <code class="post-code--single">:member</code>（<code class="post-code--single">command.ex:376</code>）。它<strong>以原提交者的身份</strong>重放一条历史命令，
 而且从 <code class="post-code--single">run/2</code> 进入，所以 <code class="post-code--single">run/1</code> 里的那道闸门根本不运行。一个 member 可以重放一条
 reviewer 的命令。</p>
@@ -312,7 +312,7 @@ reviewer 的命令。</p>
 碰到未注册的名字就抛错，所以打错字会立刻失败，而不是写出一个名字错了的事件。
 还有一个绑定测试，把注册表与中英文档表格、exporter 的已知类型三个方向互相钉死。</p>
 <p>所以命令注册表长得一样：</p>
-<pre><code class="language-python">@dataclass(frozen=True)
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-python" data-copy-source>@dataclass(frozen=True)
 class CommandSpec:
     name: str                    # 注册表键，同时是回执标记
     verbs: tuple[str, ...]       # 共享层用它生成正则
@@ -323,7 +323,7 @@ class CommandSpec:
     description: str
 
 TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
-</code></pre>
+</code></pre></div>
 <p>共享层独占：带锚点的正则构造、围栏剥离、引用行剥离、跳过 runner 自己的评论、
 权限强制、最后一条生效、回执。<code class="post-code--single">milestone_command.py</code> 缩成一个注册者：
 一个 <code class="post-code--single">validate</code>（版本必须命中候选集）和一个 <code class="post-code--single">apply</code>（原有的三步）。</p>

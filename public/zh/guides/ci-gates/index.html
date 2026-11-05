@@ -95,9 +95,9 @@
       <p class="section-tag">机制</p>
       <h2 class="orbi-compare-section-h2" id="mechanism-title">两道门禁，一个输入：check run 的 conclusion</h2>
       <p class="section-lede"><strong>评审门禁</strong>在合并之前用 PR head 的 check run 把守；<strong>发版门禁</strong>在冻结 SHA、打 Tag 之前用发版 commit 的 check run 把守。两处都向 GitHub Checks API 查询该 commit 的 check run，然后只看 <code>conclusion</code> 字段决定放行还是拦下。以下代码逐字引自交付引擎 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py" rel="noopener"><code>src/orbi/runner.py</code></a>（<code>check_review_ci</code>）与 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py" rel="noopener"><code>src/orbi/release.py</code></a>（<code>check_release_gates</code>）：</p>
-      <figure class="code-block">
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><figure class="code-block">
         <figcaption>src/orbi/runner.py — check_review_ci（评审门禁）</figcaption>
-<pre><code>failed = [
+<pre><code data-copy-source>failed = [
     check for check in check_runs
     if check.get("conclusion") not in ("success", "neutral", "skipped")
 ]
@@ -110,10 +110,10 @@ if failed:
     )
 if not check_runs:
     evidence = f"CI on review head {commit}: no check runs (nothing to gate)"</code></pre>
-      </figure>
-      <figure class="code-block">
+      </figure></div>
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><figure class="code-block">
         <figcaption>src/orbi/release.py — check_release_gates（发版门禁）</figcaption>
-<pre><code>for check in check_runs:
+<pre><code data-copy-source>for check in check_runs:
     name = check.get("name")
     status = check.get("status")
     conclusion = check.get("conclusion")
@@ -124,7 +124,7 @@ if not check_runs:
             f"release gate: CI check '{name}' is {status}/{conclusion} "
             f"on the release commit {release_commit}"
         )</code></pre>
-      </figure>
+      </figure></div>
       <p class="src-note">两段均逐字引用，核实于 2026-09-12。pending 的 check 不会被提前判定：两道门禁都会轮询到每个 check 跑完为止，等待超出预算则门禁失败——排队的测试是拦下，不是放行。<code>conclusion</code> 的取值是 GitHub 自己的枚举（<a class="orbi-src-note-a" href="https://docs.github.com/en/rest/checks/runs" rel="noopener">Checks API</a>）：<code>success, failure, neutral, cancelled, skipped, timed_out, action_required, stale</code>；门禁的通过集是其中子集 <code>success, neutral, skipped</code>。</p>
       <p class="thesis-punch">门禁看不见测试名、看不见框架、也看不见覆盖率数字。它看到的只是每个 check run 的一位信息——过或不过。所以定义「保证」的是你 CI 里的内容，不是 Orbi。</p>
     </section>
@@ -152,9 +152,9 @@ if not check_runs:
       <p class="section-tag">复制即用</p>
       <h2 class="orbi-compare-section-h2" id="workflows-title">两份完整 workflow，可直接提交</h2>
       <p class="section-lede">完整文件，不是片段——任何一份都是完整的 <code>.github/workflows/*.yml</code>。都在 <code>pull_request</code>（让评审门禁看到 PR head）和 <code>push</code> 到交付分支（让发版门禁看到发版 commit）时触发。<code>push.branches</code> 必须包含 Orbi 交付的分支；Playwright 那份假设你的 <code>playwright.config</code> 自己拉起应用（<code>webServer</code>）——那部分以 Playwright 官方文档为准。</p>
-      <figure class="code-block">
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><figure class="code-block">
         <figcaption>.github/workflows/ci.yml — pytest</figcaption>
-<pre><code>name: CI
+<pre><code data-copy-source>name: CI
 
 on:
   pull_request:
@@ -173,10 +173,10 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: pytest</code></pre>
-      </figure>
-      <figure class="code-block">
+      </figure></div>
+      <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><figure class="code-block">
         <figcaption>.github/workflows/e2e.yml — Playwright 业务流程</figcaption>
-<pre><code>name: E2E
+<pre><code data-copy-source>name: E2E
 
 on:
   pull_request:
@@ -196,7 +196,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test</code></pre>
-      </figure>
+      </figure></div>
       <p class="src-note">从下一次交付开始，Orbi 会在每个 PR head 和每个发版 commit 上检查这些 check run——红了就拒绝 merge、拒绝打 Tag。每次交付跑这些测试花多少钱是实测过的，不是估的：<a class="orbi-src-note-a" href="/zh/cost/">成本页</a>给出均值约 $0.06–0.12（DeepSeek 牌价）。</p>
     </section>
 
