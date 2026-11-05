@@ -9,11 +9,11 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session. My picks by job:
+Pi is an open-source coding agent, and Pi extensions add tools to it: MCP, web search, subagents and more. This post recommends which ones to use for each job, based on tests of 20 popular extensions on 5 November 2026. I ran them the way a CI job or background service runs Pi, with nobody watching, because that's where extensions fail quietly: one can load without errors and still leave the model without the tools you expected, or change settings for the next run. My picks by job:
 
 - Web search: `pi-web-access` or `pi-web-search`, the two that worked without a search key.
-- Subagents: `pi-subagents`, `@tintinweb/pi-subagents` and `pi-ptc-subagents` all returned a result; `pi-subagent-manager` needs a session directory.
-- MCP candidates: `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter`, or `pi-mcp-adapter` with a fresh agent directory per run. I did not test server calls with these adapters.
+- Subagents: `pi-subagents`, `@tintinweb/pi-subagents` or `pi-ptc-subagents`; all three returned a result. `pi-subagent-manager` also works, except when sessions are turned off with `--no-session`.
+- MCP: `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter`. Both loaded cleanly and left your settings alone; I didn't connect either to an MCP server, so check that part with your own server. The most installed one, `pi-mcp-adapter`, also works but rewrites your settings, so give each run a fresh agent directory.
 - Task lists: `rpiv-todo`.
 - Command guards: `cc-safety-net`; use `pi-permission-system` only with an explicit configuration.
 
