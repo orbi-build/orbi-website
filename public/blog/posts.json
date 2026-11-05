@@ -2,7 +2,7 @@
   {
     "slug": "best-pi-extensions",
     "title": "Best Pi extensions for unattended runs: 15 tested",
-    "summary": "I tested 15 popular Pi extensions with no terminal or desktop bus, then a keyring that never answers: which work, which go quiet, which change your config.",
+    "summary": "I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.",
     "zhSlug": "best-pi-extensions",
     "zhTitle": "Pi 扩展推荐：15 个扩展的无人值守实测",
     "related": []

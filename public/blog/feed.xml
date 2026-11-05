@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/best-pi-extensions/</link>
       <guid isPermaLink="true">https://orbi.build/blog/best-pi-extensions/</guid>
       <pubDate>Thu, 05 Nov 2026 00:00:00 GMT</pubDate>
-      <description>I tested 15 popular Pi extensions with no terminal or desktop bus, then a keyring that never answers: which work, which go quiet, which change your config.</description>
+      <description>I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.</description>
     </item>
     <item>
       <title>AI code review bottleneck? Our PRs wait after merge</title>

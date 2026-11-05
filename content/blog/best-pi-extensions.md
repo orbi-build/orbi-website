@@ -1,7 +1,7 @@
 ---
 title: Best Pi extensions for unattended runs: 15 tested
 date: 2026-11-05
-summary: I tested 15 popular Pi extensions with no terminal or desktop bus, then a keyring that never answers: which work, which go quiet, which change your config.
+summary: I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-pi-extensions-card.png
@@ -9,27 +9,27 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-Pi extensions can load successfully and still leave an unattended run without the tool you installed them for. I tested 15 popular packages on 5 November 2026, starting Pi without a terminal or desktop session bus, then repeating with a Secret Service that never answers. The asking-user and plan-review tools disappeared; a permission extension rejected even `ls -la`; an MCP adapter changed settings that affected the next session.
+Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 15 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. The tools for asking users questions and reviewing plans disappeared. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session.
 
-I'm Larry 🍀 Orbi, the creator of Orbi. For Pi running in CI or a systemd service, I want to know what reaches the model and what persists afterward. These are dated results for the versions below. Versions move fast.
+I'm Larry 🍀 Orbi, the creator of Orbi. For Pi in CI or a systemd service, I care about which tools reach the model and what the extensions leave behind. Extension versions change quickly, so these results apply to the versions below and the date of the tests.
 
-The short answer, for unattended runs: `pi-mcp-extension` for MCP (or `pi-mcp-adapter` with a fresh agent directory per run), `pi-web-access` or `pi-web-search` for web search, either subagent package, `rpiv-todo` for task lists, `cc-safety-net` as a command guard, and `pi-permission-system` only with an explicit configuration. The rest of the post shows why, and gives you a script to test any package yourself.
+For unattended runs, I'd use `pi-mcp-extension` for MCP (or `pi-mcp-adapter` with a fresh agent directory per run). For web search, I'd choose `pi-web-access` or `pi-web-search`. Either subagent package worked. I'd keep `rpiv-todo` for task lists and `cc-safety-net` as a command guard, and use `pi-permission-system` only with an explicit configuration. The results below explain those choices. You can test any package yourself with the script later in the post.
 
-Pi coding agent extensions are code Pi loads at startup, from local files, npm packages or git repositories; most Pi agent extensions register tools the model can call. A skill is different: a `SKILL.md` of instructions. The [production post's first section](/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them) covers that distinction and extension loading.
+Pi coding agent extensions are code that Pi loads at startup from local files, npm packages or git repositories. Most Pi agent extensions register tools the model can call. A skill contains instructions in a `SKILL.md` file. The [production post's first section](/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them) explains the distinction and how Pi loads extensions.
 
 ## How I tested the Pi coding agent extensions
 
 I used Pi 1.5.0, Node v22.23.1, `/usr/bin/npm` 12.0.2 and Linux 6.18. DeepSeek's `deepseek-flash` ran through a local logging proxy that recorded the tools sent to the model.
 
-E2 (no session bus) used `env -i`, `setsid -w`, stdin from `/dev/null`, a fresh HOME and agent directory, `-ne -e npm:<pkg>@<version>` and `timeout 120`. The extension flags limit loading to the explicit package. The model-provider key was present; no separate search-provider key was supplied. The load prompt was "Reply with the single word OK." Each extension then got a use probe. Use probes started from copies of the installed E2 HOME.
+For E2 (no session bus), I used `env -i`, `setsid -w`, stdin from `/dev/null`, a fresh HOME and agent directory, `-ne -e npm:<pkg>@<version>` and `timeout 120`. These extension flags load only the explicitly named package. I supplied the model-provider key without a separate search-provider key. The load prompt was "Reply with the single word OK." I then asked each extension to perform a task, starting each use probe from a copy of the installed E2 HOME.
 
-E1 (a private bus with an unresponsive Secret Service) used `org.freedesktop.secrets` owned by the logging black hole below. It started from a copy of the corresponding E2 HOME. E1 timings include a second of bus startup.
+For E1, I added a private bus with an unresponsive Secret Service. The logging black hole below owned `org.freedesktop.secrets`. Each E1 run started from a copy of the corresponding E2 HOME. E1 timings include a second of bus startup.
 
 The no-extension control exposed exactly `read,bash,edit,write`. A `busctl` call to the black hole timed out after 5 s; a homemade extension reading the keyring at load reached it in 3 of 3 runs.
 
 ## Results by job
 
-Downloads are npm's last-month package totals, queried on 5 November 2026. Tools below are additions to the control tools. I compared files only in the throwaway HOME and the test repository, not `/tmp` or system directories. "None observed" excludes Pi's common `auth.json` and `models-store.json`, npm caches and the package installation. Verdicts cover these load and use probes.
+Downloads are npm's last-month package totals, queried on 5 November 2026. The tools listed are additions to the control tools. I compared files in the throwaway HOME and the test repository; `/tmp` and system directories were outside that comparison. "None observed" excludes Pi's common `auth.json` and `models-store.json`, npm caches and the package installation. The verdicts apply to these load and use probes.
 
 | Extension@version | Job | License | Downloads last month | Added tools in `pi -p` | Use probe | Extra files in HOME or repo | Unattended verdict |
 |---|---|---|---|---|---|---|---|
@@ -61,7 +61,7 @@ Downloads are npm's last-month package totals, queried on 5 November 2026. Tools
 
 It also wrote `mcp-onboarding.json`. Pi's `docs/mcp.md`, line 268, describes an extension replacing built-in MCP and documents this setting for disabling it.
 
-I gave a fresh agent directory an `mcp.json` pointing to `server-everything`: Pi exposed `codemode` and wrote `mcp.log`. With the same MCP configuration in the directory left by the adapter, a later session without the adapter exposed neither `codemode` nor `mcp.log`. Those follow-up sessions omitted `-ne` so built-in MCP could load.
+I put an `mcp.json` in a fresh agent directory, pointing it to `server-everything`. Pi exposed `codemode` and wrote `mcp.log`. I then used the same MCP configuration in the directory left by the adapter. A later session without the adapter exposed no `codemode` tool and wrote no `mcp.log`. Those follow-up sessions omitted `-ne` so built-in MCP could load.
 
 For a service, use a separate writable agent directory per session, or rewrite `settings.json` each run.
 
@@ -69,11 +69,11 @@ For a service, use a separate writable agent directory per session, or rewrite `
 
 Pi 1.5.0 prints `Warning: Extension package "...": failed to install (...)` and carries on with exit code 0. Pi 1.2.0 exited 1 for the same nonexistent package. The [Pi changelog](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md) records the change in the 1.5.0 section, with [PR #11304](https://github.com/earendil-works/pi/pull/11304).
 
-A typo can therefore leave an unattended run without the intended extension. The script below checks that warning. An extension that throws during loading still made Pi 1.5.0 exit 1.
+A typo can leave an unattended run without the intended extension, so the script below checks for that warning. When an extension threw during loading, Pi 1.5.0 still exited 1.
 
 ## Asking the user and reviewing plans need a UI
 
-`rpiv-ask-user-question`'s `reconcile.ts` strips `ask_user_question` when `!ctx.hasUI`. Plannotator's `index.ts` deactivates its tool under the same condition. Both loaded safely here, but neither offered its tool in `pi -p`. Asked to use them, the model answered `NO-TOOL`.
+`rpiv-ask-user-question`'s `reconcile.ts` strips `ask_user_question` when `!ctx.hasUI`. Plannotator's `index.ts` deactivates its tool under the same condition. Both loaded safely in these tests. Neither offered its tool in `pi -p`, and the model answered `NO-TOOL` when asked to use them.
 
 ## Permission defaults can stop ordinary work
 
@@ -81,7 +81,7 @@ With no configuration, `pi-permission-system@42.0.0` rejected every attempted ba
 
 > This 'bash' call requires approval, but no interactive UI is available.
 
-That fails closed. An unattended session needs a configuration permitting its intended work. The no-extension control executed the requested create-and-remove command.
+The extension rejects calls when approval is unavailable. For unattended use, configure it to permit the work the session needs to do. The no-extension control executed the requested create-and-remove command.
 
 `cc-safety-net@2.7.3` added no tools and blocked `git reset --hard` with `BLOCKED by CC Safety Net` and rule `git.reset-hard`. The control executed it with exit 0 in the disposable repository. The extension wrote logs under `~/.cc-safety-net/`.
 
@@ -93,11 +93,11 @@ npm 12 blocked install scripts by default in this environment:
 npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
 ```
 
-The affected dependencies were Plannotator's `node-pty`, permission-system's `tree-sitter-bash` and pi-lens's `@ast-grep/cli` postinstall. The permission and lens probes still ran as described. Plannotator's tool was absent without a UI, so that probe says nothing about its behavior with those scripts skipped.
+This affected Plannotator's `node-pty` and permission-system's `tree-sitter-bash`, along with the postinstall for pi-lens's `@ast-grep/cli`. The permission and lens probes still ran as described. Plannotator's tool was absent without a UI, so that probe could not show how skipping those scripts affected its behavior.
 
 ## State extends beyond the agent directory
 
-Changing `PI_CODING_AGENT_DIR` alone leaves some state elsewhere. Context-mode wrote `~/.context-mode/projects/<hash>/context.db`. Pi-lens wrote `~/.pi-lens/` and downloaded `marksman` and `typos-lsp` into its `bin/` directory on first diagnostics. That run took about 41 s total; a repeat with binaries present took about 11 s.
+Some state stays outside the agent directory even if you change `PI_CODING_AGENT_DIR`. Context-mode wrote `~/.context-mode/projects/<hash>/context.db`. Pi-lens wrote `~/.pi-lens/`; on its first diagnostics call, it downloaded `marksman` and `typos-lsp` into its `bin/` directory. That run took about 41 s total. With the binaries already present, a repeat took about 11 s.
 
 Background-tasks left output and metadata in the repository's `.pi/tasks/`. Tintinweb's subagent saved a session under the agent directory despite the parent's `--no-session`. Hermes-memory wrote `MEMORY.md` and SQLite files there; sharing that directory carries saved memory between runs.
 
@@ -107,11 +107,11 @@ For the systemd background, see [the 4 September incident](/blog/orbi-on-pi-codi
 
 With no MCP servers configured, `pi-mcp-adapter@7.0.1` made zero calls to the never-answering Secret Service at startup or during its `mcp` call. I did not exercise OAuth or bearer-token storage.
 
-My homemade extension read `@napi-rs/keyring` at load. The black hole saw it in 3 of 3 runs. First model requests arrived at 3.2 s, against 1.2 s for the control. Both timings include the same second of bus startup; the probe added about 2 s, then execution continued. It did not hang.
+My homemade extension read the keyring through `@napi-rs/keyring` at load, and the black hole recorded it in 3 of 3 runs. First model requests arrived at 3.2 s, compared with 1.2 s for the control. Both timings include the same second of bus startup. The probe added about 2 s before execution continued without a hang.
 
-Across the 15 extensions, the only recorded Secret Service call came from pi-lens during its first diagnostics and binary download. Its first model request came at 1.3 s, against 1.2 s for the control, but the 41 s total was dominated by two binary downloads, so I did not isolate what the call itself cost. A repeat with the binaries already present recorded no call; that repeat used an earlier black-hole version that answered with an error, so I count its calls only.
+Across the 15 extensions, the only recorded Secret Service call came from pi-lens during its first diagnostics and binary download. Its first model request came at 1.3 s, compared with 1.2 s for the control. Two binary downloads accounted for most of the 41 s total, so I did not isolate the time spent on the call itself. A repeat with the binaries already present recorded no call. That repeat used an earlier black-hole version that answered with an error, so I count its calls only.
 
-This setup detects Secret Service access. It did not reproduce the earlier hang. Save this verbatim as `blackhole.py`; it needs dbus-python and PyGObject:
+This setup detects Secret Service access; it did not reproduce the earlier hang. Save the code verbatim as `blackhole.py`. It needs dbus-python and PyGObject:
 
 ```python
 #!/usr/bin/env python3
@@ -142,7 +142,7 @@ bus.add_message_filter(on_message)
 GLib.MainLoop().run()
 ```
 
-The reader script below clears the environment, so it drops the bus by default. Set `KEEP_BUS=1` to pass the current session bus through, then start both inside a private bus:
+The test script below clears the environment and drops the bus by default. Set `KEEP_BUS=1` to pass the current session bus through, then start the black hole and the test script inside a private bus:
 
 ```bash
 dbus-run-session -- bash -c 'python3 blackhole.py calls.log & sleep 1; KEEP_BUS=1 ./try-pi-extension.sh npm:<pkg>@<version>'
@@ -259,7 +259,7 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
 
 The first `exit=` is Pi's own status. In `--mode json`, Pi 1.5.0 exited 0 both for the bad key and for the missing package, which is why the script checks the last assistant message and the install warning itself. Every failure makes the script exit 1, and so do a missing argument or a missing key, before Pi starts. A local path such as `./bad.ts` is turned into an absolute path first, because the script runs Pi from a scratch directory.
 
-A successful load check still needs a use probe: the asking-user package passed this script with only the control tools.
+After the load check, test an actual tool call. The asking-user package passed this script even though the model received only the control tools.
 
 ## Which are the best Pi extensions for unattended use?
 
@@ -267,7 +267,7 @@ For MCP, the best Pi extensions I'd consider for unattended use are `pi-mcp-exte
 
 For web search, `pi-web-access` worked without a search key and reported "Provider: exa". `pi-web-search` also worked; its README says it searches through the currently selected model.
 
-Both subagent packages returned `PONG`. Pi-subagents needed a retry after the model guessed an agent name. I'd keep `rpiv-todo` for task lists, `cc-safety-net` as a command guard, and permission-system only with an explicit configuration.
+Both subagent packages returned `PONG`, though Pi-subagents needed a retry after the model guessed an agent name. I'd keep `rpiv-todo` for task lists and use `cc-safety-net` as a command guard. I'd use permission-system only with an explicit configuration.
 
 I did not test OAuth MCP servers, paid search keys or long runs. These results cover Linux, with no Windows or macOS tests.
 
@@ -291,7 +291,7 @@ source = "npm:cc-safety-net@2.7.3"
 
 Orbi's validator at `origin/main f5de8082`, `src/orbi/config.py`, accepted these sources. It rejected `npm:pi-web-access`, `npm:pi-web-access@latest` and `npm:@tintinweb/pi-subagents` with "npm source must pin a version".
 
-Pi 1.5.0's changelog says an unpinned `-e npm:` package is reinstalled when the registry has a newer matching version. That is another reason to pin. The [production post's loading section](/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist) explains how Orbi passes the configured extensions to Pi.
+Pi 1.5.0's changelog says an unpinned `-e npm:` package is reinstalled when the registry has a newer matching version. The [production post's loading section](/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist) explains how Orbi passes the configured extensions to Pi.
 
 ## Related
 

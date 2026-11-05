@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi 扩展推荐：15 个扩展的无人值守实测 | Orbi</title>
-  <meta name="description" content="实测 15 个热门 Pi 扩展：没有终端和桌面总线，再接入永不应答的钥匙串，看看哪些能用、哪些没动静、哪些改配置。">
+  <meta name="description" content="实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。">
   <link rel="canonical" href="https://orbi.build/zh/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="zh-CN" href="https://orbi.build/zh/blog/best-pi-extensions/">
   <link rel="alternate" hreflang="x-default" href="https://orbi.build/blog/best-pi-extensions/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Pi 扩展推荐：15 个扩展的无人值守实测">
-  <meta property="og:description" content="实测 15 个热门 Pi 扩展：没有终端和桌面总线，再接入永不应答的钥匙串，看看哪些能用、哪些没动静、哪些改配置。">
+  <meta property="og:description" content="实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。">
   <meta property="og:url" content="https://orbi.build/zh/blog/best-pi-extensions/">
   <meta property="og:image" content="https://orbi.build/img/blog-best-pi-extensions-card.png">
   <meta property="og:image:alt" content="Pi 扩展推荐：15 个扩展的无人值守实测">
   <meta property="article:published_time" content="2026-11-05">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi 扩展推荐：15 个扩展的无人值守实测","datePublished":"2026-11-05","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/best-pi-extensions/","image":"https://orbi.build/img/blog-best-pi-extensions-card.png","inLanguage":"zh-CN","description":"实测 15 个热门 Pi 扩展：没有终端和桌面总线，再接入永不应答的钥匙串，看看哪些能用、哪些没动静、哪些改配置。","url":"https://orbi.build/zh/blog/best-pi-extensions/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Pi 扩展推荐：15 个扩展的无人值守实测","datePublished":"2026-11-05","author":{"@type":"Person","name":"Larry 🍀 Orbi","url":"https://orbi.build/zh/about/larry-orbi/","sameAs":["https://github.com/xqliu","https://x.com/xqliu"]},"publisher":{"@type":"Organization","name":"Orbi","url":"https://orbi.build/","logo":{"@type":"ImageObject","url":"https://orbi.build/logo-mark.svg"}},"mainEntityOfPage":"https://orbi.build/zh/blog/best-pi-extensions/","image":"https://orbi.build/img/blog-best-pi-extensions-card.png","inLanguage":"zh-CN","description":"实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。","url":"https://orbi.build/zh/blog/best-pi-extensions/"}</script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#06151b">
 
@@ -155,7 +155,7 @@
           <h1 id="post-title">Pi 扩展推荐：15 个扩展的无人值守实测</h1>
           <p class="post-byline"><a href="/zh/about/larry-orbi/">Larry 🍀 Orbi</a> · <time datetime="2026-11-05">2026-11-05</time></p>
           <p class="post-series">系列：<a href="/zh/guides/pi-coding-agent/">Orbi 怎么搭在 Pi coding agent 上</a></p>
-          <p class="hero-lede">实测 15 个热门 Pi 扩展：没有终端和桌面总线，再接入永不应答的钥匙串，看看哪些能用、哪些没动静、哪些改配置。</p>
+          <p class="hero-lede">实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。</p>
         </section>
       </div>
     </div>
@@ -198,17 +198,17 @@
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展：先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功，模型却未必拿得到工具：提问和计划评审工具消失了，一个权限扩展连 <code class="post-code--spaced">ls -la</code> 都拒绝，另一个 MCP 适配器改了配置，影响到了下次会话。</p>
-<p>Pi 在 CI 或 systemd 服务里运行时，我关心的是模型到底拿到了哪些工具，以及运行后留下了什么。本文的结论只对应下表的版本和这次测试日期，扩展版本更新很快。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<p>如果你来找 Pi 扩展推荐，想知道无人值守时哪些值得装，按这次测试，我会这样选：MCP 用 <code class="post-code--single">pi-mcp-extension</code>，或给每次运行新建 agent 目录后用 <code class="post-code--single">pi-mcp-adapter</code>；网页搜索用 <code class="post-code--single">pi-web-access</code> 或 <code class="post-code--single">pi-web-search</code>；两个子 agent 包都能用。任务清单我会选 <code class="post-code--single">rpiv-todo</code>，命令拦截用 <code class="post-code--single">cc-safety-net</code>，<code class="post-code--single">pi-permission-system</code> 则要先写明确的权限配置。其中 MCP 只测了没有配置服务器时的状态查询。下面展开这些选择的依据，并给出可自行测试扩展的脚本。</p>
-<p>Pi agent 扩展是 Pi 启动时加载的代码，来源可以是本地文件、npm 包或 git 仓库，多数会注册模型可以调用的工具。本文说的 Pi 插件也指这类扩展。skill 则是一份写在 <code class="post-code--single">SKILL.md</code> 里的指令。<a href="/zh/blog/pi-extensions-in-production/#pi-%E6%89%A9%E5%B1%95%E6%98%AF%E4%BB%80%E4%B9%88-pi-%E4%BB%8E%E5%93%AA%E4%B8%89%E4%B8%AA%E5%9C%B0%E6%96%B9%E5%8A%A0%E8%BD%BD%E5%AE%83">生产环境那篇的第一节</a>介绍了两者的区别和扩展加载方式。</p>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次提问和计划评审工具都没有出现；一个权限扩展连 <code class="post-code--spaced">ls -la</code> 都拒绝，MCP 适配器则改了配置，影响到了下次会话。</p>
+<p>Pi 在 CI 或 systemd 服务里运行时，我关心模型拿到了哪些工具，扩展运行后又留下了什么。扩展版本更新很快，这些结论只适用于下表的版本和这次测试的日期。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>按这次无人值守测试的结果，我的 Pi 扩展推荐是：MCP 用 <code class="post-code--single">pi-mcp-extension</code>，或者每次运行都新建 agent 目录，再用 <code class="post-code--single">pi-mcp-adapter</code>。网页搜索可以选 <code class="post-code--single">pi-web-access</code> 或 <code class="post-code--single">pi-web-search</code>，两个子 agent 包也都能用。任务清单我会选 <code class="post-code--single">rpiv-todo</code>，命令拦截用 <code class="post-code--single">cc-safety-net</code>。<code class="post-code--single">pi-permission-system</code> 要先写明确的权限配置。其中 MCP 只测了没有配置服务器时的状态查询。下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。</p>
+<p>Pi agent 扩展是 Pi 启动时加载的代码，可以来自本地文件、npm 包或 git 仓库。多数扩展会注册模型可以调用的工具，本文说的 Pi 插件也指这类扩展。skill 是写在 <code class="post-code--single">SKILL.md</code> 里的指令。<a href="/zh/blog/pi-extensions-in-production/#pi-%E6%89%A9%E5%B1%95%E6%98%AF%E4%BB%80%E4%B9%88-pi-%E4%BB%8E%E5%93%AA%E4%B8%89%E4%B8%AA%E5%9C%B0%E6%96%B9%E5%8A%A0%E8%BD%BD%E5%AE%83">生产环境那篇的第一节</a>介绍了两者的区别，以及 Pi 怎样加载扩展。</p>
 <h2 id="这次-pi-扩展怎么测">这次 Pi 扩展怎么测</h2>
-<p>环境是 Pi 1.5.0、Node v22.23.1、<code class="post-code--single">/usr/bin/npm</code> 12.0.2 和 Linux 6.18。模型用 DeepSeek 的 <code class="post-code--single">deepseek-flash</code>，请求经过一个本地日志代理，记录发给模型的工具清单。</p>
-<p>E2 是没有会话总线的环境：用 <code class="post-code--spaced">env -i</code> 清空环境变量，<code class="post-code--spaced">setsid -w</code> 脱离终端，stdin 接 <code class="post-code--single">/dev/null</code>，HOME 和 agent 目录都是新建的；扩展参数为 <code class="post-code--spaced">-ne -e npm:&lt;pkg&gt;@&lt;version&gt;</code>，外面套 <code class="post-code--spaced">timeout 120</code>。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 &quot;Reply with the single word OK.&quot;。之后再要求每个扩展实际完成一次操作；这些调用测试都从已装好扩展的 E2 HOME 副本开始。</p>
-<p>E1 则多了一条私有会话总线，由下方的黑洞脚本占用 <code class="post-code--single">org.freedesktop.secrets</code>：它记录请求，但永不应答。E1 从对应的 E2 HOME 副本开始，计时包含 1 秒的总线启动时间。</p>
+<p>测试环境是 Pi 1.5.0、Node v22.23.1、<code class="post-code--single">/usr/bin/npm</code> 12.0.2 和 Linux 6.18。模型用 DeepSeek 的 <code class="post-code--single">deepseek-flash</code>，我通过一个本地日志代理记录发给模型的工具清单。</p>
+<p>E2 没有会话总线。我用 <code class="post-code--spaced">env -i</code> 清空环境变量，用 <code class="post-code--spaced">setsid -w</code> 脱离终端，stdin 接 <code class="post-code--single">/dev/null</code>，HOME 和 agent 目录都是新建的。扩展参数是 <code class="post-code--spaced">-ne -e npm:&lt;pkg&gt;@&lt;version&gt;</code>，运行时加上 <code class="post-code--spaced">timeout 120</code>。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 &quot;Reply with the single word OK.&quot;。加载后，我再要求每个扩展实际完成一次操作，每次调用测试都从已装好扩展的 E2 HOME 副本开始。</p>
+<p>E1 多了一条私有会话总线。下方的黑洞脚本占用 <code class="post-code--single">org.freedesktop.secrets</code>，记录请求但永不应答。E1 从对应的 E2 HOME 副本开始，计时包含 1 秒的总线启动时间。</p>
 <p>不加载扩展的对照组恰好只有 <code class="post-code--single">read,bash,edit,write</code> 四个工具。用 <code class="post-code--single">busctl</code> 调用黑洞，5 秒后超时；另一个自写扩展在加载时读取钥匙串，3 次运行中 3 次都访问到了黑洞。</p>
 <h2 id="按用途看-15-个扩展的结果">按用途看 15 个扩展的结果</h2>
-<p>表格按用途分组，下载量一列是 2026 年 11 月 5 日查询的 npm 上月包下载总量，推荐依据是这次调用结果。表里的工具都是相对对照组新增的工具。文件变化只比较临时 HOME 和测试仓库，不包含 <code class="post-code--single">/tmp</code> 或系统目录。「未观察到」不计 Pi 通常会写的 <code class="post-code--single">auth.json</code>、<code class="post-code--single">models-store.json</code>、npm 缓存和包的安装文件。每行结论只对应「调用测试」列的操作；钥匙串访问和计时结果在后面的专节说明。</p>
+<p>表格按用途分组，推荐依据是这次调用结果。下载量是 2026 年 11 月 5 日查询的 npm 上月包下载总量，工具一列只列出对照组之外新增的工具。我只比较了临时 HOME 和测试仓库里的文件变化，不包含 <code class="post-code--single">/tmp</code> 或系统目录。「未观察到」不计 Pi 通常会写的 <code class="post-code--single">auth.json</code>、<code class="post-code--single">models-store.json</code>、npm 缓存和包的安装文件。每行结论只适用于「调用测试」列的操作，钥匙串访问和计时结果见后面的专节。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
 <tr>
@@ -375,38 +375,38 @@
 </tbody></table></div>
 <p><code class="post-code--single">context-mode</code> 使用的 Elastic-2.0 允许查看源码，但不属于 OSI 认可的开源许可证。</p>
 <h2 id="mcp-适配器改的设置会影响下次会话">MCP 适配器改的设置会影响下次会话</h2>
-<p><code class="post-code--single">pi-mcp-adapter@7.0.1</code> 第一次加载就写入了下面这份配置，即使用的只是一次性的 <code class="post-code--single">-e</code>：</p>
+<p>即使只用一次性的 <code class="post-code--single">-e</code>，<code class="post-code--single">pi-mcp-adapter@7.0.1</code> 第一次加载时也写入了这份配置：</p>
 <pre><code class="language-json">{&quot;extensions&quot;:[&quot;-builtin:mcp&quot;]}
 </code></pre>
 <p>它还写了 <code class="post-code--single">mcp-onboarding.json</code>。Pi 的 <code class="post-code--single">docs/mcp.md</code> 第 268 行说明了扩展替代内置 MCP 的情况，并记录了用这项设置禁用内置 MCP 的方法。</p>
-<p>我用 <code class="post-code--single">server-everything</code> 作测试服务器，在一个新 agent 目录里放了指向它的 <code class="post-code--single">mcp.json</code>，观察 Pi 是否提供 <code class="post-code--single">codemode</code> 工具、是否写出 <code class="post-code--single">mcp.log</code>：两者都出现了。把同一份 MCP 配置放进适配器留下的目录，之后不加载适配器再启动会话，<code class="post-code--single">codemode</code> 和 <code class="post-code--single">mcp.log</code> 都没有出现。后续这些会话都没带 <code class="post-code--single">-ne</code>，允许内置 MCP 加载。</p>
-<p>服务里可以为每次会话准备独立、可写的 agent 目录，或者每次运行都重写 <code class="post-code--single">settings.json</code>。</p>
+<p>我用 <code class="post-code--single">server-everything</code> 作测试服务器，在新的 agent 目录里放了指向它的 <code class="post-code--single">mcp.json</code>。Pi 提供了 <code class="post-code--single">codemode</code> 工具，也写出了 <code class="post-code--single">mcp.log</code>。把同一份 MCP 配置放进适配器留下的目录后，不加载适配器再启动会话，<code class="post-code--single">codemode</code> 和 <code class="post-code--single">mcp.log</code> 都没有出现。后续这些会话都没带 <code class="post-code--single">-ne</code>，允许内置 MCP 加载。</p>
+<p>在服务里运行时，可以为每次会话准备独立、可写的 agent 目录，或者每次运行都重写 <code class="post-code--single">settings.json</code>。</p>
 <h2 id="包名拼错-pi-也可能以-0-退出">包名拼错，Pi 也可能以 0 退出</h2>
 <p>Pi 1.5.0 会打印 <code class="post-code--spaced">Warning: Extension package &quot;...&quot;: failed to install (...)</code>，然后继续运行，退出码为 0。同一个不存在的包，Pi 1.2.0 会以 1 退出。<a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">Pi 更新日志</a>的 1.5.0 一节记录了这项变化，对应 <a href="https://github.com/earendil-works/pi/pull/11304">PR #11304</a>。</p>
-<p>这意味着无人值守时，拼错包名可能让运行缺少预期扩展，却不报失败。下方脚本会检查这条警告。扩展在加载时抛异常的情况另算，Pi 1.5.0 仍以 1 退出。</p>
+<p>无人值守时，拼错包名可能让运行缺少预期扩展，却不报失败，所以下方脚本会检查这条警告。如果扩展在加载时抛异常，Pi 1.5.0 仍以 1 退出。</p>
 <h2 id="提问和计划评审工具需要-ui">提问和计划评审工具需要 UI</h2>
-<p><code class="post-code--single">rpiv-ask-user-question</code> 的 <code class="post-code--single">reconcile.ts</code> 在 <code class="post-code--single">!ctx.hasUI</code> 时移除 <code class="post-code--single">ask_user_question</code>。Plannotator 的 <code class="post-code--single">index.ts</code> 在同样的条件下停用工具。这次两者都顺利加载，但在 <code class="post-code--spaced">pi -p</code> 下都没提供工具；要求模型调用时，它回答 <code class="post-code--single">NO-TOOL</code>。</p>
+<p><code class="post-code--single">rpiv-ask-user-question</code> 的 <code class="post-code--single">reconcile.ts</code> 在 <code class="post-code--single">!ctx.hasUI</code> 时移除 <code class="post-code--single">ask_user_question</code>。Plannotator 的 <code class="post-code--single">index.ts</code> 在同样的条件下停用工具。这次两者都顺利加载，在 <code class="post-code--spaced">pi -p</code> 下却都没提供工具。要求模型调用时，它回答 <code class="post-code--single">NO-TOOL</code>。</p>
 <h2 id="默认权限配置会拦住普通操作">默认权限配置会拦住普通操作</h2>
 <p>没写配置时，<code class="post-code--single">pi-permission-system@42.0.0</code> 拒绝了每一次 bash 调用尝试，连 <code class="post-code--spaced">ls -la</code> 也一样：</p>
 <blockquote>
 <p>This &#39;bash&#39; call requires approval, but no interactive UI is available.</p>
 </blockquote>
-<p>它在无法获得批准时默认拒绝操作。要无人值守使用它，需要先按任务所需的操作配置权限；这次没写配置，测到的就是拒绝执行。不加载扩展的对照组执行了要求的创建再删除命令。</p>
+<p>它默认拒绝无法获得批准的操作。无人值守运行前，要先配置好任务所需的权限；这次没有配置，尝试的 bash 调用都遭到拒绝。不加载扩展的对照组执行了要求的创建再删除命令。</p>
 <p><code class="post-code--single">cc-safety-net@2.7.3</code> 没加工具，用 <code class="post-code--spaced">BLOCKED by CC Safety Net</code> 和规则 <code class="post-code--single">git.reset-hard</code> 拦下了 <code class="post-code--spaced">git reset --hard</code>。对照组在临时仓库里执行了这条命令，退出码为 0。扩展把日志写到了 <code class="post-code--single">~/.cc-safety-net/</code>。</p>
 <h2 id="npm-跳过了安装脚本">npm 跳过了安装脚本</h2>
 <p>这套环境中的 npm 12 默认阻止安装脚本：</p>
 <pre><code class="language-text">npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
 </code></pre>
-<p>受影响的依赖包括 Plannotator 的 <code class="post-code--single">node-pty</code>、permission-system 的 <code class="post-code--single">tree-sitter-bash</code>，以及 pi-lens 的 <code class="post-code--single">@ast-grep/cli</code> postinstall。权限扩展的拒绝操作和 lens 的 README 诊断仍得到了前面所述的结果，不能由此推断其他功能是否受影响。Plannotator 因为没有 UI 而不提供工具，所以这次测试无法说明跳过安装脚本会怎样影响它的行为。</p>
+<p>受影响的依赖有 Plannotator 的 <code class="post-code--single">node-pty</code> 和 permission-system 的 <code class="post-code--single">tree-sitter-bash</code>，还有 pi-lens 的 <code class="post-code--single">@ast-grep/cli</code> postinstall。权限扩展仍然拒绝操作，lens 的 README 诊断也得到了前面所述的结果，其他功能是否受影响则无法由此判断。Plannotator 因为没有 UI 而不提供工具，这次测试也就无法说明跳过安装脚本会怎样影响它的行为。</p>
 <h2 id="状态文件不全在-agent-目录里">状态文件不全在 agent 目录里</h2>
-<p>只改 <code class="post-code--single">PI_CODING_AGENT_DIR</code>，仍会在别处留下状态。Context-mode 写了 <code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code>。Pi-lens 写了 <code class="post-code--single">~/.pi-lens/</code>，第一次诊断时又把 <code class="post-code--single">marksman</code> 和 <code class="post-code--single">typos-lsp</code> 下载到它的 <code class="post-code--single">bin/</code> 目录。那次总共约 41 秒；二进制文件已经在时，重跑约 11 秒。</p>
-<p>Background-tasks 在仓库的 <code class="post-code--single">.pi/tasks/</code> 留下了输出和元数据。Tintinweb 的子 agent 在 agent 目录里保存了会话，即使父会话带了 <code class="post-code--single">--no-session</code>。Hermes-memory 在那里写了 <code class="post-code--single">MEMORY.md</code> 和 SQLite 文件；多次运行共用这个目录，就会沿用保存的记忆。</p>
+<p>只改 <code class="post-code--single">PI_CODING_AGENT_DIR</code>，有些状态文件仍会留在别处。Context-mode 写了 <code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code>。Pi-lens 写了 <code class="post-code--single">~/.pi-lens/</code>，第一次诊断时还把 <code class="post-code--single">marksman</code> 和 <code class="post-code--single">typos-lsp</code> 下载到它的 <code class="post-code--single">bin/</code> 目录。那次总共约 41 秒；已有二进制文件时，重跑约 11 秒。</p>
+<p>Background-tasks 在仓库的 <code class="post-code--single">.pi/tasks/</code> 留下了输出和元数据。Tintinweb 的子 agent 在 agent 目录里保存了会话，父会话带了 <code class="post-code--single">--no-session</code> 也一样。Hermes-memory 在同一个 agent 目录里写了 <code class="post-code--single">MEMORY.md</code> 和 SQLite 文件，多次运行共用这个目录就会沿用保存的记忆。</p>
 <h2 id="钥匙串测试没有复现-9-月的卡死">钥匙串测试没有复现 9 月的卡死</h2>
 <p>9 月 4 日曾发生过一次与 systemd 运行环境有关的卡死，记录见<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%A4%E6%AC%A1%E4%BA%8B%E6%95%85">当时的事故</a>和<a href="/zh/blog/pi-extensions-in-production/#%E4%B8%80%E6%AC%A1-d-bus-%E5%8D%A1%E6%AD%BB-%E8%AE%A9-orbi-%E4%B8%8D%E5%86%8D%E4%BF%A1%E4%BB%BB-pi-%E7%9A%84%E9%BB%98%E8%AE%A4%E5%8A%A0%E8%BD%BD">生产环境那篇</a>。</p>
 <p>没有配置 MCP 服务器时，<code class="post-code--single">pi-mcp-adapter@7.0.1</code> 无论启动还是调用 <code class="post-code--single">mcp</code>，都没有访问永不应答的 Secret Service。我没测 OAuth 或 bearer token 存储。</p>
-<p>我的自写扩展在加载时读取 <code class="post-code--single">@napi-rs/keyring</code>，3 次运行中 3 次都被黑洞记录到了。首次模型请求出现在 3.2 秒，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间；首次请求时间相差约 2 秒，之后继续运行，没有卡死。</p>
-<p>15 个扩展里，唯一记录到的 Secret Service 调用来自 pi-lens，发生在第一次诊断和下载二进制文件期间。它的首次模型请求在 1.3 秒发出，对照组是 1.2 秒；但 41 秒总耗时主要花在两次二进制下载上，所以我没有单独测出那次调用本身的耗时。二进制文件已经在时重跑，没有记录到调用；不过那次用的是会返回错误的早期黑洞版本，因此我只采用它的调用次数。</p>
-<p>这套装置能检测 Secret Service 访问，这次没有复现之前的卡死。上面的 3 次验证用的是我的自写钥匙串扩展；下面给出记录请求的黑洞服务。代码原样保存为 <code class="post-code--single">blackhole.py</code>，需要 dbus-python 和 PyGObject：</p>
+<p>我的自写扩展在加载时通过 <code class="post-code--single">@napi-rs/keyring</code> 读取钥匙串，3 次运行中 3 次都被黑洞记录到了。首次模型请求在 3.2 秒发出，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间，首次请求时间相差约 2 秒，之后继续运行，没有卡死。</p>
+<p>15 个扩展里，唯一记录到的 Secret Service 调用来自 pi-lens，发生在第一次诊断和下载二进制文件期间。它的首次模型请求在 1.3 秒发出，对照组是 1.2 秒。41 秒总耗时主要花在两次二进制下载上，我没有单独测出那次调用本身的耗时。已有二进制文件时重跑，没有记录到调用。那次用的是会返回错误的早期黑洞版本，所以我只采用它的调用次数。</p>
+<p>这套测试能检测 Secret Service 访问，这次没有复现之前的卡死；上面的 3 次验证用的是我的自写钥匙串扩展。将下方黑洞服务的代码原样保存为 <code class="post-code--single">blackhole.py</code>，需要 dbus-python 和 PyGObject：</p>
 <pre><code class="language-python">#!/usr/bin/env python3
 &quot;&quot;&quot;A Secret Service that never answers: owns org.freedesktop.secrets on the
 current session bus, logs every method call addressed to it, and never replies.
@@ -439,7 +439,7 @@ GLib.MainLoop().run()
 </code></pre>
 <p><code class="post-code--single">calls.log</code> 中每条带 <code class="post-code--single">call</code> 的行，都是一次没有得到应答的 Secret Service 请求。用我的钥匙串测试扩展运行时，日志记录了一次 <code class="post-code--single">org.freedesktop.Secret.Service.OpenSession</code> 调用；同一条命令去掉 <code class="post-code--single">KEEP_BUS=1</code> 后没有记录到调用，因为 Pi 看不到总线。</p>
 <h2 id="留下一个扩展之前-自己跑一次">留下一个扩展之前，自己跑一次</h2>
-<p>把下面代码原样保存为 <code class="post-code--single">try-pi-extension.sh</code>，再执行 <code class="post-code--spaced">chmod +x try-pi-extension.sh</code>。PATH 中需要有 Pi、Node、npm、jq、setsid 和 timeout，并且已经导出模型服务商的 key。默认读取 <code class="post-code--single">DEEPSEEK_API_KEY</code>，provider 为 <code class="post-code--single">deepseek</code>，模型为 <code class="post-code--single">deepseek-flash</code>；用 <code class="post-code--single">KEYVAR</code> 选择其他 key 变量，provider 和模型可通过可选参数传入。保存成脚本运行，不要直接粘贴到交互式 shell 里。</p>
+<p>把下面代码原样保存为 <code class="post-code--single">try-pi-extension.sh</code>，再执行 <code class="post-code--spaced">chmod +x try-pi-extension.sh</code>。PATH 中需要有 Pi、Node、npm、jq、setsid 和 timeout，运行前还要导出模型服务商的 key。脚本默认读取 <code class="post-code--single">DEEPSEEK_API_KEY</code>，provider 为 <code class="post-code--single">deepseek</code>，模型为 <code class="post-code--single">deepseek-flash</code>。可以用 <code class="post-code--single">KEYVAR</code> 选择其他 key 变量，通过可选参数传入 provider 和模型。请保存成脚本运行，不要直接粘贴到交互式 shell 里。</p>
 <pre><code class="language-bash">#!/usr/bin/env bash
 # try-pi-extension.sh &lt;source&gt; [provider] [model]
 # Starts Pi once the way a service would: no terminal, no desktop session bus,
@@ -508,7 +508,7 @@ files left behind, outside the extension&#39;s own install:
 ./agent/auth.json
 ./agent/models-store.json
 </code></pre>
-<p>下面这些失败情况，我都用最终版脚本跑过。<code class="post-code--single">bad.ts</code> 是一个三行扩展，Pi 加载它时就抛异常：</p>
+<p>我用最终版脚本跑过下面这些失败情况。<code class="post-code--single">bad.ts</code> 是一个三行扩展，Pi 加载它时就抛异常：</p>
 <pre><code class="language-ts">export default function () {
   throw new Error(&quot;boom at load&quot;);
 }
@@ -534,11 +534,11 @@ exit=124 seconds=2 workdir=/tmp/tmp.MZuYKgOPSZ
 FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
 </code></pre>
 <p>第一行的 <code class="post-code--single">exit=</code> 是执行 Pi 命令时得到的退出状态，其中 124 来自外层的 <code class="post-code--single">timeout</code>；<code class="post-code--single">FAILED</code> 里是脚本检查后的分类。Pi 1.5.0 在 <code class="post-code--spaced">--mode json</code> 下，遇到错误 key 或不存在的包都以 0 退出，因此脚本还要自己检查最后一条 assistant 消息和安装警告。上面每种失败都会让脚本以 1 退出；缺少参数或 key 也一样，在 Pi 启动前就退出。<code class="post-code--single">./bad.ts</code> 这样的本地路径会先转成绝对路径，因为脚本会换到临时目录里运行 Pi。</p>
-<p>加载检查通过后，还要实际调用一次工具：提问扩展能通过这个脚本，但模型拿到的只有对照组那四个工具。</p>
+<p>加载检查通过后，还要实际调用一次工具。提问扩展就能通过这个脚本，模型拿到的却只有对照组那四个工具。</p>
 <h2 id="无人值守时-哪些-pi-扩展算-必装">无人值守时，哪些 Pi 扩展算「必装」？</h2>
-<p>我的必装清单按用途选。需要 MCP 时，单看这次测到的设置文件副作用，我会先试 <code class="post-code--single">pi-mcp-extension</code>；也可以用适配器，但每次运行都准备新的 agent 目录。这里的 MCP 测试只覆盖没有配置服务器时的状态查询。</p>
+<p>需要 MCP 时，单看这次测到的设置文件副作用，我会先试 <code class="post-code--single">pi-mcp-extension</code>，作为必装清单的候选。也可以用适配器，每次运行都准备新的 agent 目录。这里的 MCP 测试只覆盖没有配置服务器时的状态查询。</p>
 <p>网页搜索方面，<code class="post-code--single">pi-web-access</code> 没有搜索 key 也能用，报告的 provider 是 &quot;Provider: exa&quot;。<code class="post-code--single">pi-web-search</code> 也能用，它的 README 说搜索通过当前选定的模型完成。</p>
-<p>两个子 agent 包都返回了 <code class="post-code--single">PONG</code>。Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。任务清单我会保留 <code class="post-code--single">rpiv-todo</code>，命令拦截用 <code class="post-code--single">cc-safety-net</code>，permission-system 只在有明确配置时使用。</p>
+<p>两个子 agent 包都返回了 <code class="post-code--single">PONG</code>，其中 Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。任务清单我会保留 <code class="post-code--single">rpiv-todo</code>，用 <code class="post-code--single">cc-safety-net</code> 拦截命令。permission-system 要有明确配置才会用。</p>
 <p>我没测 OAuth MCP 服务器、付费搜索 key 或长时间运行。测试环境是 Linux，没有测 Windows 和 macOS。</p>
 <h2 id="在-orbi-里固定选中的扩展版本">在 Orbi 里固定选中的扩展版本</h2>
 <p>用 Orbi 运行 Pi 时，在 <code class="post-code--single">orbi.toml</code> 里写：</p>
@@ -555,7 +555,7 @@ source = &quot;npm:@juicesharp/rpiv-todo@2.15.0&quot;
 source = &quot;npm:cc-safety-net@2.7.3&quot;
 </code></pre>
 <p>Orbi 的 <code class="post-code--spaced">origin/main f5de8082</code> 中，<code class="post-code--single">src/orbi/config.py</code> 的校验器接受了这些来源。它拒绝了 <code class="post-code--single">npm:pi-web-access</code>、<code class="post-code--single">npm:pi-web-access@latest</code> 和 <code class="post-code--single">npm:@tintinweb/pi-subagents</code>，报错为 &quot;npm source must pin a version&quot;。</p>
-<p>Pi 1.5.0 <a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">更新日志</a> 1.5.0 一节说，<code class="post-code--spaced">-e npm:</code> 指定的包如果没有固定版本，npm 包仓库里出现更新的匹配版本时会重新安装。这也是固定版本的一个理由。<a href="/zh/blog/pi-extensions-in-production/#orbi-%E7%94%A8-no-extensions-%E5%8A%A0%E7%99%BD%E5%90%8D%E5%8D%95%E5%8A%A0%E8%BD%BD-pi-%E6%89%A9%E5%B1%95">生产环境那篇的加载一节</a>解释了 Orbi 怎样把配置中的扩展传给 Pi。</p>
+<p>Pi 1.5.0 <a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md">更新日志</a>的 1.5.0 一节提到，<code class="post-code--spaced">-e npm:</code> 指定的包如果没有固定版本，npm 包仓库里出现更新的匹配版本时会重新安装。<a href="/zh/blog/pi-extensions-in-production/#orbi-%E7%94%A8-no-extensions-%E5%8A%A0%E7%99%BD%E5%90%8D%E5%8D%95%E5%8A%A0%E8%BD%BD-pi-%E6%89%A9%E5%B1%95">生产环境那篇的加载一节</a>解释了 Orbi 怎样把配置中的扩展传给 Pi。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
   <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
