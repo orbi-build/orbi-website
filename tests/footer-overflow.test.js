@@ -283,9 +283,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           const dang = track.querySelector('a[href="https://dang.ai"]');
           const dangImage = dang?.querySelector("img");
           const dangRect = dangImage?.getBoundingClientRect();
-          const launchigniter = track.querySelector('a[href="https://launchigniter.com/product/orbi?ref=badge-orbi"]');
-          const launchigniterImage = launchigniter?.querySelector("img");
-          const launchigniterRect = launchigniterImage?.getBoundingClientRect();
           // Issue #1119: Scout Forge closes the row so the directory counts the
           // badge's impressions.
           const scoutforge = track.querySelector('a[href="https://scoutforge.net/apps/orbi?ref=badge"]');
@@ -327,7 +324,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           // vertical centre and report the worst spread inside every row that
           // carries one of the new entries. Issue #1173 put every entry on that
           // one line, so there is exactly one row now.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge, findly, founderBest, makeitlast, aiForDevelopers, unoDirectory, saascity, launchvault].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, scoutforge, findly, founderBest, makeitlast, aiForDevelopers, unoDirectory, saascity, launchvault].filter(Boolean);
           const rows = [];
           for (const node of [...track.children]) {
             const box = node.getBoundingClientRect();
@@ -502,16 +499,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             dangImageHeight: dangRect?.height,
             dangNaturalWidth: dangImage?.naturalWidth,
             dangNaturalHeight: dangImage?.naturalHeight,
-            launchigniterTarget: launchigniter?.getAttribute("target"),
-            launchigniterRel: launchigniter?.getAttribute("rel"),
-            launchigniterImageSrc: launchigniterImage?.getAttribute("src"),
-            launchigniterImageAlt: launchigniterImage?.getAttribute("alt"),
-            launchigniterDeclaredWidth: launchigniterImage?.getAttribute("width"),
-            launchigniterDeclaredHeight: launchigniterImage?.getAttribute("height"),
-            launchigniterImageWidth: launchigniterRect?.width,
-            launchigniterImageHeight: launchigniterRect?.height,
-            launchigniterNaturalWidth: launchigniterImage?.naturalWidth,
-            launchigniterNaturalHeight: launchigniterImage?.naturalHeight,
             scoutforgeTarget: scoutforge?.getAttribute("target"),
             scoutforgeRel: scoutforge?.getAttribute("rel"),
             scoutforgeHref: scoutforge?.getAttribute("href"),
@@ -623,17 +610,19 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
         // ToolPotion badge, Issue #1102 the Fazier badge, Issue #1116 the
-        // turbo0 / toolfame / dang.ai / LaunchIgniter badges, Issue #1119 the
+        // turbo0 / toolfame / dang.ai badges, Issue #1119 the
         // Scout Forge badge, Issue #1129 the Findly.tools badge, Issue #1132
         // the founder.best / makeitla.st badges, Issue #1134 the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
         // Issue #1160 twelve directory badges and links, Issue #1165 the
         // doforai.tools badge, Issue #1168 the Startup Fame badge and
         // Issue #1169 the ScrollLaunch badge and Issue #1176 the Twelve Tools
-        // text link: 56 badges. Issue #1173 moved the two friend links onto the
+        // text link: 56 badges. Issue #1185 removed the LaunchIgniter badge,
+        // whose directory entry does not exist, leaving 55.
+        // Issue #1173 moved the two friend links onto the
         // strip ahead of them (each in its own text group), and the marquee's
         // runtime copy is not counted here.
-        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(56);
+        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(55);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -651,7 +640,8 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
         // appended the ToolPotion badge, Issue #1102 the Fazier badge and
-        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+        // Issue #1116 the turbo0 / toolfame / dang.ai badges (Issue #1185
+        // dropped the LaunchIgniter badge that closed that batch),
         // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge
         // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
         // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
@@ -717,23 +707,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           path + ": the Dang.ai badge must keep the 550x198 source ratio",
         ).toBeLessThan(0.02);
         expect(result.dangRel, path + ": the Dang.ai backlink must stay crawlable").not.toContain("nofollow");
-        // LaunchIgniter's badge SVG declares its own 212x55 box.
-        expect(result.launchigniterTarget, path + ": the LaunchIgniter badge opens in a new tab").toBe("_blank");
-        expect(result.launchigniterRel, path + ": the LaunchIgniter anchor keeps rel=noopener").toBe("noopener");
-        expect(result.launchigniterRel, path + ": the LaunchIgniter backlink must stay crawlable").not.toContain("nofollow");
-        expect(result.launchigniterImageSrc, path + ": LaunchIgniter badge image src")
-          .toBe("https://launchigniter.com/api/badge/orbi?theme=light");
-        expect(result.launchigniterImageAlt, path + ": LaunchIgniter badge image alt").toBe("Featured on LaunchIgniter");
-        expect(result.launchigniterDeclaredWidth, path + ": the LaunchIgniter badge declares 212px").toBe("212");
-        expect(result.launchigniterDeclaredHeight, path + ": the LaunchIgniter badge declares 55px").toBe("55");
-        expect(result.launchigniterNaturalWidth, path + ": the LaunchIgniter placeholder is 212px wide").toBe(212);
-        expect(result.launchigniterNaturalHeight, path + ": the LaunchIgniter placeholder is 55px high").toBe(55);
-        expect(Math.abs(result.launchigniterImageHeight - 28), path + ": the LaunchIgniter badge renders 28px high").toBeLessThanOrEqual(1);
-        expect(
-          Math.abs(result.launchigniterImageWidth / result.launchigniterImageHeight
-            - result.launchigniterNaturalWidth / result.launchigniterNaturalHeight),
-          path + ": the LaunchIgniter badge must keep the 212x55 source ratio",
-        ).toBeLessThan(0.02);
         // Issue #1119: Scout Forge counts the badge's impressions from the
         // image request itself, so the image must stay on scoutforge.net (never
         // self-hosted) and the anchor must stay crawlable — no nofollow, plain
@@ -1151,8 +1124,9 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
         // Startup Fast / Artificin badges and the two text links, Issue #1099
         // through the ToolPotion badge, Issue #1102 through the Fazier badge,
-        // Issue #1116 through the turbo0 / toolfame / dang.ai / LaunchIgniter
-        // badges, Issue #1119 through the Scout Forge badge, Issue #1129
+        // Issue #1116 through the turbo0 / toolfame / dang.ai badges
+        // (Issue #1185 removed the LaunchIgniter one), Issue #1119 through the
+        // Scout Forge badge, Issue #1129
         // through the Findly.tools badge, Issue #1132 through the
         // founder.best / makeitla.st badges, Issue #1134 through the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
@@ -1174,7 +1148,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://turbo0.com/item/orbi",
           "https://toolfame.com/item/orbi",
           "https://dang.ai",
-          "https://launchigniter.com/product/orbi?ref=badge-orbi",
           "https://scoutforge.net/apps/orbi?ref=badge",
           "https://findly.tools/orbi?utm_source=orbi",
           "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
@@ -1248,7 +1221,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
   const badgeHrefs = [
     "https://launchnest.io/p/orbi",
     "https://aiagentsdirectory.com/agent/orbi",
-    "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+    "https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
     "https://toolradar.com/tools/orbi",
     "https://nicklaunches.com/products/orbi/",
     "https://yourhack.ai",
@@ -1273,7 +1246,6 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://turbo0.com/item/orbi",
     "https://toolfame.com/item/orbi",
     "https://dang.ai",
-    "https://launchigniter.com/product/orbi?ref=badge-orbi",
     "https://scoutforge.net/apps/orbi?ref=badge",
     "https://findly.tools/orbi?utm_source=orbi",
     "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
@@ -1363,8 +1335,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
           // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
-          // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai /
-          // LaunchIgniter images, Issue #1119 the Scout Forge image,
+          // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai
+          // images (Issue #1185 dropped the LaunchIgniter one), Issue #1119
+          // the Scout Forge image,
           // Issue #1129 the Findly.tools image, Issue #1132 the
           // founder.best / makeitla.st images, Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault images,
@@ -1372,8 +1345,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // 101aitools.com / vibedonalds.com / minylist.com images,
           // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
           // image and Issue #1169 the ScrollLaunch image: 41 badge images in
-          // the row.
-          expect(badges, label + ": badge count").toHaveLength(41);
+          // the row. Issue #1185 removed the LaunchIgniter image, leaving 40.
+          expect(badges, label + ": badge count").toHaveLength(40);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1479,7 +1452,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.stripInsideFooter, path + " at 390px: the badge strip stays inside the footer").toBe(true);
         expect(phoneLayout.stripScrolls, path + " at 390px: the strip scrolls the badges it cannot show").toBe(true);
         expect(phoneLayout.rowHeight, path + " at 390px: the friends row is one badge high").toBeLessThanOrEqual(90);
-        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(41);
+        // Issue #1185 removed the LaunchIgniter badge, leaving 40.
+        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(40);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
@@ -1687,9 +1661,10 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         // wrapped rows this replaced.
         expect(desktop.navHeight, path + " at 1440px: the badge row is one line high").toBeLessThanOrEqual(90);
         expect(desktop.documentOverflow, path + " at 1440px: the strip never widens the page").toBe(0);
-        // 58 anchors: the two friend links + the 56 badges, all in the source.
-        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(58);
-        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(58);
+        // 57 anchors: the two friend links + the 55 badges (Issue #1185
+        // removed the LaunchIgniter one), all in the source.
+        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(57);
+        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(57);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
         // Issue #1173 item 1: the fifteen text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
