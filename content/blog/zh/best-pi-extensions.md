@@ -1,7 +1,7 @@
 ---
-title: Pi 扩展推荐：15 个扩展的无人值守实测
+title: Pi 扩展推荐：20 个扩展的无人值守实测
 date: 2026-11-05
-summary: 实测 15 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。
+summary: 实测 20 个热门 Pi 扩展，先去掉终端和桌面总线，再接入永不应答的钥匙串。有些能正常用，有些没动静，也有扩展改了配置。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-best-pi-extensions-card.png
@@ -9,11 +9,11 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 `ls -la` 都拒绝，MCP 适配器则改了配置，影响到了下次会话。
+我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 20 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 `ls -la` 都拒绝，MCP 适配器则改了配置，影响到了下次会话。
 
 Pi 在 CI 或 systemd 服务里运行时，我关心模型拿到了哪些工具，扩展运行后又留下了什么。扩展版本更新很快，这些结论只适用于下表的版本和这次测试的日期。
 
-按这次无人值守测试的结果，我的 Pi 扩展推荐是：MCP 用 `pi-mcp-extension`，或者每次运行都新建 agent 目录，再用 `pi-mcp-adapter`。网页搜索可以选 `pi-web-access` 或 `pi-web-search`，两个子 agent 包也都能用。任务清单我会选 `rpiv-todo`，命令拦截用 `cc-safety-net`。`pi-permission-system` 要先写明确的权限配置。其中 MCP 只测了没有配置服务器时的状态查询。下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。
+按这次无人值守测试的结果，我的 Pi 扩展推荐是：MCP 用 `pi-mcp-extension` 或 `@fitchmultz/pi-mcp-adapter`，或者每次运行都新建 agent 目录，再用 `pi-mcp-adapter`。网页搜索选 `pi-web-access` 或 `pi-web-search`，这两个不用搜索 key 就能用。子 agent 方面，`pi-subagents`、`@tintinweb/pi-subagents` 和 `pi-ptc-subagents` 都返回了结果，`pi-subagent-manager` 需要会话目录。任务清单我会选 `rpiv-todo`，命令拦截用 `cc-safety-net`。`pi-permission-system` 要先写明确的权限配置。其中 MCP 只测了没有配置服务器时的状态查询。下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。
 
 Pi agent 扩展是 Pi 启动时加载的代码，可以来自本地文件、npm 包或 git 仓库。多数扩展会注册模型可以调用的工具，本文说的 Pi 插件也指这类扩展。skill 是写在 `SKILL.md` 里的指令。[生产环境那篇的第一节](/zh/blog/pi-extensions-in-production/#pi-扩展是什么-pi-从哪三个地方加载它)介绍了两者的区别，以及 Pi 怎样加载扩展。
 
@@ -23,11 +23,11 @@ Pi agent 扩展是 Pi 启动时加载的代码，可以来自本地文件、npm 
 
 E2 没有会话总线。我用 `env -i` 清空环境变量，用 `setsid -w` 脱离终端，stdin 接 `/dev/null`，HOME 和 agent 目录都是新建的。agent 目录存放 Pi 的配置和状态，默认在 `~/.pi/agent`，可用 `PI_CODING_AGENT_DIR` 更改位置。扩展参数是 `-ne -e npm:<pkg>@<version>`，运行时加上 `timeout 120`。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 "Reply with the single word OK."。加载后，我再要求每个扩展实际完成一次操作，每次调用测试都从已装好扩展的 E2 HOME 副本开始。
 
-E1 多了一条私有会话总线，由下方的 `blackhole.py` 占用 `org.freedesktop.secrets`，记录每次调用但永不应答。每次 E1 运行都从对应的 E2 HOME 副本开始。15 个扩展都在 E1 和 E2 中测过，每个扩展在两种环境里提供的工具和调用测试结果都相同，所以表格中每个扩展只列一行，Secret Service 调用另放在后面的专节。E1 计时包含 1 秒的总线启动时间；同一总线下不加载扩展的 E1 对照组，在 1.2 秒时发出了首次模型请求。
+E1 多了一条私有会话总线，由下方的 `blackhole.py` 占用 `org.freedesktop.secrets`，记录每次调用但永不应答。每次 E1 运行都从对应的 E2 HOME 副本开始。20 个扩展都在 E1 和 E2 中测过，每个扩展在两种环境里提供的工具和调用测试结果都相同，所以表格中每个扩展只列一行，Secret Service 调用另放在后面的专节。E1 计时包含 1 秒的总线启动时间；同一总线下不加载扩展的 E1 对照组，在 1.2 秒时发出了首次模型请求。
 
 不加载扩展的对照组恰好只有 `read,bash,edit,write` 四个工具。用 `busctl` 调用黑洞，5 秒后超时；另一个自写扩展在加载时读取钥匙串，3 次运行中 3 次都访问到了黑洞。
 
-## 按用途看 15 个扩展的结果
+## 按用途看 20 个扩展的结果
 
 表格按用途分组，推荐依据是这次调用结果。下载量是 2026 年 11 月 5 日查询的 npm 上月包下载总量，工具一列只列出对照组之外新增的工具。我只比较了临时 HOME 和测试仓库里的文件变化，不包含 `/tmp` 或系统目录。「未观察到」不计 Pi 通常会写的 `auth.json`、`models-store.json`、npm 缓存和包的安装文件。每行结论只适用于「调用测试」列的操作，钥匙串访问和计时结果见后面的专节。
 
@@ -35,10 +35,15 @@ E1 多了一条私有会话总线，由下方的 `blackhole.py` 占用 `org.free
 |---|---|---|---|---|---|---|---|
 | `pi-mcp-adapter@7.0.1` | MCP | MIT | 1,408,674 | `mcp` | 列出的服务器为空 | agent 目录中的 `settings.json`、`mcp-onboarding.json` | 空服务器列表查询完成；会改写设置 |
 | `pi-mcp-extension@1.13.0` | MCP | MIT | 823,848 | `mcp_status`, `mcp_connect`, `mcp_list_resources`, `mcp_read_resource` | 状态返回 `[]` | 未观察到 | 状态查询能用；未配置服务器 |
+| `@fitchmultz/pi-mcp-adapter@8.0.30` | MCP | MIT | 5,684 | `mcp_search` | 搜索返回无工具（未配置服务器） | 未观察到 | 能用；不改设置 |
 | `pi-web-access@0.47.0` | 网页搜索 | MIT | 1,116,299 | `web_search`, `source_check`, `fetch_content`, `get_search_content` | 搜索返回 Pi 扩展目录 | 未观察到 | 没有搜索 key 也搜到了结果 |
 | `pi-web-search@1.7.0` | 网页搜索 | MIT | 75,116 | `web_search` | 搜索返回结果 | 未观察到 | 用当前选定的模型能搜到结果 |
+| `@zeldrisho/pi-web-search@0.14.5` | 网页搜索 | MIT | 1,875 | `web_search` | 报错：`BRAVE_SEARCH_API_KEY is required` | 未观察到 | 需要 Brave key |
+| `pi-wsearch@0.6.0` | 网页搜索 | MIT | 1,830 | `WebSearch`, `WebFetch` | 「未配置搜索引擎 key」 | 未观察到 | 需要搜索 key |
 | `pi-subagents@0.84.0` | 子 agent | MIT | 726,352 | `subagent`, `contact_supervisor`, `bg_wait`, `subagent_supervisor` | 模型猜错 agent 名称，重试后返回 `PONG` | agent 目录中 `missions/` 下的 JSON | 名称修正后能用 |
 | `@tintinweb/pi-subagents@0.23.1` | 子 agent | MIT | 47,391 | `Agent`, `SubagentWorkflow`, `get_subagent_result`, `steer_subagent` | 返回 `PONG` | agent 目录中 `sessions/` 下的 JSONL | 能用；会保存子会话 |
+| `pi-ptc-subagents@7.9.3` | 子 agent | Apache-2.0 | 6,902 | `ptc_run_code`, `ptc_workflow` | 返回 `PONG` | 未观察到 | 能用 |
+| `pi-subagent-manager@1.6.1` | 子 agent | MIT | 8,070 | `agent_types`, `agent_spawn`, `agent_wait`, `agent_steer`, `agent_status`, `agent_update`, `agent_pause`, `agent_stop`, `agent_output` | 带 `--no-session` 时启动失败（`ENOENT: mkdir ''`）；给会话目录后返回结果 | 未观察到 | 需要会话目录 |
 | `@juicesharp/rpiv-ask-user-question@2.15.0` | 向用户提问 | MIT | 151,853 | 无（没有 UI 时被移除） | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
 | `@plannotator/pi-extension@0.28.49` | 计划评审 | MIT OR Apache-2.0 | 89,716 | 无（没有 UI 时被移除） | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
 | `@juicesharp/rpiv-todo@2.15.0` | 任务管理 | MIT | 87,414 | `todo` | 添加并列出 "write tests" | 未观察到 | 能用 |
@@ -117,7 +122,7 @@ Background-tasks 在仓库的 `.pi/tasks/` 留下了输出和元数据。Tintinw
 
 我的自写扩展在加载时通过 `@napi-rs/keyring` 读取钥匙串，3 次运行中 3 次都被黑洞记录到了。首次模型请求在 3.2 秒发出，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间，首次请求时间相差约 2 秒，之后 Pi 继续运行，没有卡死。我没查明是哪一层在约 2 秒后放弃等待；`busctl` 对同一个黑洞设置了 5 秒超时，就等满了 5 秒。
 
-除自写测试扩展外，15 个扩展里唯一记录到的 Secret Service 调用来自 pi-lens，发生在总线启动后的 2.3 秒，当时它正在做第一次诊断和下载二进制文件。它的首次模型请求早在 1.3 秒时就已发出（E1 对照组是 1.2 秒），因此这次调用不可能拖慢启动。自写扩展在加载时访问钥匙串，会挡在首次模型请求之前；pi-lens 在工具调用期间访问，首次请求已经发出。那次运行同时还在下载这两个二进制文件，所以我没有单独测出这次调用本身的耗时。二进制文件已经在时，E1 里同一个调用测试用了 11.8 秒，黑洞没有记录到调用。
+除自写测试扩展外，20 个扩展里唯一记录到的 Secret Service 调用来自 pi-lens，发生在总线启动后的 2.3 秒，当时它正在做第一次诊断和下载二进制文件。它的首次模型请求早在 1.3 秒时就已发出（E1 对照组是 1.2 秒），因此这次调用不可能拖慢启动。自写扩展在加载时访问钥匙串，会挡在首次模型请求之前；pi-lens 在工具调用期间访问，首次请求已经发出。那次运行同时还在下载这两个二进制文件，所以我没有单独测出这次调用本身的耗时。二进制文件已经在时，E1 里同一个调用测试用了 11.8 秒，黑洞没有记录到调用。
 
 这套测试能检测 Secret Service 访问，这次没有复现之前的卡死；上面的 3 次验证用的是我的自写钥匙串扩展。将下方黑洞服务的代码原样保存为 `blackhole.py`，需要 dbus-python 和 PyGObject。如果总线上已有服务占用了 `org.freedesktop.secrets`，脚本会以 1 退出，因为正常钥匙串替它应答会让所有测试看起来都没问题：
 
@@ -272,11 +277,11 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
 
 ## 无人值守时，我会留下哪些 Pi 扩展？
 
-需要 MCP 时，`pi-mcp-extension` 会进我的必装清单；也可以用适配器，每次运行前重建 agent 目录。这次两个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用，`pi-mcp-extension` 没有留下这类改动。
+需要 MCP 时，`pi-mcp-extension` 和 `@fitchmultz/pi-mcp-adapter` 会进我的必装清单；也可以用 `pi-mcp-adapter`，每次运行前重建 agent 目录。这次三个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用：`pi-mcp-adapter` 改了设置，另外两个没有。
 
-网页搜索方面，`pi-web-access` 没有搜索 key 也能用，报告的 provider 是 "Provider: exa"；它的 README 说明，没有 key 时会通过 Exa 的 MCP 端点搜索，因此查询会发给 Exa。`pi-web-search` 也能用，它的 README 说搜索通过当前选定的模型完成。
+网页搜索方面，`pi-web-access` 没有搜索 key 也能用，报告的 provider 是 "Provider: exa"；它的 README 说明，没有 key 时会通过 Exa 的 MCP 端点搜索，因此查询会发给 Exa。`pi-web-search` 也能用，它的 README 说搜索通过当前选定的模型完成。`@zeldrisho/pi-web-search` 和 `pi-wsearch` 能正常加载，但要先配好自己的搜索 key（前者用 Brave），否则只返回错误。
 
-两个子 agent 包都返回了 `PONG`，其中 Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。任务清单我会保留 `rpiv-todo`，用 `cc-safety-net` 拦截命令。permission-system 要有明确配置才会用。
+三个子 agent 包返回了 `PONG`，其中 Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。`pi-subagent-manager` 在 `--no-session` 下启动子 agent 失败，给 Pi 一个会话目录后就能用；像 Orbi 这样的运行器本来就给每个会话一个目录。任务清单我会保留 `rpiv-todo`，用 `cc-safety-net` 拦截命令。permission-system 要有明确配置才会用。
 
 我没测 OAuth MCP 服务器、付费搜索 key 或长时间运行。测试环境是 Linux，没有测 Windows 和 macOS。
 

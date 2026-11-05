@@ -1,7 +1,7 @@
 ---
-title: Best Pi extensions for unattended runs: 15 tested
+title: Best Pi extensions for unattended runs: 20 tested
 date: 2026-11-05
-summary: I ran 15 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.
+summary: I ran 20 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-pi-extensions-card.png
@@ -9,11 +9,11 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 15 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session.
+Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session.
 
 I'm Larry 🍀 Orbi, the creator of Orbi. For Pi in CI or a systemd service, I care about which tools reach the model and what the extensions leave behind. Extension versions change quickly, so these results apply to the versions below and the date of the tests.
 
-For unattended runs, I'd use `pi-mcp-extension` for MCP (or `pi-mcp-adapter` with a fresh agent directory per run). For web search, I'd choose `pi-web-access` or `pi-web-search`. Either subagent package worked. I'd keep `rpiv-todo` for task lists and `cc-safety-net` as a command guard, and use `pi-permission-system` only with an explicit configuration. The results below explain those choices. You can test any package yourself with the script later in the post.
+For unattended runs, I'd use `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter` for MCP (or `pi-mcp-adapter` with a fresh agent directory per run). For web search, I'd choose `pi-web-access` or `pi-web-search`, the two that worked without a search key. For subagents, `pi-subagents`, `@tintinweb/pi-subagents` and `pi-ptc-subagents` all returned a result; `pi-subagent-manager` needs a session directory. I'd keep `rpiv-todo` for task lists and `cc-safety-net` as a command guard, and use `pi-permission-system` only with an explicit configuration. The results below explain those choices. You can test any package yourself with the script later in the post.
 
 Pi coding agent extensions are code that Pi loads at startup from local files, npm packages or git repositories. Most Pi agent extensions register tools the model can call. A skill contains instructions in a `SKILL.md` file. The [production post's first section](/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them) explains the distinction and how Pi loads extensions.
 
@@ -23,7 +23,7 @@ I used Pi 1.5.0, Node v22.23.1, `/usr/bin/npm` 12.0.2 and Linux 6.18. DeepSeek's
 
 For E2 (no session bus), I used `env -i`, `setsid -w`, stdin from `/dev/null`, a fresh HOME and a fresh agent directory (Pi's config and state directory, `~/.pi/agent` by default, moved with `PI_CODING_AGENT_DIR`), `-ne -e npm:<pkg>@<version>` and `timeout 120`. These extension flags load only the explicitly named package. I supplied the model-provider key without a separate search-provider key. The load prompt was "Reply with the single word OK." I then asked each extension to perform a task, starting each use probe from a copy of the installed E2 HOME.
 
-For E1, I added a private session bus on which `blackhole.py` (listed further down) owns `org.freedesktop.secrets`, logs every call and never replies. Each E1 run started from a copy of the corresponding E2 HOME. All 15 extensions ran in both; every one got the same tools and the same probe result in E1 as in E2, so the table shows one row each and the Secret Service calls get their own section below. E1 timings include a second of bus startup, and the E1 control (no extension, same bus) took 1.2 s to its first model request.
+For E1, I added a private session bus on which `blackhole.py` (listed further down) owns `org.freedesktop.secrets`, logs every call and never replies. Each E1 run started from a copy of the corresponding E2 HOME. All 20 extensions ran in both; every one got the same tools and the same probe result in E1 as in E2, so the table shows one row each and the Secret Service calls get their own section below. E1 timings include a second of bus startup, and the E1 control (no extension, same bus) took 1.2 s to its first model request.
 
 The no-extension control exposed exactly `read,bash,edit,write`. A `busctl` call to the black hole timed out after 5 s; a homemade extension reading the keyring at load reached it in 3 of 3 runs.
 
@@ -35,10 +35,15 @@ Downloads are npm's last-month package totals, queried on 5 November 2026. The t
 |---|---|---|---|---|---|---|---|
 | `pi-mcp-adapter@7.0.1` | MCP | MIT | 1,408,674 | `mcp` | Listed no servers | Agent `settings.json`, `mcp-onboarding.json` | Works; rewrites settings |
 | `pi-mcp-extension@1.13.0` | MCP | MIT | 823,848 | `mcp_status`, `mcp_connect`, `mcp_list_resources`, `mcp_read_resource` | Status returned `[]` | None observed | Status works; no server configured |
+| `@fitchmultz/pi-mcp-adapter@8.0.30` | MCP | MIT | 5,684 | `mcp_search` | Search returned no tools (no server configured) | None observed | Works; no settings change |
 | `pi-web-access@0.47.0` | Web search | MIT | 1,116,299 | `web_search`, `source_check`, `fetch_content`, `get_search_content` | Search returned Pi catalog | None observed | Search worked without search key |
 | `pi-web-search@1.7.0` | Web search | MIT | 75,116 | `web_search` | Search returned a result | None observed | Worked with selected model |
+| `@zeldrisho/pi-web-search@0.14.5` | Web search | MIT | 1,875 | `web_search` | Error: `BRAVE_SEARCH_API_KEY is required` | None observed | Needs a Brave key |
+| `pi-wsearch@0.6.0` | Web search | MIT | 1,830 | `WebSearch`, `WebFetch` | "No search engine keys configured" | None observed | Needs a search key |
 | `pi-subagents@0.84.0` | Subagents | MIT | 726,352 | `subagent`, `contact_supervisor`, `bg_wait`, `subagent_supervisor` | `PONG` after name retry | Agent `missions/` JSON | Worked after retry |
 | `@tintinweb/pi-subagents@0.23.1` | Subagents | MIT | 47,391 | `Agent`, `SubagentWorkflow`, `get_subagent_result`, `steer_subagent` | Returned `PONG` | Agent `sessions/` JSONL | Worked; persisted child session |
+| `pi-ptc-subagents@7.9.3` | Subagents | Apache-2.0 | 6,902 | `ptc_run_code`, `ptc_workflow` | Returned `PONG` | None observed | Worked |
+| `pi-subagent-manager@1.6.1` | Subagents | MIT | 8,070 | `agent_types`, `agent_spawn`, `agent_wait`, `agent_steer`, `agent_status`, `agent_update`, `agent_pause`, `agent_stop`, `agent_output` | Spawn failed with `--no-session` (`ENOENT: mkdir ''`); replied with a session directory | None observed | Needs a session directory |
 | `@juicesharp/rpiv-ask-user-question@2.15.0` | Ask user | MIT | 151,853 | None (removed without a UI) | Model said `NO-TOOL` | None observed | Inactive without UI |
 | `@plannotator/pi-extension@0.28.49` | Plan review | MIT OR Apache-2.0 | 89,716 | None (removed without a UI) | Model said `NO-TOOL` | None observed | Inactive without UI |
 | `@juicesharp/rpiv-todo@2.15.0` | Tasks | MIT | 87,414 | `todo` | Added/listed "write tests" | None observed | Worked |
@@ -117,7 +122,7 @@ With no MCP servers configured, `pi-mcp-adapter@7.0.1` made zero calls to the ne
 
 My homemade extension read the keyring through `@napi-rs/keyring` at load, and the black hole recorded it in 3 of 3 runs. First model requests arrived at 3.2 s, compared with 1.2 s for the control. Both timings include the same second of bus startup. The probe added about 2 s, then Pi carried on; it did not hang. I did not find which layer gives up after about 2 s; `busctl`, with its timeout set to 5 s, waited the full 5 s on the same black hole.
 
-Apart from my probe, the only Secret Service call among the 15 extensions came from pi-lens, 2.3 s after the bus was up, during its first diagnostics and binary download. That was after its first model request had already gone out at 1.3 s (the E1 control: 1.2 s), so it could not delay startup. A call made at load time, like my probe's, sits in front of the first request; one made during a tool call does not. The first run also downloaded those two binaries, so I did not measure what the call itself cost. With the binaries already present, the same probe in E1 took 11.8 s and the black hole recorded no call.
+Apart from my probe, the only Secret Service call among the 20 extensions came from pi-lens, 2.3 s after the bus was up, during its first diagnostics and binary download. That was after its first model request had already gone out at 1.3 s (the E1 control: 1.2 s), so it could not delay startup. A call made at load time, like my probe's, sits in front of the first request; one made during a tool call does not. The first run also downloaded those two binaries, so I did not measure what the call itself cost. With the binaries already present, the same probe in E1 took 11.8 s and the black hole recorded no call.
 
 This setup detects Secret Service access; it did not reproduce the earlier hang. Save the code verbatim as `blackhole.py`. It needs dbus-python and PyGObject. It exits 1 if something already owns `org.freedesktop.secrets` on the bus, because a real keyring answering in its place would make every test look clean:
 
@@ -272,11 +277,11 @@ After the load check, test an actual tool call. The asking-user package passed t
 
 ## Which are the best Pi extensions for unattended use?
 
-For MCP, the best Pi extensions I'd consider for unattended use are `pi-mcp-extension` or the adapter with an agent directory rewritten per run. I didn't connect either to a server, so the only difference I measured in what they leave behind is the settings side effect, and `pi-mcp-extension` had none.
+For MCP, the best Pi extensions I'd consider for unattended use are `pi-mcp-extension` or `@fitchmultz/pi-mcp-adapter`, or `pi-mcp-adapter` with an agent directory rewritten per run. I didn't connect any of them to a server, so the only difference I measured in what they leave behind is the settings side effect: `pi-mcp-adapter` rewrote settings, the other two didn't.
 
-For web search, `pi-web-access` worked without a search key and reported "Provider: exa"; its README says that with no keys it searches through Exa's MCP endpoint, so your queries go to Exa. `pi-web-search` also worked; its README says it searches through the currently selected model.
+For web search, `pi-web-access` worked without a search key and reported "Provider: exa"; its README says that with no keys it searches through Exa's MCP endpoint, so your queries go to Exa. `pi-web-search` also worked; its README says it searches through the currently selected model. `@zeldrisho/pi-web-search` and `pi-wsearch` loaded fine but returned an error until you give them their own search key (Brave for the first).
 
-Both subagent packages returned `PONG`, though Pi-subagents needed a retry after the model guessed an agent name. I'd keep `rpiv-todo` for task lists and use `cc-safety-net` as a command guard. I'd use permission-system only with an explicit configuration.
+Three subagent packages returned `PONG`, though Pi-subagents needed a retry after the model guessed an agent name. `pi-subagent-manager` failed to spawn under `--no-session` and worked once Pi had a session directory, which a runner like Orbi gives every session anyway. I'd keep `rpiv-todo` for task lists and use `cc-safety-net` as a command guard. I'd use permission-system only with an explicit configuration.
 
 I did not test OAuth MCP servers, paid search keys or long runs. These results cover Linux, with no Windows or macOS tests.
 
