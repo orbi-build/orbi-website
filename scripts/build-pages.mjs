@@ -168,8 +168,12 @@ const LANG = {
     guidesHeading: "Guides",
     compareHeading: "Compare",
     companyHeading: "Company",
-    friendsLabel: "Friends",
-    friendsAria: "Friends",
+    // Issue #1173: the badge row is the site's "featured on" wall, not a list
+    // of friends, and it carries the pause/play control the marquee needs.
+    friendsLabel: "Featured on",
+    friendsAria: "Featured on",
+    friendsPauseLabel: "Pause",
+    friendsPlayLabel: "Play",
     langGroupAria: "Language",
     currentLangLabel: "EN",
     otherLangAttr: "zh-CN",
@@ -225,8 +229,10 @@ const LANG = {
     guidesHeading: "指南",
     compareHeading: "对比",
     companyHeading: "公司",
-    friendsLabel: "Friends",
-    friendsAria: "Friends",
+    friendsLabel: "收录于",
+    friendsAria: "收录于",
+    friendsPauseLabel: "暂停",
+    friendsPlayLabel: "播放",
     langGroupAria: "语言",
     currentLangLabel: "ZH",
     otherLangAttr: "en",
@@ -343,6 +349,8 @@ export function renderFooter(page) {
     LANGUAGE_SWITCH: `<div class="footer-language language" role="group" aria-label="${t.langGroupAria}">${lineA}${lineB}</div>`,
     FRIENDS_ARIA: t.friendsAria,
     FRIENDS_LABEL: t.friendsLabel,
+    FRIENDS_PAUSE_LABEL: t.friendsPauseLabel,
+    FRIENDS_PLAY_LABEL: t.friendsPlayLabel,
   })}`;
 }
 

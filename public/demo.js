@@ -549,10 +549,132 @@
     if (wrapper.firstElementChild) observer.observe(wrapper.firstElementChild);
   }
 
+  // Issue #1173: the footer badge wall is one self-scrolling line. The strip
+  // holds one copy of the track in the page source, so every directory link is
+  // crawlable exactly once; the copy that makes the loop seamless is built
+  // here, hidden from screen readers and out of the tab order.
+  //
+  // The scroll itself is a CSS animation on the track's transform, not a
+  // scripted scrollLeft: it runs on the compositor, so a moving strip costs the
+  // page no main-thread work, and pausing it is one class. The distance and
+  // duration come from the measured strip width, so the loop ends exactly where
+  // the copy begins and the reset is invisible.
+  //
+  // Nothing runs until the footer is near the viewport: the copy is built, the
+  // animation starts and the strip advances only then, so a page whose reader
+  // never reaches the footer never pays for any of it. Hover, keyboard focus and
+  // the pause button stop it (WCAG 2.2.2: a strip that moves by itself for more
+  // than five seconds needs a pause control), and with reduced motion the CSS
+  // turns the same box into a plain horizontal scroller and nothing here runs.
+  function bootFooterBadges(viewport) {
+    const track = viewport.querySelector("[data-footer-badges-track]");
+    const toggle = viewport.parentElement.querySelector("[data-footer-badges-toggle]");
+    if (!track || !toggle) {
+      return;
+    }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const SPEED = 40; // px per second
+    let copy = null;
+    let paused = false;
+    let hovered = false;
+    let focused = false;
+    let visible = false;
+
+    function syncPaused() {
+      viewport.classList.toggle("is-paused", paused || hovered || focused || !visible || reduced.matches);
+    }
+
+    // The seamless loop needs a second copy of the same entries. Building it
+    // here keeps every link in the page source exactly once, and building it
+    // lazily keeps the page from fetching the badge images twice before anyone
+    // scrolls to the footer.
+    function ensureCopy() {
+      if (copy) {
+        return;
+      }
+      copy = track.cloneNode(true);
+      copy.removeAttribute("data-footer-badges-track");
+      copy.setAttribute("aria-hidden", "true");
+      copy.setAttribute("inert", "");
+      copy.querySelectorAll("a").forEach(function (link) {
+        link.setAttribute("tabindex", "-1");
+      });
+      viewport.append(copy);
+      measure();
+    }
+
+    function measure() {
+      if (!copy) {
+        return;
+      }
+      // One loop is the distance from the first copy of the track to the
+      // second: exactly the width of the strip plus one gap.
+      const period = copy.getBoundingClientRect().left - track.getBoundingClientRect().left;
+      const scrolls = period > viewport.clientWidth + 1;
+      viewport.style.setProperty("--footer-badges-period", period + "px");
+      viewport.style.setProperty("--footer-badges-duration", period / SPEED + "s");
+      viewport.classList.toggle("is-scrolling", scrolls);
+      // A control that would stop nothing is not shown at all.
+      toggle.hidden = !scrolls;
+      syncPaused();
+    }
+
+    toggle.addEventListener("click", function () {
+      paused = !paused;
+      // The label states the action the next click performs, the way a media
+      // player's play/pause control does.
+      toggle.textContent = paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause;
+      syncPaused();
+    });
+    viewport.addEventListener("pointerenter", function () {
+      hovered = true;
+      syncPaused();
+    });
+    viewport.addEventListener("pointerleave", function () {
+      hovered = false;
+      syncPaused();
+    });
+    viewport.addEventListener("focusin", function () {
+      focused = true;
+      syncPaused();
+    });
+    viewport.addEventListener("focusout", function (event) {
+      if (!viewport.contains(event.relatedTarget)) {
+        focused = false;
+        syncPaused();
+      }
+    });
+    reduced.addEventListener("change", measure);
+    if ("ResizeObserver" in window) {
+      const sizes = new ResizeObserver(function () {
+        measure();
+      });
+      sizes.observe(track);
+      sizes.observe(viewport);
+    }
+
+    function syncVisible(entries) {
+      visible = entries.some(function (entry) {
+        return entry.isIntersecting;
+      });
+      if (visible) {
+        ensureCopy();
+      }
+      syncPaused();
+    }
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(syncVisible, { rootMargin: "80px" });
+      observer.observe(viewport);
+    } else {
+      syncVisible([{ isIntersecting: true }]);
+    }
+  }
+
   document.querySelectorAll('[role="region"].post-table-scroll').forEach(bootComparisonMatrix);
   document.querySelectorAll("[data-pricing-toggle]").forEach(bootPricingToggle);
   document.querySelectorAll("[data-copy]").forEach(bootCopy);
   document.querySelectorAll(".site-header").forEach(bootNavigation);
   document.querySelectorAll("#factory-trace").forEach(bootFactoryTrace);
   document.querySelectorAll("#orbi-stats").forEach(bootStats);
+  document.querySelectorAll(".footer-badges").forEach(bootFooterBadges);
 })();
