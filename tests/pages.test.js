@@ -2369,10 +2369,11 @@ describe("one unified footer on every content page", () => {
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
   // Issue #1116 the turbo0 / toolfame / dang.ai badges, Issue #1119 the
-  // Scout Forge badge (Issue #1185 removed the LaunchIgniter and NickLaunches
-  // badges, whose directory entries do not exist), Issue #1129 the Findly.tools
-  // badge,
-  // Issue #1132 the founder.best / makeitla.st badges, Issue #1134 the
+  // Scout Forge badge (Issue #1185 removed the LaunchIgniter badge, whose
+  // directory entry does not exist; the NickLaunches badge stays — its entry
+  // is still in the directory's free-launch review), Issue #1129 the
+  // Findly.tools badge, Issue #1132 the founder.best / makeitla.st badges,
+  // Issue #1134 the
   // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
   // Issue #1160 twelve more directory badges and links, Issue #1165 the
   // doforai.tools badge, Issue #1168 the Startup Fame badge and Issue #1169 the
