@@ -1,6 +1,6 @@
 // Shared third-party request guard for the Playwright browser suites.
 //
-// Every page ships forty-one footer badge images (site/partials/footer.html) plus
+// Every page ships forty footer badge images (site/partials/footer.html) plus
 // Cloudflare Web Analytics' beacon (scripts/build-pages.mjs), and some posts
 // embed a YouTube iframe. The suites navigate with
 // `goto(..., { waitUntil: "load" })`, which waits for all of them, so every run
@@ -32,8 +32,9 @@
 // 120px width, so the source ratio comes from the file itself); and on 2026-10-30
 // img.turbo0.com 482x161 (SVG viewBox 481.56x160.97, Issue #1116), toolfame.com
 // 160x54 (SVG, Issue #1116), assets.dang.ai 550x198 (PNG — the vendor's embed
-// declares the proportional 260x94, ours the PNG's own 550x198, Issue #1116) and
-// launchigniter.com 212x55 (SVG, Issue #1116); and on 2026-10-30
+// declares the proportional 260x94, ours the PNG's own 550x198, Issue #1116)
+// — Issue #1185 removed the launchigniter.com 212x55 badge, whose directory
+// entry does not exist; and on 2026-10-30
 // scoutforge.net 300x72 (SVG — its own width/height match the embed's declared
 // box, Issue #1119); and on 2026-10-31 findly.tools 139x44 (SVG — measured on
 // the live file, which the vendor's 175x55 snippet does not match, Issue #1129),
@@ -82,7 +83,6 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "img.turbo0.com", width: 482, height: 161 },
   { host: "toolfame.com", width: 160, height: 54 },
   { host: "assets.dang.ai", width: 550, height: 198 },
-  { host: "launchigniter.com", width: 212, height: 55 },
   { host: "scoutforge.net", width: 300, height: 72 },
   { host: "findly.tools", width: 139, height: 44 },
   { host: "www.founder.best", width: 1195, height: 390 },
