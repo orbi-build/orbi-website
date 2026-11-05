@@ -9,11 +9,11 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-扩展加载成功后，模型未必拿得到工具。2026 年 11 月 5 日，我实测了 20 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 `ls -la` 都拒绝，MCP 适配器则改了配置，影响到了下次会话。按用途先看这几个：
+Pi 是一个开源的编程 agent，Pi 扩展给它加上 MCP、联网搜索、子代理这些工具。这篇按用途推荐该装哪些扩展，依据是 2026 年 11 月 5 日对 20 个热门扩展的实测。我是按 CI 任务、后台服务那样无人值守地跑 Pi 来测的，因为扩展在这种场景里最容易悄悄出问题：加载得好好的，模型却拿不到你以为有的工具，或者它改了下一次运行的配置。按用途先看这几个：
 
 - 网页搜索：`pi-web-access` 或 `pi-web-search`，这两个不用搜索 key 就能用。
-- 子代理：`pi-subagents`、`@tintinweb/pi-subagents` 和 `pi-ptc-subagents` 都返回了结果；`pi-subagent-manager` 需要会话目录。
-- MCP 候选：`pi-mcp-extension` 或 `@fitchmultz/pi-mcp-adapter`，或者每次运行都新建 agent 目录，再用 `pi-mcp-adapter`。这次没有测试这些适配器的服务器调用。
+- 子代理：`pi-subagents`、`@tintinweb/pi-subagents` 或 `pi-ptc-subagents`，三个都返回了结果。`pi-subagent-manager` 也能用，只是用 `--no-session` 关掉会话时会失败。
+- MCP：`pi-mcp-extension` 或 `@fitchmultz/pi-mcp-adapter`。两个都能正常加载，也不会改你的设置；这次没有连接 MCP 服务器，这部分请用你自己的服务器验证。装得最多的 `pi-mcp-adapter` 也能用，但会改写设置，每次运行要给它一个新的 agent 目录。
 - 任务清单：`rpiv-todo`。
 - 命令拦截：`cc-safety-net`；`pi-permission-system` 要先写明确的权限配置。
 
