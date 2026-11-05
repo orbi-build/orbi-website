@@ -224,8 +224,7 @@
           <li><a class="post-toc-link" href="#相关">相关</a></li>
           </ol>
         </details>
-<p>扩展加载成功后，模型未必拿得到工具。2026 年 11 月 5 日，我实测了 20 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 <code class="post-code--spaced">ls -la</code> 都拒绝，MCP 适配器则改了配置，影响到了下次会话。</p>
-<p><strong>无人值守跑 Pi，按用途先看这几个</strong></p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>扩展加载成功后，模型未必拿得到工具。2026 年 11 月 5 日，我实测了 20 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 <code class="post-code--spaced">ls -la</code> 都拒绝，MCP 适配器则改了配置，影响到了下次会话。按用途先看这几个：</p>
 <ul>
 <li>网页搜索：<code class="post-code--single">pi-web-access</code> 或 <code class="post-code--single">pi-web-search</code>，这两个不用搜索 key 就能用。</li>
 <li>子代理：<code class="post-code--single">pi-subagents</code>、<code class="post-code--single">@tintinweb/pi-subagents</code> 和 <code class="post-code--single">pi-ptc-subagents</code> 都返回了结果；<code class="post-code--single">pi-subagent-manager</code> 需要会话目录。</li>
@@ -233,7 +232,7 @@
 <li>任务清单：<code class="post-code--single">rpiv-todo</code>。</li>
 <li>命令拦截：<code class="post-code--single">cc-safety-net</code>；<code class="post-code--single">pi-permission-system</code> 要先写明确的权限配置。</li>
 </ul>
-<p>下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。</p>
+<p>下文说明这些选择的依据，你也可以用后面的脚本自行测试扩展。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="无人值守时-我会留下哪些-pi-扩展">无人值守时，我会留下哪些 Pi 扩展？</h2>
 <h3 id="pi-mcp-扩展">Pi MCP 扩展</h3>
 <p>需要 MCP 时，<code class="post-code--single">pi-mcp-extension</code> 和 <code class="post-code--single">@fitchmultz/pi-mcp-adapter</code> 会是我的候选；也可以用 <code class="post-code--single">pi-mcp-adapter</code>，每次运行前重建 agent 目录。这次三个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用：<code class="post-code--single">pi-mcp-adapter</code> 改了设置，另外两个没有。</p>

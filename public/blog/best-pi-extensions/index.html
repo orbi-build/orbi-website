@@ -224,8 +224,7 @@
           <li><a class="post-toc-link" href="#related">Related</a></li>
           </ol>
         </details>
-<p>Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even <code class="post-code--spaced">ls -la</code>, and an MCP adapter changed settings that affected the next session.</p>
-<p><strong>Quick picks for unattended Pi runs</strong></p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even <code class="post-code--spaced">ls -la</code>, and an MCP adapter changed settings that affected the next session. My picks by job:</p>
 <ul>
 <li>Web search: <code class="post-code--single">pi-web-access</code> or <code class="post-code--single">pi-web-search</code>, the two that worked without a search key.</li>
 <li>Subagents: <code class="post-code--single">pi-subagents</code>, <code class="post-code--single">@tintinweb/pi-subagents</code> and <code class="post-code--single">pi-ptc-subagents</code> all returned a result; <code class="post-code--single">pi-subagent-manager</code> needs a session directory.</li>
@@ -233,7 +232,7 @@
 <li>Task lists: <code class="post-code--single">rpiv-todo</code>.</li>
 <li>Command guards: <code class="post-code--single">cc-safety-net</code>; use <code class="post-code--single">pi-permission-system</code> only with an explicit configuration.</li>
 </ul>
-<p>The results below explain those choices. You can test any package yourself with the script later in the post.</p>
+<p>The results below explain those choices. You can test any package yourself with the script later in the post.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="which-are-the-best-pi-extensions-for-unattended-use">Which are the best Pi extensions for unattended use?</h2>
 <h3 id="pi-mcp-extensions">Pi MCP extensions</h3>
 <p>For MCP, my candidates for unattended use are <code class="post-code--single">pi-mcp-extension</code> or <code class="post-code--single">@fitchmultz/pi-mcp-adapter</code>, or <code class="post-code--single">pi-mcp-adapter</code> with an agent directory rewritten per run. I didn&#39;t connect any of them to a server, so the only difference I measured in what they leave behind is the settings side effect: <code class="post-code--single">pi-mcp-adapter</code> rewrote settings, the other two didn&#39;t.</p>
