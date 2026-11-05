@@ -2395,6 +2395,7 @@ describe("one unified footer on every content page", () => {
       "https://postmake.io",
       "https://auraplusplus.com",
       "https://earlyhunt.com",
+      "https://twelve.tools",
       "https://aifordevelopers.org",
       "https://uno.directory",
       "https://saascity.io",
