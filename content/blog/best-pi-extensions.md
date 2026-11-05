@@ -6,6 +6,7 @@ lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-pi-extensions-card.png
 series: pi
+mirror: best-pi-extensions
 ---
 
 Pi extensions can load successfully and still leave an unattended run without the tool you installed them for. I tested 15 popular packages on 5 November 2026, starting Pi without a terminal or desktop session bus, then repeating with a Secret Service that never answers. The asking-user and plan-review tools disappeared; a permission extension rejected even `ls -la`; an MCP adapter changed settings that affected the next session.
@@ -66,7 +67,7 @@ For a service, use a separate writable agent directory per session, or rewrite `
 
 ## A misspelled package can exit successfully
 
-Pi 1.5.0 prints `Warning: Extension package "...": failed to install (...)` and carries on with exit code 0. Pi 1.2.0 exited 1 for the same nonexistent package. The [Pi changelog](https://github.com/earendil-works/pi/blob/main/CHANGELOG.md) records the change in the 1.5.0 section, with [PR #11304](https://github.com/earendil-works/pi/pull/11304).
+Pi 1.5.0 prints `Warning: Extension package "...": failed to install (...)` and carries on with exit code 0. Pi 1.2.0 exited 1 for the same nonexistent package. The [Pi changelog](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md) records the change in the 1.5.0 section, with [PR #11304](https://github.com/earendil-works/pi/pull/11304).
 
 A typo can therefore leave an unattended run without the intended extension. The script below checks that warning. An extension that throws during loading still made Pi 1.5.0 exit 1.
 
@@ -290,7 +291,7 @@ source = "npm:cc-safety-net@2.7.3"
 
 Orbi's validator at `origin/main f5de8082`, `src/orbi/config.py`, accepted these sources. It rejected `npm:pi-web-access`, `npm:pi-web-access@latest` and `npm:@tintinweb/pi-subagents` with "npm source must pin a version".
 
-Pi 1.5.0's changelog, line 61, says an unpinned `-e npm:` package is reinstalled when the registry has a newer matching version. That is another reason to pin. The [production post's loading section](/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist) explains how Orbi passes the configured extensions to Pi.
+Pi 1.5.0's changelog says an unpinned `-e npm:` package is reinstalled when the registry has a newer matching version. That is another reason to pin. The [production post's loading section](/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist) explains how Orbi passes the configured extensions to Pi.
 
 ## Related
 
