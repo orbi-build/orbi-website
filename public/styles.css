@@ -1921,16 +1921,24 @@ h2 {
   font: inherit;
   font-weight: 700;
 }
+/* Issue #1173: the badge wall is one line — the title on the left, the
+   scrolling strip in the middle, the pause control on the right — instead of
+   the five or six wrapped rows it used to take. */
 .site-footer .footer-friends {
   display: flex;
   grid-column: 1 / -1;
-  flex-wrap: wrap;
-  gap: 12px 18px;
+  align-items: center;
+  gap: 12px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
   font-size: 0.78rem;
 }
-.site-footer .footer-friends span { color: var(--ink); font-weight: 600; }
+.site-footer .footer-friends-label {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
 /* The legal entity behind orbi.build, so the site and the company can be matched. */
 .site-footer .footer-legal {
   grid-column: 1 / -1;
@@ -1938,14 +1946,48 @@ h2 {
   color: var(--ink-soft);
   font-size: 0.78rem;
 }
-/* Issue #805: the three directory badges get their own last row, clear of the
-   20px-tall text links above them. */
+/* The clipping viewport of the marquee. demo.js appends a second copy of the
+   track here, so the strip loops without the source HTML carrying any badge
+   twice. overflow-x stays hidden while it runs; the reduced-motion rule below
+   turns the same box into a scroller. */
 .site-footer .footer-badges {
   display: flex;
-  flex-basis: 100%;
-  flex-wrap: wrap;
+  flex: 1 1 auto;
+  gap: 18px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+/* One line, never wrapping: the strip's width is the sum of its entries. */
+.site-footer .footer-badges-track {
+  display: flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 12px 18px;
+  gap: 18px;
+}
+/* Issue #1173: the loop. One copy slides exactly one strip-width (plus its gap)
+   to the left and the copy behind it lands where the original started, so the
+   restart is invisible; demo.js measures that distance and the matching
+   duration, which keeps the speed constant at 40px/s. A compositor transform,
+   not a scripted scroll, so the moving strip costs the page no main-thread
+   work — and pausing it (hover, keyboard focus, the button) is one class. */
+.site-footer .footer-badges.is-scrolling .footer-badges-track {
+  animation: footer-badges-scroll var(--footer-badges-duration) linear infinite;
+}
+.site-footer .footer-badges.is-paused .footer-badges-track {
+  animation-play-state: paused;
+}
+@keyframes footer-badges-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-1 * var(--footer-badges-period))); }
+}
+/* The two friend links keep their plain text treatment; Issue #1173 only
+   moves them onto the strip so the row fits a phone. */
+.site-footer .footer-friends-text {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
 }
 /* Issue #1038: the seven directory badges render 28px high — the design
    system's size-mark — each image in its own source ratio, so the row stays
@@ -1965,6 +2007,48 @@ h2 {
 .site-footer .footer-badges img.footer-badge-startup-fast {
   width: 150px;
   height: auto;
+}
+/* Issue #1173: the text-only directory links become 28px tiles — the height of
+   the image badges beside them — so a bare word no longer needs a row of its
+   own. :has(img) is how the image badges are told apart: their anchors are
+   pinned verbatim by the directory reviews, so they cannot carry a class. The
+   brand surface never rounds (tokens.json radius-none), hence square tiles. */
+.site-footer .footer-badges-track > a:not(:has(img)) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-size: 0.65rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* WCAG 2.2.2: a strip that moves by itself for more than five seconds needs a
+   pause control. Same 28px tile as the badges it governs. */
+.site-footer .footer-badges-toggle {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.65rem;
+  line-height: 1;
+  cursor: pointer;
+}
+/* Reduced motion: no marquee at all, and the same strip becomes a horizontal
+   scroller the visitor can drag or scroll through the badges themselves. */
+@media (prefers-reduced-motion: reduce) {
+  .site-footer .footer-badges { overflow-x: auto; touch-action: pan-x; }
+  /* The global reduced-motion rule would collapse this loop to 0.01ms and leave
+     one jump; the strip does not move at all instead. */
+  .site-footer .footer-badges-track { animation: none !important; }
+  .site-footer .footer-badges-toggle { display: none; }
 }
 
 /* The hero keeps two columns far longer than the prose sections do: it needs
