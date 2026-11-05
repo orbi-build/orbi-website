@@ -629,10 +629,11 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
         // Issue #1160 twelve directory badges and links, Issue #1165 the
         // doforai.tools badge, Issue #1168 the Startup Fame badge and
-        // Issue #1169 the ScrollLaunch badge: 55 badges. Issue #1173 moved the
-        // two friend links onto the strip ahead of them (each in its own text
-        // group), and the marquee's runtime copy is not counted here.
-        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(55);
+        // Issue #1169 the ScrollLaunch badge and Issue #1176 the Twelve Tools
+        // text link: 56 badges. Issue #1173 moved the two friend links onto the
+        // strip ahead of them (each in its own text group), and the marquee's
+        // runtime copy is not counted here.
+        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(56);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -1181,6 +1182,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://postmake.io",
           "https://auraplusplus.com",
           "https://earlyhunt.com",
+          "https://twelve.tools",
           "https://aifordevelopers.org",
           "https://uno.directory",
           "https://saascity.io",
@@ -1279,6 +1281,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://postmake.io",
     "https://auraplusplus.com",
     "https://earlyhunt.com",
+    "https://twelve.tools",
     "https://aifordevelopers.org",
     "https://uno.directory",
     "https://saascity.io",
@@ -1609,7 +1612,7 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
       trackChildren: [...strip.children].length,
       trackAnchors: track.querySelectorAll("a").length,
       copyAnchors: copy ? copy.querySelectorAll("a").length : 0,
-      // Issue #1173 item 1: the fourteen text-only directory links are 28px
+      // Issue #1173 item 1: the fifteen text-only directory links are 28px
       // tiles, so they sit on the image badges' line instead of taking rows.
       textTiles: [...track.children]
         .filter((node) => node.tagName === "A" && !node.querySelector("img"))
@@ -1684,17 +1687,17 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         // wrapped rows this replaced.
         expect(desktop.navHeight, path + " at 1440px: the badge row is one line high").toBeLessThanOrEqual(90);
         expect(desktop.documentOverflow, path + " at 1440px: the strip never widens the page").toBe(0);
-        // 57 anchors: the two friend links + the 55 badges, all in the source.
-        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(57);
-        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(57);
+        // 58 anchors: the two friend links + the 56 badges, all in the source.
+        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(58);
+        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(58);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
-        // Issue #1173 item 1: the fourteen text-only directory links are 28px
+        // Issue #1173 item 1: the fifteen text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
-        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(14);
+        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(15);
         expect(
           desktop.textTiles.filter((tile) => tile.height === 28).length,
           path + ": every text-only link renders a 28px tile",
-        ).toBe(14);
+        ).toBe(15);
         const lineCentres = [...desktop.textTiles.map((tile) => tile.centre), ...desktop.badgeCentres];
         expect(Math.max(...lineCentres) - Math.min(...lineCentres), path + ": text tiles and badges share one line")
           .toBeLessThanOrEqual(1);
