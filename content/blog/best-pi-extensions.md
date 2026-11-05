@@ -1,7 +1,7 @@
 ---
 title: Best Pi extensions for unattended runs: 15 tested
 date: 2026-11-05
-summary: I tested 15 popular Pi extensions with no terminal, no session bus and a keyring that never answers: which work, which go quiet, which change your config.
+summary: I tested 15 popular Pi extensions with no terminal or desktop bus, then a keyring that never answers: which work, which go quiet, which change your config.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-best-pi-extensions-card.png
@@ -12,9 +12,11 @@ Pi extensions can load successfully and still leave an unattended run without th
 
 I'm Larry 🍀 Orbi, the creator of Orbi. For Pi running in CI or a systemd service, I want to know what reaches the model and what persists afterward. These are dated results for the versions below. Versions move fast.
 
-An extension is code Pi loads that can register tools; a skill is a `SKILL.md` of instructions. The [production post's first section](/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them) covers that distinction and extension loading.
+The short answer, for unattended runs: `pi-mcp-extension` for MCP (or `pi-mcp-adapter` with a fresh agent directory per run), `pi-web-access` or `pi-web-search` for web search, either subagent package, `rpiv-todo` for task lists, `cc-safety-net` as a command guard, and `pi-permission-system` only with an explicit configuration. The rest of the post shows why, and gives you a script to test any package yourself.
 
-## How I tested Pi extensions
+Pi coding agent extensions are code Pi loads at startup, from local files, npm packages or git repositories; most Pi agent extensions register tools the model can call. A skill is different: a `SKILL.md` of instructions. The [production post's first section](/blog/pi-extensions-in-production/#what-pi-extensions-are-and-the-three-ways-pi-loads-them) covers that distinction and extension loading.
+
+## How I tested the Pi coding agent extensions
 
 I used Pi 1.5.0, Node v22.23.1, `/usr/bin/npm` 12.0.2 and Linux 6.18. DeepSeek's `deepseek-flash` ran through a local logging proxy that recorded the tools sent to the model.
 
@@ -26,9 +28,9 @@ The no-extension control exposed exactly `read,bash,edit,write`. A `busctl` call
 
 ## Results by job
 
-Downloads are npm's last-month package totals, queried on 5 November 2026. Tools below are additions to the control tools. "None observed" excludes Pi's common `auth.json` and `models-store.json`, npm caches and the package installation. Verdicts cover these load and use probes.
+Downloads are npm's last-month package totals, queried on 5 November 2026. Tools below are additions to the control tools. I compared files only in the throwaway HOME and the test repository, not `/tmp` or system directories. "None observed" excludes Pi's common `auth.json` and `models-store.json`, npm caches and the package installation. Verdicts cover these load and use probes.
 
-| Extension@version | Job | License | Downloads last month | Added tools in `pi -p` | Use probe | Extra files outside install | Unattended verdict |
+| Extension@version | Job | License | Downloads last month | Added tools in `pi -p` | Use probe | Extra files in HOME or repo | Unattended verdict |
 |---|---|---|---|---|---|---|---|
 | `pi-mcp-adapter@7.0.1` | MCP | MIT | 1,408,674 | `mcp` | Listed no servers | Agent `settings.json`, `mcp-onboarding.json` | Works; rewrites settings |
 | `pi-mcp-extension@1.13.0` | MCP | MIT | 823,848 | `mcp_status`, `mcp_connect`, `mcp_list_resources`, `mcp_read_resource` | Status returned `[]` | None observed | Status works; no server configured |
@@ -106,7 +108,7 @@ With no MCP servers configured, `pi-mcp-adapter@7.0.1` made zero calls to the ne
 
 My homemade extension read `@napi-rs/keyring` at load. The black hole saw it in 3 of 3 runs. First model requests arrived at 3.2 s, against 1.2 s for the control. Both timings include the same second of bus startup; the probe added about 2 s, then execution continued. It did not hang.
 
-Across the 15 extensions, the only recorded Secret Service call came from pi-lens during its first diagnostics and binary download. It caused no measurable delay; a repeat recorded none. The repeat used an earlier black-hole implementation, so I use its call count only, without attributing its timing to a never-answering service.
+Across the 15 extensions, the only recorded Secret Service call came from pi-lens during its first diagnostics and binary download. Its first model request came at 1.3 s, against 1.2 s for the control, but the 41 s total was dominated by two binary downloads, so I did not isolate what the call itself cost. A repeat with the binaries already present recorded no call; that repeat used an earlier black-hole version that answered with an error, so I count its calls only.
 
 This setup detects Secret Service access. It did not reproduce the earlier hang. Save this verbatim as `blackhole.py`; it needs dbus-python and PyGObject:
 
@@ -159,6 +161,7 @@ Save this verbatim as `try-pi-extension.sh`, then `chmod +x try-pi-extension.sh`
 # Pi fails, times out, or never builds a system prompt.
 set -euo pipefail
 src=${1:?usage: try-pi-extension.sh npm:<package>@<version> [provider] [model]}
+[ -e "$src" ] && src=$(realpath "$src")  # local file: Pi runs from another directory
 provider=${2:-deepseek}
 model=${3:-deepseek-flash}
 keyvar=${KEYVAR:-DEEPSEEK_API_KEY}
@@ -184,8 +187,16 @@ tools=$(jq -r 'select(.type=="message_start" and .message.role=="system")
 if [ "$rc" -eq 0 ] && grep -qE 'Extension package ".*": failed to install' "$work/err"; then
   rc=3
 fi
+# In --mode json, a failed model request (bad key, provider down) also exits 0.
+stop=$(jq -rs '[.[] | select(.type=="message_end" and .message.role=="assistant")]
+  | last | .message.stopReason // "none"' "$work/out.jsonl" 2>/dev/null || echo none)
+if [ "$rc" -eq 0 ] && { [ "$stop" = error ] || [ "$stop" = aborted ] || [ "$stop" = none ]; }; then
+  rc=4
+  jq -rs '[.[] | select(.type=="message_end" and .message.role=="assistant")]
+    | last | .message.errorMessage // empty' "$work/out.jsonl" 2>/dev/null >> "$work/err" || true
+fi
 if [ "$rc" -ne 0 ] || [ -z "$tools" ]; then
-  echo "FAILED (exit $rc: 124 is the timeout, 3 an extension Pi skipped); last lines of stderr:"
+  echo "FAILED (exit $rc: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:"
   tail -n 20 "$work/err"
   exit 1
 fi
@@ -198,53 +209,54 @@ echo "files left behind, outside the extension's own install:"
 
 For example, after exporting `DEEPSEEK_API_KEY`:
 
-```bash
-./try-pi-extension.sh npm:pi-web-access@0.47.0
-```
-
-The recorded working web-access run printed `exit=0 seconds=3`, its tools including `web_search`, and the remaining files. A later run with the current tool-list extraction printed:
-
 ```text
-$ ./try-pi-extension.sh npm:pi-subagents@0.84.0
-exit=0 seconds=3 workdir=/tmp/tmp.HXjsACOxYj
+$ ./try-pi-extension.sh npm:pi-web-access@0.47.0
+exit=0 seconds=3 workdir=/tmp/tmp.9hlvXJ1bBX
 tools the model was given:
 bash
-bg_wait
-contact_supervisor
 edit
+fetch_content
+get_search_content
 read
-subagent
-subagent_supervisor
+source_check
+web_search
 write
 files left behind, outside the extension's own install:
 ./agent/auth.json
 ./agent/models-store.json
-[script exit 0]
 ```
 
-These are excerpts from the final failure-path checks:
+These are the failure paths I ran with the final script. `bad.ts` is a three-line extension that throws when Pi loads it:
+
+```ts
+export default function () {
+  throw new Error("boom at load");
+}
+```
 
 ```text
-$ ./try-pi-extension.sh npm:no-such-pi-extension-xyz@1.0.0
-exit=0 seconds=2 workdir=/tmp/tmp.O1e5jVJOF8
-FAILED (exit 3: 124 is the timeout, 3 an extension Pi skipped); last lines of stderr:
-Warning: Extension package "npm:no-such-pi-extension-xyz@1.0.0": failed to install (npm install no-such-pi-extension-xyz@1.0.0 --prefix /tmp/tmp.O1e5jVJOF8/agent/tmp/extensions/npm/f35b2129 --legacy-peer-deps --no-audit --no-fund failed with code 1). Check the source and try again.
-[script exit 1]
+$ DEEPSEEK_API_KEY=sk-invalid ./try-pi-extension.sh npm:@juicesharp/rpiv-todo@2.15.0
+exit=0 seconds=1 workdir=/tmp/tmp.rRQOCMjdmz
+FAILED (exit 4: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+401: {"message":"Authentication Fails, Your api key: ****alid is invalid (...)","type":"authentication_error","param":null,"code":"invalid_request_error"}
 
-$ ./try-pi-extension.sh /var/tmp/pex/badext/bad.ts
-exit=1 seconds=0 workdir=/tmp/tmp.JMtDC1nvDx
-FAILED (exit 1: 124 is the timeout, 3 an extension Pi skipped); last lines of stderr:
-Error: Failed to load extension "/var/tmp/pex/badext/bad.ts": Failed to load extension: boom at load
+$ ./try-pi-extension.sh npm:no-such-pi-extension-xyz@1.0.0
+exit=0 seconds=1 workdir=/tmp/tmp.pRpGIwtQ0o
+FAILED (exit 3: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+Warning: Extension package "npm:no-such-pi-extension-xyz@1.0.0": failed to install (npm install no-such-pi-extension-xyz@1.0.0 --prefix /tmp/tmp.pRpGIwtQ0o/agent/tmp/extensions/npm/f35b2129 --legacy-peer-deps --no-audit --no-fund failed with code 1). Check the source and try again.
+
+$ ./try-pi-extension.sh ./bad.ts
+exit=1 seconds=0 workdir=/tmp/tmp.9PqJAU0PEu
+FAILED (exit 1: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
+Error: Failed to load extension "/var/tmp/pex/bad.ts": Failed to load extension: boom at load
 Hint: Start without extensions using "pi -ne".
-[script exit 1]
 
 $ TIMEOUT=2 ./try-pi-extension.sh npm:pi-lens@4.4.8
-exit=124 seconds=2 workdir=/tmp/tmp.OvP35LCozn
-FAILED (exit 124: 124 is the timeout, 3 an extension Pi skipped); last lines of stderr:
-[script exit 1]
+exit=124 seconds=2 workdir=/tmp/tmp.MZuYKgOPSZ
+FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
 ```
 
-The initial `exit=` is Pi's process status; the `FAILED` line uses the script's adjusted status. Status 3 means Pi skipped an extension, 124 means timeout, and 1 in the throwing-extension check came from Pi. Each failure makes the wrapper exit 1. Missing arguments or a missing provider key also exit 1 before launching Pi. An empty tool list fails the wrapper even if Pi exited 0.
+The first `exit=` is Pi's own status. In `--mode json`, Pi 1.5.0 exited 0 both for the bad key and for the missing package, which is why the script checks the last assistant message and the install warning itself. Every failure makes the script exit 1, and so do a missing argument or a missing key, before Pi starts. A local path such as `./bad.ts` is turned into an absolute path first, because the script runs Pi from a scratch directory.
 
 A successful load check still needs a use probe: the asking-user package passed this script with only the control tools.
 
