@@ -193,11 +193,11 @@
 <p>下面所有数字来自 Claude Code 2.1.287（2026-10-13 的 stable 版），跑任务的主模型是 <code class="post-code--single">claude-sonnet-5-5</code>，用 <code class="post-code--spaced">claude -p</code> 无头运行（auto 模式的分类器是另一个模型，默认 Sonnet 5）。下面每个数字都来自这些运行，按动作逐条记录。</p>
 <h2 id="claude-code-的-yolo-模式到底是什么">Claude Code 的 YOLO 模式到底是什么</h2>
 <p><code class="post-code--single">--dangerously-skip-permissions</code> 打开的是 <code class="post-code--single">bypassPermissions</code> 模式。文档里这几种写法等价：</p>
-<pre><code class="language-bash">claude --dangerously-skip-permissions
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
 # 或写进 settings.json：
 # { &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
-</code></pre>
+</code></pre></div>
 <p>它不能从一个没开它的会话里中途切进去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动（原话：<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>），除非它检测到自己已经被真正的沙箱包住。管理员可以在 managed settings 里用 <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 把它整个禁掉。</p>
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。受保护路径是一小组路径，<code class="post-code--single">.git/config</code> 只是其中之一，主要是 <code class="post-code--single">.git</code>、<code class="post-code--single">.config/git</code> 和 <code class="post-code--single">.claude</code>（Claude 自己的配置）；写它们在多数模式下不会被自动放行。</p>
 <h2 id="五种权限模式分别放行了哪些动作">五种权限模式分别放行了哪些动作</h2>
@@ -278,15 +278,15 @@ claude --permission-mode bypassPermissions
 <h2 id="两种-别问我-但也别全开-的配置">两种「别问我，但也别全开」的配置</h2>
 <p>想把弹窗关掉、底下又留个托底，我实测过两种配置，各跑三次：</p>
 <p><strong>1. <code class="post-code--single">dontAsk</code> 配白名单。</strong> 没点名的都不跑，其余一律拒掉而不是弹窗。</p>
-<pre><code class="language-bash">claude -p &quot;跑测试并总结失败项&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;跑测试并总结失败项&quot; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read&quot; &quot;Bash(npm test)&quot;
-</code></pre>
+</code></pre></div>
 <p>我的测试里六个越界动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔的引号 token 传入。</p>
 <p><strong>2. <code class="post-code--single">bypassPermissions</code> 配 deny 规则。</strong> YOLO 的速度，但 deny 规则照样咬人（它在任何模式下都生效）。</p>
-<pre><code class="language-bash">claude -p &quot;...&quot; --permission-mode bypassPermissions \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;...&quot; --permission-mode bypassPermissions \
   --settings &#39;{&quot;permissions&quot;:{&quot;deny&quot;:[&quot;Bash(curl:*)&quot;,&quot;Read(./.env.local)&quot;,&quot;Read(./.env)&quot;]}}&#39;
-</code></pre>
+</code></pre></div>
 <p>联网被 <code class="post-code--single">curl</code> 那条规则拦下了，其余照跑，注入仍被模型拒绝。只在「其余照跑也无所谓」的地方用它，比如一个用完即弃的容器，因为 deny 是黑名单，黑名单只拦得住你想到要写进去的东西。</p>
 <p>关于怎么把这个参数关起来，也就是 Claude Code 的沙箱挡住什么、又漏过什么，见<a href="/zh/blog/claude-code-sandbox/">Claude Code 沙箱实测：每种配置挡住了什么</a>。</p>
 <h2 id="别的-agent-里同一个开关">别的 agent 里同一个开关</h2>
@@ -371,17 +371,17 @@ claude --permission-mode bypassPermissions
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -397,33 +397,32 @@ claude --permission-mode bypassPermissions
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -436,9 +435,9 @@ claude --permission-mode bypassPermissions
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

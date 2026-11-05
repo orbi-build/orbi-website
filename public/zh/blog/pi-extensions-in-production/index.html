@@ -190,14 +190,14 @@
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 无人值守地跑 Pi：接一张 GitHub Issue，起一个 Pi 写改动，再起另一个 Pi 评审，评审和 CI 都过了才合并。<a href="/zh/guides/pi-coding-agent/">Pi 专题页</a>讲的是这些会话外面那层 runner（Orbi 里负责领票、起 Pi、合并的那个常驻程序），<a href="/zh/blog/orbi-on-pi-coding-agent/">系列第一篇</a>跟着一张 Issue 走完全程。这一篇只讲 Pi 扩展：Orbi 怎么加载，改成这样之前出过什么事，以及我们自己最后写了哪两个扩展。下面的命令、以及这份配置的样子，就是今天在跑的，Pi 版本 1.2.0；文中的 Orbi 版本号都是开源引擎的发布版本。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="pi-扩展是什么-pi-从哪三个地方加载它">Pi 扩展是什么，Pi 从哪三个地方加载它</h2>
 <p>最简单的 Pi 扩展就是一个文件。下面这个来自 Pi 的<a href="https://pi.dev/docs/latest/extensions">扩展文档</a>，能加载，只做一件事：</p>
-<pre><code class="language-ts">import { type ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ts" data-copy-source>import { type ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
 
 export default function (pi: ExtensionAPI) {
   pi.on(&quot;session_start&quot;, async (_event, ctx) =&gt; {
     ctx.ui.notify(&quot;Extension loaded!&quot;, &quot;info&quot;);
   });
 }
-</code></pre>
+</code></pre></div>
 <p>工具和命令也在这个函数里注册（<code class="post-code--single">pi.registerTool</code>、<code class="post-code--single">pi.registerCommand</code>），完整的工具例子在后面。扩展也可以是一个带 <code class="post-code--single">index.ts</code> 或 <code class="post-code--single">index.js</code> 的目录，或者一个在 <code class="post-code--single">package.json</code> 里声明入口的包。</p>
 <p>Pi 从三个地方加载扩展，后面说的一切都建立在这三者的区别上：</p>
 <ol>
@@ -206,10 +206,10 @@ export default function (pi: ExtensionAPI) {
 <li><strong>显式路径。</strong> <code class="post-code--spaced">pi -e ./review.ts</code> 只给这一个进程加载这一个文件。文档说这是快速试扩展的办法。</li>
 </ol>
 <p>除了这三条你自己的扩展来源，Pi 还自带内置扩展（比如 MCP 支持），不另说明就会加载。关掉自动加载的开关，从 <code class="post-code--spaced">pi --help</code>（1.2.0）里摘出这三行：</p>
-<pre><code class="language-text">--extension, -e &lt;path&gt;   Load an extension file or builtin:&lt;name&gt; (can be used multiple times)
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>--extension, -e &lt;path&gt;   Load an extension file or builtin:&lt;name&gt; (can be used multiple times)
 --no-extensions, -ne     Disable extension discovery and built-in extensions (explicit -e paths still work)
 --no-builtin-tools, -nbt Disable built-in tools by default but keep extension/custom tools enabled
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">--no-extensions</code> 关掉自动发现、<code class="post-code--single">settings.json</code> 里的包，以及 Pi 自带的内置扩展（比如 MCP 支持）；<a href="https://pi.dev/docs/latest/cli">命令行文档</a>的原话是关掉「discovered, configured, and built-in extensions」。显式的 <code class="post-code--single">-e</code> 照样加载，内置扩展也可以用 <code class="post-code--spaced">-e builtin:&lt;名字&gt;</code> 单独点名：<code class="post-code--spaced">pi -ne -e builtin:mcp</code> 就是一个只有 MCP 这一个扩展的会话，把 <code class="post-code--single">builtin:mcp</code> 换成你自己的扩展文件，就是只有你那个扩展的会话。要注意这个开关不管内置工具。默认开着的四个（<code class="post-code--single">read</code>、<code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code>）还在；<code class="post-code--single">ls</code>、<code class="post-code--single">find</code>、<code class="post-code--single">grep</code> 也是内置工具，只是默认不开，下面几处 <code class="post-code--single">--tools</code> 清单里的名字就是从这儿来的。关内置工具是另一个开关 <code class="post-code--single">--no-builtin-tools</code>，下面的澄清门禁两个都用。</p>
 <h2 id="一次-d-bus-卡死-让-orbi-不再信任-pi-的默认加载">一次 D-Bus 卡死，让 Orbi 不再信任 Pi 的默认加载</h2>
 <p>我机器上的 Orbi runner 是一个 systemd 用户服务。2026 年 9 月 4 日，一次运行什么都没做就停住了：Pi 进程活着，几分钟过去没有会话文件，也没有发给模型的请求。完整的记录和诊断脚本在<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%A4%E6%AC%A1%E4%BA%8B%E6%95%85">第一篇的事故一节</a>，这里只说要紧的。</p>
@@ -217,7 +217,7 @@ export default function (pi: ExtensionAPI) {
 <p>就这一晚的事故，但一次就够了：跑 runner 的那个用户账号（在我机器上就是我）为交互使用装的一个包，停掉了一次无人值守的运行，而 Orbi 的配置里没有任何一行说它可以进来。针对它的修法是 <a href="https://github.com/orbi-build/orbi/issues/249">Issue #249</a>，9 月 7 日（UTC）合并：Orbi 自己声明一次运行可以有哪些扩展，实现者和评审者两个会话都带 <code class="post-code--single">--no-extensions</code> 启动。第三个角色 <code class="post-code--single">ticket</code>（写 Issue 评论的那个会话）晚了一个月才补上，见下面的表。</p>
 <h2 id="orbi-用-no-extensions-加白名单加载-pi-扩展">Orbi 用 <code class="post-code--single">--no-extensions</code> 加白名单加载 Pi 扩展</h2>
 <p>Orbi 的 runner 读自己的配置文件 <code class="post-code--single">orbi.toml</code>（后面出现的 <code class="post-code--single">.github/orbi.toml</code> 是另一个文件，放在仓库里的 GitHub 侧设置）。扩展清单是里面一张可重复的表：</p>
-<pre><code class="language-toml">[[pi_extensions]]
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-toml" data-copy-source>[[pi_extensions]]
 source = &quot;npm:some-extension@1.4.2&quot;
 enabled = true
 [pi_extensions.env]
@@ -228,18 +228,18 @@ source = &quot;git:github.com/org/repo@v1&quot;
 
 [[pi_extensions]]
 source = &quot;extensions/local-check.ts&quot;
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">enabled</code> 默认是 true。Orbi 在加载配置时校验（<code class="post-code--single">src/orbi/config.py</code>）：npm 来源没有具体版本号、git 来源 <code class="post-code--single">@</code> 后面没有东西、本地路径不存在、同一个来源写了两次、两条记录给同一个 <code class="post-code--single">env</code> 名字设了不同的值，任何一条都会在运行开始前拒绝整份配置。启动 Pi 时，启用条目的 <code class="post-code--single">env</code> 表合并进那一个 Pi 进程的环境（<code class="post-code--single">src/orbi/pi_session.py</code> 里的 <code class="post-code--single">pi_extension_env</code>），从不写进日志。git 那条检查只看字符串：SSH 形式的 <code class="post-code--single">git:git@host:org/repo</code> 能过，所以 git 来源要写成 <code class="post-code--single">git:&lt;主机&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code>。</p>
 <p>有两个边界要知道。<code class="post-code--single">env</code> 的值是字面值：写 <code class="post-code--single">&quot;$SOME_TOKEN&quot;</code>，传给 Pi 的就是这个字符串本身，不会展开，所以扩展要用的秘密应该由扩展自己从服务的环境里读，不要写在这里。另外 git 的 ref 可以是会动的 tag 或分支；如果你要实现者和评审者（两个独立的 Pi 进程）跑的扩展代码一个字节都不差，就钉 commit SHA，或者把同一个仓库修订版里的文件原样带上。</p>
 <p>命令这边是 <code class="post-code--single">src/orbi/pi_command.py</code> 里的几行：</p>
-<pre><code class="language-python">def _pi_extension_args(config: RunnerConfig) -&gt; list[str]:
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-python" data-copy-source>def _pi_extension_args(config: RunnerConfig) -&gt; list[str]:
     &quot;&quot;&quot;Return the isolated extension flags for every Pi role.&quot;&quot;&quot;
     args = [&quot;--no-extensions&quot;]
     for extension in config.pi_extensions:
         if extension[&quot;enabled&quot;]:
             args.extend((&quot;--extension&quot;, extension[&quot;source&quot;]))
     return args
-</code></pre>
+</code></pre></div>
 <p>实现者、评审者、<code class="post-code--single">ticket</code> 角色，以及 <code class="post-code--spaced">orbi suggest</code> 里写建议的那个会话，拿到 <code class="post-code--single">--no-extensions</code>，再按启用的条目各加一个 <code class="post-code--single">--extension</code>。白名单靠的是这两样合在一起：<code class="post-code--single">--no-extensions</code> 拒掉自动发现、设置文件和内置扩展，显式给出的条目就是会话能有的全部扩展。<code class="post-code--single">-e</code> 接的不只是路径：帮助文本写的是「文件或 <code class="post-code--single">builtin:&lt;名字&gt;</code>」，但在 Pi 1.2.0 上 <code class="post-code--spaced">pi -ne -e npm:&lt;包&gt;@&lt;版本&gt;</code> 会真的去 npm 仓库取包（写错名字会收到 npm 自己的 404），<code class="post-code--single">-e</code> 接 <code class="post-code--single">git:&lt;主机&gt;/&lt;owner&gt;/&lt;repo&gt;@&lt;ref&gt;</code> 会去克隆，Orbi 配置里的 <code class="post-code--single">npm:</code>、<code class="post-code--single">git:</code> 来源就是这样原样交给 Pi 的。<code class="post-code--single">pi_extensions</code> 为空，Pi 就一个扩展都没有，这是 Orbi 的默认。</p>
 <p>不过不是每个 Orbi 会话都用这份清单。下面是三种形状，每一种都是对「这个会话该能做什么」的不同回答：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -271,7 +271,7 @@ source = &quot;extensions/local-check.ts&quot;
 <p>如果你想写一个 Pi 扩展又不知道拿来干什么，我最先会指给你看的是澄清门禁，因为它解决的问题和 MCP、工具链都没关系：怎么稳定地从模型那里拿到一个结构化的答案。</p>
 <p>仓库开了它（<code class="post-code--spaced">clarify_thin_tickets = true</code>）以后，门禁在 Orbi 开始交付之前跑。一个 Pi 会话把 Issue 正文当提示词读进来，按三条检查判断：有没有写清可观察的结果、验收条件，是不是单一结果。票面太薄时，Orbi 停下这次尝试，把 Issue 的标签换成 <code class="post-code--single">ai-needs-detail</code>，并留一条评论（下文叫它拦票评论），列出缺什么；模型能提出修法时，评论里还会给出来：拆成这几张票，或者补上这几行验收。到 Orbi v0.7.20 为止，门禁让模型用自由文本回 JSON，引擎解析 stdout。在 Orbi Cloud 的测试环境上，门禁把提议全丢了：模型把 <code class="post-code--single">kind</code> 和 <code class="post-code--single">items</code> 放在顶层、和 <code class="post-code--single">missing</code> 并列，解析器只读 <code class="post-code--single">suggestion</code>，拦票评论里从来没出现过提议；同一段提示词发给 DeepSeek 三次，三次都返回了可用的拆分方案，只是放错了层级（<a href="https://github.com/orbi-build/orbi/issues/1955">Issue #1955</a>）。</p>
 <p>修法是不再解析文本。从 Orbi v0.7.21（10 月 28 日）起，引擎自带 <code class="post-code--single">src/orbi/extensions/clarify_verdict.ts</code>，一个只注册一个工具的扩展。下面是删节版：去掉了 <code class="post-code--single">split</code> 那一种提议形状、导出的常量和注释，描述也缩短了；<a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/extensions/clarify_verdict.ts">完整文件</a> 138 行：</p>
-<pre><code class="language-ts">import type { ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ts" data-copy-source>import type { ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
 import { Type } from &quot;typebox&quot;;
 import { writeFileSync } from &quot;node:fs&quot;;
 
@@ -317,24 +317,24 @@ export default function (pi: ExtensionAPI) {
     },
   });
 }
-</code></pre>
+</code></pre></div>
 <p>起作用的有三处。<code class="post-code--single">parameters</code> 是一个每一层都带 <code class="post-code--spaced">additionalProperties: false</code> 的 TypeBox schema，Pi 在跑 <code class="post-code--single">execute</code> 之前就按它校验模型给的参数，所以顶层的 <code class="post-code--single">kind</code>、不认识的检查 id、（完整文件里）只有一项的 split，都到不了文件。<code class="post-code--single">execute</code> 把校验过的参数写到引擎放在 <code class="post-code--single">ORBI_CLARIFY_OUT</code> 里的那个路径，引擎读文件，不读 stdout。<code class="post-code--spaced">terminate: true</code> 让这次运行在这次调用之后就结束，不再为下一轮付钱；Pi 只在这一轮的每个工具调用都返回了它时才这样做，一次有效裁决和一次失败的调用混在同一轮里，运行还会继续。会话用 <code class="post-code--spaced">--no-builtin-tools --no-extensions --extension &lt;这个文件&gt;</code> 启动：内置工具关、自动发现关、只开这一个扩展。</p>
 <p>schema 防的是畸形的裁决，不是缺失的裁决。一次调用被 schema 拒掉只是那一次失败，模型可以再试。整轮结束仍然没有文件（模型用散文回答，或者一次都没通过校验），引擎才把这当成模型不可用来处理：门禁放行，交付不经过这道检查就开始。薄票于是像门禁出现之前那样照常进来；不再发生的，是提议丢了却没有痕迹：引擎读到的每条提议仍要过一道检查（比如空行会被拒掉），丢掉时会把原因写进日志。</p>
 <p>Pi 加载扩展时会把 <code class="post-code--single">typebox</code> 指向它自己钉死的那份，所以这样的文件不需要自己的 <code class="post-code--single">package.json</code>。想自己试一下这个形状，把上面的代码存成 <code class="post-code--single">verdict.ts</code>，然后：</p>
-<pre><code class="language-bash">out=&quot;$(mktemp -d)/verdict.json&quot;   # 每次用新路径，免得读到上一次的结果
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>out=&quot;$(mktemp -d)/verdict.json&quot;   # 每次用新路径，免得读到上一次的结果
 ORBI_CLARIFY_OUT=&quot;$out&quot; \
   pi -ne -e ./verdict.ts -nbt \
   -p &#39;Call clarify_verdict once with {&quot;missing&quot;:[]}.&#39;
 cat &quot;$out&quot;
-</code></pre>
+</code></pre></div>
 <p>几种出错长得不一样。Pi 没报错、<code class="post-code--single">cat</code> 说文件不存在：模型根本没调工具。Pi 报参数校验错误：参数不合 schema。工具抛异常：<code class="post-code--single">ORBI_CLARIFY_OUT</code> 没设，或者那个路径写不了。</p>
 <h2 id="orbi-cloud-起草-issue-用的扩展">Orbi Cloud 起草 Issue 用的扩展</h2>
 <p>第二个扩展在 Orbi Cloud 里。Cloud 托管同一套 runner，另外加了一个页面：你用对话说想改什么，Orbi 替你起草 Issue。那次起草是租户沙箱（每个租户仓库一个独立的 Linux 用户）里的一个 Pi 会话，这样启动：</p>
-<pre><code class="language-bash">pi --no-extensions --no-context-files --no-skills -e &lt;起草扩展&gt; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>pi --no-extensions --no-context-files --no-skills -e &lt;起草扩展&gt; \
    --tools read,grep,find,ls,write_draft,ask_user_question \
    --session-dir &lt;目录&gt; --session-id &lt;id&gt;
 # 请求从标准输入喂进去；标准输入不是终端时，pi 非交互地跑完就退出
-</code></pre>
+</code></pre></div>
 <p>白名单那条规矩在这里也成立。<code class="post-code--single">--tools</code> 本身也是白名单：它替换掉 Pi 默认启用的那组工具，所以这个会话里 <code class="post-code--single">bash</code>、<code class="post-code--single">edit</code>、<code class="post-code--single">write</code> 都调不到。扩展注册的就是列表末尾那两个工具：</p>
 <ul>
 <li><code class="post-code--single">write_draft</code> 接收完整的草稿和它的 Issue 标题，写到固定的文件里。页面只认这些文件是草稿，所以模型打在屏幕上的东西永远不会变成草稿。这套工具里没有通用的 write、edit，会话改不了仓库里的文件。之后另起一个 Pi 会话，拿用户的原话和草稿当输入文本，对照检查；它加载同一个扩展，但工具只有 <code class="post-code--single">write_draft</code>，检查完的草稿也从这条路交回来。</li>
@@ -421,17 +421,17 @@ cat &quot;$out&quot;
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -447,33 +447,32 @@ cat &quot;$out&quot;
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -486,9 +485,9 @@ cat &quot;$out&quot;
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

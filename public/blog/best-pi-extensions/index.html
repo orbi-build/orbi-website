@@ -477,12 +477,12 @@
 <h2 id="what-breaks-when-pi-runs-unattended">What breaks when Pi runs unattended</h2>
 <h3 id="the-adapter-changes-the-next-session-s-mcp-settings">The adapter changes the next session&#39;s MCP settings</h3>
 <p><code class="post-code--single">pi-mcp-adapter@7.0.1</code> wrote this on its first load, even through a one-off <code class="post-code--single">-e</code>:</p>
-<pre><code class="language-json">{&quot;extensions&quot;:[&quot;-builtin:mcp&quot;]}
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{&quot;extensions&quot;:[&quot;-builtin:mcp&quot;]}
+</code></pre></div>
 <p>It also wrote <code class="post-code--single">mcp-onboarding.json</code>. Pi&#39;s <code class="post-code--single">docs/mcp.md</code>, line 268, describes an extension replacing built-in MCP and documents this setting for disabling it.</p>
 <p>To see the effect, I put this <code class="post-code--single">mcp.json</code> in a fresh agent directory, pointing at <code class="post-code--single">@modelcontextprotocol/server-everything</code> (installed locally):</p>
-<pre><code class="language-json">{&quot;mcpServers&quot;:{&quot;everything&quot;:{&quot;command&quot;:&quot;/var/tmp/pex/mcpsrv/node_modules/.bin/mcp-server-everything&quot;,&quot;args&quot;:[&quot;stdio&quot;]}}}
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{&quot;mcpServers&quot;:{&quot;everything&quot;:{&quot;command&quot;:&quot;/var/tmp/pex/mcpsrv/node_modules/.bin/mcp-server-everything&quot;,&quot;args&quot;:[&quot;stdio&quot;]}}}
+</code></pre></div>
 <p>The <code class="post-code--single">command</code> path is where I installed the server on the test machine; point it at your own copy.</p>
 <p>Started without <code class="post-code--single">-ne</code>, Pi&#39;s built-in MCP connected to it: the model got a <code class="post-code--single">codemode</code> tool and Pi wrote <code class="post-code--single">mcp.log</code>. I copied the same <code class="post-code--single">mcp.json</code> into the agent directory the adapter had used, and started Pi again without <code class="post-code--single">-ne</code> and without the adapter. No <code class="post-code--single">codemode</code>, no <code class="post-code--single">mcp.log</code>: the <code class="post-code--single">-builtin:mcp</code> line in that directory&#39;s <code class="post-code--single">settings.json</code> kept the built-in MCP off. Leaving out <code class="post-code--single">-ne</code> does not bring it back. When I emptied the <code class="post-code--single">extensions</code> list in that <code class="post-code--single">settings.json</code> and ran again, <code class="post-code--single">codemode</code> and <code class="post-code--single">mcp.log</code> were back. These MCP-server runs only tested this side effect. The MCP probes in the table did not connect to any server.</p>
 <p>For a service, use a separate writable agent directory per session, or rewrite <code class="post-code--single">settings.json</code> each run.</p>
@@ -500,8 +500,8 @@
 <p><code class="post-code--single">cc-safety-net@2.7.3</code> added no tools and blocked <code class="post-code--spaced">git reset --hard</code> with <code class="post-code--spaced">BLOCKED by CC Safety Net</code> and rule <code class="post-code--single">git.reset-hard</code>. Without the extension, the control ran it in the throwaway repository and it exited 0. The extension wrote logs under <code class="post-code--single">~/.cc-safety-net/</code>.</p>
 <h3 id="npm-skipped-install-scripts">npm skipped install scripts</h3>
 <p>npm 12 blocked install scripts by default in this environment:</p>
-<pre><code class="language-text">npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+</code></pre></div>
 <p>Three installs each blocked one package&#39;s scripts: Plannotator&#39;s <code class="post-code--single">node-pty</code> and permission-system&#39;s <code class="post-code--single">tree-sitter-bash</code>, along with the postinstall for pi-lens&#39;s <code class="post-code--single">@ast-grep/cli</code>. The permission probe still rejected bash as described, and <code class="post-code--single">lens_diagnostics</code> reported <code class="post-code--spaced">clean=1, unavailable=0, failed=0</code> (and <code class="post-code--spaced">Primary LSP (marksman): confirmed clean</code> on a repeat), so the parts I probed ran. I can&#39;t tell from this whether anything else in those packages lost a native piece. Plannotator&#39;s tool was absent without a UI, so that probe could not show how skipping those scripts affected its behavior.</p>
 <h3 id="state-extends-beyond-the-agent-directory">State extends beyond the agent directory</h3>
 <p>Some state stays outside the agent directory even if you change <code class="post-code--single">PI_CODING_AGENT_DIR</code>. Context-mode wrote <code class="post-code--single">~/.context-mode/projects/&lt;hash&gt;/context.db</code>. Pi-lens wrote <code class="post-code--single">~/.pi-lens/</code>; on its first diagnostics call, it downloaded <code class="post-code--single">marksman</code> and <code class="post-code--single">typos-lsp</code> into its <code class="post-code--single">bin/</code> directory. That first run took 41.2 s. With the binaries already present, the same probe took 11.3 s (E2) and 11.8 s (E1).</p>
@@ -512,7 +512,7 @@
 <p>My homemade extension read the keyring through <code class="post-code--single">@napi-rs/keyring</code> at load, and the black hole recorded it in 3 of 3 runs. First model requests arrived at 3.2 s, compared with 1.2 s for the control. Both timings include the same second of bus startup. The probe added about 2 s, then Pi carried on; it did not hang. I did not find which layer gives up after about 2 s; <code class="post-code--single">busctl</code>, with its timeout set to 5 s, waited the full 5 s on the same black hole.</p>
 <p>Apart from my probe, the only Secret Service call among the 20 extensions came from pi-lens, 2.3 s after the bus was up, during its first diagnostics and binary download. That was after its first model request had already gone out at 1.3 s (the E1 control: 1.2 s), so it could not delay startup. A call made at load time, like my probe&#39;s, sits in front of the first request; one made during a tool call does not. The first run also downloaded those two binaries, so I did not measure what the call itself cost. With the binaries already present, the same probe in E1 took 11.8 s and the black hole recorded no call.</p>
 <p>This setup detects Secret Service access; it did not reproduce the earlier hang. Save the code verbatim as <code class="post-code--single">blackhole.py</code>. It needs dbus-python and PyGObject. It exits 1 if something already owns <code class="post-code--single">org.freedesktop.secrets</code> on the bus, because a real keyring answering in its place would make every test look clean:</p>
-<pre><code class="language-python">#!/usr/bin/env python3
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-python" data-copy-source>#!/usr/bin/env python3
 &quot;&quot;&quot;A Secret Service that never answers: owns org.freedesktop.secrets on the
 current session bus, logs every method call addressed to it, and never replies.
 Usage: blackhole.py &lt;logfile&gt;&quot;&quot;&quot;
@@ -539,14 +539,14 @@ def on_message(_conn, msg):
 
 bus.add_message_filter(on_message)
 GLib.MainLoop().run()
-</code></pre>
+</code></pre></div>
 <p>The test script below clears the environment and drops the bus by default. Set <code class="post-code--single">KEEP_BUS=1</code> to pass the current session bus through, then start the black hole and the test script inside a private bus:</p>
-<pre><code class="language-bash">dbus-run-session -- bash -c &#39;rm -f calls.log; python3 blackhole.py calls.log &amp; for i in $(seq 50); do grep -q &quot; ready &quot; calls.log 2&gt;/dev/null &amp;&amp; break; sleep 0.1; done; grep -q &quot; ready &quot; calls.log || exit 1; KEEP_BUS=1 ./try-pi-extension.sh npm:&lt;pkg&gt;@&lt;version&gt;&#39;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>dbus-run-session -- bash -c &#39;rm -f calls.log; python3 blackhole.py calls.log &amp; for i in $(seq 50); do grep -q &quot; ready &quot; calls.log 2&gt;/dev/null &amp;&amp; break; sleep 0.1; done; grep -q &quot; ready &quot; calls.log || exit 1; KEEP_BUS=1 ./try-pi-extension.sh npm:&lt;pkg&gt;@&lt;version&gt;&#39;
+</code></pre></div>
 <p>Any line with <code class="post-code--single">call</code> in <code class="post-code--single">calls.log</code> is a Secret Service request that never got an answer. With my keyring probe, that run logged one <code class="post-code--single">org.freedesktop.Secret.Service.OpenSession</code> call; the same command without <code class="post-code--single">KEEP_BUS=1</code> logged none, because Pi never saw the bus.</p>
 <h2 id="pin-the-extensions-you-keep-in-orbi">Pin the extensions you keep in Orbi</h2>
 <p>In <code class="post-code--single">orbi.toml</code>:</p>
-<pre><code class="language-toml">[[pi_extensions]]
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-toml" data-copy-source>[[pi_extensions]]
 source = &quot;npm:pi-web-access@0.47.0&quot;
 
 [[pi_extensions]]
@@ -557,12 +557,12 @@ source = &quot;npm:@juicesharp/rpiv-todo@2.15.0&quot;
 
 [[pi_extensions]]
 source = &quot;npm:cc-safety-net@2.7.3&quot;
-</code></pre>
+</code></pre></div>
 <p>Orbi&#39;s validator at <code class="post-code--spaced">origin/main f5de8082</code>, <code class="post-code--single">src/orbi/config.py</code>, accepted these sources. It rejected <code class="post-code--single">npm:pi-web-access</code>, <code class="post-code--single">npm:pi-web-access@latest</code> and <code class="post-code--single">npm:@tintinweb/pi-subagents</code> with &quot;npm source must pin a version&quot;.</p>
 <p>Pi 1.5.0&#39;s changelog says an unpinned <code class="post-code--spaced">-e npm:</code> package is reinstalled when the registry has a newer matching version. The <a href="/blog/pi-extensions-in-production/#how-orbi-loads-pi-extensions-no-extensions-plus-a-pinned-allowlist">production post&#39;s loading section</a> explains how Orbi passes the configured extensions to Pi.</p>
 <h2 id="test-a-package-before-keeping-it">Test a package before keeping it</h2>
 <p>Save this verbatim as <code class="post-code--single">try-pi-extension.sh</code>, then <code class="post-code--spaced">chmod +x try-pi-extension.sh</code>. Have Pi, Node, npm, jq, setsid and timeout on PATH, and export your provider key. It defaults to <code class="post-code--single">DEEPSEEK_API_KEY</code>, provider <code class="post-code--single">deepseek</code> and model <code class="post-code--single">deepseek-flash</code>; <code class="post-code--single">KEYVAR</code> selects another key variable, with provider and model as optional arguments. Run it as a script, not pasted into an interactive shell.</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # try-pi-extension.sh &lt;source&gt; [provider] [model]
 # Starts Pi once the way a service would: no terminal, no desktop session bus,
 # stdin closed, a throwaway HOME, only this one extension. Exits non-zero if
@@ -613,9 +613,9 @@ echo &quot;$tools&quot;
 echo &quot;files left behind, outside the extension&#39;s own install:&quot;
 (cd &quot;$work&quot; &amp;&amp; find . -type f -not -path &#39;./agent/tmp/*&#39; -not -path &#39;./.npm/*&#39; \
   -not -name out.jsonl -not -name err | sort)
-</code></pre>
+</code></pre></div>
 <p>For example, after exporting <code class="post-code--single">DEEPSEEK_API_KEY</code>:</p>
-<pre><code class="language-text">$ ./try-pi-extension.sh npm:pi-web-access@0.47.0
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ ./try-pi-extension.sh npm:pi-web-access@0.47.0
 exit=0 seconds=3 workdir=/tmp/tmp.9hlvXJ1bBX
 tools the model was given:
 bash
@@ -629,13 +629,13 @@ write
 files left behind, outside the extension&#39;s own install:
 ./agent/auth.json
 ./agent/models-store.json
-</code></pre>
+</code></pre></div>
 <p>These are the failure paths I ran with the final script. <code class="post-code--single">bad.ts</code> is a three-line extension that throws when Pi loads it:</p>
-<pre><code class="language-ts">export default function () {
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-ts" data-copy-source>export default function () {
   throw new Error(&quot;boom at load&quot;);
 }
-</code></pre>
-<pre><code class="language-text">$ DEEPSEEK_API_KEY=sk-invalid ./try-pi-extension.sh npm:@juicesharp/rpiv-todo@2.15.0
+</code></pre></div>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>$ DEEPSEEK_API_KEY=sk-invalid ./try-pi-extension.sh npm:@juicesharp/rpiv-todo@2.15.0
 exit=0 seconds=1 workdir=/tmp/tmp.rRQOCMjdmz
 FAILED (exit 4: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
 401: {&quot;message&quot;:&quot;Authentication Fails, Your api key: ****alid is invalid (...)&quot;,&quot;type&quot;:&quot;authentication_error&quot;,&quot;param&quot;:null,&quot;code&quot;:&quot;invalid_request_error&quot;}
@@ -654,7 +654,7 @@ Hint: Start without extensions using &quot;pi -ne&quot;.
 $ TIMEOUT=2 ./try-pi-extension.sh npm:pi-lens@4.4.8
 exit=124 seconds=2 workdir=/tmp/tmp.MZuYKgOPSZ
 FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
-</code></pre>
+</code></pre></div>
 <p>The list the script prints is every tool the model got, Pi&#39;s four built-ins included; the table above lists only the additions. The first <code class="post-code--single">exit=</code> is the status of the timeout-wrapped Pi run (124 when <code class="post-code--single">timeout</code> killed it); the number after <code class="post-code--spaced">FAILED (exit</code> is the script&#39;s classification, and the text in parentheses is the same legend every time. In <code class="post-code--spaced">--mode json</code>, Pi 1.5.0 exited 0 both for the bad key and for the missing package, which is why the script checks the last assistant message and the install warning itself. Every failure makes the script exit 1, and so do a missing argument or a missing key, before Pi starts. A local path such as <code class="post-code--single">./bad.ts</code> is turned into an absolute path first, because the script runs Pi from a scratch directory.</p>
 <p>After the load check, test an actual tool call. The asking-user package passed this script even though the model received only the control tools.</p>
 <aside class="post-cta">
@@ -729,17 +729,17 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -755,33 +755,32 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -794,9 +793,9 @@ FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); las
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

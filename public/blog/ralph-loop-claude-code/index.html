@@ -187,15 +187,15 @@
           </ol>
         </details>
 <p>A Ralph loop, also called the Ralph Wiggum technique, runs a coding agent on the same prompt over and over. In its barest form it never stops on its own; most setups add a way for the agent to declare the work finished. Geoffrey Huntley <a href="https://ghuntley.com/ralph/">named it in July 2025</a>, and his smallest version is one line of bash (with today&#39;s Claude Code CLI you&#39;d write <code class="post-code--spaced">claude -p</code> where he wrote <code class="post-code--single">claude-code</code>):</p>
-<pre><code class="language-bash">while :; do cat PROMPT.md | claude-code ; done
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>while :; do cat PROMPT.md | claude-code ; done
+</code></pre></div>
 <p>Each round starts a fresh session, so the only record of how far the last round got is the files it left in the repository. The agent does one more piece of work and exits, and the loop starts it again. Thoughtworks added the <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop to its Technology Radar</a> in April 2026, in the Assess ring: worth exploring to understand its impact, one step short of Trial.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <p>Huntley pitches it for bootstrapping greenfield projects &quot;with the expectation you&#39;ll get 90% done&quot;. He says he would never use it on an existing codebase, warns that you&#39;ll &quot;wake up to a broken codebase that doesn&#39;t compile from time to time&quot;, and advises asking for one thing per loop.</p>
 <p>I&#39;m Larry 🍀 Orbi, and I built Orbi. Orbi takes a GitHub Issue, has a coding agent write the change, puts it through a separate review session and merges it, usually with nobody at the keyboard. Orbi&#39;s runner, the program that moves each Issue through those steps, is a loop too, so I wanted to see where a plain Ralph loop stops. On 10 October I ran one with Claude Code on a small Python library. After four rounds every test passed and the agent wrote DONE. A separate review session, costing 11 cents, then found a spec violation and said not to merge.</p>
 <h2 id="anthropic-s-ralph-loop-plugin-has-no-round-limit-by-default">Anthropic&#39;s ralph-loop plugin has no round limit by default</h2>
 <p>Anthropic publishes the idea as a Claude Code plugin, <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ralph-loop">ralph-loop</a> (it was called ralph-wiggum earlier). There is no outer bash loop. A Stop hook catches Claude&#39;s attempt to end the session and feeds the same prompt back in, so the whole loop runs inside one session and context carries over between rounds:</p>
-<pre><code class="language-text">/ralph-loop &quot;&lt;prompt&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>/ralph-loop &quot;&lt;prompt&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
+</code></pre></div>
 <p>If you run it unattended:</p>
 <ul>
 <li>Without flags it never stops. The script that starts the loop, <code class="post-code--single">setup-ralph-loop.sh</code>, defaults <code class="post-code--single">--max-iterations</code> to 0, meaning unlimited, and warns that without a cap or a completion promise the loop runs forever. To end one early, the plugin ships a <code class="post-code--single">/cancel-ralph</code> command. The README says to always set <code class="post-code--single">--max-iterations</code>.</li>
@@ -205,16 +205,16 @@
 <h2 id="running-a-ralph-loop-with-claude-code-on-a-small-library">Running a Ralph loop with Claude Code on a small library</h2>
 <p>I didn&#39;t use the plugin. I used Huntley&#39;s outer-loop shape so each round would be a fresh process I could measure.</p>
 <p>The task was a tiny library called textkit: <code class="post-code--single">slugify</code>, <code class="post-code--single">truncate</code>, <code class="post-code--single">wrap</code> and a small CLI. The spec is four numbered points; the one that matters later reads &quot;ASCII-fold accented letters (é → e); runs of anything that is not a-z or 0-9 become a single <code class="post-code--single">-</code>&quot;. I wrote 15 tests against the spec and left the package empty, so every test failed. This is the whole <code class="post-code--single">PROMPT.md</code>:</p>
-<pre><code class="language-text">Study spec.md and fix_plan.md. Pick the single most important unfinished item,
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>Study spec.md and fix_plan.md. Pick the single most important unfinished item,
 implement it, and run `python -m pytest -q`.
 Update fix_plan.md (create it if missing) with what is done and what is left,
 then commit with git.
 Only when every test passes and fix_plan.md lists nothing left, write the word
 DONE into a file named STATUS.
-</code></pre>
+</code></pre></div>
 <p>I capped the loop at 10 rounds and ran Claude Code 2.1.281 headless with Claude Opus 5.5, logged in with a subscription. <code class="post-code--spaced">--setting-sources &quot;&quot;</code> keeps my own CLAUDE.md, hooks and plugins out of the run and <code class="post-code--single">--strict-mcp-config</code> keeps out MCP servers, so it behaves more like a clean machine. <code class="post-code--single">dontAsk</code> refuses any tool call not on the allowlist instead of waiting for a person. The loop below clears any old DONE first, stops on a failed round and prints every denied call. It uses the same <code class="post-code--single">claude</code> flags as my run and, like my run, keeps each round&#39;s JSON outside the repository. Save it as a script; it needs <code class="post-code--single">jq</code>.</p>
 <p>I tested it with a fake <code class="post-code--single">claude</code> on the <code class="post-code--single">PATH</code>: a non-zero exit, <code class="post-code--single">is_error</code> true, empty output and ten rounds without DONE each end the script with status 1.</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # Run inside the task repository. Round logs go one level up, outside the repo.
 rm -f STATUS
 for i in $(seq 1 10); do
@@ -231,7 +231,7 @@ for i in $(seq 1 10); do
   [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] &amp;&amp; break
 done
 [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] || { echo &quot;no DONE after 10 rounds&quot; &gt;&amp;2; exit 1; }
-</code></pre>
+</code></pre></div>
 <p>After each round I counted passing tests and read the JSON. On a subscription nothing is billed per run; the cost column is Claude Code&#39;s own estimate at API prices, and so is every dollar figure below.</p>
 <p class="post-table-hint" hidden>Swipe horizontally to see all columns.</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="Swipe horizontally to see all columns."><table class="table-comparison">
 <thead>
@@ -281,15 +281,15 @@ done
 <p>I then wrote 13 more tests from the spec that the loop never saw, such as <code class="post-code--spaced">slugify(&quot;Ça va, l&#39;été 2026&quot;)</code>, custom ellipses, result lengths for every width from 1 to 19, tabs and an empty CLI call. All 13 passed, so by every test I had, the loop was finished.</p>
 <h2 id="a-separate-review-found-a-spec-violation">A separate review found a spec violation</h2>
 <p>Next I gave the diff and the spec to a fresh <code class="post-code--spaced">claude -p</code> session. It ran the same model under <code class="post-code--single">dontAsk</code> with no allowlist, told in the prompt not to use tools, and with none of the writing session&#39;s history; independent here means a clean context, not a different model. This was the review prompt, followed by the spec and the diff:</p>
-<pre><code class="language-text">You are reviewing a change you did not write. Do not use any tools; answer
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>You are reviewing a change you did not write. Do not use any tools; answer
 from the text below. List every place where the code does not meet the spec,
 or is wrong for an input the spec covers. For each: the input, expected,
 actual. Last line: MERGE or DO NOT MERGE.
-</code></pre>
+</code></pre></div>
 <p>It cost $0.11 and came back with DO NOT MERGE, and the finding was real: the loop&#39;s <code class="post-code--single">slugify</code> folds accents with <code class="post-code--spaced">encode(&quot;ascii&quot;, &quot;ignore&quot;)</code>, and that call silently deletes every character it can&#39;t fold, before the regex that should turn it into <code class="post-code--single">-</code> ever sees it:</p>
-<pre><code class="language-text">slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   (spec: &#39;foo-bar&#39;)
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   (spec: &#39;foo-bar&#39;)
 slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       (spec: &#39;a-b&#39;)
-</code></pre>
+</code></pre></div>
 <p>None of the 28 tests used an em dash or a currency sign.</p>
 <p>I sent the findings back as one more round&#39;s prompt. That round cost $0.26, fixed <code class="post-code--single">slugify</code> and added six tests for the inputs the review listed, taking the repository from 15 tests to 21, and wrote DONE again; my 13 held-out tests still passed. A second review ($0.15) said MERGE and listed eight places where the spec can be read two ways, for example whether a superscript like the <code class="post-code--single">²</code> in <code class="post-code--single">x²</code> counts as a digit, which only the spec&#39;s owner can settle.</p>
 <p>The whole run, loop plus two reviews plus the fix, came to about $1.24.</p>
@@ -392,17 +392,17 @@ slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       (spec: &#39;a-b&#39;)
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -418,33 +418,32 @@ slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       (spec: &#39;a-b&#39;)
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -457,9 +456,9 @@ slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       (spec: &#39;a-b&#39;)
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

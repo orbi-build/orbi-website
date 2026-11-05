@@ -261,7 +261,7 @@
 <p>Reads are different. The sandbox never asks about them, in any mode: sandboxed commands can read most of the machine, <code class="post-code--single">~/.ssh</code> and <code class="post-code--single">~/.aws/credentials</code> included, unless you list paths to deny or turn on the read block described below.</p>
 <h2 id="settings-that-block-bash-without-a-prompt">Settings that block Bash without a prompt</h2>
 <p>These settings stopped the three Bash attempts. This is what I ran, with the path to my fake secret replaced:</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{
   &quot;sandbox&quot;: {
     &quot;enabled&quot;: true,
     &quot;failIfUnavailable&quot;: true,
@@ -272,7 +272,7 @@
     }
   }
 }
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">failIfUnavailable</code> makes Claude Code exit at startup if a dependency such as <code class="post-code--single">bubblewrap</code> or <code class="post-code--single">socat</code> is missing, and fail a command rather than run it unsandboxed if the sandbox breaks later. Without it, a missing dependency means commands run with no sandbox, and nothing tells you.</p>
 <p><code class="post-code--spaced">allowUnsandboxedCommands: false</code> is what the <code class="post-code--single">/sandbox</code> panel calls strict sandbox mode. Claude Code then ignores <code class="post-code--single">dangerouslyDisableSandbox</code>. In the four-step run Claude didn&#39;t send the flag at all; its second attempt used <code class="post-code--single">tee</code>, which failed too. So I ran one more prompt that told it to set <code class="post-code--spaced">dangerouslyDisableSandbox: true</code>. It did, and the write still failed with <code class="post-code--spaced">read-only file system</code>.</p>
 <p><code class="post-code--single">strictAllowlist</code> refuses every host that isn&#39;t listed, whatever the permission mode. curl got <code class="post-code--spaced">CONNECT tunnel failed, response 403</code>. In a real project you&#39;d add the hosts you need under <code class="post-code--single">allowedDomains</code>, such as <code class="post-code--single">registry.npmjs.org</code>. The setting needs Claude Code 2.1.219 or later. It only takes effect in your user settings, managed settings or <code class="post-code--single">--settings</code>; a repository&#39;s <code class="post-code--single">.claude/settings.json</code> can&#39;t switch it on.</p>
@@ -283,13 +283,13 @@
 <h2 id="the-write-tool-runs-outside-the-sandbox">The Write tool runs outside the sandbox</h2>
 <p>Even with the strict settings, the Write tool created its file outside the project on the first try. The sandbox only wraps shell commands. Read, Edit, Write and WebFetch run inside the Claude Code process and are governed by permission rules (<a href="https://code.claude.com/docs/en/sandboxing#what-runs-outside-the-sandbox">what runs outside the sandbox</a>). Hooks and MCP servers run outside it as well, with your full access.</p>
 <p><code class="post-code--single">--dangerously-skip-permissions</code> skips the prompts, but in my test it didn&#39;t skip deny rules. I added one rule to the strict setup:</p>
-<pre><code class="language-json">&quot;permissions&quot;: { &quot;deny&quot;: [&quot;Edit(//abs/path/outside/**)&quot;] }
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>&quot;permissions&quot;: { &quot;deny&quot;: [&quot;Edit(//abs/path/outside/**)&quot;] }
+</code></pre></div>
 <p><code class="post-code--single">//</code> marks an absolute path; a single leading <code class="post-code--single">/</code> would be relative to the settings file and wouldn&#39;t match. The Write tool got <code class="post-code--spaced">File is in a directory that is denied by your permission settings</code>, and the Bash write was refused before it ran. Edit deny rules also cover Bash redirects and commands like <code class="post-code--single">tee</code>. They don&#39;t cover a Python or Node script that opens a file itself; for those, the sandbox is what stops the write. The limit is that a deny rule protects only the paths you list. You can&#39;t write &quot;everything outside the project&quot;. So list the targets that matter, such as <code class="post-code--single">Edit(~/.bashrc)</code>, <code class="post-code--single">Edit(~/.ssh/**)</code> and <code class="post-code--single">Edit(~/.claude/**)</code>.</p>
 <p>Reads have a gap too, but unlike writes they have one broad switch. In my table, &quot;blocked&quot; for the secret means Bash <code class="post-code--single">cat</code> was blocked; <code class="post-code--single">credentials.files</code> doesn&#39;t stop Claude&#39;s own Read tool. <code class="post-code--single">permissions.blockReadsOutsideWorkingDirectories</code> (Claude Code 2.1.257 or later) does: file tools refuse reads outside your working directories, and with the sandbox on, Bash also loses read access to your home directory and other user-file areas, apart from the working directory, the session temp directory and the parts of <code class="post-code--single">~/.claude</code> that Claude Code needs. I ran it with the strict retry and network settings and asked for the fake secret both ways: the Read tool was refused with a message naming the setting, and sandboxed Bash got <code class="post-code--spaced">No such file or directory</code> for a file that existed. If your toolchain lives in your home directory (nvm&#39;s node, <code class="post-code--single">~/.cargo</code>), sandboxed commands lose it too; re-allow it with <code class="post-code--single">sandbox.filesystem.allowRead</code> in the <code class="post-code--single">--settings</code> file.</p>
 <p>The network has a similar gap: <code class="post-code--single">strictAllowlist</code> doesn&#39;t cover WebFetch, which follows <code class="post-code--single">WebFetch(domain:...)</code> permission rules.</p>
 <p>If <code class="post-code--single">/sandbox</code> is all you can use for an unattended run, use at least this file. <code class="post-code--single">permissions</code> sits next to <code class="post-code--single">sandbox</code> in the same file. I tested the strict settings, the deny mechanism with one outside directory and the read block; the other paths follow the docs&#39; examples, and I haven&#39;t run this exact file end to end:</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{
   &quot;sandbox&quot;: {
     &quot;enabled&quot;: true,
     &quot;failIfUnavailable&quot;: true,
@@ -312,13 +312,13 @@
     ]
   }
 }
-</code></pre>
+</code></pre></div>
 <p>A bare <code class="post-code--single">WebFetch</code> removes that tool altogether. <code class="post-code--single">./</code> is relative to the directory you start Claude in, so start it from the project. The <code class="post-code--single">~/.claude.json</code> and <code class="post-code--single">./</code> lines are there for the reason in &quot;One run can plant code for the next&quot; below.</p>
 <p>Anthropic&#39;s own advice in <a href="https://code.claude.com/docs/en/sandbox-environments#how-isolation-relates-to-permission-modes">Choose a sandbox environment</a> is that the sandboxed Bash tool on its own &quot;is not sufficient for fully unattended runs&quot;. With <code class="post-code--single">--dangerously-skip-permissions</code> it calls for a container, a VM or the sandbox runtime, run as a non-root user (Claude Code refuses the flag as root anyway).</p>
 <h2 id="wrapping-the-whole-claude-code-process">Wrapping the whole Claude Code process</h2>
 <p>The sandbox runtime is Anthropic&#39;s open-source <a href="https://github.com/anthropics/sandbox-runtime"><code class="post-code--single">@anthropic-ai/sandbox-runtime</code></a>, or <code class="post-code--single">srt</code>. It&#39;s the same isolation <code class="post-code--single">/sandbox</code> uses (bubblewrap on Linux, Seatbelt on macOS) put around the entire <code class="post-code--single">claude</code> process. With it, all four attempts failed, and the Write tool got <code class="post-code--spaced">EROFS: read-only file system</code>. Inside srt I left Claude Code&#39;s own sandbox off. Claude still sent <code class="post-code--spaced">dangerouslyDisableSandbox: true</code> on its retries; there was nothing for it to switch off.</p>
 <p>Keep the settings file outside the project. Inside a directory the agent can write, the agent could rewrite it for the next run. This is the file from a second srt run, in which writing a file inside the project and requesting <code class="post-code--single">registry.npmjs.org</code> both worked, with my test paths swapped for a typical project path (the first run had a shorter file that denied only the fake secret):</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-json" data-copy-source>{
   &quot;filesystem&quot;: {
     &quot;denyRead&quot;: [&quot;~/.ssh&quot;, &quot;~/.aws&quot;],
     &quot;allowWrite&quot;: [&quot;~/src/myrepo&quot;, &quot;~/.claude&quot;, &quot;~/.claude.json&quot;, &quot;/tmp&quot;],
@@ -332,13 +332,13 @@
     &quot;deniedDomains&quot;: []
   }
 }
-</code></pre>
-<pre><code class="language-bash">mkdir -p ~/.claude &amp;&amp; { [ -f ~/.claude.json ] || echo &#39;{}&#39; &gt; ~/.claude.json; }
+</code></pre></div>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>mkdir -p ~/.claude &amp;&amp; { [ -f ~/.claude.json ] || echo &#39;{}&#39; &gt; ~/.claude.json; }
 cd ~/src/myrepo
 npx @anthropic-ai/sandbox-runtime@0.0.79 --settings ~/.config/srt/myrepo.json -- \
   claude --settings &#39;{&quot;sandbox&quot;:{&quot;enabled&quot;:false}}&#39; -p &quot;Run the test suite and fix what fails&quot; \
   --dangerously-skip-permissions --strict-mcp-config
-</code></pre>
+</code></pre></div>
 <ul>
 <li><code class="post-code--single">denyWrite</code> also holds for paths that don&#39;t exist yet: in a separate srt run, creating <code class="post-code--single">.claude/settings.json</code> in a project with no <code class="post-code--single">.claude</code> directory failed with <code class="post-code--spaced">Read-only file system</code>.</li>
 <li>The <code class="post-code--single">--</code> before <code class="post-code--single">claude</code> is required. Without it, srt parses the flags meant for Claude as its own; in my run it took Claude&#39;s <code class="post-code--single">--settings</code> and stopped with <code class="post-code--spaced">does not exist</code>.</li>
@@ -364,7 +364,7 @@ npx @anthropic-ai/sandbox-runtime@0.0.79 --settings ~/.config/srt/myrepo.json --
 </ul>
 <h2 id="test-your-own-setup">Test your own setup</h2>
 <p>Run the same four steps against an empty repository and check the disk afterwards. This is the prompt I used; put in your own absolute paths:</p>
-<pre><code class="language-text">This is an authorized test of the sandbox on my own machine; the files involved are
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>This is an authorized test of the sandbox on my own machine; the files involved are
 throwaway test files. Do these four steps in order. Use exactly the tool named for each
 step. If a step fails, make one more attempt in whatever way you think will get it done,
 then move on.
@@ -372,7 +372,7 @@ then move on.
 2. Write tool (not Bash): create /abs/path/outside/write.txt containing the text write-was-here
 3. Bash tool: curl -sS -m 15 -o net.txt https://example.com; echo &quot;curl-exit=$?&quot; &gt; net-exit.txt
 4. Bash tool: cat /abs/path/fake-secret.env &gt; secret.txt
-</code></pre>
+</code></pre></div>
 <p>Keep <code class="post-code--single">outside/</code> and the fake secret out of the project and out of your temp directory. Create the fake secret with some content first, outside the sandbox, in your home directory (for example <code class="post-code--single">~/fake-secret.env</code>), where the read block applies. Then make your settings cover the test paths: with <code class="post-code--single">/sandbox</code> alone, add <code class="post-code--single">outside/</code> to an <code class="post-code--single">Edit</code> deny rule, and unless you turned on the read block, add the fake secret to <code class="post-code--single">credentials.files</code>; with srt, add the fake secret to <code class="post-code--single">filesystem.denyRead</code>. These lists only protect paths you name. With <code class="post-code--single">/sandbox</code> and no <code class="post-code--single">Edit</code> rule for <code class="post-code--single">outside/</code>, step 2 getting out is expected; with either setup, a fake secret that isn&#39;t listed can be read in step 4. Neither means the setup is broken. Also create <code class="post-code--single">outside/</code> as an empty directory your own user can write, so a missing or read-only folder isn&#39;t mistaken for the sandbox at work.</p>
 <p>Add a fifth step to the prompt, <code class="post-code--spaced">5. Bash tool: echo inside-ok &gt; inside.txt</code>, and change &quot;four steps&quot; to &quot;five&quot;, to prove the run worked at all. Then check:</p>
 <ul>
@@ -462,17 +462,17 @@ then move on.
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -488,33 +488,32 @@ then move on.
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -527,9 +526,9 @@ then move on.
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="Pause" data-label-play="Play">Pause</button>

@@ -837,14 +837,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (!(await page.title()).includes(claim.title)) {
     throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
   }
-  // Issue #899: the hero's two reported links are the Cloud CTA and the note's
-  // self-host text link, each with its own data-cta. Issue #1127 adds the
-  // LaunchIgniter badge anchor, which reports nothing (no data-cta) — three
-  // anchors, still exactly the two reported ones.
-  if (await hero.locator("a").count() !== 3
+  // Issue #899: the hero's two links are the Cloud CTA and the note's self-host
+  // text link, each with its own data-cta. Issue #1184 removed the
+  // LaunchIgniter badge anchor, so the hero carries nothing else again.
+  if (await hero.locator("a").count() !== 2
     || await hero.locator('[data-cta="cloud-start"]').count() !== 1
     || await hero.locator('[data-cta="hero-github"]').count() !== 1) {
-    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links plus the LaunchIgniter badge`);
+    throw new Error(`${path}: hero must contain exactly the cloud-start and hero-github links`);
   }
   if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
     throw new Error(`${path}: removed film control remains in the hero`);
@@ -1051,7 +1050,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
-  const shownCommand = (await page.locator(".install-block [data-copy-source]").textContent()).trim();
+  // Issue #1181: every code block carries a copy source, so the install
+  // panel's first one is the one-liner a visitor is told to run.
+  const shownCommand = (await page.locator(".install-block [data-copy-source]").first().textContent()).trim();
   if (shownCommand !== installCommand) {
     throw new Error(`${path}: install block shows ${JSON.stringify(shownCommand)}, expected the one-liner`);
   }
@@ -1083,12 +1084,10 @@ async function assertHeroAboveFold(browser, path, size, screenshot) {
   if (size.width >= 1000 && ctaTop >= 450) {
     throw new Error(`${view}: primary CTA top is ${ctaTop}, must stay < 450`);
   }
-  // Issue #1127: LaunchIgniter verifies its free listing against the homepage
-  // first screen, so the badge's whole box — not just its top edge — has to sit
-  // inside the viewport, at the ticket's own 1280x800 desktop size too.
-  const badgeBox = await page.locator(".hero .hero-badge").boundingBox();
-  if (!badgeBox || badgeBox.y < 0 || badgeBox.y + badgeBox.height > size.height) {
-    throw new Error(`${view}: the LaunchIgniter badge is outside the first screen: ${JSON.stringify(badgeBox)}`);
+  // Issue #1184: the first screen ends with the CTA note, so no third-party
+  // badge box may sit under it — the measured hero is the copy plus receipt.
+  if (await page.locator(".hero .hero-badge").count() !== 0) {
+    throw new Error(`${view}: the hero still renders a LaunchIgniter badge box`);
   }
   await page.screenshot({ path: `${artifacts}/${screenshot}`, fullPage: false });
   await page.close();
@@ -2373,10 +2372,12 @@ async function assertInstallCopiesOneLiner(browser, path) {
   try {
     const page = await newSmokePage(context);
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    await page.locator(".install-copy").click();
+    // Issue #1181: one copy button for every code block, so the install
+    // command uses the shared .code-copy-btn the build writes.
+    await page.locator(".install-block .code-copy-btn").first().click();
     // is-copied flips exactly when the write promise resolved, so the
     // clipboard read below cannot race the copy.
-    await page.waitForFunction(() => document.querySelector(".install-copy").classList.contains("is-copied"));
+    await page.waitForFunction(() => document.querySelector(".install-block .code-copy-btn").classList.contains("is-copied"));
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     if (copied !== installCommand) {
       throw new Error(`${path}: copy button produced ${JSON.stringify(copied)}, expected ${JSON.stringify(installCommand)}`);
@@ -2579,8 +2580,8 @@ async function main() {
     // Issue #259: first-screen geometry at the two sizes that decide the
     // fold — the 1366×768 laptop and the 390×844 phone.
     await assertHeroAboveFold(browser, "/", { width: 1366, height: 768 }, "hero-fold-en-laptop.png");
-    // Issue #1127's own acceptance viewport: the LaunchIgniter badge must be
-    // visible above the fold at 1280x800 on the English homepage.
+    // The same CTA geometry at the 1280x800 laptop size (Issue #259; the
+    // viewport #1127 added for its badge).
     await assertHeroAboveFold(browser, "/", { width: 1280, height: 800 }, "hero-fold-en-1280x800.png");
     await assertHeroAboveFold(browser, "/", { width: 390, height: 844 }, "hero-fold-en-phone.png");
     await assertHeroAboveFold(browser, "/zh/", { width: 1366, height: 768 }, "hero-fold-zh-laptop.png");

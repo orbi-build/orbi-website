@@ -196,12 +196,12 @@
 <p>我是 Larry 🍀 Orbi，<a href="https://github.com/orbi-build/orbi">Orbi</a> 的创始人。2026 年 10 月 16 日，我在 Linux 上用 Codex CLI 0.159.3 实测了这几种配置。Orbi 运行的是编码 agent Pi，Codex 接入走 Pi 的 <code class="post-code--single">openai-codex</code> provider，不运行 Codex CLI；本文命令供直接使用 CLI 的开发者参考。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <h2 id="怎样启动-codex-yolo-mode">怎样启动 Codex YOLO mode</h2>
 <p>在已经做好外层隔离的一次性运行环境中执行：</p>
-<pre><code class="language-bash">codex exec --yolo &quot;Run the tests and fix the failures.&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec --yolo &quot;Run the tests and fix the failures.&quot;
+</code></pre></div>
 <p>完整参数的含义相同：</p>
-<pre><code class="language-bash">codex exec --dangerously-bypass-approvals-and-sandbox \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec --dangerously-bypass-approvals-and-sandbox \
   &quot;Run the tests and fix the failures.&quot;
-</code></pre>
+</code></pre></div>
 <p><a href="https://learn.chatgpt.com/docs/cli/reference">OpenAI 的 CLI 文档</a> 定义了这两个写法，并要求运行环境有外部防护。新建一个 Git worktree 不提供操作系统层面的隔离：agent 仍以你的系统用户身份运行。</p>
 <p>虚拟机或容器内部可读的文件和凭据，进程依然能够访问。本次实验的外层环境隐藏了真实 home 目录和其他进程，只暴露假的可写测试目录，没有 GPU 设备。模型请求和本地测试服务仍需要网络。</p>
 <h2 id="实测-codex-yolo-mode-能执行什么">实测 Codex YOLO mode 能执行什么</h2>
@@ -249,28 +249,28 @@
 <p>这组实验只记录当前 Linux 环境里的三项操作，没有测试恶意仓库、沙箱逃逸或自动审批 reviewer 的判断。<a href="https://github.com/orbi-build/orbi-website/blob/beta/docs/blog/codex-yolo-mode-lab.md">实验记录与探针</a>提供了环境说明和复现步骤。</p>
 <h2 id="保留-workspace-write-也能无人交互运行">保留 workspace-write，也能无人交互运行</h2>
 <p>如果依赖已经准备好，任务只需要在允许的工作区内改文件：</p>
-<pre><code class="language-bash">codex -a never exec --sandbox workspace-write \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex -a never exec --sandbox workspace-write \
   &quot;Fix the failing tests. Run the relevant checks and report what changed.&quot;
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">exec</code> 不启动交互式终端界面。<code class="post-code--single">workspace-write</code> 规定文件系统边界，<code class="post-code--spaced">-a never</code> 禁止请求审批，因此越出当前权限的命令不能在运行中申请提权。任务需要下载依赖或访问其他目录时，可能无法完成；这些访问条件要在启动前准备好。</p>
 <p>我还让每种配置各做一次普通任务：创建内容为 <code class="post-code--spaced">print(&#39;workspace ok&#39;)</code> 的 <code class="post-code--single">greeting.py</code>，然后运行它。workspace-write 完成了，没有用到 Codex YOLO mode；YOLO 也完成了。read-only 下，agent 表示无法创建文件，没有调用工具。普通任务加上固定探针，共六次 CLI 调用。</p>
 <p>六次 CLI 退出码全是 0，包括没有创建目标文件的 read-only 普通任务。流水线进入下一步前，还要检查目标文件和项目测试结果；正常退出本身不能证明任务达到了验收标准。</p>
 <h2 id="codex-auto-mode-与已删除的-full-auto-命令">Codex auto mode 与已删除的 full-auto 命令</h2>
 <p>Codex auto mode 就是 OpenAI 文档里的 <strong>Auto</strong> 预设。按<a href="https://learn.chatgpt.com/docs/agent-approvals-security">审批与安全文档</a>的定义，它由 <code class="post-code--single">workspace-write</code> 沙箱和 <code class="post-code--single">on-request</code> 审批组成。工作区里的读文件、改代码、跑命令，Codex 直接做；在默认网络设置下，改工作区外的文件、运行需要联网的命令之前，它会先问你。</p>
 <p>在有版本控制的目录里启动时，Codex 会把 Auto 作为推荐的默认值；信任该目录之前，它可能保持只读。会话中途可以用 <code class="post-code--single">/permissions</code> 换预设，比如从 Auto 换成 Read Only。Auto 需要有人在终端前回应审批，无人值守运行应改用上一节的 workspace-write 命令。要显式指定 Auto，这样写：</p>
-<pre><code class="language-bash">codex --sandbox workspace-write --ask-for-approval on-request
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex --sandbox workspace-write --ask-for-approval on-request
+</code></pre></div>
 <p>旧教程常用的是一个简写：</p>
-<pre><code class="language-bash">codex exec --full-auto &quot;fix the failing tests&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec --full-auto &quot;fix the failing tests&quot;
+</code></pre></div>
 <p>在 Codex CLI 0.100.0 中，交互式 <a href="https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/tui/src/cli.rs#L79"><code class="post-code--spaced">codex --full-auto</code></a> 的源码注释写作 <code class="post-code--spaced">-a on-request</code> 加 <code class="post-code--spaced">--sandbox workspace-write</code>，和 Auto 是同一组参数。在 <code class="post-code--spaced">codex exec</code> 下，<code class="post-code--single">--full-auto</code> 只设置沙箱，审批保持 exec 的<a href="https://github.com/openai/codex/blob/rust-v0.100.0/codex-rs/exec/src/lib.rs#L246">默认值 never</a>，所以旧的 exec 简写实际相当于 <code class="post-code--spaced">codex -a never exec --sandbox workspace-write</code>。在我测试的版本中，这个参数在解析阶段就会报错，任务还没有开始：</p>
-<pre><code class="language-text">$ codex --version
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>$ codex --version
 codex-cli 0.159.3
 
 $ codex exec --full-auto --help
 error: unexpected argument &#39;--full-auto&#39; found
 # exit code: 2
-</code></pre>
+</code></pre></div>
 <p>2026 年 10 月 17 日补充核对时，我用 Codex CLI 0.163.0 重跑这条检查，报错相同；交互式的 <code class="post-code--spaced">codex --full-auto --help</code> 也一样报错。OpenAI 当前的<a href="https://learn.chatgpt.com/docs/non-interactive-mode">非交互运行文档</a>说明，<code class="post-code--single">--full-auto</code> 已不再支持。需要修改仓库的脚本应明确使用 <code class="post-code--spaced">--sandbox workspace-write</code>；需要自动审批 review 时，改用 <code class="post-code--single">--approve-for-me</code>，它已包含 workspace-write，不要再加 <code class="post-code--single">--sandbox</code>。一些搜索结果描述的是过渡期的行为：<a href="https://github.com/openai/codex/blob/rust-v0.130.0/codex-rs/exec/src/cli.rs#L99">Codex CLI 0.130.0</a> 仍接受 <code class="post-code--single">--full-auto</code>，只打印一条弃用警告。实际是否可用，要核对安装版本的参数解析结果。</p>
 <p>审批与安全文档的<a href="https://learn.chatgpt.com/docs/agent-approvals-security#common-sandbox-and-approval-combinations">常用组合表</a>列出了这几种模式，<code class="post-code--single">--approve-for-me</code> 这个简写出自 <a href="https://learn.chatgpt.com/docs/cli/reference">CLI 参考</a>：</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
@@ -304,9 +304,9 @@ error: unexpected argument &#39;--full-auto&#39; found
 <p>迁移 Codex full auto 脚本时，先确定任务需要什么权限。如果脚本只需要修改仓库，把 <code class="post-code--spaced">codex exec --full-auto &quot;...&quot;</code> 换成 <code class="post-code--spaced">codex -a never exec --sandbox workspace-write &quot;...&quot;</code>。直接替换成 <code class="post-code--single">--yolo</code> 会同时取消本地沙箱，放开的权限远不止修改仓库。</p>
 <h2 id="需要审批时-让自动-reviewer-判断">需要审批时，让自动 reviewer 判断</h2>
 <p>官方还提供了这个预设：</p>
-<pre><code class="language-bash">codex exec --approve-for-me \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>codex exec --approve-for-me \
   &quot;Fix the failing tests and run the relevant checks.&quot;
-</code></pre>
+</code></pre></div>
 <p>它组合了 workspace-write、on-request 审批和自动 reviewer。CLI 文档列明它与显式 sandbox 参数、YOLO 冲突，应单独使用。</p>
 <p><a href="https://learn.chatgpt.com/docs/sandboxing/auto-review">Auto-review</a>检查符合条件、需要审批的操作。沙箱已经允许的命令不会经过这道 review；获批的提权请求可以跨出通常的边界。请求被拒绝后，agent 必须改用风险实质上更低的方案；找不到这样的方案时，应停下来询问用户。账户和组织策略也可能限制这个模式。</p>
 <p>我只确认了 0.159.3 接受该参数，没有在这组实验里测试 reviewer 的决策。审批 review 与代码 review 的职责也不同：一个命令获准执行，并不能证明它生成的补丁正确、可以合并。</p>
@@ -404,17 +404,17 @@ error: unexpected argument &#39;--full-auto&#39; found
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -430,33 +430,32 @@ error: unexpected argument &#39;--full-auto&#39; found
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -469,9 +468,9 @@ error: unexpected argument &#39;--full-auto&#39; found
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

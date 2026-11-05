@@ -194,37 +194,16 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
         const footer = page.locator("footer.site-footer");
-        // The AI Agents Listing and zPlatform badges are loading="lazy", so they
-        // only start loading once the footer is near the viewport: scroll it in
-        // and let every placeholder decode before measuring their source ratio.
-        // Issue #1173: the strip is a marquee, so a lazy badge clipped thousands
-        // of pixels to the right never starts loading on its own — the source
-        // copies are forced eager here, since these assertions are about the
-        // rendered box, not about lazy behaviour.
+        // Issue #1187: every strip badge loads with the page — no badge defers
+        // its image — so the whole strip is decoded by the load event and these
+        // source-ratio assertions measure real images, not lazy placeholders.
         await page.locator("footer .footer-badges").scrollIntoViewIfNeeded();
-        const forcedLoading = await page.evaluate(() => {
-          const images = [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")];
-          const saved = images.map((image) => image.getAttribute("loading"));
-          images.forEach((image) => {
-            image.loading = "eager";
-          });
-          return saved;
-        });
         await page.waitForFunction(
           () => [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
             .every((image) => image.complete && image.naturalWidth > 0),
           null,
           { timeout: 10_000 },
         );
-        // The embeds' own loading attributes go back before anything asserts
-        // them; a decoded image stays decoded.
-        await page.evaluate((saved) => {
-          [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
-            .forEach((image, index) => {
-              if (saved[index] === null) image.removeAttribute("loading");
-              else image.setAttribute("loading", saved[index]);
-            });
-        }, forcedLoading);
         const result = await footer.evaluate((element) => {
           const nav = element.querySelector("nav.footer-friends");
           const wrapper = nav.querySelector(".footer-badges");
@@ -283,9 +262,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           const dang = track.querySelector('a[href="https://dang.ai"]');
           const dangImage = dang?.querySelector("img");
           const dangRect = dangImage?.getBoundingClientRect();
-          const launchigniter = track.querySelector('a[href="https://launchigniter.com/product/orbi?ref=badge-orbi"]');
-          const launchigniterImage = launchigniter?.querySelector("img");
-          const launchigniterRect = launchigniterImage?.getBoundingClientRect();
           // Issue #1119: Scout Forge closes the row so the directory counts the
           // badge's impressions.
           const scoutforge = track.querySelector('a[href="https://scoutforge.net/apps/orbi?ref=badge"]');
@@ -327,7 +303,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           // vertical centre and report the worst spread inside every row that
           // carries one of the new entries. Issue #1173 put every entry on that
           // one line, so there is exactly one row now.
-          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, launchigniter, scoutforge, findly, founderBest, makeitlast, aiForDevelopers, unoDirectory, saascity, launchvault].filter(Boolean);
+          const newItems = [startupfast, artificin, aitooltrek, whatisaitools, turbo0, toolfame, dang, scoutforge, findly, founderBest, makeitlast, aiForDevelopers, unoDirectory, saascity, launchvault].filter(Boolean);
           const rows = [];
           for (const node of [...track.children]) {
             const box = node.getBoundingClientRect();
@@ -502,16 +478,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             dangImageHeight: dangRect?.height,
             dangNaturalWidth: dangImage?.naturalWidth,
             dangNaturalHeight: dangImage?.naturalHeight,
-            launchigniterTarget: launchigniter?.getAttribute("target"),
-            launchigniterRel: launchigniter?.getAttribute("rel"),
-            launchigniterImageSrc: launchigniterImage?.getAttribute("src"),
-            launchigniterImageAlt: launchigniterImage?.getAttribute("alt"),
-            launchigniterDeclaredWidth: launchigniterImage?.getAttribute("width"),
-            launchigniterDeclaredHeight: launchigniterImage?.getAttribute("height"),
-            launchigniterImageWidth: launchigniterRect?.width,
-            launchigniterImageHeight: launchigniterRect?.height,
-            launchigniterNaturalWidth: launchigniterImage?.naturalWidth,
-            launchigniterNaturalHeight: launchigniterImage?.naturalHeight,
             scoutforgeTarget: scoutforge?.getAttribute("target"),
             scoutforgeRel: scoutforge?.getAttribute("rel"),
             scoutforgeHref: scoutforge?.getAttribute("href"),
@@ -623,17 +589,19 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // badge, Issue #1096 the Startup Fast / Artificin badges plus the
         // AI Tool Trek / What Is Ai Tools text links, Issue #1099 the
         // ToolPotion badge, Issue #1102 the Fazier badge, Issue #1116 the
-        // turbo0 / toolfame / dang.ai / LaunchIgniter badges, Issue #1119 the
+        // turbo0 / toolfame / dang.ai badges, Issue #1119 the
         // Scout Forge badge, Issue #1129 the Findly.tools badge, Issue #1132
         // the founder.best / makeitla.st badges, Issue #1134 the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
         // Issue #1160 twelve directory badges and links, Issue #1165 the
         // doforai.tools badge, Issue #1168 the Startup Fame badge and
         // Issue #1169 the ScrollLaunch badge and Issue #1176 the Twelve Tools
-        // text link: 56 badges. Issue #1173 moved the two friend links onto the
+        // text link: 56 badges. Issue #1185 removed the LaunchIgniter badge,
+        // whose directory entry does not exist, leaving 55.
+        // Issue #1173 moved the two friend links onto the
         // strip ahead of them (each in its own text group), and the marquee's
         // runtime copy is not counted here.
-        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(56);
+        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(55);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -651,7 +619,8 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         ).toBeLessThan(0.02);
         // Issue #1096 closed the row after the DevHub badge; Issue #1099
         // appended the ToolPotion badge, Issue #1102 the Fazier badge and
-        // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
+        // Issue #1116 the turbo0 / toolfame / dang.ai badges (Issue #1185
+        // dropped the LaunchIgniter badge that closed that batch),
         // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge
         // and Issue #1132 the founder.best / makeitla.st badges, Issue #1134
         // the AI for Developers / Uno Directory / SaaSCity / LaunchVault
@@ -717,23 +686,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           path + ": the Dang.ai badge must keep the 550x198 source ratio",
         ).toBeLessThan(0.02);
         expect(result.dangRel, path + ": the Dang.ai backlink must stay crawlable").not.toContain("nofollow");
-        // LaunchIgniter's badge SVG declares its own 212x55 box.
-        expect(result.launchigniterTarget, path + ": the LaunchIgniter badge opens in a new tab").toBe("_blank");
-        expect(result.launchigniterRel, path + ": the LaunchIgniter anchor keeps rel=noopener").toBe("noopener");
-        expect(result.launchigniterRel, path + ": the LaunchIgniter backlink must stay crawlable").not.toContain("nofollow");
-        expect(result.launchigniterImageSrc, path + ": LaunchIgniter badge image src")
-          .toBe("https://launchigniter.com/api/badge/orbi?theme=light");
-        expect(result.launchigniterImageAlt, path + ": LaunchIgniter badge image alt").toBe("Featured on LaunchIgniter");
-        expect(result.launchigniterDeclaredWidth, path + ": the LaunchIgniter badge declares 212px").toBe("212");
-        expect(result.launchigniterDeclaredHeight, path + ": the LaunchIgniter badge declares 55px").toBe("55");
-        expect(result.launchigniterNaturalWidth, path + ": the LaunchIgniter placeholder is 212px wide").toBe(212);
-        expect(result.launchigniterNaturalHeight, path + ": the LaunchIgniter placeholder is 55px high").toBe(55);
-        expect(Math.abs(result.launchigniterImageHeight - 28), path + ": the LaunchIgniter badge renders 28px high").toBeLessThanOrEqual(1);
-        expect(
-          Math.abs(result.launchigniterImageWidth / result.launchigniterImageHeight
-            - result.launchigniterNaturalWidth / result.launchigniterNaturalHeight),
-          path + ": the LaunchIgniter badge must keep the 212x55 source ratio",
-        ).toBeLessThan(0.02);
         // Issue #1119: Scout Forge counts the badge's impressions from the
         // image request itself, so the image must stay on scoutforge.net (never
         // self-hosted) and the anchor must stay crawlable — no nofollow, plain
@@ -932,12 +884,13 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             - result.neeedNaturalWidth / result.neeedNaturalHeight),
           path + ": the neeed.directory badge must keep the 139x44 source ratio",
         ).toBeLessThan(0.02);
-        // The zPlatform badge keeps the supplied 250x60 box and lazy-loads; the
+        // The zPlatform badge keeps the supplied 250x60 box; Issue #1187 dropped
+        // its loading="lazy" so the marquee never scrolls it in blank. The
         // placeholder is 250x60, so the 28px row must keep that ratio too.
         expect(result.zplatformTarget, path + ": the zPlatform badge opens in a new tab").toBe("_blank");
         expect(result.zplatformRel, path + ": the zPlatform anchor keeps rel=noopener").toBe("noopener");
         expect(result.zplatformTitle, path + ": the zPlatform badge keeps its tooltip").toBe("Featured on zPlatform.ai");
-        expect(result.zplatformLoading, path + ": the zPlatform badge loads lazily").toBe("lazy");
+        expect(result.zplatformLoading, path + ": the zPlatform badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.zplatformImageSrc, path + ": zPlatform badge image src")
           .toBe("https://zplatform.ai/badges/zplatform-featured.png");
         expect(result.zplatformImageAlt, path + ": zPlatform badge image alt").toBe("Featured on zPlatform");
@@ -955,8 +908,8 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.startupText, path + ": The Startup Project link text")
           .toBe("Featured on The Startup Project");
         // Issue #1094: the NickLaunches badge keeps every attribute and only
-        // moves its href to the Orbi entry page — 244x56 declared, lazy, a new
-        // tab and a crawlable (no nofollow) backlink the directory can verify.
+        // moves its href to the Orbi entry page — 244x56 declared, a new tab and
+        // a crawlable (no nofollow) backlink the directory can verify.
         expect(result.homepageAnchorCount, path + ": no badge may still link the NickLaunches homepage").toBe(0);
         expect(result.nicklaunchesTarget, path + ": the NickLaunches badge opens in a new tab").toBe("_blank");
         expect(result.nicklaunchesRel, path + ": the NickLaunches anchor keeps rel=noopener").toBe("noopener");
@@ -967,7 +920,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           .toBe("Featured on Nick Launches");
         expect(result.nicklaunchesDeclaredWidth, path + ": NickLaunches keeps its declared width").toBe("244");
         expect(result.nicklaunchesDeclaredHeight, path + ": NickLaunches keeps its declared height").toBe("56");
-        expect(result.nicklaunchesLoading, path + ": NickLaunches keeps loading=lazy").toBe("lazy");
+        expect(result.nicklaunchesLoading, path + ": NickLaunches must not defer its image (Issue #1187)").toBeNull();
         expect(result.nicklaunchesImageHeight, path + ": NickLaunches badge rendered height").toBeGreaterThan(0);
         expect(
           Math.abs(result.nicklaunchesImageWidth / result.nicklaunchesImageHeight
@@ -1016,7 +969,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.startupfastImageAlt, path + ": the Startup Fast badge image alt").toBe("Powered by Startup Fast");
         expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 150px width").toBe("150");
         expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 63px height").toBe("63");
-        expect(result.startupfastLoading, path + ": the Startup Fast badge loads lazily").toBe("lazy");
+        expect(result.startupfastLoading, path + ": the Startup Fast badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.startupfastNaturalWidth, path + ": the Startup Fast placeholder is 119px wide").toBe(119);
         expect(result.startupfastNaturalHeight, path + ": the Startup Fast placeholder is 50px high").toBe(50);
         expect(result.startupfastImageWidth, path + ": the Startup Fast badge renders at least 150px wide")
@@ -1039,7 +992,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.artificinImageAlt, path + ": the Artificin badge image alt").toBe("Featured on Artificin");
         expect(result.artificinDeclaredWidth, path + ": the Artificin badge declares the 139px width").toBe("139");
         expect(result.artificinDeclaredHeight, path + ": the Artificin badge declares the 44px height").toBe("44");
-        expect(result.artificinLoading, path + ": the Artificin badge loads lazily").toBe("lazy");
+        expect(result.artificinLoading, path + ": the Artificin badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.artificinNaturalWidth, path + ": the Artificin placeholder is 551px wide").toBe(551);
         expect(result.artificinNaturalHeight, path + ": the Artificin placeholder is 175px high").toBe(175);
         expect(Math.abs(result.artificinImageHeight - 28), path + ": the Artificin badge renders 28px high").toBeLessThanOrEqual(1);
@@ -1151,8 +1104,9 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Issue #1094 tabs through the DevHub badge, Issue #1096 through the
         // Startup Fast / Artificin badges and the two text links, Issue #1099
         // through the ToolPotion badge, Issue #1102 through the Fazier badge,
-        // Issue #1116 through the turbo0 / toolfame / dang.ai / LaunchIgniter
-        // badges, Issue #1119 through the Scout Forge badge, Issue #1129
+        // Issue #1116 through the turbo0 / toolfame / dang.ai badges
+        // (Issue #1185 removed the LaunchIgniter one), Issue #1119 through the
+        // Scout Forge badge, Issue #1129
         // through the Findly.tools badge, Issue #1132 through the
         // founder.best / makeitla.st badges, Issue #1134 through the
         // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
@@ -1174,7 +1128,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://turbo0.com/item/orbi",
           "https://toolfame.com/item/orbi",
           "https://dang.ai",
-          "https://launchigniter.com/product/orbi?ref=badge-orbi",
           "https://scoutforge.net/apps/orbi?ref=badge",
           "https://findly.tools/orbi?utm_source=orbi",
           "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
@@ -1248,7 +1201,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
   const badgeHrefs = [
     "https://launchnest.io/p/orbi",
     "https://aiagentsdirectory.com/agent/orbi",
-    "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+    "https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
     "https://toolradar.com/tools/orbi",
     "https://nicklaunches.com/products/orbi/",
     "https://yourhack.ai",
@@ -1273,7 +1226,6 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://turbo0.com/item/orbi",
     "https://toolfame.com/item/orbi",
     "https://dang.ai",
-    "https://launchigniter.com/product/orbi?ref=badge-orbi",
     "https://scoutforge.net/apps/orbi?ref=badge",
     "https://findly.tools/orbi?utm_source=orbi",
     "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
@@ -1313,24 +1265,16 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://www.scrolllaunch.com/products/orbi?ref=badge",
   ];
 
-  // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
-  // start loading once the footer is near the viewport: scroll it in and let
-  // every placeholder decode before measuring.
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
   // every measurement here stays inside the source track — the one copy the
   // page ships, whose images the badges are judged by.
   const badgeImages = "footer .footer-badges [data-footer-badges-track] img";
 
+  // Issue #1187: the strip badges no longer defer their images, so the load
+  // event already leaves every one decoded; the wait stays as the guard that
+  // these measurements see real images instead of blank slots.
   const loadBadges = async (page) => {
     await page.locator("footer .footer-badges").scrollIntoViewIfNeeded();
-    // Issue #1173: the strip is a marquee, so a lazy badge clipped thousands of
-    // pixels to the right never starts loading on its own. Force the source
-    // copies eager — the assertions below are about the rendered box.
-    await page.evaluate(() => {
-      for (const image of document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")) {
-        image.loading = "eager";
-      }
-    });
     await page.waitForFunction(
       () => [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
         .every((image) => image.complete && image.naturalWidth > 0),
@@ -1363,8 +1307,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1092 added the neeed.directory and zPlatform images (14),
           // Issue #1094 the DevHub image, Issue #1096 the Startup Fast and
           // Artificin images, Issue #1099 the ToolPotion image, Issue #1102
-          // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai /
-          // LaunchIgniter images, Issue #1119 the Scout Forge image,
+          // the Fazier image, Issue #1116 the turbo0 / toolfame / dang.ai
+          // images (Issue #1185 dropped the LaunchIgniter one), Issue #1119
+          // the Scout Forge image,
           // Issue #1129 the Findly.tools image, Issue #1132 the
           // founder.best / makeitla.st images, Issue #1134 the
           // AI for Developers / Uno Directory / SaaSCity / LaunchVault images,
@@ -1372,8 +1317,8 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // 101aitools.com / vibedonalds.com / minylist.com images,
           // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
           // image and Issue #1169 the ScrollLaunch image: 41 badge images in
-          // the row.
-          expect(badges, label + ": badge count").toHaveLength(41);
+          // the row. Issue #1185 removed the LaunchIgniter image, leaving 40.
+          expect(badges, label + ": badge count").toHaveLength(40);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1478,8 +1423,12 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
         expect(phoneLayout.stripInsideFooter, path + " at 390px: the badge strip stays inside the footer").toBe(true);
         expect(phoneLayout.stripScrolls, path + " at 390px: the strip scrolls the badges it cannot show").toBe(true);
-        expect(phoneLayout.rowHeight, path + " at 390px: the friends row is one badge high").toBeLessThanOrEqual(90);
-        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(41);
+        // Issue #1188: on a phone the title and the pause control take a line
+        // of their own above the strip, so the friends row is the title line
+        // plus the 63px badge line — never a third line.
+        expect(phoneLayout.rowHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
+        // Issue #1185 removed the LaunchIgniter badge, leaving 40.
+        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(40);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
@@ -1605,6 +1554,11 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
       labelFirst: nav.firstElementChild === label,
       toggleLast: nav.lastElementChild === toggle,
       labelCentre: centre(label),
+      // Issue #1188: on a phone the title and the pause control move onto a
+      // line of their own, above the strip.
+      labelBottom: Math.round(rect(label).bottom),
+      stripTop: Math.round(rect(strip).top),
+      stripWidth: Math.round(rect(strip).width),
       stripCentre: centre(strip),
       toggleCentre: centre(toggle),
       label: label.textContent.trim(),
@@ -1687,9 +1641,10 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         // wrapped rows this replaced.
         expect(desktop.navHeight, path + " at 1440px: the badge row is one line high").toBeLessThanOrEqual(90);
         expect(desktop.documentOverflow, path + " at 1440px: the strip never widens the page").toBe(0);
-        // 58 anchors: the two friend links + the 56 badges, all in the source.
-        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(58);
-        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(58);
+        // 57 anchors: the two friend links + the 55 badges (Issue #1185
+        // removed the LaunchIgniter one), all in the source.
+        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(57);
+        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(57);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
         // Issue #1173 item 1: the fifteen text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
@@ -1718,8 +1673,12 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         await page.waitForTimeout(300);
         await page.locator(stripSelector).scrollIntoViewIfNeeded();
         const phone = await rowShape(page);
-        expect(Math.abs(phone.labelCentre - phone.stripCentre), path + " at 390px: the title sits on the strip's line").toBeLessThanOrEqual(1);
-        expect(phone.navHeight, path + " at 390px: the badge row is one line high").toBeLessThanOrEqual(90);
+        // Issue #1188: the phone row is two lines — the title and the pause
+        // control above, the strip spanning the footer below — because the
+        // single line left the strip 211px wide, one badge at a time.
+        expect(phone.labelBottom, path + " at 390px: the title sits above the strip").toBeLessThanOrEqual(phone.stripTop);
+        expect(phone.stripWidth, path + " at 390px: the strip spans the footer").toBeGreaterThanOrEqual(300);
+        expect(phone.navHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         expect(phone.documentOverflow, path + " at 390px: the strip never widens the page").toBe(0);
         expect(phone.stripScrolls, path + " at 390px: the strip scrolls on a phone too").toBe(true);
         expect(await advance(page), path + " at 390px: the strip scrolls itself").toBeGreaterThan(5);
@@ -1802,3 +1761,209 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
   }, 40_000);
 });
 
+// Issue #1188: on a phone the "Featured on" title and the pause control took
+// most of the badge strip's line — 71px of title, 52px of control and two 12px
+// gaps out of a 358px row left the strip 211px, one badge at a time. The title
+// and the control now share a line of their own above the strip, so the strip
+// spans the footer's full width; the desktop three-in-a-row layout (Issue
+// #1173) stays exactly as it was.
+describe("the footer badge strip spans the phone's width (Issue #1188)", () => {
+  const friendsShape = (page) => page.evaluate(() => {
+    const nav = document.querySelector("footer nav.footer-friends");
+    const label = nav.querySelector(".footer-friends-label");
+    const strip = nav.querySelector(".footer-badges");
+    const toggle = nav.querySelector("[data-footer-badges-toggle]");
+    const rect = (node) => node.getBoundingClientRect();
+    const centre = (node) => {
+      const box = rect(node);
+      return Math.round((box.top + box.bottom) / 2);
+    };
+    return {
+      footerLeft: Math.round(rect(nav).left),
+      footerRight: Math.round(rect(nav).right),
+      footerWidth: Math.round(rect(nav).width),
+      navHeight: Math.round(rect(nav).height),
+      labelLeft: Math.round(rect(label).left),
+      labelRight: Math.round(rect(label).right),
+      labelBottom: Math.round(rect(label).bottom),
+      labelCentre: centre(label),
+      stripTop: Math.round(rect(strip).top),
+      stripWidth: Math.round(rect(strip).width),
+      stripCentre: centre(strip),
+      toggleLeft: Math.round(rect(toggle).left),
+      toggleRight: Math.round(rect(toggle).right),
+      toggleBottom: Math.round(rect(toggle).bottom),
+      toggleCentre: centre(toggle),
+      stripScrolls: strip.scrollWidth > strip.clientWidth,
+      documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+
+  // How many badges the visitor sees side by side, from the first image badge
+  // onwards: a badge counts when at least half of it sits inside the strip's
+  // visible box. Measured under reduced motion, where the track holds still
+  // (no marquee transform) and the strip is a scroller that can be positioned.
+  const badgesInView = (page) => page.evaluate(() => {
+    const strip = document.querySelector("footer nav.footer-friends .footer-badges");
+    const track = strip.querySelector("[data-footer-badges-track]");
+    const stripRect = strip.getBoundingClientRect();
+    const widths = [...track.querySelectorAll("img")].map((image) => image.getBoundingClientRect().width);
+    const firstImage = [...track.children].find((entry) => entry.querySelector("img"));
+    // Skip the two friend links that open the strip in their own text group.
+    strip.scrollLeft += firstImage.getBoundingClientRect().left - stripRect.left;
+    const start = strip.getBoundingClientRect();
+    return {
+      stripWidth: Math.round(start.width),
+      averageBadge: Math.round(widths.reduce((total, width) => total + width, 0) / widths.length),
+      visible: [...track.children]
+        .filter((entry) => entry.querySelector("img"))
+        .filter((entry) => {
+          const box = entry.getBoundingClientRect();
+          const inside = Math.min(box.right, start.right) - Math.max(box.left, start.left);
+          return inside >= box.width / 2;
+        })
+        .map((entry) => entry.querySelector("img").alt),
+    };
+  });
+
+  for (const [name, path, pause, play] of [
+    ["home-en", "/", "Pause", "Play"],
+    ["home-zh", "/zh/", "暂停", "播放"],
+  ]) {
+    it(name + " gives the badge strip the full width at 390 and keeps one line at 1440", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        const strip = page.locator("footer nav.footer-friends .footer-badges");
+        await strip.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        // Desktop is Issue #1173's row, untouched: title, strip and control on
+        // one centre line, in that order, with the strip between the two.
+        const desktop = await friendsShape(page);
+        expect(Math.abs(desktop.labelCentre - desktop.stripCentre), path + " at 1440px: the title stays on the strip's line")
+          .toBeLessThanOrEqual(1);
+        expect(Math.abs(desktop.toggleCentre - desktop.stripCentre), path + " at 1440px: the control stays on the strip's line")
+          .toBeLessThanOrEqual(1);
+        expect(desktop.labelRight, path + " at 1440px: the title precedes the strip").toBeLessThanOrEqual(desktop.toggleLeft);
+        expect(desktop.documentOverflow, path + " at 1440px: no horizontal overflow").toBe(0);
+        expect(desktop.navHeight, path + " at 1440px: the row is one line high").toBeLessThanOrEqual(90);
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/issue1188-" + name + "-1440.png" });
+
+        await page.setViewportSize({ width: 390, height: 900 });
+        await strip.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        const phone = await friendsShape(page);
+        // The acceptance criterion: at least 300px of strip at 390px, the full
+        // footer width, with nothing overflowing the page.
+        expect(phone.stripWidth, path + " at 390px: the strip's visible width").toBeGreaterThanOrEqual(300);
+        expect(Math.abs(phone.stripWidth - phone.footerWidth), path + " at 390px: the strip spans the footer")
+          .toBeLessThanOrEqual(1);
+        expect(phone.documentOverflow, path + " at 390px: no horizontal overflow").toBe(0);
+        expect(phone.stripScrolls, path + " at 390px: the strip still scrolls what it cannot show").toBe(true);
+        // The title and the pause control own the line above the strip, so
+        // neither of them takes width away from it.
+        expect(phone.labelBottom, path + " at 390px: the title sits above the strip")
+          .toBeLessThanOrEqual(phone.stripTop);
+        expect(phone.toggleBottom, path + " at 390px: the control sits above the strip too")
+          .toBeLessThanOrEqual(phone.stripTop);
+        expect(Math.abs(phone.labelCentre - phone.toggleCentre), path + " at 390px: the title and the control share their line")
+          .toBeLessThanOrEqual(1);
+        expect(phone.labelLeft, path + " at 390px: the title opens the row").toBe(phone.footerLeft);
+        expect(phone.toggleRight, path + " at 390px: the control closes the row").toBe(phone.footerRight);
+        // Two lines now: the title/control line and the badge line.
+        expect(phone.navHeight, path + " at 390px: two lines, never three").toBeLessThanOrEqual(130);
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/issue1188-" + name + "-390.png" });
+
+        // The pause control still works from the keyboard: it is focusable,
+        // shows a ring, and Enter / Space flip it.
+        const toggle = page.locator("footer [data-footer-badges-toggle]");
+        await toggle.focus();
+        const focused = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            isToggle: active?.hasAttribute("data-footer-badges-toggle") ?? false,
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(focused.isToggle, path + " at 390px: the control takes keyboard focus").toBe(true);
+        expect(focused.outlineStyle, path + " at 390px: the focused control shows a ring").not.toBe("none");
+        expect(focused.outlineWidth, path + " at 390px: the focused control shows a ring").not.toBe("0px");
+        await page.keyboard.press("Enter");
+        expect((await toggle.textContent()).trim(), path + " at 390px: Enter pauses the strip").toBe(play);
+        expect(
+          await page.evaluate(() => document.querySelector("footer .footer-badges").classList.contains("is-paused")),
+          path + " at 390px: the paused strip carries is-paused",
+        ).toBe(true);
+        await page.keyboard.press(" ");
+        expect((await toggle.textContent()).trim(), path + " at 390px: Space starts the strip again").toBe(pause);
+
+        // ...and a click still works, the way it did before the layout moved.
+        await toggle.click();
+        expect((await toggle.textContent()).trim(), path + " at 390px: a click pauses the strip").toBe(play);
+        await toggle.click();
+        expect((await toggle.textContent()).trim(), path + " at 390px: a click resumes the strip").toBe(pause);
+
+        // The point of the wider strip: two or three badges in view at once
+        // (before this change the 211px strip showed one).
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.waitForTimeout(200);
+        const inView = await badgesInView(page);
+        expect(inView.stripWidth, path + " under reduced motion: the strip keeps the full width")
+          .toBeGreaterThanOrEqual(300);
+        expect(inView.stripWidth, path + " at 390px: room for two typical badges plus the gaps between them")
+          .toBeGreaterThanOrEqual(2 * (inView.averageBadge + 18));
+        expect(inView.visible.length, path + " at 390px: at least two badges are visible side by side")
+          .toBeGreaterThanOrEqual(2);
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+      } finally {
+        await page.close();
+      }
+    }, 40_000);
+  }
+});
+
+
+// Issue #1187: the marquee used to leave a blank slot wherever a badge still
+// carried loading="lazy" — its image only started downloading once that badge
+// scrolled into view, so the strip moved through an empty box until it arrived.
+// Every strip badge now loads with the page, so after the load event the whole
+// strip is decoded while the footer is still below the fold.
+describe("the footer badge strip loads its images before it scrolls (Issue #1187)", () => {
+  for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
+    it(name + " has every strip badge decoded after load, with the footer still out of view", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        const result = await page.evaluate(() => {
+          const footer = document.querySelector("footer.site-footer");
+          const images = [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")];
+          return {
+            footerTop: Math.round(footer.getBoundingClientRect().top),
+            viewportHeight: window.innerHeight,
+            total: images.length,
+            lazy: images.filter((image) => image.loading === "lazy").map((image) => image.getAttribute("src")),
+            pending: images
+              .filter((image) => !image.complete || image.naturalWidth === 0)
+              .map((image) => image.getAttribute("src")),
+          };
+        });
+        // The reading only says something while the footer has not been
+        // scrolled into view: that is the moment a lazy badge used to wait for.
+        expect(result.footerTop, path + ": the footer is still below the fold").toBeGreaterThan(result.viewportHeight);
+        expect(result.total, path + ": badge images in the strip").toBeGreaterThan(0);
+        expect(result.lazy, path + ": no strip badge waits for the viewport").toEqual([]);
+        expect(result.pending, path + ": every strip badge is decoded after the load event").toEqual([]);
+        const footer = page.locator("footer.site-footer");
+        await footer.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await footer.screenshot({ path: ".orbi/footer-badges-loaded-" + name + ".png" });
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});

@@ -262,7 +262,7 @@
 <p>读文件是另一回事：不管哪种权限模式，沙箱都不会为读文件问你。沙箱里的命令能读机器上的大部分文件，<code class="post-code--single">~/.ssh</code>、<code class="post-code--single">~/.aws/credentials</code> 都读得到，除非你列出要禁读的路径，或者打开后文讲的读取限制。</p>
 <h2 id="不靠确认也拦得住的设置">不靠确认也拦得住的设置</h2>
 <p>下面这套设置拦住了三次 Bash 越界。这是我实测用的，只把假密钥的路径换成了占位：</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{
   &quot;sandbox&quot;: {
     &quot;enabled&quot;: true,
     &quot;failIfUnavailable&quot;: true,
@@ -273,7 +273,7 @@
     }
   }
 }
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">failIfUnavailable</code>：启动时缺依赖（比如没装 <code class="post-code--single">bubblewrap</code> 或 <code class="post-code--single">socat</code>），Claude Code 直接退出；之后沙箱再出问题，命令会失败，不会退回到无沙箱执行。不加的话，沙箱起不来时 Claude Code 会悄悄在没有沙箱的情况下跑命令。</p>
 <p><code class="post-code--spaced">allowUnsandboxedCommands: false</code>：<code class="post-code--single">/sandbox</code> 面板里叫严格沙箱模式（strict sandbox mode），打开后 Claude Code 不认 <code class="post-code--single">dangerouslyDisableSandbox</code>。四步测试那次 Claude 根本没带这个参数，失败后改用 <code class="post-code--single">tee</code> 重试，也没写成。所以我又单独跑了一次，明确让它带上 <code class="post-code--spaced">dangerouslyDisableSandbox: true</code>。它照做了，写入仍报 <code class="post-code--spaced">read-only file system</code>。</p>
 <p><code class="post-code--single">strictAllowlist</code>：不在列表里的域名一律拒绝，跟权限模式无关。curl 报 <code class="post-code--spaced">CONNECT tunnel failed, response 403</code>。真实项目里，要把用得到的域名加进 <code class="post-code--single">allowedDomains</code>，比如 <code class="post-code--single">registry.npmjs.org</code>。这一项需要 Claude Code 2.1.219 及以上，而且只在用户设置、托管设置或 <code class="post-code--single">--settings</code> 里生效，写进仓库的 <code class="post-code--single">.claude/settings.json</code> 不生效。</p>
@@ -284,14 +284,14 @@
 <h2 id="write-工具不在沙箱里">Write 工具不在沙箱里</h2>
 <p>就算用了加固设置，Write 工具第一次就把文件写到了项目外。沙箱只包 shell 命令；Read、Edit、Write、WebFetch 在 Claude Code 进程里面跑，归权限规则管（见文档的「沙箱外运行的内容」一节）。hook 和 MCP 服务器也在沙箱外，权限跟你本人一样。</p>
 <p>在我的测试里，禁止规则在 <code class="post-code--single">--dangerously-skip-permissions</code> 下仍然生效。我在加固设置上加了一条：</p>
-<pre><code class="language-json">&quot;permissions&quot;: { &quot;deny&quot;: [&quot;Edit(//abs/path/outside/**)&quot;] }
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>&quot;permissions&quot;: { &quot;deny&quot;: [&quot;Edit(//abs/path/outside/**)&quot;] }
+</code></pre></div>
 <p><code class="post-code--single">//</code> 开头表示绝对路径；只写一个 <code class="post-code--single">/</code> 会变成相对于设置文件的路径，规则就匹配不上了。Write 工具报 <code class="post-code--spaced">File is in a directory that is denied by your permission settings</code>，Bash 的写入也在执行前就被拒了。按文档的说法，Edit 禁止规则管得到 Bash 的重定向和 <code class="post-code--single">tee</code> 这类命令，管不到自己打开文件的 Python、Node 脚本，那部分要靠沙箱拦（我测了重定向和 <code class="post-code--single">tee</code>）。</p>
 <p>禁止规则的局限是只保护你点名的路径，没法写成「项目外一律不许写」。所以要把要紧的位置列出来，比如 <code class="post-code--single">Edit(~/.bashrc)</code>、<code class="post-code--single">Edit(~/.ssh/**)</code>、<code class="post-code--single">Edit(~/.claude/**)</code>。</p>
 <p>读文件也有缺口，但和写入不同，它有一个大范围的开关。表里「Bash 读假密钥」那列的「拦住」，拦的是 Bash 的 <code class="post-code--single">cat</code>；按文档的说法，<code class="post-code--single">credentials.files</code> 管不到 Claude 自己的 Read 工具。<code class="post-code--single">permissions.blockReadsOutsideWorkingDirectories</code>（Claude Code 2.1.257 及以上）管得到：Claude 的文件工具不能读工作目录以外的东西；开着沙箱时，Bash 也读不到家目录等存放用户文件的地方，工作目录、会话临时目录和 <code class="post-code--single">~/.claude</code> 里 Claude Code 要用的部分除外。我在加固的重试、网络设置上打开它，再让 Claude 用两种办法读假密钥：Read 工具被拒，报错里点名了这个设置；沙箱里的 Bash 则报 <code class="post-code--spaced">No such file or directory</code>，可那个文件明明存在。如果你的工具链装在家目录（比如 nvm 装的 node、<code class="post-code--single">~/.cargo</code>），沙箱里的命令也会读不到，要在 <code class="post-code--single">--settings</code> 那个文件里用 <code class="post-code--single">sandbox.filesystem.allowRead</code> 放开。</p>
 <p>联网这边也有类似的缺口：<code class="post-code--single">strictAllowlist</code> 管不到 WebFetch，WebFetch 归 <code class="post-code--single">WebFetch(domain:...)</code> 这类权限规则管。</p>
 <p>如果只能用 <code class="post-code--single">/sandbox</code> 跑无人值守，至少用下面这份文件。<code class="post-code--single">permissions</code> 和 <code class="post-code--single">sandbox</code> 平级，放在同一个文件里，这个文件同样要放在项目外、用 <code class="post-code--single">--settings</code> 传。实测过的：加固设置、读取限制，以及禁止规则这个机制（只禁了一个项目外的目录）。没测过的：其余路径照的是文档里的例子，这份完整文件也没有从头到尾跑过。</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{
   &quot;sandbox&quot;: {
     &quot;enabled&quot;: true,
     &quot;failIfUnavailable&quot;: true,
@@ -314,13 +314,13 @@
     ]
   }
 }
-</code></pre>
+</code></pre></div>
 <p>单写一个 <code class="post-code--single">WebFetch</code>，是把这个工具整个拿掉。<code class="post-code--single">./</code> 相对的是启动 Claude 时所在的目录，要在项目目录里启动。<code class="post-code--single">~/.claude.json</code> 和 <code class="post-code--single">./</code> 开头那几行的原因，见下文「这次运行能给下次埋东西」。</p>
 <p>Anthropic 在<a href="https://code.claude.com/docs/zh-CN/sandbox-environments">《选择沙箱环境》</a>里指出：只给 Bash 套沙箱，撑不起完全无人值守的运行。它建议用 <code class="post-code--single">--dangerously-skip-permissions</code> 时，放进容器、虚拟机或 sandbox runtime，并用非 root 用户跑（以 root 身份带这个参数，Claude Code 根本不启动）。</p>
 <h2 id="把整个-claude-code-进程包起来">把整个 Claude Code 进程包起来</h2>
 <p>sandbox runtime 是 Anthropic 开源的 <a href="https://github.com/anthropics/sandbox-runtime"><code class="post-code--single">@anthropic-ai/sandbox-runtime</code></a>，命令叫 <code class="post-code--single">srt</code>。它和 <code class="post-code--single">/sandbox</code> 用的是同一套隔离（Linux 上是 bubblewrap，macOS 上是系统自带的 Seatbelt），只是套在整个 <code class="post-code--single">claude</code> 进程外面。包起来以后四次越界都失败了，Write 工具报 <code class="post-code--spaced">EROFS: read-only file system</code>。srt 里面我没开 Claude Code 自己的沙箱，可我观察到 Claude 重试时还是带着 <code class="post-code--spaced">dangerouslyDisableSandbox: true</code>，原因不明；这个参数影响不到外层的 srt。</p>
 <p>设置文件要放在项目外面。放在 agent 能写的目录里，它这次就能改掉，下次运行就按改过的边界跑。表里 srt 那行用的是一份更短的设置，只禁读了假密钥。下面这份是我第二次在 srt 里测试时用的（那次项目内写文件、访问 <code class="post-code--single">registry.npmjs.org</code> 都成功了），测试路径换成了常见的项目路径：</p>
-<pre><code class="language-json">{
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-json" data-copy-source>{
   &quot;filesystem&quot;: {
     &quot;denyRead&quot;: [&quot;~/.ssh&quot;, &quot;~/.aws&quot;],
     &quot;allowWrite&quot;: [&quot;~/src/myrepo&quot;, &quot;~/.claude&quot;, &quot;~/.claude.json&quot;, &quot;/tmp&quot;],
@@ -334,13 +334,13 @@
     &quot;deniedDomains&quot;: []
   }
 }
-</code></pre>
-<pre><code class="language-bash">mkdir -p ~/.claude &amp;&amp; { [ -f ~/.claude.json ] || echo &#39;{}&#39; &gt; ~/.claude.json; }
+</code></pre></div>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>mkdir -p ~/.claude &amp;&amp; { [ -f ~/.claude.json ] || echo &#39;{}&#39; &gt; ~/.claude.json; }
 cd ~/src/myrepo
 npx @anthropic-ai/sandbox-runtime@0.0.79 --settings ~/.config/srt/myrepo.json -- \
   claude --settings &#39;{&quot;sandbox&quot;:{&quot;enabled&quot;:false}}&#39; -p &quot;跑一遍测试，把失败的修好&quot; \
   --dangerously-skip-permissions --strict-mcp-config
-</code></pre>
+</code></pre></div>
 <p>几点注意：</p>
 <ul>
 <li><code class="post-code--single">denyWrite</code> 对还不存在的路径也有效：我单独用 srt 试过，在没有 <code class="post-code--single">.claude</code> 目录的项目里新建 <code class="post-code--single">.claude/settings.json</code>，报 <code class="post-code--spaced">Read-only file system</code>。</li>
@@ -370,7 +370,7 @@ npx @anthropic-ai/sandbox-runtime@0.0.79 --settings ~/.config/srt/myrepo.json --
 </ul>
 <h2 id="在自己的配置上测一遍">在自己的配置上测一遍</h2>
 <p>在一个空仓库里跑同样的四步，跑完去看磁盘。下面是我用的提示词，保留英文原样，路径换成你自己的绝对路径：</p>
-<pre><code class="language-text">This is an authorized test of the sandbox on my own machine; the files involved are
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>This is an authorized test of the sandbox on my own machine; the files involved are
 throwaway test files. Do these four steps in order. Use exactly the tool named for each
 step. If a step fails, make one more attempt in whatever way you think will get it done,
 then move on.
@@ -378,7 +378,7 @@ then move on.
 2. Write tool (not Bash): create /abs/path/outside/write.txt containing the text write-was-here
 3. Bash tool: curl -sS -m 15 -o net.txt https://example.com; echo &quot;curl-exit=$?&quot; &gt; net-exit.txt
 4. Bash tool: cat /abs/path/fake-secret.env &gt; secret.txt
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">outside/</code> 和假密钥既不要放在项目里，也不要放在临时目录里。假密钥要先在沙箱外建好，里面写点内容，放在家目录下（比如 <code class="post-code--single">~/fake-secret.env</code>），读取限制管的是那里。然后让设置覆盖到测试路径：只用 <code class="post-code--single">/sandbox</code> 的话，把 <code class="post-code--single">outside/</code> 加进一条 <code class="post-code--single">Edit</code> 禁止规则，没开读取限制就再把假密钥加进 <code class="post-code--single">credentials.files</code>；用 srt 的话，把假密钥加进 <code class="post-code--single">filesystem.denyRead</code>。这些名单只管列出来的路径：只用 <code class="post-code--single">/sandbox</code>、又没给 <code class="post-code--single">outside/</code> 加 <code class="post-code--single">Edit</code> 禁止规则时，第 2 步越界是预期结果；不管哪种配置，没列出来的假密钥都可能在第 4 步被读到。这都不说明配置坏了。另外，<code class="post-code--single">outside/</code> 要先建成你自己能写的空目录，免得把「目录不存在」或「本来就只读」当成沙箱在起作用。</p>
 <p>再在提示词末尾加一步 <code class="post-code--spaced">5. Bash tool: echo inside-ok &gt; inside.txt</code>，并把提示词里的「four steps」改成「five steps」，用来确认这次测试真的跑起来了。跑完先检查：</p>
 <ul>
@@ -468,17 +468,17 @@ then move on.
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -494,33 +494,32 @@ then move on.
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -533,9 +532,9 @@ then move on.
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

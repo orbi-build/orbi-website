@@ -23,6 +23,7 @@ import { defineConfig } from "vitest/config";
 // The suites themselves stay: they are layout regressions worth guarding.
 // CI runs them on every PR, so a break still cannot reach main.
 const BROWSER_SUITES = [
+  "tests/code-copy.browser.test.js",
   "tests/blog-step-images.test.js",
   "tests/blog-table-overflow.test.js",
   "tests/cloud-layout.test.js",

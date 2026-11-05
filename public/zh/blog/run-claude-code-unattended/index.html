@@ -222,9 +222,9 @@
         </details>
 <p>Claude Code 的 headless 模式，就是加了 <code class="post-code--single">-p</code>（全称 <code class="post-code--single">--print</code>）的非交互模式：不开界面，跑完一个提示词，把结果打到终端就退出。想把 Claude Code 放进 cron 或 CI，用的就是它。官方中文文档管这一页叫<a href="https://code.claude.com/docs/zh-CN/headless">「以编程方式运行 Claude Code」</a>，headless 这个词只剩在网址里。</p>
 <p>headless 运行没人回答授权提示，要授权的操作会被直接拒掉，而且被拒不算出错，退出码还是 0。得事先定好哪些操作能放行。最省事的是 <code class="post-code--single">auto</code> 权限模式：</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
-<pre><code class="language-bash">claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;修复 tests/test_auth.py 里失败的测试&quot; \
   --permission-mode auto --permission-prompts none
-</code></pre>
+</code></pre></div>
 <p>这条命令单独跑，有操作被拒也看不出来：要加 <code class="post-code--spaced">--output-format json</code>，再查 <code class="post-code--single">permission_denials</code>，不管用哪种模式都一样。完整脚本见下文。</p>
 <p><code class="post-code--spaced">--permission-prompts none</code> 可加可不加。cron 和 CI 里本来就没人回答授权提示，加了它，Claude 被拒之后不会再重试，也不会去调 AskUserQuestion 这类要人回答的工具。它要 Claude Code v2.1.259 以上，旧版本去掉就行。</p>
 <p><code class="post-code--single">auto</code> 也不是总能用。模型不支持、设置里关掉了、Anthropic 在服务端关掉，会话都会改从 Manual 模式（即 <code class="post-code--spaced">--permission-mode default</code>）启动，没预先放行的写入都会被拒。所以夜间任务我用 <code class="post-code--single">dontAsk</code> 加白名单，它不依赖 <code class="post-code--single">auto</code> 能不能用，下文的检查脚本就是这么配的。在 headless 下，<code class="post-code--single">dontAsk</code> 放行的范围和 <code class="post-code--single">default</code> 加同一份白名单一样；区别是<a href="https://code.claude.com/docs/zh-CN/permission-modes">官方文档</a>把它定位成 CI 用的锁定模式，连显式的 <code class="post-code--single">ask</code> 规则和 AskUserQuestion 都直接拒，会话从不等人输入。</p>
@@ -245,7 +245,7 @@
 <p>第二次跑 <code class="post-code--spaced">claude --bare -p &quot;say hi&quot; --output-format json</code>，没设 <code class="post-code--single">ANTHROPIC_API_KEY</code>。<code class="post-code--single">--bare</code> 不读订阅登录，这次本来就该失败，我就是想看看失败长什么样。退出码是 1，JSON 里却还写着 <code class="post-code--spaced">&quot;subtype&quot;: &quot;success&quot;</code>。能看出失败的只有 <code class="post-code--spaced">&quot;is_error&quot;: true</code>，和 <code class="post-code--single">result</code> 里那句 <code class="post-code--spaced">Not logged in · Please run /login</code>。</p>
 <p>第三次在 <code class="post-code--spaced">--permission-mode default</code> 下让它写一个文件。headless 运行里没人批准写入，文件没写成，可退出码是 0，<code class="post-code--spaced">&quot;subtype&quot;: &quot;success&quot;</code>、<code class="post-code--spaced">&quot;is_error&quot;: false</code>。唯一的线索在 <code class="post-code--single">permission_denials</code> 里，它列出了 Claude 试过又被拒的两次工具调用：一次 Bash 重定向，一次 Write 工具。我这次没预先放行任何写入。夜间任务要是碰上前面说的 <code class="post-code--single">auto</code> 不可用、会话改从 Manual 模式启动，处境就和这次一样，可能一晚又一晚以 0 退出，什么也没干成。</p>
 <p>脚本要查三样：退出码、<code class="post-code--single">is_error</code>，还有 <code class="post-code--single">permission_denials</code> 是不是空的。退出码 0 而 <code class="post-code--single">is_error</code> 为 true 的情况我没碰到过，查它也顺带拦住了空输出和非 JSON。下面这段要放进 bash 脚本里用，别直接在终端里敲，<code class="post-code--spaced">exit 1</code> 会把你的 shell 关掉。另外要装好 <code class="post-code--single">jq</code>：</p>
-<pre><code class="language-bash">out=$(claude -p &quot;Run the test suite and fix what fails&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>out=$(claude -p &quot;Run the test suite and fix what fails&quot; \
   --permission-mode dontAsk --allowedTools &quot;Read,Edit,Bash(npm test *)&quot; \
   --output-format json)
 status=$?
@@ -265,7 +265,7 @@ if [ &quot;$denied&quot; -ne 0 ]; then
   jq -r &#39;.permission_denials[].tool_name&#39; &lt;&lt;&lt;&quot;$out&quot; &gt;&amp;2
   exit 1
 fi
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">dontAsk</code> 会拒掉所有本该弹确认的操作，读文件和白名单里的工具照常执行。<code class="post-code--spaced">Bash(npm test *)</code> 放行带参数和不带参数的 <code class="post-code--spaced">npm test</code>；<code class="post-code--single">ls</code>、<code class="post-code--single">cat</code>、<code class="post-code--single">grep</code> 这类内置的只读命令通常不用逐项放行（显式的 deny 规则照样生效）。白名单里还有 <code class="post-code--single">Edit</code>，所以 Claude 能改 <code class="post-code--spaced">npm test</code> 实际跑的内容。这份白名单只能防手滑，当不了沙箱，任务还是要用专用用户来跑。</p>
 <p>别的需要批准的 Bash 命令都会被拒，脚本会把它记成失败。先手动跑一次，看看 <code class="post-code--single">permission_denials</code> 里列了哪些命令，愿意放行的再加进白名单。输出为空、不是 JSON 这些异常情况，脚本也都返回 1，我用一个假的 <code class="post-code--single">claude</code> 脚本放进 <code class="post-code--single">PATH</code> 逐个试过。</p>
 <h3 id="headless-怎么登录">headless 怎么登录</h3>
@@ -274,15 +274,15 @@ fi
 <p>细节见<a href="https://code.claude.com/docs/zh-CN/authentication#generate-a-long-lived-token">认证文档</a>。不能加 <code class="post-code--single">--bare</code> 的时候，可以用 <code class="post-code--spaced">--setting-sources user</code> 不读仓库自己的配置和 <code class="post-code--single">.mcp.json</code>，<code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> 可以在这一次运行里关掉 hooks。官方还说 <code class="post-code--single">--bare</code> 将来会成为 <code class="post-code--single">-p</code> 的默认值，到时候靠 token 登录的配置可能要改。</p>
 <h3 id="最小的-cron-定时任务">最小的 cron 定时任务</h3>
 <p>cron 的 <code class="post-code--single">PATH</code> 很短，也不读你的 shell 配置，所以工作目录、可执行文件路径和凭据都要写全。token 放进一个只有运行这个任务的用户能读的文件（<code class="post-code--spaced">chmod 600</code>），并且要用 <code class="post-code--single">export</code>，否则 Claude 读不到：</p>
-<pre><code class="language-bash"># ~/.claude-nightly.env
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source># ~/.claude-nightly.env
 export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
 export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">PATH</code> 这一行和 token 一样重要：Claude 在任务里执行的命令，比如你的测试工具，用的也是这个文件里的 <code class="post-code--single">PATH</code>。你的工具装在哪，就把哪个目录加进去。</p>
 <p>把上面的检查脚本存成 <code class="post-code--single">$HOME/bin/claude-nightly.sh</code>，第一行加上 <code class="post-code--spaced">#!/usr/bin/env bash</code>，再 <code class="post-code--spaced">chmod +x</code>。有任何操作被拒，它都会以 1 退出。然后在这个用户的 crontab 里写（仓库路径换成你的）：</p>
-<pre><code class="language-bash"># crontab -e：每天凌晨 3 点
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source># crontab -e：每天凌晨 3 点
 0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; &quot;$HOME/bin/claude-nightly.sh&quot; &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
-</code></pre>
+</code></pre></div>
 <p>脚本靠环境文件里设的 <code class="post-code--single">PATH</code> 找到 <code class="post-code--single">claude</code>，所以这个 <code class="post-code--single">PATH</code> 要包含 <code class="post-code--spaced">which claude</code> 打印出来的目录。每次失败都会在日志里留下一行说明；<code class="post-code--single">cd</code> 失败这类脚本启动前的错误不会进这个日志，要去看 cron 发的邮件或系统日志。<code class="post-code--single">permission_denials</code> 那项检查不能删：换成 <code class="post-code--single">auto</code> 后，一旦 <code class="post-code--single">auto</code> 不可用、会话改从 Manual 模式启动，写入被拒时退出码照样是 0，只有这项检查能把那次运行记成失败。</p>
 <p>如果你只需要这样一个定时任务，到这里就够了。</p>
 <h2 id="ssh-断开后-让-vps-上的-claude-code-接着跑">SSH 断开后，让 VPS 上的 Claude Code 接着跑</h2>
@@ -311,10 +311,10 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <h3 id="启动-断开-重新连接">启动、断开、重新连接</h3>
 <p>下面假定 <code class="post-code--single">/srv/myrepo</code> 是一个可信的 Python 仓库，已有 <code class="post-code--single">greet</code> 函数和 unittest 测试。用于自己的项目时，把目录、需求和测试命令一起改。安排定时任务前，先有人在场跑通一次。</p>
 <p>用作业用户创建一个全新的结果目录，再进入 tmux。目录已经存在时，第一条命令会故意失败，避免把旧作业结果当成这次证据：</p>
-<pre><code class="language-bash">mkdir &quot;$HOME/claude-vps-demo&quot; &amp;&amp; tmux new-session -s cc-vps-demo
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>mkdir &quot;$HOME/claude-vps-demo&quot; &amp;&amp; tmux new-session -s cc-vps-demo
+</code></pre></div>
 <p>在 tmux 终端里，把命令存成脚本再运行：</p>
-<pre><code class="language-bash">cat &gt; &quot;$HOME/claude-vps-demo/run.sh&quot; &lt;&lt;&#39;SH&#39;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>cat &gt; &quot;$HOME/claude-vps-demo/run.sh&quot; &lt;&lt;&#39;SH&#39;
 #!/usr/bin/env bash
 cd /srv/myrepo &amp;&amp;
 claude -p &quot;Make greet reject empty or whitespace-only names with ValueError. Add regression tests, keep the valid-name behavior, and run python3 -m unittest.&quot; \
@@ -327,11 +327,11 @@ rc=$?
 printf &#39;%s\n&#39; &quot;$rc&quot; &gt; &quot;$HOME/claude-vps-demo/exit-code&quot;
 SH
 bash &quot;$HOME/claude-vps-demo/run.sh&quot;
-</code></pre>
+</code></pre></div>
 <p>这里给可信仓库预先放行了写入操作，不构成操作系统隔离，作业用户的账号里不要留无关凭据。Claude 运行时，按 <code class="post-code--single">Ctrl-b</code>，松开，再按 <code class="post-code--single">d</code>，即可脱离 tmux；随后可以关闭 SSH。以同一用户重连，运行 <code class="post-code--spaced">tmux attach-session -t cc-vps-demo</code> 就能回到那个终端。命令结束后，shell 仍然开着。</p>
 <h3 id="检查结果以后再算完成">检查结果以后再算完成</h3>
 <p>没有 <code class="post-code--single">exit-code</code> 文件，表示脚本没有完成结果记录，不能算成功。重连后查看日志，把退出码、非空 JSON 与工具拒绝数组一起检查：</p>
-<pre><code class="language-bash">cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
 if test &quot;$(cat &quot;$HOME/claude-vps-demo/exit-code&quot;)&quot; = 0 &amp;&amp;
    test -s &quot;$HOME/claude-vps-demo/result.json&quot; &amp;&amp;
    jq -e &#39;.is_error == false and
@@ -341,7 +341,7 @@ if test &quot;$(cat &quot;$HOME/claude-vps-demo/exit-code&quot;)&quot; = 0 &amp;
 else
   echo &quot;Run incomplete or failed; inspect its JSON and log.&quot; &gt;&amp;2
 fi
-</code></pre>
+</code></pre></div>
 <p>接着读改动文件或 <code class="post-code--spaced">git diff</code>，在 <code class="post-code--single">/srv/myrepo</code> 独立运行 <code class="post-code--spaced">python3 -m unittest -v</code>。这次虚机实验检查了正常名字、空字符串、纯空白名字三个场景。我还用工具被拒、缺字段、空输出、无效 JSON、非零退出码这几种样例试过上面的判断，它们都没有输出成功信息。</p>
 <p>这次只测了 SSH 客户端消失、虚机仍在运行的情况，没有测试重启恢复。主机重启后，tmux 的进程也没了，需要另外设计服务或调度器来管理重启。<code class="post-code--single">--resume</code> 可以用 session ID 接着一段 Claude 对话，但恢复对话仍需要启动进程，并确认此前的工作做到哪里。</p>
 <h2 id="claude-p-外面还缺的六件事">claude -p 外面还缺的六件事</h2>
@@ -361,12 +361,12 @@ fi
 <p>Orbi 在我开票一分钟后认领，开了 <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>，独立评审一轮没发现问题，认领后 45 分钟合并。现在合并前会最后读一次标签，Issue 上有 <code class="post-code--single">ai-blocked</code> 就不合。</p>
 <p><img src="/img/headless-1504-merged.webp" alt="#1504 时间线的后半段：Orbi 开了 PR #1505，一轮评审后合并，标签从 ai-pr-opened 换成 ai-merged"></p>
 <p>你的循环如果最后一步是 <code class="post-code--spaced">gh pr merge</code>，同样有这个漏洞。立即合并的情况下，在它前面加几行能把这个窗口缩小，但缩不到零：读完标签到真正合并之间加上的标签，也拦不住。这几行要存成 bash 脚本再运行；贴进交互终端的话，<code class="post-code--single">:</code> 那一行报错后不会退出，后面几行照样执行：</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 : &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?缺少评审通过的 SHA}&quot;
 labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1
 grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;blocked: $ISSUE&quot;; exit 3; }
 gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
-</code></pre>
+</code></pre></div>
 <p>Issue、PR、评审通过的 SHA 缺一个，<code class="post-code--single">:</code> 那一行就退出；读不到标签，<code class="post-code--single">labels=</code> 那一行也退出，免得查询失败反而放行。Issue 被拦下时脚本以 3 退出，循环不会把它当成成功。<code class="post-code--single">--match-head-commit</code> 保证合进去的就是评审过的那个提交。</p>
 <p>目标分支要求 merge queue 时是例外：必需的 CI 检查还没通过，<code class="post-code--spaced">gh pr merge</code> 会开启自动合并；已经通过，会把 PR 排进队列。之后再加的阻止标签，这段脚本都管不到。</p>
 <h3 id="失败后停在哪个标签">失败后停在哪个标签</h3>
@@ -461,17 +461,17 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -487,33 +487,32 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -526,9 +525,9 @@ gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quo
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

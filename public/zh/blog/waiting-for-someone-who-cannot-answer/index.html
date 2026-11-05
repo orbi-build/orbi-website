@@ -234,23 +234,23 @@
 它住在沙箱自己的 <code class="post-code--single">orbi.toml</code> 文件里。不是 GitHub，不是我们的控制面。</p>
 <p>所以控制面可以建出一张 release 票，而沙箱仍然认为什么都没在跑。两个系统，两个答案，
 没有对账。在我们的生产日志里，每个 tick 一次，针对我们刚走查过的那个仓库：</p>
-<pre><code class="post-code--spaced">INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>INFO active_milestone_variable_absent repo=orbi-build/orbi-beta-e2e-org-09182001
+</code></pre></div>
 <p>然后我们去看一个字段是怎么从控制面进到那个文件的，发现<strong>根本没有通用机制</strong>。
 有四个各自手写的同步函数，<code class="post-code--single">sync_orbi_toml_engine_track</code>、<code class="post-code--single">sync_orbi_toml_providers</code>、
 <code class="post-code--single">sync_orbi_toml_oauth</code>，加上初次渲染，每个为一个字段而加，每个都 stage 一个临时文件
 再原子替换。注释记录了这个累积过程：</p>
-<pre><code class="language-bash"># Issue #116: the connect-time base branch rides the payload and must reach
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source># Issue #116: the connect-time base branch rides the payload and must reach
 #             the rendered orbi.toml
 # Issue #770: attribution_footer rides the same way
-</code></pre>
+</code></pre></div>
 <p>加一个字段要改四个文件。所以没人加 <code class="post-code--single">active_milestone</code>：
 <code class="post-code--spaced">grep -rn &quot;active_milestone&quot; src/*.ts host-provisioner/*.sh</code> 零命中。
 <strong>控制面不知道这个字段存在。</strong></p>
 <h2 id="租户能碰什么-不能碰什么">租户能碰什么，不能碰什么</h2>
 <p>有一个设计问题，我们一看文件系统就自己解决了。</p>
 <p>本来我们要为「租户手工改了托管字段怎么办」设计合并语义。然后查了一下：</p>
-<pre><code class="language-console">$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-console" data-copy-source>$ sudo ls -la /home/&lt;sandbox&gt;/orbi/orbi.toml
 -rw------- 1 orbi-... orbi-... 926 Sep 22 06:39 orbi.toml
 
 $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
@@ -258,7 +258,7 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 -rw-r--r-- ... id_ed25519.pub
 -rw------- ... known_hosts
                                 # 没有 authorized_keys
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">0600</code>、属主是沙箱用户、没有 <code class="post-code--single">authorized_keys</code>。<strong>租户连 SSH 都进不去。</strong>
 没有手改需要对账。</p>
 <p>这让设计比我们假设的更简单：控制面是唯一写者，合并只需保留<strong>其他控制面字段</strong>，
@@ -278,9 +278,9 @@ $ sudo ls -la /home/&lt;sandbox&gt;/.ssh/
 <p>推意味着给沙箱主机开入站通道，拉意味着最多一个刷新周期的延迟。
 常规做法是在延迟与攻击面之间权衡。</p>
 <p>但那个周期已经是一分钟：</p>
-<pre><code class="language-console">$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-console" data-copy-source>$ systemctl cat orbi-cloud-provisioner.timer | grep OnUnit
 OnUnitActiveSec=1min
-</code></pre>
+</code></pre></div>
 <p>而且刷新端点的查询是 <code class="post-code--spaced">WHERE r.status = &#39;active&#39; AND t.status = &#39;active&#39;</code>，
 <strong>每个活跃沙箱每分钟都过一遍</strong>，不只是待开通的。所以拉最多costs 六十秒，
 而这个动作本来就要等引擎下一次认领。<strong>没有取舍可权衡。</strong>
@@ -288,16 +288,16 @@ OnUnitActiveSec=1min
 <p>先量再吵，花了两条命令。</p>
 <h2 id="一个被数据库纠正的错误诊断">一个被数据库纠正的错误诊断</h2>
 <p>读生产日志时我们发现六小时内 288 条一模一样的错误：</p>
-<pre><code class="post-code--spaced">ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>ERROR milestone_reconcile_failed repo=zzuu080603/VCPToolBox-macOS
 subprocess.CalledProcessError: ... /milestones?state=all ... exit status 1
-</code></pre>
+</code></pre></div>
 <p>直觉读法是凭据失效，我们就是这么写进票里的。在沙箱内复现拿到
 <code class="post-code--spaced">401 Bad credentials</code>，看起来更坐实了，尤其那个仓是 public、用维护者 token 读得到。</p>
 <p>然后我们查了数据库，诊断当场塌掉：</p>
-<pre><code class="post-code--spaced">login=cdredfox    tenant=inactive  codeduck          repo=inactive
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>login=cdredfox    tenant=inactive  codeduck          repo=inactive
 login=zzuu080603  tenant=active    VCPToolBox-macOS  repo=inactive   ← 报错的
 login=zzuu080603  tenant=active    Tianshu-harness   repo=active     ← 正常的
-</code></pre>
+</code></pre></div>
 <p>两个报错的沙箱对应的仓库都是 <strong>inactive</strong>。刷新端点按 <code class="post-code--spaced">status = &#39;active&#39;</code> 过滤，
 所以这些 token 从来不会被刷新，这是设计，而且是对的。<strong>同一个租户的 active 仓库完全正常。</strong>
 对照组就摆在同一个查询结果里。</p>
@@ -403,17 +403,17 @@ orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
         <a href="https://aiagentsdirectory.com/agent/orbi" target="_blank" rel="noopener" title="Discover Orbi on AI Agents Directory">
           <img src="https://aiagentsdirectory.com/featured-badge.svg?v=2024" alt="Orbi - Featured on AI Agents Directory" width="168" height="42" />
         </a>
-        <a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
-          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />
+        <a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">
+          <img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />
         </a>
         <a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">
           <img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />
         </a>
-        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" /></a>
+        <a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" /></a>
         <a href="https://yourhack.ai" target="_blank">yourhack.ai</a>
-        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60" loading="lazy"></a>
-        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54" loading="lazy"></a>
-        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54" loading="lazy"></a>
+        <a href="https://showmebest.ai" target="_blank"><img src="https://showmebest.ai/badge/feature-badge-white.webp" alt="Featured on ShowMeBestAI" width="220" height="60"></a>
+        <a href="https://goodaitools.com/ai/orbi" target="_blank"><img src="https://goodaitools.com/assets/images/badge.png" alt="Good AI Tools" height="54"></a>
+        <a href="https://aixcollection.com/ai/orbi" target="_blank"><img src="https://aixcollection.com/assets/images/badge.png" alt="AI X Collection" height="54"></a>
         <a href="https://launchtory.com/projects/orbi-build">Orbi on Launchtory</a>
         <a href="https://dofollow.tools" target="_blank" rel="noopener noreferrer"><img alt="Featured on Dofollow.Tools" width="200" height="54" src="https://dofollow.tools/badge/badge_dark.svg"></a>
         <a href="https://altern.ai/ai/orbi" target="_blank" rel="noopener">
@@ -429,33 +429,32 @@ orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
           <img src="https://neeed.directory/badges/neeed-badge-light.svg" alt="Featured on neeed.directory" width="139" />
         </a>
         <a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">
-          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />
+          <img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />
         </a>
         <a href="https://startupproject.org/startups/" target="_blank" rel="noopener">Featured on The Startup Project</a>
         <a href="https://devhub.best/projects/orbi?utm_source=badge" target="_blank" rel="noopener noreferrer"><img src="https://r2.direasy-multi-tenant.focusapps.app/uploads/616d0b1a-3979-4b8c-94d1-b4f1fedd3ead/1783239702078/53yqmim54zv/featured-on-light.svg" alt="Featured on DevHub" width="150" height="44" /></a>
-        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" /></a>
-        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" /></a>
+        <a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast"><img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" /></a>
+        <a href="https://artificin.com" target="_blank" rel="noopener"><img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" /></a>
         <a href="https://aitooltrek.com" target="_blank" rel="noopener">AI Tool Trek</a>
         <a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>
-        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" /></a>
+        <a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener"><img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" /></a>
         <a href="https://fazier.com" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light" width="120" alt="Fazier badge" /></a>
         <a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" /></a>
         <a href="https://toolfame.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://toolfame.com/badge-light.svg" alt="Featured on toolfame.com" width="160" height="54" /></a>
         <a href="https://dang.ai" target="_blank" rel="noopener"><img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" /></a>
-        <a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>
         <a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" /></a>
         <a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer"><img src="https://findly.tools/badges/findly-tools-badge-light.svg" alt="Featured on Findly.tools" width="139" height="44" /></a>
-        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" /></a>
+        <a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" /></a>
         <a href="https://www.makeitla.st/" title="Featured on MakeItLast"><img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/></a>
-        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" loading="lazy" /></a>
-        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" loading="lazy" /></a>
+        <a href="https://postmake.io" target="_blank" rel="noopener"><img src="https://postmake.io/postmake_badge_light.png" alt="Featured on the Postmake directory" height="54" /></a>
+        <a href="https://auraplusplus.com" target="_blank" rel="noopener" title="Featured on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="150" height="44" /></a>
         <a href="https://earlyhunt.com" target="_blank" rel="noopener">Featured on EarlyHunt</a>
         <a href="https://twelve.tools" target="_blank">Featured on Twelve Tools</a>
         <a href="https://aifordevelopers.org" target="_blank"><img src="https://aifordevelopers.org/assets/badge.svg" alt="Featured on AI for Developers" width="220" height="48"></a>
         <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
         <a href="https://saascity.io" target="_blank" rel="noopener"><img src="https://saascity.io/badges/featured-dark.svg" alt="Featured on SaaSCity" width="150" height="54" /></a>
         <a href="https://launchvault.dev" target="_blank" rel="noopener"><img src="https://launchvault.dev/images/badges/launch-valut-badge.svg" alt="Featured on LaunchVault" height="54" /></a>
-        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>
+        <a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>
         <a href="https://goodsaas.xyz/saas/orbi" target="_blank" rel="noopener"><img src="https://goodsaas.xyz/badge/orbi.svg?theme=dark" alt="goodSaaS on goodSaaS" /></a>
         <a href="https://101aitools.com" target="_blank"><img src="https://101aitools.com/badge-featured-101aitools.svg" alt="Featured on 101 AI Tools" width="360" height="72"></a>
         <a href="https://webtech.tools" title="WebTech">WebTech</a>
@@ -468,9 +467,9 @@ orbi-cloud#870（通用配置下发，而不是第五个手写同步函数）、
         <a href="https://minylist.com" target="_blank" title="Featured on minylist"><img src="https://minylist.com/badge/featured.svg" alt="Featured on minylist" width="176" height="60" /></a>
         <a href="https://toolsify.ai/" title="Toolsify AI Tools Directory">Toolsify AI Tools Diresctory</a>
         <a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>
-        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>
+        <a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>
         <a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank"><img src="https://startupfa.me/badges/featured-badge.webp" alt="Orbi - Featured on Startup Fame" width="171" height="54" /></a>
-        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>
+        <a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>
