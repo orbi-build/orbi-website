@@ -10,7 +10,7 @@
       <link>https://orbi.build/blog/best-pi-extensions/</link>
       <guid isPermaLink="true">https://orbi.build/blog/best-pi-extensions/</guid>
       <pubDate>Thu, 05 Nov 2026 00:00:00 GMT</pubDate>
-      <description>I ran 20 popular Pi extensions with no terminal or desktop bus, then with a keyring that never answers. Some worked; others lacked tools or changed config.</description>
+      <description>20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.</description>
     </item>
     <item>
       <title>AI code review bottleneck? Our PRs wait after merge</title>
