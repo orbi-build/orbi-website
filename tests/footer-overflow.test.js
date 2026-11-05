@@ -1451,7 +1451,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         expect(phoneLayout.overflow, path + " at 390px: document overflow").toBe(0);
         expect(phoneLayout.stripInsideFooter, path + " at 390px: the badge strip stays inside the footer").toBe(true);
         expect(phoneLayout.stripScrolls, path + " at 390px: the strip scrolls the badges it cannot show").toBe(true);
-        expect(phoneLayout.rowHeight, path + " at 390px: the friends row is one badge high").toBeLessThanOrEqual(90);
+        // Issue #1188: on a phone the title and the pause control take a line
+        // of their own above the strip, so the friends row is the title line
+        // plus the 63px badge line — never a third line.
+        expect(phoneLayout.rowHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         // Issue #1185 removed the LaunchIgniter badge, leaving 40.
         expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(40);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
@@ -1579,6 +1582,11 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
       labelFirst: nav.firstElementChild === label,
       toggleLast: nav.lastElementChild === toggle,
       labelCentre: centre(label),
+      // Issue #1188: on a phone the title and the pause control move onto a
+      // line of their own, above the strip.
+      labelBottom: Math.round(rect(label).bottom),
+      stripTop: Math.round(rect(strip).top),
+      stripWidth: Math.round(rect(strip).width),
       stripCentre: centre(strip),
       toggleCentre: centre(toggle),
       label: label.textContent.trim(),
@@ -1693,8 +1701,12 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         await page.waitForTimeout(300);
         await page.locator(stripSelector).scrollIntoViewIfNeeded();
         const phone = await rowShape(page);
-        expect(Math.abs(phone.labelCentre - phone.stripCentre), path + " at 390px: the title sits on the strip's line").toBeLessThanOrEqual(1);
-        expect(phone.navHeight, path + " at 390px: the badge row is one line high").toBeLessThanOrEqual(90);
+        // Issue #1188: the phone row is two lines — the title and the pause
+        // control above, the strip spanning the footer below — because the
+        // single line left the strip 211px wide, one badge at a time.
+        expect(phone.labelBottom, path + " at 390px: the title sits above the strip").toBeLessThanOrEqual(phone.stripTop);
+        expect(phone.stripWidth, path + " at 390px: the strip spans the footer").toBeGreaterThanOrEqual(300);
+        expect(phone.navHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         expect(phone.documentOverflow, path + " at 390px: the strip never widens the page").toBe(0);
         expect(phone.stripScrolls, path + " at 390px: the strip scrolls on a phone too").toBe(true);
         expect(await advance(page), path + " at 390px: the strip scrolls itself").toBeGreaterThan(5);
@@ -1775,5 +1787,170 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
       await page.close();
     }
   }, 40_000);
+});
+
+
+// Issue #1188: on a phone the "Featured on" title and the pause control took
+// most of the badge strip's line — 71px of title, 52px of control and two 12px
+// gaps out of a 358px row left the strip 211px, one badge at a time. The title
+// and the control now share a line of their own above the strip, so the strip
+// spans the footer's full width; the desktop three-in-a-row layout (Issue
+// #1173) stays exactly as it was.
+describe("the footer badge strip spans the phone's width (Issue #1188)", () => {
+  const friendsShape = (page) => page.evaluate(() => {
+    const nav = document.querySelector("footer nav.footer-friends");
+    const label = nav.querySelector(".footer-friends-label");
+    const strip = nav.querySelector(".footer-badges");
+    const toggle = nav.querySelector("[data-footer-badges-toggle]");
+    const rect = (node) => node.getBoundingClientRect();
+    const centre = (node) => {
+      const box = rect(node);
+      return Math.round((box.top + box.bottom) / 2);
+    };
+    return {
+      footerLeft: Math.round(rect(nav).left),
+      footerRight: Math.round(rect(nav).right),
+      footerWidth: Math.round(rect(nav).width),
+      navHeight: Math.round(rect(nav).height),
+      labelLeft: Math.round(rect(label).left),
+      labelRight: Math.round(rect(label).right),
+      labelBottom: Math.round(rect(label).bottom),
+      labelCentre: centre(label),
+      stripTop: Math.round(rect(strip).top),
+      stripWidth: Math.round(rect(strip).width),
+      stripCentre: centre(strip),
+      toggleLeft: Math.round(rect(toggle).left),
+      toggleRight: Math.round(rect(toggle).right),
+      toggleBottom: Math.round(rect(toggle).bottom),
+      toggleCentre: centre(toggle),
+      stripScrolls: strip.scrollWidth > strip.clientWidth,
+      documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+
+  // How many badges the visitor sees side by side, from the first image badge
+  // onwards: a badge counts when at least half of it sits inside the strip's
+  // visible box. Measured under reduced motion, where the track holds still
+  // (no marquee transform) and the strip is a scroller that can be positioned.
+  const badgesInView = (page) => page.evaluate(() => {
+    const strip = document.querySelector("footer nav.footer-friends .footer-badges");
+    const track = strip.querySelector("[data-footer-badges-track]");
+    const stripRect = strip.getBoundingClientRect();
+    const widths = [...track.querySelectorAll("img")].map((image) => image.getBoundingClientRect().width);
+    const firstImage = [...track.children].find((entry) => entry.querySelector("img"));
+    // Skip the two friend links that open the strip in their own text group.
+    strip.scrollLeft += firstImage.getBoundingClientRect().left - stripRect.left;
+    const start = strip.getBoundingClientRect();
+    return {
+      stripWidth: Math.round(start.width),
+      averageBadge: Math.round(widths.reduce((total, width) => total + width, 0) / widths.length),
+      visible: [...track.children]
+        .filter((entry) => entry.querySelector("img"))
+        .filter((entry) => {
+          const box = entry.getBoundingClientRect();
+          const inside = Math.min(box.right, start.right) - Math.max(box.left, start.left);
+          return inside >= box.width / 2;
+        })
+        .map((entry) => entry.querySelector("img").alt),
+    };
+  });
+
+  for (const [name, path, pause, play] of [
+    ["home-en", "/", "Pause", "Play"],
+    ["home-zh", "/zh/", "暂停", "播放"],
+  ]) {
+    it(name + " gives the badge strip the full width at 390 and keeps one line at 1440", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        const strip = page.locator("footer nav.footer-friends .footer-badges");
+        await strip.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        // Desktop is Issue #1173's row, untouched: title, strip and control on
+        // one centre line, in that order, with the strip between the two.
+        const desktop = await friendsShape(page);
+        expect(Math.abs(desktop.labelCentre - desktop.stripCentre), path + " at 1440px: the title stays on the strip's line")
+          .toBeLessThanOrEqual(1);
+        expect(Math.abs(desktop.toggleCentre - desktop.stripCentre), path + " at 1440px: the control stays on the strip's line")
+          .toBeLessThanOrEqual(1);
+        expect(desktop.labelRight, path + " at 1440px: the title precedes the strip").toBeLessThanOrEqual(desktop.toggleLeft);
+        expect(desktop.documentOverflow, path + " at 1440px: no horizontal overflow").toBe(0);
+        expect(desktop.navHeight, path + " at 1440px: the row is one line high").toBeLessThanOrEqual(90);
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/issue1188-" + name + "-1440.png" });
+
+        await page.setViewportSize({ width: 390, height: 900 });
+        await strip.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        const phone = await friendsShape(page);
+        // The acceptance criterion: at least 300px of strip at 390px, the full
+        // footer width, with nothing overflowing the page.
+        expect(phone.stripWidth, path + " at 390px: the strip's visible width").toBeGreaterThanOrEqual(300);
+        expect(Math.abs(phone.stripWidth - phone.footerWidth), path + " at 390px: the strip spans the footer")
+          .toBeLessThanOrEqual(1);
+        expect(phone.documentOverflow, path + " at 390px: no horizontal overflow").toBe(0);
+        expect(phone.stripScrolls, path + " at 390px: the strip still scrolls what it cannot show").toBe(true);
+        // The title and the pause control own the line above the strip, so
+        // neither of them takes width away from it.
+        expect(phone.labelBottom, path + " at 390px: the title sits above the strip")
+          .toBeLessThanOrEqual(phone.stripTop);
+        expect(phone.toggleBottom, path + " at 390px: the control sits above the strip too")
+          .toBeLessThanOrEqual(phone.stripTop);
+        expect(Math.abs(phone.labelCentre - phone.toggleCentre), path + " at 390px: the title and the control share their line")
+          .toBeLessThanOrEqual(1);
+        expect(phone.labelLeft, path + " at 390px: the title opens the row").toBe(phone.footerLeft);
+        expect(phone.toggleRight, path + " at 390px: the control closes the row").toBe(phone.footerRight);
+        // Two lines now: the title/control line and the badge line.
+        expect(phone.navHeight, path + " at 390px: two lines, never three").toBeLessThanOrEqual(130);
+        await page.locator("footer.site-footer").screenshot({ path: ".orbi/issue1188-" + name + "-390.png" });
+
+        // The pause control still works from the keyboard: it is focusable,
+        // shows a ring, and Enter / Space flip it.
+        const toggle = page.locator("footer [data-footer-badges-toggle]");
+        await toggle.focus();
+        const focused = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            isToggle: active?.hasAttribute("data-footer-badges-toggle") ?? false,
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(focused.isToggle, path + " at 390px: the control takes keyboard focus").toBe(true);
+        expect(focused.outlineStyle, path + " at 390px: the focused control shows a ring").not.toBe("none");
+        expect(focused.outlineWidth, path + " at 390px: the focused control shows a ring").not.toBe("0px");
+        await page.keyboard.press("Enter");
+        expect((await toggle.textContent()).trim(), path + " at 390px: Enter pauses the strip").toBe(play);
+        expect(
+          await page.evaluate(() => document.querySelector("footer .footer-badges").classList.contains("is-paused")),
+          path + " at 390px: the paused strip carries is-paused",
+        ).toBe(true);
+        await page.keyboard.press(" ");
+        expect((await toggle.textContent()).trim(), path + " at 390px: Space starts the strip again").toBe(pause);
+
+        // ...and a click still works, the way it did before the layout moved.
+        await toggle.click();
+        expect((await toggle.textContent()).trim(), path + " at 390px: a click pauses the strip").toBe(play);
+        await toggle.click();
+        expect((await toggle.textContent()).trim(), path + " at 390px: a click resumes the strip").toBe(pause);
+
+        // The point of the wider strip: two or three badges in view at once
+        // (before this change the 211px strip showed one).
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.waitForTimeout(200);
+        const inView = await badgesInView(page);
+        expect(inView.stripWidth, path + " under reduced motion: the strip keeps the full width")
+          .toBeGreaterThanOrEqual(300);
+        expect(inView.stripWidth, path + " at 390px: room for two typical badges plus the gaps between them")
+          .toBeGreaterThanOrEqual(2 * (inView.averageBadge + 18));
+        expect(inView.visible.length, path + " at 390px: at least two badges are visible side by side")
+          .toBeGreaterThanOrEqual(2);
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+      } finally {
+        await page.close();
+      }
+    }, 40_000);
+  }
 });
 

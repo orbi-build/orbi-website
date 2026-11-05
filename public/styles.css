@@ -2010,6 +2010,25 @@ h2 {
   line-height: 1;
   cursor: pointer;
 }
+/* Issue #1188: on a phone the title and the pause control took most of the
+   strip's line — 71px of title, 52px of control and two 12px gaps out of a
+   358px row left the strip 211px, one badge at a time. They move onto a line of
+   their own, sharing it edge to edge, and the strip spans the footer below
+   them. 480px is where the inline row stops paying for itself: there the strip
+   is the viewport minus 179px (the widest title, the control and the two gaps),
+   so it drops under 300px as soon as the viewport is under 480. Above the
+   breakpoint Issue #1173's single row is unchanged. */
+@media (max-width: 480px) {
+  .site-footer .footer-friends {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    row-gap: 10px;
+  }
+  /* The control stays after the strip in the DOM, so it is still the last stop
+     in the tab order; only its box moves up beside the title. */
+  .site-footer .footer-badges-toggle { order: 1; }
+  .site-footer .footer-badges { order: 2; flex: 0 0 100%; }
+}
 /* Reduced motion: no marquee at all, and the same strip becomes a horizontal
    scroller the visitor can drag or scroll through the badges themselves. */
 @media (prefers-reduced-motion: reduce) {
