@@ -9,7 +9,7 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次提问和计划评审工具都没有出现；一个权限扩展连 `ls -la` 都拒绝，MCP 适配器则改了配置，影响到了下次会话。
+我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 11 月 5 日，我实测了 15 个热门 Pi 扩展。我先在没有终端、没有桌面会话总线的环境里启动 Pi，再接入一个永不应答的 Secret Service（钥匙串服务）重跑。扩展加载成功后，模型未必拿得到工具。这次用于提问和计划评审的两个扩展都没提供工具；一个权限扩展连 `ls -la` 都拒绝，MCP 适配器则改了配置，影响到了下次会话。
 
 Pi 在 CI 或 systemd 服务里运行时，我关心模型拿到了哪些工具，扩展运行后又留下了什么。扩展版本更新很快，这些结论只适用于下表的版本和这次测试的日期。
 
@@ -21,9 +21,9 @@ Pi agent 扩展是 Pi 启动时加载的代码，可以来自本地文件、npm 
 
 测试环境是 Pi 1.5.0、Node v22.23.1、`/usr/bin/npm` 12.0.2 和 Linux 6.18。模型用 DeepSeek 的 `deepseek-flash`，我通过一个本地日志代理记录发给模型的工具清单。
 
-E2 没有会话总线。我用 `env -i` 清空环境变量，用 `setsid -w` 脱离终端，stdin 接 `/dev/null`，HOME 和 agent 目录都是新建的。扩展参数是 `-ne -e npm:<pkg>@<version>`，运行时加上 `timeout 120`。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 "Reply with the single word OK."。加载后，我再要求每个扩展实际完成一次操作，每次调用测试都从已装好扩展的 E2 HOME 副本开始。
+E2 没有会话总线。我用 `env -i` 清空环境变量，用 `setsid -w` 脱离终端，stdin 接 `/dev/null`，HOME 和 agent 目录都是新建的。agent 目录存放 Pi 的配置和状态，默认在 `~/.pi/agent`，可用 `PI_CODING_AGENT_DIR` 更改位置。扩展参数是 `-ne -e npm:<pkg>@<version>`，运行时加上 `timeout 120`。这组扩展参数只加载显式指定的包。环境里有模型服务商的 key，没有额外提供搜索服务商的 key。加载测试的 prompt 是 "Reply with the single word OK."。加载后，我再要求每个扩展实际完成一次操作，每次调用测试都从已装好扩展的 E2 HOME 副本开始。
 
-E1 多了一条私有会话总线。下方的黑洞脚本占用 `org.freedesktop.secrets`，记录请求但永不应答。E1 从对应的 E2 HOME 副本开始，计时包含 1 秒的总线启动时间。
+E1 多了一条私有会话总线，由下方的 `blackhole.py` 占用 `org.freedesktop.secrets`，记录每次调用但永不应答。每次 E1 运行都从对应的 E2 HOME 副本开始。15 个扩展都在 E1 和 E2 中测过，每个扩展在两种环境里提供的工具和调用测试结果都相同，所以表格中每个扩展只列一行，Secret Service 调用另放在后面的专节。E1 计时包含 1 秒的总线启动时间；同一总线下不加载扩展的 E1 对照组，在 1.2 秒时发出了首次模型请求。
 
 不加载扩展的对照组恰好只有 `read,bash,edit,write` 四个工具。用 `busctl` 调用黑洞，5 秒后超时；另一个自写扩展在加载时读取钥匙串，3 次运行中 3 次都访问到了黑洞。
 
@@ -39,17 +39,17 @@ E1 多了一条私有会话总线。下方的黑洞脚本占用 `org.freedesktop
 | `pi-web-search@1.7.0` | 网页搜索 | MIT | 75,116 | `web_search` | 搜索返回结果 | 未观察到 | 用当前选定的模型能搜到结果 |
 | `pi-subagents@0.84.0` | 子 agent | MIT | 726,352 | `subagent`, `contact_supervisor`, `bg_wait`, `subagent_supervisor` | 模型猜错 agent 名称，重试后返回 `PONG` | agent 目录中 `missions/` 下的 JSON | 名称修正后能用 |
 | `@tintinweb/pi-subagents@0.23.1` | 子 agent | MIT | 47,391 | `Agent`, `SubagentWorkflow`, `get_subagent_result`, `steer_subagent` | 返回 `PONG` | agent 目录中 `sessions/` 下的 JSONL | 能用；会保存子会话 |
-| `@juicesharp/rpiv-ask-user-question@2.15.0` | 向用户提问 | MIT | 151,853 | 无 | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
-| `@plannotator/pi-extension@0.28.49` | 计划评审 | MIT OR Apache-2.0 | 89,716 | 无 | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
+| `@juicesharp/rpiv-ask-user-question@2.15.0` | 向用户提问 | MIT | 151,853 | 无（没有 UI 时被移除） | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
+| `@plannotator/pi-extension@0.28.49` | 计划评审 | MIT OR Apache-2.0 | 89,716 | 无（没有 UI 时被移除） | 模型回答 `NO-TOOL` | 未观察到 | 没有 UI 时不启用 |
 | `@juicesharp/rpiv-todo@2.15.0` | 任务管理 | MIT | 87,414 | `todo` | 添加并列出 "write tests" | 未观察到 | 能用 |
 | `pi-background-tasks@2.6.10` | 任务管理 | ISC | 18,054 | `fusion_reason`, `fusion_investigate`, `fusion_research`, `fusion_validate`, `bg_delegate`, `bg_result`, `bg_run`, `bg_run_pi_attested`, `bg_status`, `bg_logs`, `bg_kill` | 返回 `hi-from-bg` | 仓库中的 `.pi/tasks/` | 能用；会留下输出 |
-| `@gotgenes/pi-permission-system@42.0.0` | 安全 | MIT | 46,073 | 无 | Bash 审批被拒绝 | agent 目录中的权限审查日志 | 需要配置 |
-| `cc-safety-net@2.7.3` | 安全 | MIT | 114,610 | 无 | 拦下 `git reset --hard` | `~/.cc-safety-net/logs/` | 命令拦截生效 |
+| `@gotgenes/pi-permission-system@42.0.0` | 安全 | MIT | 46,073 | 无（检查 bash 调用） | Bash 审批被拒绝 | agent 目录中的权限审查日志 | 需要配置 |
+| `cc-safety-net@2.7.3` | 安全 | MIT | 114,610 | 无（检查 bash 调用） | 拦下 `git reset --hard` | `~/.cc-safety-net/logs/` | 命令拦截生效 |
 | `context-mode@2.1.0` | 上下文 | Elastic-2.0 | 103,931 | `ctx_execute`, `ctx_batch`, `ctx_index`, `ctx_search`, `ctx_resume`, `ctx_stats`, `ctx_doctor`, `ctx_upgrade`, `ctx_purge` | 返回 `hi-from-ctx` | `~/.context-mode/projects/<hash>/context.db` | 能用；会保留数据库 |
 | `pi-lens@4.4.8` | 代码反馈 | MIT | 86,632 | `lens_diagnostics`, `symbol_search`, `effective_config`, `project_report`, `module_report`, `read_symbol`, `read_enclosing`, `pi_lens_activate_tools` | README 诊断未报问题 | `~/.pi-lens/`、下载的二进制文件 | 能用；首次调用会下载工具 |
 | `pi-hermes-memory@0.10.0` | 记忆 | MIT | 25,570 | `memory_add`, `memory_replace`, `memory_remove`, `skill_manage`, `session_search`, `memory_search` | 保存了测试用的颜色 | agent 目录中的 `MEMORY.md`、SQLite 文件 | 能用；会保留记忆 |
 
-`context-mode` 使用的 Elastic-2.0 允许查看源码，但不属于 OSI 认可的开源许可证。
+`cc-safety-net` 支持多个 coding agent，它的 npm 关键词包含 `claude-code`、`opencode` 和 `pi-package`，在 Pi 中可以作为普通扩展加载。`context-mode` 使用的 Elastic-2.0 允许查看源码，但不属于 OSI 认可的开源许可证。
 
 ## MCP 适配器改的设置会影响下次会话
 
@@ -61,13 +61,21 @@ E1 多了一条私有会话总线。下方的黑洞脚本占用 `org.freedesktop
 
 它还写了 `mcp-onboarding.json`。Pi 的 `docs/mcp.md` 第 268 行说明了扩展替代内置 MCP 的情况，并记录了用这项设置禁用内置 MCP 的方法。
 
-我用 `server-everything` 作测试服务器，在新的 agent 目录里放了指向它的 `mcp.json`。Pi 提供了 `codemode` 工具，也写出了 `mcp.log`。把同一份 MCP 配置放进适配器留下的目录后，不加载适配器再启动会话，`codemode` 和 `mcp.log` 都没有出现。后续这些会话都没带 `-ne`，允许内置 MCP 加载。
+为了确认这项设置的影响，我在新的 agent 目录里放了下面这份 `mcp.json`，指向本地已安装的 `@modelcontextprotocol/server-everything`：
+
+```json
+{"mcpServers":{"everything":{"command":"/var/tmp/pex/mcpsrv/node_modules/.bin/mcp-server-everything","args":["stdio"]}}}
+```
+
+`command` 里是测试机上的安装路径，照做时换成你自己装的位置。
+
+启动时不带 `-ne`，Pi 的内置 MCP 就连接了这台服务器：模型拿到了 `codemode` 工具，Pi 也写出了 `mcp.log`。我把同一份 `mcp.json` 复制到适配器用过的 agent 目录，再次启动 Pi，仍然不带 `-ne`，也不加载适配器。这次 `codemode` 和 `mcp.log` 都没有出现，因为该目录的 `settings.json` 中仍有 `-builtin:mcp`，内置 MCP 依然被禁用。省略 `-ne` 不能恢复它。我把这份 `settings.json` 里的 `extensions` 列表清空后再跑，`codemode` 和 `mcp.log` 都回来了。这几次连接 MCP 服务器的运行只用于验证配置副作用，表格里的 MCP 调用测试没有连接任何服务器。
 
 在服务里运行时，可以为每次会话准备独立、可写的 agent 目录，或者每次运行都重写 `settings.json`。
 
 ## 包名拼错，Pi 也可能以 0 退出
 
-Pi 1.5.0 会打印 `Warning: Extension package "...": failed to install (...)`，然后继续运行，退出码为 0。同一个不存在的包，Pi 1.2.0 会以 1 退出。[Pi 更新日志](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md)的 1.5.0 一节记录了这项变化，对应 [PR #11304](https://github.com/earendil-works/pi/pull/11304)。
+Pi 1.5.0 会打印 `Warning: Extension package "...": failed to install (...)`，然后继续运行，退出码为 0。我用 Pi 1.2.0（`/usr/bin/pi`）跑了同一条命令，退出码是 1。[Pi 更新日志](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md)的 1.5.0 一节记录了这项变化，对应 [PR #11304](https://github.com/earendil-works/pi/pull/11304)。
 
 无人值守时，拼错包名可能让运行缺少预期扩展，却不报失败，所以下方脚本会检查这条警告。如果扩展在加载时抛异常，Pi 1.5.0 仍以 1 退出。
 
@@ -81,9 +89,9 @@ Pi 1.5.0 会打印 `Warning: Extension package "...": failed to install (...)`�
 
 > This 'bash' call requires approval, but no interactive UI is available.
 
-它默认拒绝无法获得批准的操作。无人值守运行前，要先配置好任务所需的权限；这次没有配置，尝试的 bash 调用都遭到拒绝。不加载扩展的对照组执行了要求的创建再删除命令。
+测试要求执行 `mkdir -p scratch && rm -rf scratch && echo removed`，不加载扩展的对照组执行后输出了 `removed`。扩展在无法获得批准时会拒绝调用。无人值守时，需要配置好任务所需的权限；这次没有测试这样的配置。
 
-`cc-safety-net@2.7.3` 没加工具，用 `BLOCKED by CC Safety Net` 和规则 `git.reset-hard` 拦下了 `git reset --hard`。对照组在临时仓库里执行了这条命令，退出码为 0。扩展把日志写到了 `~/.cc-safety-net/`。
+`cc-safety-net@2.7.3` 没加工具，用 `BLOCKED by CC Safety Net` 和规则 `git.reset-hard` 拦下了 `git reset --hard`。不加载扩展的对照组在临时仓库里执行了这条命令，退出码为 0。扩展把日志写到了 `~/.cc-safety-net/`。
 
 ## npm 跳过了安装脚本
 
@@ -93,11 +101,11 @@ Pi 1.5.0 会打印 `Warning: Extension package "...": failed to install (...)`�
 npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
 ```
 
-受影响的依赖有 Plannotator 的 `node-pty` 和 permission-system 的 `tree-sitter-bash`，还有 pi-lens 的 `@ast-grep/cli` postinstall。权限扩展仍然拒绝操作，lens 的 README 诊断也得到了前面所述的结果，其他功能是否受影响则无法由此判断。Plannotator 因为没有 UI 而不提供工具，这次测试也就无法说明跳过安装脚本会怎样影响它的行为。
+三次安装各有一个包的脚本被阻止：Plannotator 的 `node-pty`、permission-system 的 `tree-sitter-bash`，以及 pi-lens 的 `@ast-grep/cli` postinstall。权限扩展仍按前文所述拒绝 bash 调用，`lens_diagnostics` 返回了 `clean=1, unavailable=0, failed=0`，重跑时还报告 `Primary LSP (marksman): confirmed clean`，所以这次测到的部分能运行。但这些包的其他部分是否缺了原生组件，无法由此判断。Plannotator 因为没有 UI 而不提供工具，这次测试也就无法说明跳过安装脚本会怎样影响它的行为。
 
 ## 状态文件不全在 agent 目录里
 
-只改 `PI_CODING_AGENT_DIR`，有些状态文件仍会留在别处。Context-mode 写了 `~/.context-mode/projects/<hash>/context.db`。Pi-lens 写了 `~/.pi-lens/`，第一次诊断时还把 `marksman` 和 `typos-lsp` 下载到它的 `bin/` 目录。那次总共约 41 秒；已有二进制文件时，重跑约 11 秒。
+只改 `PI_CODING_AGENT_DIR`，有些状态文件仍会留在别处。Context-mode 写了 `~/.context-mode/projects/<hash>/context.db`。Pi-lens 写了 `~/.pi-lens/`，第一次诊断时还把 `marksman` 和 `typos-lsp` 下载到它的 `bin/` 目录。第一次用了 41.2 秒；二进制文件已经在时，同一个调用测试在 E2 用了 11.3 秒，在 E1 用了 11.8 秒。
 
 Background-tasks 在仓库的 `.pi/tasks/` 留下了输出和元数据。Tintinweb 的子 agent 在 agent 目录里保存了会话，父会话带了 `--no-session` 也一样。Hermes-memory 在同一个 agent 目录里写了 `MEMORY.md` 和 SQLite 文件，多次运行共用这个目录就会沿用保存的记忆。
 
@@ -107,11 +115,11 @@ Background-tasks 在仓库的 `.pi/tasks/` 留下了输出和元数据。Tintinw
 
 没有配置 MCP 服务器时，`pi-mcp-adapter@7.0.1` 无论启动还是调用 `mcp`，都没有访问永不应答的 Secret Service。我没测 OAuth 或 bearer token 存储。
 
-我的自写扩展在加载时通过 `@napi-rs/keyring` 读取钥匙串，3 次运行中 3 次都被黑洞记录到了。首次模型请求在 3.2 秒发出，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间，首次请求时间相差约 2 秒，之后继续运行，没有卡死。
+我的自写扩展在加载时通过 `@napi-rs/keyring` 读取钥匙串，3 次运行中 3 次都被黑洞记录到了。首次模型请求在 3.2 秒发出，对照组是 1.2 秒。两者都包含相同的 1 秒总线启动时间，首次请求时间相差约 2 秒，之后 Pi 继续运行，没有卡死。我没查明是哪一层在约 2 秒后放弃等待；`busctl` 对同一个黑洞设置了 5 秒超时，就等满了 5 秒。
 
-15 个扩展里，唯一记录到的 Secret Service 调用来自 pi-lens，发生在第一次诊断和下载二进制文件期间。它的首次模型请求在 1.3 秒发出，对照组是 1.2 秒。41 秒总耗时主要花在两次二进制下载上，我没有单独测出那次调用本身的耗时。已有二进制文件时重跑，没有记录到调用。那次用的是会返回错误的早期黑洞版本，所以我只采用它的调用次数。
+除自写测试扩展外，15 个扩展里唯一记录到的 Secret Service 调用来自 pi-lens，发生在总线启动后的 2.3 秒，当时它正在做第一次诊断和下载二进制文件。它的首次模型请求早在 1.3 秒时就已发出（E1 对照组是 1.2 秒），因此这次调用不可能拖慢启动。自写扩展在加载时访问钥匙串，会挡在首次模型请求之前；pi-lens 在工具调用期间访问，首次请求已经发出。那次运行同时还在下载这两个二进制文件，所以我没有单独测出这次调用本身的耗时。二进制文件已经在时，E1 里同一个调用测试用了 11.8 秒，黑洞没有记录到调用。
 
-这套测试能检测 Secret Service 访问，这次没有复现之前的卡死；上面的 3 次验证用的是我的自写钥匙串扩展。将下方黑洞服务的代码原样保存为 `blackhole.py`，需要 dbus-python 和 PyGObject：
+这套测试能检测 Secret Service 访问，这次没有复现之前的卡死；上面的 3 次验证用的是我的自写钥匙串扩展。将下方黑洞服务的代码原样保存为 `blackhole.py`，需要 dbus-python 和 PyGObject。如果总线上已有服务占用了 `org.freedesktop.secrets`，脚本会以 1 退出，因为正常钥匙串替它应答会让所有测试看起来都没问题：
 
 ```python
 #!/usr/bin/env python3
@@ -119,13 +127,14 @@ Background-tasks 在仓库的 `.pi/tasks/` 留下了输出和元数据。Tintinw
 current session bus, logs every method call addressed to it, and never replies.
 Usage: blackhole.py <logfile>"""
 import sys, time
-import dbus, dbus.lowlevel, dbus.mainloop.glib
+import dbus, dbus.bus, dbus.lowlevel, dbus.mainloop.glib
 from gi.repository import GLib
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()
 NAME = "org.freedesktop.secrets"
-bus.request_name(NAME)
+if bus.request_name(NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE) != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+    sys.exit(f"{NAME} is already owned on this bus: a real keyring is running, nothing would be tested")
 me = bus.get_unique_name()
 log = open(sys.argv[1], "a", buffering=1)
 log.write(f"{time.time():.3f} ready {NAME} as {me}\n")
@@ -145,7 +154,7 @@ GLib.MainLoop().run()
 下方的测试脚本会清空环境变量，默认不传入总线。设置 `KEEP_BUS=1` 才会把当前会话总线传给 Pi；把黑洞和测试脚本一起放进私有总线里启动：
 
 ```bash
-dbus-run-session -- bash -c 'python3 blackhole.py calls.log & sleep 1; KEEP_BUS=1 ./try-pi-extension.sh npm:<pkg>@<version>'
+dbus-run-session -- bash -c 'rm -f calls.log; python3 blackhole.py calls.log & for i in $(seq 50); do grep -q " ready " calls.log 2>/dev/null && break; sleep 0.1; done; grep -q " ready " calls.log || exit 1; KEEP_BUS=1 ./try-pi-extension.sh npm:<pkg>@<version>'
 ```
 
 `calls.log` 中每条带 `call` 的行，都是一次没有得到应答的 Secret Service 请求。用我的钥匙串测试扩展运行时，日志记录了一次 `org.freedesktop.Secret.Service.OpenSession` 调用；同一条命令去掉 `KEEP_BUS=1` 后没有记录到调用，因为 Pi 看不到总线。
@@ -257,15 +266,15 @@ exit=124 seconds=2 workdir=/tmp/tmp.MZuYKgOPSZ
 FAILED (exit 124: 124 timeout, 3 extension skipped, 4 model request failed); last lines of stderr:
 ```
 
-第一行的 `exit=` 是执行 Pi 命令时得到的退出状态，其中 124 来自外层的 `timeout`；`FAILED` 里是脚本检查后的分类。Pi 1.5.0 在 `--mode json` 下，遇到错误 key 或不存在的包都以 0 退出，因此脚本还要自己检查最后一条 assistant 消息和安装警告。上面每种失败都会让脚本以 1 退出；缺少参数或 key 也一样，在 Pi 启动前就退出。`./bad.ts` 这样的本地路径会先转成绝对路径，因为脚本会换到临时目录里运行 Pi。
+脚本列出的是模型拿到的全部工具，包含 Pi 内置的四个工具；上面的表格只列新增工具。第一行的 `exit=` 是执行 Pi 命令时得到的退出状态，其中 124 来自外层的 `timeout`；`FAILED (exit` 后的数字是脚本检查后的分类，括号里的说明每次都一样，列出各分类的含义。Pi 1.5.0 在 `--mode json` 下，遇到错误 key 或不存在的包都以 0 退出，因此脚本还要自己检查最后一条 assistant 消息和安装警告。上面每种失败都会让脚本以 1 退出；缺少参数或 key 也一样，在 Pi 启动前就退出。`./bad.ts` 这样的本地路径会先转成绝对路径，因为脚本会换到临时目录里运行 Pi。
 
 加载检查通过后，还要实际调用一次工具。提问扩展就能通过这个脚本，模型拿到的却只有对照组那四个工具。
 
-## 无人值守时，哪些 Pi 扩展算「必装」？
+## 无人值守时，我会留下哪些 Pi 扩展？
 
-需要 MCP 时，单看这次测到的设置文件副作用，我会先试 `pi-mcp-extension`，作为必装清单的候选。也可以用适配器，每次运行都准备新的 agent 目录。这里的 MCP 测试只覆盖没有配置服务器时的状态查询。
+需要 MCP 时，`pi-mcp-extension` 会进我的必装清单；也可以用适配器，每次运行前重建 agent 目录。这次两个扩展都没连接服务器，在留下的东西上，测到的区别只有设置文件副作用，`pi-mcp-extension` 没有留下这类改动。
 
-网页搜索方面，`pi-web-access` 没有搜索 key 也能用，报告的 provider 是 "Provider: exa"。`pi-web-search` 也能用，它的 README 说搜索通过当前选定的模型完成。
+网页搜索方面，`pi-web-access` 没有搜索 key 也能用，报告的 provider 是 "Provider: exa"；它的 README 说明，没有 key 时会通过 Exa 的 MCP 端点搜索，因此查询会发给 Exa。`pi-web-search` 也能用，它的 README 说搜索通过当前选定的模型完成。
 
 两个子 agent 包都返回了 `PONG`，其中 Pi-subagents 那次，模型先猜了一个 agent 名称，重试后才成功。任务清单我会保留 `rpiv-todo`，用 `cc-safety-net` 拦截命令。permission-system 要有明确配置才会用。
 
