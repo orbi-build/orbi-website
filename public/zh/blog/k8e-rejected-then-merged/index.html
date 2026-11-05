@@ -195,12 +195,12 @@
 <ul>
 <li><p><strong>R1：判定器放过了一个不可能出现的结果。</strong> 两个 CAS 都以 revision 3 为前提，A 确认成功，B 结果未知。恢复后如果读到的是 B 写的值，那就说明出错了：两个比较里总有一个会失败，A 已经成功，B 不可能也成功。判定器却判了通过，因为它把结果未知的 CAS 当成了不带条件的普通写入。</p>
 <p>对应的操作历史：</p>
-<pre><code class="post-code--spaced">k is at rev 3
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="post-code--spaced" data-copy-source>k is at rev 3
 A: CAS rev3 -&gt; a  acked
 B: CAS rev3 -&gt; b  unknown
 recovered: k = b
 oracle: OK   (should fail)
-</code></pre>
+</code></pre></div>
 </li>
 <li><p><strong>R2：记账的就是被杀的那个进程。</strong> 记录器和 etcd 跑在同一个进程里，测试一 SIGKILL，记录器也跟着死。一次写入可能已经确认成功，确认还没落进日志，进程就没了。这条写入于是被记成「结果未知」，真丢了测试也发现不了。票里写的要求正好相反：记录器必须放在被测节点外面。</p>
 </li>

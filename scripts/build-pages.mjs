@@ -626,6 +626,49 @@ export function wrapRenderedTables(html, lang) {
   return renderRange(0, html.length);
 }
 
+// Issue #1181: every code block on every page — the homepage's install
+// commands, blog posts, Markdown guides, hand-written guide pages, and any page
+// added later — gets the same one-click copy button, labelled in the page's own
+// language. The build writes the button (the deployed artifact has to carry it,
+// and no page source marks a block by hand) and demo.js's existing [data-copy]
+// wiring copies the text of the [data-copy-source] element inside the button's
+// parent and reports the result in the button's own label. That is why the
+// button is the block's sibling and never inside it: a button inside the block
+// would put its label on the clipboard.
+const CODE_COPY_LABELS = {
+  en: { idle: "Copy", done: "Copied" },
+  zh: { idle: "复制", done: "已复制" },
+};
+
+// marked renders a fenced block as <pre><code class="language-x">…</code></pre>
+// and leaves the code's own bytes alone (entities aside), so the code text is
+// copied verbatim. A guide may fence a block without an info string, hence the
+// optional attributes. A hand-written guide page (site/pages/guides/**) writes
+// the same block as a <figure class="code-block"> panel with its own caption,
+// so a figure is one copyable unit too; other <figure> elements are not.
+const CODE_UNIT = /<figure class="code-block">(?:(?!<figure\b|<\/figure>)[\s\S])*?<\/figure>|<pre><code([^>]*)>([\s\S]*?)<\/code><\/pre>/g;
+
+// A block that already carries data-copy-source is wrapped already (this
+// function must stay idempotent), so it is left alone.
+const COPY_SOURCE = "data-copy-source";
+
+export function wrapCodeBlocks(html, lang) {
+  const labels = CODE_COPY_LABELS[lang];
+  if (!labels) throw new Error(`wrapCodeBlocks: no copy labels for language "${lang}"`);
+  const button = `<button class="code-copy-btn" type="button" data-copy data-copied-label="${labels.done}">${labels.idle}</button>`;
+  return html.replace(CODE_UNIT, (unit, attributes, code) => {
+    if (attributes === undefined) {
+      if (!unit.includes("<pre><code") || unit.includes(COPY_SOURCE)) return unit;
+      // The panel is copied as a whole, so its code element is what demo.js
+      // reads; the caption never reaches the clipboard.
+      const panel = unit.replace(/<pre><code([^>]*)>/, (tag, codeAttributes) => `<pre><code${codeAttributes} ${COPY_SOURCE}>`);
+      return `<div class="code-copy">${button}${panel}</div>`;
+    }
+    if (attributes.includes(COPY_SOURCE)) return unit;
+    return `<div class="code-copy">${button}<pre><code${attributes} ${COPY_SOURCE}>${code}</code></pre></div>`;
+  });
+}
+
 // Issue #522: on the hand-written site pages (compare, cost, ...) phones stack
 // the wide .compare-table tables row-by-row, so each cell must carry its
 // column's header. The build marks such tables .table-stack and adds a
@@ -1631,20 +1674,25 @@ export async function buildPages(outDir, { contentDir = CONTENT_DIR, guidesDir =
     }
     const out = join(outDir, page.output);
     html = addTableDataLabels(html);
+    // Issue #1181: every page's code blocks get the one copy button — the
+    // homepage's install commands, blog posts, Markdown guides, the
+    // hand-written guide panels and whatever page is added next. It is applied
+    // where each page is written, so no page marks a block by hand.
+    const shipped = wrapCodeBlocks(html, page.lang);
     await mkdir(dirname(out), { recursive: true });
-    await writeFile(out, html);
-    renderedPages.set(page.output, html);
+    await writeFile(out, shipped);
+    renderedPages.set(page.output, shipped);
   }
   for (const post of posts) {
     const out = join(outDir, post.output);
     await mkdir(dirname(out), { recursive: true });
     const seriesGuide = post.series ? guideBySeries.get(`${post.lang}/${post.series}`) : null;
-    await writeFile(out, renderPost(post, POST_TEMPLATE, seriesGuide, author));
+    await writeFile(out, wrapCodeBlocks(renderPost(post, POST_TEMPLATE, seriesGuide, author), post.lang));
   }
   for (const guide of guides) {
     const out = join(outDir, guide.output);
     await mkdir(dirname(out), { recursive: true });
-    await writeFile(out, renderGuide(guide, GUIDE_TEMPLATE, posts, guidesData));
+    await writeFile(out, wrapCodeBlocks(renderGuide(guide, GUIDE_TEMPLATE, posts, guidesData), guide.lang));
   }
   await writeFile(
     join(outDir, "sitemap.xml"),

@@ -392,7 +392,7 @@
 <p>自己测 harness 时，要把 <code class="post-code--single">HOME</code> 指向空目录，确保工作目录的上级没有 AGENTS.md 或 CLAUDE.md，再用 grep 查会话记录里有没有真实家目录的路径。Pi 的 <code class="post-code--single">--no-context-files</code>、<code class="post-code--single">--no-skills</code> 和 Claude Code 的 <code class="post-code--single">--bare</code> 能处理其中一部分。重跑时，我用了空 HOME 和最小环境，工作目录的上级也没有上下文文件。</p>
 <h2 id="复现命令">复现命令</h2>
 <p>用 bash 执行下面的命令，<code class="post-code--single">claude</code> 要指向 npm 安装的程序本身（会清掉 <code class="post-code--single">ANTHROPIC_*</code> 或依赖 <code class="post-code--single">HOME</code> 的包装脚本在这里会直接失败）。2026 年 11 月 1 日我在自己机器上这样跑了一遍（Pi 1.2.0、Claude Code 2.1.281），输入用量与前面的空操作计数只差几个 token：Pi 是 1,635，默认 Claude Code 是 17,379，<code class="post-code--single">--bare</code> 是 1,258。两个工具都会把工作目录路径写进 prompt，临时目录的路径比我测试时的目录短，所以少了几个 token。<code class="post-code--spaced">env -i</code> 会清掉 shell 里导出的其他变量，比如 <code class="post-code--single">PI_CODING_AGENT_DIR</code>、<code class="post-code--single">CLAUDE_CONFIG_DIR</code>，否则这些变量会把真实配置目录带回来。</p>
-<pre><code class="language-bash">export DEEPSEEK_API_KEY=...
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>export DEEPSEEK_API_KEY=...
 CLEAN=$(mktemp -d)        # empty HOME: no ~/AGENTS.md, ~/.agents/skills, ~/.claude/CLAUDE.md
 cd &quot;$(mktemp -d)&quot;         # no AGENTS.md or CLAUDE.md in any parent directory
 # env -i drops everything else you exported, such as PI_CODING_AGENT_DIR or CLAUDE_CONFIG_DIR
@@ -412,7 +412,7 @@ env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https:/
 env -i HOME=&quot;$CLEAN&quot; PATH=&quot;$PATH&quot; ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic \
   ANTHROPIC_API_KEY=&quot;$DEEPSEEK_API_KEY&quot; ANTHROPIC_MODEL=deepseek-flash ANTHROPIC_SMALL_FAST_MODEL=deepseek-flash \
   claude -p --bare --output-format json &quot;Reply with exactly OK&quot; | jq &#39;.modelUsage&#39;
-</code></pre>
+</code></pre></div>
 <p>测编程任务时，按上面的描述自己写两个任务的文件；文件和我的不会逐字节相同，token 数也会不同。每个任务各建一个 git 仓库，只放该任务的两个文件，先把有 bug 的状态提交一次（<code class="post-code--spaced">git init &amp;&amp; git add -A &amp;&amp; git commit -m broken</code>），这样 <code class="post-code--spaced">git checkout -- .</code> 和 <code class="post-code--spaced">git diff</code> 才有比较的基准。把 <code class="post-code--spaced">Reply with exactly OK</code> 换成任务 prompt，给 Claude Code 命令加上 <code class="post-code--single">--dangerously-skip-permissions</code>。跑完后，自己再跑 <code class="post-code--spaced">python3 -m unittest</code> 和 <code class="post-code--spaced">git diff -- &lt;test file&gt;</code>。每次编程测试前，用 <code class="post-code--spaced">git checkout -- .</code> 把文件恢复到有 bug 的状态。要复现表中四个工具的那一行，在默认 Claude Code 那条命令（用 <code class="post-code--single">ANTHROPIC_AUTH_TOKEN</code> 的那条）上加 <code class="post-code--single">--tools=Bash,Read,Edit,Write</code>。Pi 在每条 assistant 消息里输出用量，要自己累加；Claude Code 的 <code class="post-code--single">modelUsage</code> 已经加总了全部请求，包括子代理。</p>
 <h2 id="orbi-换-harness-时踩过的坑">Orbi 换 harness 时踩过的坑</h2>
 <p>Orbi 最早的提交里就有 Pi，<a href="/zh/blog/orbi-on-pi-coding-agent/#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E7%9B%B4%E7%94%A8-pi">当时没有做过对比</a>。更难任务的结果见 <a href="/zh/blog/searching-for-orbis-harness/">harness 测评</a>：Opus 5.5 经 Claude Code 桥接，在 Orbi harness 的 v1、v5、v11 三个版本上分别是 1/3、2/3 和 3/4（通过次数 / 运行次数，跨三个仓库）；<code class="post-code--single">deepseek-flash</code> 经 Pi，在原版 harness 上是 6/15，到 v15 是 9/9。</p>

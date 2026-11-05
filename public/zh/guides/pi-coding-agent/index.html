@@ -241,12 +241,12 @@
 </tbody></table></div>
 <p><code class="post-code--single">implement</code> 和 <code class="post-code--single">review</code> 会话带 <code class="post-code--single">--no-extensions</code> 启动。在 Pi 里，这个参数同时关掉扩展的自动发现和 Pi 的内置扩展（比如 MCP 和 Pi 执行代码的工具模式 Codemode），所以某个角色要用的扩展，都得通过 Orbi 配置里的 <code class="post-code--single">pi_extensions</code> 以 <code class="post-code--single">--extension</code> 加回来，Orbi Cloud 就是这样加回 Codemode 的。<code class="post-code--single">ticket</code> 角色不开工具，从 v0.6.2 起（<a href="https://github.com/orbi-build/orbi/issues/1558">Issue #1558</a>，2026 年 10 月 5 日）也带同样的 <code class="post-code--single">--no-extensions</code> 和 <code class="post-code--single">--extension</code> 参数；在那之前它启动时完全不带扩展相关的参数，runner 所在系统用户装的扩展可能加载进去。Orbi 怎么加载、怎么写扩展，见<a href="/zh/blog/pi-extensions-in-production/">扩展那篇</a>。skill 也没有这样隔离：Orbi 用 <code class="post-code--single">--skill</code> 加上自己的 skill，但不传 <code class="post-code--single">--no-skills</code>，所以用户自己的 skill 在每个角色里都可能加载。</p>
 <p>模型在 runner 的 <code class="post-code--single">orbi.toml</code> 里选；仓库自己的 <code class="post-code--single">.github/orbi.toml</code> 不能设模型相关的键。一个最小的配置如下，评审的两个键可以指向另一个模型，这里用的是同一个：</p>
-<pre><code class="language-toml">pi_providers = &quot;.orbi/pi-providers.json&quot;   # 相对这份配置文件所在目录；Pi models.json 格式
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-toml" data-copy-source>pi_providers = &quot;.orbi/pi-providers.json&quot;   # 相对这份配置文件所在目录；Pi models.json 格式
 pi_provider = &quot;deepseek&quot;
 pi_model = &quot;deepseek-flash&quot;
 review_pi_provider = &quot;deepseek&quot;            # 可选，不写就回退到 pi_provider
 review_pi_model = &quot;deepseek-flash&quot;         # 可选，不写就回退到 pi_model
-</code></pre>
+</code></pre></div>
 <p>现成的 provider 文件在 <a href="https://github.com/orbi-build/orbi/tree/main/templates/pi-providers"><code class="post-code--single">templates/pi-providers</code></a>。设了 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code> 的话，每个角色解析出的 provider 和 model 会以 <code class="post-code--single">--provider</code>、<code class="post-code--single">--model</code> 写在它的命令上（评审先用 <code class="post-code--single">review_</code> 开头的键，没设的键逐个回退）；不设的话，Pi 会悄悄退回用户设置里的默认模型（见下文那次事故）。没有 <code class="post-code--single">pi_providers</code> 文件时，这两个键指定的必须是 Pi 自己能解析的模型（Pi 内置的 provider，或者用户 <code class="post-code--single">~/.pi/agent/models.json</code> 里定义的）。<code class="post-code--spaced">orbi doctor</code> 在 provider 文件、<code class="post-code--single">pi_provider</code>、<code class="post-code--single">pi_model</code> 都设好、API 密钥也能解析时，会打印配置的 provider 和 model。没有 provider 文件时，它会把模型报成未配置，尽管 Pi 自己能解析的模型照样能跑。</p>
 <h2 id="orbi-在-pi-harness-外面补的几层">Orbi 在 Pi harness 外面补的几层</h2>
 <p>一个 Pi 进程只知道自己这个会话。哪张 issue 该起会话、会话留下的 commit 怎么处理、会话没声音了怎么办，都由 runner 决定。</p>

@@ -276,7 +276,7 @@
 <h3 id="把任务挪到-api-按量计费">把任务挪到 API 按量计费</h3>
 <p>CLI、IDE 插件和桌面应用都可以用 OpenAI API key 登录，不用 ChatGPT 账户。这部分用量通过你的 OpenAI Platform 账户按标准 API 价格计费，不占套餐额度。OpenAI 建议 CI 这类程序化任务用 API key 登录。代价是：Codex cloud 以及 GitHub 代码审查、Slack 集成等云端功能都需要 ChatGPT 登录；能用哪些模型，取决于你的 key 有哪些模型权限。<a href="https://learn.chatgpt.com/docs/auth">认证说明</a>、<a href="https://learn.chatgpt.com/docs/pricing">功能对照</a></p>
 <p>先在 <a href="https://platform.openai.com/api-keys">OpenAI Platform 后台</a>创建 API key，在当前 shell 里用 <code class="post-code--single">export</code> 设成环境变量 <code class="post-code--single">OPENAI_API_KEY</code>（值从密钥管理工具读取；或者先运行 <code class="post-code--spaced">read -rs OPENAI_API_KEY &amp;&amp; export OPENAI_API_KEY</code>，再粘贴 key 并回车，key 不会显示在屏幕上，也不进 shell 历史）。不加 <code class="post-code--single">export</code>，脚本读不到它。然后给 API 登录单独一个 <code class="post-code--single">CODEX_HOME</code>，免得覆盖你平时交互用的 ChatGPT 登录。下面这段存成 <code class="post-code--single">codex-api-login.sh</code>，用 <code class="post-code--spaced">bash codex-api-login.sh</code> 运行。别用 <code class="post-code--single">sh</code> 运行，它可能不支持 <code class="post-code--single">pipefail</code>；也不要粘贴进交互式终端，脚本里的 <code class="post-code--spaced">set -e</code> 一遇到错误就会把那个终端关掉。</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 set -euo pipefail
 : &quot;${OPENAI_API_KEY:?set OPENAI_API_KEY to an OpenAI Platform API key first}&quot;
 export CODEX_HOME=&quot;$HOME/.codex-api&quot;
@@ -284,7 +284,7 @@ mkdir -p &quot;$CODEX_HOME&quot;
 printenv OPENAI_API_KEY | codex login --with-api-key
 codex login status
 codex exec --skip-git-repo-check -m gpt-6-luna &quot;Reply with the single word OK&quot; &lt;/dev/null
-</code></pre>
+</code></pre></div>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。2026 年 10 月 17 日，我在 Linux 上用 Codex CLI 0.163.0 跑了这段脚本。为了不在测试上花真钱，我用的是一个编造的 key：</p>
 <ul>
 <li><code class="post-code--single">OPENAI_API_KEY</code> 没设置或为空时，脚本停在第三行，退出码 1。</li>
@@ -304,8 +304,8 @@ codex exec --skip-git-repo-check -m gpt-6-luna &quot;Reply with the single word 
 <li>key 存在 <code class="post-code--single">$HOME/.codex-api</code> 的 <code class="post-code--single">auth.json</code> 里（或系统的凭据存储里），这个目录要像密码一样保管。</li>
 </ul>
 <p>合起来，一条 cron 任务的命令是这样：</p>
-<pre><code class="language-bash">cd /path/to/repo &amp;&amp; CODEX_HOME=&quot;$HOME/.codex-api&quot; codex -a never exec -m gpt-6-luna --sandbox workspace-write &quot;Run the tests and fix the failures.&quot; &lt;/dev/null
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>cd /path/to/repo &amp;&amp; CODEX_HOME=&quot;$HOME/.codex-api&quot; codex -a never exec -m gpt-6-luna --sandbox workspace-write &quot;Run the tests and fix the failures.&quot; &lt;/dev/null
+</code></pre></div>
 <p><code class="post-code--single">-m</code> 要和测试请求保持一致；不加的话，Codex 用的是它的默认模型。我用编造的 key 在一个新建的 Git 仓库里跑过这条命令，它连到了 API，同样以 <code class="post-code--single">401</code> 退出、退出码 1，说明命令本身能照原样运行。交给 cron 之前，先用一个必须写文件的小任务试一次。</p>
 <p>Codex 也可以完全不走 OpenAI 计费：在 <code class="post-code--single">config.toml</code> 的 <code class="post-code--single">model_providers.&lt;id&gt;</code> 下定义另一个支持 Responses API 的服务商，再用 <code class="post-code--single">model_provider</code> 选中它；或者用 <code class="post-code--single">--oss</code> 通过 Ollama 或 LM Studio 跑本地模型。<a href="https://learn.chatgpt.com/docs/config-file/config-reference">配置参考</a></p>
 <h3 id="给-api-花费设硬上限">给 API 花费设硬上限</h3>

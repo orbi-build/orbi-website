@@ -314,7 +314,7 @@
 <h2 id="在自己的仓库量一遍合并后的等待">在自己的仓库量一遍合并后的等待</h2>
 <p>脚本的前提：晋升在生产分支的第一父提交链上表现为合并提交，晋升来源分支也用合并提交接收 PR。PR 用压缩合并、或者晋升是新建提交的仓库，脚本什么也找不到，会以退出码 1 结束。Orbi 自己在 10 月 23 日改成了新建提交的晋升方式，所以本文窗口截止于 10 月 22 日 0 点。</p>
 <p>把下面的脚本保存为 <code class="post-code--single">~/merge-wait.sh</code>，存在仓库外面，免得被误提交：</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # How long had the oldest merged PR in each promotion been waiting?
 # Usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]
 #   e.g. TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
@@ -353,22 +353,22 @@ printf &#39;date\tmerged_prs\toldest_wait_h\n%s\n&#39; &quot;$rows&quot;
 printf &#39;%s\n&#39; &quot;$rows&quot; | cut -f3 | sort -n |
   awk &#39;{v[NR]=$1} END{m=(NR%2)?v[(NR+1)/2]:(v[NR/2]+v[NR/2+1])/2;
        printf &quot;promotions=%d median_h=%.1f p90_h=%.1f max_h=%.1f\n&quot;, NR, m, v[int(0.9*(NR-1)+0.5)+1], v[NR]}&#39;
-</code></pre>
+</code></pre></div>
 <p>加执行权限、拉取远端，再从仓库根目录运行，依次传入生产分支、晋升来源分支、开始日期，以及可选的结束日期：</p>
-<pre><code class="language-bash">chmod +x ~/merge-wait.sh
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>chmod +x ~/merge-wait.sh
 git fetch
 TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
-</code></pre>
+</code></pre></div>
 <p>两个日期都取 shell 所用时区的午夜。Git 的 <code class="post-code--single">--until</code> 会包含恰好在那个午夜合并的提交，所以 <code class="post-code--single">2026-10-22</code> 覆盖 10 月 21 日，以及时间恰好为 22 日 00:00:00 的合并，我的窗口里没有后一种。<code class="post-code--single">TZ=Asia/Shanghai</code> 把午夜设为 +08，和本文窗口一致。不传结束日期，就一直算到现在。</p>
 <p>每次晋升只要带入了至少一个 PR，脚本就输出一行：日期、带入多少个 PR、最早那个 PR 等了多少小时，最后再输出汇总。合入 main 的提交，如果第二父提交不在晋升来源分支上，例如从别处合入的热修复，就会跳过。成功时退出码为 0；缺少参数或找不到符合条件的晋升时为 1；分支未知时为 2。要在完整克隆上跑：浅克隆会丢掉深度以外的晋升，汇总行静默偏小，不报错（orbi-cloud 用 <code class="post-code--spaced">--depth 300</code> 克隆时只算到 81 次，完整是 108 次）。需要 git、awk 和常见的 coreutils（sort、head、cut、wc、tr）。90 分位取排序后第 round(0.9 × (n − 1)) + 1 个值，和上表同一规则；用插值法的工具算出来会略有出入。</p>
 <p>在 orbi-cloud 上，对本文窗口，汇总行与上表对应（脚本保留一位小数，12.85 显示为 12.8）：</p>
-<pre><code class="language-text">promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
+</code></pre></div>
 <p>压缩合并的 PR、只靠发版标签的流程、把晋升重新创建为新提交的流程，都需要换一种查询。如果你们会把 main 回合到来源分支，这些合并也在来源分支的第一父提交链上，会被当成 PR 计数，要先过滤掉。</p>
 <p>仓库采用上述合并方式时，要看此刻还有什么在等，可以跑：</p>
-<pre><code class="language-bash">git rev-list --count origin/main..origin/beta
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>git rev-list --count origin/main..origin/beta
 git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origin/beta | sort -n | head -1
-</code></pre>
+</code></pre></div>
 <p>第一行统计 beta 有、main 还没有的提交数。第二行输出仍在等待的最早 PR 合并提交（从 main 回合到 beta 的合并也会出现在这里）。第二行没有输出，说明没有 PR 在等，但可能还有发版提交或杂务提交；第一行输出 0，才说明没有任何提交在等。排序要用第一列的纪元秒数。直接把 ISO 日期当字符串排序，遇到提交的时区偏移不同时，顺序会错。我测量时在一条临时查询里犯过这个错；脚本和上表用的都是纪元秒。</p>
 <h2 id="统计的限制">统计的限制</h2>
 <p>这只是一个由 agent 开发的产品、一个维护者、约五周的记录。我用 PR 在 beta 上的合并提交时间表示「合入 beta」，发版标签的计时用它所指提交的提交者时间。合入 main 的时刻早于实际部署。审批票和分支差距告警的数字，都取决于这个团队的流程。</p>

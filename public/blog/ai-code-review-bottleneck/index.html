@@ -312,7 +312,7 @@
 <h2 id="measure-merge-wait-in-your-repository">Measure merge wait in your repository</h2>
 <p>The script below assumes promotions are merge commits on the production branch&#39;s first-parent line and that the promoted branch takes PRs as merge commits. With squash-merged PRs or promotions made as new commits it finds nothing and exits 1. Orbi&#39;s own promotions switched to new commits on 23 October, which is why my window ends at midnight going into 22 October.</p>
 <p>Save this as <code class="post-code--single">~/merge-wait.sh</code>, outside the repository so it doesn&#39;t end up in a commit:</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # How long had the oldest merged PR in each promotion been waiting?
 # Usage: merge-wait.sh &lt;production-branch&gt; &lt;promoted-branch&gt; &lt;since YYYY-MM-DD&gt; [until YYYY-MM-DD]
 #   e.g. TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
@@ -351,21 +351,21 @@ printf &#39;date\tmerged_prs\toldest_wait_h\n%s\n&#39; &quot;$rows&quot;
 printf &#39;%s\n&#39; &quot;$rows&quot; | cut -f3 | sort -n |
   awk &#39;{v[NR]=$1} END{m=(NR%2)?v[(NR+1)/2]:(v[NR/2]+v[NR/2+1])/2;
        printf &quot;promotions=%d median_h=%.1f p90_h=%.1f max_h=%.1f\n&quot;, NR, m, v[int(0.9*(NR-1)+0.5)+1], v[NR]}&#39;
-</code></pre>
+</code></pre></div>
 <p>Make it executable, fetch, and run it from the repository root with the production branch, the branch you promote from, a start date and an optional end date:</p>
-<pre><code class="language-bash">chmod +x ~/merge-wait.sh
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>chmod +x ~/merge-wait.sh
 git fetch
 TZ=Asia/Shanghai ~/merge-wait.sh origin/main origin/beta 2026-09-14 2026-10-22
-</code></pre>
+</code></pre></div>
 <p>Both dates mean midnight in the shell&#39;s time zone. Git&#39;s <code class="post-code--single">--until</code> includes a merge made exactly at that midnight, so <code class="post-code--single">2026-10-22</code> covers 21 October plus any merge stamped 00:00:00 on the 22nd (my window had none). <code class="post-code--single">TZ=Asia/Shanghai</code> makes that midnight +08, as in my window; without an end date the window runs to now. The script prints one row per promotion that brought in at least one PR (date, how many PRs, the oldest one&#39;s wait in hours) and a summary line. Merges into main whose second parent isn&#39;t on the promoted branch, such as hotfixes, are skipped. It exits 0 on success, 1 for a missing argument or when no matching promotion is found, and 2 for an unknown branch. Run it on a full clone: in a shallow clone, promotions beyond the clone&#39;s depth are missing and the summary comes out low without an error (on orbi-cloud, <code class="post-code--spaced">--depth 300</code> gave 81 promotions instead of 108). It needs git, awk and the usual coreutils (sort, head, cut, wc, tr). p90 is the value at rank round(0.9 × (n − 1)) + 1, the same rule as the table; tools that interpolate can give a slightly different number.</p>
 <p>On orbi-cloud, for this window, the summary line matches the table (the script rounds to one decimal, so 12.85 shows as 12.8):</p>
-<pre><code class="language-text">promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>promotions=108 median_h=2.9 p90_h=12.8 max_h=168.5
+</code></pre></div>
 <p>Squash-merged PRs, tag-only release flows, and promotions recreated as new commits need a different query. If you merge main back into the promoted branch, those merges sit on its first-parent line too and will be counted as PRs; filter them out first.</p>
 <p>To see what&#39;s waiting right now in a repository that promotes this way:</p>
-<pre><code class="language-bash">git rev-list --count origin/main..origin/beta
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>git rev-list --count origin/main..origin/beta
 git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origin/beta | sort -n | head -1
-</code></pre>
+</code></pre></div>
 <p>The first line counts commits on beta that main doesn&#39;t have. The second prints the oldest PR merge still waiting (merges from main back into beta would show up here too). No output means no PR is waiting, though release or chore commits may be; a 0 from the first command means nothing is waiting at all. Sort on the epoch seconds in the first field: sorting ISO dates as strings gives the wrong order when commits carry different time zone offsets. I made that mistake in a one-off query while measuring; the script and the table use epoch seconds.</p>
 <h2 id="limits">Limits</h2>
 <p>This is one agent-built product, one maintainer, and about five weeks. I use the time of each PR&#39;s merge commit on beta as &quot;landed on beta&quot;; tag clocks use the tagged commit&#39;s committer time. Main&#39;s merge time precedes deployment. The approval-ticket and drift-alert numbers depend on this team&#39;s process.</p>

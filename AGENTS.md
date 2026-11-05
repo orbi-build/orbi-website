@@ -151,6 +151,13 @@ belongs to decides where you edit it.
 `npm run build` also writes `sitemap.xml`, `blog/feed.xml` and `llms.txt`
 into `public/`; all are committed like the HTML — generated, never hand-edited.
 
+Every code block gets its copy button the same way (Issue #1181). The build wraps
+each `<pre><code>` — and each hand-written `<figure class="code-block">` panel —
+in `.code-copy`, writes a `Copy` / `Copied` button above it (中文页 复制 / 已复制)
+and marks the code `data-copy-source`; `public/demo.js` does the copying. No page
+and no Markdown body marks a block by hand: a page that hand-writes its own copy
+button ships two.
+
 `sitemap.xml` carries only what a crawler needs: each indexable URL plus its
 `en` / `zh-CN` / `x-default` hreflang alternates (Issue #1065). No `lastmod`,
 `changefreq` or `priority` — all three are optional in the

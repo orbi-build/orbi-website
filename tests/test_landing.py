@@ -652,15 +652,20 @@ class LandingTests(unittest.TestCase):
         """Four lines with long flags are miserable to select by hand."""
         js = (ROOT / "public" / "demo.js").read_text(encoding="utf-8")
         self.assertIn("clipboard", js)
-        for page, label in ((self.en, "Copy"), (self.zh, "复制")):
+        for page, copied in ((self.en, "Copied"), (self.zh, "已复制")):
             buttons = [
                 attrs for tag, attrs in page.elements
                 if tag == "button" and "data-copy" in attrs
             ]
-            self.assertEqual(len(buttons), 1, buttons)
-            # the button must say what it copies, for screen readers too
-            self.assertTrue(buttons[0].get("aria-label"), buttons[0])
-            self.assertTrue(buttons[0].get("data-copied-label"), buttons[0])
+            # Issue #1181: the homepage's copy button is the one every code
+            # block gets, so both the one-liner and the collapsed four-step
+            # block carry it. Its visible label — Copy/复制, the accessible name
+            # — is asserted in tests/code-copy.test.js together with the label
+            # it reports back, which is the page's own language.
+            self.assertEqual(len(buttons), 2, buttons)
+            for attrs in buttons:
+                self.assertEqual(attrs.get("class"), "code-copy-btn", attrs)
+                self.assertEqual(attrs.get("data-copied-label"), copied, attrs)
 
     def test_wide_code_scrolls_inside_its_own_container(self) -> None:
         """A <pre> in a grid/flex track needs min-width:0, or its intrinsic

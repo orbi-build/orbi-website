@@ -276,7 +276,7 @@
 <h3 id="move-the-run-to-api-billing">Move the run to API billing</h3>
 <p>The CLI, IDE extension and desktop app can sign in with an OpenAI API key instead of ChatGPT. That usage is billed through your OpenAI Platform account at standard API rates and does not touch your plan&#39;s allowance. OpenAI recommends API-key sign-in for programmatic jobs such as CI. The trade-offs: Codex cloud and cloud features such as GitHub code review and Slack need ChatGPT sign-in, and the models you get are the ones your key can use. <a href="https://learn.chatgpt.com/docs/auth">Authentication</a>, <a href="https://learn.chatgpt.com/docs/pricing">feature availability</a></p>
 <p>First create an API key in the <a href="https://platform.openai.com/api-keys">OpenAI Platform dashboard</a> and export it in your shell as <code class="post-code--single">OPENAI_API_KEY</code> (read the value from your secret store, or run <code class="post-code--spaced">read -rs OPENAI_API_KEY &amp;&amp; export OPENAI_API_KEY</code>, then paste the key and press Enter, which keeps it off the screen and out of shell history). Without <code class="post-code--single">export</code>, the script cannot see it. Then give the API login its own <code class="post-code--single">CODEX_HOME</code>, so it does not replace the ChatGPT login you use interactively. Save this as <code class="post-code--single">codex-api-login.sh</code> and run it with <code class="post-code--spaced">bash codex-api-login.sh</code>. Do not run it with <code class="post-code--single">sh</code>, which may not support <code class="post-code--single">pipefail</code>, and do not paste it into an interactive shell, where <code class="post-code--spaced">set -e</code> would close the shell on the first error:</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 set -euo pipefail
 : &quot;${OPENAI_API_KEY:?set OPENAI_API_KEY to an OpenAI Platform API key first}&quot;
 export CODEX_HOME=&quot;$HOME/.codex-api&quot;
@@ -284,7 +284,7 @@ mkdir -p &quot;$CODEX_HOME&quot;
 printenv OPENAI_API_KEY | codex login --with-api-key
 codex login status
 codex exec --skip-git-repo-check -m gpt-6-luna &quot;Reply with the single word OK&quot; &lt;/dev/null
-</code></pre>
+</code></pre></div>
 <p>I&#39;m Larry 🍀 Orbi, the creator of Orbi. On 17 October 2026 I ran this on Linux with Codex CLI 0.163.0, with a made-up key, because I did not want to bill a real one for a test:</p>
 <ul>
 <li>With <code class="post-code--single">OPENAI_API_KEY</code> unset or empty, the script stopped at the third line with exit code 1.</li>
@@ -304,8 +304,8 @@ codex exec --skip-git-repo-check -m gpt-6-luna &quot;Reply with the single word 
 <li>The key is stored in <code class="post-code--single">auth.json</code> inside <code class="post-code--single">$HOME/.codex-api</code> (or your OS credential store), so treat that folder like a password.</li>
 </ul>
 <p>Put together, the command for one cron job looks like this:</p>
-<pre><code class="language-bash">cd /path/to/repo &amp;&amp; CODEX_HOME=&quot;$HOME/.codex-api&quot; codex -a never exec -m gpt-6-luna --sandbox workspace-write &quot;Run the tests and fix the failures.&quot; &lt;/dev/null
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>cd /path/to/repo &amp;&amp; CODEX_HOME=&quot;$HOME/.codex-api&quot; codex -a never exec -m gpt-6-luna --sandbox workspace-write &quot;Run the tests and fix the failures.&quot; &lt;/dev/null
+</code></pre></div>
 <p>Keep the same <code class="post-code--single">-m</code> as in your test request; without it, Codex picks its default model. With the made-up key in a fresh Git repository, this command reached the API and exited 1 with the same <code class="post-code--single">401</code>, so it parses and runs as written. Before you hand the job to cron, try one small task that has to write a file.</p>
 <p>Codex can also leave OpenAI billing entirely: define another provider that speaks the Responses API under <code class="post-code--single">model_providers.&lt;id&gt;</code> in <code class="post-code--single">config.toml</code> and select it with <code class="post-code--single">model_provider</code>, or use <code class="post-code--single">--oss</code> to run a local model through Ollama or LM Studio. <a href="https://learn.chatgpt.com/docs/config-file/config-reference">Configuration reference</a></p>
 <h3 id="put-a-hard-cap-on-api-spend">Put a hard cap on API spend</h3>

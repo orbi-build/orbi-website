@@ -1652,40 +1652,18 @@ h2 {
   background: var(--night);
 }
 
-.install-copy {
-  border-radius: var(--radius-control);
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1;
-  min-height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--line-dark);
-  background: rgba(255, 255, 255, 0.04);
-  color: #c3d5d0;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
-}
-
-.install-copy:hover {
-  border-color: rgba(237, 245, 240, 0.45);
-  background: rgba(255, 255, 255, 0.08);
-  color: #edf5f0;
-}
-
-.install-copy.is-copied {
-  border-color: var(--run);
-  color: var(--run);
+/* The install panel draws the box itself, so the shared .code-copy wrapper adds
+   no gap and keeps the panel's 20px inset: the same button sits above the
+   command inside the panel, where the command's own right padding used to make
+   room for an absolutely positioned one. */
+.install-block .code-copy {
+  margin: 0;
+  padding: 10px 20px 0;
 }
 
 .install-block pre {
   margin: 0;
-  /* Right padding keeps the first command clear of the copy button. */
-  padding: 18px 88px 18px 20px;
+  padding: 8px 0 18px;
   overflow-x: auto;
   color: #dbe9e4;
   font-family: var(--mono);
@@ -1711,7 +1689,7 @@ h2 {
 }
 
 /* The four hand-run steps stay available but collapsed, clearly secondary to
- * the one-line install. The nested pre drops the copy-button padding. */
+ * the one-line install. Their code block takes the shared copy button too. */
 .install-manual {
   border-top: 1px solid var(--line);
 }
@@ -1729,7 +1707,7 @@ h2 {
 }
 
 .install-manual pre {
-  padding: 0 20px 16px;
+  padding: 8px 0 16px;
 }
 
 .pricing-summary {
@@ -2189,18 +2167,8 @@ h2 {
 @media (max-width: 760px) {
   .social-proof-grid { grid-template-columns: 1fr; }
 
-  /* A <pre> scrolls horizontally, so right padding scrolls away with the
-   * content and the floating button ends up on top of the commands. On narrow
-   * screens give it its own full-width bar above the code instead. */
-  .install-copy {
-    position: static;
-    display: block;
-    width: 100%;
-    min-height: 44px;
-    border-width: 0 0 1px;
-    text-align: center;
-  }
-  .install-block pre { padding: 16px; font-size: 0.72rem; line-height: 1.75; }
+  .install-block .code-copy { padding: 10px 16px 0; }
+  .install-block pre { padding: 8px 0 16px; font-size: 0.72rem; line-height: 1.75; }
   .install-block .install-needs { padding: 0 16px 14px; }
 
   body { font-size: 16px; }
@@ -2853,3 +2821,42 @@ h2 {
 .bench-figure { margin: 28px 0 0; max-width: 820px; }
 .bench-figure-img { border-radius: var(--radius-card); display: block; width: 100%; height: auto; border: 1px solid var(--line); }
 .bench-figure-cap { margin-top: 8px; color: var(--ink-soft); font-size: 0.85rem; }
+
+/* Issue #1181: every code block on every page carries one click-to-copy
+   button (scripts/build-pages.mjs wrapCodeBlocks writes it; demo.js does the
+   copying through the same [data-copy] wiring the homepage install command has
+   always used, and there is no second copy implementation anywhere). The button
+   sits in its own row above the block, so it never covers a line of code — not
+   a Markdown block's first line, not a hand-written guide panel's caption — and
+   the code scrolls sideways inside its own box without moving it. Nothing hides
+   it behind a hover, so it is there on a phone too. It keeps its own light
+   chip, which reads on the paper article ground and on the night .code-block
+   and .install-block panels alike. */
+.code-copy { margin: 18px 0; }
+
+/* The block hands its outer margin to the wrapper: the button must sit right on
+   top of the panel, not above an inherited gap. Both selectors outrank the
+   templates' .post-body/.guide-body pre rule and the guide pages' own
+   .code-block rule, which each page ships in the document itself. */
+:is(.post-body, .guide-body) .code-copy > pre,
+.code-copy > .code-block { margin: 0; }
+
+.code-copy-btn {
+  display: block;
+  width: fit-content;
+  margin: 0 0 6px auto;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+.code-copy-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+.code-copy-btn.is-copied { border-color: var(--run-on-light); color: var(--run-on-light); }

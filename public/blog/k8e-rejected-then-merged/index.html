@@ -195,12 +195,12 @@
 <ul>
 <li><p><strong>R1: the oracle accepted an impossible state.</strong> Say two CAS writes both expect revision 3. A is acknowledged and B&#39;s outcome is unknown. If recovery shows B&#39;s value, something went wrong, because whichever write ran second must have failed its compare. The oracle accepted it anyway: it treated an unknown CAS as an unconditional put.</p>
 <p>The history in question:</p>
-<pre><code class="post-code--spaced">k is at rev 3
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>k is at rev 3
 A: CAS rev3 -&gt; a  acked
 B: CAS rev3 -&gt; b  unknown
 recovered: k = b
 oracle: OK   (should fail)
-</code></pre>
+</code></pre></div>
 </li>
 <li><p><strong>R2: the process being killed was also the one taking notes.</strong> The recorder ran inside the process the test SIGKILLs. A write could be acknowledged, and the process killed before the acknowledgement reached the log. That write would be logged as &quot;unknown&quot;, so losing it would pass the test. The issue had asked for the recorder to sit outside the node under test.</p>
 </li>

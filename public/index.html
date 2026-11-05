@@ -287,15 +287,14 @@
         <div class="midway">
           <p class="orbi-midway-p">Run this on your own repository</p>
           <div class="install-block">
-            <button class="install-copy" type="button" data-copy aria-label="Copy the install command" data-copied-label="Copied">Copy</button>
-            <pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre>
+            <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code data-copy-source>curl -fsSL https://aiready.sh | sh</code></pre></div>
             <p class="install-needs orbi-midway-p">Needs Python 3.14, git, gh, systemd, and a model endpoint. <code>orbi doctor</code> names whatever is missing.</p>
             <details class="install-manual">
               <summary>Prefer to run the four steps by hand</summary>
-              <pre><code>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
+              <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code data-copy-source>git clone https://github.com/orbi-build/orbi.git &amp;&amp; cd orbi
 uv tool install --force --reinstall --editable --python /usr/bin/python3 .
 cp .orbi.example.toml orbi.toml
-orbi setup --config orbi.toml</code></pre>
+orbi setup --config orbi.toml</code></pre></div>
             </details>
           </div>
           <a class="button button-signal" data-cta="midway-cloud" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>

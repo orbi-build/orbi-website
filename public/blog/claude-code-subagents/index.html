@@ -186,7 +186,7 @@
 <p>I checked Anthropic&#39;s <a href="https://code.claude.com/docs/en/sub-agents">subagent configuration</a> and <a href="https://code.claude.com/docs/en/best-practices#create-custom-subagents">usage guidance</a> on 2026-10-17.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <h2 id="configure-claude-code-subagents-for-a-project">Configure Claude Code subagents for a project</h2>
 <p>Save this as <code class="post-code--single">.claude/agents/change-reviewer.md</code> in your repository; Claude Code picks up a new agent file at the start of a session, so start a fresh session in the project after adding it. That directory scopes the agent to the project; <code class="post-code--single">~/.claude/agents/</code> makes it available across your projects. Both locations are covered in the <a href="https://code.claude.com/docs/en/claude-directory#file-reference">directory reference</a>.</p>
-<pre><code class="language-markdown">---
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-markdown" data-copy-source>---
 name: change-reviewer
 description: Review supplied changed files for behavioral bugs and missing tests.
 tools: Read, Grep, Glob
@@ -206,13 +206,13 @@ For each finding, return:
 Report uncertainty when the evidence is incomplete.
 If no actionable findings remain, say what you inspected.
 Do not edit files. Identify tests that need running by the main session.
-</code></pre>
+</code></pre></div>
 <p>The YAML requires <code class="post-code--single">name</code> and <code class="post-code--single">description</code>. The Markdown body supplies the agent&#39;s system prompt. Here, <code class="post-code--single">tools</code> limits access to file inspection and <code class="post-code--single">model</code> requests Sonnet (a call can still override the model). Claude uses the description when deciding whether to delegate. <a href="https://code.claude.com/docs/en/sub-agents#frontmatter-reference">Anthropic documents these fields in the frontmatter reference.</a></p>
 <p>Keep the description short and put the review procedure in the body. A description such as &quot;help with coding&quot; gives the main agent little reason to choose this reviewer for a particular task.</p>
 <p>To confirm the agent loaded, start a session in the project, type <code class="post-code--single">@</code> and pick <code class="post-code--single">change-reviewer</code> from the list, then send a request. If it does not appear, check that the file sits in <code class="post-code--single">.claude/agents/</code> and restart the session. When the task runs, the transcript shows a delegation entry naming the agent, which is how you verify the subagent ran rather than the main session answering in place.</p>
 <h2 id="give-the-reviewer-a-complete-assignment">Give the reviewer a complete assignment</h2>
 <p>Ask the main session to collect the diff, then give it a request like this with the bracketed inputs filled in:</p>
-<pre><code class="language-text">Use the change-reviewer subagent to review this change.
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-text" data-copy-source>Use the change-reviewer subagent to review this change.
 
 Requirement: [paste the expected user-visible behavior]
 Changed files: [paste the file paths]
@@ -222,7 +222,7 @@ Constraints: [paste compatibility requirements or repository rules]
 Check whether the changed behavior satisfies the requirement.
 Return actionable findings using the format in your instructions.
 List any tests the main session should run. Do not change files.
-</code></pre>
+</code></pre></div>
 <p>For the ordinary subagent used here, <a href="https://code.claude.com/docs/en/sub-agents#what-loads-at-startup">startup context</a> excludes the main conversation&#39;s history; Claude prepares its task message. Supply the requirement, paths and diff explicitly. Claude Code also supports forks that inherit the conversation; this example uses an ordinary subagent.</p>
 <p>Suppose a change should reject an empty form submission. Include that requirement, the handler&#39;s path and any relevant validation tests. Asking only &quot;review the change&quot; leaves the reviewer to infer what successful behavior should be.</p>
 <p>This agent has no Bash tool, so ask the main session to run the proposed tests. When reading its report, check that each finding identifies a triggering input and a location in the code. A suggestion to &quot;improve validation&quot; is too vague to act on. A report that names an accepted empty value, the handler that accepts it and the missing assertion gives you something to verify.</p>

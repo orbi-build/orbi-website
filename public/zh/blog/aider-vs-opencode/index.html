@@ -226,16 +226,16 @@
 <p>Aider 的 <a href="https://aider.chat/docs/git.html">Git 集成</a>默认会提交它的修改。遇到原本就有未提交改动的文件，它还可能先提交已有改动；自动提交也可以关闭。OpenCode 可以通过工具运行 Git 命令，最终是留下 commit 还是未提交修改，要看任务要求和实际执行的操作。</p>
 <p>所以，光看 <code class="post-code--spaced">git diff</code> 容易漏掉已经提交的代码：agent 提交之后，这条命令可能什么也不输出。</p>
 <p>给两款工具分别准备一个干净的仓库副本，从同一个提交开始。在各自的仓库目录里，用 Bash 运行：</p>
-<pre><code class="language-bash">git status --short
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>git status --short
 trial_base=$(git rev-parse HEAD)
-</code></pre>
+</code></pre></div>
 <p>如果 status 列出了已有改动，先准备干净的试用副本。保留这个终端。等 agent 完成后，回到同一个 Bash 会话运行：</p>
-<pre><code class="language-bash">git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>git rev-parse --verify &quot;${trial_base:?Record trial_base before the run}^{commit}&quot; &gt;/dev/null &amp;&amp;
 git status --short &amp;&amp;
 git diff --stat &quot;$trial_base&quot; -- &amp;&amp;
 git diff &quot;$trial_base&quot; -- &amp;&amp;
 git log --oneline &quot;$trial_base&quot;..HEAD
-</code></pre>
+</code></pre></div>
 <p>相对于 <code class="post-code--single">trial_base</code> 的 diff 会显示已跟踪文件的最终改动，包括已提交、已暂存和尚未暂存的部分。status 还会用 <code class="post-code--single">??</code> 列出未跟踪的新文件；它们的内容不在这个 diff 里，需要另外打开检查。log 则列出开始之后新增的提交。</p>
 <p>这组 Git 检查方法已在隔离仓库验证过，覆盖已提交、未提交的修改和未跟踪文件。它验证的是检查方法，没有测出哪款 agent 写代码更好。</p>
 <h2 id="接受改动前核对检查结果">接受改动前核对检查结果</h2>

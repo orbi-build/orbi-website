@@ -251,18 +251,18 @@
 <p>Before claiming an issue, the runner queried whether its stable delivery branch already existed. It stored the answer in a local variable called <code class="post-code--single">stable_branch_present</code>.</p>
 <p>The code then built a <code class="post-code--single">DeliveryFacts</code> object to pass the observations to the next step. It omitted that field. The object used its default value, <code class="post-code--single">False</code>, even when the query had returned <code class="post-code--single">True</code>.</p>
 <p>The claim path checked the remote branch again. Its race guard was equivalent to this:</p>
-<pre><code class="language-python">if not stable_branch_present and stable_branch_exists(...):
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-python" data-copy-source>if not stable_branch_present and stable_branch_exists(...):
     # Yield: another delivery may have appeared during the claim window.
-</code></pre>
+</code></pre></div>
 <p>This is an explanatory excerpt, not a runnable recovery command. An absent branch at the first observation followed by a present branch at the second can indicate concurrent work. The lost field made an old branch look like that transition on every attempt.</p>
 <p>The <a href="https://github.com/orbi-build/orbi/pull/1596/files">patch</a> passed the observation into the object:</p>
-<pre><code class="language-diff"> return DeliveryFacts(
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-diff" data-copy-source> return DeliveryFacts(
      ...
      stable_branch=stable_branch,
 +    stable_branch_present=stable_branch_present,
      ...
  )
-</code></pre>
+</code></pre></div>
 <p>The race guard remained. The fix gave it the first observation it had been missing.</p>
 <h2 id="what-the-regression-test-checks">What the regression test checks</h2>
 <p>The <a href="https://github.com/orbi-build/orbi/pull/1596/files">new test in PR #1596</a> drives the issue-processing path with a branch-existence stub that always returns <code class="post-code--single">True</code>. Once that first observation reaches the guard correctly, the guard short-circuits and skips its second lookup. The test records the worktree-creation call and asserts that the runner requests <code class="post-code--single">existing_branch=True</code>, returns a PR result and emits no <code class="post-code--single">claim_yield</code> event.</p>

@@ -269,13 +269,13 @@
 <h2 id="长任务启动前-先确认谁在付费">长任务启动前，先确认谁在付费</h2>
 <p>在 Claude Code 中运行 <code class="post-code--single">/status</code> 看账号，运行 <code class="post-code--single">/usage</code> 看订阅用量。<a href="https://code.claude.com/docs/en/authentication">认证文档</a>说明了订阅和 Console 访问的区别。</p>
 <p>还要检查真正启动任务的 shell。下面只显示变量有没有设置，不打印变量值：</p>
-<pre><code class="language-bash">python3 - &lt;&lt;&#39;PY&#39;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>python3 - &lt;&lt;&#39;PY&#39;
 import os
 for name in (&quot;ANTHROPIC_API_KEY&quot;, &quot;ANTHROPIC_AUTH_TOKEN&quot;,
              &quot;ANTHROPIC_BASE_URL&quot;, &quot;CLAUDE_CODE_OAUTH_TOKEN&quot;):
     print(f&quot;{name}: {&#39;set&#39; if os.environ.get(name) else &#39;unset&#39;}&quot;)
 PY
-</code></pre>
+</code></pre></div>
 <p>这个检查只能帮助排查，不能单独证明最终计费路径；配置文件、凭据辅助程序也可能影响认证。官方特别提醒，环境变量里设置了 <code class="post-code--single">ANTHROPIC_API_KEY</code> 时，Claude Code 可能改走 API 计费，不使用 Pro 或 Max 内含额度。<a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan">订阅接入说明</a>也写了如何切换账号。</p>
 <p>远程 shell、cron 或 CI 的环境，可能和你平时打开的终端不同。无人值守任务开始前，查实际作业环境。<a href="/zh/blog/run-claude-code-unattended/">headless 运行指南</a>还说明了怎样留存结果、识别工具被拒；退出码成功不保证需求已经完成。</p>
 <h3 id="cost-显示的是应付账单吗"><code class="post-code--single">/cost</code> 显示的是应付账单吗？</h3>

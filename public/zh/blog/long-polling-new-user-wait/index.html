@@ -269,7 +269,7 @@
 <p>Orbi 已经按这一版开工了，我问：能不能再薄一点？</p>
 <p>回头看现有的开通脚本，发现根本不用新程序。它可以同时跑两份；刷新是一整段，可以整段跳过；新接口返回的东西和原来的清单一模一样。于是只给脚本加了一个开关 <code class="post-code--single">--claim-only</code>：跳过刷新，改去挂长轮询，接到请求后，开通的代码全部照旧。跑一轮就退出。</p>
 <p>循环交给 systemd。完整的服务文件就这么几行：</p>
-<pre><code class="language-ini">[Unit]
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-ini" data-copy-source>[Unit]
 Description=Orbi Cloud provisioning fast claim (long-poll)
 # 这个服务本来就是要不停重启的，关掉默认的启动限流
 # （10 秒内启动 5 次就停掉），否则 Cloud 一出错它就被停了
@@ -286,7 +286,7 @@ RestartSec=1
 
 [Install]
 WantedBy=multi-user.target
-</code></pre>
+</code></pre></div>
 <p>脚本每跑完一轮就退出，systemd 隔 1 秒再把它拉起来。每一轮都从磁盘重新读脚本，所以发新版本时不用写任何「重启服务」的逻辑，下一轮自然就是新代码。前提是部署时先写临时文件、再改名换上去，别直接覆盖一个正在跑的脚本。</p>
 <figure class="post-media">
 <img src="/img/diagrams/longpoll-loop-zh.svg" alt="主机上 systemd 以 Restart=always、RestartSec=1 运行 provisioner.sh --claim-only。每一轮向 Cloud 发请求，Cloud 每秒看一次、最多挂 20 秒、只交出新请求；主机接下请求、准备好环境后退出，1 秒后 systemd 开始下一轮。每分钟一轮的任务照旧刷新凭据、处理重试。" width="720" height="380">

@@ -267,8 +267,8 @@ paid on every future command, forever, by everyone maintaining this. A
 notification is not worth a permanent fork in the grammar.</p>
 <h2 id="the-regex-is-three-decisions-in-one">The regex is three decisions in one</h2>
 <p>Anchoring at the start of a line, with the multiline flag:</p>
-<pre><code class="post-code--spaced">(?mi)^/milestone[\t ]+(\S+)[\t ]*$
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>(?mi)^/milestone[\t ]+(\S+)[\t ]*$
+</code></pre></div>
 <p>Prow writes this in Go. bors splits the comment into lines and anchors each one
 in Elixir. Two unrelated implementations made the same choice, usually a sign
 the choice is load-bearing.</p>
@@ -292,10 +292,10 @@ starting with <code class="post-code--single">/hold</code> and fires.</p>
 <p>Prow knows this. There is a function for it, <code class="post-code--single">DropCodeBlock</code>, in
 <code class="post-code--single">pkg/markdown/code_block.go</code>, with a 2025 copyright header. So we checked how
 widely it is used:</p>
-<pre><code class="post-code--spaced">$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="post-code--spaced" data-copy-source>$ grep -rn &quot;DropCodeBlock&quot; --include=*.go . | grep -v _test.go
 pkg/plugins/trigger/generic-comment.go:66
 pkg/markdown/code_block.go:25   (the definition)
-</code></pre>
+</code></pre></div>
 <p>One call site. Out of fifty-plus plugins. Writing <code class="post-code--single">/hold</code> inside a fenced block
 on Prow fires today.</p>
 <p>This is not a criticism of Prow&#39;s engineers; it is a structural consequence of
@@ -324,11 +324,11 @@ Then <code class="post-code--single">run/1</code> at <code class="post-code--sin
 command in one comment and checks once, before executing any of them. That is
 the right shape.</p>
 <p>But <code class="post-code--single">run/2</code> is reachable directly, and <code class="post-code--single">command.ex:513-516</code> reaches it:</p>
-<pre><code class="language-elixir">def run(c, :retry) do
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-elixir" data-copy-source>def run(c, :retry) do
   {commenter, cmd} = Logging.most_recent_cmd(c.patch)
   run(%{c | commenter: commenter}, cmd)
 end
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">:retry</code> requires only <code class="post-code--single">:member</code> (<code class="post-code--single">command.ex:376</code>). It replays a historical
 command <strong>under the original commenter&#39;s identity</strong>, and it enters through
 <code class="post-code--single">run/2</code>, so the gate in <code class="post-code--single">run/1</code> never runs. A member can replay a reviewer&#39;s
@@ -357,7 +357,7 @@ unregistered name, so a typo fails immediately instead of writing a silently
 misnamed event. And a binding test pins the registry against the EN/ZH
 documentation tables and the exporter&#39;s known kinds, in all three directions.</p>
 <p>So the command registry looks the same:</p>
-<pre><code class="language-python">@dataclass(frozen=True)
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-python" data-copy-source>@dataclass(frozen=True)
 class CommandSpec:
     name: str                    # the registry key and the receipt marker
     verbs: tuple[str, ...]       # the shared layer builds the regex from these
@@ -368,7 +368,7 @@ class CommandSpec:
     description: str
 
 TICKET_COMMANDS: dict[str, CommandSpec] = { ... }
-</code></pre>
+</code></pre></div>
 <p>The shared layer alone owns regex construction with the anchor,
 fenced-block stripping, quoted-line stripping, skipping the runner&#39;s own
 comments, permission enforcement, last-occurrence-wins, and receipts.

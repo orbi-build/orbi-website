@@ -197,8 +197,8 @@
 <li><strong>The base is current.</strong> The pull request must contain the latest <code class="post-code--single">main</code>, absorbed by a plain merge, not a rebase that rewrites what was reviewed.</li>
 </ul>
 <p>In the merge step that is one command, and the pin is the whole point:</p>
-<pre><code class="language-bash">gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_HEAD&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_HEAD&quot;
+</code></pre></div>
 <p>If the remote head moved after the review, that call fails instead of merging something nobody reviewed. Only then does the merge land, pinned to that exact commit. If any condition fails the Issue moves to a state that waits for the next tick, or stops for a human. There is no path where a delivery merges because it looked fine.</p>
 <p>These are ordinary conditions. Any team would say them out loud in a code review conversation. The difference is that they are three lines in a state machine rather than three habits in a person&#39;s head, so they hold at 3 a.m. on the ninetieth pull request.</p>
 <h2 id="what-a-person-still-does">What a person still does</h2>

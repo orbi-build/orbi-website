@@ -221,9 +221,9 @@
           </ol>
         </details>
 <p>In Claude Code headless mode, <code class="post-code--spaced">claude -p</code> runs one prompt without the interactive UI, prints the result and exits (<a href="https://code.claude.com/docs/en/headless">docs</a>). It exits non-zero when Claude itself fails, but a denied tool call doesn&#39;t count as a failure, so a run with a denied call still exits 0. With no one to answer prompts, a headless run denies anything that needs approval, so decide up front what it may do. The simplest setup is the <code class="post-code--single">auto</code> permission mode:</p>
-<pre><code class="language-bash">claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude -p &quot;Fix the failing test in tests/test_auth.py&quot; \
   --permission-mode auto --permission-prompts none
-</code></pre>
+</code></pre></div>
 <p>Run on its own, that command won&#39;t tell you a call was denied: add <code class="post-code--spaced">--output-format json</code> and check <code class="post-code--single">permission_denials</code>, whatever mode you use. The full script is below.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
 <p><code class="post-code--spaced">--permission-prompts none</code> is optional. In cron or CI nobody can answer a prompt anyway; what the flag adds is that Claude stops retrying denied actions and drops tools that need a person to answer, such as AskUserQuestion. It needs Claude Code v2.1.259 or later, so drop it on older versions.</p>
 <p><code class="post-code--single">auto</code> isn&#39;t always available either. If the model doesn&#39;t support it, or a settings file or Anthropic turns it off, the session starts in Manual mode (<code class="post-code--spaced">--permission-mode default</code>), and any write you didn&#39;t pre-approve is denied. So for a nightly job I use <code class="post-code--single">dontAsk</code> with an allowlist, which doesn&#39;t depend on <code class="post-code--single">auto</code> at all; the check script below is set up that way. In a headless run <code class="post-code--single">dontAsk</code> allows the same things as <code class="post-code--single">default</code> with the same allowlist. The difference is that the <a href="https://code.claude.com/docs/en/permission-modes">docs</a> make it the locked-down mode for CI: it denies even explicit <code class="post-code--single">ask</code> rules and AskUserQuestion, and the session never waits for input.</p>
@@ -243,7 +243,7 @@
 <p>The second session ran <code class="post-code--spaced">claude --bare -p &quot;say hi&quot; --output-format json</code> with no <code class="post-code--single">ANTHROPIC_API_KEY</code>. <code class="post-code--single">--bare</code> doesn&#39;t read a subscription login, so this run was meant to fail, and I wanted to see what failure looks like. It exited 1, and the JSON still said <code class="post-code--spaced">&quot;subtype&quot;: &quot;success&quot;</code>. The failure showed only in <code class="post-code--spaced">&quot;is_error&quot;: true</code> and in <code class="post-code--single">result</code>, which read <code class="post-code--spaced">Not logged in · Please run /login</code>.</p>
 <p>The third session asked for a file to be written under <code class="post-code--spaced">--permission-mode default</code>, where nothing approves writes in a headless run. Nothing was written. The run exited 0, with <code class="post-code--spaced">&quot;subtype&quot;: &quot;success&quot;</code> and <code class="post-code--spaced">&quot;is_error&quot;: false</code>. The only sign was <code class="post-code--single">permission_denials</code>, which listed the two tool calls that were refused: a Bash redirect and the Write tool. I hadn&#39;t pre-approved any write, which is exactly the position a nightly job is in when <code class="post-code--single">auto</code> isn&#39;t available and the session starts in Manual mode (<code class="post-code--single">default</code>) as described above. That job can exit 0 night after night with nothing done.</p>
 <p>So a script has to check three things: the exit code, <code class="post-code--single">is_error</code>, and whether <code class="post-code--single">permission_denials</code> is empty. I haven&#39;t seen a run exit 0 with <code class="post-code--single">is_error</code> true, so that check is a cheap second line. Put this in a bash script rather than typing it into a terminal, because <code class="post-code--spaced">exit 1</code> would close your shell. It needs <code class="post-code--single">jq</code>:</p>
-<pre><code class="language-bash">out=$(claude -p &quot;Run the test suite and fix what fails&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>out=$(claude -p &quot;Run the test suite and fix what fails&quot; \
   --permission-mode dontAsk --allowedTools &quot;Read,Edit,Bash(npm test *)&quot; \
   --output-format json)
 status=$?
@@ -263,7 +263,7 @@ if [ &quot;$denied&quot; -ne 0 ]; then
   jq -r &#39;.permission_denials[].tool_name&#39; &lt;&lt;&lt;&quot;$out&quot; &gt;&amp;2
   exit 1
 fi
-</code></pre>
+</code></pre></div>
 <p><code class="post-code--single">dontAsk</code> denies anything that would otherwise ask for approval, while reads and the tools you list still run. <code class="post-code--spaced">Bash(npm test *)</code> allows <code class="post-code--spaced">npm test</code> with or without arguments, and read-only commands such as <code class="post-code--single">ls</code>, <code class="post-code--single">cat</code> and <code class="post-code--single">grep</code> usually need no allowlist entry, though explicit deny rules still apply.</p>
 <p>Because <code class="post-code--single">Edit</code> is allowed, Claude can change what <code class="post-code--spaced">npm test</code> runs. The allowlist guards against mistakes; it isn&#39;t a sandbox, so run the job as a dedicated user (see below). Any other Bash command that needs approval is denied and fails the script, so run the job once by hand, read <code class="post-code--single">permission_denials</code>, and add the commands you&#39;re happy to allow. Every failure path, including empty or non-JSON output, exits 1; I tried each one against a fake <code class="post-code--single">claude</code> script on the <code class="post-code--single">PATH</code>.</p>
 <h3 id="headless-authentication-api-key-or-subscription-token">Headless authentication: API key or subscription token</h3>
@@ -272,15 +272,15 @@ fi
 <p>The <a href="https://code.claude.com/docs/en/authentication#generate-a-long-lived-token">authentication docs</a> cover both. To keep the repository&#39;s own settings and <code class="post-code--single">.mcp.json</code> out of a run that can&#39;t use <code class="post-code--single">--bare</code>, add <code class="post-code--spaced">--setting-sources user</code>, and <code class="post-code--spaced">--settings &#39;{&quot;disableAllHooks&quot;:true}&#39;</code> turns hooks off for one run. Anthropic also says <code class="post-code--single">--bare</code> will become the default for <code class="post-code--single">-p</code> in a future release, so a token-based setup may need changing then.</p>
 <h3 id="a-minimal-cron-job">A minimal cron job</h3>
 <p>cron runs with a short <code class="post-code--single">PATH</code> and none of your shell setup, so spell out the directory, the binary and the credentials. Put the token in a file only the user running the job can read (<code class="post-code--spaced">chmod 600</code>), and <code class="post-code--single">export</code> it, or Claude won&#39;t see it:</p>
-<pre><code class="language-bash"># ~/.claude-nightly.env
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source># ~/.claude-nightly.env
 export CLAUDE_CODE_OAUTH_TOKEN=&quot;...&quot;
 export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
-</code></pre>
+</code></pre></div>
 <p>The commands Claude runs during the job, such as your test runner, get their <code class="post-code--single">PATH</code> from this file too, so add the directories your tools live in.</p>
 <p>Save the check script from &quot;What a headless run returns&quot; above as <code class="post-code--single">$HOME/bin/claude-nightly.sh</code>, with <code class="post-code--spaced">#!/usr/bin/env bash</code> as its first line, and <code class="post-code--spaced">chmod +x</code> it. It exits 1 when anything was denied. Then, in that user&#39;s crontab, with your own repository path:</p>
-<pre><code class="language-bash"># crontab -e: every night at 03:00
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source># crontab -e: every night at 03:00
 0 3 * * * cd /srv/myrepo &amp;&amp; . &quot;$HOME/.claude-nightly.env&quot; &amp;&amp; &quot;$HOME/bin/claude-nightly.sh&quot; &gt;&gt; &quot;$HOME/claude-nightly.log&quot; 2&gt;&amp;1
-</code></pre>
+</code></pre></div>
 <p>The script finds <code class="post-code--single">claude</code> through the <code class="post-code--single">PATH</code> set in the env file, so make sure that <code class="post-code--single">PATH</code> includes the directory <code class="post-code--spaced">which claude</code> prints. The log gets a line explaining each failed run; a failure before the script starts, such as a bad <code class="post-code--single">cd</code>, won&#39;t show up in it. Look in cron&#39;s mail or the system log for those. Don&#39;t drop the <code class="post-code--single">permission_denials</code> check. If you switch to <code class="post-code--single">auto</code> and it isn&#39;t available, the session starts in Manual mode, a denied write still exits 0, and only that check marks the run as failed.</p>
 <p>If one scheduled job like that is all you need, you&#39;re done.</p>
 <h2 id="keep-a-claude-code-vps-job-running-after-ssh-disconnects">Keep a Claude Code VPS job running after SSH disconnects</h2>
@@ -309,10 +309,10 @@ export PATH=&quot;/usr/local/bin:$HOME/.local/bin:$PATH&quot;
 <h3 id="start-disconnect-and-reconnect">Start, disconnect and reconnect</h3>
 <p>The following example assumes a trusted Python repository at <code class="post-code--single">/srv/myrepo</code>, with a <code class="post-code--single">greet</code> function and a unittest suite. Change the path, prompt and test command together for your own project. Run it once with a person present before scheduling it.</p>
 <p>As the job user, create a fresh result directory and open tmux. The first command intentionally fails if the directory already exists, so do not reuse an old job&#39;s evidence:</p>
-<pre><code class="language-bash">mkdir &quot;$HOME/claude-vps-demo&quot; &amp;&amp; tmux new-session -s cc-vps-demo
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>mkdir &quot;$HOME/claude-vps-demo&quot; &amp;&amp; tmux new-session -s cc-vps-demo
+</code></pre></div>
 <p>Inside the tmux terminal, save the command as a script and run it:</p>
-<pre><code class="language-bash">cat &gt; &quot;$HOME/claude-vps-demo/run.sh&quot; &lt;&lt;&#39;SH&#39;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>cat &gt; &quot;$HOME/claude-vps-demo/run.sh&quot; &lt;&lt;&#39;SH&#39;
 #!/usr/bin/env bash
 cd /srv/myrepo &amp;&amp;
 claude -p &quot;Make greet reject empty or whitespace-only names with ValueError. Add regression tests, keep the valid-name behavior, and run python3 -m unittest.&quot; \
@@ -325,11 +325,11 @@ rc=$?
 printf &#39;%s\n&#39; &quot;$rc&quot; &gt; &quot;$HOME/claude-vps-demo/exit-code&quot;
 SH
 bash &quot;$HOME/claude-vps-demo/run.sh&quot;
-</code></pre>
+</code></pre></div>
 <p>The writes are pre-approved for this trusted repository; treat that as an allowlist, and leave OS-level isolation to the dedicated user account, which should hold no unrelated credentials. To detach while Claude runs, press <code class="post-code--single">Ctrl-b</code>, release both keys, then press <code class="post-code--single">d</code>. You can now close SSH. Reconnect as the same user and run <code class="post-code--spaced">tmux attach-session -t cc-vps-demo</code> to return to that terminal. The shell stays open after the command finishes.</p>
 <h3 id="check-the-result-before-counting-it-as-done">Check the result before counting it as done</h3>
 <p>No <code class="post-code--single">exit-code</code> file means the wrapper did not finish recording a result; it is not a success. From a reconnected shell, inspect the log and check the recorded exit code, non-empty JSON and permission-denial array together:</p>
-<pre><code class="language-bash">cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>cat &quot;$HOME/claude-vps-demo/stderr.log&quot;
 if test &quot;$(cat &quot;$HOME/claude-vps-demo/exit-code&quot;)&quot; = 0 &amp;&amp;
    test -s &quot;$HOME/claude-vps-demo/result.json&quot; &amp;&amp;
    jq -e &#39;.is_error == false and
@@ -339,7 +339,7 @@ if test &quot;$(cat &quot;$HOME/claude-vps-demo/exit-code&quot;)&quot; = 0 &amp;
 else
   echo &quot;Run incomplete or failed; inspect its JSON and log.&quot; &gt;&amp;2
 fi
-</code></pre>
+</code></pre></div>
 <p>Then read the changed files or <code class="post-code--spaced">git diff</code> and independently run <code class="post-code--spaced">python3 -m unittest -v</code> from <code class="post-code--single">/srv/myrepo</code>. In the VM test, this checked the valid name, empty name and whitespace-only name cases. I also checked the result-reading condition with denied tools, missing fields, empty output, invalid JSON and a non-zero exit code; those cases did not print the success message.</p>
 <p>This test covered an SSH client disappearing while the VM kept running. It did not test reboot recovery. After a host reboot, tmux&#39;s processes are gone; use a separately designed service or scheduler for restart behavior. To continue a recorded Claude conversation, <code class="post-code--single">--resume</code> uses its session ID, but a resumed conversation still needs a live process and a check of the work already done.</p>
 <h2 id="six-things-a-headless-loop-doesn-t-answer">Six things a headless loop doesn&#39;t answer</h2>
@@ -359,12 +359,12 @@ fi
 <p>Orbi claimed it a minute after I filed it, opened <a href="https://github.com/orbi-build/orbi/pull/1505">PR #1505</a>, passed the independent review with no findings and merged 45 minutes after the claim. The gate now reads the labels one last time, and an <code class="post-code--single">ai-blocked</code> Issue stops the merge.</p>
 <p><img src="/img/headless-1504-merged.webp" alt="The end of the #1504 timeline: Orbi opened PR #1505, merged it after one review round, and swapped ai-pr-opened for ai-merged"></p>
 <p>If your loop ends in <code class="post-code--spaced">gh pr merge</code>, it has the same hole. A few lines in front of it narrow it for an immediate merge, though not to zero: a label added between the read and the merge still gets through. Save them as a bash script and run that; pasted into an interactive terminal, the <code class="post-code--single">:</code> line reports the error but doesn&#39;t exit, and the lines after it still run:</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 : &quot;${ISSUE:?}&quot; &quot;${PR:?}&quot; &quot;${REVIEWED_SHA:?missing the SHA the review approved}&quot;
 labels=$(gh issue view &quot;$ISSUE&quot; --json labels -q &#39;.labels[].name&#39;) || exit 1
 grep -qx ai-blocked &lt;&lt;&lt;&quot;$labels&quot; &amp;&amp; { echo &quot;blocked: $ISSUE&quot;; exit 3; }
 gh pr merge &quot;$PR&quot; --squash --match-head-commit &quot;$REVIEWED_SHA&quot;
-</code></pre>
+</code></pre></div>
 <p>The <code class="post-code--single">:</code> line stops if the Issue, the PR or the reviewed SHA is missing. The <code class="post-code--single">labels=</code> line exits if the labels can&#39;t be read, so a failed lookup never becomes a merge. A blocked Issue makes the script exit 3, so your loop doesn&#39;t count it as a success, and <code class="post-code--single">--match-head-commit</code> merges only the commit that was reviewed.</p>
 <p>A merge queue is the exception. There, <code class="post-code--spaced">gh pr merge</code> enables auto-merge if required checks haven&#39;t passed, and adds the PR to the queue if they have, and this script never sees a blocking label added after that.</p>
 <h3 id="what-happens-when-it-fails">What happens when it fails</h3>

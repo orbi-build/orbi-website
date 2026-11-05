@@ -187,32 +187,32 @@
           </ol>
         </details>
 <p>Ralph loop（也叫 Ralph Wiggum 循环、Ralph 循环）是一种让编程 agent 无人值守干活的办法：同一段提示词反复喂给 agent，一轮接一轮。最原始的写法自己不会停，常见的做法是加一个出口，让 agent 自己宣布活干完了。这个名字是 Geoffrey Huntley 在 <a href="https://ghuntley.com/ralph/">2025 年 7 月的文章</a>里起的，最小写法只有一行 bash（原文写的是 <code class="post-code--single">claude-code</code>，换成现在的 Claude Code 命令行就是 <code class="post-code--spaced">claude -p</code>）：</p>
-<pre><code class="language-bash">while :; do cat PROMPT.md | claude-code ; done
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>while :; do cat PROMPT.md | claude-code ; done
+</code></pre></div>
 <p>每一轮都是新会话，agent 只能靠上一轮留在仓库里的文件知道做到了哪。它往前做一步就退出，循环再把它拉起来。Thoughtworks 在 2026 年 4 月把 <a href="https://www.thoughtworks.com/en-us/radar/techniques/ralph-loop">Ralph loop 收进了技术雷达</a>，放在「评估」环，意思是值得了解它会带来什么影响，还没到建议在项目里试用的程度。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
 <p>Huntley 说这适合从零起的新项目，「预期做到九成」。他说自己绝不会用在现有代码库上，还提醒你「时不时醒来会发现代码库编译不过」。写提示词的建议是每轮只让它做一件事。</p>
 <p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 是一座软件黑灯工厂：一张 GitHub Issue 进去，编程 agent 写代码，另一个会话评审，然后合并，多数时候不用人守着。调度这一切的程序叫 runner，runner 本身也是一个循环。我一直想知道，最朴素的 Ralph loop 会在哪出问题、最后由谁收尾。10 月 10 日我用 Claude Code 跑了一次，对象是一个很小的 Python 库。第 4 轮测试全绿，agent 写下了 DONE。之后我另开一个会话评审，花了 0.11 美元，它找出一处不符合规格的地方，结论是不能合并。</p>
 <h2 id="官方-ralph-loop-插件默认不设轮数上限">官方 ralph-loop 插件默认不设轮数上限</h2>
 <p>Anthropic 把这个思路做成了 Claude Code 插件 <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ralph-loop">ralph-loop</a>，早先叫 ralph-wiggum。它不用外层的 bash 循环，而是用一个 Stop hook：Claude 想结束会话时被拦下，同一段提示词再塞回去。所以整个循环跑在一个会话里，上下文会一轮轮累积下来。用法是：</p>
-<pre><code class="language-text">/ralph-loop &quot;&lt;提示词&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
-</code></pre>
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>/ralph-loop &quot;&lt;提示词&gt;&quot; --max-iterations 20 --completion-promise &quot;DONE&quot;
+</code></pre></div>
 <p>不加参数它就不会停。启动循环的脚本 <code class="post-code--single">setup-ralph-loop.sh</code> 里，<code class="post-code--single">--max-iterations</code> 默认是 0，也就是不限轮数，启动时会提示：不设上限、也不设完成暗号的话，循环会一直跑下去。想中途结束，插件带了一个 <code class="post-code--single">/cancel-ralph</code> 命令。README 的建议是永远设上 <code class="post-code--single">--max-iterations</code>。</p>
 <p>除了到上限或手动取消，循环是否结束由 agent 自己说了算：只有 Claude 写出你设定的完成暗号（这里是 <code class="post-code--single">&lt;promise&gt;DONE&lt;/promise&gt;</code>）循环才会结束，每轮塞回去的提示里还专门写了一句「别为了退出撒谎」。</p>
 <p>Claude Code 另外内置了 <a href="https://code.claude.com/docs/zh-CN/goal"><code class="post-code--single">/goal</code></a> 命令：每一轮结束后，由另一个模型检查条件有没有满足，而不是干活的那个模型自己说了算。</p>
 <h2 id="用-claude-code-实测一次-ralph-loop">用 Claude Code 实测一次 Ralph loop</h2>
 <p>我没用插件，用的是 Huntley 那种外层循环，这样每一轮都是一个独立进程，方便量。</p>
 <p>任务是一个叫 textkit 的小库：<code class="post-code--single">slugify</code>、<code class="post-code--single">truncate</code>、<code class="post-code--single">wrap</code> 三个函数加一个命令行。规格一共 4 条，后面要用到的那条是「重音字母折成 ASCII（é → e）；不是 a-z 或 0-9 的连续字符变成一个 <code class="post-code--single">-</code>」。我照规格写了 15 个测试，textkit 包里先不写实现，测试全红。<code class="post-code--single">PROMPT.md</code> 全文如下：</p>
-<pre><code class="language-text">Study spec.md and fix_plan.md. Pick the single most important unfinished item,
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>Study spec.md and fix_plan.md. Pick the single most important unfinished item,
 implement it, and run `python -m pytest -q`.
 Update fix_plan.md (create it if missing) with what is done and what is left,
 then commit with git.
 Only when every test passes and fix_plan.md lists nothing left, write the word
 DONE into a file named STATUS.
-</code></pre>
+</code></pre></div>
 <p>意思是：读规格和 <code class="post-code--single">fix_plan.md</code>，挑一件最重要的事做完、跑测试、更新 <code class="post-code--single">fix_plan.md</code>、git 提交；全部通过时在 <code class="post-code--single">STATUS</code> 文件里写 DONE。</p>
 <p>我给循环设了 10 轮上限，用 Claude Code 2.1.281 的 headless 模式跑，模型是 Claude Opus 5.5，登录的是订阅。<code class="post-code--spaced">--setting-sources &quot;&quot;</code> 让我自己的 CLAUDE.md、hooks 和插件都不参与，<code class="post-code--single">--strict-mcp-config</code> 不加载 MCP 服务，更接近一台干净的机器。<code class="post-code--single">dontAsk</code> 的意思是白名单以外、本该弹确认的调用一律拒绝，不等人。下面的脚本比我实测那版多了三处保护：先清掉旧的 DONE，某一轮失败就停，每轮把被拒的调用打印出来。<code class="post-code--single">claude</code> 的参数和实测时一样，每轮的 JSON 也同样存在仓库外面。存成脚本用，需要装 <code class="post-code--single">jq</code>。</p>
 <p>我用一个假的 <code class="post-code--single">claude</code> 放进 <code class="post-code--single">PATH</code> 逐个试过：上次残留的 DONE 会先被清掉，不会让循环提前结束；非零退出码、<code class="post-code--single">is_error</code> 为 true、空输出、跑满 10 轮没有 DONE，都会让脚本以 1 退出。</p>
-<pre><code class="language-bash">#!/usr/bin/env bash
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # 在任务仓库里运行；每轮的日志写到仓库外面的上一级目录。
 rm -f STATUS
 for i in $(seq 1 10); do
@@ -229,7 +229,7 @@ for i in $(seq 1 10); do
   [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] &amp;&amp; break
 done
 [ &quot;$(cat STATUS 2&gt;/dev/null)&quot; = DONE ] || { echo &quot;no DONE after 10 rounds&quot; &gt;&amp;2; exit 1; }
-</code></pre>
+</code></pre></div>
 <p>每轮结束我数一次通过的测试，再读 JSON。订阅登录不按次扣钱，表里的花费是 Claude Code 按 API 价格自己估的，下文所有美元数字都是这个口径。</p>
 <p class="post-table-hint" hidden>左右滑动查看所有列。</p><div class="post-table-scroll" tabindex="0" role="region" aria-label="左右滑动查看所有列。"><table class="table-comparison">
 <thead>
@@ -279,16 +279,16 @@ done
 <p>接着我照着规格另写了 13 个测试，循环从没见过，比如 <code class="post-code--spaced">slugify(&quot;Ça va, l&#39;été 2026&quot;)</code>、自定义省略号、宽度从 1 到 19 的每种截断长度、制表符、不带参数的命令行。13 个全过，测试层面已经挑不出问题。</p>
 <h2 id="换一个会话来评审-发现-slugify-不符合规格">换一个会话来评审，发现 slugify 不符合规格</h2>
 <p>然后我把 diff 和规格交给一个新的 <code class="post-code--spaced">claude -p</code> 会话。用的还是同一个模型，在 <code class="post-code--single">dontAsk</code> 下不给白名单，并在提示词里要求它不用工具，也不带写代码那个会话的历史。评审提示词如下，后面接上规格和 diff：</p>
-<pre><code class="language-text">You are reviewing a change you did not write. Do not use any tools; answer
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>You are reviewing a change you did not write. Do not use any tools; answer
 from the text below. List every place where the code does not meet the spec,
 or is wrong for an input the spec covers. For each: the input, expected,
 actual. Last line: MERGE or DO NOT MERGE.
-</code></pre>
+</code></pre></div>
 <p>意思是：这段改动不是你写的，只根据下面的文字回答，逐条列出代码不符合规格的地方，写明输入、期望和实际，最后一行只写 MERGE 或 DO NOT MERGE。</p>
 <p>花了 0.11 美元，结论是 DO NOT MERGE。它找到的问题是真的：循环写的 <code class="post-code--single">slugify</code> 用 <code class="post-code--spaced">encode(&quot;ascii&quot;, &quot;ignore&quot;)</code> 折重音，这一步会把折不成 ASCII 的字符直接删掉，本该把它变成 <code class="post-code--single">-</code> 的正则根本看不到它：</p>
-<pre><code class="language-text">slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   （规格：&#39;foo-bar&#39;）
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>slugify(&quot;foo—bar&quot;)  -&gt; &#39;foobar&#39;   （规格：&#39;foo-bar&#39;）
 slugify(&quot;a€b&quot;)      -&gt; &#39;ab&#39;       （规格：&#39;a-b&#39;）
-</code></pre>
+</code></pre></div>
 <p>一共 28 个测试，没有一个用到破折号或货币符号，所以全部通过，代码却违反了规格。</p>
 <p>我把评审意见当作下一轮的提示词再喂回去。这一轮花了 0.26 美元，修好了 <code class="post-code--single">slugify</code>，按评审列出的输入补了 6 个测试，仓库里的测试从 15 个变成 21 个，又写下 DONE；我那 13 个也仍然全过。第二次评审（0.15 美元）给了 MERGE，同时列出 8 处规格本身有两种读法的地方，比如 <code class="post-code--single">x²</code> 里的上标 <code class="post-code--single">²</code> 算不算数字。这类问题评审定不了，得由定规格的人拍板。</p>
 <p>循环、两次评审加一轮修复，一共 1.24 美元左右。</p>

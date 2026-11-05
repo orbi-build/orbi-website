@@ -265,12 +265,12 @@
 <p>这张票一共起了 4 个 Pi 会话，1 个实现、3 个评审。按 Orbi Cloud 的用量记录，Pi 跑了 51 分钟，发了 164 次模型请求，输出 10.8 万 token，缓存读取 841 万 token，模型都是 <code class="post-code--single">deepseek-flash</code>（DeepSeek-V4.1-Flash）。四个会话都不在 DeepSeek 的高峰时段，按公开价整张票大约 0.12 美元。</p>
 <h2 id="orbi-怎么调用-pi">Orbi 怎么调用 Pi</h2>
 <p>每个 Pi 会话都是一个 <code class="post-code--spaced">pi --print</code> 进程；Cloud 上的 runner 现在用的是 10 月 1 日发布的 Pi 1.0。去掉提示词正文，命令长这样（见 <a href="https://github.com/orbi-build/orbi/blob/main/src/orbi/pi_command.py"><code class="post-code--single">src/orbi/pi_command.py</code></a>）：</p>
-<pre><code class="language-text">pi [--no-tools] [--no-extensions [--extension &lt;白名单里的扩展&gt;]] \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-text" data-copy-source>pi [--no-tools] [--no-extensions [--extension &lt;白名单里的扩展&gt;]] \
    [--skill &lt;路径&gt; ...] \
    [--provider &lt;p&gt;] [--model &lt;m&gt;] [--thinking &lt;级别&gt;] \
    --print --session-dir &lt;本次 run 的目录&gt; \
    --system-prompt &lt;角色提示词&gt; &lt;issue 上下文&gt;
-</code></pre>
+</code></pre></div>
 <p>扩展白名单写在 Orbi 的配置里。Cloud 上它只有一项，就是 Pi 自带的 Codemode 扩展，所以实现和评审会话带着 <code class="post-code--single">--no-extensions</code> 也照样有 Codemode。runner 的 Pi 设置里还另外打开了 Codemode 这个工具，光加扩展是不会打开的（「如果你也想无人值守地跑 Pi」一节有细说）。</p>
 <p>实现会话带工具，加载 Orbi 交付用的 skill（其中有 <code class="post-code--single">tdd-dev</code>，先写会失败的测试再写代码），用实现模型。动代码之前它先写 <code class="post-code--single">.orbi/plan.md</code>：目标、看过哪些文件、要做的任务、拿什么命令验证。然后在这张 issue 的 worktree 里改代码、跑测试，停在一次 commit 上。</p>
 <p>评审会话是对着 PR 另起的。它的活是审这一份 diff，有问题就在这份 diff 上修到能合，所以 03:51 那个评审推过提交。Orbi 不给它传两个 skill：<code class="post-code--single">tdd-dev</code> 会把它带去从头实现这张票；<code class="post-code--single">review-fix-loop</code>（审、修、再审，直到没问题）会在会话里再套一层评审循环，而 runner 外面已经在跑一层了。评审可以单独配模型（<code class="post-code--single">review_pi_provider</code>、<code class="post-code--single">review_pi_model</code>），结束时必须输出一行 <code class="post-code--spaced">REVIEW_VERDICT {...}</code> JSON，Orbi 解析的就是这一行。</p>
@@ -396,7 +396,7 @@
 <h2 id="两次事故">两次事故</h2>
 <p>第一次是扩展惹的祸。9 月 4 日晚上，run 开始卡住，卡在 Pi 发出第一个模型请求之前，z.ai 上有，Gemini 上也有。每个都干等 15 分钟，直到空转检测把它杀掉、把 issue 标成 <code class="post-code--single">ai-blocked</code>。卡住的 <code class="post-code--single">pi</code> 进程活着，但几乎不动，两分半钟只用了 2 秒 CPU；没有任何连到模型 API 的 TCP 连接，唯一的 socket 连着当前用户的 D-Bus；会话目录是空的，Pi 连会话文件都还没建。</p>
 <p>同样的配置在 shell 里手动跑，连续 20 多次都正常。systemd 用户服务拉起来的 run 不是每个都卡，但卡住的都是它拉起来的。在 Linux 上碰到类似症状，可以把下面这段存成 <code class="post-code--single">pi-hang.sh</code>，用运行 pi 的那个用户执行，传入 pi 进程的 pid 和任务 worktree 来确认。在 Cloud 上，pi 进程是 Orbi 日志里 <code class="post-code--single">process_spawned</code> 那一行所记 pid 的子进程。</p>
-<pre><code class="language-bash"># 用法：bash pi-hang.sh &lt;pi 进程的 pid&gt; &lt;任务 worktree&gt;
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source># 用法：bash pi-hang.sh &lt;pi 进程的 pid&gt; &lt;任务 worktree&gt;
 PID=$1 WT=$2
 [ &quot;$(ps -o comm= -p &quot;$PID&quot; 2&gt;/dev/null)&quot; = pi ] || { echo &quot;$PID 不是正在运行的 pi 进程&quot;; exit 1; }
 ls &quot;/proc/$PID/fd&quot; &gt;/dev/null 2&gt;&amp;1 || { echo &quot;请用运行 pi 的那个用户来跑&quot;; exit 1; }
@@ -415,7 +415,7 @@ awk -v p=&quot;pid=$PID,&quot; &#39;$0 ~ p {print $8}&#39; &lt;&lt;&lt;&quot;$un
 
 # 4. 会话文件建出来没有（我们那次是空的）
 ls -la &quot;$WT/.pi-session/&quot;
-</code></pre>
+</code></pre></div>
 <p>原因是一个装在用户级别的 Pi 扩展包 <code class="post-code--single">pi-mcp-adapter</code>。它启动时通过 D-Bus 向桌面的 Secret Service 要钥匙串，在 systemd 用户服务里，这个请求有时永远等不到回应。为什么会这样，我们没再往下挖。把它从 <code class="post-code--single">~/.pi/agent/settings.json</code> 里去掉，同一个 run 15 秒就拿到了第一个模型响应（<a href="https://github.com/orbi-build/orbi/issues/311">排查过程见 orbi#311</a>）。长期的修法是 <a href="https://github.com/orbi-build/orbi/issues/249">orbi#249</a>，这张票 9 月 3 日就开着，9 月 7 日（UTC）合入：实现和评审会话一律带 <code class="post-code--single">--no-extensions</code> 启动，只加载 Orbi 配置里列出的扩展。它只管扩展，这一点跟下一个事故有关。之后 Orbi 怎么加载 Pi 扩展（钉死版本的白名单），以及我们自己最后写了哪两个扩展，见<a href="/zh/blog/pi-extensions-in-production/">《Pi 扩展在生产环境里怎么用》</a>。</p>
 <p>第二次是 runner 跑错了模型。9 月 20 日我新配了一个 runner，本来要通过 Pi 用 GPT。配置里写了仓库，却漏了 <code class="post-code--single">pi_provider</code> 和 <code class="post-code--single">pi_model</code>，Orbi 就没传 <code class="post-code--single">--provider</code> 和 <code class="post-code--single">--model</code>，Pi 退回去用这个系统用户 <code class="post-code--single">~/.pi/agent/settings.json</code> 里的 <code class="post-code--single">defaultModel</code>，这一项 #249 没管。我以为它是 GPT runner。Orbi 的日志会在会话启动时记下实际用的 provider 和模型，那一行写的却是 <code class="post-code--spaced">provider=LLAMA_INTRANET model=qwen3.8:27b</code>，一个本地模型。没有任何报错，唯一的线索就是那一行，好在我当天就看到了。现在每个 runner 的配置都写明 provider 和模型。这是约定，Orbi 不强制检查，所以实际跑的是哪个模型，看启动行，不看配置。</p>
 <h2 id="如果你也想无人值守地跑-pi">如果你也想无人值守地跑 Pi</h2>

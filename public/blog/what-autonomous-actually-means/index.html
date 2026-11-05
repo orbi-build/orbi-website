@@ -254,7 +254,7 @@ finding and goes again at 3am while everyone is asleep.</p>
 <h2 id="trying-it">Trying it</h2>
 <p>The whole loop is one container. systemd runs as PID 1 inside it, which is what
 the cgroup bind is for:</p>
-<pre><code class="language-bash">docker run -d --name orbi \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>docker run -d --name orbi \
   --stop-signal SIGRTMIN+3 \
   --tmpfs /run --tmpfs /tmp \
   --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
@@ -267,7 +267,7 @@ the cgroup bind is for:</p>
   -e ORBI_PI_BASE_URL=https://api.deepseek.com \
   -e ORBI_PI_API_KEY=&quot;sk-xxx&quot; \
   ghcr.io/orbi-build/orbi:latest
-</code></pre>
+</code></pre></div>
 <p>The engine is whichever model you point those four variables at. Label an Issue
 <code class="post-code--single">ai-ready</code> and the next tick picks it up. The review runs as a separate session
 against the frozen head, and nothing merges unless that session passes it.

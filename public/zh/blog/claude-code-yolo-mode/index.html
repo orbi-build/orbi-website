@@ -193,11 +193,11 @@
 <p>下面所有数字来自 Claude Code 2.1.287（2026-10-13 的 stable 版），跑任务的主模型是 <code class="post-code--single">claude-sonnet-5-5</code>，用 <code class="post-code--spaced">claude -p</code> 无头运行（auto 模式的分类器是另一个模型，默认 Sonnet 5）。下面每个数字都来自这些运行，按动作逐条记录。</p>
 <h2 id="claude-code-的-yolo-模式到底是什么">Claude Code 的 YOLO 模式到底是什么</h2>
 <p><code class="post-code--single">--dangerously-skip-permissions</code> 打开的是 <code class="post-code--single">bypassPermissions</code> 模式。文档里这几种写法等价：</p>
-<pre><code class="language-bash">claude --dangerously-skip-permissions
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
 # 或写进 settings.json：
 # { &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
-</code></pre>
+</code></pre></div>
 <p>它不能从一个没开它的会话里中途切进去。第一次在交互会话里开，它会让你确认一次「我自己负责」，然后记下 <code class="post-code--single">skipDangerousModePermissionPrompt</code>，之后的会话就不再弹这个对话框。在 Linux 和 macOS 上，用 root 或 <code class="post-code--single">sudo</code> 跑时它会拒绝启动（原话：<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>），除非它检测到自己已经被真正的沙箱包住。管理员可以在 managed settings 里用 <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> 把它整个禁掉。</p>
 <p>就算在这个模式下，也还有几样东西拦得住：显式的 <code class="post-code--single">ask</code> 规则、指向关键路径的 <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code>（比如 <code class="post-code--spaced">rm -rf ~</code>）、以及 deny 规则。deny 规则在任何模式下都生效，YOLO 也不例外。受保护路径是一小组路径，<code class="post-code--single">.git/config</code> 只是其中之一，主要是 <code class="post-code--single">.git</code>、<code class="post-code--single">.config/git</code> 和 <code class="post-code--single">.claude</code>（Claude 自己的配置）；写它们在多数模式下不会被自动放行。</p>
 <h2 id="五种权限模式分别放行了哪些动作">五种权限模式分别放行了哪些动作</h2>
@@ -278,15 +278,15 @@ claude --permission-mode bypassPermissions
 <h2 id="两种-别问我-但也别全开-的配置">两种「别问我，但也别全开」的配置</h2>
 <p>想把弹窗关掉、底下又留个托底，我实测过两种配置，各跑三次：</p>
 <p><strong>1. <code class="post-code--single">dontAsk</code> 配白名单。</strong> 没点名的都不跑，其余一律拒掉而不是弹窗。</p>
-<pre><code class="language-bash">claude -p &quot;跑测试并总结失败项&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;跑测试并总结失败项&quot; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read&quot; &quot;Bash(npm test)&quot;
-</code></pre>
+</code></pre></div>
 <p>我的测试里六个越界动作全部被挡住：五个有副作用的动作被权限层拦下，注入被模型拒绝，和别的模式一样。这是最紧的一种，也最适合 CI：agent 只能做你列的那两件事，别的都不行。工具名用空格分隔的引号 token 传入。</p>
 <p><strong>2. <code class="post-code--single">bypassPermissions</code> 配 deny 规则。</strong> YOLO 的速度，但 deny 规则照样咬人（它在任何模式下都生效）。</p>
-<pre><code class="language-bash">claude -p &quot;...&quot; --permission-mode bypassPermissions \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>claude -p &quot;...&quot; --permission-mode bypassPermissions \
   --settings &#39;{&quot;permissions&quot;:{&quot;deny&quot;:[&quot;Bash(curl:*)&quot;,&quot;Read(./.env.local)&quot;,&quot;Read(./.env)&quot;]}}&#39;
-</code></pre>
+</code></pre></div>
 <p>联网被 <code class="post-code--single">curl</code> 那条规则拦下了，其余照跑，注入仍被模型拒绝。只在「其余照跑也无所谓」的地方用它，比如一个用完即弃的容器，因为 deny 是黑名单，黑名单只拦得住你想到要写进去的东西。</p>
 <p>关于怎么把这个参数关起来，也就是 Claude Code 的沙箱挡住什么、又漏过什么，见<a href="/zh/blog/claude-code-sandbox/">Claude Code 沙箱实测：每种配置挡住了什么</a>。</p>
 <h2 id="别的-agent-里同一个开关">别的 agent 里同一个开关</h2>

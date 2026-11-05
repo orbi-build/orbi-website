@@ -1051,7 +1051,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 1) throw new Error(`${path}: horizontal overflow of ${overflow}px at ${size.width}x${size.height}`);
-  const shownCommand = (await page.locator(".install-block [data-copy-source]").textContent()).trim();
+  // Issue #1181: every code block carries a copy source, so the install
+  // panel's first one is the one-liner a visitor is told to run.
+  const shownCommand = (await page.locator(".install-block [data-copy-source]").first().textContent()).trim();
   if (shownCommand !== installCommand) {
     throw new Error(`${path}: install block shows ${JSON.stringify(shownCommand)}, expected the one-liner`);
   }
@@ -2373,10 +2375,12 @@ async function assertInstallCopiesOneLiner(browser, path) {
   try {
     const page = await newSmokePage(context);
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
-    await page.locator(".install-copy").click();
+    // Issue #1181: one copy button for every code block, so the install
+    // command uses the shared .code-copy-btn the build writes.
+    await page.locator(".install-block .code-copy-btn").first().click();
     // is-copied flips exactly when the write promise resolved, so the
     // clipboard read below cannot race the copy.
-    await page.waitForFunction(() => document.querySelector(".install-copy").classList.contains("is-copied"));
+    await page.waitForFunction(() => document.querySelector(".install-block .code-copy-btn").classList.contains("is-copied"));
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     if (copied !== installCommand) {
       throw new Error(`${path}: copy button produced ${JSON.stringify(copied)}, expected ${JSON.stringify(installCommand)}`);

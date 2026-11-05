@@ -193,11 +193,11 @@
 <p>All numbers below are from Claude Code 2.1.287 (the stable release on 2026-10-13), the agent on <code class="post-code--single">claude-sonnet-5-5</code>, run non-interactively with <code class="post-code--spaced">claude -p</code> (auto mode&#39;s classifier, below, is a second model reviewing the first; the docs call it Sonnet 5, a different model from the <code class="post-code--single">claude-sonnet-5-5</code> the agent runs on). Every number below comes from those runs, recorded per action.</p>
 <h2 id="what-yolo-mode-does-in-claude-code">What YOLO mode does in Claude Code</h2>
 <p><code class="post-code--single">--dangerously-skip-permissions</code> turns on <code class="post-code--single">bypassPermissions</code> mode. The documented equivalents:</p>
-<pre><code class="language-bash">claude --dangerously-skip-permissions
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude --dangerously-skip-permissions
 claude --permission-mode bypassPermissions
 # or in settings.json:
 # { &quot;permissions&quot;: { &quot;defaultMode&quot;: &quot;bypassPermissions&quot; } }
-</code></pre>
+</code></pre></div>
 <p>You can&#39;t switch into it from a session you didn&#39;t start with it enabled. The first interactive session asks you to accept responsibility once, then records <code class="post-code--single">skipDangerousModePermissionPrompt</code> so later sessions skip the dialog. On Linux and macOS it refuses to start as root or under <code class="post-code--single">sudo</code> (&quot;<code class="post-code--spaced">--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons</code>&quot;) unless it detects a real sandbox around it. An administrator can block it entirely with <code class="post-code--spaced">permissions.disableBypassPermissionsMode: &quot;disable&quot;</code> in managed settings.</p>
 <p>Even in this mode, a few things still stop: an explicit <code class="post-code--single">ask</code> rule, an <code class="post-code--single">rm</code>/<code class="post-code--single">rmdir</code> that targets a critical path like <code class="post-code--spaced">rm -rf ~</code>, and a deny rule. Deny rules win in every mode, YOLO included. (The protected paths the table below refers to are a small set, chiefly <code class="post-code--single">.git</code>, <code class="post-code--single">.config/git</code> and <code class="post-code--single">.claude</code>.)</p>
 <h2 id="what-each-permission-mode-let-through">What each permission mode let through</h2>
@@ -278,15 +278,15 @@ claude --permission-mode bypassPermissions
 <h2 id="two-ways-to-drop-the-prompts-without-full-bypass">Two ways to drop the prompts without full bypass</h2>
 <p>To drop the prompts and still keep a floor under the agent, I tested two configurations, each three runs:</p>
 <p><strong>1. <code class="post-code--single">dontAsk</code> with an allow list.</strong> Nothing runs unless you named it; everything else is denied, not prompted.</p>
-<pre><code class="language-bash">claude -p &quot;run the tests and summarize failures&quot; \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude -p &quot;run the tests and summarize failures&quot; \
   --permission-mode dontAsk \
   --allowedTools &quot;Read&quot; &quot;Bash(npm test)&quot;
-</code></pre>
+</code></pre></div>
 <p>The allowed tools are passed as space-separated quoted tokens. In my runs every one of the six actions was stopped: the five side-effect actions denied by the permission layer, and the injection declined by the model, the same as in every other mode. This is the tightest option and the right one for CI: the agent can do the two things you listed and nothing else.</p>
 <p><strong>2. <code class="post-code--single">bypassPermissions</code> with deny rules.</strong> YOLO speed, but deny rules still bite (they win in every mode).</p>
-<pre><code class="language-bash">claude -p &quot;...&quot; --permission-mode bypassPermissions \
+<div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>claude -p &quot;...&quot; --permission-mode bypassPermissions \
   --settings &#39;{&quot;permissions&quot;:{&quot;deny&quot;:[&quot;Bash(curl:*)&quot;,&quot;Read(./.env.local)&quot;,&quot;Read(./.env)&quot;]}}&#39;
-</code></pre>
+</code></pre></div>
 <p>The network call was denied by the <code class="post-code--single">curl</code> rule; the rest still ran, and the injection was still declined by the model. The other actions still run unchecked, so use this only in a throwaway container. A deny list is a blocklist: it stops only what you thought to name.</p>
 <p>For a fuller treatment of containing the flag (what the Claude Code sandbox blocks and what leaks past it), see <a href="/blog/claude-code-sandbox/">Claude Code sandbox: what each setup blocks</a>.</p>
 <h2 id="the-same-switch-in-other-agents">The same switch in other agents</h2>
