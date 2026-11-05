@@ -6,6 +6,13 @@
     <description>Notes from shipping Orbi in the open: delivery runs, failures, fixes, and measurements.</description>
     <language>en</language>
     <item>
+      <title>Best Pi extensions for unattended runs: 20 tested</title>
+      <link>https://orbi.build/blog/best-pi-extensions/</link>
+      <guid isPermaLink="true">https://orbi.build/blog/best-pi-extensions/</guid>
+      <pubDate>Thu, 05 Nov 2026 00:00:00 GMT</pubDate>
+      <description>20 Pi coding agent extensions tested without a terminal or desktop bus: which to use for MCP, web search and subagents, and which change config.</description>
+    </item>
+    <item>
       <title>AI code review bottleneck? Our PRs wait after merge</title>
       <link>https://orbi.build/blog/ai-code-review-bottleneck/</link>
       <guid isPermaLink="true">https://orbi.build/blog/ai-code-review-bottleneck/</guid>
