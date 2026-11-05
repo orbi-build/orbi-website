@@ -9,9 +9,7 @@ series: pi
 mirror: best-pi-extensions
 ---
 
-Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session.
-
-**Quick picks for unattended Pi runs**
+Pi extensions can load successfully without giving an unattended run the tools you expected. I tested 20 popular packages on 5 November 2026. I first started Pi without a terminal or desktop session bus, then repeated the tests with a Secret Service that never answers. Two extensions, one for asking the user questions and one for plan review, never offered their tools. A permission extension rejected even `ls -la`, and an MCP adapter changed settings that affected the next session. My picks by job:
 
 - Web search: `pi-web-access` or `pi-web-search`, the two that worked without a search key.
 - Subagents: `pi-subagents`, `@tintinweb/pi-subagents` and `pi-ptc-subagents` all returned a result; `pi-subagent-manager` needs a session directory.
