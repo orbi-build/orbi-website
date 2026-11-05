@@ -601,7 +601,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Issue #1173 moved the two friend links onto the
         // strip ahead of them (each in its own text group), and the marquee's
         // runtime copy is not counted here.
-        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(55);
+        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(59);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -627,9 +627,10 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // badges, so LaunchVault was the last entry, Issue #1160 appended
         // twelve more, Issue #1165 the doforai.tools badge, Issue #1168 the
         // Startup Fame badge and Issue #1169 the ScrollLaunch badge, so it
+        // then OpenHunts, SaaSGrow, NavFolders and Huzzler were appended, so Huzzler
         // closes the row now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the ScrollLaunch link")
-          .toBe("https://www.scrolllaunch.com/products/orbi?ref=badge");
+        expect(result.lastBadgeHref, path + ": the footer badges end with the Huzzler link")
+          .toBe("https://huzzler.so");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -1156,6 +1157,10 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://doforai.tools",
           "https://startupfa.me/s/orbi?utm_source=orbi.build",
           "https://www.scrolllaunch.com/products/orbi?ref=badge",
+          "https://openhunts.com",
+          "https://saasgrow.app?ref=orbi.build",
+          "https://navfolders.com",
+          "https://huzzler.so",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1263,6 +1268,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     // Issue #1169: the ScrollLaunch badge closes the row; its source is the
     // vendor's 220x48 SVG, declared in that same box.
     "https://www.scrolllaunch.com/products/orbi?ref=badge",
+    "https://openhunts.com",
+    "https://saasgrow.app?ref=orbi.build",
+    "https://navfolders.com",
+    "https://huzzler.so",
   ];
 
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
@@ -1318,7 +1327,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
           // image and Issue #1169 the ScrollLaunch image: 41 badge images in
           // the row. Issue #1185 removed the LaunchIgniter image, leaving 40.
-          expect(badges, label + ": badge count").toHaveLength(40);
+          expect(badges, label + ": badge count").toHaveLength(43);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1428,7 +1437,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         // plus the 63px badge line — never a third line.
         expect(phoneLayout.rowHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         // Issue #1185 removed the LaunchIgniter badge, leaving 40.
-        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(40);
+        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(43);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
@@ -1641,18 +1650,18 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         // wrapped rows this replaced.
         expect(desktop.navHeight, path + " at 1440px: the badge row is one line high").toBeLessThanOrEqual(90);
         expect(desktop.documentOverflow, path + " at 1440px: the strip never widens the page").toBe(0);
-        // 57 anchors: the two friend links + the 55 badges (Issue #1185
+        // 61 anchors: the two friend links + the 59 badges (Issue #1185
         // removed the LaunchIgniter one), all in the source.
-        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(57);
-        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(57);
+        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(61);
+        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(61);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
         // Issue #1173 item 1: the fifteen text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
-        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(15);
+        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(16);
         expect(
           desktop.textTiles.filter((tile) => tile.height === 28).length,
           path + ": every text-only link renders a 28px tile",
-        ).toBe(15);
+        ).toBe(16);
         const lineCentres = [...desktop.textTiles.map((tile) => tile.centre), ...desktop.badgeCentres];
         expect(Math.max(...lineCentres) - Math.min(...lineCentres), path + ": text tiles and badges share one line")
           .toBeLessThanOrEqual(1);

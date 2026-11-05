@@ -2347,9 +2347,14 @@ describe("one unified footer on every content page", () => {
       expect(anchor, `${page.output}: the ScrollLaunch backlink must stay crawlable`).not.toContain("nofollow");
       expect(anchor, `${page.output}: the ScrollLaunch backlink must not be sponsored`).not.toContain("sponsored");
       expect(anchor, `${page.output}: the ScrollLaunch backlink must not be ugc`).not.toContain("ugc");
-      // The row ends at ScrollLaunch, so the wrapper's closing tag follows it.
-      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the ScrollLaunch badge must close the badge row`)
+      // ScrollLaunch is followed directly by the OpenHunts badge.
+      expect(footer.slice(footer.indexOf(badge) + badge.length), `${page.output}: the OpenHunts badge must follow ScrollLaunch`)
+        .toMatch(/^\s*<a href="https:\/\/openhunts\.com"/);
+      // The row now ends at Huzzler, so the wrapper's closing tag follows it.
+      const huzzler = '<a href="https://huzzler.so" target="_blank" rel="noopener">Featured on Huzzler</a>';
+      expect(footer.slice(footer.indexOf(huzzler) + huzzler.length), `${page.output}: the Huzzler badge must close the badge row`)
         .toMatch(/^\s*<\/div>/);
+      expect(footerAnchorTag(footer, "https://navfolders.com"), `${page.output}: NavFolders must be dofollow`).not.toContain("nofollow");
       // The badge must stay on the vendor's host: ScrollLaunch verifies the
       // embed against its own file, so a self-hosted copy would not count.
       expect(countMatches(footer, /src="\/img\/[^"]*scrolllaunch[^"]*"/gi), `${page.output}: the ScrollLaunch badge must not be self-hosted`)
@@ -2442,6 +2447,10 @@ describe("one unified footer on every content page", () => {
       "https://startupfa.me/s/orbi?utm_source=orbi.build",
       // Issue #1169: the ScrollLaunch badge, appended after Startup Fame.
       "https://www.scrolllaunch.com/products/orbi?ref=badge",
+      "https://openhunts.com",
+      "https://saasgrow.app?ref=orbi.build",
+      "https://navfolders.com",
+      "https://huzzler.so",
     ];
     // Issue #1173: the two friend links lead the strip; the badges follow in
     // the order the directory embeds were added.
