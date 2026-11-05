@@ -157,11 +157,12 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
 
 // Issue #1184: the homepage hero is not a place for a third-party listing
 // badge, so #1127's first-screen LaunchIgniter badge is gone (the maintainer
-// accepted losing the free listing). The vendor's badge stays in the shared
-// footer badge row, byte-for-byte unchanged. Turbo0's listing needs its badge
-// present in the homepage HTML; the shared footer badge row carries it
+// accepted losing the free listing). Issue #1185 then removed the vendor's
+// badge from the shared footer too: launchigniter.com/product/orbi answers 200
+// with "Product Not Found", so it leads nowhere. Turbo0's listing needs its
+// badge present in the homepage HTML; the shared footer badge row carries it
 // (Issue #1116), and this pins that the homepage still does.
-describe("homepage LaunchIgniter and Turbo0 badges (Issues #1127, #1184)", () => {
+describe("homepage LaunchIgniter and Turbo0 badges (Issues #1127, #1184, #1185)", () => {
   const homepages = [
     ["site/pages/index.html", "EN source"],
     ["public/index.html", "EN build"],
@@ -181,19 +182,19 @@ describe("homepage LaunchIgniter and Turbo0 badges (Issues #1127, #1184)", () =>
     }
   });
 
-  it("leaves the footer LaunchIgniter badge byte-for-byte unchanged", async () => {
-    // Issue #1184 removes the hero copy only: the vendor's footer embed keeps
-    // its exact link, image, alt text and declared 212x55 box.
-    const footerBadge = '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener"><img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" /></a>';
+  it("keeps the LaunchIgniter badge out of the footer too (Issue #1185)", async () => {
+    // Issue #1184 removed the hero copy; Issue #1185 removed the vendor's
+    // footer embed as well, because its product page answers 200 with
+    // "Product Not Found" — the directory has no Orbi entry to land on.
     // The source pages carry the footer as a <!--@footer--> marker, so the
-    // embed is pinned in the partial plus both built homepages.
+    // absence is pinned in the partial plus both built homepages.
     for (const [path, label] of [
       ["site/partials/footer.html", "shared footer"],
       ["public/index.html", "EN build"],
       ["public/zh/index.html", "ZH build"],
     ]) {
       const html = await read(path);
-      expect(html, `${path} (${label}): the footer badge link and image`).toContain(footerBadge);
+      expect(count(html, /launchigniter\.com/gi), `${path} (${label}): no LaunchIgniter link in the footer`).toBe(0);
     }
   });
 

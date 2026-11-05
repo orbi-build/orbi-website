@@ -1600,8 +1600,12 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1185: the badge's link points at the entry page that actually shows
+  // Orbi. `aiagentslisting.com/orbi` answered 200 but served the directory's own
+  // homepage, so the badge led nowhere; `/agent/orbi` carries Orbi's listing.
+  // The embedded image is unchanged.
   it("carries the AI Agents Listing badge on every footer page", () => {
-    const anchor = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
+    const anchor = '<a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
     const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -1623,7 +1627,7 @@ describe("one unified footer on every content page", () => {
   it("carries the Toolradar badge with a crawlable backlink on every footer page", () => {
     const anchor = '<a href="https://toolradar.com/tools/orbi" target="_blank" rel="noopener">';
     const image = '<img src="https://toolradar.com/api/badge/orbi?type=review&style=light&v=4" alt="Orbi on Toolradar" width="147" height="42" />';
-    const listing = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
+    const listing = '<a href="https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Toolradar badge anchor drifted`).toContain(anchor);
@@ -1765,6 +1769,10 @@ describe("one unified footer on every content page", () => {
   // the noopener rel, the src, the alt, the 244x56 declared size and the lazy
   // loading stay as earlier Issues shipped them, and the link stays crawlable
   // (no nofollow) so the directory can verify the backlink.
+  // Issue #1185 keeps it: the 2026-10-29 submission is still in the directory's
+  // free-launch review, so the 404 is a not-yet-published entry, not a wrong URL
+  // — the free launch requires this badge on the homepage to verify the
+  // backlink.
   it("points the NickLaunches badge at the Orbi entry page on every footer page", () => {
     const anchor = '<a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener">';
     const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" />';
@@ -1777,6 +1785,18 @@ describe("one unified footer on every content page", () => {
         .not.toContain('<a href="https://nicklaunches.com/"');
       expect(footerAnchorTag(footer, "https://nicklaunches.com/products/orbi/"), `${page.output}: the NickLaunches backlink must stay crawlable`)
         .not.toContain("nofollow");
+    }
+  });
+
+  // Issue #1185: LaunchIgniter never published an Orbi entry — its product page
+  // answers 200 with "Product Not Found" — so the badge sent visitors to a page
+  // with no Orbi on it and left the footer. It comes back only once the site
+  // publishes the entry (a new Issue carries the then current URL).
+  it("carries no LaunchIgniter badge in the footer on any page (Issue #1185)", () => {
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: the footer must not link LaunchIgniter`)
+        .not.toMatch(/launchigniter\.com/i);
     }
   });
 
@@ -1933,9 +1953,10 @@ describe("one unified footer on every content page", () => {
   // nofollow and no JavaScript, so the directory reads it in the shipped
   // bytes). Each embed keeps the vendor's href/src/alt, opens a new tab and
   // declares its source image's box — turbo0's SVG viewBox is 481.56x160.97,
-  // toolfame's 160x54, dang.ai's PNG 550x198 (the vendor declares the
-  // proportional 260x94) and LaunchIgniter's 212x55 — so the shared 28px
-  // footer rule (Issue #1038) keeps every badge in its source ratio.
+  // toolfame's 160x54 and dang.ai's PNG 550x198 (the vendor declares the
+  // proportional 260x94) — so the shared 28px footer rule (Issue #1038) keeps
+  // every badge in its source ratio. Issue #1185 dropped the LaunchIgniter
+  // badge that used to close this batch.
   it("carries the 2026-10-30 directory badges after the Fazier badge on every footer page (Issue #1116)", () => {
     const fazier = '<a href="https://fazier.com" target="_blank" rel="noopener">';
     const entries = [
@@ -1953,11 +1974,6 @@ describe("one unified footer on every content page", () => {
         href: "https://dang.ai",
         anchor: '<a href="https://dang.ai" target="_blank" rel="noopener">',
         image: '<img src="https://assets.dang.ai/badges/dang-verified-dark.png" alt="Verified on DANG!" width="550" height="198" />',
-      },
-      {
-        href: "https://launchigniter.com/product/orbi?ref=badge-orbi",
-        anchor: '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">',
-        image: '<img src="https://launchigniter.com/api/badge/orbi?theme=light" alt="Featured on LaunchIgniter" width="212" height="55" />',
       },
     ];
     for (const page of content()) {
@@ -1985,10 +2001,11 @@ describe("one unified footer on every content page", () => {
   // the footer carries the supplied embed as ordinary server-rendered HTML —
   // no nofollow, no JavaScript — with the image still on scoutforge.net (a
   // self-hosted copy would never reach their counter). It sits after the
-  // LaunchIgniter badge — Issue #1129 then appends the Findly.tools badge — and
-  // declares the SVG's own 300x72 box for the shared 28px footer rule (#1038).
-  it("carries the Scout Forge badge after the LaunchIgniter badge on every footer page (Issue #1119)", () => {
-    const launchigniter = '<a href="https://launchigniter.com/product/orbi?ref=badge-orbi" target="_blank" rel="noopener">';
+  // dang.ai badge (the LaunchIgniter badge it followed left in Issue #1185) —
+  // Issue #1129 then appends the Findly.tools badge — and declares the SVG's
+  // own 300x72 box for the shared 28px footer rule (#1038).
+  it("carries the Scout Forge badge after the dang.ai badge on every footer page (Issue #1119)", () => {
+    const dang = '<a href="https://dang.ai" target="_blank" rel="noopener">';
     const anchor = '<a href="https://scoutforge.net/apps/orbi?ref=badge" target="_blank" rel="noopener">';
     const image = '<img src="https://scoutforge.net/badge/orbi/image?theme=light" alt="Orbi on Scout Forge" width="300" height="72" />';
     const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
@@ -1998,9 +2015,9 @@ describe("one unified footer on every content page", () => {
       expect(footer, `${page.output}: the Scout Forge anchor and image must sit together`)
         .toContain(anchor + image);
       // Server-rendered, not injected later: the anchor is in the shipped bytes
-      // after the LaunchIgniter badge and before the wrapper closes.
-      expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the LaunchIgniter badge`)
-        .toBeGreaterThan(footer.indexOf(launchigniter));
+      // after the dang.ai badge and before the wrapper closes.
+      expect(footer.indexOf(anchor), `${page.output}: the Scout Forge badge must follow the dang.ai badge`)
+        .toBeGreaterThan(footer.indexOf(dang));
       expect(footer.indexOf(findly), `${page.output}: the Findly.tools badge must follow the Scout Forge badge`)
         .toBeGreaterThan(footer.indexOf(anchor));
       expect(countMatches(footer, /https:\/\/scoutforge\.net\/badge\/orbi\/image\?theme=light/g), `${page.output}: exactly one Scout Forge badge image`)
@@ -2351,9 +2368,12 @@ describe("one unified footer on every content page", () => {
   // Project text link, Issue #1094 the DevHub badge, Issue #1096 the
   // Startup Fast / Artificin badges plus the AI Tool Trek / What Is Ai Tools
   // text links, Issue #1099 the ToolPotion badge, Issue #1102 the Fazier badge,
-  // Issue #1116 the turbo0 / toolfame / dang.ai / LaunchIgniter badges,
-  // Issue #1119 the Scout Forge badge, Issue #1129 the Findly.tools badge,
-  // Issue #1132 the founder.best / makeitla.st badges, Issue #1134 the
+  // Issue #1116 the turbo0 / toolfame / dang.ai badges, Issue #1119 the
+  // Scout Forge badge (Issue #1185 removed the LaunchIgniter badge, whose
+  // directory entry does not exist; the NickLaunches badge stays — its entry
+  // is still in the directory's free-launch review), Issue #1129 the
+  // Findly.tools badge, Issue #1132 the founder.best / makeitla.st badges,
+  // Issue #1134 the
   // AI for Developers / Uno Directory / SaaSCity / LaunchVault badges,
   // Issue #1160 twelve more directory badges and links, Issue #1165 the
   // doforai.tools badge, Issue #1168 the Startup Fame badge and Issue #1169 the
@@ -2362,7 +2382,7 @@ describe("one unified footer on every content page", () => {
     const badgeHrefs = [
       "https://launchnest.io/p/orbi",
       "https://aiagentsdirectory.com/agent/orbi",
-      "https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
+      "https://aiagentslisting.com/agent/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed",
       "https://toolradar.com/tools/orbi",
       "https://nicklaunches.com/products/orbi/",
       "https://yourhack.ai",
@@ -2387,7 +2407,6 @@ describe("one unified footer on every content page", () => {
       "https://turbo0.com/item/orbi",
       "https://toolfame.com/item/orbi",
       "https://dang.ai",
-      "https://launchigniter.com/product/orbi?ref=badge-orbi",
       "https://scoutforge.net/apps/orbi?ref=badge",
       "https://findly.tools/orbi?utm_source=orbi",
       "https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral",
