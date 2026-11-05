@@ -1609,6 +1609,12 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
       trackChildren: [...strip.children].length,
       trackAnchors: track.querySelectorAll("a").length,
       copyAnchors: copy ? copy.querySelectorAll("a").length : 0,
+      // Issue #1173 item 1: the fourteen text-only directory links are 28px
+      // tiles, so they sit on the image badges' line instead of taking rows.
+      textTiles: [...track.children]
+        .filter((node) => node.tagName === "A" && !node.querySelector("img"))
+        .map((node) => ({ height: Math.round(rect(node).height), centre: centre(node) })),
+      badgeCentres: [...track.querySelectorAll("img")].map((image) => centre(image)),
       // The copy has to repeat the strip entry for entry — same links, same
       // images — or the loop shows a seam.
       copyIsDuplicate: Boolean(copy)
@@ -1682,6 +1688,16 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(57);
         expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(57);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
+        // Issue #1173 item 1: the fourteen text-only directory links are 28px
+        // tiles on the image badges' line, so they add no row height.
+        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(14);
+        expect(
+          desktop.textTiles.filter((tile) => tile.height === 28).length,
+          path + ": every text-only link renders a 28px tile",
+        ).toBe(14);
+        const lineCentres = [...desktop.textTiles.map((tile) => tile.centre), ...desktop.badgeCentres];
+        expect(Math.max(...lineCentres) - Math.min(...lineCentres), path + ": text tiles and badges share one line")
+          .toBeLessThanOrEqual(1);
         expect(desktop.stripScrolls, path + ": the strip scrolls what it cannot show").toBe(true);
         expect(desktop.toggleText, path + ": the pause control's label").toBe(pause);
         expect(await advance(page), path + " at 1440px: the strip scrolls itself").toBeGreaterThan(5);
