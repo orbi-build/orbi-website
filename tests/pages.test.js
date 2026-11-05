@@ -1602,7 +1602,7 @@ describe("one unified footer on every content page", () => {
 
   it("carries the AI Agents Listing badge on every footer page", () => {
     const anchor = '<a href="https://aiagentslisting.com/orbi?utm_source=aiagentslisting&utm_medium=badge&utm_campaign=embed">';
-    const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" loading="lazy" />';
+    const image = '<img src="https://aiagentslisting.com/orbi/badge.svg?theme=dark" alt="Orbi badge" width="168" height="42" />';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: AI Agents Listing badge anchor drifted`).toContain(anchor);
@@ -1727,7 +1727,7 @@ describe("one unified footer on every content page", () => {
 
   it("carries the zPlatform badge with a crawlable backlink on every footer page", () => {
     const anchor = '<a href="https://zplatform.ai/" target="_blank" rel="noopener" title="Featured on zPlatform.ai">';
-    const image = '<img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" loading="lazy" />';
+    const image = '<img src="https://zplatform.ai/badges/zplatform-featured.png" alt="Featured on zPlatform" width="250" height="60" />';
     const neeed = '<a href="https://neeed.directory/products/orbi?utm_source=orbi" target="_blank" rel="noopener">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -1762,12 +1762,14 @@ describe("one unified footer on every content page", () => {
 
   // Issue #1094: the NickLaunches badge links its own entry page for Orbi
   // instead of the directory homepage. Only the href changes — the new tab,
-  // the noopener rel, the src, the alt, the 244x56 declared size and the lazy
-  // loading stay as earlier Issues shipped them, and the link stays crawlable
-  // (no nofollow) so the directory can verify the backlink.
+  // the noopener rel, the src, the alt and the 244x56 declared size stay as
+  // earlier Issues shipped them, and the link stays crawlable (no nofollow) so
+  // the directory can verify the backlink. Issue #1187 dropped every badge's
+  // loading="lazy": the strip scrolls badges in from outside the viewport, so a
+  // deferred image left a blank slot in the marquee.
   it("points the NickLaunches badge at the Orbi entry page on every footer page", () => {
     const anchor = '<a href="https://nicklaunches.com/products/orbi/" target="_blank" rel="noopener">';
-    const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" loading="lazy" />';
+    const image = '<img src="https://nicklaunches.com/badges/featured.png" alt="Featured on Nick Launches" width="244" height="56" />';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: NickLaunches badge anchor drifted`).toContain(anchor + image);
@@ -1820,12 +1822,12 @@ describe("one unified footer on every content page", () => {
     const entries = [
       {
         anchor: '<a href="https://startupfa.st" target="_blank" rel="noopener" title="Powered by Startup Fast">',
-        image: '<img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" loading="lazy" />',
+        image: '<img class="footer-badge-startup-fast" src="https://startupfa.st/images/badges/powered-by-dark.svg" alt="Powered by Startup Fast" width="150" height="63" />',
         href: "https://startupfa.st",
       },
       {
         anchor: '<a href="https://artificin.com" target="_blank" rel="noopener">',
-        image: '<img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" loading="lazy" />',
+        image: '<img src="https://artificin.com/badges/Artificin-badge.png" alt="Featured on Artificin" width="139" height="44" />',
         href: "https://artificin.com",
       },
       {
@@ -1890,7 +1892,7 @@ describe("one unified footer on every content page", () => {
   // link stays crawlable (no nofollow) so ToolPotion can verify it.
   it("carries the ToolPotion badge with a crawlable backlink on every footer page (Issue #1099)", () => {
     const anchor = '<a href="https://toolpotion.ai/en/ai-agent/orbi" target="_blank" rel="noopener">';
-    const image = '<img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" loading="lazy" />';
+    const image = '<img src="https://toolpotion.ai/badge/30971/top-ranked-detailed-gradient.svg" alt="Orbi — ToolPotion badge" width="250" height="54" />';
     const whatisaitools = '<a href="https://whatisaitools.com/" target="_blank" rel="noopener" title="What Is Ai Tools">What Is Ai Tools</a>';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -2061,7 +2063,7 @@ describe("one unified footer on every content page", () => {
   // disappears drops the link to nofollow — so the embed must not drift.
   it("carries the founder.best and makeitla.st badges closing the badge row on every footer page (Issue #1132)", () => {
     const founderBestAnchor = '<a href="https://www.founder.best?ref=founderbest&utm_source=founder.best&utm_medium=referral" target="_blank" rel="noopener noreferrer">';
-    const founderBestImage = '<img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" loading="lazy" decoding="async" />';
+    const founderBestImage = '<img src="https://www.founder.best/api/badge/featured/orbi" alt="Orbi - Featured on Founder.best" width="1195" height="390" decoding="async" />';
     const makeitlastAnchor = '<a href="https://www.makeitla.st/" title="Featured on MakeItLast">';
     const makeitlastImage = '<img src="https://www.makeitla.st/badge/makeitlast-badge-dark.svg?v=3" alt="Featured on MakeItLast" width="252" height="76"/>';
     const findly = '<a href="https://findly.tools/orbi?utm_source=orbi" target="_blank" rel="noopener noreferrer">';
@@ -2161,7 +2163,7 @@ describe("one unified footer on every content page", () => {
     }
   });
   it("carries the Findstack badge verbatim on every footer page", () => {
-    const badge = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" loading="lazy" /></a>';
+    const badge = '<a target="_blank" rel="noopener" href="https://findstack.com/products/orbi/reviews"><img alt="Orbi on Findstack" width="180" height="56" src="https://findstack.com/badges/orbi.svg" /></a>';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
       expect(footer, `${page.output}: Findstack badge drifted`).toContain(badge);
@@ -2246,7 +2248,7 @@ describe("one unified footer on every content page", () => {
   // Issue #1168 appends the Startup Fame badge after it and Issue #1169 the
   // ScrollLaunch badge after that, so it no longer closes the row.
   it("carries the doforai.tools badge on every footer page (Issue #1165)", () => {
-    const badge = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" loading="lazy" /></a>';
+    const badge = '<a href="https://doforai.tools" target="_blank" rel="noopener noreferrer"><img src="https://doforai.tools/badge/feature-badge-white.webp" alt="Featured on doforai.tools" width="172" height="54" /></a>';
     const bestaitool = '<a href="https://bestaitool.app/" title="BestAITool AI Tools Directory">BestAITool AI Tools Diresctory</a>';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));
@@ -2313,7 +2315,7 @@ describe("one unified footer on every content page", () => {
   // not an UTM), the 220x48 box is the badge's own viewBox, and the anchor stays
   // crawlable — nofollow, sponsored or ugc would make the badge unverifiable.
   it("carries the ScrollLaunch badge closing the badge row on every footer page (Issue #1169)", () => {
-    const badge = '<a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" /></a>';
+    const badge = '<a href="https://www.scrolllaunch.com/products/orbi?ref=badge" target="_blank" rel="noopener"><img src="https://www.scrolllaunch.com/api/badge/orbi" alt="Featured on ScrollLaunch" width="220" height="48" /></a>';
     const startupfame = '<a href="https://startupfa.me/s/orbi?utm_source=orbi.build" target="_blank">';
     for (const page of content()) {
       const footer = footerRegion(shipped.get(page.output));

@@ -194,37 +194,16 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
         const footer = page.locator("footer.site-footer");
-        // The AI Agents Listing and zPlatform badges are loading="lazy", so they
-        // only start loading once the footer is near the viewport: scroll it in
-        // and let every placeholder decode before measuring their source ratio.
-        // Issue #1173: the strip is a marquee, so a lazy badge clipped thousands
-        // of pixels to the right never starts loading on its own — the source
-        // copies are forced eager here, since these assertions are about the
-        // rendered box, not about lazy behaviour.
+        // Issue #1187: every strip badge loads with the page — no badge defers
+        // its image — so the whole strip is decoded by the load event and these
+        // source-ratio assertions measure real images, not lazy placeholders.
         await page.locator("footer .footer-badges").scrollIntoViewIfNeeded();
-        const forcedLoading = await page.evaluate(() => {
-          const images = [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")];
-          const saved = images.map((image) => image.getAttribute("loading"));
-          images.forEach((image) => {
-            image.loading = "eager";
-          });
-          return saved;
-        });
         await page.waitForFunction(
           () => [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
             .every((image) => image.complete && image.naturalWidth > 0),
           null,
           { timeout: 10_000 },
         );
-        // The embeds' own loading attributes go back before anything asserts
-        // them; a decoded image stays decoded.
-        await page.evaluate((saved) => {
-          [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
-            .forEach((image, index) => {
-              if (saved[index] === null) image.removeAttribute("loading");
-              else image.setAttribute("loading", saved[index]);
-            });
-        }, forcedLoading);
         const result = await footer.evaluate((element) => {
           const nav = element.querySelector("nav.footer-friends");
           const wrapper = nav.querySelector(".footer-badges");
@@ -932,12 +911,13 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             - result.neeedNaturalWidth / result.neeedNaturalHeight),
           path + ": the neeed.directory badge must keep the 139x44 source ratio",
         ).toBeLessThan(0.02);
-        // The zPlatform badge keeps the supplied 250x60 box and lazy-loads; the
+        // The zPlatform badge keeps the supplied 250x60 box; Issue #1187 dropped
+        // its loading="lazy" so the marquee never scrolls it in blank. The
         // placeholder is 250x60, so the 28px row must keep that ratio too.
         expect(result.zplatformTarget, path + ": the zPlatform badge opens in a new tab").toBe("_blank");
         expect(result.zplatformRel, path + ": the zPlatform anchor keeps rel=noopener").toBe("noopener");
         expect(result.zplatformTitle, path + ": the zPlatform badge keeps its tooltip").toBe("Featured on zPlatform.ai");
-        expect(result.zplatformLoading, path + ": the zPlatform badge loads lazily").toBe("lazy");
+        expect(result.zplatformLoading, path + ": the zPlatform badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.zplatformImageSrc, path + ": zPlatform badge image src")
           .toBe("https://zplatform.ai/badges/zplatform-featured.png");
         expect(result.zplatformImageAlt, path + ": zPlatform badge image alt").toBe("Featured on zPlatform");
@@ -955,8 +935,8 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.startupText, path + ": The Startup Project link text")
           .toBe("Featured on The Startup Project");
         // Issue #1094: the NickLaunches badge keeps every attribute and only
-        // moves its href to the Orbi entry page — 244x56 declared, lazy, a new
-        // tab and a crawlable (no nofollow) backlink the directory can verify.
+        // moves its href to the Orbi entry page — 244x56 declared, a new tab and
+        // a crawlable (no nofollow) backlink the directory can verify.
         expect(result.homepageAnchorCount, path + ": no badge may still link the NickLaunches homepage").toBe(0);
         expect(result.nicklaunchesTarget, path + ": the NickLaunches badge opens in a new tab").toBe("_blank");
         expect(result.nicklaunchesRel, path + ": the NickLaunches anchor keeps rel=noopener").toBe("noopener");
@@ -967,7 +947,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           .toBe("Featured on Nick Launches");
         expect(result.nicklaunchesDeclaredWidth, path + ": NickLaunches keeps its declared width").toBe("244");
         expect(result.nicklaunchesDeclaredHeight, path + ": NickLaunches keeps its declared height").toBe("56");
-        expect(result.nicklaunchesLoading, path + ": NickLaunches keeps loading=lazy").toBe("lazy");
+        expect(result.nicklaunchesLoading, path + ": NickLaunches must not defer its image (Issue #1187)").toBeNull();
         expect(result.nicklaunchesImageHeight, path + ": NickLaunches badge rendered height").toBeGreaterThan(0);
         expect(
           Math.abs(result.nicklaunchesImageWidth / result.nicklaunchesImageHeight
@@ -1016,7 +996,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.startupfastImageAlt, path + ": the Startup Fast badge image alt").toBe("Powered by Startup Fast");
         expect(result.startupfastDeclaredWidth, path + ": the Startup Fast badge declares the 150px width").toBe("150");
         expect(result.startupfastDeclaredHeight, path + ": the Startup Fast badge declares the 63px height").toBe("63");
-        expect(result.startupfastLoading, path + ": the Startup Fast badge loads lazily").toBe("lazy");
+        expect(result.startupfastLoading, path + ": the Startup Fast badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.startupfastNaturalWidth, path + ": the Startup Fast placeholder is 119px wide").toBe(119);
         expect(result.startupfastNaturalHeight, path + ": the Startup Fast placeholder is 50px high").toBe(50);
         expect(result.startupfastImageWidth, path + ": the Startup Fast badge renders at least 150px wide")
@@ -1039,7 +1019,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(result.artificinImageAlt, path + ": the Artificin badge image alt").toBe("Featured on Artificin");
         expect(result.artificinDeclaredWidth, path + ": the Artificin badge declares the 139px width").toBe("139");
         expect(result.artificinDeclaredHeight, path + ": the Artificin badge declares the 44px height").toBe("44");
-        expect(result.artificinLoading, path + ": the Artificin badge loads lazily").toBe("lazy");
+        expect(result.artificinLoading, path + ": the Artificin badge must not defer its image (Issue #1187)").toBeNull();
         expect(result.artificinNaturalWidth, path + ": the Artificin placeholder is 551px wide").toBe(551);
         expect(result.artificinNaturalHeight, path + ": the Artificin placeholder is 175px high").toBe(175);
         expect(Math.abs(result.artificinImageHeight - 28), path + ": the Artificin badge renders 28px high").toBeLessThanOrEqual(1);
@@ -1313,24 +1293,16 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://www.scrolllaunch.com/products/orbi?ref=badge",
   ];
 
-  // The AI Agents Listing and zPlatform badges are loading="lazy", so they only
-  // start loading once the footer is near the viewport: scroll it in and let
-  // every placeholder decode before measuring.
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
   // every measurement here stays inside the source track — the one copy the
   // page ships, whose images the badges are judged by.
   const badgeImages = "footer .footer-badges [data-footer-badges-track] img";
 
+  // Issue #1187: the strip badges no longer defer their images, so the load
+  // event already leaves every one decoded; the wait stays as the guard that
+  // these measurements see real images instead of blank slots.
   const loadBadges = async (page) => {
     await page.locator("footer .footer-badges").scrollIntoViewIfNeeded();
-    // Issue #1173: the strip is a marquee, so a lazy badge clipped thousands of
-    // pixels to the right never starts loading on its own. Force the source
-    // copies eager — the assertions below are about the rendered box.
-    await page.evaluate(() => {
-      for (const image of document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")) {
-        image.loading = "eager";
-      }
-    });
     await page.waitForFunction(
       () => [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")]
         .every((image) => image.complete && image.naturalWidth > 0),
@@ -1802,3 +1774,44 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
   }, 40_000);
 });
 
+// Issue #1187: the marquee used to leave a blank slot wherever a badge still
+// carried loading="lazy" — its image only started downloading once that badge
+// scrolled into view, so the strip moved through an empty box until it arrived.
+// Every strip badge now loads with the page, so after the load event the whole
+// strip is decoded while the footer is still below the fold.
+describe("the footer badge strip loads its images before it scrolls (Issue #1187)", () => {
+  for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
+    it(name + " has every strip badge decoded after load, with the footer still out of view", async () => {
+      const page = await guardedPage(browser, baseUrl);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(baseUrl + path, { waitUntil: "load", timeout: 25_000 });
+        const result = await page.evaluate(() => {
+          const footer = document.querySelector("footer.site-footer");
+          const images = [...document.querySelectorAll("footer .footer-badges [data-footer-badges-track] img")];
+          return {
+            footerTop: Math.round(footer.getBoundingClientRect().top),
+            viewportHeight: window.innerHeight,
+            total: images.length,
+            lazy: images.filter((image) => image.loading === "lazy").map((image) => image.getAttribute("src")),
+            pending: images
+              .filter((image) => !image.complete || image.naturalWidth === 0)
+              .map((image) => image.getAttribute("src")),
+          };
+        });
+        // The reading only says something while the footer has not been
+        // scrolled into view: that is the moment a lazy badge used to wait for.
+        expect(result.footerTop, path + ": the footer is still below the fold").toBeGreaterThan(result.viewportHeight);
+        expect(result.total, path + ": badge images in the strip").toBeGreaterThan(0);
+        expect(result.lazy, path + ": no strip badge waits for the viewport").toEqual([]);
+        expect(result.pending, path + ": every strip badge is decoded after the load event").toEqual([]);
+        const footer = page.locator("footer.site-footer");
+        await footer.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await footer.screenshot({ path: ".orbi/footer-badges-loaded-" + name + ".png" });
+      } finally {
+        await page.close();
+      }
+    }, 30_000);
+  }
+});
