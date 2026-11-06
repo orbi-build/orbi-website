@@ -1215,6 +1215,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://aixcollection.com/ai/orbi",
     "https://launchtory.com/projects/orbi-build",
     "https://dofollow.tools",
+    "https://gets.tools",
     "https://altern.ai/ai/orbi",
     "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     "https://www.tooluck.org/item/orbi",
