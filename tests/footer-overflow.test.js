@@ -600,8 +600,8 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // whose directory entry does not exist, leaving 55.
         // Issue #1173 moved the two friend links onto the
         // strip ahead of them (each in its own text group), and the marquee's
-        // runtime copy is not counted here.
-        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(59);
+        // runtime copy is not counted here. Gets.Tools adds one more badge.
+        expect(result.stripAnchorCount, path + ": badges on the strip").toBe(60);
         // Issue #1015: the SaaSpa.ge badge sits before the Tooluck badge added
         // by Issue #1027, carries the supplied target/rel and alt, and — since
         // Issue #1038 — renders 28px high in its 200x60 source ratio.
@@ -1053,7 +1053,21 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         ).toBeLessThan(0.02);
         // Issue #1012: the badge is reachable from the keyboard and shows the
         // focus ring. Tab from the badge before it, as a keyboard visitor does.
+        // Gets.Tools sits between Dofollow.Tools and Altern.
         await page.locator('footer .footer-badges [data-footer-badges-track] a[href="https://dofollow.tools"]').focus();
+        await page.keyboard.press("Tab");
+        const getsTools = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            href: active?.getAttribute("href"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(getsTools.href, path + ": Tab from Dofollow.Tools must focus the Gets.Tools badge").toBe("https://gets.tools");
+        expect(getsTools.outlineStyle, path + ": the focused Gets.Tools badge needs a visible focus ring").not.toBe("none");
+        expect(getsTools.outlineWidth, path + ": the focused Gets.Tools badge needs a visible focus ring").not.toBe("0px");
         await page.keyboard.press("Tab");
         const focused = await page.evaluate(() => {
           const active = document.activeElement;
@@ -1064,7 +1078,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             outlineWidth: style.outlineWidth,
           };
         });
-        expect(focused.href, path + ": Tab from Toolradar must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
+        expect(focused.href, path + ": Tab from Gets.Tools must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
         expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
         expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
         // Issue #1015: the new last badge is reachable too, with the same ring.
@@ -1215,6 +1229,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://aixcollection.com/ai/orbi",
     "https://launchtory.com/projects/orbi-build",
     "https://dofollow.tools",
+    "https://gets.tools",
     "https://altern.ai/ai/orbi",
     "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     "https://www.tooluck.org/item/orbi",
@@ -1305,6 +1320,25 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
       };
     }));
 
+  // Issue #1198: yourhack.ai's official embed replaced a 28px text tile, so at
+  // both widths the badge it now renders has to read as the same row as the
+  // image badge beside it — same height (within 4px of Nick Launches) and the
+  // same line — instead of a lone small box between them.
+  const expectYourhackRow = (badges, label) => {
+    const yourhack = badges.filter((badge) => badge.alt === "Listed on yourhack.ai");
+    expect(yourhack, label + ": the yourhack.ai badge image").toHaveLength(1);
+    const neighbour = badges.find((badge) => badge.alt === "Featured on Nick Launches");
+    expect(neighbour, label + ": the Nick Launches badge next to it").toBeTruthy();
+    expect(
+      Math.abs(yourhack[0].height - neighbour.height),
+      label + ": the yourhack.ai badge height against Nick Launches",
+    ).toBeLessThanOrEqual(4);
+    expect(
+      Math.abs(yourhack[0].top - neighbour.top),
+      label + ": the yourhack.ai badge shares its neighbours' line",
+    ).toBeLessThanOrEqual(4);
+  };
+
   for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
     it(name + " renders every badge 28px high in their source ratio", async () => {
       const page = await guardedPage(browser, baseUrl);
@@ -1326,9 +1360,10 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // 101aitools.com / vibedonalds.com / minylist.com images,
           // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
           // image and Issue #1169 the ScrollLaunch image, plus OpenHunts /
-          // SaaSGrow / NavFolders / Huzzler (Huzzler now an image badge):
-          // 44 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(44);
+          // SaaSGrow / NavFolders / Huzzler (Huzzler now an image badge),
+          // Issue #1198's yourhack.ai image, and Gets.Tools: 46 badge images
+          // in the row.
+          expect(badges, label + ": badge count").toHaveLength(46);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1357,6 +1392,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await loadBadges(page);
         const desktop = await measureBadges(page);
         expectBadges(desktop, path + " at 1440px");
+        expectYourhackRow(desktop, path + " at 1440px");
         // Issue #1173: every badge sits on the strip's single line now — the
         // row no longer wraps into five of them. The taller Startup Fast badge
         // (Issue #1125) is centred on that line too, so it is measured apart.
@@ -1403,6 +1439,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await loadBadges(page);
         const phone = await measureBadges(page);
         expectBadges(phone, path + " at 390px");
+        expectYourhackRow(phone, path + " at 390px");
         expect(
           new Set(phone.filter((badge) => badge.alt !== "Powered by Startup Fast").map((badge) => badge.top)).size,
           path + " at 390px: the badges stay on one line",
@@ -1438,7 +1475,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         // plus the 63px badge line — never a third line.
         expect(phoneLayout.rowHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         // Issue #1185 removed the LaunchIgniter badge, leaving 40.
-        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(44);
+        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(46);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
@@ -1651,19 +1688,20 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         // wrapped rows this replaced.
         expect(desktop.navHeight, path + " at 1440px: the badge row is one line high").toBeLessThanOrEqual(90);
         expect(desktop.documentOverflow, path + " at 1440px: the strip never widens the page").toBe(0);
-        // 61 anchors: the two friend links + the 59 badges (Issue #1185
-        // removed the LaunchIgniter one), all in the source.
-        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(61);
-        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(61);
+        // 62 anchors: the two friend links + the 60 badges (Issue #1185
+        // removed the LaunchIgniter one; Gets.Tools added), all in the source.
+        expect(desktop.trackAnchors, path + ": anchors on the source strip").toBe(62);
+        expect(desktop.copyAnchors, path + ": anchors in the marquee copy").toBe(62);
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
         // Issue #1173 item 1: the text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
-        // Huzzler is now an image badge, so 15 text-only links remain.
-        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(15);
+        // Huzzler and yourhack.ai are now image badges, so 14 text-only links
+        // remain.
+        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(14);
         expect(
           desktop.textTiles.filter((tile) => tile.height === 28).length,
           path + ": every text-only link renders a 28px tile",
-        ).toBe(15);
+        ).toBe(14);
         const lineCentres = [...desktop.textTiles.map((tile) => tile.centre), ...desktop.badgeCentres];
         expect(Math.max(...lineCentres) - Math.min(...lineCentres), path + ": text tiles and badges share one line")
           .toBeLessThanOrEqual(1);

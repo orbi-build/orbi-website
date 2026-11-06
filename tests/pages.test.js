@@ -1790,6 +1790,33 @@ describe("one unified footer on every content page", () => {
     }
   });
 
+  // Issue #1198: https://yourhack.ai/add-badge hands out one embed — an anchor
+  // on their badge file, alt "Listed on yourhack.ai". The directory re-checks
+  // the page and delists orbi.build when the link disappears, so the href stays
+  // the bare https://yourhack.ai without nofollow. 131x20 is the SVG's own
+  // width/height; the shared 28px footer rule (Issue #1038) renders it in that
+  // ratio like the badges beside it.
+  it("carries the yourhack.ai badge image instead of a text link on every footer page (Issue #1198)", () => {
+    const anchor = '<a href="https://yourhack.ai" target="_blank" rel="noopener">';
+    const image = '<img src="https://yourhack.ai/badge/yourhack.svg" alt="Listed on yourhack.ai" width="131" height="20" />';
+    for (const page of content()) {
+      const footer = footerRegion(shipped.get(page.output));
+      expect(footer, `${page.output}: the yourhack.ai badge drifted`).toContain(anchor + image);
+      expect(footer, `${page.output}: the yourhack.ai entry must no longer be a text link`)
+        .not.toContain(">yourhack.ai</a>");
+      expect(countMatches(footer, /https:\/\/yourhack\.ai\/badge\/yourhack\.svg/g), `${page.output}: exactly one yourhack.ai badge image`)
+        .toBe(1);
+      const tag = footerAnchorTag(footer, "https://yourhack.ai");
+      expect(tag, `${page.output}: the yourhack.ai backlink must stay crawlable`).not.toContain("nofollow");
+      expect(tag, `${page.output}: the yourhack.ai backlink must not be sponsored`).not.toContain("sponsored");
+      expect(tag, `${page.output}: the yourhack.ai backlink must not be ugc`).not.toContain("ugc");
+      // The directory counts the badge from requests for its own file, so the
+      // shipped HTML must never point at a self-hosted copy.
+      expect(countMatches(footer, /src="\/img\/[^"]*yourhack[^"]*"/gi), `${page.output}: the yourhack.ai badge must not be self-hosted`)
+        .toBe(0);
+    }
+  });
+
   // Issue #1185: LaunchIgniter never published an Orbi entry — its product page
   // answers 200 with "Product Not Found" — so the badge sent visitors to a page
   // with no Orbi on it and left the footer. It comes back only once the site
@@ -2398,6 +2425,7 @@ describe("one unified footer on every content page", () => {
       "https://aixcollection.com/ai/orbi",
       "https://launchtory.com/projects/orbi-build",
       "https://dofollow.tools",
+      "https://gets.tools",
       "https://altern.ai/ai/orbi",
       "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
       "https://www.tooluck.org/item/orbi",
