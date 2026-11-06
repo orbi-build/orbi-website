@@ -1305,6 +1305,25 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
       };
     }));
 
+  // Issue #1198: yourhack.ai's official embed replaced a 28px text tile, so at
+  // both widths the badge it now renders has to read as the same row as the
+  // image badge beside it — same height (within 4px of Nick Launches) and the
+  // same line — instead of a lone small box between them.
+  const expectYourhackRow = (badges, label) => {
+    const yourhack = badges.filter((badge) => badge.alt === "Listed on yourhack.ai");
+    expect(yourhack, label + ": the yourhack.ai badge image").toHaveLength(1);
+    const neighbour = badges.find((badge) => badge.alt === "Featured on Nick Launches");
+    expect(neighbour, label + ": the Nick Launches badge next to it").toBeTruthy();
+    expect(
+      Math.abs(yourhack[0].height - neighbour.height),
+      label + ": the yourhack.ai badge height against Nick Launches",
+    ).toBeLessThanOrEqual(4);
+    expect(
+      Math.abs(yourhack[0].top - neighbour.top),
+      label + ": the yourhack.ai badge shares its neighbours' line",
+    ).toBeLessThanOrEqual(4);
+  };
+
   for (const [name, path] of [["home-en", "/"], ["home-zh", "/zh/"]]) {
     it(name + " renders every badge 28px high in their source ratio", async () => {
       const page = await guardedPage(browser, baseUrl);
@@ -1326,9 +1345,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
           // 101aitools.com / vibedonalds.com / minylist.com images,
           // Issue #1165 the doforai.tools image, Issue #1168 the Startup Fame
           // image and Issue #1169 the ScrollLaunch image, plus OpenHunts /
-          // SaaSGrow / NavFolders / Huzzler (Huzzler now an image badge):
-          // 44 badge images in the row.
-          expect(badges, label + ": badge count").toHaveLength(44);
+          // SaaSGrow / NavFolders / Huzzler (Huzzler now an image badge) and
+          // Issue #1198's yourhack.ai image: 45 badge images in the row.
+          expect(badges, label + ": badge count").toHaveLength(45);
           for (const badge of badges) {
             expect(badge.naturalWidth, label + ": " + badge.alt + " placeholder loaded").toBeGreaterThan(0);
             expect(badge.width, label + ": " + badge.alt + " rendered width").toBeGreaterThan(0);
@@ -1357,6 +1376,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await loadBadges(page);
         const desktop = await measureBadges(page);
         expectBadges(desktop, path + " at 1440px");
+        expectYourhackRow(desktop, path + " at 1440px");
         // Issue #1173: every badge sits on the strip's single line now — the
         // row no longer wraps into five of them. The taller Startup Fast badge
         // (Issue #1125) is centred on that line too, so it is measured apart.
@@ -1403,6 +1423,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         await loadBadges(page);
         const phone = await measureBadges(page);
         expectBadges(phone, path + " at 390px");
+        expectYourhackRow(phone, path + " at 390px");
         expect(
           new Set(phone.filter((badge) => badge.alt !== "Powered by Startup Fast").map((badge) => badge.top)).size,
           path + " at 390px: the badges stay on one line",
@@ -1438,7 +1459,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
         // plus the 63px badge line — never a third line.
         expect(phoneLayout.rowHeight, path + " at 390px: the title line plus the badge line").toBeLessThanOrEqual(130);
         // Issue #1185 removed the LaunchIgniter badge, leaving 40.
-        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(44);
+        expect(phoneLayout.renderedBadges, path + " at 390px: every badge on the strip renders").toBe(45);
         await page.locator("footer.site-footer").screenshot({ path: ".orbi/footer-badges-28px-" + name + "-390.png" });
       } finally {
         await page.close();
@@ -1658,12 +1679,13 @@ describe("the footer badge strip is one self-scrolling row (Issue #1173)", () =>
         expect(desktop.trackChildren, path + ": the strip carries exactly two copies").toBe(2);
         // Issue #1173 item 1: the text-only directory links are 28px
         // tiles on the image badges' line, so they add no row height.
-        // Huzzler is now an image badge, so 15 text-only links remain.
-        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(15);
+        // Huzzler and yourhack.ai are now image badges, so 14 text-only links
+        // remain.
+        expect(desktop.textTiles.length, path + ": text-only directory links on the strip").toBe(14);
         expect(
           desktop.textTiles.filter((tile) => tile.height === 28).length,
           path + ": every text-only link renders a 28px tile",
-        ).toBe(15);
+        ).toBe(14);
         const lineCentres = [...desktop.textTiles.map((tile) => tile.centre), ...desktop.badgeCentres];
         expect(Math.max(...lineCentres) - Math.min(...lineCentres), path + ": text tiles and badges share one line")
           .toBeLessThanOrEqual(1);

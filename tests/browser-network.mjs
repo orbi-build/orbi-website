@@ -59,7 +59,9 @@
 // HTTP 429 from the delivery sandbox; the vendor's 171x54 embed box keeps
 // that ratio within 0.14%, Issue #1168); and on 2026-11-04
 // www.scrolllaunch.com 220x48 (SVG — its own width/height and its viewBox
-// 0 0 220 48, the same box the vendor's embed declares, Issue #1169).
+// 0 0 220 48, the same box the vendor's embed declares, Issue #1169); and on
+// 2026-11-06 yourhack.ai 131x20 (SVG — its own width/height, measured on the
+// live file, Issue #1198).
 // Since Issue #1038
 // the shared footer rule renders every badge at 28px high, so the
 // placeholder's natural size decides only the width the source ratio implies
@@ -99,6 +101,10 @@ export const BADGE_PLACEHOLDER_SIZES = [
   { host: "doforai.tools", width: 538, height: 169 },
   { host: "startupfa.me", width: 468, height: 148 },
   { host: "www.scrolllaunch.com", width: 220, height: 48 },
+  // Issue #1198: www.yourhack.ai is reached as the bare yourhack.ai host, and
+  // the file measures 131x20 on the live URL (200, image/svg+xml), the same box
+  // the vendor's embed snippet declares through its 20px-tall SVG.
+  { host: "yourhack.ai", width: 131, height: 20 },
 ];
 const FALLBACK_PLACEHOLDER_SIZE = { width: 1, height: 1 };
 
