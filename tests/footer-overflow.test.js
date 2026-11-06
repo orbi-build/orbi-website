@@ -1053,7 +1053,21 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         ).toBeLessThan(0.02);
         // Issue #1012: the badge is reachable from the keyboard and shows the
         // focus ring. Tab from the badge before it, as a keyboard visitor does.
+        // Gets.Tools sits between Dofollow.Tools and Altern.
         await page.locator('footer .footer-badges [data-footer-badges-track] a[href="https://dofollow.tools"]').focus();
+        await page.keyboard.press("Tab");
+        const getsTools = await page.evaluate(() => {
+          const active = document.activeElement;
+          const style = getComputedStyle(active);
+          return {
+            href: active?.getAttribute("href"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        });
+        expect(getsTools.href, path + ": Tab from Dofollow.Tools must focus the Gets.Tools badge").toBe("https://gets.tools");
+        expect(getsTools.outlineStyle, path + ": the focused Gets.Tools badge needs a visible focus ring").not.toBe("none");
+        expect(getsTools.outlineWidth, path + ": the focused Gets.Tools badge needs a visible focus ring").not.toBe("0px");
         await page.keyboard.press("Tab");
         const focused = await page.evaluate(() => {
           const active = document.activeElement;
@@ -1064,7 +1078,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             outlineWidth: style.outlineWidth,
           };
         });
-        expect(focused.href, path + ": Tab from Toolradar must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
+        expect(focused.href, path + ": Tab from Gets.Tools must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
         expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
         expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
         // Issue #1015: the new last badge is reachable too, with the same ring.
