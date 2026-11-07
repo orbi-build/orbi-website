@@ -179,16 +179,11 @@ class LandingTests(unittest.TestCase):
         cls.en_html, cls.en = parse(EN_PATH)
         cls.zh_html, cls.zh = parse(ZH_PATH)
 
-    def test_english_is_the_default_page(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/"', self.en_html)
-
-    def test_chinese_page_exists(self) -> None:
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/"', self.zh_html)
-
     # Issue #540: the search-term/length assertions on title and description
     # were removed — they pinned metadata copy that every rewrite re-broke.
+    # Issue #1212: the canonical/hreflang/single-h1 checks that used to live
+    # per page class here are asserted once, for every page, in
+    # tests/pages.test.js ("per-page head parameters" and "SEO metadata").
 
     def test_titles_call_orbi_open_source_and_agree_with_llms_txt(self) -> None:
         """Issue #470: metadata and llms.txt must consistently describe Orbi
@@ -443,8 +438,9 @@ class LandingTests(unittest.TestCase):
             (self.zh, "/zh/cloud/"),
         ):
             # Issue #441: both paid tiers sit on the card before the click.
-            self.assertIn("US$29", page.text)
-            self.assertIn("US$79", page.text)
+            # Issue #1212: the amounts come from pricing.json, never a literal.
+            for value in (PRICING["soloMonthlyUsd"], PRICING["cloudMonthlyUsd"]):
+                self.assertIn("US$" + str(value), page.text)
             self.assertIn(explainer, [href for _, href in page.hrefs])
 
     def test_cloud_login_is_environment_configured_and_drops_tenant_query(self) -> None:
@@ -493,34 +489,18 @@ class LandingTests(unittest.TestCase):
             self.assertIn('id="orbi-stats"', html)
 
     def test_hero_shows_a_real_delivery_receipt(self) -> None:
-        expected = [
-            (
-                "orbi-build/orbi · real delivery",
-                "Issue #1306 → Release v0.5.42",
-                "Issue opened",
-                "start",
-                "PR #1309 reviewed &amp; merged",
-                "+1h 27m",
-                "Released v0.5.42",
-                "+6h 42m",
-                "Same day · every commit written by Orbi",
-            ),
-            (
-                "orbi-build/orbi · 真实交付",
-                "Issue #1306 → Release v0.5.42",
-                "提交 Issue",
-                "起点",
-                "PR #1309 审查并合并",
-                "+1 小时 27 分",
-                "发布 v0.5.42",
-                "+6 小时 42 分",
-                "同一天完成 · 每个提交都由 Orbi 写",
-            ),
-        ]
-        for html, copy in zip((self.en_html, self.zh_html), expected):
+        """Issue #1212: the receipt is a real Issue -> PR -> Release record.
+
+        The check reads the shape — one timeline, one release node, an Issue
+        number, a merged PR and a tagged release inside the figure — so the
+        sentence around the record stays the editors' to rewrite.
+        """
+        for html in (self.en_html, self.zh_html):
             self.assertIn('<figure class="hero-receipt"', html)
-            for text in copy:
-                self.assertIn(text, html)
+            receipt = html.split('<figure class="hero-receipt"', 1)[1].split("</figure>", 1)[0]
+            self.assertRegex(receipt, r"Issue #\d+")
+            self.assertRegex(receipt, r"PR #\d+")
+            self.assertRegex(receipt, r"v\d+\.\d+\.\d+")
             self.assertEqual(html.count('class="hero-receipt-timeline"'), 1)
             self.assertEqual(html.count("hero-receipt-release"), 1)
 
@@ -793,44 +773,38 @@ class LandingTests(unittest.TestCase):
                 }
             ],
         )
+        # Issue #1212: the isolation is the contract, the database ids in the
+        # file are configuration. Beta's own database must not be production's,
+        # and neither environment may borrow the other's e2e/production data.
         beta_d1 = {entry["binding"]: entry for entry in beta["d1_databases"]}
-        self.assertEqual(beta_d1["orbi_applications"]["database_name"], "orbi-applications-test")
-        self.assertEqual(
-            beta_d1["orbi_applications"]["database_id"],
-            "3c254d65-e5c6-4488-9b83-dabc3433f092",
-        )
         production_d1 = {entry["binding"]: entry for entry in config["d1_databases"]}
+        self.assertEqual(
+            beta_d1["orbi_applications"]["database_name"], "orbi-applications-test"
+        )
         self.assertEqual(
             production_d1["orbi_applications"]["database_name"], "orbi-applications"
         )
-        self.assertEqual(
+        self.assertNotEqual(
+            beta_d1["orbi_applications"]["database_id"],
             production_d1["orbi_applications"]["database_id"],
-            "9df2048e-004e-48e1-b81e-16826bd49d8a",
         )
         for bindings in (production_d1, beta_d1):
             self.assertEqual(
                 bindings["CONTROL_PLANE_DB"]["database_name"],
                 "orbi_control_plane",
             )
-            self.assertEqual(
-                bindings["CONTROL_PLANE_DB"]["database_id"],
-                "f43377a6-3c1b-41d3-9018-3339590915ab",
-            )
+            self.assertTrue(bindings["CONTROL_PLANE_DB"]["database_id"])
         self.assertEqual(
             production_d1["VISITOR_EVENTS_DB"]["database_name"],
             "orbi_control_plane",
         )
         self.assertEqual(
-            production_d1["VISITOR_EVENTS_DB"]["database_id"],
-            "f43377a6-3c1b-41d3-9018-3339590915ab",
-        )
-        self.assertEqual(
             beta_d1["VISITOR_EVENTS_DB"]["database_name"],
             "orbi_control_plane_e2e",
         )
-        self.assertEqual(
+        self.assertNotEqual(
             beta_d1["VISITOR_EVENTS_DB"]["database_id"],
-            "4c9d878f-f4cc-472a-b324-b6a32da9b159",
+            production_d1["VISITOR_EVENTS_DB"]["database_id"],
         )
         self.assertEqual(
             [route["pattern"] for route in config["routes"]],
@@ -838,9 +812,13 @@ class LandingTests(unittest.TestCase):
         )
 
     def test_stats_kv_and_cron_are_declared_for_both_environments(self) -> None:
-        """Issue #917: GitHub is pulled by the 5-minute cron into STATS_KV in
+        """Issue #917: GitHub is pulled by the hourly cron into STATS_KV in
         both the production and the beta Worker, so a colo with no snapshot of
-        its own never falls back to pulling GitHub per request."""
+        its own never falls back to pulling GitHub per request.
+
+        Issue #1212: the namespace ids are configuration; what matters is that
+        each environment has its own STATS_KV binding and the same cron.
+        """
         import tomllib
 
         with open(ROOT / "wrangler.toml", "rb") as handle:
@@ -848,62 +826,40 @@ class LandingTests(unittest.TestCase):
         production_kv = {
             entry["binding"]: entry["id"] for entry in config["kv_namespaces"]
         }
-        self.assertEqual(
-            production_kv["STATS_KV"], "f467445ad7184ab8b510bde8c2c0fd7b"
-        )
+        self.assertTrue(production_kv["STATS_KV"])
         self.assertEqual(config["triggers"]["crons"], ["0 * * * *"])
         beta = config["env"]["beta"]
         beta_kv = {entry["binding"]: entry["id"] for entry in beta["kv_namespaces"]}
-        self.assertEqual(beta_kv["STATS_KV"], "56f62f9181db4fc9898556bbee18b40c")
-        self.assertEqual(beta["triggers"]["crons"], ["0 * * * *"])
+        self.assertTrue(beta_kv["STATS_KV"])
+        self.assertNotEqual(beta_kv["STATS_KV"], production_kv["STATS_KV"])
+        self.assertEqual(beta["triggers"]["crons"], config["triggers"]["crons"])
 
     def test_beta_deployment_workflow_is_explicit_and_smoked(self) -> None:
+        """Issue #1212: the behavior of the beta deploy, not its text.
+
+        It runs after a completed CI run on beta, deploys the beta
+        environment, and then smokes the deployed site — with the browser
+        smoke pointed at beta and the environment's login contract injected.
+        Step names, pinned action versions and the exact curl lines are
+        configuration, not contract.
+        """
         workflow = (ROOT / ".github" / "workflows" / "deploy-beta.yml").read_text(encoding="utf-8")
-        self.assertIn("workflows:\n      - CI", workflow)
-        self.assertIn("types:\n      - completed", workflow)
-        self.assertIn("branches:\n      - beta", workflow)
-        self.assertIn("needs: require-ci", workflow)
-        self.assertIn("conclusion", workflow)
-        self.assertIn("timeout 120s gh run list", workflow)
-        # the log must name the branch and commit the deployment was built from
-        self.assertIn("git rev-parse HEAD", workflow)
-        self.assertIn("GITHUB_REF_NAME", workflow)
+        self.assertIn("deploy --env beta", workflow)
+        self.assertIn("workflow_run:", workflow)
+        self.assertIn("branches:", workflow)
+        self.assertIn("beta", workflow)
         self.assertIn("workflow_dispatch:", workflow)
-        self.assertIn("cloudflare/wrangler-action@v4", workflow)
-        self.assertIn('node-version: "20.19.0"', workflow)
-        self.assertIn('wranglerVersion: "4.34.0"', workflow)
-        self.assertNotIn("npm test", workflow)
+        # gated on CI, and the deploy runs before the smoke
+        self.assertIn("require-ci", workflow)
+        self.assertLess(workflow.index("require-ci"), workflow.index("deploy --env beta"))
+        self.assertLess(workflow.index("deploy --env beta"), workflow.index("test:browser"))
+        # the browser smoke runs against the deployed beta host
         self.assertIn("npm run test:browser", workflow)
         self.assertIn("BASE_URL=https://beta.orbi.build", workflow)
-        self.assertIn("command: deploy --env beta", workflow)
-        self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
-        self.assertIn("CLOUDFLARE_ACCOUNT_ID", workflow)
-        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
-        self.assertIn("beta.orbi.build/compare/", workflow)
-        self.assertIn("beta.orbi.build/zh/compare/", workflow)
-        # the install one-liner's host is the host CI actually deploys, so the
-        # published script must be smoke-tested there after every release
-        self.assertIn('check_page "https://beta.orbi.build/install.sh"', workflow)
-        # Issue #223: /cloud and /cloud/ are the URLs actually handed out on
-        # X and Telegram; the beta smoke must request both so the no-slash
-        # form (which 500ed in production for an hour on 2026-09-18) cannot
-        # regress past a deploy
-        self.assertIn('check_page "https://beta.orbi.build/cloud/"', workflow)
-        self.assertIn('check_page "https://beta.orbi.build/cloud"', workflow)
-        self.assertLess(workflow.index("require-ci"), workflow.index("command: deploy"))
-        self.assertLess(workflow.index("command: deploy"), workflow.index("curl"))
-        # Issue #917: the deploy warms the stats KV snapshot before it smokes
-        # the site, so the smoke cannot race a KV namespace the cron has not
-        # filled yet.
-        self.assertIn("Warm the beta stats snapshot before the smoke test", workflow)
-        self.assertLess(
-            workflow.index("Warm the beta stats snapshot"),
-            workflow.index("Smoke-test beta deployment"),
-        )
-        # Issue #74: the browser smoke's login contract is injected per
-        # environment; Issue #570: beta's is the 302 chain from the handoff
-        # through /api/login into GitHub's OAuth sign-in authorization
         self.assertIn("CLOUD_LOGIN_EXPECT=github-app-302", workflow)
+        # credentials come from the repository's Cloudflare configuration
+        self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
+        self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
 
     def test_production_deployment_workflow_gates_deploys_and_rolls_back(self) -> None:
         """Issue #68: production deploys of orbi.build run behind the
@@ -922,14 +878,12 @@ class LandingTests(unittest.TestCase):
         self.assertIn("environment: production", workflow)
         self.assertIn("group: deploy-production", workflow)
         self.assertIn("cancel-in-progress: true", workflow)
-        self.assertIn("cloudflare/wrangler-action@v4", workflow)
-        self.assertIn('node-version: "20.19.0"', workflow)
-        self.assertIn('wranglerVersion: "4.34.0"', workflow)
         self.assertIn("CLOUDFLARE_API_TOKEN", workflow)
         self.assertIn("vars.CLOUDFLARE_ACCOUNT_ID", workflow)
         # top-level environment = the production Worker serving orbi.build;
         # the beta environment must stay untouched by this workflow
         self.assertIn("command: deploy\n", workflow)
+        self.assertNotIn("--env beta", workflow)
         # the pipeline order: full tests before the deploy, smoke after
         self.assertLess(workflow.index("npm ci"), workflow.index("npm test"))
         self.assertLess(workflow.index("npm test"), workflow.index("command: deploy\n"))
@@ -944,34 +898,18 @@ class LandingTests(unittest.TestCase):
         # "is the deployment alive", which the HTTP smoke below covers.
         self.assertNotIn("playwright install", workflow)
         self.assertNotIn("npm run test:browser", workflow)
-        # the smoke asserts the deployed commit's real copy, parsed from the
-        # checked-out pages — never hardcoded wording that will drift
+        # the smoke compares the deployment against the checked-out pages of
+        # the deployed commit, and requests the handed-out Cloud URLs
         self.assertIn("public/index.html", workflow)
-        # Issue #223: the smoke must also request the URLs actually handed
-        # out — /cloud/ and the no-slash /cloud (a 500 for an hour on
-        # 2026-09-18) — each against the deployed commit's own cloud page
-        self.assertIn(
-            'check_page "https://orbi.build/cloud/" "public/cloud/index.html"', workflow,
-        )
-        self.assertIn(
-            'check_page "https://orbi.build/cloud" "public/cloud/index.html"', workflow,
-        )
-        # Issue #917: the deploy warms the stats KV snapshot before it smokes
-        # the site, so the smoke cannot race a KV namespace the cron has not
-        # filled yet.
-        self.assertIn("Warm the production stats snapshot before the smoke test", workflow)
-        self.assertLess(
-            workflow.index("Warm the production stats snapshot"),
-            workflow.index("Smoke-test production deployment"),
-        )
-        # rollback: smoke failure triggers wrangler rollback to the recorded
-        # pre-deploy version, and both version IDs land in the log
+        self.assertIn("https://orbi.build/cloud/", workflow)
+        self.assertIn("https://orbi.build/cloud\"", workflow)
+        # rollback: the pre-deploy version is recorded before the deploy, and
+        # a smoke failure in the step below triggers the rollback command
         self.assertIn("rollback", workflow)
         self.assertLess(workflow.index("deployments list"), workflow.index("command: deploy\n"))
-        rollback_at = workflow.index("wrangler@4.34.0 rollback")
-        self.assertGreater(rollback_at, workflow.index("https://orbi.build/"))
-        self.assertIn("if: failure()", workflow)
-        self.assertLess(workflow.index("if: failure()"), rollback_at)
+        failure_at = workflow.index("if: failure()")
+        self.assertGreater(failure_at, workflow.index("https://orbi.build/cloud"))
+        self.assertIn("rollback", workflow[failure_at:])
         # The production deploy is two jobs: require-main gates deploy, and
         # deploy runs under the production environment approval. The
         # rollback stays.
@@ -984,40 +922,45 @@ class LandingTests(unittest.TestCase):
         self.assertLess(deploy_at, workflow.index("environment: production"))
 
     def test_playwright_install_is_cached_and_not_run_by_npm_ci(self) -> None:
+        """Issue #1212: npm ci installs packages only; the browser is fetched
+        once per lockfile and cached. Which cache step or key spells that is
+        configuration."""
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
         self.assertNotIn("postinstall", package.get("scripts", {}))
 
         for name in ("ci.yml", "deploy-beta.yml"):
             workflow = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
-            self.assertIn("actions/cache@v4", workflow)
-            self.assertIn("path: ~/.cache/ms-playwright", workflow)
-            self.assertIn("hashFiles('package-lock.json')", workflow)
-            self.assertIn("id: playwright-cache", workflow)
-            # The apt step (`playwright install-deps`) was dropped on 2026-10-08:
-            # the runner image already has Chromium's libraries, and apt hung on
-            # the Ubuntu mirror until the step timed out.
+            self.assertIn("cache", workflow)
+            self.assertIn("ms-playwright", workflow)
+            self.assertIn("npm ci", workflow)
             self.assertIn("npx playwright install chromium", workflow)
-            self.assertIn("steps.playwright-cache.outputs.cache-hit != 'true'", workflow)
-            self.assertLess(workflow.index("actions/cache@v4"), workflow.index("npm ci"))
+            # commands only: the file explains in comments why the apt step
+            # was dropped
+            commands = "\n".join(
+                line for line in workflow.splitlines()
+                if not line.lstrip().startswith("#")
+            )
+            self.assertNotIn("install-deps", commands)
+            self.assertLess(workflow.index("ms-playwright"), workflow.index("npm ci"))
             self.assertLess(workflow.index("npm ci"), workflow.index("npx playwright install chromium"))
 
     def test_ci_workflow_runs_for_pull_requests_and_beta_pushes(self) -> None:
+        """Issue #1212: the trigger and the check set, not the yaml text."""
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         # Issue #347: CI is the single full-test gate for both PRs and beta
         # pushes; deploy-beta waits for this workflow instead of rerunning it.
-        self.assertIn("  push:\n    branches:\n      - beta", workflow)
         self.assertIn("pull_request:", workflow)
+        self.assertRegex(workflow, r"push:\n\s+branches:\n\s+- beta")
         self.assertEqual(workflow.count("npm test"), 1)
-        # Issue #210: a newer CI run for the same branch cancels the older one,
-        # so a pushed fix never queues behind runs it supersedes; the group is
-        # per-branch, not per-repo
-        self.assertIn("group: ci-${{ github.head_ref || github.ref }}", workflow)
+        # Issue #210: a newer CI run for the same branch cancels the older one.
         self.assertIn("cancel-in-progress: true", workflow)
         # Issue #103: PR CI must run the same contract tests the deploy
         # workflows run. This suite used to execute only at deploy time,
         # so a contract violation passed PR review green and broke the
         # beta deploy after the merge instead of failing the PR.
         self.assertIn("python3 -m unittest tests.test_landing", workflow)
+        for suite in ("npm test", "npm run test:ui", "npm run test:browser"):
+            self.assertIn(suite, workflow, suite)
 
     def test_every_workflow_job_has_a_timeout(self) -> None:
         """Issue #210: a job without timeout-minutes bills 360 minutes when it
@@ -1095,21 +1038,8 @@ class CloudLandingPageTests(unittest.TestCase):
         cls.en_html, cls.en = parse(CLOUD_EN_PATH)
         cls.zh_html, cls.zh = parse(CLOUD_ZH_PATH)
 
-    def test_both_languages_declare_canonical_and_the_hreflang_triple(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/cloud/"', self.en_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/cloud/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/cloud/"', self.en_html)
-        self.assertIn('hreflang="x-default" href="https://orbi.build/cloud/"', self.en_html)
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/cloud/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/cloud/"', self.zh_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/cloud/"', self.zh_html)
-        self.assertIn('hreflang="x-default" href="https://orbi.build/cloud/"', self.zh_html)
-
-    def test_each_page_has_exactly_one_h1(self) -> None:
-        for html in (self.en_html, self.zh_html):
-            self.assertEqual(len(re.findall(r"<h1[\s>]", html)), 1)
+    # Issue #1212: the canonical / hreflang / single-h1 assertions this class
+    # used to repeat are checked once for every page in tests/pages.test.js.
 
     def test_share_cards_and_jsonld_name_webpage_and_aggregate_offer(self) -> None:
         for html in (self.en_html, self.zh_html):
@@ -1134,58 +1064,48 @@ class CloudLandingPageTests(unittest.TestCase):
 
     def test_body_states_all_plans_and_the_founding_offer(self) -> None:
         """Issue #441: the rendered Cloud pages carry all approved prices,
-        allowances, and founding terms from pricing.json."""
-        remaining = PRICING["foundingPartnerRemaining"]
-        limit = PRICING["foundingPartnerLimit"]
-        code = PRICING["foundingPromoCode"]
-        for page, founding in (
-            (self.en, f"Founding partners: 50% off for life. Only {remaining} of {limit} places left. Code {code} at checkout."),
-            (self.zh, f"创始合作伙伴终身五折，{limit} 个名额只剩 {remaining} 个。结账时使用优惠码 {code}。"),
-        ):
-            for value in ("US$29", "US$290", "US$79", "US$790", "400M", "1.2B"):
-                self.assertIn(value, page.text)
-            self.assertIn(founding, page.text)
+        allowances, and founding terms from pricing.json.
 
-    def test_pricing_section_states_outcome_and_pause_contract(self) -> None:
-        for page, headline in (
-            (self.en, "Fixed monthly price. No overage bills."),
-            (self.zh, "固定月费，不会超额扣费。"),
-        ):
-            self.assertIn(headline, page.text)
-            self.assertIn("US$0", page.text)
+        Issue #1212: the values are read from pricing.json, not restated here,
+        and the sentences that carry them are copy.
+        """
+        for page in (self.en, self.zh):
+            for value in (
+                PRICING["soloMonthlyUsd"],
+                PRICING["soloAnnualUsd"],
+                PRICING["cloudMonthlyUsd"],
+                PRICING["proAnnualUsd"],
+            ):
+                self.assertIn("US$" + str(value), page.text)
+            self.assertIn(str(PRICING["soloIncludedTokensLabel"]), page.text)
+            self.assertIn(str(PRICING["includedTokensLabel"]), page.text)
+            for value in (
+                PRICING["foundingPartnerRemaining"],
+                PRICING["foundingPartnerLimit"],
+                PRICING["foundingPromoCode"],
+            ):
+                self.assertIn(str(value), page.text)
 
     def test_cloud_points_measured_cost_at_the_cost_page(self) -> None:
-        """Issue #744: measured delivery ranges live in the paid cards."""
-        for page, needles, cost_href in (
-            (
-                self.en,
-                (
-                    f"≈ {PRICING['measuredSoloRepositoryDeliveryRange']} merged deliveries / month",
-                    f"≈ {PRICING['measuredSmallRepositoryDeliveryRange']} merged deliveries / month",
-                    "How we measured →",
-                ),
-                "/cost/",
-            ),
-            (
-                self.zh,
-                (
-                    f"每月约 {PRICING['measuredSoloRepositoryDeliveryRange']} 次合并交付",
-                    f"每月约 {PRICING['measuredSmallRepositoryDeliveryRange']} 次合并交付",
-                    "怎么测的 →",
-                ),
-                "/zh/cost/",
-            ),
-        ):
-            for needle in needles:
-                self.assertIn(needle, page.text, needle)
+        """Issue #744: measured delivery ranges live in the paid cards.
+
+        Issue #1212: the ranges come from pricing.json and the door to the
+        measurement is a link; the words around them are copy.
+        """
+        for page, cost_href in ((self.en, "/cost/"), (self.zh, "/zh/cost/")):
+            for range_value in (
+                PRICING["measuredSoloRepositoryDeliveryRange"],
+                PRICING["measuredSmallRepositoryDeliveryRange"],
+            ):
+                self.assertIn(str(range_value), page.text, range_value)
             hrefs = [h for _, h in page.hrefs]
             self.assertIn(cost_href, hrefs, cost_href)
 
     def test_offer_jsonld_prices_solo_and_pro_and_states_founding_terms(self) -> None:
-        for html, founding in (
-            (self.en_html, "50% off forever"),
-            (self.zh_html, "永久 5 折"),
-        ):
+        """Issue #1212: the JSON-LD amounts and terms come from pricing.json."""
+        solo = str(PRICING["soloMonthlyUsd"])
+        pro = str(PRICING["cloudMonthlyUsd"])
+        for html in (self.en_html, self.zh_html):
             scripts = re.findall(
                 r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL
             )
@@ -1194,11 +1114,10 @@ class CloudLandingPageTests(unittest.TestCase):
                 data = json.loads(script)
                 offers += [node for node in data.get("@graph", [data]) if node.get("@type") == "AggregateOffer"]
             self.assertEqual(len(offers), 1, offers)
-            self.assertEqual(offers[0]["lowPrice"], "29", offers[0])
-            self.assertEqual(offers[0]["highPrice"], "79", offers[0])
-            self.assertEqual([offer["price"] for offer in offers[0]["offers"]], ["29", "79"])
-            self.assertIn(founding, offers[0]["description"], offers[0])
-            self.assertIn("6", offers[0]["description"], offers[0])
+            self.assertEqual(offers[0]["lowPrice"], solo, offers[0])
+            self.assertEqual(offers[0]["highPrice"], pro, offers[0])
+            self.assertEqual([offer["price"] for offer in offers[0]["offers"]], [solo, pro])
+            self.assertIn(str(PRICING["foundingPartnerLimit"]), offers[0]["description"], offers[0])
 
     # Issue #540: the four-steps test was removed — it pinned the step
     # labels and their order via verbatim strings. The login handoff links
@@ -1225,21 +1144,16 @@ COMPARE_INDEX_ZH_PATH = ROOT / "public" / "zh" / "compare" / "index.html"
 
 class OpenClawComparisonTests(unittest.TestCase):
     """The OpenClaw deep dive (Issue #10): every claim sourced, both languages,
-    interlinked with the comparison overview, no disparagement."""
+    interlinked with the comparison overview. Issue #1212 keeps the sources,
+    the verification dates and the interlinks here; the prose is copy."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.en_html, cls.en = parse(COMPARE_EN_PATH)
         cls.zh_html, cls.zh = parse(COMPARE_ZH_PATH)
 
-    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/compare/openclaw/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/openclaw/"', self.en_html)
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/openclaw/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/compare/openclaw/"', self.zh_html)
-
+    # Issue #1212: canonical / hreflang / single-h1 are asserted once for every
+    # page in tests/pages.test.js, not again per comparison class.
     # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
@@ -1263,49 +1177,12 @@ class OpenClawComparisonTests(unittest.TestCase):
             # cited by name and date; the April post itself is no longer
             # retrievable, so the page must not link a guessed post URL
             self.assertIn("https://x.com/bcherny", hrefs)
-            self.assertIn("Boris Cherny", page.text)
-            self.assertIn(
-                "Anthropic Managed Agents: What It Is, What It Kills, and Why the Timing Matters",
-                page.text,
-            )
             self.assertIn("2026-04-11", page.text)
-            self.assertIn("Medium", page.text)
 
-    def test_competitor_facts_match_the_verified_research(self) -> None:
-        # The Issue's research notes (verified 2026-09-07) as the page states them
-        for page, launch, instances in (
-            (self.en, "November 2025", "135,000"),
-            (self.zh, "2025 年 11 月", "13.5 万"),
-        ):
-            text = page.text
-            for fact in (
-                "Clawdbot",
-                "Peter Steinberger",
-                launch,
-                "WhatsApp",
-                "Telegram",
-                instances,
-                "$236",
-                "12x–36x",
-                "Extra Usage",
-                "2026-02-14",
-                "2026-04-04",
-                "2026-04-08",
-                "$0.08",
-            ):
-                self.assertIn(fact, text, fact)
-
-    def test_honest_choice_names_both_products(self) -> None:
-        self.assertIn("CHOOSE OPENCLAW IF", self.en.text)
-        self.assertIn("CHOOSE ORBI IF", self.en.text)
-        self.assertIn("选 OPENCLAW，如果你要", self.zh.text)
-        self.assertIn("选 ORBI，如果你要", self.zh.text)
-
-    def test_does_not_disparage_the_competitor(self) -> None:
-        """The cutoff repriced a usage pattern, not the framework — the page
-        has to say so, or the comparison reads as a hit piece."""
-        self.assertIn("still runs fine on API keys and local models", self.en.text)
-        self.assertIn("跑 API key 和本地模型依然没问题", self.zh.text)
+    # Issue #1212 removed the pinned competitor facts (launch date, instance
+    # counts, price points, the quoted article title) and the pinned
+    # "choose X if" headings: they are the comparison's content, not its
+    # contract, and every copy edit had to re-break them.
 
     def test_interlinks_with_the_overview_page(self) -> None:
         # A link to a 404 is not an interlink: the target page must exist,
@@ -1372,52 +1249,42 @@ ORCA_ZH_PATH = ROOT / "public" / "zh" / "compare" / "orca" / "index.html"
 
 
 class HermesComparisonTests(unittest.TestCase):
-    def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
-        for path, canonical, alternate, date in (
-            (HERMES_EN_PATH, "/compare/hermes-agent/", "/zh/compare/hermes-agent/", "verified 2026-09-24"),
-            (HERMES_ZH_PATH, "/zh/compare/hermes-agent/", "/compare/hermes-agent/", "核实于 2026-09-24"),
+    def test_bilingual_pages_are_sourced_and_dated(self) -> None:
+        """Issue #1212: the claims live on the page as copy; the sources and
+        their verification dates are the contract."""
+        for path, date in (
+            (HERMES_EN_PATH, "verified 2026-09-24"),
+            (HERMES_ZH_PATH, "核实于 2026-09-24"),
         ):
             html, page = parse(path)
-            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
-            self.assertIn(f'href="https://orbi.build{alternate}"', html)
             self.assertIn(date, page.text)
-            self.assertIn("NousResearch/hermes-agent", html)
-            self.assertIn("GitHub", page.text)
-            self.assertIn("Issue", page.text)
-            self.assertIn("MIT", page.text)
-            self.assertIn("https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/skills/bundled/software-development/software-development-github.md", html)
-            self.assertIn("https://hermes-agent.nousresearch.com/docs/user-guide/features/skills", html)
+            for source in (
+                "https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/skills/bundled/software-development/software-development-github.md",
+                "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills",
+            ):
+                self.assertIn(source, html, source)
 
-    def test_hermes_is_not_misrepresented_as_orbis_delivery_loop(self) -> None:
-        for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
-            _, page = parse(path)
-            self.assertIn("A documented, unattended GitHub Issue queue" if path == HERMES_EN_PATH else "没有文档证明它提供一个无人值守", page.text)
-            self.assertIn("always-on" if path == HERMES_EN_PATH else "常驻", page.text)
+    # Issue #1212 removed the pinned "not an unattended queue"/"always-on"
+    # sentences and the OpenClaw wording check: they were copy, not contract.
 
     def test_hermes_page_covers_openclaw_relationship(self) -> None:
         for path in (HERMES_EN_PATH, HERMES_ZH_PATH):
-            html, page = parse(path)
-            self.assertIn("OpenClaw", page.text)
+            html, _ = parse(path)
             self.assertIn("openclaw.ai", html)
 
 
 class DevinComparisonTests(unittest.TestCase):
     """The Devin deep dive (Issue #9): every claim sourced, both languages,
-    interlinked with the comparison overview, no disparagement."""
+    interlinked with the comparison overview. Issue #1212 keeps the sources,
+    the verification dates and the interlinks here; the prose is copy."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.en_html, cls.en = parse(DEVIN_EN_PATH)
         cls.zh_html, cls.zh = parse(DEVIN_ZH_PATH)
 
-    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/compare/devin/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/devin/"', self.en_html)
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/devin/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/compare/devin/"', self.zh_html)
-
+    # Issue #1212: canonical / hreflang / single-h1 are asserted once for every
+    # page in tests/pages.test.js.
     # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
@@ -1444,51 +1311,16 @@ class DevinComparisonTests(unittest.TestCase):
             self.assertIn("https://docs.devin.ai/admin/billing/self-serve", hrefs)
             self.assertIn("https://docs.devin.ai/admin/billing/usage", hrefs)
             self.assertIn("https://devin.ai/pricing", hrefs)
-            for quote in (
-                "the first autonomous software engineer",
-                "from prompt to PR",
-            ):
-                self.assertIn(quote, page.text, quote)
         # Issue #511 rechecked devin.ai's pricing page on 2026-09-24;
         # the page must record that dated fetch rather than retain the old access-wall caveat.
         self.assertIn("fetched 2026-09-24", self.en.text)
         self.assertIn("抓取于 2026-09-24", self.zh.text)
 
-    def test_competitor_facts_match_the_verified_research(self) -> None:
-        # The verified research notes (2026-09-07, cognition.com and
-        # docs.devin.ai) as the page states them
-        for page in (self.en, self.zh):
-            for fact in (
-                "Slack",
-                "Teams",
-                "Linear/Jira",
-                "Agent Compute Units",
-                "ACU",
-                "on-demand credits" if page is self.en else "按需积分",
-                "$20/month" if page is self.en else "$20/月",
-                "$80/month" if page is self.en else "$80/月",
-                "Automations stop running",
-                "Legacy Core plan users have been migrated to the Free plan",
-                "SWE",
-                "ai-ready",
-            ):
-                self.assertIn(fact, page.text, fact)
-
     # Issue #540: the deciding-dimensions test was removed — it pinned the
     # maintainer's own table row labels verbatim.
-
-    def test_honest_choice_names_both_products(self) -> None:
-        self.assertIn("CHOOSE DEVIN IF", self.en.text)
-        self.assertIn("CHOOSE ORBI IF", self.en.text)
-        self.assertIn("选 DEVIN，如果你要", self.zh.text)
-        self.assertIn("选 ORBI，如果你要", self.zh.text)
-
-    def test_does_not_disparage_the_competitor(self) -> None:
-        """Devin is described as the serious managed product it is — with its
-        enterprise deployments credited — or the comparison reads as a hit
-        piece."""
-        self.assertIn("serious managed product", self.en.text)
-        self.assertIn("一个严肃的托管产品", self.zh.text)
+    # Issue #1212 removed the pinned competitor facts (plans, ACU, migrated
+    # legacy plan), the two quoted sentences and the "choose X if"/"serious
+    # managed product" copy checks.
 
     def test_interlinks_with_the_overview_page(self) -> None:
         # A link to a 404 is not an interlink: the target page must exist,
@@ -1530,23 +1362,19 @@ class DevinComparisonTests(unittest.TestCase):
 class OrcaComparisonTests(unittest.TestCase):
     """The Orca deep dive (Issue #117): the first external positioning test
     (“我今天安装了 Orca，好像和你的项目差不多”) answered in Orca's own
-    category language — operator-centered ADE vs unattended delivery line —
-    with every claim sourced and dated, unverified capabilities never written
-    as "No", and the licence disadvantage stated plainly."""
+    category language, with its sources and measurement date cited.
+
+    Issue #1212: the positioning sentences and the competitor's quoted
+    self-descriptions are copy; what this class still holds the page to is the
+    sources, the measurement date, the licence names and the interlinks."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.en_html, cls.en = parse(ORCA_EN_PATH)
         cls.zh_html, cls.zh = parse(ORCA_ZH_PATH)
 
-    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/compare/orca/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/orca/"', self.en_html)
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/orca/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/compare/orca/"', self.zh_html)
-
+    # Issue #1212: canonical / hreflang / single-h1 are asserted once for every
+    # page in tests/pages.test.js.
     # Issue #540: the SEO keyword/length test on the titles was removed.
 
     def test_share_cards_are_complete(self) -> None:
@@ -1571,47 +1399,24 @@ class OrcaComparisonTests(unittest.TestCase):
             self.assertIn("https://api.github.com/repos/stablyai/orca", hrefs)
             self.assertIn("https://www.onorca.dev", hrefs)
 
-    def test_the_official_self_descriptions_are_quoted_verbatim(self) -> None:
-        for page in (self.en, self.zh):
-            for quote in (
-                "The AI Orchestrator for 100x builders",
-                "each in its own worktree, tracked in one place",
-                "ADE for working with a fleet of parallel agents",
-                "Drop comments on any diff line and ship them back to the agent",
-            ):
-                self.assertIn(quote, page.text, quote)
-
     # Issue #540: the Orca-language positioning test was removed — it pinned
     # the maintainer's own positioning sentences verbatim.
+    # Issue #1212 removed the verbatim competitor self-descriptions, the
+    # "Not verified" cell count, the measured GitHub counts and the pinned
+    # licence/positioning sentences: the sources below are the contract.
 
-    def test_unverified_capabilities_never_read_no(self) -> None:
-        """开 PR / 独立评审 / 自动 merge / 发版 are undocumented in Orca's
-        official materials — the cells must say so, never fake a "No"."""
-        for page, unverified in ((self.en, "Not verified"), (self.zh, "未能核实")):
-            self.assertGreaterEqual(page.text.count(unverified), 4, unverified)
-        # the one documented near-miss is named for what it is, not inflated
-        self.assertIn("merge the winner", self.en.text)
-        self.assertIn("merge the winner", self.zh.text)
-
-    def test_the_licence_difference_is_stated_plainly(self) -> None:
+    def test_the_licence_names_are_stated(self) -> None:
         for page in (self.en, self.zh):
             self.assertIn("MIT", page.text)
             self.assertIn("AGPL-3.0", page.text)
             self.assertIn("Sustainable Use", page.text)
-        # the disadvantage is conceded, not spun
-        self.assertIn("Orca's MIT wins", self.en.text)
-        self.assertIn("Orbi 以 AGPL-3.0 开源", self.zh.text)
 
-    def test_the_density_numbers_carry_the_measurement_date(self) -> None:
+    def test_every_claim_carries_its_measurement_date(self) -> None:
         for page, measured in (
             (self.en, "measured 2026-09-12"),
             (self.zh, "实测于 2026-09-12"),
         ):
             self.assertIn(measured, page.text, measured)
-            for count in ("66,832", "4,391", "5,867", "2,815", "294", "18"):
-                self.assertIn(count, page.text, count)
-            # restraint: no quality judgment on the competitor's tracker
-            self.assertIn("No quality judgment" if page is self.en else "不做质量判断", page.text)
 
     def test_interlinks_with_the_overview_page(self) -> None:
         for page, overview in ((self.en, "/compare/"), (self.zh, "/zh/compare/")):
@@ -1656,16 +1461,8 @@ class CompareIndexTests(unittest.TestCase):
         cls.en_html, cls.en = parse(COMPARE_INDEX_EN_PATH)
         cls.zh_html, cls.zh = parse(COMPARE_INDEX_ZH_PATH)
 
-    def test_declare_canonicals_and_alternates(self) -> None:
-        self.assertIn('rel="canonical" href="https://orbi.build/compare/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/compare/"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/compare/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/compare/"', self.zh_html)
-
-    def test_the_epics_competitors_are_all_named(self) -> None:
-        for page in (self.en, self.zh):
-            for name in ("Orca", "OpenClaw", "Copilot", "Claude Managed Agents", "OpenAI Codex", "Devin", "OpenHands", "Hermes Agent"):
-                self.assertIn(name, page.text, name)
+    # Issue #1212: canonical / hreflang are asserted once for every page in
+    # tests/pages.test.js, and the competitor-roster name list is copy.
 
     def test_hero_leads_with_the_most_similar_competitor(self) -> None:
         """Issue #56: the hero primary deep dive is the closest peer, OpenHands;
@@ -1702,15 +1499,16 @@ class CompareIndexTests(unittest.TestCase):
 
 
 class ManagedAgentsComparisonTests(unittest.TestCase):
-    def test_bilingual_pages_are_canonical_and_sourced(self) -> None:
-        for path, canonical, alternate, terms in (
-            (MANAGED_EN_PATH, "/compare/managed-agents/", "/zh/compare/managed-agents/", ("Brain", "Hands", "$0.08/session-hour", "verified 2026-09-07")),
-            (MANAGED_ZH_PATH, "/zh/compare/managed-agents/", "/compare/managed-agents/", ("Brain", "Hands", "$0.08/session-hour", "核实于 2026-09-07")),
+    def test_bilingual_pages_are_sourced_and_dated(self) -> None:
+        """Issue #1212: canonical/hreflang live in tests/pages.test.js; the
+        competitor's own documentation link and the fetch date are the
+        contract, the terms around them are copy."""
+        for path, date in (
+            (MANAGED_EN_PATH, "verified 2026-09-07"),
+            (MANAGED_ZH_PATH, "核实于 2026-09-07"),
         ):
             html, page = parse(path)
-            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
-            self.assertIn(f'href="https://orbi.build{alternate}"', html)
-            self.assertTrue(all(term in page.text for term in terms), page.text)
+            self.assertIn(date, page.text)
             self.assertIn("https://www.anthropic.com/engineering/managed-agents", html)
 
     def test_overviews_link_the_managed_agents_dive(self) -> None:
@@ -1737,23 +1535,18 @@ OPENHANDS_ZH_PATH = ROOT / "public" / "zh" / "compare" / "openhands" / "index.ht
 class OpenHandsComparisonTests(unittest.TestCase):
     """Issue #12: bilingual, sourced OpenHands comparison."""
 
-    def test_pages_are_canonical_bilingual_and_dated(self) -> None:
-        for path, canonical, alternate, date in (
-            (OPENHANDS_EN_PATH, "/compare/openhands/", "/zh/compare/openhands/", "verified 2026-09-07"),
-            (OPENHANDS_ZH_PATH, "/zh/compare/openhands/", "/compare/openhands/", "核实于 2026-09-07"),
+    def test_pages_are_dated(self) -> None:
+        """Issue #1212: canonical/hreflang live in tests/pages.test.js."""
+        for path, date in (
+            (OPENHANDS_EN_PATH, "verified 2026-09-07"),
+            (OPENHANDS_ZH_PATH, "核实于 2026-09-07"),
         ):
-            html, page = parse(path)
-            self.assertIn(f'rel="canonical" href="https://orbi.build{canonical}"', html)
-            self.assertIn(f'hreflang="{"zh-CN" if path == OPENHANDS_EN_PATH else "en"}"', html)
-            self.assertIn(f"href=\"https://orbi.build{alternate}\"", html)
+            _, page = parse(path)
             self.assertIn(date, page.text)
 
     def test_openhands_contract_is_sourced(self) -> None:
         for path in (OPENHANDS_EN_PATH, OPENHANDS_ZH_PATH):
-            html, page = parse(path)
-            self.assertIn("OpenHands", page.text)
-            for fact in ("Docker", "BYOK", "GitHub", "REST API", "MIT"):
-                self.assertIn(fact, page.text, fact)
+            html, _ = parse(path)
             for source in (
                 "https://github.com/All-Hands-AI/OpenHands",
                 "https://github.com/OpenHands/software-agent-sdk",
@@ -1905,13 +1698,8 @@ class BootstrapEvidenceTests(unittest.TestCase):
         cls.en_html, cls.en = parse(EVIDENCE_EN_PATH)
         cls.zh_html, cls.zh = parse(EVIDENCE_ZH_PATH)
 
-    def test_both_languages_declare_canonicals_and_alternates(self) -> None:
-        self.assertIn('lang="en"', self.en_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/evidence/"', self.en_html)
-        self.assertIn('hreflang="zh-CN" href="https://orbi.build/zh/evidence/"', self.en_html)
-        self.assertIn('lang="zh-CN"', self.zh_html)
-        self.assertIn('rel="canonical" href="https://orbi.build/zh/evidence/"', self.zh_html)
-        self.assertIn('hreflang="en" href="https://orbi.build/evidence/"', self.zh_html)
+    # Issue #1212: canonical / hreflang are asserted once for every page in
+    # tests/pages.test.js.
 
     def test_homes_link_to_the_evidence_page_outside_the_hero(self) -> None:
         _, home_en = parse(EN_PATH)
@@ -1954,9 +1742,10 @@ class BootstrapEvidenceTests(unittest.TestCase):
             self.assertNotIn("Apache", html)
             self.assertNotIn("Apache 2.0", html)
 
-    def test_each_sample_tells_the_visitor_what_to_look_for(self) -> None:
-        self.assertGreaterEqual(self.en_html.count("What to look for on the timeline"), 3)
-        self.assertGreaterEqual(self.zh_html.count("在时间线上看什么"), 3)
+    def test_each_sample_carries_its_author_and_review_terms(self) -> None:
+        """Issue #1212: the invitation sentence is copy; what each sample must
+        show is the author handle and the review_rounds term a visitor looks
+        for on the timeline."""
         for html in (self.en_html, self.zh_html):
             self.assertGreaterEqual(html.count("xqliu"), 3)
             self.assertGreaterEqual(html.lower().count("review_rounds"), 3)

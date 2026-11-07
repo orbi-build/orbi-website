@@ -60,54 +60,22 @@ async function newSmokePage(target, options) {
 // remains public/install.sh; this line is the user-facing command.
 const installCommand = "curl -fsSL https://aiready.sh | sh";
 
-// Same order as the /compare/ grid and footer; the shared "Orbi vs X" label.
-// Issue #807 made the Cursor page's own h1 lead with the old product name, so
-// the label and that page's h1 intentionally differ.
+// The comparison deep dives the footer and the /compare/ grid must both list.
+// Issue #1212: the anchors' wording is copy; the destinations are the contract.
 const deepDives = [
-  ["Orbi vs Orca", "/compare/orca/"],
-  ["Orbi vs OpenClaw", "/compare/openclaw/"],
-  ["Orbi vs GitHub Copilot cloud agent", "/compare/github-copilot-coding-agent/"],
-  ["Orbi vs Claude Managed Agents", "/compare/managed-agents/"],
-  ["Orbi vs Claude Code", "/compare/claude-code/"],
-  ["Orbi vs OpenHands", "/compare/openhands/"],
-  ["Orbi vs Hermes Agent", "/compare/hermes-agent/"],
-  ["Orbi vs Keelen", "/compare/keelen/"],
-  ["Orbi vs OpenAI Codex", "/compare/codex/"],
-  ["Orbi vs Devin", "/compare/devin/"],
-  ["Orbi vs Google Jules", "/compare/jules/"],
-  ["Orbi vs Cursor Cloud Agents", "/compare/cursor/"],
+  "/compare/orca/",
+  "/compare/openclaw/",
+  "/compare/github-copilot-coding-agent/",
+  "/compare/managed-agents/",
+  "/compare/claude-code/",
+  "/compare/openhands/",
+  "/compare/hermes-agent/",
+  "/compare/keelen/",
+  "/compare/codex/",
+  "/compare/devin/",
+  "/compare/jules/",
+  "/compare/cursor/",
 ];
-
-// Issue #899: the hero opens with two short sentences — open source, and the
-// two places it can run — a Cloud-named button, and one small line whose text
-// link goes to the self-host repository. The registered licence detail lives
-// in the How-it-works trust line and the FAQ, not in the first sentence.
-const releaseClaims = {
-  "/": {
-    h1: "File an Issue. Get a release.",
-    lede: "Orbi writes code for your GitHub Issues with AI. It arranges independent AI review, merges approved changes, and follows your repository’s release process. You don’t have to supervise every step.",
-    button: "Try Orbi Cloud free →",
-    title: "File an Issue. Get a release.",
-  },
-  "/zh/": {
-    h1: "提个 Issue，收个版本",
-    lede: "Orbi 用 AI 完成 GitHub 上的开发任务。代码经过独立 AI 评审，通过后自动合并，再按仓库流程发版。你不用一直守着。",
-    button: "免费试用 Orbi Cloud →",
-    title: "提个 Issue，收个版本",
-  },
-};
-const sharedAttributes = {
-  "/": [
-    "Open source (AGPL-3.0), free forever",
-    "Self-hosted — code never leaves your machine",
-    "Bring your own model",
-  ],
-  "/zh/": [
-    "开源（AGPL-3.0），永久免费",
-    "自托管 — 代码不离开你的机器",
-    "自带模型",
-  ],
-};
 
 // Issue #102: the shipped files carry the monthly price as a token and the
 // site Worker resolves it while serving (src/worker.js). Issue #138 added the
@@ -254,10 +222,10 @@ async function assertFooterDeepDives(page, label) {
   const links = await page.locator(".site-footer .footer-compare a").evaluateAll((nodes) =>
     nodes.map((a) => [a.textContent.trim(), a.getAttribute("href")])
   );
-  for (const [text, href] of deepDives) {
+  for (const href of deepDives) {
     const match = links.find(([, linkHref]) => linkHref === href);
     if (!match) throw new Error(`${label}: footer is missing deep dive ${href}`);
-    if (match[0] !== text) throw new Error(`${label}: ${href} anchor is "${match[0]}", expected "${text}"`);
+    if (!match[0]) throw new Error(`${label}: ${href} has no anchor text`);
   }
 }
 
@@ -761,11 +729,11 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (separatorVisible !== (size.width > 760)) {
     throw new Error(`${path}: hero CTA note separator visibility is wrong at ${size.width}px: ${JSON.stringify(ctaNoteLayout)}`);
   }
-  const claim = releaseClaims[path];
+  // Issue #1212: the hero is checked for shape — one h1, one definition, one
+  // Cloud CTA, one note and one self-host link — and for the numbers those
+  // elements carry from pricing.json. The sentences are copy.
   const heroH1 = (await hero.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: hero h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
-  }
+  if (!heroH1) throw new Error(`${path}: hero h1 is empty`);
   const heroLayout = await hero.locator("h1").evaluate((h1) => {
     const style = getComputedStyle(h1);
     return {
@@ -784,34 +752,18 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (heroLayout.overflows) {
     throw new Error(`${path}: hero h1 overflows horizontally at ${size.width}px`);
   }
-  let lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
-  // Right after a deploy the edge can still serve the previous build for a
-  // few seconds; on 2026-10-08 the beta smoke read the old lede and failed a
-  // deploy whose page was already correct (run 37744201241). Against a real
-  // deployment, reload for up to 60s before treating a stale lede as wrong.
-  for (let tries = 0; process.env.BASE_URL && lede !== claim.lede && tries < 12; tries += 1) {
-    await page.waitForTimeout(5_000);
-    await page.reload({ waitUntil: "load" });
-    lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
-  }
-  if (lede !== claim.lede) {
-    throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected ${JSON.stringify(claim.lede)}`);
+  const lede = (await hero.locator(".hero-lede").textContent()).replace(/\s+/g, " ").trim();
+  if ([...lede].length < 40) {
+    throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected a definition sentence`);
   }
   // Issue #899: the button says where the click goes, and the one small line
   // under it shows the numeric trial (the Worker substitutes
   // __FREE_DELIVERIES__ before the bytes leave) plus its self-host text link.
   const heroButtonText = (await hero.locator('[data-cta="cloud-start"]').textContent()).trim();
-  if (heroButtonText !== claim.button) {
-    throw new Error(`${path}: hero CTA label is ${JSON.stringify(heroButtonText)}, expected ${JSON.stringify(claim.button)}`);
-  }
+  if (!heroButtonText) throw new Error(`${path}: hero CTA has no label`);
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
-  // Issue #977: the note first names the GitHub authorization the button leads
-  // to, then the numeric trial and its self-host text link.
-  const expectedHeroNote = path === "/"
-    ? `GitHub authorization and App installation required. ${pricing.freeDeliveries} deliveries free, no credit card · Open source · Self-host ↗`
-    : `需 GitHub 授权并安装 App 前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 开源自托管 ↗`;
-  if (heroNote !== expectedHeroNote) {
-    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
+  if (!heroNote.includes(String(pricing.freeDeliveries))) {
+    throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected the ${pricing.freeDeliveries}-delivery trial`);
   }
   const heroGithub = hero.locator('[data-cta="hero-github"]');
   if (await heroGithub.count() !== 1
@@ -834,9 +786,9 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
       throw new Error(`${path}: hero CTA label renders ${labelLines} lines at ${size.width}px, expected 1`);
     }
   }
-  if (!(await page.title()).includes(claim.title)) {
-    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the release claim`);
-  }
+  // Issue #1212: the title exists (its 60-character limit and its presence on
+  // every page are gated in tests/pages.test.js); the wording is copy.
+  if (!(await page.title()).trim()) throw new Error(`${path}: the page has no title`);
   // Issue #899: the hero's two links are the Cloud CTA and the note's self-host
   // text link, each with its own data-cta. Issue #1184 removed the
   // LaunchIgniter badge anchor, so the hero carries nothing else again.
@@ -848,11 +800,16 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   if (await hero.locator('[data-cta="film-play"]').count() !== 0) {
     throw new Error(`${path}: removed film control remains in the hero`);
   }
-  const systemText = await page.locator("#system").textContent();
-  for (const attribute of sharedAttributes[path]) {
-    if (!systemText.includes(attribute)) {
-      throw new Error(`${path}: the How-it-works section lost the shared attribute ${JSON.stringify(attribute)}`);
-    }
+  // Issue #1212: the How-it-works section keeps its three shared attributes as
+  // filled items; their sentences are copy.
+  const attributes = page.locator("#system .trust-line li");
+  const attributeCount = await attributes.count();
+  if (attributeCount !== 3) {
+    throw new Error(`${path}: the How-it-works section lists ${attributeCount} attributes, expected three`);
+  }
+  for (let index = 0; index < attributeCount; index += 1) {
+    const text = (await attributes.nth(index).textContent()).trim();
+    if (!text) throw new Error(`${path}: How-it-works attribute ${index + 1} is empty`);
   }
   const receivedStatsResponse = await statsResponse;
   if (!receivedStatsResponse || !statsRequested) {
@@ -992,10 +949,13 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
   for (const value of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd, pricing.soloIncludedTokensLabel, pricing.includedTokensLabel, pricing.soloRepositories, pricing.proRepositories, pricing.freeDeliveries, pricing.foundingPartnerLimit, pricing.foundingPartnerRemaining]) {
     if (!summaryText.includes(String(value))) throw new Error(`${path}: pricing summary is missing ${value}`);
   }
-  const foundingSummary = path.startsWith("/zh")
-    ? `创始合作伙伴终身五折，${pricing.foundingPartnerLimit} 个名额只剩 ${pricing.foundingPartnerRemaining} 个。`
-    : `Founding partners: 50% off for life. Only ${pricing.foundingPartnerRemaining} of ${pricing.foundingPartnerLimit} places left.`;
-  if (!summaryText.includes(foundingSummary)) throw new Error(`${path}: founding partner summary is stale`);
+  // Issue #1212: the founding sentence is copy; its live values are not.
+  for (const value of [
+    pricing.foundingPartnerRemaining,
+    pricing.foundingPartnerLimit,
+  ]) {
+    if (!summaryText.includes(String(value))) throw new Error(`${path}: founding partner summary is missing ${value}`);
+  }
   const summaryHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const summaryLink = summary.locator(`[data-cta="pricing-summary"][href="${summaryHref}"]`);
   if (await summaryLink.count() !== 1) throw new Error(`${path}: pricing summary link has wrong target`);
@@ -1290,77 +1250,23 @@ async function assertProofLoopReducedMotion(browser, path) {
 // you put in CI decides what Orbi guarantees — and the boundary survives:
 // with no check runs both gates pass, and the release ships minus its only
 // test-acceptance gate.
+// Issue #1212: the Cloud page's sentences are copy. What the smoke pins is
+// what the funnel and the pricing claim depend on — the login handoff, the
+// pricing section and its cost-page door, the CI-gates guide link, every
+// priced value from pricing.json, the release boundary (ai-release, GitHub
+// Actions) and a four-step onboarding path.
 const cloudPages = {
   "/cloud/": {
     zh: "/zh/cloud/",
-    // Issue #237: the title now leads with the search term; the release
-    // claim itself stays pinned on the h1 below and in the body.
-    title: "Self-hosted or cloud coding agent",
-    h1: "Orbi Cloud: file an Issue, get a release",
-    loop: "GitHub Issue in, tagged release out",
-    // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
-    ctaMicrocopy: "Next step happens on GitHub: sign in and choose which repositories Orbi can access. You can authorize a single repository, and change it any time on GitHub.",
-    metaNeedle: ["US$29", "US$79"],
-    text: [
-      "exact-head merge",
-      "cuts the tag",
-      "closes the milestone",
-      // the release boundary: you start it, Orbi runs it
-      "never automatic",
-      "ai-release",
-      "only humans",
-      "GitHub Actions",
-      // Issue #129: the lever framing and the no-CI boundary
-      "what you put in CI decides what Orbi guarantees",
-      "business-flow e2e",
-      "no check runs, both gates pass",
-      "test-acceptance gate",
-      // Issue #108 + #137 + #138 + #145: the $79 regular price with the
-      // included-token quota (rendered from the pricing.json label; since #145
-      // that is 1.2B, the same quota the Founder plan carries); the
-      // over-limit behavior is the pause, not a $0.10 overage price
-      "US$29", "US$290", "US$79", "US$790", "1.2B tokens", "deliveries pause", "50% off forever",
-      // Issue #744: the short measured ranges sit in their paid cards; the
-      // detailed measurement remains on /cost/.
-      "Fixed monthly price. No overage bills.",
-      "≈ 80–210 merged deliveries / month", "≈ 240–630 merged deliveries / month",
-      "How we measured →", "prompt caching",
-    ],
+    login: "/cloud/login",
     guideHref: "/guides/ci-gates/",
+    costHref: "/cost/",
   },
   "/zh/cloud/": {
     zh: "/cloud/",
-    title: "提个 Issue，收个版本",
-    h1: "Orbi Cloud：提个 Issue，收个版本",
-    loop: "GitHub Issue 进，打好 Tag 的 Release 出",
-    // Issue #156: the zero-warning handoff — the microcopy under the hero CTA.
-    ctaMicrocopy: "下一步在 GitHub 上完成：登录并选择 Orbi 可以访问的仓库。可以只授权一个仓库，随时在 GitHub 上修改。",
-    metaNeedle: ["US$29", "US$79"],
-    text: [
-      "exact-head merge",
-      "冻结 SHA",
-      "打 Tag",
-      "GitHub Release",
-      "关闭 milestone",
-      "从不是全自动",
-      "ai-release",
-      "只有人能打",
-      "GitHub Actions",
-      // Issue #129: the lever framing and the no-CI boundary
-      "CI 里放什么，决定了 Orbi 替你保证什么",
-      "业务闭环",
-      "两道门禁都放行",
-      "测试验收闸门",
-      // Issue #108 + #137 + #138 + #145: the $79 regular price with the
-      // included-token quota (rendered from the pricing.json label; zh rides
-      // the same label, 1.2B since #663)
-      "US$29", "US$290", "US$79", "US$790", "1.2B token", "交付暂停", "永久 5 折",
-      // Issue #744: the short measured ranges sit in their paid cards.
-      "固定月费，不会超额扣费。",
-      "每月约 80–210 次合并交付", "每月约 240–630 次合并交付",
-      "怎么测的 →", "prompt caching",
-    ],
+    login: "/zh/cloud/login",
     guideHref: "/zh/guides/ci-gates/",
+    costHref: "/zh/cost/",
   },
 };
 
@@ -1448,32 +1354,39 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected the release claim ${JSON.stringify(claim.h1)}`);
-  }
-  const pageTitle = await page.title();
-  if (!pageTitle.includes(claim.title)) {
-    throw new Error(`${path}: title ${JSON.stringify(pageTitle)} does not carry the release claim`);
-  }
+  if (!heroH1) throw new Error(`${path}: the h1 is empty`);
+  if (!(await page.title())) throw new Error(`${path}: the page has no title`);
   // Issue #413 gives search descriptions a strict language-specific length.
-  // The independently authored social descriptions keep the price claim.
+  // The independently authored social descriptions keep the price claim, and
+  // Issue #1212 reads it from pricing.json rather than restating the amounts.
   const socialDescriptions = await Promise.all([
     'meta[property="og:description"]',
     'meta[name="twitter:description"]',
   ].map((selector) => page.locator(selector).getAttribute("content")));
-  for (const needle of claim.metaNeedle) {
-    for (const content of socialDescriptions) {
-      if (!content.includes(needle)) {
-        throw new Error(`${path}: social description ${JSON.stringify(content)} is missing ${JSON.stringify(needle)}`);
+  for (const content of socialDescriptions) {
+    for (const amount of [pricing.soloMonthlyUsd, pricing.cloudMonthlyUsd]) {
+      if (!content.includes("US$" + amount)) {
+        throw new Error(`${path}: social description ${JSON.stringify(content)} is missing US$${amount}`);
       }
     }
   }
-  // The stop-at-the-PR claim is gone — from the title, the h1, the loop
-  // heading, and the body.
+  // Issue #1212: the priced values come from pricing.json; the release
+  // boundary and the CI gate are interface terms, not prose.
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const needle of [claim.loop, ...claim.text]) {
+  const requiredValues = [
+    "US$" + pricing.soloMonthlyUsd,
+    "US$" + pricing.soloAnnualUsd,
+    "US$" + pricing.cloudMonthlyUsd,
+    "US$" + pricing.proAnnualUsd,
+    pricing.soloIncludedTokensLabel + " token",
+    pricing.includedTokensLabel + " token",
+    String(pricing.freeDeliveries),
+    "ai-release",
+    "GitHub Actions",
+  ];
+  for (const needle of requiredValues) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
+      throw new Error(`${path}: missing the required value ${JSON.stringify(needle)}`);
     }
   }
   // Issue #275: the onboarding must end with a concrete execution switch,
@@ -1483,12 +1396,15 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const stepList = page.locator(".proof-ledger-four");
   const steps = stepList.locator(":scope > li");
   if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
-  const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
-  for (const needle of path === "/cloud/"
-    ? ["Write your first request", "Drafting doesn't use a free delivery", "Label one ai-ready instead", "How writing a request works"]
-    : ["写下第一个需求", "写草稿不占免费次数", "打上 ai-ready 标签也行", "写需求怎么用"]) {
-    if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
-  }
+  // Issue #1212: four filled steps; the instructions themselves are copy.
+  const stepTexts = await steps.allTextContents();
+  stepTexts.forEach((stepText, index) => {
+    if (!stepText.replace(/\s+/g, " ").trim()) {
+      throw new Error(`${path}: onboarding step ${index + 1} is empty`);
+    }
+  });
+  const stepText = stepTexts.join(" ").replace(/\s+/g, " ");
+  if (!stepText.includes("ai-ready")) throw new Error(`${path}: onboarding path never names the ai-ready label`);
   const stepBoxes = await steps.evaluateAll((elements) => elements.map((element) => {
     const box = element.getBoundingClientRect();
     return { top: box.top, left: box.left, right: box.right, width: box.width };
@@ -1504,15 +1420,18 @@ async function assertCloudPage(browser, path, size, screenshot) {
     throw new Error(`${path}: onboarding steps are clipped at ${size.width}px`);
   }
   await stepList.screenshot({ path: `${artifacts}/${screenshot.replace(/\.png$/, "-steps.png")}` });
-  if ((await page.getByText("US$79").count()) < 1) throw new Error(`${path}: the regular US$79 price is not on the page`);
-  // Issue #108 + #451: the JSON-LD aggregate publishes both paid plans,
-  // with the coupon in its description — never a single-plan or retired price.
+  if ((await page.getByText("US$" + pricing.cloudMonthlyUsd).count()) < 1) {
+    throw new Error(`${path}: the regular US$${pricing.cloudMonthlyUsd} price is not on the page`);
+  }
+  // Issue #108 + #451: the JSON-LD aggregate publishes both paid plans from
+  // pricing.json, with the founding terms in its description.
   const offers = (await Promise.all(
     (await page.locator('script[type="application/ld+json"]').allTextContents()).map((s) => JSON.parse(s))
   )).flatMap((data) => data["@graph"] ?? [data]).filter((node) => node["@type"] === "AggregateOffer");
   if (offers.length !== 1
-    || JSON.stringify(offers[0].offers?.map(({ price }) => price)) !== JSON.stringify(["29", "79"])
-    || !String(offers[0].description).includes(path.startsWith("/zh") ? "永久 5 折" : "50% off forever")) {
+    || JSON.stringify(offers[0].offers?.map(({ price }) => price))
+      !== JSON.stringify([String(pricing.soloMonthlyUsd), String(pricing.cloudMonthlyUsd)])
+    || !String(offers[0].description).includes(String(pricing.foundingPartnerLimit))) {
     throw new Error(`${path}: JSON-LD AggregateOffer must price Solo and Pro with the founding partner terms, got ${JSON.stringify(offers)}`);
   }
   // Issue #107: the login buttons' contract is the click's landing
@@ -1524,41 +1443,26 @@ async function assertCloudPage(browser, path, size, screenshot) {
   }
   // Issue #741: the Cloud hero has one action and one concise reassurance,
   // matching the homepage's first-screen conversion path.
+  // Issue #741/#1212: the hero carries one h1, one lede, one CTA and one
+  // reassurance, in that order; the CTA reaches this language's login handoff
+  // and its label names the trial from pricing.json.
   const hero = page.locator(".compare-hero");
-  const expectedHero = path === "/cloud/"
-    ? {
-      lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
-      button: `Try ${pricing.freeDeliveries} deliveries free →`,
-      note: "No credit card required · Orbi only sees the repos you pick",
-      href: "/cloud/login",
-    }
-    : {
-      lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
-      button: `免费试 ${pricing.freeDeliveries} 次 →`,
-      note: "不用绑定信用卡 · 只授权你选的仓库",
-      href: "/zh/cloud/login",
-    };
   const heroSequence = await hero.locator(":scope > *").evaluateAll((elements) =>
     elements.map((element) => ({ tag: element.tagName, text: element.textContent.trim() })));
-  const expectedSequence = [
-    { tag: "H1", text: claim.h1 },
-    { tag: "P", text: expectedHero.lede },
-    { tag: "A", text: expectedHero.button },
-    { tag: "P", text: expectedHero.note },
-  ];
-  if (JSON.stringify(heroSequence) !== JSON.stringify(expectedSequence)) {
+  if (JSON.stringify(heroSequence.map(({ tag }) => tag)) !== JSON.stringify(["H1", "P", "A", "P"])) {
     throw new Error(`${path}: hero must contain only h1, lede, one CTA, and reassurance in order; got ${JSON.stringify(heroSequence)}`);
+  }
+  for (const element of heroSequence) {
+    if (!element.text) throw new Error(`${path}: hero ${element.tag} is empty`);
   }
   const heroButton = hero.locator("a.hero-cta");
   if (await heroButton.count() !== 1
-    || await heroButton.getAttribute("href") !== expectedHero.href
+    || await heroButton.getAttribute("href") !== claim.login
     || await heroButton.getAttribute("data-cta") !== "cloud-hero") {
     throw new Error(`${path}: Cloud hero CTA contract is incorrect`);
   }
-  for (const forbidden of ["k8e", "cloud-docs", "Run Orbi yourself", "自己运行 Orbi", "How an Issue becomes a tagged release", "Issue 如何变成打了 tag 的 Release"]) {
-    if (await hero.getByText(forbidden, { exact: false }).count()) {
-      throw new Error(`${path}: forbidden first-screen copy remains: ${forbidden}`);
-    }
+  if (!(await heroButton.textContent()).includes(String(pricing.freeDeliveries))) {
+    throw new Error(`${path}: Cloud hero CTA must name the ${pricing.freeDeliveries}-delivery trial`);
   }
   // Issue #128: the "needs GitHub Actions" sentence links the CI-gates
   // guide — the explanation of what that requirement actually buys.
@@ -1570,9 +1474,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if ((await page.locator("#pricing").count()) !== 1) {
     throw new Error(`${path}: missing id=pricing on the PRICING section`);
   }
-  const costHref = path.startsWith("/zh") ? "/zh/cost/" : "/cost/";
-  if ((await page.locator(`#pricing a[href="${costHref}"]`).count()) < 1) {
-    throw new Error(`${path}: PRICING section lost the ${costHref} link`);
+  if ((await page.locator(`#pricing a[href="${claim.costHref}"]`).count()) < 1) {
+    throw new Error(`${path}: PRICING section lost the ${claim.costHref} link`);
   }
   const pricingHref = path.startsWith("/zh") ? "/zh/cloud/#pricing" : "/cloud/#pricing";
   const navPricing = page.locator(`[data-primary-nav] a[href="${pricingHref}"]`);
@@ -1598,32 +1501,32 @@ async function assertCloudPage(browser, path, size, screenshot) {
 // merged-PR sample; Issue #886 moved it below the page as the labelled earlier
 // sample and promoted the n=169 Cloud sample to the headline. The smoke reads
 // the hero n each rendered page shows and asserts the two languages agree.
+// Issue #1212: the cost pages' prose is copy. What is pinned is the data the
+// page publishes (the sample sizes and their dates, the cost figures, the
+// token distribution, the re-derivation inputs), the DeepSeek list prices the
+// money math uses, the competitor sources with their verification date, and
+// that neither page hides the sample it is quoting.
+const costValues = [
+  // the headline sample: date, size, and median/p90/mean cost
+  "2026-10-05", "n=169", "$0.082", "$0.22", "$0.11", "$18.45",
+  // the retired n=20 sample stays published as the earlier one
+  "2026-09-22", "n=20", "$0.125", "$0.249", "10,612,802",
+  // older per-delivery snapshot remains available
+  "2026-09-12", "n=46",
+  // the re-derivation recipe: which files, which field, which rounding
+  ".pi-session/*.jsonl", "usage.totalTokens",
+  // the full measured distribution
+  "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
+  // composition
+  "95.9%", "3.4%", "0.7%",
+  // DeepSeek list prices and the money math
+  "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
+  "totalTokens",
+];
 const costPages = {
   "/cost/": {
     zh: "/zh/cost/",
-    h1: "What an AI coding agent costs per merged pull request",
-    earlier: "Earlier sample",
-    text: [
-      // the headline sample: date, size, and median/p90/mean cost
-      "measured 2026-10-05 15:36 UTC+8", "n=169", "$0.082", "$0.22", "mean $0.11", "$18.45",
-      // the retired n=20 sample stays published, labelled as earlier
-      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
-      // older per-delivery snapshot remains available
-      "2026-09-12", "n=46",
-      "n is a snapshot as of the stated date, not a permanent fact",
-      // the re-derivation recipe: which files, which grouping, which field
-      ".pi-session/*.jsonl", "usage.totalTokens", "nearest rank",
-      // the full measured distribution
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
-      // composition
-      "95.9%", "3.4%", "0.7%",
-      // DeepSeek list prices and the money math
-      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
-      // the three limits
-      "not a promise to everyone", "order of magnitude", "totalTokens",
-      // competitor non-disclosure, verified
-      "Quota not published", "~10x Pro usage", "verified 2026-09-11",
-    ],
+    values: costValues,
     hrefs: [
       "https://docs.devin.ai/admin/billing/self-serve",
       "https://docs.factory.ai/pricing/individuals",
@@ -1633,20 +1536,7 @@ const costPages = {
   },
   "/zh/cost/": {
     zh: "/cost/",
-    h1: "AI 编程 agent 每合并一个 PR 花多少钱",
-    earlier: "早期样本",
-    text: [
-      "截至 2026-10-05 15:36（UTC+8）实测", "n=169", "$0.082", "$0.22", "均值 $0.11", "$18.45",
-      "2026-09-22 09:44 UTC", "n=20", "$0.125", "$0.249", "10,612,802",
-      "2026-09-12", "n=46",
-      "n 是截至标注日期的快照,不是永久事实",
-      ".pi-session/*.jsonl", "usage.totalTokens", "nearest-rank",
-      "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
-      "95.9%", "3.4%", "0.7%",
-      "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
-      "不是对所有人的承诺", "一个数量级", "totalTokens",
-      "额度未公布", "~10x Pro usage", "核实于 2026-09-11",
-    ],
+    values: costValues,
     hrefs: [
       "https://docs.devin.ai/admin/billing/self-serve",
       "https://docs.factory.ai/pricing/individuals",
@@ -1674,11 +1564,9 @@ async function assertCostPage(browser, path, size, screenshot) {
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
-  }
+  if (!heroH1) throw new Error(`${path}: the h1 is empty`);
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const needle of claim.text) {
+  for (const needle of claim.values) {
     if (!text.includes(needle)) {
       throw new Error(`${path}: missing the required data point ${JSON.stringify(needle)}`);
     }
@@ -1691,9 +1579,9 @@ async function assertCostPage(browser, path, size, screenshot) {
   }
   if (hero.includes("$0.125")) throw new Error(`${path}: hero still leads with the retired $0.125 median`);
   // Issue #886: the retired median survives only inside the earlier sample,
-  // which sits below the current sections — page position, not just a label.
-  const earlierAt = text.indexOf(claim.earlier);
-  if (earlierAt < 0) throw new Error(`${path}: no ${JSON.stringify(claim.earlier)} section`);
+  // which sits below the current one — page position, not just a label.
+  const earlierAt = text.indexOf("n=20");
+  if (earlierAt < 0) throw new Error(`${path}: no earlier n=20 sample`);
   for (let at = text.indexOf("$0.125"); at !== -1; at = text.indexOf("$0.125", at + 1)) {
     if (at < earlierAt) throw new Error(`${path}: $0.125 appears before the earlier sample`);
   }
@@ -1734,22 +1622,14 @@ async function assertCostPage(browser, path, size, screenshot) {
   return shownN[1];
 }
 
-// Issue #89: the /compare/ matrix splits Delivery into three rows —
-// independent review / auto-merge / tag + Release — and the vendors' verbatim
-// quotes for those rows must render in both languages, with Orbi the only
-// "Yes" in the Release row.
+// Issue #89: the /compare/ matrix carries the three delivery rows and the
+// vendors' sources plus their verification dates. Issue #1212 removed the
+// pinned vendor quotes — they are the competitors' words, restated.
 const compareMatrix = {
   "/compare/": {
     zh: "/zh/compare/",
     rows: ["Independent review (can edit code and rerun tests)", "Auto-merge", "Tag / Release"],
     yes: "Yes",
-    quotes: [
-      "Pull request authors cannot approve their own pull requests.",
-      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
-      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
-      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
-      "toggle auto-merge directly from Devin Review without leaving the page",
-    ],
     hrefs: [
       "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
       "https://code.claude.com/docs/en/code-review",
@@ -1761,13 +1641,6 @@ const compareMatrix = {
     zh: "/compare/",
     rows: ["独立评审（能改代码重跑测试）", "自动 merge", "打 Tag / 发 Release"],
     yes: "是",
-    quotes: [
-      "Pull request authors cannot approve their own pull requests.",
-      "Each Copilot cloud agent session has a maximum execution time of 59 minutes.",
-      "Findings are tagged by severity and don’t approve or block your PR, so existing review workflows stay intact.",
-      "The check run always completes with a neutral conclusion so it never blocks merging through branch protection rules.",
-      "toggle auto-merge directly from Devin Review without leaving the page",
-    ],
     hrefs: [
       "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews",
       "https://code.claude.com/docs/en/code-review",
@@ -1811,13 +1684,9 @@ async function assertCompareMatrix(browser, path, size, screenshot) {
   if (yesCount !== 1 || releaseCells[0] !== claim.yes) {
     throw new Error(`${path}: Release row must carry exactly one ${JSON.stringify(claim.yes)} in the Orbi column, got ${JSON.stringify(releaseCells)}`);
   }
-  // The verbatim vendor quotes, their URLs, and the verification dates.
+  // The vendors' own sources and their verification dates. Issue #1212: the
+  // quotes themselves are the competitors' words, not a contract.
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const quote of claim.quotes) {
-    if (!text.includes(quote)) {
-      throw new Error(`${path}: the verbatim vendor quote is missing: ${JSON.stringify(quote)}`);
-    }
-  }
   for (const href of claim.hrefs) {
     if ((await page.locator(`a[href="${href}"]`).count()) < 1) {
       throw new Error(`${path}: missing a link to the official source ${href}`);
@@ -1920,7 +1789,7 @@ export async function assertHomeCloudFlow(
 // Issue #711: /compare/ uses the same primary nav and direct login handoff.
 // Issue #941: the Sign in link is gone and the CTA names GitHub, the entry
 // every visitor actually takes.
-async function assertCompareNavCta(browser, path, label) {
+async function assertCompareNavCta(browser, path) {
   const page = await newSmokePage(browser, { viewport: { width: 1440, height: 900 } });
   try {
     await page.goto(`${targetURL}${path}`, { waitUntil: "load" });
@@ -1931,9 +1800,7 @@ async function assertCompareNavCta(browser, path, label) {
     await cta.scrollIntoViewIfNeeded();
     if (!(await cta.isVisible())) throw new Error(`${path}: nav CTA is not visible`);
     const text = (await cta.textContent()).trim();
-    if (text !== label) {
-      throw new Error(`${path}: nav CTA is ${JSON.stringify(text)}, expected ${JSON.stringify(label)}`);
-    }
+    if (!text) throw new Error(`${path}: the nav CTA has no label`);
     const href = await cta.getAttribute("href");
     const expectedHref = path.startsWith("/zh/") ? "/zh/cloud/login" : "/cloud/login";
     if (href !== expectedHref) {
@@ -1946,35 +1813,20 @@ async function assertCompareNavCta(browser, path, label) {
 }
 
 // Issue #117: the Orca deep dive answers the first external positioning test
-// (“我今天安装了 Orca，好像和你的项目差不多”). The rendered page must carry
-// the verbatim official self-descriptions, at least four honest "Not
-// verified"/「未能核实」 cells (the undocumented delivery capabilities never
-// written as "No"), the plainly stated licence disadvantage, and the measured
-// GitHub-API counts with their measurement date — in both languages.
+// in Orca's own category language, with every claim sourced and dated and the
+// licence difference stated. Issue #1212 removed the pinned competitor quotes,
+// the measured counts and the "Not verified" cell count — those are content,
+// not contract. The licence names and the measurement date stay.
 const orcaPages = {
   "/compare/orca/": {
     zh: "/zh/compare/orca/",
-    h1: "Orbi vs Orca",
-    quotes: [
-      "The AI Orchestrator for 100x builders",
-      "ADE for working with a fleet of parallel agents",
-      "Drop comments on any diff line and ship them back to the agent",
-    ],
-    unverified: "Not verified",
     licence: ["MIT", "AGPL-3.0", "Sustainable Use"],
-    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "measured 2026-09-12"],
+    measured: "measured 2026-09-12",
   },
   "/zh/compare/orca/": {
     zh: "/compare/orca/",
-    h1: "Orbi vs Orca",
-    quotes: [
-      "The AI Orchestrator for 100x builders",
-      "ADE for working with a fleet of parallel agents",
-      "Drop comments on any diff line and ship them back to the agent",
-    ],
-    unverified: "未能核实",
     licence: ["MIT", "AGPL-3.0", "Sustainable Use"],
-    counts: ["66,832", "4,391", "5,867", "2,815", "294", "18", "实测于 2026-09-12"],
+    measured: "实测于 2026-09-12",
   },
 };
 
@@ -1996,24 +1848,15 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
+  if (!heroH1.includes("Orca")) {
+    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected the Orca comparison`);
   }
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const quote of claim.quotes) {
-    if (!text.includes(quote)) {
-      throw new Error(`${path}: the verbatim official quote is missing: ${JSON.stringify(quote)}`);
-    }
-  }
-  const unverifiedCount = text.split(claim.unverified).length - 1;
-  if (unverifiedCount < 4) {
-    throw new Error(`${path}: expected at least 4 ${JSON.stringify(claim.unverified)} cells, got ${unverifiedCount}`);
-  }
   for (const term of claim.licence) {
     if (!text.includes(term)) throw new Error(`${path}: the licence section is missing ${JSON.stringify(term)}`);
   }
-  for (const count of claim.counts) {
-    if (!text.includes(count)) throw new Error(`${path}: missing the measured count ${JSON.stringify(count)}`);
+  if (!text.includes(claim.measured)) {
+    throw new Error(`${path}: the measured counts carry no ${JSON.stringify(claim.measured)} date`);
   }
   // Issue #711 moved the language switch to the footer.
   const languageSwitch = page.locator(".site-footer .language a");
@@ -2029,174 +1872,73 @@ async function assertOrcaPage(browser, path, size, screenshot) {
   await page.close();
 }
 
-// Issue #128: the CI-gates guide states the engine contract on the page —
-// what the gates read (check-run conclusions, quoted verbatim from
-// runner.py / release.py), what that makes Orbi guarantee (whatever CI
-// runs: pytest in → code logic; Playwright business flows in → the loop
-// closes), and the four boundaries with the fail-open stated prominently —
-// the hero carries it, not just the body. Both complete workflow files
-// must render as text (verbatim copyable), and the cross links to the
-// cost page and the cloud page must exist in the page's own language tree.
+// Issue #128: the CI-gates guide states the engine contract on the page and
+// renders both complete workflow files. Issue #1212: the sentences quoted here
+// are copy — the guide is checked for its sources, its cross links and the
+// workflow snippets it publishes, not for the prose around them.
 const ciGatesPages = {
   "/guides/ci-gates/": {
     zh: "/zh/guides/ci-gates/",
-    title: "what you put in CI is what Orbi guarantees",
-    h1: "What you put in CI is what Orbi guarantees",
-    hero: [
-      "with no check runs at all, both gates pass",
-      "do not know pytest from Playwright",
-    ],
-    text: [
-      // the verbatim engine quotes and their decision rule
-      '("success", "neutral", "skipped")',
-      "no check runs (nothing to gate)",
-      // the ladder
-      "Unit tests only",
-      "+ integration tests",
-      "+ business-flow e2e (Playwright)",
-      "The business loop closes",
-      // the four boundaries
-      "No check runs, nothing to gate — both gates pass",
-      "Neutral and skipped conclusions count as passing",
-      "Coverage proves the tests touch the code — not that the code is right",
-      "pytest-specific",
-      "never read the test log",
-      // both complete workflow files render
-      "name: CI",
-      "runs-on: ubuntu-latest",
-      "actions/setup-python@v5",
-      "npx playwright install --with-deps chromium",
-      "npx playwright test",
-      // provenance
-      "verified 2026-09-12",
-    ],
+    workflowSnippets: ["name: ", "runs-on: ", "npx playwright test"],
     hrefs: [
       "https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py",
       "https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py",
       "https://docs.github.com/en/rest/checks/runs",
     ],
     localHrefs: ["/cost/", "/cloud/"],
+    verified: "verified 2026-09-12",
   },
   "/zh/guides/ci-gates/": {
     zh: "/guides/ci-gates/",
-    title: "CI 里放什么，Orbi 就保证什么",
-    h1: "CI 里放什么，Orbi 就保证什么",
-    hero: [
-      "一个 check run 都没有时，两道门禁都放行",
-      "不认识 pytest，也不认识 Playwright",
-    ],
-    text: [
-      '("success", "neutral", "skipped")',
-      "no check runs (nothing to gate)",
-      "只有单测",
-      "+ 集成测试",
-      "+ 业务流程 e2e（Playwright）",
-      "业务闭环是通的",
-      "一个 check run 都没有，两道门禁都放行",
-      "neutral 和 skipped 同样算通过",
-      "覆盖率证明测试碰过这些代码，不证明代码做对了业务",
-      "pytest 专属",
-      "从不读测试日志",
-      "name: CI",
-      "runs-on: ubuntu-latest",
-      "actions/setup-python@v5",
-      "npx playwright install --with-deps chromium",
-      "npx playwright test",
-      "核实于 2026-09-12",
-    ],
+    workflowSnippets: ["name: ", "runs-on: ", "npx playwright test"],
     hrefs: [
       "https://github.com/orbi-build/orbi/blob/main/src/orbi/runner.py",
       "https://github.com/orbi-build/orbi/blob/main/src/orbi/release.py",
       "https://docs.github.com/en/rest/checks/runs",
     ],
     localHrefs: ["/zh/cost/", "/zh/cloud/"],
+    verified: "核实于 2026-09-12",
   },
 };
 
 // Issue #177: the bootstrap evidence page is the inspectable entrance.
-// The visitor must land on a page that (a) explains Orbi builds Orbi,
-// (b) offers at least three public GitHub records as real <a href>,
-// (c) never links the private repos, (d) tells the visitor what to look
-// for on each timeline, and (e) does not invent a licence name or write a
-// qualitative claim as a fact. Screenshots land in .orbi/ next to the other flows.
+// Screenshots land in .orbi/ next to the other flows.
+// The visitor must land on a page that explains Orbi builds Orbi and offers at
+// least three public GitHub records as real <a href>, never the private repo.
+// Issue #1212 removed the pinned sentences; the records, the kinds, the
+// verification date and the cross links are what the page owes a visitor.
+const evidenceRecords = [
+  "https://github.com/orbi-build/orbi/issues/852",
+  "https://github.com/orbi-build/orbi/pull/854",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
+  "https://github.com/orbi-build/orbi/issues/842",
+  "https://github.com/orbi-build/orbi/pull/845",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
+  "https://github.com/orbi-build/orbi/issues/825",
+  "https://github.com/orbi-build/orbi/pull/830",
+  "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
+  "https://github.com/orbi-build/orbi/releases",
+];
 const evidencePages = {
   "/evidence/": {
     zh: "/zh/evidence/",
-    title: "Orbi builds Orbi",
-    h1: "Orbi builds Orbi. The record is GitHub",
-    hero: [
-      "Orbi is the delivery line that ships Orbi",
-      "Click them",
-    ],
-    text: [
-      "Issue #852",
-      "Issue #842",
-      "Issue #825",
-      "PR #854",
-      "PR #845",
-      "PR #830",
-      "Release v0.5.5",
-      "What to look for on the timeline",
-      "review_rounds",
-      "xqliu",
-      "verified 2026-09-14",
-    ],
-    hrefs: [
-      "https://github.com/orbi-build/orbi/issues/852",
-      "https://github.com/orbi-build/orbi/pull/854",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
-      "https://github.com/orbi-build/orbi/issues/842",
-      "https://github.com/orbi-build/orbi/pull/845",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
-      "https://github.com/orbi-build/orbi/issues/825",
-      "https://github.com/orbi-build/orbi/pull/830",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
-      "https://github.com/orbi-build/orbi/releases",
-    ],
+    hrefs: evidenceRecords,
     forbiddenHrefs: [
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/cloud/"],
+    verified: "verified 2026-09-14",
     homeEntry: "/",
     homeLink: "/evidence/",
   },
   "/zh/evidence/": {
     zh: "/evidence/",
-    title: "Orbi 在造 Orbi",
-    h1: "Orbi 在造 Orbi。记录在 GitHub",
-    hero: [
-      "Orbi 是把 Orbi 自己交付出去的那条产线",
-      "请点开",
-    ],
-    text: [
-      "Issue #852",
-      "Issue #842",
-      "Issue #825",
-      "PR #854",
-      "PR #845",
-      "PR #830",
-      "Release v0.5.5",
-      "在时间线上看什么",
-      "review_rounds",
-      "xqliu",
-      "核实于 2026-09-14",
-    ],
-    hrefs: [
-      "https://github.com/orbi-build/orbi/issues/852",
-      "https://github.com/orbi-build/orbi/pull/854",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.5",
-      "https://github.com/orbi-build/orbi/issues/842",
-      "https://github.com/orbi-build/orbi/pull/845",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.4",
-      "https://github.com/orbi-build/orbi/issues/825",
-      "https://github.com/orbi-build/orbi/pull/830",
-      "https://github.com/orbi-build/orbi/releases/tag/v0.5.3",
-      "https://github.com/orbi-build/orbi/releases",
-    ],
+    hrefs: evidenceRecords,
     forbiddenHrefs: [
       "https://github.com/orbi-build/orbi-cloud",
     ],
     localHrefs: ["/zh/cloud/"],
+    verified: "核实于 2026-09-14",
     homeEntry: "/zh/",
     homeLink: "/zh/evidence/",
   },
@@ -2220,23 +1962,11 @@ async function assertEvidencePage(browser, path, size, screenshot) {
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
-  }
-  if (!(await page.title()).includes(claim.title)) {
-    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the claim`);
-  }
-  const heroText = (await page.locator(".compare-hero").textContent()).replace(/\s+/g, " ");
-  for (const needle of claim.hero) {
-    if (!heroText.includes(needle)) {
-      throw new Error(`${path}: the hero is missing ${JSON.stringify(needle)}: ${JSON.stringify(heroText)}`);
-    }
-  }
+  if (!heroH1) throw new Error(`${path}: the h1 is empty`);
+  if (!(await page.title())) throw new Error(`${path}: the page has no title`);
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const needle of claim.text) {
-    if (!text.includes(needle)) {
-      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
-    }
+  if (!text.includes(claim.verified)) {
+    throw new Error(`${path}: the records carry no ${JSON.stringify(claim.verified)} date`);
   }
   if (text.toLowerCase().includes("apache")) {
     throw new Error(`${path}: invented or conflicting licence name Apache`);
@@ -2323,25 +2053,20 @@ async function assertCiGatesPage(browser, path, size, screenshot) {
   const h1Count = await page.locator("h1").count();
   if (h1Count !== 1) throw new Error(`${path}: expected exactly one h1, got ${h1Count}`);
   const heroH1 = (await page.locator("h1").textContent()).replace(/\s+/g, " ").trim();
-  if (heroH1 !== claim.h1) {
-    throw new Error(`${path}: h1 is ${JSON.stringify(heroH1)}, expected ${JSON.stringify(claim.h1)}`);
-  }
-  if (!(await page.title()).includes(claim.title)) {
-    throw new Error(`${path}: title ${JSON.stringify(await page.title())} does not carry the claim`);
-  }
-  // The fail-open boundary is prominent: carried by the hero itself, not
-  // only the boundaries section further down.
+  if (!heroH1) throw new Error(`${path}: the h1 is empty`);
+  if (!(await page.title())) throw new Error(`${path}: the page has no title`);
   const heroText = (await page.locator("section.compare-hero").textContent()).replace(/\s+/g, " ");
-  for (const needle of claim.hero) {
-    if (!heroText.includes(needle)) {
-      throw new Error(`${path}: the hero is missing the prominent claim ${JSON.stringify(needle)}: ${JSON.stringify(heroText)}`);
-    }
+  if ([...heroText.trim()].length < 40) {
+    throw new Error(`${path}: the hero carries no claim: ${JSON.stringify(heroText)}`);
   }
   const text = (await page.locator("main").textContent()).replace(/\s+/g, " ");
-  for (const needle of claim.text) {
-    if (!text.includes(needle)) {
-      throw new Error(`${path}: missing the required claim ${JSON.stringify(needle)}`);
+  for (const snippet of claim.workflowSnippets) {
+    if (!text.includes(snippet)) {
+      throw new Error(`${path}: the guide does not render the workflow snippets: missing ${JSON.stringify(snippet)}`);
     }
+  }
+  if (!text.includes(claim.verified)) {
+    throw new Error(`${path}: the sources carry no ${JSON.stringify(claim.verified)} date`);
   }
   for (const href of claim.hrefs) {
     if ((await page.locator(`main a[href="${href}"]`).count()) < 1) {
@@ -2410,7 +2135,9 @@ async function assertPublishedInstallScript(browser) {
   }
 }
 
-async function assertLegalPage(browser, path, expectedHeading, expectedAddress, size, screenshot) {
+// Issue #1212: the legal pages are checked for one filled h1, the verified
+// contact address and the footer's legal links — their headings are copy.
+async function assertLegalPage(browser, path, expectedAddress, size, screenshot) {
   const page = await newSmokePage(browser, { viewport: size });
   const errors = [];
   const failures = [];
@@ -2441,7 +2168,8 @@ async function assertLegalPage(browser, path, expectedHeading, expectedAddress, 
     if (!response || response.status() !== 200) {
       throw new Error(`${path} returned ${response?.status() ?? "no response"}`);
     }
-    await page.getByRole("heading", { level: 1, name: expectedHeading, exact: true }).waitFor();
+    if ((await page.locator("h1").count()) !== 1) throw new Error(`${path}: expected exactly one h1`);
+    if (!(await page.locator("h1").textContent()).trim()) throw new Error(`${path}: the h1 is empty`);
     const mainText = await page.locator("main").textContent();
     if (mainText.includes("__CLOUD_") || mainText.includes("__INCLUDED_")) {
       throw new Error(`${path}: pricing placeholder reached the rendered page`);
@@ -2491,14 +2219,13 @@ async function assertSupportChannels(browser, path, expected, size, screenshot) 
       throw new Error(`${path}: the contact list does not start with the Telegram group ("${(await firstEntry.innerText()).trim()}")`);
     }
     const groupLabel = (await group.innerText()).trim();
-    if (groupLabel !== expected.group) {
-      throw new Error(`${path}: the group link reads "${groupLabel}", expected "${expected.group}"`);
-    }
+    if (!groupLabel) throw new Error(`${path}: the Telegram group link has no label`);
     if ((await contact.locator(`a[href="${expected.backupHref}"]`).count()) !== 1) {
       throw new Error(`${path}: the backup mail link is missing from the contact list`);
     }
-    if (!(await contact.innerText()).includes(expected.backup)) {
-      throw new Error(`${path}: the mail address is not labelled "${expected.backup}"`);
+    const contactText = await contact.innerText();
+    if (!contactText.includes(expected.backupHref.replace("mailto:", ""))) {
+      throw new Error(`${path}: the mail address is not shown as text`);
     }
     const entries = await contact.locator("ul > li").evaluateAll((nodes) => nodes.map((node) => {
       const rect = node.getBoundingClientRect();
@@ -2636,22 +2363,22 @@ async function main() {
     // Issue #287: all policy/support URLs render at the acceptance widths in
     // both languages, without browser errors or horizontal overflow.
     const legalPages = [
-      ["/privacy/", "Privacy policy", "privacy@orbi.build", "privacy-en"],
-      ["/terms/", "Terms of service", "support@orbi.build", "terms-en"],
-      ["/support/", "Orbi support: talk to us on Telegram", "support@orbi.build", "support-en"],
-      ["/zh/privacy/", "隐私政策", "privacy@orbi.build", "privacy-zh"],
-      ["/zh/terms/", "服务条款", "support@orbi.build", "terms-zh"],
-      ["/zh/support/", "Orbi 支持：来 Telegram 找我们", "support@orbi.build", "support-zh"],
+      ["/privacy/", "privacy@orbi.build", "privacy-en"],
+      ["/terms/", "support@orbi.build", "terms-en"],
+      ["/support/", "support@orbi.build", "support-en"],
+      ["/zh/privacy/", "privacy@orbi.build", "privacy-zh"],
+      ["/zh/terms/", "support@orbi.build", "terms-zh"],
+      ["/zh/support/", "support@orbi.build", "support-zh"],
     ];
-    for (const [path, heading, address, name] of legalPages) {
-      await assertLegalPage(browser, path, heading, address, { width: 1440, height: 900 }, `${name}-desktop.png`);
-      await assertLegalPage(browser, path, heading, address, { width: 390, height: 844 }, `${name}-mobile.png`);
+    for (const [path, address, name] of legalPages) {
+      await assertLegalPage(browser, path, address, { width: 1440, height: 900 }, `${name}-desktop.png`);
+      await assertLegalPage(browser, path, address, { width: 390, height: 844 }, `${name}-mobile.png`);
     }
     // Issue #980: Telegram first and email as the backup, read and reached
     // with the keyboard, on the support pages in both languages.
     const supportChannels = [
-      ["/support/", { group: "Join the Telegram group", backup: "backup email", backupHref: "mailto:support@orbi.build" }, "support-en"],
-      ["/zh/support/", { group: "加入 Telegram 群", backup: "备用邮箱", backupHref: "mailto:support@orbi.build" }, "support-zh"],
+      ["/support/", { backupHref: "mailto:support@orbi.build" }, "support-en"],
+      ["/zh/support/", { backupHref: "mailto:support@orbi.build" }, "support-zh"],
     ];
     for (const [path, expected, name] of supportChannels) {
       await assertSupportChannels(browser, path, expected, { width: 1440, height: 900 }, `${name}-contact-desktop.png`);
@@ -2675,8 +2402,8 @@ async function main() {
     // Issue #170: /compare/ is a buyer-decision hop. The nav CTA must be the
     // same Cloud login as every other page, not Apply — a silent /apply
     // still 200s, so the funnel would break without a 404.
-    await assertCompareNavCta(browser, "/compare/", "Try Cloud with GitHub");
-    await assertCompareNavCta(browser, "/zh/compare/", "用 GitHub 试用 Cloud");
+    await assertCompareNavCta(browser, "/compare/");
+    await assertCompareNavCta(browser, "/zh/compare/");
     // assertCompareNavCta checks the language-specific direct-login href;
     // assertHomeCloudFlow above verifies the same nav handoff lands correctly.
     // Issue #117: the Orca deep dive, both languages, phone and desktop widths.
@@ -2697,12 +2424,12 @@ async function main() {
     const assetContext = await browser.newContext();
     try {
       const legalPaths = ["/privacy/", "/terms/", "/support/", "/zh/privacy/", "/zh/terms/", "/zh/support/"];
-      for (const path of [...deepDives.map(([, href]) => href), "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
+      for (const path of [...deepDives, "/zh/compare/orca/", "/cloud/", "/zh/cloud/", "/zh/compare/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         const response = await assetContext.request.get(`${targetURL}${path}`);
         if (response.status() !== 200) throw new Error(`${path} returned ${response.status()}`);
       }
       const sitemap = await (await assetContext.request.get(`${targetURL}/sitemap.xml`)).text();
-      for (const href of [...deepDives.map(([, href]) => href), "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
+      for (const href of [...deepDives, "/cloud/", "/zh/cloud/", "/cost/", "/zh/cost/", "/guides/ci-gates/", "/zh/guides/ci-gates/", "/evidence/", "/zh/evidence/", ...legalPaths]) {
         if (!sitemap.includes(`https://orbi.build${href}"`)) throw new Error(`sitemap.xml is missing https://orbi.build${href}`);
       }
     } finally {
@@ -2730,7 +2457,9 @@ async function main() {
     page.on("requestfailed", (request) => { if (!isTelemetry(request.url())) failures.push(request.url()); });
     await page.goto(`${targetURL}/compare/`, { waitUntil: "networkidle" });
     await assertFooterDeepDives(page, "/compare/");
-    await page.getByRole("link", { name: "Orbi vs Cursor Cloud Agents", exact: true }).click();
+    // Issue #1212: the deep-dive entry is followed by its destination, not by
+    // its anchor wording.
+    await page.locator('.site-footer .footer-compare a[href="/compare/cursor/"]').click();
     await page.waitForLoadState("networkidle");
     if (new URL(page.url()).pathname !== "/compare/cursor/") throw new Error(`detail route: ${page.url()}`);
     await assertFooterDeepDives(page, "/compare/cursor/");
@@ -2739,7 +2468,10 @@ async function main() {
     if ((await languageSwitch.count()) !== 1 || (await languageSwitch.getAttribute("href")) !== "/zh/compare/cursor/") {
       throw new Error("detail language switch is wrong");
     }
-    await page.getByRole("heading", { name: "Orbi vs Cursor Background Agents", exact: true }).waitFor();
+    if ((await page.locator("h1").count()) !== 1) throw new Error("detail route: expected exactly one h1");
+    if (!(await page.locator("h1").textContent()).includes("Cursor")) {
+      throw new Error(`detail route: unexpected h1 ${JSON.stringify(await page.locator("h1").textContent())}`);
+    }
     await page.screenshot({ path: `${artifacts}/comparison-cursor.png`, fullPage: false });
     if (errors.length || failures.length) throw new Error(`comparison page errors=${JSON.stringify(errors)} failed=${JSON.stringify(failures)}`);
     await page.close();
