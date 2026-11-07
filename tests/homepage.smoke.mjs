@@ -1513,15 +1513,14 @@ const costValues = [
   "2026-09-22", "n=20", "$0.125", "$0.249", "10,612,802",
   // older per-delivery snapshot remains available
   "2026-09-12", "n=46",
-  // the re-derivation recipe: which files, which field, which rounding
-  ".pi-session/*.jsonl", "usage.totalTokens",
+  // the re-derivation recipe: which files, which rounding
+  ".pi-session/*.jsonl",
   // the full measured distribution
   "2,220,637", "3,961,248", "13,290,932", "16,555,250", "37,627,783", "4,742,066",
   // composition
   "95.9%", "3.4%", "0.7%",
   // DeepSeek list prices and the money math
   "$0.003", "$0.15", "$0.60", "$0.058", "$0.115", "$0.46", "$0.92", "~$5.77", "~$11.55", "$6–12",
-  "totalTokens",
 ];
 const costPages = {
   "/cost/": {
