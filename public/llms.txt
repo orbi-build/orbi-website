@@ -335,7 +335,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/zh/blog/write-a-request/
 - Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 (English):
   https://orbi.build/blog/pi-agent-harness/
-- Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):
+- Pi agent harness 三种跑法：kill -9 后如何恢复 (Chinese):
   https://orbi.build/zh/blog/pi-agent-harness/
 - Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/
