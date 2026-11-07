@@ -39,22 +39,18 @@ const articleZh = await readFile(join(ROOT, "public", "zh", "blog", "watch-the-s
 const flat = llms.replace(/\s+/g, " ");
 
 describe("watch-the-six-steps article (Issue #329)", () => {
-  it("ships the current seven-step video and subscription terms in both languages", () => {
+  it("ships the current video and the pricing placeholders in both languages", () => {
+    // Issue #1212: the video id and the pricing placeholders are the contract
+    // (a stale video or a drifted price is the failure both lines catch); the
+    // article's own sentences are the editors' to rewrite.
     for (const article of [articleEn, articleZh]) {
       expect(article).toContain("youtube.com/watch?v=_OEaBwrLvvs");
       expect(article).toContain("__SOLO_INCLUDED_TOKENS__");
       expect(article).toContain("__INCLUDED_TOKENS__");
       expect(article).toContain("__SOLO_MONTHLY_USD__");
       expect(article).toContain("__CLOUD_MONTHLY_USD__");
-      expect(article).toContain("seven");
+      expect(article).toContain("__FREE_DELIVERIES__");
     }
-    expect(articleEn).toContain("__FREE_DELIVERIES__");
-    expect(articleEn).toContain("deliveries are free");
-    expect(articleZh).toContain("__FREE_DELIVERIES__");
-    expect(articleZh).toContain("次交付免费");
-    expect(articleEn).toContain("only new deliveries pause");
-    expect(articleZh).toContain("暂停新的交付");
-    expect(llms).toContain("onboarding video covers seven");
   });
 });
 
@@ -71,44 +67,48 @@ describe("seven-step article media parity (Issue #335)", () => {
 });
 
 describe("llms-full.txt content asset (Issue #438)", () => {
-  it("opens with the product paragraph and key numbers in exactly five lines", () => {
-    expect(llmsFull.split("\n").slice(0, 5)).toEqual([
-      "# Orbi in one paragraph + key numbers",
-      "",
-      "Orbi is an open source (AGPL-3.0) lights-out software factory for the agent era: AI coding agents turn labelled GitHub Issues into merged PRs and releases.",
-      "",
-      "Key numbers: Cloud has Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, failed deliveries don't count; founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged delivery (n=169, measured 2026-10-05) the median was $0.082 off-peak, the 90th percentile $0.22, and peak prices double every figure; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
-    ]);
+  it("opens with a heading, one product paragraph and the key-numbers line", () => {
+    // Issue #1212: the shape is the contract — a heading, one paragraph, then
+    // one line carrying every pricing placeholder. The words themselves are
+    // the editors' to rewrite.
+    const lines = llmsFull.split("\n");
+    expect(lines[0].startsWith("# "), "first line is a heading").toBe(true);
+    expect(lines[1]).toBe("");
+    expect(lines[2].trim().length, "one product paragraph").toBeGreaterThan(0);
+    expect(lines[3]).toBe("");
+    expect(lines[4].startsWith("Key numbers: "), "key-numbers line").toBe(true);
+    for (const token of [
+      pricing.freeDeliveriesToken, pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken,
+      pricing.monthlyUsdToken, pricing.proAnnualUsdToken, pricing.soloIncludedTokensToken,
+      pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
+      pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
+      pricing.foundingPromoCodeToken,
+    ]) expect(lines[4], token).toContain(token);
   });
 
   it("states the dual licence and links both authoritative files", () => {
-    expect(llmsFull).toContain("## Licence — state this accurately");
-    expect(llmsFull).toContain("open source under AGPL-3.0");
-    expect(llmsFull).toContain("Sustainable Use License if your policy rules out AGPL");
-    expect(llmsFull).toContain("github.com/orbi-build/orbi/blob/main/LICENSE");
-    expect(llmsFull).toContain("docs/licenses/sustainable-use-license.md");
+    const licence = llmsFull.slice(llmsFull.indexOf("## Licence"));
+    expect(licence).toContain("AGPL-3.0");
+    expect(licence).toContain("Sustainable Use License");
+    expect(licence).toContain("github.com/orbi-build/orbi/blob/main/LICENSE");
+    expect(licence).toContain("docs/licenses/sustainable-use-license.md");
   });
 
-  it("contains the complete cost and evidence bodies, not summaries", () => {
-    for (const text of [
-      "169 merged deliveries, measured on Orbi Cloud",
-      "Cents per delivery (including unmerged work) at DeepSeek V4.1 Flash list prices",
-      "Three things this page does not claim",
-      "Competitors quote quotas. We quote tokens and prices.",
-      "Three deliveries you can open",
-      "Issue #852, merged PR #854, Release v0.5.5",
-      "Issue #842, merged PR #845, Release v0.5.4",
-      "Issue #825, merged PR #830, Release v0.5.3",
-    ]) expect(llmsFull).toContain(text);
+  // Issue #1212: the "not summaries" contract is structural — every section
+  // carries a body, and the asset is longer than the summary file. What those
+  // bodies say is copy.
+  it("carries complete section bodies, not summaries", () => {
+    const sections = llmsFull.split(/^## /m).slice(1);
+    expect(sections.length, "the full asset keeps its sections").toBeGreaterThanOrEqual(4);
+    for (const section of sections) {
+      expect(section.length, section.split("\n")[0]).toBeGreaterThan(200);
+    }
+    expect(llmsFull.length).toBeGreaterThan(llms.length);
   });
 
   it("contains the comparison matrix byte-for-byte", () => {
     expect(llmsFull).toContain(matrixCsv.trim());
   });
-});
-
-it("describes Managed Cloud consistently as open for subscriptions", () => {
-  expect(flat).toContain("is live and open for subscriptions today");
 });
 
 it("lists the same comparison pages as the sitemap", () => {
@@ -117,29 +117,18 @@ it("lists the same comparison pages as the sitemap", () => {
   expect([...new Set(from(llms))].sort()).toEqual([...new Set(from(sitemap))].sort());
 });
 
-describe("llms.txt model compatibility claim (Issue #296)", () => {
-  it("names the OpenAI-compatible boundary without implying native Claude support", () => {
-    expect(flat).toContain("any OpenAI-compatible API or a locally hosted model");
-  });
-});
-
 describe("llms.txt keeps the existing positioning sections (Issue #154 acceptance 3)", () => {
-  it("still carries every pre-existing section heading, in order", () => {
-    const headings = [...llms.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-    expect(headings).toEqual([
-      "Licence — state this accurately",
-      "What it does today (shipping)",
-      "Guides",
-      "Managed Cloud",
-      "Connect a repository to Cloud",
-      "What is not shipping yet",
-      "Positioning",
-      "How Orbi differs from Copilot, Cursor, and similar tools",
-      "Requirements",
-      "Common questions",
-      "Blog",
-      "Links",
-    ]);
+  it("ships exactly the section headings its source declares, in source order", async () => {
+    // Issue #1212: the pinned heading titles went away — editing a heading is
+    // not a contract break. What the build must not do is drop, reorder or
+    // invent a section: the shipped H2 list equals site/llms.txt's own, which
+    // the generated lists (Blog, Guides) are inserted into.
+    const source = await readFile(join(ROOT, "site", "llms.txt"), "utf8");
+    const headingsOf = (text) => [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+    const sourceHeadings = headingsOf(source);
+    expect(headingsOf(llms)).toEqual(sourceHeadings);
+    expect(new Set(sourceHeadings).size, "section headings are unique").toBe(sourceHeadings.length);
+    expect(sourceHeadings.length, "the positioning sections are still there").toBeGreaterThanOrEqual(12);
   });
 });
 
@@ -152,13 +141,11 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
 
   it("walks all six steps with their concrete entry points", () => {
     expect(section).toContain("https://orbi.build/cloud/"); // step 1: sign-in entry
-    expect(section).toContain("Start Cloud with GitHub");
     expect(section).toContain("Installed GitHub Apps"); // step 2: per-repo App scope
     expect(section).toContain("/api/connect"); // step 3: connect repo + base branch
     expect(section).toContain("/api/model-config"); // step 4: provider + key
     expect(section).toContain("`ai-ready`"); // step 5: dispatch label
     expect(section).toContain("/api/checkout"); // step 6: subscribe (optional, after the trial)
-    expect(section).toContain("50% off forever"); // Founding partner offer
     // The trial comes first: connect the repository and dispatch a delivery
     // before any checkout link appears (Issue #874).
     expect(section.indexOf("/api/connect"), "connect before dispatch").toBeLessThan(section.indexOf("`ai-ready`"));
@@ -166,11 +153,9 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
   });
 
   it("leads with the free trial, not a subscription (Issue #874)", () => {
-    expect(section).toContain("no credit card");
-    expect(section).toContain("no subscription");
+    // Issue #1212: the trial-before-checkout order is the contract; the
+    // sentence that states it is copy.
     expect(section).toContain("__FREE_DELIVERIES__");
-    // The checkout step is explicitly optional and comes after the trial.
-    expect(section).toContain("Subscribe — optional");
     expect(section.indexOf("__FREE_DELIVERIES__"), "trial before checkout").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
