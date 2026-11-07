@@ -9,7 +9,7 @@ mirror: pi-agent-harness
 series: pi
 ---
 
-The Pi harness, also called the Pi agent harness, is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. This post is for developers who run coding agents unattended: I start the same task in three Pi setups, kill each one partway through, and show what survives and who has to restart it. You also get install commands, a supervisor script for `pi --print`, and runnable AI SDK and Cloudflare examples, all retested on Pi 1.5.0 on 6 November 2026. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
+The Pi harness, also called the Pi agent harness, is the loop inside [Pi](https://pi.dev), the open-source coding agent from Earendil: it sends your prompt to a model, runs the tool calls the model asks for, records the conversation, and repeats until the model stops asking for tools. This post is for developers who run coding agents unattended: I start the same task in three Pi setups, kill each one partway through, and show what survives and who has to restart it. You also get install commands, a supervisor script for `pi --print`, and runnable AI SDK and Cloudflare examples, all retested on 6 November 2026 on Pi 1.5.0 and Pi Durable 1.5.0. On 1 October 2026 Earendil shipped Pi 1.0 and, next to it, an experimental second harness called Pi Durable, which checkpoints every step so a run can outlive the process running it.
 
 I'm Larry 🍀 Orbi, the creator of Orbi, which runs Pi with nobody watching: it hands Pi a GitHub issue and, when things go well, gets back a reviewed, merged pull request. How Orbi starts Pi is in [the first post of this series](/blog/orbi-on-pi-coding-agent/); the runner around Pi is described in the [Pi hub](/guides/pi-coding-agent/). I first ran these tests on 6 October 2026 on Pi 1.0.0 and reran all of them on 6 November 2026 on Pi 1.5.0 and the current adapter and Durable Object packages; this version reports the November results and says where they differ.
 
@@ -23,7 +23,7 @@ Pi has four CLI modes: the interactive terminal, print, JSON, and RPC over stdin
 
 Since 1 October, "pi harness" can mean two things from the same team. The first is the Pi coding harness: the Pi coding agent (`@earendil-works/pi-coding-agent`, the `pi` command), which Earendil describes as a harness built for one person at a terminal. Earendil's [Pi Durable announcement](https://earendil.com/posts/pi-durable/) describes what happens when the `pi` process dies: "you look at what happened and tell it to continue." Pi Durable (`@earendil-works/pi-durable`) is a separate library for agents that keep running on their own.
 
-In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi's model layer, `pi-ai`, but it isn't the `pi` command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node; a Cloudflare Worker has no shell or filesystem, so there the tools are whatever you write.
+In it every model call and tool call is a task that stores a checkpoint before moving on, so a new process can open the same storage and carry on. It shares Pi's model layer, `pi-ai`, but it isn't the `pi` command. It ships the same four coding tools, but they only work once you give them an execution environment, meaning somewhere to read files and run commands; Pi Durable includes one for Node. A Cloudflare Worker has no shell, and its filesystem is a virtual one whose `/tmp` lasts only for a single request, so on Cloudflare you write the tools yourself.
 
 ## How to install and run the Pi harness
 
@@ -61,7 +61,7 @@ Create files step1.txt through step5.txt in the current directory, one at a time
 
 Uninterrupted, a run took about 50 seconds. The model was `deepseek-flash` through DeepSeek's API every time. Between 22 and 33 seconds in during the November hard-kill tests, I killed the process with `SIGKILL` (`kill -9`), which a process can't catch; the Linux out-of-memory killer sends the same signal. For the AI SDK I also tried `SIGTERM`, which a process can catch; `SIGTERM` was the only way the AI SDK run recovered. The results below are from the 6 November 2026 retest on my own machine, unless I label them as October observations.
 
-The table also shows that this isn't a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell or filesystem. I compared one thing: what is left after a hard kill, and who has to act.
+The table also shows that this isn't a like-for-like benchmark. The three run different code, and the Cloudflare test used my own two tools because a Worker has no shell and keeps no files between requests. I compared one thing: what is left after a hard kill, and who has to act.
 
 ## Running Pi headless with `pi --print`
 
@@ -310,7 +310,7 @@ The Wrangler config I used, Cloudflare's minus the `ai` binding. The key goes in
 
 `replay` is how a Pi Durable tool says whether it may run twice. `write_file` is `"safe"`, because it overwrites the row for that file name; `sleep` keeps the default, which means an interrupted call is not rerun. The `operationId` makes the submission idempotent: sending the same id again returns the same operation.
 
-I ran it with `wrangler dev` (wrangler 4.158.0) on my machine, with no Cloudflare account involved. Uninterrupted, it finished in 49.6 seconds (48 in October). For the November kill test, I killed `wrangler` and its `workerd` runtime with `SIGKILL` 22, 28 and 33 seconds in, every time during a `sleep`, and restarted `wrangler dev` on the same local state about 3 seconds later. Restarting `wrangler dev` stands in for Cloudflare bringing the runtime back; what the test shows is that the object then resumes on its own.
+I ran it with `npx wrangler dev` (wrangler 4.158.0) on my machine, with no Cloudflare account involved. Uninterrupted, it finished in 49.6 seconds (48 in October). For the November kill test, I killed `wrangler` and its `workerd` runtime with `SIGKILL` 22, 28 and 33 seconds in, every time during a `sleep`, and restarted `wrangler dev` on the same local state about 3 seconds later. Restarting `wrangler dev` stands in for Cloudflare bringing the runtime back; what the test shows is that the object then resumes on its own.
 
 I added a log line to the object's constructor. The object was constructed 4.9, 0.9 and 23.9 seconds after I issued the restart command, all within one heartbeat. No request reached the object before it resumed. Before I queried the finished result, the only requests logged after each restart were four requests to `/`, all after the object had resumed; the Worker answers those with 404 without calling the object. All five steps finished each time.
 
