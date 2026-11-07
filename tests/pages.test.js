@@ -3879,6 +3879,11 @@ describe("buyer-facing pages drop internal vocabulary (Issue #1217)", () => {
     "terminal outcome",
     "runner injection",
     "review_rounds", // the field name the evidence page used to print
+    // The Cloud backend's own name for itself. Both languages carried it, and
+    // the dictionary bans one spelling (控制平面) while the page used the
+    // other (控制面), so the test pins the idea, not the spelling.
+    "control plane",
+    "控制面",
     "totalTokens",
     "FREE_DELIVERY_ALLOWANCE",
     "delivery_usage",

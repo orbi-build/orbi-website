@@ -585,8 +585,10 @@ class LandingTests(unittest.TestCase):
                 html.count(f'<span class="stat-private">{private_label}</span>'), 1, html,
             )
             purposes = {
-                "en": ["Orbi itself", "This website", "Cloud control plane"],
-                "zh": ["Orbi 本身", "这个网站", "Cloud 控制面"],
+                # Issue #1217: "control plane" is internal vocabulary; the
+                # purpose reads as the visitor's word for the private Cloud repo.
+                "en": ["Orbi itself", "This website", "Cloud service"],
+                "zh": ["Orbi 本身", "这个网站", "Cloud 服务"],
             }[lang]
             for purpose in purposes:
                 self.assertIn(purpose, page.text)

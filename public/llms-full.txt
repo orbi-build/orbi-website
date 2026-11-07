@@ -16,7 +16,7 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
         <p class="eyebrow"><span class="live-dot"></span>Cost transparency · measured 2026-10-05 15:36 UTC+8 · n=169</p>
-        <h1 id="cost-title">What an AI coding agent costs per merged pull request</h1>
+        <h1 id="cost-title">What an AI coding agent costs per merged delivery</h1>
         <p class="hero-lede"><strong>The measured median is $0.082 per merged delivery off-peak</strong>, with a 90th percentile of $0.22. That comes from <strong>169 merged deliveries</strong> that Orbi Cloud recorded between <strong>2026-09-16</strong> and <strong>2026-10-05 15:36 UTC+8</strong>, all on <code>deepseek-flash</code>. Peak prices double every figure, so these are the off-peak floor. We publish the dated sample, price inputs, and limits below.</p>
         <div class="cta-row">
           <a class="button button-signal" href="/cloud/login">Start Cloud with GitHub <span aria-hidden="true">↗</span></a>
@@ -26,7 +26,7 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
     </div>
 
     <section class="compare-section shell" aria-labelledby="merged-pr-title">
-      <p class="section-tag">COST PER MERGED PULL REQUEST</p>
+      <p class="section-tag">COST PER MERGED DELIVERY</p>
       <h2 class="orbi-compare-section-h2" id="merged-pr-title">169 merged deliveries, measured on Orbi Cloud</h2>
       <p class="section-lede">The clearest unit is one merged delivery — a pull request that merged — not an abstract token quota. Orbi Cloud's usage records start on <strong>2026-09-16</strong>; at <strong>2026-10-05 15:36 UTC+8</strong> they held <strong>169 merged deliveries</strong> with token counts, every one of them on <code>deepseek-flash</code> in a Pi session. Per delivery the median cost was <strong>$0.082</strong> off-peak, the 90th percentile <strong>$0.22</strong>, and the mean <strong>$0.11</strong>.</p>
       <div class="compare-table-wrap">
@@ -119,7 +119,7 @@ Orbi is open source under AGPL-3.0, or the Sustainable Use License if your polic
 
     <section class="compare-section shell" aria-labelledby="earlier-sample-title">
       <p class="section-tag">EARLIER SAMPLE · n=20 · KEPT FOR THE RECORD</p>
-      <h2 class="orbi-compare-section-h2" id="earlier-sample-title">Earlier sample: 20 merged pull requests, 22–24 September 2026</h2>
+      <h2 class="orbi-compare-section-h2" id="earlier-sample-title">Earlier sample: 20 merged deliveries, 22–24 September 2026</h2>
       <p class="section-lede">Before Cloud's usage records existed, we measured a smaller sample by hand: from <strong>2026-09-22 09:44 UTC to 2026-09-24 12:03 UTC</strong>, <strong>20 merged deliveries</strong> in the orbi-build/orbi repository, every one of them on <code>deepseek-flash</code> (DeepSeek-V4.1-Flash). Their median was <strong>$0.125</strong> off-peak and $0.249 at peak, over a median <strong>10,612,802 tokens</strong> per merged delivery; the median runtime was <strong>60.4 minutes</strong> across a median <strong>156 model requests</strong>. We keep this sample published, but the 169 merged deliveries above are the current figure.</p>
       <div class="compare-table-wrap">
         <table class="compare-table table-stack">
