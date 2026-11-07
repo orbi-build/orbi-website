@@ -1082,6 +1082,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
         expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
         // Issue #1015: the new last badge is reachable too, with the same ring.
+        await page.keyboard.press("Tab"); // SiftFox -> Altern
         await page.keyboard.press("Tab");
         const next = await page.evaluate(() => {
           const active = document.activeElement;
