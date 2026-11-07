@@ -34,7 +34,7 @@ const CASES = [
     login: "/zh/cloud/login",
     pagePath: "/zh/compare/codex/",
     cloudLabel: "免费试用 Orbi Cloud →",
-    note: "Orbi Cloud 托管运行这套 GitHub 交付流程；自托管则把 Runner 留在你自己的基础设施上。",
+    note: "Orbi Cloud 托管运行这套 GitHub 交付流程；自托管则把运行环境留在你自己的基础设施上。",
     choiceSelfHost: '<a class="button button-outline" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>',
     closingSelfHost: '<a class="button button-dark" href="https://docs.orbi.build/zh">自托管 Orbi <span aria-hidden="true">↗</span></a>',
     title: "Orbi vs OpenAI Codex：云端编程 agent 对比",
