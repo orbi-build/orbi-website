@@ -189,10 +189,10 @@
       <p class="section-tag">方法</p>
       <h2 class="orbi-compare-section-h2" id="method-title">每次运行怎么打分</h2>
       <figure class="bench-figure">
-        <img class="bench-figure-img" src="/img/diagrams/harness-flow-zh.svg" alt="每次运行：私有快照仓库交给真实的 Orbi runner，再由隐藏评分器打分。评分器事先校准。" width="720" height="300">
+        <img class="bench-figure-img" src="/img/diagrams/harness-flow-zh.svg" alt="每次运行：私有快照仓库交给真实的 Orbi 托管运行环境，再由隐藏评分器打分。评分器事先校准。" width="720" height="300">
       </figure>
       <ul class="event-list">
-        <li class="orbi-event-list-li"><span class="event-era">1</span><div><strong>真实流程，私有快照。</strong><p class="orbi-event-list-p">每次运行有一份自己的私有仓库，停在修复之前的 commit。原样的 Orbi runner 认领 issue、实现、开 PR、评审、修改、合并。</p></div></li>
+        <li class="orbi-event-list-li"><span class="event-era">1</span><div><strong>真实流程，私有快照。</strong><p class="orbi-event-list-p">每次运行有一份自己的私有仓库，停在修复之前的 commit。原样的 Orbi 托管运行环境（在你自己的机器上执行交付的那个进程）认领 issue、实现、开 PR、评审、修改、合并。</p></div></li>
         <li class="orbi-event-list-li"><span class="event-era">2</span><div><strong>隐藏的、校准过的评分器。</strong><p class="orbi-event-list-p">任何一次运行计分之前，评分器必须在修复前的代码上判失败、在已知正确的修复上判通过。容易改出回归的题，还得在上游第一次修复上判失败。评分时顺带跑仓库自带的 lint、类型检查和全量测试。</p></div></li>
         <li class="orbi-event-list-li"><span class="event-era">3</span><div><strong>碰不到答案。</strong><p class="orbi-event-list-p">留出集的运行给 <code>gh</code> 和 <code>git</code> 套了一层包装，只放行这次运行自己的仓库，agent 查不到上游的修复。快照保留了被忽略却被跟踪的文件，也带上了 submodule 的内容。</p></div></li>
       </ul>
