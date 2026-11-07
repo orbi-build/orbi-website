@@ -66,7 +66,7 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 | 后台工具 | 谁合并，谁发版？ |
 |---|---|
-| Cursor 云端 agent | 人工合并；Origin 仓库也可以由人批准 agent 合并，发版沿用你的流程 |
+| Cursor 云端 agent | 人工合并；托管在 Cursor 自家 Origin 上的仓库，也可以由人批准后让 agent 合并；发版沿用你的流程 |
 | Copilot 云端 agent | 由人批准并合并 PR，发版沿用你的流程 |
 | Devin Cloud | 这次比较尚未确认合并和发版归谁 |
 | Orbi | Orbi 在评审和 CI 通过后合并；人发起发版，Orbi 打 tag 并发布 |
@@ -75,7 +75,7 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 换工具前，可以先比较 [Cursor 云端 agent](https://cursor.com/docs/cloud-agent)。它需要 Premium 或更高套餐，在隔离的云端虚拟机里运行，在单独的分支上工作，再把改动推到仓库交接。
 
-如果仓库托管在 Cursor 自己的 Origin 上，agent 可以请求人工批准合并，再合入批准时对应的那一版提交。这是 [2026 年 9 月 7 日当周的云端 agent 更新记录](https://cursor.com/docs/release-notes/cloud-agents)描述的行为，文档没有描述跳过批准直接合并的流程。你只需要把执行移出本机、又想继续用 Cursor，可以先看这条路。
+Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Origin」，Premium 起提供。如果仓库托管在 Origin 上，agent 可以请求人工批准合并，再合入批准时对应的那一版提交。这是 [2026 年 9 月 7 日当周的云端 agent 更新记录](https://cursor.com/docs/release-notes/cloud-agents)描述的行为，文档没有描述跳过批准直接合并的流程；GitHub 上的仓库，文档写的是推分支交接。你只需要把执行移出本机、又想继续用 Cursor，可以先看这条路。
 
 ### GitHub Copilot 云端 agent
 
@@ -89,9 +89,9 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 ### Orbi
 
-给 GitHub Issue 打上 `ai-ready` 标签，Orbi 就会运行 [Pi 编码 agent](/zh/guides/pi-coding-agent/) 来实现改动。Orbi 用独立会话评审改动。评审和仓库 CI 通过后，负责执行交付流程的 Orbi runner 合并评审过的那一版提交。发版由人用 `/orbi milestone <version>` 发起，随后 Orbi 创建发版 Issue、打 tag 并发布。
+给 GitHub Issue 打上 `ai-ready` 标签，Orbi 就会运行开源编码 agent [Pi](/zh/guides/pi-coding-agent/) 来实现改动。另开一个没写过这段代码的 Pi 会话做评审。评审和仓库 CI 通过后，Orbi runner（自部署时跑在你的机器上，用 Orbi Cloud 时是托管的 runner）合并评审过的那一版提交。默认没有人在合并前签字；如果分支保护要求人工批准，Orbi 会停在 `ai-awaiting-merge`，并在 Issue 评论里写明需要谁做什么。发版由人在 Issue 评论里输入 `/orbi milestone <version>` 发起，随后 Orbi 创建发版 Issue、打 tag 并发布。
 
-[Orbi](https://github.com/orbi-build/orbi) 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 是托管版，月付和年付套餐以那一页为准；前 3 次合并交付免费，不需要信用卡。
+[Orbi](https://github.com/orbi-build/orbi) 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 是托管版，月付和年付套餐以那一页为准；前 3 次合并交付（一个 Issue 的 PR 被 Orbi 合并算一次）免费，不需要信用卡。
 
 你想把 Issue 交出去，让 runner 经过评审和 CI 后合并，又想自己决定何时开始发版，可以比较 Orbi。要的是编辑器里的行内补全，Orbi 接不了 Cursor 的这部分工作。
 
@@ -114,7 +114,7 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 - 想把任务交给后台，比较 Cursor 云端 agent 和 Copilot 云端 agent。Devin Cloud 适合本机与云端切换会话，但合并和发版归属仍未确认。
 - 想让 runner 在评审和 CI 后合并，等你发出发版命令再发布，可以看 Orbi。
 
-## 一次从 Issue 到发版的实测时间线
+## 一次从 Issue 到发版的真实交付记录
 
 [orbi-build/orbi#2123](https://github.com/orbi-build/orbi/issues/2123) 要求 Orbi 停止向它交付的仓库更新 GitHub Actions 变量 `ORBI_ACTIVE_MILESTONE`。改动进入 [PR #2124](https://github.com/orbi-build/orbi/pull/2124)，并随 [v0.7.38](https://github.com/orbi-build/orbi/releases/tag/v0.7.38) 发布。下表全部是 2026 年 11 月 6 日的 UTC 时间。
 
@@ -133,11 +133,11 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 换成北京时间，都是 2026 年 11 月 6 日：08:03:45 打标签，09:05:15 合并，10:52:01 输入发版命令，11:11:32 发版。
 
-从 `ai-ready` 标签算起，2 分 49 秒后 Issue 被认领，46 分 15 秒后开出 PR，61 分 30 秒后合并。合并约 1 小时 47 分钟后，人才输入发版命令，这段间隔反映的是人工选择发版时机。从输入命令到发布完成，花了 19 分 31 秒。
+从 `ai-ready` 标签算起，2 分 49 秒后 Issue 被认领，46 分 15 秒后开出 PR，61 分 30 秒后合并。合并约 1 小时 47 分钟后，人才在 #2125 的评论里输入发版命令；#2125 是 Orbi 开出来请人确认下一个里程碑的 Issue。记录里看不出这段间隔为什么这么长。从输入命令到发布完成，花了 19 分 31 秒。
 
-[Issue 评论](https://github.com/orbi-build/orbi/issues/2123)记录的评审结果是「pass, no findings」，1 轮通过，没有发现问题。PR 的 CI 检查均通过：[tests 用时 6 分 31 秒](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350)、[macos-compatibility 用时 6 分 51 秒](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517)、[link 用时 4 秒](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151)。
+[Issue 上的合并评论](https://github.com/orbi-build/orbi/issues/2123#issuecomment-6673829957)记录的评审结果是「pass, no findings」，1 轮通过，没有发现问题。PR 的 CI 检查均通过：[tests 用时 6 分 31 秒](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350)、[macos-compatibility 用时 6 分 51 秒](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517)、[link 用时 4 秒](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151)。
 
-这条记录只涉及一次范围很窄的改动（停止写入那个变量），跨 19 个文件，新增 230 行、删除 308 行。它不能当成平均耗时，也不能用来预测另一个任务。
+这个 PR 改了 19 个文件，新增 230 行、删除 308 行：源码只在 `src/orbi/` 下 5 个文件里新增 7 行、删除 77 行，其余是测试、一个 CI 故障分诊工具，以及中英两版文档。它不能当成平均耗时，也不能用来预测另一个任务。
 
 要从 GitHub 复查这条时间线，把下面的脚本存成文件，用 bash 运行。需要先登录 GitHub CLI，输出时间为 UTC。
 

@@ -71,7 +71,7 @@ I use four questions to choose between these tools:
 
 ### Cursor's own cloud agents, as a baseline
 
-Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff. On a repository hosted on Cursor's own Origin, an agent can ask a person to approve a merge and then land that exact commit, according to the [cloud agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026; the docs do not describe a merge without that approval. Pick this route if moving execution off your machine is enough and you want to keep Cursor.
+Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff. Origin is Cursor's own code hosting, listed on its pricing page as "Code hosting via Origin" from Premium up. On a repository hosted there, an agent can ask a person to approve a merge and then land that exact commit, according to the [cloud agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026; the docs do not describe a merge without that approval, and for a GitHub repository they describe the branch handoff. Pick this route if moving execution off your machine is enough and you want to keep Cursor.
 
 ### GitHub Copilot cloud agent
 
@@ -83,7 +83,7 @@ Before switching products, compare [Cursor's cloud agents](https://cursor.com/do
 
 ### Orbi
 
-Label a GitHub Issue `ai-ready` and Orbi runs the [Pi coding agent](/guides/pi-coding-agent/) to implement it. A separate review session checks the work, and the runner merges the reviewed commit once your CI passes. A person starts a release with `/orbi milestone <version>`; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page, and the first 3 merged deliveries are free with no card required. Pick it if you want an Issue carried through review and merge, with a person choosing when to start the release. If you want inline completions, Orbi does not replace Cursor.
+Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner (on your machine if you self-host, or Orbi Cloud's hosted runner) merges the reviewed commit once your CI passes. No person signs off on that merge by default; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release by commenting `/orbi milestone <version>` on an Issue; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page, and the first 3 merged deliveries (an Issue whose PR Orbi merged) are free with no card required. Pick it if you want an Issue carried through review and merge, with a person choosing when to start the release. If you want inline completions, Orbi does not replace Cursor.
 
 ## One Issue to a release, timed
 
@@ -102,11 +102,11 @@ In [orbi-build/orbi#2123](https://github.com/orbi-build/orbi/issues/2123), Orbi 
 
 `app/orbi-build` and `orbi-build[bot]` are two spellings GitHub uses for the same Orbi GitHub App.
 
-From the `ai-ready` label, the Issue was claimed after 2 min 49 s, the PR opened after 46 min 15 s, and the PR merged after 61 min 30 s. The release command was typed about 1 h 47 min after the merge, reflecting a person's choice of timing. From that command to the published release took 19 min 31 s.
+From the `ai-ready` label, the Issue was claimed after 2 min 49 s, the PR opened after 46 min 15 s, and the PR merged after 61 min 30 s. A person typed the release command about 1 h 47 min after the merge, as a comment on #2125, the Issue where Orbi asked to confirm the next milestone; the record does not say why the gap was that long. From that command to the published release took 19 min 31 s.
 
-The [Issue comments](https://github.com/orbi-build/orbi/issues/2123) record Orbi's review verdict: "pass, no findings" in 1 round. The PR's CI checks passed: [tests in 6m31s](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350), [macos-compatibility in 6m51s](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517) and [link in 4s](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151).
+The [merge comment on the Issue](https://github.com/orbi-build/orbi/issues/2123#issuecomment-6673829957) records Orbi's review verdict: "pass, no findings" in 1 round. The PR's CI checks passed: [tests in 6m31s](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350), [macos-compatibility in 6m51s](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517) and [link in 4s](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151).
 
-This record covers one narrowly scoped change, removing that variable write, with +230 −308 lines across 19 files. It is not an average or a prediction for another task.
+The PR touched 19 files (+230 −308): the source change is +7 −77 across 5 files under `src/orbi/`, and the rest is tests, a CI triage tool and the docs in English and Chinese. It is not an average or a prediction for another task.
 
 To reproduce the timeline from GitHub, use this script. Paste it into a file and run it with bash; it needs the GitHub CLI logged in. Times are UTC.
 
