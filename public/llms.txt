@@ -85,26 +85,23 @@ https://orbi.build/guides/ (English) · https://orbi.build/zh/guides/ (Chinese).
 
 **Managed Cloud** is live and open for subscriptions today:
 a commercial hosted control plane that keeps the same GitHub-native ledger.
-Every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no
-credit card, no subscription, and failed deliveries don't count. Cloud has
-Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month
-or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens,
-__SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or
-US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__
-repositories). When a paid allowance runs out, new deliveries pause with no
-overage bill. Founding partners get 50% off forever,
+__FREE_TRIAL__; no credit card, no subscription. Cloud has Solo
+(US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year,
+__SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository) and Pro
+(US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year,
+__INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories). When a paid
+allowance runs out, new deliveries pause with no overage bill. Founding
+partners get 50% off forever,
 __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places remaining.
 Fully self-hosting the core costs nothing and always will. Details and signup:
 https://orbi.build/cloud/
 
 ## Connect a repository to Cloud
 
-Agent-executable setup for Managed Cloud. Every plan starts with a trial of
-__FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, and
-failed deliveries don't count — so connect the repository and dispatch a first
-delivery before any payment. The onboarding video covers seven
-steps; this operational checklist states how to tell each Cloud action is done
-and where to go when it is not. The Cloud
+Agent-executable setup for Managed Cloud. __FREE_TRIAL__, so connect the
+repository and dispatch a first delivery before any payment. The
+onboarding video covers seven steps; this operational checklist states how to
+tell each Cloud action is done and where to go when it is not. The Cloud
 console lives on https://orbi.build under /api/ — after sign-in you are on the
 Cloud status page (https://orbi.build/api/), which is the home screen for
 every step below.
@@ -133,7 +130,7 @@ every step below.
 
 4. **Configure the model source — only when the status page asks.** This step
    is normally unnecessary, because the platform's model channel covers the
-   trial, so skip it by default. If the status page shows
+   included usage, so skip it by default. If the status page shows
    「仓库已连接，还差模型来源」 (repository connected, model source missing),
    the platform model channel is unavailable and you must bring your own key:
    open https://orbi.build/api/model-config, pick a provider, paste its API
@@ -151,9 +148,9 @@ every step below.
    https://github.com/orbi-build/orbi/issues with the repository name and the
    status page's request id.
 
-6. **Subscribe — optional, only to keep delivering after the trial.** The
-   trial's __FREE_DELIVERIES__ merged deliveries start before any payment, so
-   skip this step while they last. When you want more, choose Solo at
+6. **Subscribe — optional, only to keep delivering after the allowance.**
+   __FREE_TRIAL__, so skip this step while it lasts. When you want more, choose
+   Solo at
    https://orbi.build/api/checkout?plan=solo or Pro at
    https://orbi.build/api/checkout?plan=pro and complete Stripe checkout.
    Founding partners get 50% off forever,
@@ -232,10 +229,10 @@ approvals still apply.
 pull request, labels, and run ID live in GitHub rather than in a process, so a
 restart reconstructs the same run, branch, worktree, and PR.
 
-**What does it cost?** Self-hosting is free forever. Managed Cloud offers Free
-(__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or
+**What does it cost?** Self-hosting is free forever. Managed Cloud offers
+__FREE_TRIAL__, then Solo (US$__SOLO_MONTHLY_USD__/month or
 US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens,
-__SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or
+__SOLO_REPOSITORIES__ repository) and Pro (US$__CLOUD_MONTHLY_USD__/month or
 US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens,
 __PRO_REPOSITORIES__ repositories). What the model usage itself costs is
 measured, not estimated, and published in two units. Per merged delivery

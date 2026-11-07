@@ -77,7 +77,7 @@ describe("llms-full.txt content asset (Issue #438)", () => {
       "",
       "Orbi is an open source (AGPL-3.0) lights-out software factory for the agent era: AI coding agents turn labelled GitHub Issues into merged PRs and releases.",
       "",
-      "Key numbers: Cloud has Free (__FREE_DELIVERIES__ merged deliveries), Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository), and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); every plan starts with a trial of __FREE_DELIVERIES__ merged deliveries — no credit card, no subscription, failed deliveries don't count; founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged delivery (n=169, measured 2026-10-05) the median was $0.082 off-peak, the 90th percentile $0.22, and peak prices double every figure; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
+      "Key numbers: __FREE_TRIAL__ with no credit card required, then Solo (US$__SOLO_MONTHLY_USD__/month or US$__SOLO_ANNUAL_USD__/year, __SOLO_INCLUDED_TOKENS__ tokens, __SOLO_REPOSITORIES__ repository) and Pro (US$__CLOUD_MONTHLY_USD__/month or US$__PRO_ANNUAL_USD__/year, __INCLUDED_TOKENS__ tokens, __PRO_REPOSITORIES__ repositories); founding partners get 50% off forever with code __FOUNDING_PROMO_CODE__ at checkout, __FOUNDING_PARTNER_REMAINING__ of __FOUNDING_PARTNER_LIMIT__ places left; per merged delivery (n=169, measured 2026-10-05) the median was $0.082 off-peak, the 90th percentile $0.22, and peak prices double every figure; per delivery including unmerged work (n=46, measured 2026-09-12) the mean was 4,742,066 totalTokens, about $0.06–0.12 each, or about __MEASURED_LARGE_CODEBASE_DELIVERIES__ large-codebase deliveries per Pro allowance (__MEASURED_SNAPSHOT_DELIVERIES__ on the older snapshot). Authoritative figures: https://orbi.build/cost/",
     ]);
   });
 
@@ -165,13 +165,14 @@ describe("llms.txt Connect a repository to Cloud (Issue #154 acceptance 1)", () 
     expect(section.indexOf("`ai-ready`"), "dispatch before subscribe").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
-  it("leads with the free trial, not a subscription (Issue #874)", () => {
-    expect(section).toContain("no credit card");
-    expect(section).toContain("no subscription");
-    expect(section).toContain("__FREE_DELIVERIES__");
-    // The checkout step is explicitly optional and comes after the trial.
+  it("leads with the free allowance, not a subscription (Issues #874, #1216)", () => {
+    // Issue #1216: the allowance is the shared sentence token, never a
+    // per-section delivery count.
+    expect(section).toContain(pricing.freeTrialCopyToken);
+    expect(section).not.toContain(pricing.freeDeliveriesToken);
+    // The checkout step is explicitly optional and comes after the allowance.
     expect(section).toContain("Subscribe — optional");
-    expect(section.indexOf("__FREE_DELIVERIES__"), "trial before checkout").toBeLessThan(section.indexOf("/api/checkout"));
+    expect(section.indexOf(pricing.freeTrialCopyToken), "allowance before checkout").toBeLessThan(section.indexOf("/api/checkout"));
   });
 
   it("gives every step an explicit done-check (the issue's per-step completion bar)", () => {
@@ -275,7 +276,7 @@ describe("llms pricing tokens (Issue #874)", () => {
     for (const token of [
       pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
       pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
-      pricing.freeDeliveriesToken, pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
+      pricing.freeTrialCopyToken, pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
     ]) expect(section, token).toContain(token);
   });
 
@@ -283,7 +284,7 @@ describe("llms pricing tokens (Issue #874)", () => {
     const line = llmsFull.split("\n")[4];
     for (const token of [
       pricing.soloMonthlyUsdToken, pricing.soloAnnualUsdToken, pricing.monthlyUsdToken, pricing.proAnnualUsdToken,
-      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.freeDeliveriesToken,
+      pricing.soloIncludedTokensToken, pricing.includedTokensToken, pricing.freeTrialCopyToken,
       pricing.foundingPartnerRemainingToken, pricing.foundingPartnerLimitToken,
     ]) expect(line, token).toContain(token);
   });

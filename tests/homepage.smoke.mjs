@@ -208,6 +208,10 @@ function startServer() {
               .replaceAll(pricing.foundingPartnerRemainingToken, String(pricing.foundingPartnerRemaining))
               .replaceAll(pricing.foundingPromoCodeToken, pricing.foundingPromoCode)
               .replaceAll(pricing.includedTokensToken, String(pricing.includedTokensLabel))
+              .replaceAll(
+                pricing.freeTrialCopyToken,
+                pathname.startsWith("/zh") ? pricing.freeTrialCopyZh : pricing.freeTrialCopy,
+              )
               .replaceAll(pricing.freeDeliveriesToken, String(pricing.freeDeliveries))
               .replaceAll(
                 pricing.measuredSmallRepositoryDeliveryRangeToken,
@@ -798,18 +802,18 @@ async function assertHomepage(browser, path, comparisonPath, size, screenshot) {
     throw new Error(`${path}: hero lede is ${JSON.stringify(lede)}, expected ${JSON.stringify(claim.lede)}`);
   }
   // Issue #899: the button says where the click goes, and the one small line
-  // under it shows the numeric trial (the Worker substitutes
-  // __FREE_DELIVERIES__ before the bytes leave) plus its self-host text link.
+  // under it carries the GitHub prerequisite and the no-card reassurance
+  // (Issue #1216 dropped the numeric trial from every CTA note).
   const heroButtonText = (await hero.locator('[data-cta="cloud-start"]').textContent()).trim();
   if (heroButtonText !== claim.button) {
     throw new Error(`${path}: hero CTA label is ${JSON.stringify(heroButtonText)}, expected ${JSON.stringify(claim.button)}`);
   }
   const heroNote = (await hero.locator(".hero-cta-note").textContent()).replace(/\s+/g, " ").trim();
   // Issue #977: the note first names the GitHub authorization the button leads
-  // to, then the numeric trial and its self-host text link.
+  // to, then the no-card reassurance and its self-host text link.
   const expectedHeroNote = path === "/"
-    ? `GitHub authorization and App installation required. ${pricing.freeDeliveries} deliveries free, no credit card · Open source · Self-host ↗`
-    : `需 GitHub 授权并安装 App 前 ${pricing.freeDeliveries} 次交付免费，不用绑卡 · 开源自托管 ↗`;
+    ? "GitHub sign-in and App install required. No credit card required · Open source · Self-host ↗"
+    : "需 GitHub 授权并安装 App。不用绑卡。 · 开源自托管 ↗";
   if (heroNote !== expectedHeroNote) {
     throw new Error(`${path}: hero CTA note is ${JSON.stringify(heroNote)}, expected ${JSON.stringify(expectedHeroNote)}`);
   }
@@ -1220,11 +1224,9 @@ async function assertProofLoop(browser, path, size, screenshot) {
   const midwayCta = page.locator('[data-cta="midway-cloud"]');
   const midwayText = (await midwayCta.textContent()).trim();
   // Issue #899: the hero button names Orbi Cloud for the first screen; the
-  // midway CTA under the proof keeps the numeric trial promise. Both land on
-  // the same handoff, which is what the two share now.
-  const expectedMidwayText = path.startsWith("/zh/")
-    ? `免费试 ${pricing.freeDeliveries} 次 →`
-    : `Try ${pricing.freeDeliveries} deliveries free →`;
+  // midway CTA under the proof carries the same label (Issue #1216 removed the
+  // numeric trial). Both land on the same handoff.
+  const expectedMidwayText = path.startsWith("/zh/") ? "免费试用 Orbi Cloud →" : "Try Orbi Cloud free →";
   if (midwayText !== expectedMidwayText) {
     throw new Error(`${view}: midway CTA text is ${JSON.stringify(midwayText)}, expected ${JSON.stringify(expectedMidwayText)}`);
   }
@@ -1485,8 +1487,8 @@ async function assertCloudPage(browser, path, size, screenshot) {
   if (await steps.count() !== 4) throw new Error(`${path}: expected four onboarding steps`);
   const stepText = (await steps.allTextContents()).join(" ").replace(/\s+/g, " ");
   for (const needle of path === "/cloud/"
-    ? ["Write your first request", "Drafting doesn't use a free delivery", "Label one ai-ready instead", "How writing a request works"]
-    : ["写下第一个需求", "写草稿不占免费次数", "打上 ai-ready 标签也行", "写需求怎么用"]) {
+    ? ["Write your first request", "Drafting doesn't start a delivery", "Label one ai-ready instead", "How writing a request works"]
+    : ["写下第一个需求", "写草稿不开始交付", "打上 ai-ready 标签也行", "写需求怎么用"]) {
     if (!stepText.includes(needle)) throw new Error(`${path}: onboarding step is missing ${JSON.stringify(needle)}`);
   }
   const stepBoxes = await steps.evaluateAll((elements) => elements.map((element) => {
@@ -1528,13 +1530,13 @@ async function assertCloudPage(browser, path, size, screenshot) {
   const expectedHero = path === "/cloud/"
     ? {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
-      button: `Try ${pricing.freeDeliveries} deliveries free →`,
+      button: "Try Orbi Cloud free →",
       note: "No credit card required · Orbi only sees the repos you pick",
       href: "/cloud/login",
     }
     : {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
-      button: `免费试 ${pricing.freeDeliveries} 次 →`,
+      button: "免费试用 Orbi Cloud →",
       note: "不用绑定信用卡 · 只授权你选的仓库",
       href: "/zh/cloud/login",
     };

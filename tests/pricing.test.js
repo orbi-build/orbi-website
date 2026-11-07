@@ -182,25 +182,73 @@ describe("Cloud monthly price constant (Issue #102)", () => {
 
 });
 
-describe("Free delivery allowance constant (Issue #274)", () => {
-  const FREE_PAGES = ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"];
+// Issue #1216: the free allowance no longer appears as a per-page promise.
+// One sentence, defined once in pricing.json, appears only in the two pricing
+// notes and on the terms pages; every other page says nothing about it.
+describe("free trial copy (Issue #1216)", () => {
+  const EN = "First 3 merged pull requests free";
+  const ZH = "前 3 个合并的 PR 免费";
+  const ALLOWED = {
+    "index.html": { note: "pricing-summary-trial", copy: EN },
+    "zh/index.html": { note: "pricing-summary-trial", copy: ZH },
+    "cloud/index.html": { note: "pricing-trial-note", copy: EN },
+    "zh/cloud/index.html": { note: "pricing-trial-note", copy: ZH },
+    "terms/index.html": { copy: EN },
+    "zh/terms/index.html": { copy: ZH },
+  };
+  const retired = ["deliveries free", "3-delivery", "FREE_DELIVERY_ALLOWANCE", "免费试 3 次"];
 
-  it("keeps the allowance sourced from pricing.json and tokenized in every source", async () => {
+  it("defines the sentence once, with the count filled from pricing.json", () => {
     expect(pricing.freeDeliveries).toBe(3);
+    expect(pricing.freeTrialCopy.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(EN);
+    expect(pricing.freeTrialCopyZh.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(ZH);
+  });
+
+  it("carries the sentence token exactly once on the pricing notes and terms pages, nowhere else", async () => {
     for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
-      for (const relativePath of FREE_PAGES) {
+      for (const [relativePath, expected] of Object.entries(ALLOWED)) {
         const html = await readFile(`${dir}${relativePath}`, "utf8");
-        expect(html, `${dir}${relativePath}`).toContain(FREE_DELIVERIES_TOKEN);
+        expect(html.split(pricing.freeTrialCopyToken).length - 1, `${dir}${relativePath}: sentence token`).toBe(1);
+        expect(html, `${dir}${relativePath}: no literal copy`).not.toContain(expected.copy);
+      }
+      const allowed = new Set(Object.keys(ALLOWED).map((relativePath) => `${dir}${relativePath}`));
+      for (const path of await listHtmlFiles(dir)) {
+        if (allowed.has(path)) continue;
+        const html = await readFile(path, "utf8");
+        expect(html, `${path}: sentence token`).not.toContain(pricing.freeTrialCopyToken);
+        for (const copy of [EN, ZH]) expect(html, `${path}: ${copy}`).not.toContain(copy);
       }
     }
   });
 
-  it("serves the allowance through the real Worker path", async () => {
-    for (const relativePath of FREE_PAGES) {
+  it("renders the one wording through the real Worker path, and only next to the pricing notes", async () => {
+    for (const [relativePath, expected] of Object.entries(ALLOWED)) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
+      expect(body, relativePath).not.toContain(pricing.freeTrialCopyToken);
       expect(body, relativePath).not.toContain(FREE_DELIVERIES_TOKEN);
-      expect(body, relativePath).toContain(FREE_DELIVERIES);
+      expect(body.split(expected.copy).length - 1, `${relativePath}: sentence count`).toBe(1);
+      if (expected.note) {
+        const note = body.match(new RegExp(`<p class="${expected.note}">[\\s\\S]*?</p>`))?.[0] ?? "";
+        expect(note, `${relativePath}: the sentence lives in the pricing note`).toContain(expected.copy);
+      }
+    }
+    for (const relativePath of ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const hero = body.match(/<p class="hero-cta-note">[\s\S]*?<\/p>/)?.[0] ?? "";
+      expect(hero, `${relativePath}: hero note`).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(hero, `${relativePath}: hero note`).not.toContain("3");
+    }
+  });
+
+  it("ships none of the retired phrases in any built page or llms file", async () => {
+    for (const path of await listHtmlFiles(PUBLIC_DIR)) {
+      const html = await readFile(path, "utf8");
+      for (const phrase of retired) expect(html, `${path}: ${phrase}`).not.toContain(phrase);
+    }
+    for (const name of ["llms.txt", "llms-full.txt"]) {
+      const text = await readFile(`${PUBLIC_DIR}${name}`, "utf8");
+      for (const phrase of retired) expect(text, `${name}: ${phrase}`).not.toContain(phrase);
     }
   });
 });
@@ -208,19 +256,17 @@ describe("Free delivery allowance constant (Issue #274)", () => {
 describe("Cloud pricing trial integration (Issue #742)", () => {
   const pricingPages = [
     ["cloud/index.html", {
-      intro: `Every plan starts with ${FREE_DELIVERIES_TOKEN} free merged deliveries · No credit card required`,
-      failed: "· Failed deliveries don't count",
+      intro: `${pricing.freeTrialCopyToken} · No credit card required`,
       login: "/cloud/login",
-      soloButton: `Try ${FREE_DELIVERIES_TOKEN} deliveries free →`,
+      soloButton: "Try Orbi Cloud free →",
       soloClass: "button button-signal",
       proClass: "button button-ghost",
       subscribe: "or subscribe now →",
     }],
     ["zh/cloud/index.html", {
-      intro: `每个套餐都先免费试 ${FREE_DELIVERIES_TOKEN} 次合并交付 · 不用绑定信用卡`,
-      failed: "· 失败的交付不计次数",
+      intro: `${pricing.freeTrialCopyToken} · 不用绑卡`,
       login: "/zh/cloud/login",
-      soloButton: `免费试 ${FREE_DELIVERIES_TOKEN} 次 →`,
+      soloButton: "免费试用 Orbi Cloud →",
       soloClass: "button button-signal",
       proClass: "button button-ghost",
       subscribe: "或直接订阅 →",
@@ -233,7 +279,6 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       const pricing = html.match(/<section id="pricing"[\s\S]*?<\/section>\n\s*<section class="compare-section shell" aria-labelledby="cost-title">/)?.[0];
       expect(pricing, relativePath).toBeDefined();
       expect(pricing, relativePath).toContain(expected.intro);
-      expect(pricing, relativePath).toContain(expected.failed);
       expect(pricing, relativePath).not.toContain("CLOUD TRIAL");
       expect(pricing, relativePath).not.toContain("CLOUD 试用");
       expect(pricing.match(/<article class="pricing-card/g), relativePath).toHaveLength(2);
@@ -481,7 +526,7 @@ describe("llms.txt ships pricing tokens, never drifted literals (Issues #146, #8
     for (const path of [LLMS, LLMS_FULL]) {
       const raw = await readFile(path, "utf8");
       for (const token of [
-        pricing.freeDeliveriesToken, pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
+        pricing.freeTrialCopyToken, pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
         pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
       ]) expect(raw, path + ": " + token).toContain(token);
     }

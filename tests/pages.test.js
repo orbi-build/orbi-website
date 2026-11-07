@@ -1683,13 +1683,13 @@ describe("Cloud hero single CTA (Issue #741)", () => {
     "cloud/index.html": {
       lede: "Orbi runs your Issues all the way to a release, on infrastructure we operate. No Issue yet? Describe the change in a sentence and Orbi drafts it from your code.",
       href: "/cloud/login",
-      button: "Try __FREE_DELIVERIES__ deliveries free →",
+      button: "Try Orbi Cloud free →",
       note: "No credit card required · Orbi only sees the repos you pick",
     },
     "zh/cloud/index.html": {
       lede: "Orbi 在我们运营的机器上，把你的 Issue 一路做到发版。还没写 Issue？说一句想改什么，Orbi 读你的代码写成 Issue 草稿。",
       href: "/zh/cloud/login",
-      button: "免费试 __FREE_DELIVERIES__ 次 →",
+      button: "免费试用 Orbi Cloud →",
       note: "不用绑定信用卡 · 只授权你选的仓库",
     },
   };
@@ -2114,17 +2114,18 @@ describe("homepage closing Cloud CTA (Issue #714)", () => {
     "index.html": {
       tag: "MANAGED CLOUD",
       title: "Try it on your own repository",
-      description: "Try __FREE_DELIVERIES__ deliveries free on your own repository, then let Orbi carry the work to a tagged release.",
-      // Issue #899 names Cloud in the hero button only; the closing CTA keeps
-      // the free-deliveries promise, on the hero's own handoff.
-      trial: "Try __FREE_DELIVERIES__ deliveries free →",
+      description: "Try Orbi Cloud on your own repository, then let Orbi carry the work to a tagged release.",
+      // Issue #899 names Cloud in the hero button only; Issue #1216 removes the
+      // free-delivery count from every CTA, so the closing button keeps the
+      // same Cloud label as the hero.
+      trial: "Try Orbi Cloud free →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build">Prefer to self-host? Read the install guide →</a>',
     },
     "zh/index.html": {
       tag: "托管 Cloud",
       title: "在你自己的仓库上试一试",
-      description: "在你自己的仓库上免费试 __FREE_DELIVERIES__ 次，再让 Orbi 把工作推进到打 Tag 的正式发布。",
-      trial: "免费试 __FREE_DELIVERIES__ 次 →",
+      description: "在你自己的仓库上试用 Orbi Cloud，再让 Orbi 把工作推进到打 Tag 的正式发布。",
+      trial: "免费试用 Orbi Cloud →",
       selfHost: '<a class="text-link" data-cta="closing-selfhost" href="https://docs.orbi.build/zh">想自己部署？看安装文档 →</a>',
     },
   };
@@ -2214,22 +2215,25 @@ describe("cloud buyer FAQ (Issue #166)", () => {
     }
   });
 
-  it("states the two-plan trial terms in visible FAQ and sharing descriptions", () => {
-    const expectations = {
-      "cloud/index.html": {
-        faq: /Cloud has two paid plans, Solo and Pro\. Each plan starts with a trial of __FREE_DELIVERIES__ successful merged deliveries — no credit card required, and failed deliveries don't count\./,
-        share: /Solo and Pro are the two paid plans, at US\$__SOLO_MONTHLY_USD__\/month and US\$__CLOUD_MONTHLY_USD__\/month; each starts with a trial of __FREE_DELIVERIES__ successful merged deliveries, no credit card required, and failed deliveries don't count\./g,
-      },
-      "zh/cloud/index.html": {
-        faq: /Cloud 有 Solo 和 Pro 两个付费套餐。每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/,
-        share: /Solo 和 Pro 两个付费套餐，每月分别为 US\$__SOLO_MONTHLY_USD__ 和 US\$__CLOUD_MONTHLY_USD__；每个套餐先提供 __FREE_DELIVERIES__ 次成功合并交付的试用，不用绑定信用卡，失败交付不计次数。/g,
-      },
+  // Issue #1216: the trial copy moved to the pricing note, so the first FAQ
+  // answer and the sharing descriptions name the two paid plans and nothing
+  // about a delivery count. The assertions name the plans, not our sentences.
+  it("names the two paid plans in the first FAQ answer and the sharing descriptions", () => {
+    const banned = {
+      "cloud/index.html": /trial|__FREE_DELIVERIES__|__FREE_TRIAL__/i,
+      "zh/cloud/index.html": /试用|__FREE_DELIVERIES__|__FREE_TRIAL__/,
     };
-    for (const [output, expected] of Object.entries(expectations)) {
+    for (const [output, pattern] of Object.entries(banned)) {
       const html = shipped.get(output);
-      expect(cloudFaqItems(html)[0].answer, `${output}: visible FAQ trial terms`).toMatch(expected.faq);
-      expect(html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [], `${output}: sharing descriptions`).toHaveLength(2);
-      expect(html.match(expected.share) ?? [], `${output}: sharing trial terms`).toHaveLength(2);
+      const answer = cloudFaqItems(html)[0].answer;
+      for (const plan of ["Solo", "Pro"]) expect(answer, `${output}: FAQ plans`).toContain(plan);
+      expect(answer, `${output}: FAQ trial copy`).not.toMatch(pattern);
+      const shares = html.match(/<meta (?:property="og:description"|name="twitter:description") content="([^"]+)"/g) ?? [];
+      expect(shares, `${output}: sharing descriptions`).toHaveLength(2);
+      for (const share of shares) {
+        for (const plan of ["Solo", "Pro"]) expect(share, `${output}: sharing plans`).toContain(plan);
+        expect(share, `${output}: sharing trial copy`).not.toMatch(pattern);
+      }
     }
   });
 });
@@ -2245,7 +2249,6 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
       expect((html.match(/<h1\b/gi) || []), output).toHaveLength(1);
       expect(html, output).toContain('href="https://devin.ai/pricing"');
       for (const token of [
-        pricing.freeDeliveriesToken,
         pricing.soloMonthlyUsdToken,
         pricing.soloIncludedTokensToken,
         pricing.soloRepositoriesToken,
@@ -2273,27 +2276,16 @@ describe("Devin comparison SEO and pricing (Issue #511)", () => {
     }
   });
 
-  // Issue #795: the page claimed a "Free, Solo, Pro" Cloud tier, while /cloud/
-  // sells two paid plans (Solo, Pro) each starting with a __FREE_DELIVERIES__
-  // successful-merged-delivery trial. The FAQ sentence appears twice per page
-  // (JSON-LD answer + visible answer) and must stay in lockstep.
-  it("describes Cloud as two paid plans with a trial, never a Free tier (Issue #795)", () => {
-    const expectations = [
-      [
-        "compare/devin/index.html",
-        "Orbi Cloud has two paid plans, Solo and Pro, each starting with a trial of __FREE_DELIVERIES__ successful merged deliveries;",
-        "or run as Cloud on a Solo or Pro plan, each starting with a free trial of __FREE_DELIVERIES__ merged deliveries.",
-      ],
-      [
-        "zh/compare/devin/index.html",
-        "Orbi Cloud 有 Solo、Pro 两档付费套餐，各自先送 __FREE_DELIVERIES__ 次成功合并交付的试用；",
-        "也可以用 Cloud 的 Solo 或 Pro 套餐，各自先送 __FREE_DELIVERIES__ 次合并交付的免费试用。",
-      ],
-    ];
-    for (const [output, faqSentence, ledeSentence] of expectations) {
+  // Issues #795 / #1216: the page claimed a "Free, Solo, Pro" Cloud tier, and
+  // later a per-plan delivery trial. It sells two paid plans and says nothing
+  // about a free-delivery count.
+  it("describes Cloud as two paid plans, never a Free tier or a delivery trial", () => {
+    for (const output of ["compare/devin/index.html", "zh/compare/devin/index.html"]) {
       const html = shipped.get(output);
-      expect(html.split(faqSentence).length - 1, `${output}: FAQ sentence occurrences`).toBe(2);
-      expect(html, `${output}: pricing section lede`).toContain(ledeSentence);
+      const text = stripTags(html);
+      for (const plan of ["Solo", "Pro"]) expect(text, `${output}: plan ${plan}`).toContain(plan);
+      expect(html, `${output}: no free-delivery token`).not.toContain("__FREE_DELIVERIES__");
+      expect(html, `${output}: no free-trial token`).not.toContain("__FREE_TRIAL__");
       // The only remaining "Free" mentions are Devin's own plan names in the
       // dated source list, never Orbi's Cloud tiers (Issue #795).
       expect(html, `${output}: no Free Cloud tier`).not.toMatch(/Free,\s*Solo|Free、Solo/);
@@ -2890,12 +2882,12 @@ describe("blog (Issue #212)", () => {
       const expected = post.lang === "zh"
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
-            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            button: "免费试用 Orbi Cloud →",
             href: "/zh/cloud/login",
           }
         : {
             title: "Orbi takes your Issues all the way to a release.",
-            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            button: "Try Orbi Cloud free →",
             href: "/cloud/login",
           };
       expect(inline[0]).toContain(`<span>${expected.title}</span>`);
@@ -2916,14 +2908,14 @@ describe("blog (Issue #212)", () => {
       const expected = post.lang === "zh"
         ? {
             title: "Orbi 把你的 Issue 一路做到发版。",
-            button: "免费试 __FREE_DELIVERIES__ 次 →",
+            button: "免费试用 Orbi Cloud →",
             note: "不用绑定信用卡 · 只授权你选的仓库",
             href: "/zh/cloud/login",
             selfHost: "想自己部署？开源免费（AGPL）→",
           }
         : {
             title: "Orbi takes your Issues all the way to a release.",
-            button: "Try __FREE_DELIVERIES__ deliveries free →",
+            button: "Try Orbi Cloud free →",
             note: "No credit card required · Orbi only sees the repos you pick",
             href: "/cloud/login",
             selfHost: "Prefer to self-host? It's open source (AGPL) →",

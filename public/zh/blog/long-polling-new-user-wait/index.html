@@ -196,7 +196,7 @@
           </ol>
         </details>
 <p>有个新用户在 Orbi Cloud 上连好了仓库，页面显示「正在准备工作环境」。他等了一会儿，走了。</p>
-<p>他走的时候，环境其实已经准备好了。页面每 10 秒才刷新一次，还没来得及告诉他。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>他走的时候，环境其实已经准备好了。页面每 10 秒才刷新一次，还没来得及告诉他。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>那天夜里我开始查这件事。我做规划用的 AI 助手 Claude Code 告诉我，准备环境「要 5 分钟左右」。我回它：5 分钟，一个操作系统都装好了。</p>
 <p>查下来，这一步一般要一分钟左右，慢的时候两分多钟。一夜之后，测试环境上变成了 10 秒左右。改动拆成 31 张票，全是 Orbi 自己写、自己评审、自己合并的（Orbi 是我在做的产品，agent 时代的软件黑灯工厂：从 Issue 到发版，不用人守着）。中间还撞上了一个 bug：审查早就点过名，我们觉得没必要修，当天晚上就撞上了。</p>
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/JLmbpUKHCGY" title="新用户连上仓库要等多久：改前 1 到 2 分钟，改后约 12 秒" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>都从点「连接仓库」算起，算到环境就绪、能写第一个需求。改前是生产上的真实记录：一般 1 分钟左右，最慢 2 分多钟，页面上只有一句「约几分钟」。改后是测试环境上的实录，按真实秒数播放：约 12 秒。</figcaption></figure><p>后面会反复出现两样东西：Cloud 是我们的网站，用户在这里登录、连仓库；主机是我们自己的一台机器，给每个连上的仓库建一个沙箱。为了安全，主机只能往外连，Cloud 没法直接叫它。</p>
@@ -354,7 +354,7 @@ WantedBy=multi-user.target
 </ol>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

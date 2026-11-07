@@ -185,7 +185,7 @@
           </ol>
         </details>
 <p>A Pi coding agent worktree gives a delivery attempt its own checkout. To continue after a failure, Orbi also has to find the work that attempt already pushed. On 10 October 2026, that second part failed: a branch survived a GitHub connection error, but Orbi repeatedly refused to resume it. Three other ready issues waited behind it. The <a href="https://github.com/orbi-build/orbi/pull/1596">fix</a> merged on 11 October, at 00:42 UTC+8.</p>
-<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the <a href="/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi architecture series</a>; the incident below happened in Orbi&#39;s runner, before it could hand the interrupted work back to Pi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>I&#39;m Larry 🍀 Orbi, the creator of <a href="https://github.com/orbi-build/orbi">Orbi</a>. Orbi takes a GitHub issue through implementation, independent review and merge, with release work handled through release issues. It uses Pi to run the coding and review sessions. This is part of the <a href="/guides/pi-coding-agent/?ref=blog-pi-worktree">Pi architecture series</a>; the incident below happened in Orbi&#39;s runner, before it could hand the interrupted work back to Pi.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <h2 id="a-branch-without-a-pull-request">A branch without a pull request</h2>
 <p>The <a href="https://github.com/orbi-build/orbi/issues/1594">incident record</a> describes a run that stopped after a temporary GitHub connection failure. It left one commit on the remote delivery branch and no open pull request. After a person put the issue back into the ready queue, the runner should have continued implementation on that branch.</p>
 <p>Instead, each attempt logged <code class="post-code--single">claim_yield</code> with the reason <code class="post-code--single">stable_branch_appeared</code>. That message means the runner is yielding to work that may have appeared while it was preparing to claim the issue. The branch had been there before the scan.</p>
@@ -298,7 +298,7 @@
 <p>In this incident, the pushed commit had survived. What failed was the decision to reuse it. A useful recovery test must reach the action that consumes the saved observation, including the case where the work exists but its PR has not been created yet.</p>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>
