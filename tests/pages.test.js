@@ -3877,6 +3877,7 @@ describe("buyer-facing pages drop internal vocabulary (Issue #1217)", () => {
     "tenant’s",
     "terminal outcome",
     "runner injection",
+    "review_rounds", // the field name the evidence page used to print
     "totalTokens",
     "FREE_DELIVERY_ALLOWANCE",
     "delivery_usage",
