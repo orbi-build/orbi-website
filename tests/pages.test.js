@@ -1323,11 +1323,26 @@ describe("build output is committed (npm run build ran)", () => {
     expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(
       pagesForSitemap.length + posts.length + guides.length,
     );
-    // Issue #1065: the sitemap carries the URL and its hreflang alternates
-    // only. lastmod, changefreq and priority are optional in the protocol, and
-    // dropping them is what keeps this a plain build artifact with no Git or
-    // clock dependency.
-    expect(generatedSitemap).not.toMatch(/<(?:lastmod|changefreq|priority)>/);
+    // Issue #1065/#1226: the sitemap carries the URL, its hreflang alternates
+    // and — for a blog post whose front matter pins `updated` — that date as
+    // lastmod. changefreq and priority stay out: they are optional in the
+    // protocol and would be a guess. lastmod comes from the content file, so
+    // the sitemap is still a plain build artifact with no Git or clock
+    // dependency.
+    expect(generatedSitemap).not.toMatch(/<(?:changefreq|priority)>/);
+    const dated = posts.filter((post) => post.updated);
+    expect([...generatedSitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)]).toHaveLength(dated.length);
+    for (const entry of dated) {
+      const at = generatedSitemap.indexOf(`<loc>https://orbi.build${entry.href}</loc>`);
+      expect(at, `${entry.href}: sitemap entry`).toBeGreaterThan(-1);
+      expect(generatedSitemap.slice(at, generatedSitemap.indexOf("</url>", at)), `${entry.href}: lastmod`)
+        .toContain(`<lastmod>${entry.updated}</lastmod>`);
+    }
+    for (const entry of posts.filter((post) => !post.updated)) {
+      const at = generatedSitemap.indexOf(`<loc>https://orbi.build${entry.href}</loc>`);
+      expect(generatedSitemap.slice(at, generatedSitemap.indexOf("</url>", at)), `${entry.href}: no lastmod`)
+        .not.toContain("<lastmod>");
+    }
   });
 
   // Issue #888: every URL in the sitemap must be an indexable HTML page that
@@ -3120,6 +3135,76 @@ describe("blog failure path (Issue #212)", () => {
   it("fails with the file path when lang contradicts the file's directory", () => {
     expect(() => postFromSource("zh/t.md", front({ ...full, lang: "en" })))
       .toThrow(/content\/blog\/zh\/t\.md[\s\S]*lang/);
+  });
+});
+
+// Issue #1226: a post may pin the day it was last updated. The page shows it
+// next to the publish date, the Article JSON-LD carries it as dateModified and
+// the sitemap entry carries it as lastmod. A post without `updated` keeps the
+// old output exactly; a malformed or backdated value fails the build naming
+// the file, like a guide's.
+describe("blog update date (Issue #1226)", () => {
+  const front = (fields) =>
+    `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\nBody paragraph.\n`;
+  const full = { title: "T", date: "2026-10-06", summary: "s", lang: "en", author: "Larry 🍀 Orbi", image: "/img/blog-t.png" };
+
+  const articleOf = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((match) => JSON.parse(match[1]))
+    .find((entry) => entry["@type"] === "Article");
+  const sitemapEntry = (xml, href) => {
+    const at = xml.indexOf(`<loc>https://orbi.build${href}</loc>`);
+    return at === -1 ? "" : xml.slice(at, xml.indexOf("</url>", at));
+  };
+
+  it("shows the 6 Nov 2026 update on both Pi agent harness pages, in JSON-LD and the sitemap", async () => {
+    const cases = [
+      { output: "blog/pi-agent-harness/index.html", href: "/blog/pi-agent-harness/", label: "Updated 6 Nov 2026" },
+      { output: "zh/blog/pi-agent-harness/index.html", href: "/zh/blog/pi-agent-harness/", label: "更新于 2026-11-06" },
+    ];
+    for (const { output, href, label } of cases) {
+      const html = await readFile(join(ROOT, "public", output), "utf8");
+      const byline = html.match(/<p class="post-byline">([\s\S]*?)<\/p>/)?.[1] ?? "";
+      expect(byline, `${output}: byline shows the update date next to the publish date`)
+        .toContain(`<time class="post-updated" datetime="2026-11-06">${label}</time>`);
+      expect(byline, `${output}: publish date stays`).toContain('datetime="2026-10-06"');
+      const article = articleOf(html);
+      expect(article?.datePublished, `${output}: datePublished`).toBe("2026-10-06");
+      expect(article?.dateModified, `${output}: dateModified`).toBe("2026-11-06");
+      const entry = sitemapEntry(shippedSitemap, href);
+      expect(entry, `${href}: sitemap entry`).toContain("<lastmod>2026-11-06</lastmod>");
+    }
+  });
+
+  it("only adds the update date, dateModified and lastmod when the post declares one", async () => {
+    const contentDir = await mkdtemp(join(tmpdir(), "orbi-content-"));
+    const outDir = await mkdtemp(join(tmpdir(), "orbi-updated-build-"));
+    try {
+      await writeFile(join(contentDir, "updated.md"), front({ ...full, title: "Updated", updated: "2026-11-06" }));
+      await writeFile(join(contentDir, "plain.md"), front({ ...full, title: "Plain" }));
+      await buildPages(outDir, { contentDir });
+
+      const updatedHtml = await readFile(join(outDir, "blog", "updated", "index.html"), "utf8");
+      expect(updatedHtml).toContain('<time class="post-updated" datetime="2026-11-06">Updated 6 Nov 2026</time>');
+      expect(articleOf(updatedHtml)?.dateModified).toBe("2026-11-06");
+
+      const plainHtml = await readFile(join(outDir, "blog", "plain", "index.html"), "utf8");
+      expect(plainHtml, "no update date on the page").not.toContain("post-updated");
+      expect(articleOf(plainHtml), "no dateModified in the JSON-LD").not.toHaveProperty("dateModified");
+
+      const sitemap = await readFile(join(outDir, "sitemap.xml"), "utf8");
+      expect(sitemapEntry(sitemap, "/blog/updated/")).toContain("<lastmod>2026-11-06</lastmod>");
+      expect(sitemapEntry(sitemap, "/blog/plain/"), "no lastmod without updated").not.toContain("<lastmod>");
+    } finally {
+      await rm(contentDir, { recursive: true, force: true });
+      await rm(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it("fails the build naming the file when updated is malformed or earlier than date", () => {
+    expect(() => postFromSource("t.md", front({ ...full, updated: "6 Nov 2026" })))
+      .toThrow(/content\/blog\/t\.md[\s\S]*"updated"/);
+    expect(() => postFromSource("t.md", front({ ...full, updated: "2026-10-05" })))
+      .toThrow(/content\/blog\/t\.md[\s\S]*updated[\s\S]*2026-10-06/);
   });
 });
 

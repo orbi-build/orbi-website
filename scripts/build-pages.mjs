@@ -910,6 +910,18 @@ export function postFromSource(displayName, source) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) {
     throw new Error(`${label}: front matter needs "date" as YYYY-MM-DD, got "${fields.date}"`);
   }
+  // Issue #1226: `updated` is the day the post was last revised. It is
+  // optional, but when present it is pinned as YYYY-MM-DD and cannot precede
+  // the publish date, so the displayed date, the JSON-LD and the sitemap
+  // lastmod cannot disagree with the post.
+  if (fields.updated !== undefined) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.updated)) {
+      throw new Error(`${label}: front matter needs "updated" as YYYY-MM-DD, got "${fields.updated}"`);
+    }
+    if (fields.updated < fields.date) {
+      throw new Error(`${label}: front matter "updated" (${fields.updated}) is earlier than "date" (${fields.date})`);
+    }
+  }
   if (fields.lang !== lang) {
     throw new Error(`${label}: front matter says lang: ${fields.lang}, but its directory fixes lang: ${lang}`);
   }
@@ -933,6 +945,7 @@ export function postFromSource(displayName, source) {
     title: fields.title,
     headline: fields.title,
     date: fields.date,
+    updated: fields.updated,
     summary: fields.summary,
     author: fields.author,
     image: fields.image,
@@ -1037,6 +1050,7 @@ function renderPostMeta(post, author) {
     "@type": "Article",
     headline: post.headline,
     datePublished: post.date,
+    ...(post.updated ? { dateModified: post.updated } : {}),
     author: {
       "@type": "Person",
       name: post.author,
@@ -1337,6 +1351,23 @@ export function insertInlinePostCta(html, cta) {
 // the last one above 40% of the viewport.
 const TOC_HIGHLIGHT_SCRIPT = `<script>(()=>{try{const links=[...document.querySelectorAll('.post-toc-link')];const targetOf=(link)=>link.getAttribute('href').slice(1);const headings=[...new Set(links.map(link=>document.getElementById(targetOf(link))).filter(Boolean))];const setCurrent=(heading)=>{links.forEach((link)=>link.classList.toggle('is-current',targetOf(link)===heading.id));};if('IntersectionObserver' in window){const update=()=>{const current=headings.findLast((heading)=>heading.getBoundingClientRect().top<=innerHeight*.4)??headings[0];if(current)setCurrent(current);};const observer=new IntersectionObserver(update,{rootMargin:'-24px 0px -60% 0px',threshold:0});headings.forEach((heading)=>observer.observe(heading));addEventListener('scroll',update,{passive:true});update();}}catch(error){console.warn('post_toc_observer_failed',error);}})();</script>`;
 
+// The publish date stays the post's own ISO date. An updated post carries the
+// revision beside it in the page's language: "Updated 6 Nov 2026" in English,
+// "更新于 2026-11-06" in Chinese (Issue #1226).
+const UPDATED_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function renderPostUpdated(post) {
+  if (!post.updated) return "";
+  const when = post.lang === "zh"
+    ? post.updated
+    : (() => {
+        const [year, month, day] = post.updated.split("-").map(Number);
+        return `${day} ${UPDATED_MONTHS[month - 1]} ${year}`;
+      })();
+  const label = post.lang === "zh" ? `更新于 ${when}` : `Updated ${when}`;
+  return ` · <time class="post-updated" datetime="${post.updated}">${label}</time>`;
+}
+
 // `seriesGuide` is the same-language guide page that renders this post's
 // series index; when set, the post carries a backlink to it (Issue #826).
 function renderPost(post, template, seriesGuide, author) {
@@ -1387,6 +1418,7 @@ function renderPost(post, template, seriesGuide, author) {
     NAV: toLayout(renderNav(page), "pretty"),
     EYEBROW: t.eyebrow,
     DATE: post.date,
+    UPDATED: renderPostUpdated(post),
     AUTHOR_NAME: escAttr(post.author),
     AUTHOR_HREF: escAttr(authorHref(author, post.lang)),
     HEADLINE: escAttr(post.title),
@@ -1498,16 +1530,19 @@ function renderSitemap(pages, posts = [], guides = []) {
   // regardless of pairing (Issue #214). Paired posts carry hreflang
   // alternates to each other; a single-language post lists itself only — an
   // alternate to the blog index would promise a translation that does not
-  // exist.
+  // exist. A post that declares `updated` carries it as lastmod, read from
+  // the content file (Issue #1226), so the file stays a pure build artifact
+  // with no Git or clock dependency.
   for (const post of posts) {
     const base = "https://orbi.build";
     const href = post.href;
+    const lastmod = post.updated ? `\n    <lastmod>${post.updated}</lastmod>` : "";
     if (!post.paired) {
-      urls.push(`  <url>\n    <loc>${base}${href}</loc>\n  </url>`);
+      urls.push(`  <url>\n    <loc>${base}${href}</loc>${lastmod}\n  </url>`);
       continue;
     }
     const mirror = pathToHref(post.mirrorOutput);
-    urls.push(`  <url>\n    <loc>${base}${href}</loc>\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${base}${href}</loc>${lastmod}\n    <xhtml:link rel="alternate" hreflang="en" href="${base}${post.lang === "en" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="zh-CN" href="${base}${post.lang === "zh" ? href : mirror}"/>\n    <xhtml:link rel="alternate" hreflang="x-default" href="${base}${post.lang === "en" ? href : mirror}"/>\n  </url>`);
   }
   // Guides (Issue #826): always paired, so every entry carries the three
   // hreflang alternates.

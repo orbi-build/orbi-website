@@ -104,7 +104,10 @@ belongs to decides where you edit it.
   by the page body with `<!--@nav-->` and `<!--@footer-->` markers.
 - `content/blog/<slug>.md` (+ `content/blog/zh/<slug>.md`) — one Markdown file
   per blog post (Issue #212): YAML front matter (`title`, `date`, `summary`,
-  `lang`, `author`, `image`, all six required; optional `mirror`; posts with a
+  `lang`, `author`, `image`, all six required; optional `mirror`; optional
+  `updated: YYYY-MM-DD` (the last revision, which cannot precede `date` and
+  is shown beside the publish date, written as `dateModified` and used as the
+  sitemap `lastmod`); posts with a
   video provide all six `video_*` fields) plus a
   CommonMark body. Blog bodies
   may use only `<figure>`, `<figcaption>`, `<img>` (with a non-empty
@@ -159,11 +162,11 @@ and no Markdown body marks a block by hand: a page that hand-writes its own copy
 button ships two.
 
 `sitemap.xml` carries only what a crawler needs: each indexable URL plus its
-`en` / `zh-CN` / `x-default` hreflang alternates (Issue #1065). No `lastmod`,
-`changefreq` or `priority` — all three are optional in the
-[sitemap protocol](https://www.sitemaps.org/protocol.html), and leaving them out
-keeps the file a pure function of the URL set: no Git history, no build clock,
-and a committed copy that a rebuild reproduces byte-for-byte. Adding a page
+`en` / `zh-CN` / `x-default` hreflang alternates (Issue #1065), plus a
+`<lastmod>` for a blog post whose front matter pins `updated` (Issue #1226). No `changefreq` or `priority` — both are optional in the
+[sitemap protocol](https://www.sitemaps.org/protocol.html) and would be a
+guess, while `lastmod` is read from the content file: no Git history, no build
+clock, and a committed copy that a rebuild reproduces byte-for-byte. Adding a page
 therefore means `npm run build` and committing the new `public/sitemap.xml`
 with it, like every other generated file.
 

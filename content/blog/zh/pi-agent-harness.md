@@ -1,6 +1,7 @@
 ---
 title: Pi agent harness 三种跑法：kill -9 后如何恢复
 date: 2026-10-06
+updated: 2026-11-06
 summary: 我在 11 月 6 日重测 Pi CLI、AI SDK 和 Cloudflare PiHarness，记录进程被杀后的会话恢复结果，并给出安装命令、监督脚本和可运行示例。
 lang: zh
 author: Larry 🍀 Orbi
