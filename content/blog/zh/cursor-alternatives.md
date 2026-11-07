@@ -1,14 +1,14 @@
 ---
-title: Cursor 替代品怎么选：谁替你合并 PR？
+title: Cursor 替代品怎么选：编辑器、后台 agent 与合并发版
 date: 2026-11-07
-summary: 按 2026 年 11 月 7 日官方文档核对 Cursor 替代品，把编辑器与后台 agent 分组，写清模型费用、免费与开源边界、谁负责合并和发版，再附一条可用脚本复查的真实 Issue 到发版时间线。
+summary: 按 2026 年 11 月 7 日的官方文档，把 Cursor 替代品分成编辑器和后台 agent 两组，比较模型费用、免费与开源边界，以及谁合并、谁发版。文末附一次 Issue 到发版的真实时间线和复查脚本。
 lang: zh
 author: Larry 🍀 Orbi
 image: /img/blog-cursor-alternatives-card.png
 mirror: cursor-alternatives
 ---
 
-Cursor 是一款 AI 代码编辑器，挑 Cursor 替代品时，可以比较其他编辑器，也可以看看能接手任务的 agent。如果你正在挑替代方案，先看清它在 2026 年 11 月 7 日的[定价](https://cursor.com/pricing)：Plus 每月 8 美元，只能用 Grok 模型；第三方模型要 Premium 每月 30 美元起，还要按 API 标价另付使用费。这篇按同一天各家的官方文档，把工具分成编辑器或终端里用的一组、交给后台执行的一组，并附一次从 Issue 到发版的真实时间线。
+Cursor 是一款 AI 代码编辑器。挑 Cursor 替代品时，可以比较其他编辑器，也可以看看能接手任务的 agent。先看清 Cursor 在 2026 年 11 月 7 日的[定价](https://cursor.com/pricing)：Plus 每月 8 美元，只能用 Grok 模型；第三方模型要 Premium（每月 30 美元）或更高套餐，或者 Teams，还要按 API 标价另付使用费。这篇按同一天各家的官方文档，把工具分成编辑器或终端里用的一组、交给后台执行的一组，并附一次从 Issue 到发版的真实时间线。
 
 我是 Larry 🍀 Orbi，Orbi 的创始人。
 
@@ -42,11 +42,11 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 ### GitHub Copilot
 
-[GitHub Copilot](https://github.com/features/copilot/plans) 的 Free 每月有 2,000 次代码补全，Pro 每人每月 10 美元，Pro+ 每月 39 美元。把任务交给 Copilot 并让它开 PR，要从 Pro 起，Free 不包含这一步。编辑器补全和 GitHub 任务分派都要用时，它能兼顾这两处；云端 agent 的审批限制在后文单列。
+[GitHub Copilot](https://github.com/features/copilot/plans) 的 Free 每月有 2,000 次代码补全，Pro 每月 10 美元，Pro+ 每月 39 美元。把任务交给 Copilot 并让它开 PR，要从 Pro 起，Free 不包含这一步。编辑器补全和 GitHub 任务分派都要用时，它能兼顾这两处；云端 agent 的审批限制在后文单列。
 
 ### Devin Desktop，原来的 Windsurf
 
-[Devin Desktop](https://devin.ai/desktop) 是 Windsurf 的新名字。官方文档介绍了在本机或 Devin Cloud 中运行会话、切换时保留上下文的用法。[Devin Free](https://devin.ai/pricing) 为 0 美元，提供少量 agent 额度和不限次数的 Tab 补全；Pro 每月 20 美元，增加 Devin Cloud 使用权限。经常要把编辑器会话从本机移到云端，可以比较这一项。
+[Devin Desktop](https://devin.ai/desktop) 是 Windsurf 的新名字。官方文档介绍了在本机或 Devin Cloud 中运行会话、切换时保留上下文的用法。[Devin Free](https://devin.ai/pricing) 为 0 美元，提供少量 agent 额度和不限次数的 Tab 补全；Pro 每月 20 美元，增加 Devin Cloud 使用权限。
 
 ### Zed
 
@@ -54,11 +54,11 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 ### Cline
 
-[Cline](https://docs.cline.bot/cline-overview) 有编辑器扩展，也有 CLI 和桌面应用，扩展支持的编辑器包括 Cursor。[源码采用 Apache-2.0 许可](https://github.com/cline/cline)。模型可以走 Cline 按量计费、每月 9.99 美元的 ClinePass，或自带 API key（BYOK）。概览页写的是「Every action requires your explicit approval」，即每个动作都需要你明确批准。保留 Cursor，同时逐步批准 agent 的动作，Cline 支持这样的用法。
+[Cline](https://docs.cline.bot/cline-overview) 有编辑器扩展，也有 CLI 和桌面应用，扩展支持的编辑器包括 Cursor。[源码采用 Apache-2.0 许可](https://github.com/cline/cline)。模型可以走 Cline 按量计费、每月 9.99 美元的 ClinePass，或自带 API key（BYOK）。概览页写的是「Every action requires your explicit approval」，即每个动作都需要你明确批准。想保留 Cursor、又要逐步批准 agent 的每个动作，可以装 Cline。
 
 ### Claude Code
 
-[Claude Code](https://code.claude.com/docs/en/overview) 是终端 agent，也提供 VS Code 和 JetBrains 的 IDE 扩展；概览页还有在 Cursor 中安装的链接。大多数使用方式需要 Claude 订阅或 Anthropic Console 账号。继续用现有编辑器时，也能通过扩展用上 Claude Code。账号和工作流的区别见 [Cursor 对比 Claude Code](/zh/blog/cursor-vs-claude-code/)。
+[Claude Code](https://code.claude.com/docs/en/overview) 是终端 agent，也提供 VS Code 和 JetBrains 的 IDE 扩展；概览页还有在 Cursor 中安装的链接。大多数使用方式需要 Claude 订阅或 Anthropic Console 账号。账号和工作流的区别见 [Cursor 对比 Claude Code](/zh/blog/cursor-vs-claude-code/)。
 
 ## 交给后台执行的几种选择
 
@@ -75,17 +75,17 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 换工具前，可以先比较 [Cursor 云端 agent](https://cursor.com/docs/cloud-agent)。它需要 Premium 或更高套餐，在隔离的云端虚拟机里运行，在单独的分支上工作，再把改动推到仓库交接。
 
-Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Origin」，Premium 起提供。如果仓库托管在 Origin 上，agent 可以请求人工批准合并，再合入批准时对应的那一版提交。这是 [2026 年 9 月 7 日当周的云端 agent 更新记录](https://cursor.com/docs/release-notes/cloud-agents)描述的行为，文档没有描述跳过批准直接合并的流程；GitHub 上的仓库，文档写的是推分支交接。你只需要把执行移出本机、又想继续用 Cursor，可以先看这条路。
+Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Origin」，Premium 起提供。如果仓库托管在 Origin 上，agent 可以请求人工批准合并，再合入批准时对应的那一版提交。这是 [2026 年 9 月 7 日当周的云端 agent 更新记录](https://cursor.com/docs/release-notes/cloud-agents)描述的行为，文档没有描述跳过批准直接合并的流程；GitHub 上的仓库，文档写的是推分支交接。只想把执行移出本机、不想离开 Cursor 的话，这条路就够用。
 
 ### GitHub Copilot 云端 agent
 
-[Copilot 云端 agent](https://github.com/features/copilot/plans) 从 Pro 起可用，每人每月 10 美元，Pro+ 为每月 39 美元。它的[安全文档](https://docs.github.com/en/copilot/concepts/agents/coding-agent/risks-and-mitigations)明确说，它不能批准或合并 PR。
+[Copilot 云端 agent](https://github.com/features/copilot/plans) 从 Pro 起可用。它的[安全文档](https://docs.github.com/en/copilot/concepts/agents/coding-agent/risks-and-mitigations)明确说，它不能批准或合并 PR。
 
-默认情况下，需要一个有仓库写入权限的人评审代码，再点击「Approve and run workflows」，工作流才会运行。让 Copilot 创建这个 PR 的人，不能提交批准该 PR 的评审。你希望任务交接到 PR 就停下，而且仓库里有人能完成这些审批，可以选它。两者的逐项对比见 [Orbi 对比 GitHub Copilot coding agent](/zh/compare/github-copilot-coding-agent/)。
+默认情况下，需要一个有仓库写入权限的人评审代码，再点击「Approve and run workflows」，工作流才会运行。让 Copilot 创建这个 PR 的人，不能提交批准该 PR 的评审。如果你希望任务交到 PR 就停下，仓库里也有人能完成这些审批，用它比较顺手。两者的逐项对比见 [Orbi 对比 GitHub Copilot coding agent](/zh/compare/github-copilot-coding-agent/)。
 
 ### Devin Cloud
 
-[Devin Cloud 从 Pro 起可用，每月 20 美元](https://devin.ai/pricing)。[Desktop 文档](https://devin.ai/desktop)介绍了本机和云端之间保留上下文、切换会话的用法。想让云端任务接着本机的会话执行，可以比较这一项。Devin 文档写明了哪些、没写哪些，见 [Orbi 对比 Devin](/zh/compare/devin/)。
+[Devin Cloud 从 Pro 起可用，每月 20 美元](https://devin.ai/pricing)。[Desktop 文档](https://devin.ai/desktop)介绍了本机和云端之间保留上下文、切换会话的用法。Devin 文档写明了哪些、没写哪些，见 [Orbi 对比 Devin](/zh/compare/devin/)。
 
 ### Orbi
 
@@ -93,7 +93,7 @@ Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Ori
 
 [Orbi](https://github.com/orbi-build/orbi) 在 AGPL-3.0 下开源，自部署软件免费，模型 key 自备。[Orbi Cloud](/zh/cloud/?ref=blog-cursor-alt) 是托管版，月付和年付套餐以那一页为准；前 3 次合并交付（一个 Issue 的 PR 被 Orbi 合并算一次）免费，不需要信用卡。
 
-你想把 Issue 交出去，让 runner 经过评审和 CI 后合并，又想自己决定何时开始发版，可以比较 Orbi。要的是编辑器里的行内补全，Orbi 接不了 Cursor 的这部分工作。
+如果你想把 Issue 交出去，让 runner 在评审和 CI 通过后合并，发版时机由自己定，可以用 Orbi。要的是编辑器里的行内补全，Orbi 接不了 Cursor 的这部分工作。
 
 ## 找免费或开源的 Cursor 平替，费用怎么算
 
@@ -137,7 +137,7 @@ Origin 是 Cursor 自家的代码托管，定价页写作「Code hosting via Ori
 
 [Issue 上的合并评论](https://github.com/orbi-build/orbi/issues/2123#issuecomment-6673829957)记录的评审结果是「pass, no findings」，1 轮通过，没有发现问题。PR 的 CI 检查均通过：[tests 用时 6 分 31 秒](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350)、[macos-compatibility 用时 6 分 51 秒](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517)、[link 用时 4 秒](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151)。
 
-这个 PR 改了 19 个文件，新增 230 行、删除 308 行：源码只在 `src/orbi/` 下 5 个文件里新增 7 行、删除 77 行，其余是测试、一个 CI 故障分诊工具，以及中英两版文档。它不能当成平均耗时，也不能用来预测另一个任务。
+这个 PR 改了 19 个文件，新增 230 行、删除 308 行。源码只在 `src/orbi/` 下 5 个文件里新增 7 行、删除 77 行，其余是测试、一个 CI 故障分诊工具，以及中英两版文档。它不能当成平均耗时，也不能用来预测另一个任务。
 
 要从 GitHub 复查这条时间线，把下面的脚本存成文件，用 bash 运行。需要先登录 GitHub CLI，输出时间为 UTC。
 

@@ -1323,11 +1323,26 @@ describe("build output is committed (npm run build ran)", () => {
     expect([...generatedSitemap.matchAll(/<url>/g)]).toHaveLength(
       pagesForSitemap.length + posts.length + guides.length,
     );
-    // Issue #1065: the sitemap carries the URL and its hreflang alternates
-    // only. lastmod, changefreq and priority are optional in the protocol, and
-    // dropping them is what keeps this a plain build artifact with no Git or
-    // clock dependency.
-    expect(generatedSitemap).not.toMatch(/<(?:lastmod|changefreq|priority)>/);
+    // Issue #1065/#1226: the sitemap carries the URL, its hreflang alternates
+    // and — for a blog post whose front matter pins `updated` — that date as
+    // lastmod. changefreq and priority stay out: they are optional in the
+    // protocol and would be a guess. lastmod comes from the content file, so
+    // the sitemap is still a plain build artifact with no Git or clock
+    // dependency.
+    expect(generatedSitemap).not.toMatch(/<(?:changefreq|priority)>/);
+    const dated = posts.filter((post) => post.updated);
+    expect([...generatedSitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)]).toHaveLength(dated.length);
+    for (const entry of dated) {
+      const at = generatedSitemap.indexOf(`<loc>https://orbi.build${entry.href}</loc>`);
+      expect(at, `${entry.href}: sitemap entry`).toBeGreaterThan(-1);
+      expect(generatedSitemap.slice(at, generatedSitemap.indexOf("</url>", at)), `${entry.href}: lastmod`)
+        .toContain(`<lastmod>${entry.updated}</lastmod>`);
+    }
+    for (const entry of posts.filter((post) => !post.updated)) {
+      const at = generatedSitemap.indexOf(`<loc>https://orbi.build${entry.href}</loc>`);
+      expect(generatedSitemap.slice(at, generatedSitemap.indexOf("</url>", at)), `${entry.href}: no lastmod`)
+        .not.toContain("<lastmod>");
+    }
   });
 
   // Issue #888: every URL in the sitemap must be an indexable HTML page that
@@ -3123,6 +3138,76 @@ describe("blog failure path (Issue #212)", () => {
   });
 });
 
+// Issue #1226: a post may pin the day it was last updated. The page shows it
+// next to the publish date, the Article JSON-LD carries it as dateModified and
+// the sitemap entry carries it as lastmod. A post without `updated` keeps the
+// old output exactly; a malformed or backdated value fails the build naming
+// the file, like a guide's.
+describe("blog update date (Issue #1226)", () => {
+  const front = (fields) =>
+    `---\n${Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n\nBody paragraph.\n`;
+  const full = { title: "T", date: "2026-10-06", summary: "s", lang: "en", author: "Larry 🍀 Orbi", image: "/img/blog-t.png" };
+
+  const articleOf = (html) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((match) => JSON.parse(match[1]))
+    .find((entry) => entry["@type"] === "Article");
+  const sitemapEntry = (xml, href) => {
+    const at = xml.indexOf(`<loc>https://orbi.build${href}</loc>`);
+    return at === -1 ? "" : xml.slice(at, xml.indexOf("</url>", at));
+  };
+
+  it("shows the 6 Nov 2026 update on both Pi agent harness pages, in JSON-LD and the sitemap", async () => {
+    const cases = [
+      { output: "blog/pi-agent-harness/index.html", href: "/blog/pi-agent-harness/", label: "Updated 6 Nov 2026" },
+      { output: "zh/blog/pi-agent-harness/index.html", href: "/zh/blog/pi-agent-harness/", label: "更新于 2026-11-06" },
+    ];
+    for (const { output, href, label } of cases) {
+      const html = await readFile(join(ROOT, "public", output), "utf8");
+      const byline = html.match(/<p class="post-byline">([\s\S]*?)<\/p>/)?.[1] ?? "";
+      expect(byline, `${output}: byline shows the update date next to the publish date`)
+        .toContain(`<time class="post-updated" datetime="2026-11-06">${label}</time>`);
+      expect(byline, `${output}: publish date stays`).toContain('datetime="2026-10-06"');
+      const article = articleOf(html);
+      expect(article?.datePublished, `${output}: datePublished`).toBe("2026-10-06");
+      expect(article?.dateModified, `${output}: dateModified`).toBe("2026-11-06");
+      const entry = sitemapEntry(shippedSitemap, href);
+      expect(entry, `${href}: sitemap entry`).toContain("<lastmod>2026-11-06</lastmod>");
+    }
+  });
+
+  it("only adds the update date, dateModified and lastmod when the post declares one", async () => {
+    const contentDir = await mkdtemp(join(tmpdir(), "orbi-content-"));
+    const outDir = await mkdtemp(join(tmpdir(), "orbi-updated-build-"));
+    try {
+      await writeFile(join(contentDir, "updated.md"), front({ ...full, title: "Updated", updated: "2026-11-06" }));
+      await writeFile(join(contentDir, "plain.md"), front({ ...full, title: "Plain" }));
+      await buildPages(outDir, { contentDir });
+
+      const updatedHtml = await readFile(join(outDir, "blog", "updated", "index.html"), "utf8");
+      expect(updatedHtml).toContain('<time class="post-updated" datetime="2026-11-06">Updated 6 Nov 2026</time>');
+      expect(articleOf(updatedHtml)?.dateModified).toBe("2026-11-06");
+
+      const plainHtml = await readFile(join(outDir, "blog", "plain", "index.html"), "utf8");
+      expect(plainHtml, "no update date on the page").not.toContain("post-updated");
+      expect(articleOf(plainHtml), "no dateModified in the JSON-LD").not.toHaveProperty("dateModified");
+
+      const sitemap = await readFile(join(outDir, "sitemap.xml"), "utf8");
+      expect(sitemapEntry(sitemap, "/blog/updated/")).toContain("<lastmod>2026-11-06</lastmod>");
+      expect(sitemapEntry(sitemap, "/blog/plain/"), "no lastmod without updated").not.toContain("<lastmod>");
+    } finally {
+      await rm(contentDir, { recursive: true, force: true });
+      await rm(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it("fails the build naming the file when updated is malformed or earlier than date", () => {
+    expect(() => postFromSource("t.md", front({ ...full, updated: "6 Nov 2026" })))
+      .toThrow(/content\/blog\/t\.md[\s\S]*"updated"/);
+    expect(() => postFromSource("t.md", front({ ...full, updated: "2026-10-05" })))
+      .toThrow(/content\/blog\/t\.md[\s\S]*updated[\s\S]*2026-10-06/);
+  });
+});
+
 describe("blog table rendering (Issue #393)", () => {
   const front = (body) => `---\ntitle: T\ndate: 2026-09-18\nsummary: s\nlang: en\nauthor: Orbi\nimage: /img/blog-t.png\n---\n\n${body}\n`;
 
@@ -3851,6 +3936,59 @@ describe("homepage body carries an Orbi definition sentence (Issues #890, #899, 
       expect(lede, `${output}: definition under the H1`).toContain("Orbi");
       expect([...lede].length, `${output}: a real sentence, not a label`).toBeGreaterThan(40);
       expect(html.slice(html.indexOf("<body")), `${output}: body definition`).toContain(lede);
+    });
+  }
+});
+
+// Issue #1217: the six pages a buyer reads before deciding (home, Cloud, cost,
+// evidence, terms, privacy) must speak to that visitor — no internal
+// vocabulary, no source field name, no database table name. This is the
+// machine-checkable half of the Issue's acceptance list; the wording itself is
+// copy (Issue #1212), so only these strings are pinned, not any sentence.
+describe("buyer-facing pages drop internal vocabulary (Issue #1217)", () => {
+  const BUYER_PAGES = [
+    "index.html", "zh/index.html",
+    "cloud/index.html", "zh/cloud/index.html",
+    "cost/index.html", "zh/cost/index.html",
+    "evidence/index.html", "zh/evidence/index.html",
+    "terms/index.html", "zh/terms/index.html",
+    "privacy/index.html", "zh/privacy/index.html",
+  ];
+  const INTERNAL = [
+    "reviewed merged,", // the proof heading was missing its comma
+    "second story",
+    // The footer's third-party badge host is r2.direasy-multi-tenant.focusapps.app,
+    // so the pinned word is the visible one: tenants, and the possessive.
+    "tenants",
+    "tenant’s",
+    "terminal outcome",
+    "runner injection",
+    "review_rounds", // the field name the evidence page used to print
+    // The Cloud backend's own name for itself. Both languages carried it, and
+    // the dictionary bans one spelling (控制平面) while the page used the
+    // other (控制面), so the test pins the idea, not the spelling.
+    "control plane",
+    "控制面",
+    "totalTokens",
+    "FREE_DELIVERY_ALLOWANCE",
+    "delivery_usage",
+    "visitor_events",
+    "底仓",
+    "出厂",
+    "事实源",
+    "控制平面",
+  ];
+
+  for (const output of BUYER_PAGES) {
+    it(`${output} carries no internal vocabulary`, () => {
+      const html = shipped.get(output);
+      expect(html, `${output} is shipped`).toBeTruthy();
+      for (const phrase of INTERNAL) expect(html, `${output}: ${phrase}`).not.toContain(phrase);
+      // "Only 5 of 6 places left" contradicts itself: the count is the
+      // contract, and the word "Only" was copy. In the build the numbers are
+      // still pricing.json tokens the Worker substitutes on the way out.
+      expect(html, `${output}: "Only" before the remaining places`)
+        .not.toContain("Only __FOUNDING_PARTNER_REMAINING__");
     });
   }
 });

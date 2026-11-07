@@ -27,7 +27,7 @@
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
   <meta name="twitter:title" content="Orbi vs Devin：自托管交付 vs Cognition 托管 AI 工程师">
-  <meta name="twitter:description" content="vendor 云上的托管工程师，还是你自己机器上的交付产线。各自适合谁。">
+  <meta name="twitter:description" content="厂商云上的托管工程师，还是你自己机器上的交付产线。各自适合谁。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
@@ -61,7 +61,7 @@
     {"@type":"Question","name":"Orbi 是开源的 Devin 替代方案吗？","acceptedAnswer":{"@type":"Answer","text":"是。Orbi 以 AGPL-3.0 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。"}},
     {"@type":"Question","name":"可以自托管 Orbi 吗？","acceptedAnswer":{"@type":"Answer","text":"可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。Orbi Cloud 是希望由 Orbi 为你运营交付产线时的托管选项。"}},
     {"@type":"Question","name":"和 Devin 相比，Orbi 怎么收费？","acceptedAnswer":{"@type":"Answer","text":"自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐；Devin 列出订阅套餐和按消息计价的用量。查看价格成本对比和带日期的价格表。"}},
-    {"@type":"Question","name":"Orbi 会合并自己的 PR 吗？","acceptedAnswer":{"@type":"Answer","text":"只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读Orbi 如何安全自动合并 AI pull request。"}}
+    {"@type":"Question","name":"Orbi 会合并自己的 PR 吗？","acceptedAnswer":{"@type":"Answer","text":"只有经过独立评审、CI 通过并检查审查过的提交完全一致后，Orbi 才能合并一次交付的 pull request。阅读Orbi 如何安全自动合并 AI pull request。"}}
   ]
 }
 </script>
@@ -140,7 +140,7 @@
             </div>
           </li>
         </ol>
-        <p class="thesis-punch">一台读数你无法完全预测的计价器，以 vendor 可以改写的结构计价——它已经被改写过一次。可预测的成本，是单位握在你手里的成本：你的机器，你的模型，你的计价器。</p>
+        <p class="thesis-punch">一台读数你无法完全预测的计价器，以厂商可以改写的结构计价——它已经被改写过一次。可预测的成本，是单位握在你手里的成本：你的机器，你的模型，你的计价器。</p>
       </div>
     </section>
 
@@ -158,11 +158,11 @@
               <tr><th scope="row">免费</th><td data-label="Orbi">自托管：$0，AGPL-3.0，可选 SUL；使用你自己的模型 key。</td><td data-label="Devin">$0，light quota。</td></tr>
               <tr><th scope="row">个人</th><td data-label="Orbi">Cloud Solo：每月 US$__SOLO_MONTHLY_USD__，__SOLO_INCLUDED_TOKENS__ token，__SOLO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Pro：每月 $20。</td></tr>
               <tr><th scope="row">团队 / 规模</th><td data-label="Orbi">Cloud Pro：每月 US$__CLOUD_MONTHLY_USD__，__INCLUDED_TOKENS__ token，__PRO_REPOSITORIES__ 个仓库。</td><td data-label="Devin">Max：每月 $200；Teams：每月 $80，另加每个全席位每月 $40；Enterprise：联系销售。</td></tr>
-              <tr><th scope="row">计量</th><td data-label="Orbi">自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td data-label="Devin">「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」</td></tr>
+              <tr><th scope="row">计量</th><td data-label="Orbi">自托管使用你的硬件和模型供应商。Cloud 的包含额度用完后会暂停交付；没有按 token 超额收费。</td><td data-label="Devin">「Cost per message varies based on the model used, the task size and complexity, and the reasoning required.」（每条消息的价格取决于所用模型、任务规模与复杂度，以及所需的推理量。）</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="src-note">Devin 价格与计费原文：<a class="orbi-src-note-a" href="https://devin.ai/pricing" rel="noopener">Devin 官方定价页</a>，抓取于 2026-09-24；该页也为 Enterprise 列出「Dedicated deployment option」。Orbi Cloud 价格与额度：<a class="orbi-src-note-a" href="/zh/cloud/#pricing">Orbi Cloud 价格</a>。</p>
+        <p class="src-note">Devin 价格与计费原文：<a class="orbi-src-note-a" href="https://devin.ai/pricing" rel="noopener">Devin 官方定价页</a>，抓取于 2026-09-24；该页也为 Enterprise 列出「Dedicated deployment option」（专属部署选项）。Orbi Cloud 价格与额度：<a class="orbi-src-note-a" href="/zh/cloud/#pricing">Orbi Cloud 价格</a>。</p>
       </div>
     </section>
 
@@ -187,7 +187,7 @@
             </tr>
             <tr>
               <th scope="row">模型</th>
-              <td data-label="Orbi">BYOK——任意 OpenAI 兼容端点（provider 条款可能不同），换模型只改配置</td>
+              <td data-label="Orbi">BYOK——任意 OpenAI 兼容端点（模型服务商条款可能不同），换模型只改配置</td>
               <td data-label="Devin">Cognition 自研 SWE 模型跑在 Cognition 基础设施上；无自带 key 选项</td>
             </tr>
             <tr>
@@ -203,7 +203,7 @@
             <tr>
               <th scope="row">可审计</th>
               <td data-label="Orbi">开源（AGPL-3.0）——整条交付链路可读</td>
-              <td data-label="Devin">闭源——你审计的是 vendor 的承诺，不是代码</td>
+              <td data-label="Devin">闭源——你审计的是厂商的承诺，不是代码</td>
             </tr>
           </tbody>
         </table>
@@ -221,7 +221,7 @@
             <p class="option-state">选 DEVIN，如果你要</p>
             <h3 class="orbi-run-option-h3">一个托管的人工智能工程师</h3>
             <ul class="orbi-run-option-ul">
-              <li class="orbi-run-option-li">无需安装、运行、维护任何东西——机器、模型、升级都由 vendor 承担</li>
+              <li class="orbi-run-option-li">无需安装、运行、维护任何东西——机器、模型、升级都由厂商承担</li>
               <li class="orbi-run-option-li">在团队已经在用的地方派活：Slack、Teams、Linear、Jira</li>
               <li class="orbi-run-option-li">你的现实是企业采购：SSO、按订单的 ACU 额度、用量治理、联邦部署</li>
               <li class="orbi-run-option-li">你接受计价成本与闭源实现作为这一切的代价</li>
@@ -232,10 +232,10 @@
             <p class="option-state">选 ORBI，如果你要</p>
             <h3 class="orbi-run-option-h3">一条自己拥有的交付产线</h3>
             <ul class="orbi-run-option-ul">
-              <li class="orbi-run-option-li">成本由你自己的硬件和模型封顶——provider 额度（如有）可以做到零成本，且没有按任务计价器</li>
+              <li class="orbi-run-option-li">成本由你自己的硬件和模型封顶——模型服务商额度（如有）可以做到零成本，且没有按任务计价器</li>
               <li class="orbi-run-option-li">整条链路可读、可审计；每次运行都在 GitHub 留下证据</li>
               <li class="orbi-run-option-li">GitHub 原生队列：一个 <code>ai-ready</code> label 就开工；branch protection 和人工审批依然说了算</li>
-              <li class="orbi-run-option-li">BYOK 任意 OpenAI 兼容端点——模型是一个配置项，不是一个 vendor</li>
+              <li class="orbi-run-option-li">BYOK 任意 OpenAI 兼容端点——模型是一个配置项，不是一个厂商</li>
             </ul>
             <a class="button button-outline" href="https://docs.orbi.build/zh">自托管 Orbi ↗</a>
           </article>
@@ -251,7 +251,7 @@
           <details class="faq-item" open><summary><span>01</span>Orbi 是开源的 Devin 替代方案吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">是。Orbi 以 <a href="https://github.com/orbi-build/orbi/blob/main/LICENSE" rel="noopener">AGPL-3.0</a> 发布，面向从 Issue 到经过审查的 pull request 与发版的自托管 GitHub 交付。</p></div></details>
           <details class="faq-item"><summary><span>02</span>可以自托管 Orbi 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">可以。你可以在自己的机器上用自己的模型 key 自托管 Orbi。<a href="/zh/cloud/">Orbi Cloud</a> 是希望由 Orbi 为你运营交付产线时的托管选项。</p></div></details>
           <details class="faq-item"><summary><span>03</span>和 Devin 相比，Orbi 怎么收费？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">自托管 Orbi 按 AGPL-3.0 免费，你承担自己的硬件和模型供应商成本。Orbi Cloud 有 Solo、Pro 两档付费套餐；Devin 列出订阅套餐和按消息计价的用量。查看<a href="/zh/cost/">价格成本对比</a>和带日期的<a href="#pricing-title">价格表</a>。</p></div></details>
-          <details class="faq-item"><summary><span>04</span>Orbi 会合并自己的 PR 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">只有经过独立评审、CI 通过并检查 reviewed head 完全一致后，Orbi 才能合并一次交付的 pull request。阅读<a href="/zh/guides/auto-merge-ai-prs/">Orbi 如何安全自动合并 AI pull request</a>。</p></div></details>
+          <details class="faq-item"><summary><span>04</span>Orbi 会合并自己的 PR 吗？</summary><div class="faq-answer"><p class="orbi-faq-answer-p">只有经过独立评审、CI 通过并检查审查过的提交完全一致后，Orbi 才能合并一次交付的 pull request。阅读<a href="/zh/guides/auto-merge-ai-prs/">Orbi 如何安全自动合并 AI pull request</a>。</p></div></details>
         </div>
       </div>
     </section>
@@ -297,7 +297,7 @@
     <section class="closing shell" aria-labelledby="closing-title">
       <p class="section-tag">开源（AGPL-3.0）核心</p>
       <h2 class="orbi-closing-h2" id="closing-title">委托的两种形状</h2>
-      <p >按你委托的东西选：在 vendor 云里租用的工程师，还是在自己仓库里运营的产线。如果是后者，Orbi 自托管免费——给一个 Issue 打上 <code>ai-ready</code> label，key 留在你手里。</p>
+      <p >按你委托的东西选：在厂商云里租用的工程师，还是在自己仓库里运营的产线。如果是后者，Orbi 自托管免费——给一个 Issue 打上 <code>ai-ready</code> label，key 留在你手里。</p>
       <div class="cta-row">
         <a class="button button-dark" href="https://docs.orbi.build/zh">安装 Orbi <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="/zh/compare/">全部对比</a>
@@ -443,6 +443,8 @@
         <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
         <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
         <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
+<a href="https://submitmysaas.com" target="_blank"><img src="https://submitmysaas.com/featured-badge.png" alt="Featured on SubmitMySaas" height="54" /></a>
+<a href="https://launchitx.com/projects/orbi" target="_blank" title="Launched on LaunchitX"><img src="https://launchitx.com/images/badges/launched-on-launchitx.svg" alt="Launched on LaunchitX" width="200" height="44" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

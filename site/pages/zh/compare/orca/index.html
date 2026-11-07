@@ -126,7 +126,7 @@
               <tr><th scope="row">任务入口</th><td>GitHub Issue + <code>ai-ready</code> 标签</td><td>桌面应用、移动伴侣、CLI（<code>orca worktree create</code>）；未说明无人值守队列</td></tr>
               <tr><th scope="row">开交付 PR</th><td>是</td><td>未能核实——官方说明应用内可浏览 PR；agent 打开交付 PR 未说明</td></tr>
               <tr><th scope="row">独立评审（能改代码重跑测试）</th><td>是——独立 session 修复代码并重跑测试</td><td>未能核实——文档化的评审是人标注 diff</td></tr>
-              <tr><th scope="row">自动 merge</th><td>是——只合并审过的那个 Head</td><td>未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
+              <tr><th scope="row">自动 merge</th><td>是——只合并审过的那个提交</td><td>未能核实——「merge the winner」指比较多个并行 agent 的产出，不是文档化的 PR 自动合并</td></tr>
               <tr><th scope="row">打 Tag / 发 Release</th><td>是——冻结 SHA、打 Tag、发布 Release</td><td>未能核实</td></tr>
               <tr><th scope="row">形态</th><td>自托管 CLI + systemd，跑在你自己的机器上；另有托管 Cloud 试点</td><td>桌面（macOS/Windows/Linux）、移动（iOS/Android）、远程运行时；CLI</td></tr>
               <tr><th scope="row">许可证</th><td>AGPL-3.0 或 Sustainable Use License</td><td>MIT</td></tr>
@@ -186,7 +186,7 @@
           <h3 class="orbi-run-option-h3">让交付无人值守地跑</h3>
           <ul class="orbi-run-option-ul">
             <li class="orbi-run-option-li">打了 <code>ai-ready</code> 的 GitHub Issue 自动变成审查过的 PR——独立 session 会改代码、重跑测试</li>
-            <li class="orbi-run-option-li">只合并审过的那个 Head，并发布为打 Tag 的 Release，中间不需要人操作</li>
+            <li class="orbi-run-option-li">只合并审过的那个提交，并发布为打 Tag 的 Release，中间不需要人操作</li>
             <li class="orbi-run-option-li">BYOK、自己的机器、GitHub 同时是队列和证据账本</li>
             <li class="orbi-run-option-li">接受 AGPL-3.0 或 Sustainable Use License，换取一条有人维护的交付产线</li>
           </ul>
@@ -226,7 +226,7 @@
           <small>github.com/orbi-build/orbi</small>
         </li>
         <li class="orbi-source-list-li">
-          <strong ><a class="orbi-source-list-a" href="https://docs.orbi.build/zh">Orbi 文档</a>——Orbi 这一列：Issue + <code>ai-ready</code>、独立评审、exact-head 合并、打 Tag + Release</strong>
+          <strong ><a class="orbi-source-list-a" href="https://docs.orbi.build/zh">Orbi 文档</a>——Orbi 这一列：Issue + <code>ai-ready</code>、独立评审、按确切提交合并、打 Tag + Release</strong>
           <span class="source-date">核实于 2026-09-12</span>
           <small>docs.orbi.build/zh</small>
         </li>

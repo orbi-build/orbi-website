@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi</title>
+  <title>AI 编程 agent 每次合并交付花多少钱（实测） | Orbi</title>
   <meta name="description" content="实测 AI 编程 agent 每次合并交付的成本：Orbi Cloud 记录的 169 次合并交付，中位 $0.082（非高峰），公开样本窗口、DeepSeek 牌价与复算方法。">
   <link rel="canonical" href="https://orbi.build/zh/cost/">
   <link rel="alternate" hreflang="en" href="https://orbi.build/cost/">
@@ -17,7 +17,7 @@
   <meta property="og:locale" content="zh_CN">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://orbi.build/zh/cost/">
-  <meta property="og:title" content="AI 编程 agent 每个合并 PR 花多少钱（实测）">
+  <meta property="og:title" content="AI 编程 agent 每次合并交付花多少钱（实测）">
   <meta property="og:description" content="实测 169 次合并交付：DeepSeek Flash 非高峰中位 $0.082、90 分位 $0.22，并公开样本窗口与复算方法。">
   <meta property="og:image" content="https://orbi.build/img/og-zh.png">
   <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xqliu">
   <meta name="twitter:creator" content="@xqliu">
-  <meta name="twitter:title" content="AI 编程 agent 每个合并 PR 花多少钱（实测）">
+  <meta name="twitter:title" content="AI 编程 agent 每次合并交付花多少钱（实测）">
   <meta name="twitter:description" content="实测 169 次合并交付：DeepSeek Flash 非高峰中位 $0.082、90 分位 $0.22。">
   <meta name="twitter:image" content="https://orbi.build/img/og-zh.png">
   <link rel="stylesheet" href="/fonts/fonts.css">
@@ -37,7 +37,7 @@
     "@graph": [
       {
         "@type": "WebPage",
-        "name": "AI 编程 agent 每个合并 PR 花多少钱（实测） | Orbi",
+        "name": "AI 编程 agent 每次合并交付花多少钱（实测） | Orbi",
         "description": "实测 AI 编程 agent 每次合并交付的成本：Orbi Cloud 记录的 169 次合并交付，中位 $0.082（非高峰），公开样本窗口、DeepSeek 牌价与复算方法。",
         "url": "https://orbi.build/zh/cost/",
         "inLanguage": "zh-CN",
@@ -86,11 +86,11 @@
     <div class="night">
       <section class="compare-hero shell" aria-labelledby="cost-title">
         <p class="eyebrow"><span class="live-dot"></span>成本透明 · 截至 2026-10-05 15:36（UTC+8）实测 · n=169</p>
-        <h1 id="cost-title">AI 编程 agent 每合并一个 PR 花多少钱</h1>
+        <h1 id="cost-title">AI 编程 agent 每次合并交付花多少钱</h1>
         <p class="hero-lede"><strong>实测中位成本：每次合并交付 $0.082（非高峰），90 分位 $0.22。</strong>数据来自 Orbi Cloud 在 <strong>2026-09-16</strong> 至 <strong>2026-10-05 15:36（UTC+8）</strong>记录的 <strong>169 次合并交付</strong>，全部跑 <code>deepseek-flash</code>。高峰时段价格翻倍，所以这里给的是下限。样本窗口、价格输入和适用范围都公开在下方。</p>
         <div class="cta-row">
           <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
-          <p class="hero-alt">想自己部署?交付核心永久免费 —— <a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
+          <p class="hero-alt">想自己部署？交付核心永久免费——<a class="orbi-hero-alt-a" data-cta="install" href="https://docs.orbi.build/zh">自己运行 Orbi ↗</a></p>
         </div>
       </section>
     </div>
@@ -98,7 +98,7 @@
     <section class="compare-section shell" aria-labelledby="merged-pr-title">
       <p class="section-tag">每次合并交付的成本</p>
       <h2 class="orbi-compare-section-h2" id="merged-pr-title">169 次合并交付，来自 Orbi Cloud 的实测记录</h2>
-      <p class="section-lede">最清楚的统计单位是一次合并交付，而不是抽象的 token 配额。Orbi Cloud 的用量记录从 <strong>2026-09-16</strong> 开始；截至 <strong>2026-10-05 15:36（UTC+8）</strong>，里面记着 <strong>169 次带 token 数的合并交付</strong>，全部在 Pi 会话里、全部跑 <code>deepseek-flash</code>。按次计算：非高峰中位成本 <strong>$0.082</strong>，90 分位 <strong>$0.22</strong>，均值 <strong>$0.11</strong>。</p>
+      <p class="section-lede">最清楚的统计单位是一次合并交付——也就是一个合并了的 PR——而不是抽象的 token 配额。Orbi Cloud 的用量记录从 <strong>2026-09-16</strong> 开始；截至 <strong>2026-10-05 15:36（UTC+8）</strong>，里面记着 <strong>169 次带 token 数的合并交付</strong>，全部在 Pi 会话里、全部跑 <code>deepseek-flash</code>。按次计算：非高峰中位成本 <strong>$0.082</strong>，90 分位 <strong>$0.22</strong>，均值 <strong>$0.11</strong>。</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
           <thead><tr><th scope="col">统计量</th><th scope="col">非高峰</th></tr></thead>
@@ -110,19 +110,19 @@
           </tbody>
         </table>
       </div>
-      <p class="src-note">金额按 DeepSeek 官方 <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash 价格</a>的非高峰价计算：缓存命中每百万 token $0.003、未命中每百万 $0.15、输出每百万 $0.60。工作日高峰（UTC 01:00–04:00 和 06:00–10:00）所有数字翻倍，所以这里是下限。用量记录里每次交付只有一个总数，没有每次请求的时间，分不出高峰和闲时：真实中位数在 $0.082 到它的两倍之间。</p>
-      <p class="src-note">样本范围：Cloud 的用量记录，每个 issue 和分支一行，由 Pi 会话写入；同一个 run 恢复时累加，同一分支上新的一次尝试会覆盖。169 次里 141 次在 Orbi 自己的三个仓库，11 次在我们组织下的 fork 和测试仓库，17 次在 Cloud 用户的 7 个仓库 —— 这 17 次的中位成本是 $0.090。输入绝大部分是缓存读取：每次交付单独算，缓存读取占输入的比例中位数是 97.8%。另见 <a href="/zh/compare/devin/">Devin 对比</a>、<a href="/zh/cloud/">Cloud</a> 和 <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
+      <p class="src-note">金额按 DeepSeek 官方 <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash 价格</a>的非高峰价计算：缓存命中每百万 token $0.003、未命中每百万 $0.15、输出每百万 $0.60。工作日高峰（UTC 01:00–04:00 和 06:00–10:00）所有数字翻倍，所以这里是下限。用量记录里每次交付只有一个总数，没有每次请求的时间，分不出高峰和非高峰：真实中位数在 $0.082 到它的两倍之间。</p>
+      <p class="src-note">样本范围：Cloud 的用量记录，每个 Issue 和分支一行，由 Pi 会话写入；同一个交付恢复时累加，同一分支上新的一次尝试会覆盖。169 次里 141 次在 Orbi 自己的三个仓库，11 次在我们组织下的 fork 和测试仓库，17 次在 Cloud 用户的 7 个仓库 —— 这 17 次的中位成本是 $0.090。输入绝大部分是缓存读取：每次交付单独算，缓存读取占输入的比例中位数是 97.8%。另见 <a href="/zh/compare/devin/">Devin 对比</a>、<a href="/zh/cloud/">Cloud</a> 和 <a href="/zh/guides/auto-merge-ai-prs/">自动合并 AI PR 指南</a>。</p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="measured-title">
-      <p class="section-tag">实测数据 · 每次交付（含未合并）</p>
-      <h2 class="orbi-compare-section-h2" id="measured-title">46 次真实交付，在我们自己的仓库上实测</h2>
-      <p class="section-lede">Orbi 的每次交付跑两个 Agent session —— 实现,外加一个能修分支、能重跑测试的独立审查。截至 <strong>2026-09-12</strong>,我们聚合了 orbi 仓库自身 <strong>n=46 次交付</strong>(Python、完整 CI、Issue 写得规范)的 session 日志。样本就是当天磁盘上还在的 worktree —— 会随 worktree 清理而变化 —— 所以 <strong>n 是截至标注日期的快照,不是永久事实</strong>。下面是按次统计的 <code>totalTokens</code> 完整分布 —— 也就是 Provider 实际计费的口径,含缓存读取:</p>
+      <p class="section-tag">更早的快照 · 2026-09-12 实测 · 按运行次数计（含未合并）</p>
+      <h2 class="orbi-compare-section-h2" id="measured-title">46 次真实运行，在我们自己的仓库上实测</h2>
+      <p class="section-lede">Orbi 每跑一次都用两个 Agent 会话：先实现，再由一场能改分支、能重跑测试的独立审查把关。截至 <strong>2026-09-12</strong>——早于页头 2026-10-05 那个样本，统计的是运行次数而不是合并交付——我们聚合了 orbi 仓库自身 <strong>n=46 次运行</strong>（Python、完整 CI、Issue 写得规范）的会话日志。样本就是当天磁盘上还在的工作副本，会随清理而变化，所以 <strong>n 只是截至这一天的快照，不是永久事实</strong>。下面是按运行统计的 token 数完整分布——也就是服务商实际计费的口径，含缓存读取：</p>
       <div class="compare-table-wrap">
         <table class="compare-table">
-          <thead><tr><th scope="col">分位</th><th scope="col">单次 totalTokens</th></tr></thead>
+          <thead><tr><th scope="col">分位</th><th scope="col">单次运行的 token 数</th></tr></thead>
           <tbody>
-            <tr><th scope="row">p50(中位)</th><td>2,220,637</td></tr>
+            <tr><th scope="row">p50（中位）</th><td>2,220,637</td></tr>
             <tr><th scope="row">p75</th><td>3,961,248</td></tr>
             <tr><th scope="row">p90</th><td>13,290,932</td></tr>
             <tr><th scope="row">p95</th><td>16,555,250</td></tr>
@@ -130,26 +130,26 @@
             <tr><th scope="row">均值</th><td>4,742,066</td></tr>
           </tbody>
         </table>
-      <p class="src-note">2026-09-12 快照的均值 4,742,066 tokens 折算约为 Pro 的 __MEASURED_SNAPSHOT_DELIVERIES__ 次 __INCLUDED_TOKENS__ token 交付。Cloud 定价页采用约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次，因为之后按大代码库交付重新测得；两组样本的任务规模不同。当前计划数字见 <a href="/zh/cloud/#pricing">Cloud 定价</a>。</p>
-      <p class="src-note">数据来源,任何人可按此复核:orbi-build/orbi 仓库各 git worktree 的 Agent session 日志(<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>),聚合于 2026-09-12。一次交付 = 一个 worktree 的 implement + review session;单次 totalTokens = 该 worktree 全部记录的 <code>usage.totalTokens</code> 之和;n = 日志中含至少一条 usage 记录的 worktree 数(不记 usage 的新旧 session 不计);分位用 nearest-rank。样本会随 worktree 清理而变化。token 的去向:<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
+      <p class="src-note">2026-09-12 那次快照的均值 4,742,066 tokens，按 Pro 每月 __INCLUDED_TOKENS__ token 折算，约为 __MEASURED_SNAPSHOT_DELIVERIES__ 次运行。Cloud 定价页采用约 __MEASURED_LARGE_CODEBASE_DELIVERIES__ 次合并交付，因为之后按大代码库的交付重新测得；两组样本的任务规模不同。当前计划数字见 <a href="/zh/cloud/#pricing">Cloud 定价</a>。</p>
+      <p class="src-note">数据来源，任何人可按此复核：orbi-build/orbi 仓库各 git 工作副本的 Agent 会话日志（<code>&lt;repo&gt;/.worktrees/*/.pi-session/*.jsonl</code>），聚合于 2026-09-12。一次运行 = 一个工作副本里实现与审查两场会话；单次运行的 token 数 = 该工作副本全部日志记录的 token 数之和；n = 日志中含至少一条用量记录的工作副本数（没有用量记录的新旧会话不计）；分位用 nearest-rank。样本会随工作副本清理而变化。token 的去向：<strong>95.9% 缓存读取、3.4% 输入、0.7% 输出。</strong></p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="money-title">
       <div class="shell">
         <p class="section-tag">折算成钱</p>
-        <h2 class="orbi-compare-section-h2" id="money-title">每次交付（含未合并工作）按 DeepSeek V4.1 Flash 官方牌价，几分钱</h2>
-        <p class="section-lede">DeepSeek 公布价格 —— <code>deepseek-flash</code>(DeepSeek-V4.1-Flash):off-peak 时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。peak 时段(工作日 01:00–04:00 与 06:00–10:00 UTC)恰好翻倍。46 次交付快照的均值折算约为<strong>每次交付 $0.06–0.12</strong>。把官方牌价套到实测分布上:</p>
+        <h2 class="orbi-compare-section-h2" id="money-title">每次运行（含未合并工作）按 DeepSeek V4.1 Flash 官方牌价，几分钱</h2>
+        <p class="section-lede">DeepSeek 公布的价格：<code>deepseek-flash</code>（DeepSeek-V4.1-Flash）在非高峰时段缓存命中 <strong>$0.003/1M</strong> tokens、未命中 <strong>$0.15/1M</strong>、输出 <strong>$0.60/1M</strong>。高峰时段（工作日 01:00–04:00 与 06:00–10:00 UTC）价格恰好翻倍。46 次运行那次快照的均值折算约为<strong>每次运行 $0.06–0.12</strong>。把官方牌价套到实测分布上：</p>
         <div class="compare-table-wrap">
           <table class="compare-table table-stack">
-            <thead><tr><th scope="col">场景</th><th scope="col">Off-peak</th><th scope="col">Peak</th></tr></thead>
+            <thead><tr><th scope="col">场景</th><th scope="col">非高峰</th><th scope="col">高峰</th></tr></thead>
             <tbody>
-              <tr><th scope="row">单次交付(均值,474 万 tokens)</th><td data-label="Off-peak">$0.058</td><td data-label="Peak">$0.115</td></tr>
-              <tr><th scope="row">单次交付(实测最大,3760 万 tokens)</th><td data-label="Off-peak">$0.46</td><td data-label="Peak">$0.92</td></tr>
-              <tr><th scope="row">100 个 issue(按均值结构)</th><td data-label="Off-peak">~$5.77</td><td data-label="Peak">~$11.55</td></tr>
+              <tr><th scope="row">单次运行（均值，474 万 tokens）</th><td data-label="非高峰">$0.058</td><td data-label="高峰">$0.115</td></tr>
+              <tr><th scope="row">单次运行（实测最大，3760 万 tokens）</th><td data-label="非高峰">$0.46</td><td data-label="高峰">$0.92</td></tr>
+              <tr><th scope="row">100 个 Issue（按均值结构）</th><td data-label="非高峰">~$5.77</td><td data-label="高峰">~$11.55</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="src-note">金额按实测 token 构成(95.9% / 3.4% / 0.7%)对照 DeepSeek 公布的 deepseek-flash 官方牌价计算 —— <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">api-docs.deepseek.com/quick_start/pricing</a>,核实于 2026-09-11。</p>
+        <p class="src-note">金额按实测 token 构成（95.9% / 3.4% / 0.7%）对照 DeepSeek 公布的 deepseek-flash 官方牌价计算——<a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">api-docs.deepseek.com/quick_start/pricing</a>，核实于 2026-09-11。</p>
       </div>
     </section>
 
@@ -160,22 +160,22 @@
         <li class="orbi-event-list-li">
           <span class="event-era">只测了我们自己</span>
           <div>
-            <strong >这是我们仓库的实测区间,不是对所有人的承诺</strong>
-            <p class="orbi-event-list-p">Python、完整 CI、Issue 写得规范,让我们的上下文保持很短。上下文更长、测试更慢、Issue 更模糊的仓库,分布会落在别处。上面的表格是什么就是什么:我们仓库的实测区间。</p>
+            <strong >这是我们仓库的实测区间，不是对所有人的承诺</strong>
+            <p class="orbi-event-list-p">Python、完整 CI、Issue 写得规范，让我们的上下文保持很短。上下文更长、测试更慢、Issue 更模糊的仓库，分布会落在别处。上面的表格是什么就是什么：我们仓库的实测区间。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">缓存是承重墙</span>
           <div>
-            <strong >95.9% 缓存读取,前提是 Provider 支持 prompt caching</strong>
-            <p class="orbi-event-list-p">整个成本结构压在缓存命中上。换到不支持 prompt caching 的端点 —— 每个 token 都按 miss 计价 —— 同样的工作成本大约要涨一个数量级。外推之前先查你的 Provider。</p>
+            <strong >95.9% 缓存读取，前提是服务商支持 prompt caching</strong>
+            <p class="orbi-event-list-p">整个成本结构压在缓存命中上。换到不支持 prompt caching 的端点——每个 token 都按未命中计价——同样的工作成本大约要涨一个数量级。外推之前先查你的服务商。</p>
           </div>
         </li>
         <li class="orbi-event-list-li">
           <span class="event-era">按计费口径统计</span>
           <div>
-            <strong >数字是 totalTokens,含缓存读取</strong>
-            <p class="orbi-event-list-p">这才是 Provider 实际计费的口径。只算 input + output 会漏掉约 96% 的真实消耗,把数字做好看 —— 那恰恰是这一页反对的事。</p>
+            <strong >这些是总 token 数，含缓存读取</strong>
+            <p class="orbi-event-list-p">这才是服务商实际计费的口径。只算输入和输出会漏掉约 96% 的真实消耗，把数字做好看——那恰恰是这一页反对的事。</p>
           </div>
         </li>
       </ul>
@@ -183,49 +183,49 @@
 
     <section class="compare-section shell" aria-labelledby="why-title">
       <p class="section-tag">为什么这么便宜</p>
-      <h2 class="orbi-compare-section-h2" id="why-title">缓存命中单价是 miss 的 1/50,而 95.9% 的工作都是命中</h2>
-      <p class="section-lede">每次交付都在重读同一批仓库上下文:目录树、约定、Issue、失败的测试。prompt caching 把这些重复阅读变成按 $0.003/1M 计价的命中,而不是按 $0.15/1M 计价的 miss。就这一个比值,让一整次交付 —— 实现加上能修能重跑的独立审查 —— 只要几分钱。这也是问任何 BYOK Agent 厂商时唯一诚实的问题:<strong>你的 token 里命中占比多少?你的 Provider 对命中收多少钱?</strong></p>
+      <h2 class="orbi-compare-section-h2" id="why-title">缓存命中单价是未命中的 1/50，而 95.9% 的工作都是命中</h2>
+      <p class="section-lede">每次运行都在重读同一批仓库上下文：目录树、约定、Issue、失败的测试。prompt caching 把这些重复阅读变成按 $0.003/1M 计价的命中，而不是按 $0.15/1M 计价的未命中。就这一个比值，让一整次运行——实现加上能改能重跑的独立审查——只要几分钱。这也是问任何 BYOK Agent 厂商时唯一诚实的问题：<strong>你的 token 里命中占多少？你的服务商对命中收多少钱？</strong></p>
     </section>
 
     <section class="compare-section shell" aria-labelledby="earlier-sample-title">
       <p class="section-tag">早期样本 · n=20 · 保留存档</p>
-      <h2 class="orbi-compare-section-h2" id="earlier-sample-title">早期样本：20 个合并 PR，2026 年 9 月 22–24 日</h2>
-      <p class="section-lede">在 Cloud 的用量记录出现之前，我们手工统计过一组更小的样本：<strong>2026-09-22 09:44 UTC 到 2026-09-24 12:03 UTC</strong>，orbi-build/orbi 仓库的 <strong>20 个合并 PR</strong>，全部使用 <code>deepseek-flash</code>（DeepSeek-V4.1-Flash）。这组样本的非高峰中位成本是 <strong>$0.125</strong>，高峰 $0.249；每个合并 PR 的 token 中位数 <strong>10,612,802</strong>；运行时长中位数 <strong>60.4 分钟</strong>，模型请求中位数 <strong>156 次</strong>。我们继续公开这组样本，但当前数字是上面的 169 次合并交付。</p>
+      <h2 class="orbi-compare-section-h2" id="earlier-sample-title">早期样本：20 次合并交付，2026 年 9 月 22–24 日</h2>
+      <p class="section-lede">在 Cloud 的用量记录出现之前，我们手工统计过一组更小的样本：<strong>2026-09-22 09:44 UTC 到 2026-09-24 12:03 UTC</strong>，orbi-build/orbi 仓库的 <strong>20 次合并交付</strong>，全部使用 <code>deepseek-flash</code>（DeepSeek-V4.1-Flash）。这组样本的非高峰中位成本是 <strong>$0.125</strong>，高峰 $0.249；每次合并交付的 token 中位数 <strong>10,612,802</strong>；运行时长中位数 <strong>60.4 分钟</strong>，模型请求中位数 <strong>156 次</strong>。我们继续公开这组样本，但当前数字是上面的 169 次合并交付。</p>
       <div class="compare-table-wrap">
         <table class="compare-table table-stack">
           <thead><tr><th scope="col">统计量</th><th scope="col">非高峰</th><th scope="col">高峰</th></tr></thead>
           <tbody>
-            <tr><th scope="row">每个合并 PR 成本中位数</th><td data-label="非高峰">$0.125</td><td data-label="高峰">$0.249</td></tr>
-            <tr><th scope="row">每个合并 PR 平均成本</th><td data-label="非高峰">$0.152</td><td data-label="高峰">$0.304</td></tr>
-            <tr><th scope="row">每个合并 PR P90 成本</th><td data-label="非高峰">$0.298</td><td data-label="高峰">$0.597</td></tr>
-            <tr><th scope="row">每个合并 PR 最大成本</th><td data-label="非高峰">$0.417</td><td data-label="高峰">$0.834</td></tr>
+            <tr><th scope="row">每次合并交付成本中位数</th><td data-label="非高峰">$0.125</td><td data-label="高峰">$0.249</td></tr>
+            <tr><th scope="row">每次合并交付平均成本</th><td data-label="非高峰">$0.152</td><td data-label="高峰">$0.304</td></tr>
+            <tr><th scope="row">每次合并交付的 P90 成本</th><td data-label="非高峰">$0.298</td><td data-label="高峰">$0.597</td></tr>
+            <tr><th scope="row">每次合并交付的最大成本</th><td data-label="非高峰">$0.417</td><td data-label="高峰">$0.834</td></tr>
           </tbody>
         </table>
       </div>
       <p class="src-note">金额按 DeepSeek 官方 <a class="orbi-src-note-a" href="https://api-docs.deepseek.com/quick_start/pricing" rel="noopener">deepseek-flash 价格</a>计算，2026-09-24 核对：缓存命中每百万 token $0.003、未命中每百万 $0.15、输出每百万 $0.60。工作日高峰（UTC 01:00–04:00 和 06:00–10:00）价格翻倍。样本 token 构成：缓存读取占 97.1%；输入 1.9%；输出 1.0%。</p>
-      <p class="src-note">为什么这组和上面的 46 次交付快照不同：那一组按 worktree 统计，含未合并工作和小改动；这一组仅统计已合并 PR。20 个 PR 对应公开可查的 Issue：#1289、#1290、#1231、#1262、#1304、#1306、#1307、#933、#898、#856、#610、#1259、#1294、#1322、#1324、#1088、#1328、#1332、#1337、#1336。</p>
+      <p class="src-note">为什么这组和上面的 46 次运行快照不同：那一组按运行统计，含未合并工作和小改动；这一组只统计合并交付。这 20 次对应的公开 Issue 是：#1289、#1290、#1231、#1262、#1304、#1306、#1307、#933、#898、#856、#610、#1259、#1294、#1322、#1324、#1088、#1328、#1332、#1337、#1336。</p>
     </section>
 
     <section class="compare-section compare-section-tint" aria-labelledby="comparison-title">
       <div class="shell">
-        <p class="section-tag">$200 档,供对照</p>
-        <h2 class="orbi-compare-section-h2" id="comparison-title">竞品报的是额度,我们报的是 token 和价格</h2>
-        <p class="section-lede">$200 档的托管 Agent 不公布你的钱买到了什么。以下说法对照他们的官方文档核实:</p>
+        <p class="section-tag">$200 档，供对照</p>
+        <h2 class="orbi-compare-section-h2" id="comparison-title">竞品报的是额度，我们报的是 token 和价格</h2>
+        <p class="section-lede">$200 档的托管 Agent 不公布你的钱买到了什么。以下说法对照他们的官方文档核实：</p>
         <ul class="event-list">
           <li class="orbi-event-list-li">
             <span class="event-era">DEVIN</span>
             <div>
-              <strong >"A daily and weekly usage quota" —— 没有数量,没有单价</strong>
-              <p class="orbi-event-list-p">Pro($20/月)包含 "a daily and weekly usage quota";Max($200/月)是 "a significantly larger weekly usage quota (with no daily cap)"。整个页面上,Cognition 没有写出任一档包含多少 ACU、一个 ACU 值多少钱。</p>
-              <p class="src-note orbi-event-list-p">来源:<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a> —— 核实于 2026-09-11。</p>
+              <strong >"A daily and weekly usage quota"——没有数量，没有单价</strong>
+              <p class="orbi-event-list-p">Pro（$20/月）只写 "a daily and weekly usage quota"；Max（$200/月）写 "a significantly larger weekly usage quota (with no daily cap)"。整页看下来，Cognition 没有写出任一档包含多少 ACU、一个 ACU 值多少钱。</p>
+              <p class="src-note orbi-event-list-p">来源：<a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>，核实于 2026-09-11。</p>
             </div>
           </li>
           <li class="orbi-event-list-li">
             <span class="event-era">FACTORY</span>
             <div>
-              <strong >"~5x Pro usage" / "~10x Pro usage" —— 没有任何绝对值</strong>
-              <p class="orbi-event-list-p">Plus($100/月)是 "~5x Pro usage";Max($200/月)是 "~10x Pro usage"。页面上找不到任何绝对 token 量,也没有 per-token 价格。</p>
-              <p class="src-note orbi-event-list-p">来源:<a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> —— 核实于 2026-09-11。</p>
+              <strong >"~5x Pro usage" / "~10x Pro usage"——没有任何绝对值</strong>
+              <p class="orbi-event-list-p">Plus（$100/月）只写 "~5x Pro usage"；Max（$200/月）只写 "~10x Pro usage"。页面上找不到任何绝对 token 量，也没有单个 token 的价格。</p>
+              <p class="src-note orbi-event-list-p">来源：<a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a>，核实于 2026-09-11。</p>
             </div>
           </li>
         </ul>
@@ -233,20 +233,20 @@
           <table class="compare-table table-stack">
             <thead><tr><th scope="col"></th><th scope="col">订阅</th><th scope="col">模型费</th><th scope="col">总计</th><th scope="col">产出打 Tag 的 Release</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Orbi + DeepSeek</th><td data-label="订阅">自托管 $0；Cloud Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token（创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位）</td><td data-label="模型费">实测约 $6–12（自托管）;Cloud 已含</td><td data-label="总计">自托管 $6–12；Cloud US$__SOLO_MONTHLY_USD__ 起</td><td data-label="产出打 Tag 的 Release">是 —— 审查过的 PR、精确合并、打 Tag 发 Release</td></tr>
-              <tr><th scope="row">Devin Max</th><td data-label="订阅">$200</td><td data-label="模型费">额度未公布</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">文档止于 PR("from prompt to PR")</td></tr>
-              <tr><th scope="row">Factory Max</th><td data-label="订阅">$200</td><td data-label="模型费">"~10x Pro usage",无绝对值</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">无打 Tag/Release 流程记载</td></tr>
+              <tr><th scope="row">Orbi + DeepSeek</th><td data-label="订阅">自托管 $0；Cloud Solo 每月 US$__SOLO_MONTHLY_USD__，含 __SOLO_INCLUDED_TOKENS__ token；Pro 每月 US$__CLOUD_MONTHLY_USD__，含 __INCLUDED_TOKENS__ token（创始会员永久 5 折，限 __FOUNDING_PARTNER_LIMIT__ 位）</td><td data-label="模型费">实测约 $6–12（自托管）；Cloud 已含</td><td data-label="总计">自托管 $6–12；Cloud US$__SOLO_MONTHLY_USD__ 起</td><td data-label="产出打 Tag 的 Release">是——审过的 PR、只合并审过的提交、打 Tag 发 Release</td></tr>
+              <tr><th scope="row">Devin Max</th><td data-label="订阅">$200</td><td data-label="模型费">额度未公布</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">文档止于 PR（"from prompt to PR"）</td></tr>
+              <tr><th scope="row">Factory Max</th><td data-label="订阅">$200</td><td data-label="模型费">"~10x Pro usage"，没有绝对值</td><td data-label="总计">$200+</td><td data-label="产出打 Tag 的 Release">无打 Tag/Release 流程记载</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="src-note">Devin 行依据 <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>;Factory 行依据 <a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a> —— 均核实于 2026-09-11。Orbi 模型费即上文的实测区间。</p>
+        <p class="src-note">Devin 行依据 <a class="orbi-src-note-a" href="https://docs.devin.ai/admin/billing/self-serve" rel="noopener">docs.devin.ai/admin/billing/self-serve</a>；Factory 行依据 <a class="orbi-src-note-a" href="https://docs.factory.ai/pricing/individuals" rel="noopener">docs.factory.ai/pricing/individuals</a>——均核实于 2026-09-11。Orbi 的模型费即上文的实测区间。</p>
       </div>
     </section>
 
     <section class="closing shell" aria-labelledby="start-title">
-      <p class="section-tag">你的 key,你的账单</p>
+      <p class="section-tag">你的 key，你的账单</p>
       <h2 class="orbi-closing-h2" id="start-title">拿你自己的后台对一遍这些数字</h2>
-      <p >用你自己的 DeepSeek key 跑 Orbi,Provider 的用量页会显示每一次交付、每一个 token、每一分钱。这就是全部主张:我们和你和账单之间,什么都没有。</p>
+      <p >用你自己的 DeepSeek key 跑 Orbi，服务商的用量页会显示每一次运行、每一个 token、每一分钱。这就是全部主张：你和你的账单之间，什么都没有。</p>
       <div class="cta-row">
         <a class="button button-signal" href="/zh/cloud/login">用 GitHub 开始 Cloud <span aria-hidden="true">↗</span></a>
         <a class="text-link" href="/zh/compare/">看附出处的竞品对比 →</a>
@@ -392,6 +392,8 @@
         <a href="https://appalist.com/ai/orbi" target="_blank"><img src="https://appalist.com/assets/images/badge.png" alt="Appa List" height="54" /></a>
         <a href="https://weliketools.com/tool/orbi" target="_blank"><img src="https://weliketools.com/assets/images/badge.png" alt="We Like Tools" height="54" /></a>
         <a href="https://bowora.com/?via=4rnfymxi" target="_blank">Featured on Bowora</a>
+<a href="https://submitmysaas.com" target="_blank"><img src="https://submitmysaas.com/featured-badge.png" alt="Featured on SubmitMySaas" height="54" /></a>
+<a href="https://launchitx.com/projects/orbi" target="_blank" title="Launched on LaunchitX"><img src="https://launchitx.com/images/badges/launched-on-launchitx.svg" alt="Launched on LaunchitX" width="200" height="44" /></a>
         </div>
       </div>
       <button class="footer-badges-toggle" type="button" data-footer-badges-toggle data-label-pause="暂停" data-label-play="播放">暂停</button>

@@ -238,10 +238,9 @@ __PRO_REPOSITORIES__ repositories). What the model usage itself costs is
 measured, not estimated, and published in two units. Per merged delivery
 (the /cost/ page's headline): 169 merged deliveries recorded by Orbi Cloud,
 measured 2026-10-05, median $0.082 off-peak (peak prices double, so that is
-the floor) and a 90th percentile of $0.22. Per delivery including unmerged
-work: the 2026-09-12 n=46 snapshot had a median of 2,220,637 and a mean of
-4,742,066 totalTokens — roughly $0.06–0.12 per delivery at DeepSeek V4.1
-Flash list prices. Every sample moves as records change; treat
+the floor) and a 90th percentile of $0.22. Per run including unmerged work:
+the 2026-09-12 n=46 snapshot had a median of 2,220,637 tokens and a mean of
+4,742,066 — roughly $0.06–0.12 per run at DeepSeek V4.1 Flash list prices. Every sample moves as records change; treat
 https://orbi.build/cost/ as authoritative.
 
 ## Blog
@@ -250,9 +249,9 @@ Shipping notes from the root domain: what each delivery run hit, what fixed
 it, and the numbers behind both, traced to the issues they came from. RSS
 feed of the English posts: https://orbi.build/blog/feed.xml
 
-- Cursor alternatives: which one merges the PR for you? (English):
+- Cursor alternatives: editors, agents and who merges (English):
   https://orbi.build/blog/cursor-alternatives/
-- Cursor 替代品怎么选：谁替你合并 PR？ (Chinese):
+- Cursor 替代品怎么选：编辑器、后台 agent 与合并发版 (Chinese):
   https://orbi.build/zh/blog/cursor-alternatives/
 - Best Pi extensions for unattended runs: 20 tested (English):
   https://orbi.build/blog/best-pi-extensions/
@@ -336,7 +335,7 @@ feed of the English posts: https://orbi.build/blog/feed.xml
   https://orbi.build/zh/blog/write-a-request/
 - Pi agent harness: CLI, AI SDK, Pi Durable vs kill -9 (English):
   https://orbi.build/blog/pi-agent-harness/
-- Pi agent harness 三种跑法：kill -9 之后谁能接上 (Chinese):
+- Pi agent harness 三种跑法：kill -9 后如何恢复 (Chinese):
   https://orbi.build/zh/blog/pi-agent-harness/
 - Pi + DeepSeek Flash, 169 merged PRs: 8–16¢ each (English):
   https://orbi.build/blog/orbi-on-pi-coding-agent/

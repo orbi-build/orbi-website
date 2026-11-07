@@ -585,8 +585,10 @@ class LandingTests(unittest.TestCase):
                 html.count(f'<span class="stat-private">{private_label}</span>'), 1, html,
             )
             purposes = {
-                "en": ["Orbi itself", "This website", "Cloud control plane"],
-                "zh": ["Orbi 本身", "这个网站", "Cloud 控制面"],
+                # Issue #1217: "control plane" is internal vocabulary; the
+                # purpose reads as the visitor's word for the private Cloud repo.
+                "en": ["Orbi itself", "This website", "Cloud service"],
+                "zh": ["Orbi 本身", "这个网站", "Cloud 服务"],
             }[lang]
             for purpose in purposes:
                 self.assertIn(purpose, page.text)
@@ -1743,12 +1745,18 @@ class BootstrapEvidenceTests(unittest.TestCase):
             self.assertNotIn("Apache 2.0", html)
 
     def test_each_sample_carries_its_author_and_review_terms(self) -> None:
-        """Issue #1212: the invitation sentence is copy; what each sample must
-        show is the author handle and the review_rounds term a visitor looks
-        for on the timeline."""
-        for html in (self.en_html, self.zh_html):
+        """Issue #1212 / #1217: the invitation sentence is copy, and the
+        `review_rounds` field name is internal vocabulary that a visitor page
+        may not carry. What every sample still has to show is the author handle
+        and a note pointing at the review record on the timeline."""
+        for html, review_word in ((self.en_html, "review"), (self.zh_html, "评审")):
             self.assertGreaterEqual(html.count("xqliu"), 3)
-            self.assertGreaterEqual(html.lower().count("review_rounds"), 3)
+            samples = html.split('class="orbi-event-list-li"')[1:]
+            self.assertGreaterEqual(len(samples), 3, "fewer than three samples")
+            for sample in samples:
+                body = sample.split("</li>")[0]
+                self.assertIn("xqliu", body)
+                self.assertIn(review_word, body)
 
     def test_licence_wording_is_not_invented(self) -> None:
         for html in (self.en_html, self.zh_html):
