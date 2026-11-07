@@ -5,7 +5,6 @@ summary: Cursor alternatives checked against their own docs on 7 Nov 2026: edito
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-cursor-alternatives-card.png
-mirror: cursor-alternatives
 ---
 
 Cursor is an AI code editor, and these Cursor alternatives cover other editors as well as agents you can hand work to. If you're choosing what to switch to, check Cursor's [pricing](https://cursor.com/pricing) as of 7 November 2026: Plus is $8/month with the restriction "Only Grok models are available on this plan"; third-party models need Premium ($30/month) and separate billing at "API list price". I checked each alternative against its own docs on that date and grouped them by whether you stay in an editor or hand work off, with one timed record of an Issue reaching a release.
