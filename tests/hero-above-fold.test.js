@@ -45,6 +45,7 @@ function expectedCopy(item) {
 }
 
 const normalizeIndent = (value) => value.split("\n").map((line) => line.trim()).join("\n");
+const count = (html, pattern) => [...html.matchAll(pattern)].length;
 
 describe("homepage hero CTA (Issues #704, #899)", () => {
   // Issue #1184 drops the badge #1127 appended, so five elements remain.
@@ -154,3 +155,37 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
   });
 });
 
+// Issue #1184: the homepage hero is not a place for a third-party listing
+// badge, so #1127's first-screen LaunchIgniter badge is gone (the maintainer
+// accepted losing the free listing). Issue #1185 then removed the vendor's
+// badge from the shared footer too. Issue #1207 keeps the footer badge row out
+// of the test suites — a badge's name, href, order and image are not contracts
+// — but the first screen carries no badge at all, which is a layout decision
+// this file still pins.
+describe("homepage first screen carries no listing badge (Issues #1127, #1184)", () => {
+  const homepages = [
+    ["site/pages/index.html", "EN source"],
+    ["public/index.html", "EN build"],
+    ["site/pages/zh/index.html", "ZH source"],
+    ["public/zh/index.html", "ZH build"],
+  ];
+
+  it("keeps the LaunchIgniter badge out of the homepage first screen", async () => {
+    for (const [path, label] of homepages) {
+      const html = await read(path);
+      const firstScreen = hero(html);
+      expect(firstScreen, `${path} (${label}): the hero section`).not.toBe("");
+      expect(count(firstScreen, /hero-badge/g), `${path} (${label}): no hero badge markup in the first screen`)
+        .toBe(0);
+      expect(count(firstScreen, /launchigniter\.com/gi), `${path} (${label}): no link to launchigniter.com in the first screen`)
+        .toBe(0);
+    }
+  });
+
+  it("drops the retired hero badge styles", async () => {
+    // Issue #1184: nothing renders .hero-badge any more, so its rules go with
+    // the markup instead of lingering as dead CSS.
+    const css = await read("public/styles.css");
+    expect(css, "the hero badge styles must be gone").not.toContain(".hero-badge");
+  });
+});

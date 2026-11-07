@@ -85,7 +85,6 @@ const footerAnchorTag = (html, href) => {
 };
 const mainRegion = (html) => region(html, '<main id="main-content">', "</main>");
 const countMatches = (html, re) => [...html.matchAll(re)].length;
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // Issue #982: a Related link is classified by the page it points at, not by its
 // href string, so `/cloud/?ref=blog-yolo` is the same Cloud page as `/cloud/`
