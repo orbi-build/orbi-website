@@ -7,11 +7,11 @@ author: Larry 🍀 Orbi
 image: /img/blog-cursor-alternatives-card.png
 ---
 
-Cursor is an AI code editor, and these Cursor alternatives cover other editors as well as agents you can hand work to. If you're choosing what to switch to, check Cursor's [pricing](https://cursor.com/pricing) as of 7 November 2026: Plus is $8/month with the restriction "Only Grok models are available on this plan"; third-party models need Premium ($30/month) and separate billing at "API list price". I checked each alternative against its own docs on that date and grouped them by whether you stay in an editor or hand work off, with one timed record of an Issue reaching a release.
+Cursor is an AI code editor, and these Cursor alternatives cover other editors as well as agents you can hand work to. If you're choosing what to switch to, check Cursor's [pricing](https://cursor.com/pricing) as of 7 November 2026: Plus is $8/month with the restriction "Only Grok models are available on this plan"; third-party models need Premium ($30/month) and separate billing at "API list price". I checked each alternative against its own docs on that date and grouped them by whether you stay in your editor or terminal or hand work off, with one timed record of an Issue reaching a release.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
-Orbi is in this list; I did not install or run the third-party tools for this post or purchase Cursor's paid plans, so those entries rest on their official docs.
+Orbi is in this list; I did not install or run the third-party tools for this post or purchase Cursor's paid plans, so those entries rest on their official docs. Orbi itself is not an editor: it takes GitHub Issues in the background through review, merge and release, so it sits beside an editor rather than replacing Cursor's completions.
 
 ## Why people look for a Cursor alternative
 
@@ -37,7 +37,7 @@ I use four questions to choose between these tools:
 - Does the workflow open a pull request (PR), or leave that step to you?
 - Who merges the reviewed change, and who starts and publishes a release?
 
-## Cursor alternatives that keep you in an editor
+## Cursor alternatives for your editor or terminal
 
 ### GitHub Copilot
 
@@ -63,14 +63,14 @@ I use four questions to choose between these tools:
 
 | Background option | Who merges and releases? |
 |---|---|
-| Cursor cloud agents | You handle the merge and release after the branch handoff |
+| Cursor cloud agents | A person merges, or approves the agent's merge on an Origin repository; releasing stays with your workflow |
 | Copilot cloud agent | People approve and merge the PR; releasing stays with your workflow |
 | Devin Cloud | Merge and release ownership is unconfirmed in this comparison |
 | Orbi | The runner merges after review and CI; a person starts the release, then Orbi tags and publishes |
 
 ### Cursor's own cloud agents, as a baseline
 
-Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff; they do not merge the change. Pick this route if moving execution off your machine is enough and you want to keep Cursor.
+Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff. On a repository hosted on Cursor's own Origin, an agent can ask a person to approve a merge and then land that exact commit, according to the [cloud agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026; the docs do not describe a merge without that approval. Pick this route if moving execution off your machine is enough and you want to keep Cursor.
 
 ### GitHub Copilot cloud agent
 
@@ -82,7 +82,7 @@ Before switching products, compare [Cursor's cloud agents](https://cursor.com/do
 
 ### Orbi
 
-Label a GitHub Issue `ai-ready` and Orbi runs the [Pi coding agent](/guides/pi-coding-agent/) to implement it. A separate review session checks the work, and the runner merges the reviewed commit once your CI passes. A person starts a release with `/orbi milestone <version>`; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) costs $24/month for Solo or $66/month for Pro, with 3 free merged deliveries and no card required. Pick it if you want an Issue carried through review and merge, with a person choosing when to start the release. Orbi is not an editor; if you want inline completions, it does not replace Cursor.
+Label a GitHub Issue `ai-ready` and Orbi runs the [Pi coding agent](/guides/pi-coding-agent/) to implement it. A separate review session checks the work, and the runner merges the reviewed commit once your CI passes. A person starts a release with `/orbi milestone <version>`; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) costs $29/month for Solo or $79/month for Pro billed monthly, or $290 and $790 billed yearly ($24 and $66 a month), with 3 free merged deliveries and no card required. Pick it if you want an Issue carried through review and merge, with a person choosing when to start the release. If you want inline completions, Orbi does not replace Cursor.
 
 ## One Issue to a release, timed
 
