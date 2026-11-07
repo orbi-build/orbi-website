@@ -91,9 +91,9 @@ pi --print --continue --session-dir ./sess \
    "You were interrupted. Continue the original task from where you left off." < /dev/null
 ```
 
-`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，三次恢复后的运行分别用了约 33、32、22 秒。每次模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。10 月有一次 kill 落在 `step3.txt` 写完之后、两次工具调用之间，那次模型直接从第 4 步继续，没有检查。
+`--continue` 会打开 `--session-dir` 下、从同一工作目录启动的最近一个会话，所以每个任务要用单独的会话目录。目录为空时，它会新建会话。11 月三次恢复都建齐了五个文件，回复 `ALL DONE`，三次恢复后的运行分别用了约 33、32、22 秒。保留了会话文件的两次里，模型都先用 `ls` 和 `cat` 检查 step 文件，再继续。10 月有一次 kill 落在 `step3.txt` 写完之后、两次工具调用之间，那次模型直接从第 4 步继续，没有检查。
 
-被打断的 `bash` 调用，恢复前后都没有在会话文件里补上结果。聊天 API 要求每次工具调用都有结果，Pi 的模型层因此会在构造请求时补一条：`pi-ai` 为孤立调用插入 `No result provided`，并标为错误（`@earendil-works/pi-ai` 1.5.0 中的 `transform-messages.js`）。模型能看到这条失败结果，会话文件里却没有。回放、审计会话文件时，要考虑这种缺结果的调用。
+这两份会话文件里，被打断的 `bash` 调用在恢复前后都没有补上结果。聊天 API 要求每次工具调用都有结果，Pi 的模型层因此会在构造请求时补一条：`pi-ai` 为孤立调用插入 `No result provided`，并标为错误（`@earendil-works/pi-ai` 1.5.0 中的 `transform-messages.js`）。模型能看到这条失败结果，会话文件里却没有。回放、审计会话文件时，要考虑这种缺结果的调用。
 
 下面是一个简短的监督脚本。每次尝试都有时限，到点后 `timeout` 先发 `SIGTERM`，让 Pi 清理仍在运行的工具命令；只有 Pi 卡住不退，才在 30 秒后发 `SIGKILL`。`pi` 非零退出就恢复同一个会话，连首次在内最多尝试三次。脚本用的是 GNU `timeout`，面向 Linux；macOS 没有自带这个命令，Homebrew 的 coreutils 装的是 `gtimeout`，我没有在 macOS 测试。保存为 `pi-task.sh`，用 bash 执行：
 
@@ -150,7 +150,7 @@ sleep 40 | timeout 20 pi --print "reply with only PONG" < /dev/null # PONG print
 
 ## 用 AI SDK 把 Pi 嵌进 Node 程序
 
-[`@ai-sdk/harness-pi`](https://ai-sdk.dev/providers/ai-sdk-harnesses/pi) 把 Pi 放在宿主 Node 进程里，文件和 shell 操作交给沙箱；Vercel 的说法是，Pi 把沙箱当作远程文件系统和 shell。沙箱可以用 Vercel Sandbox，也可以用 `just-bash`，后者是带虚拟文件系统、在进程内运行的 bash。我把 `just-bash` 接到真实目录上，让文件在进程被杀后还能保留。适配器 1.0.177 依赖 `@earendil-works/pi-coding-agent` `^1.0.3`，npm 实际安装了 1.5.0，所以这条路径现在也用当前的 Pi。10 月用适配器 1.0.141 时，装的是 Pi 0.85.1。我选择测适配器，是因为它把文件和 shell 分到了沙箱里；Pi 自带的 SDK 没做 kill 测试。
+[`@ai-sdk/harness-pi`](https://ai-sdk.dev/providers/ai-sdk-harnesses/pi) 把 Pi 放在宿主 Node 进程里，文件和 shell 操作交给沙箱；Vercel 的说法是，Pi 把沙箱当作远程文件系统和 shell。沙箱可以用 Vercel Sandbox，也可以用 `just-bash`，后者是带虚拟文件系统、在进程内运行的 bash。我把 `just-bash` 接到真实目录上，让文件在进程被杀后还能保留。适配器 1.0.177 依赖 `@earendil-works/pi-coding-agent` `^1.0.3`，npm 实际安装了 1.5.0，所以这条路径现在也用当前的 Pi。10 月用的适配器 1.0.141 依赖 Pi `^0.85.1`。我选择测适配器，是因为它把文件和 shell 分到了沙箱里；Pi 自带的 SDK 没做 kill 测试。
 
 下面的脚本去掉了日志。一轮正常结束且流中没有错误时，脚本退出 0，任务是否完成仍要另外检查；流报告错误时退出 1；收到 `SIGTERM`、`stop()` 返回恢复状态后退出 143，方便监督程序区分。脚本固定使用 `state.json` 和同一个 session id，所以和 `pi-task.sh` 一样，每个任务要用独立目录。需要 Node 22.19 或更新版本，这是内置 Pi 的要求。把脚本存为 `run.mjs`，安装我用的版本，设好 `DEEPSEEK_API_KEY` 后运行：
 
