@@ -1,14 +1,14 @@
 ---
-title: Cursor alternatives: which one merges the PR for you?
+title: Cursor alternatives: editors, agents and who merges
 date: 2026-11-07
-summary: Cursor alternatives checked against their docs on 7 Nov 2026: editors (Copilot, Devin Desktop, Zed, Cline), agents, and who handles merges and releases.
+summary: Cursor alternatives checked against their docs on 7 Nov 2026, grouped by editor or background agent, and by who merges and releases.
 lang: en
 author: Larry 🍀 Orbi
 image: /img/blog-cursor-alternatives-card.png
 mirror: cursor-alternatives
 ---
 
-Cursor is an AI code editor, and these Cursor alternatives cover other editors as well as agents you can hand work to. If you're choosing what to switch to, check Cursor's [pricing](https://cursor.com/pricing) as of 7 November 2026: Plus is $8/month with the restriction "Only Grok models are available on this plan"; third-party models need Premium ($30/month) and separate billing at "API list price". I checked each alternative against its own docs on that date and grouped them by whether you stay in your editor or terminal or hand work off, with one timed record of an Issue reaching a release.
+Cursor is an AI code editor, and these Cursor alternatives cover other editors as well as agents you can hand work to. If you're choosing what to switch to, check Cursor's [pricing](https://cursor.com/pricing) as of 7 November 2026: Plus is $8/month with the restriction "Only Grok models are available on this plan"; third-party models need Premium ($30/month) or higher, or Teams, plus separate billing at "API list price". Every alternative below was checked against its own docs on that same date.
 
 I'm Larry 🍀 Orbi, the creator of Orbi.
 
@@ -42,23 +42,23 @@ I use four questions to choose between these tools:
 
 ### GitHub Copilot
 
-[GitHub Copilot's plans](https://github.com/features/copilot/plans) include Free with 2,000 completions per month, Pro at $10/user/month and Pro+ at $39/month. Assigning work to Copilot to create a PR starts with Pro; Free does not include that handoff. Pick it if editor completions and GitHub task assignment fit your work; the cloud agent's approval restrictions are covered below.
+[GitHub Copilot's plans](https://github.com/features/copilot/plans) include Free with 2,000 completions per month, Pro at $10/month and Pro+ at $39/month. Assigning work to Copilot to create a PR starts with Pro; Free does not include that handoff. One subscription covers editor completions and GitHub task assignment, but read the cloud agent's approval restrictions below before you count on the second.
 
 ### Devin Desktop, formerly Windsurf
 
-[Devin Desktop](https://devin.ai/desktop) is the new name for Windsurf. Its docs describe sessions on your machine or in Devin Cloud, with the same context carried between them. [Devin Free](https://devin.ai/pricing) costs $0 and includes a light agent quota and unlimited Tab completions; Pro is $20/month and adds Devin Cloud access. Pick it if you expect to move editor sessions from your machine to the cloud.
+[Devin Desktop](https://devin.ai/desktop) is the new name for Windsurf. Its docs describe sessions on your machine or in Devin Cloud, with the same context carried between them. [Devin Free](https://devin.ai/pricing) costs $0 and includes a light agent quota and unlimited Tab completions; Pro is $20/month and adds Devin Cloud access.
 
 ### Zed
 
-[Zed Personal](https://zed.dev/pricing) is $0, with unlimited use through your own API keys or external agents. Zed is open source. Pro costs $10/month and includes $5 of tokens. Pick it if an open-source editor with your own model access suits you; include the provider's bill when comparing the $0 editor plan.
+[Zed Personal](https://zed.dev/pricing) is $0, with unlimited use through your own API keys or external agents, so on that plan the cost that matters is your model provider's bill. Zed is open source. Pro costs $10/month and includes $5 of tokens.
 
 ### Cline
 
-[Cline](https://docs.cline.bot/cline-overview) has an editor extension, including support for Cursor, plus a CLI and desktop app. Its [source is Apache-2.0 licensed](https://github.com/cline/cline). Model access can use Cline usage billing, ClinePass at $9.99/month, or bring your own key (BYOK). The overview says, "Every action requires your explicit approval." Pick it if you want to approve the agent's actions while working in your editor, including while keeping Cursor installed.
+[Cline](https://docs.cline.bot/cline-overview) has an editor extension, including support for Cursor, plus a CLI and desktop app. Its [source is Apache-2.0 licensed](https://github.com/cline/cline). Model access can use Cline usage billing, ClinePass at $9.99/month, or bring your own key (BYOK). The overview says, "Every action requires your explicit approval."
 
 ### Claude Code
 
-[Claude Code](https://code.claude.com/docs/en/overview) is a terminal agent with IDE extensions for VS Code and JetBrains; the overview includes an install link for Cursor itself. Most surfaces require a Claude subscription or Anthropic Console account. Pick it if you want to work through a terminal agent or use its extension in your existing editor. For the account and workflow comparison, read [Cursor vs Claude Code](/blog/cursor-vs-claude-code/).
+[Claude Code](https://code.claude.com/docs/en/overview) is a terminal agent with IDE extensions for VS Code and JetBrains; the overview includes an install link for Cursor itself. Most surfaces require a Claude subscription or Anthropic Console account. For the account and workflow comparison, read [Cursor vs Claude Code](/blog/cursor-vs-claude-code/).
 
 ## Cursor alternatives that work in the background
 
@@ -71,25 +71,25 @@ I use four questions to choose between these tools:
 
 ### Cursor's own cloud agents, as a baseline
 
-Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff. Origin is Cursor's own code hosting, listed on its pricing page as "Code hosting via Origin" from Premium up. On a repository hosted there, an agent can ask a person to approve a merge and then land that exact commit, according to the [cloud agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026; the docs do not describe a merge without that approval, and for a GitHub repository they describe the branch handoff. Pick this route if moving execution off your machine is enough and you want to keep Cursor.
+Before switching products, compare [Cursor's cloud agents](https://cursor.com/docs/cloud-agent). They require Premium or higher and run in isolated cloud VMs. They work on a separate branch and push changes to your repository for handoff. Origin is Cursor's own code hosting, listed on its pricing page as "Code hosting via Origin" from Premium up. On a repository hosted there, an agent can ask a person to approve a merge and then land that exact commit, according to the [cloud agents release notes](https://cursor.com/docs/release-notes/cloud-agents) for the week of 7 September 2026; the docs do not describe a merge without that approval, and for a GitHub repository they describe the branch handoff. If all you want is execution off your own machine, this route lets you stay on Cursor.
 
 ### GitHub Copilot cloud agent
 
-[Copilot cloud agent access](https://github.com/features/copilot/plans) starts at Pro ($10/user/month), with Pro+ at $39/month. Its [security documentation](https://docs.github.com/en/copilot/concepts/agents/coding-agent/risks-and-mitigations) says it "cannot approve or merge a pull request". By default, a person with write access must review the code and click "Approve and run workflows" before workflows run. The person who requested the PR cannot submit the approving PR review. Pick it if a PR is the handoff you want and your repository has people available for those approval steps. The [Orbi vs GitHub Copilot coding agent](/compare/github-copilot-coding-agent/) page compares the two side by side.
+[Copilot cloud agent access](https://github.com/features/copilot/plans) starts at Pro ($10/month), with Pro+ at $39/month. Its [security documentation](https://docs.github.com/en/copilot/concepts/agents/coding-agent/risks-and-mitigations) says it "cannot approve or merge a pull request". By default, a person with write access must review the code and click "Approve and run workflows" before workflows run. The person who requested the PR cannot submit the approving PR review. That suits a team that wants the agent to stop at a PR and has reviewers on hand for those approvals. The [Orbi vs GitHub Copilot coding agent](/compare/github-copilot-coding-agent/) page compares the two side by side.
 
 ### Devin Cloud
 
-[Devin Cloud is available from Pro at $20/month](https://devin.ai/pricing). The [Desktop documentation](https://devin.ai/desktop) describes moving sessions between your machine and the cloud while retaining context. Pick it if that continuity is the reason you want background execution. Merge and release ownership is unconfirmed in this comparison; [Orbi vs Devin](/compare/devin/) covers what Devin's docs did say.
+[Devin Cloud is available from Pro at $20/month](https://devin.ai/pricing). The [Desktop documentation](https://devin.ai/desktop) describes moving sessions between your machine and the cloud while retaining context. [Orbi vs Devin](/compare/devin/) covers what else Devin's docs say.
 
 ### Orbi
 
-Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner (on your machine if you self-host, or Orbi Cloud's hosted runner) merges the reviewed commit once your CI passes. No person signs off on that merge by default; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release by commenting `/orbi milestone <version>` on an Issue; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page, and the first 3 merged deliveries (an Issue whose PR Orbi merged) are free with no card required. Pick it if you want an Issue carried through review and merge, with a person choosing when to start the release. If you want inline completions, Orbi does not replace Cursor.
+Label a GitHub Issue `ai-ready` and Orbi runs [Pi](/guides/pi-coding-agent/), an open-source coding agent, to implement it. A second Pi session that did not write the code reviews it, and the Orbi runner (on your machine if you self-host, or Orbi Cloud's hosted runner) merges the reviewed commit once your CI passes. No person signs off on that merge by default; if your branch protection requires a human approval, Orbi stops at `ai-awaiting-merge` and the Issue comment names the action. A person starts a release by commenting `/orbi milestone <version>` on an Issue; Orbi then opens the release ticket, tags and publishes. Self-hosted [Orbi](https://github.com/orbi-build/orbi) is free under AGPL-3.0 with your own model key. [Orbi Cloud](/cloud/?ref=blog-cursor-alt) is the hosted version; its monthly and yearly plans are listed on that page, and the first 3 merged deliveries (an Issue whose PR Orbi merged) are free with no card required. It fits a team that wants Issues carried through review and merge while a person still decides when to release. If you want inline completions, Orbi does not replace Cursor.
 
 ## One Issue to a release, timed
 
 In [orbi-build/orbi#2123](https://github.com/orbi-build/orbi/issues/2123), Orbi stopped updating a GitHub Actions variable in repositories it delivers to: `ORBI_ACTIVE_MILESTONE`. The change became [PR #2124](https://github.com/orbi-build/orbi/pull/2124) and was included in [v0.7.38](https://github.com/orbi-build/orbi/releases/tag/v0.7.38). All times below are UTC on 6 November 2026.
 
-| Step | UTC time | Who |
+| Step | Time | Who |
 |---|---|---|
 | Open Issue #2123 | 00:03:43 | xqliu |
 | Add `ai-ready` | 00:03:45 | xqliu |
@@ -106,9 +106,9 @@ From the `ai-ready` label, the Issue was claimed after 2 min 49 s, the PR opened
 
 The [merge comment on the Issue](https://github.com/orbi-build/orbi/issues/2123#issuecomment-6673829957) records Orbi's review verdict: "pass, no findings" in 1 round. The PR's CI checks passed: [tests in 6m31s](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350), [macos-compatibility in 6m51s](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517) and [link in 4s](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151).
 
-The PR touched 19 files (+230 −308): the source change is +7 −77 across 5 files under `src/orbi/`, and the rest is tests, a CI triage tool and the docs in English and Chinese. It is not an average or a prediction for another task.
+The PR touched 19 files (+230 −308). The source change is +7 −77 across 5 files under `src/orbi/`, and the rest is tests, a CI triage tool and the docs in English and Chinese. It is not an average or a prediction for another task.
 
-To reproduce the timeline from GitHub, use this script. Paste it into a file and run it with bash; it needs the GitHub CLI logged in. Times are UTC.
+To reproduce the timeline from GitHub, use this script. Paste it into a file and run it with bash; it needs the GitHub CLI logged in.
 
 ```bash
 #!/usr/bin/env bash

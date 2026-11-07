@@ -1,10 +1,10 @@
 [
   {
     "slug": "cursor-alternatives",
-    "title": "Cursor alternatives: which one merges the PR for you?",
-    "summary": "Cursor alternatives checked against their docs on 7 Nov 2026: editors (Copilot, Devin Desktop, Zed, Cline), agents, and who handles merges and releases.",
+    "title": "Cursor alternatives: editors, agents and who merges",
+    "summary": "Cursor alternatives checked against their docs on 7 Nov 2026, grouped by editor or background agent, and by who merges and releases.",
     "zhSlug": "cursor-alternatives",
-    "zhTitle": "Cursor 替代品怎么选：谁替你合并 PR？",
+    "zhTitle": "Cursor 替代品怎么选：编辑器、后台 agent 与合并发版",
     "related": []
   },
   {
