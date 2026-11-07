@@ -1075,11 +1075,12 @@ describe("footer directory badges are one strip inside the friends row (Issues #
             outlineWidth: style.outlineWidth,
           };
         });
-        expect(focused.href, path + ": Tab from Gets.Tools must focus the Altern badge").toBe("https://altern.ai/ai/orbi");
-        expect(focused.outlineStyle, path + ": the focused Altern badge needs a visible focus ring").not.toBe("none");
-        expect(focused.outlineWidth, path + ": the focused Altern badge needs a visible focus ring").not.toBe("0px");
+        expect(focused.href, path + ": Tab from Gets.Tools must focus the SiftFox badge").toBe("https://siftfox.com/tool/orbi");
+        expect(focused.outlineStyle, path + ": the focused SiftFox badge needs a visible focus ring").not.toBe("none");
+        expect(focused.outlineWidth, path + ": the focused SiftFox badge needs a visible focus ring").not.toBe("0px");
         // Issue #1015: the new last badge is reachable too, with the same ring.
         await page.keyboard.press("Tab"); // SiftFox -> Altern
+        await page.keyboard.press("Tab");
         await page.keyboard.press("Tab");
         const next = await page.evaluate(() => {
           const active = document.activeElement;
@@ -1096,7 +1097,7 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Issue #1027: Tab from SaaSpa.ge enters the Tooluck badge with the
         // same ring, and one more Tab leaves the badge row — the row stays a
         // normal tab sequence, never a keyboard trap.
-        await page.keyboard.press("Tab");
+        // Focus is already on Tooluck here (the previous Tab passed SaaSpa.ge).
         const tooluck = await page.evaluate(() => {
           const active = document.activeElement;
           const style = getComputedStyle(active);
@@ -1231,6 +1232,7 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://launchtory.com/projects/orbi-build",
     "https://dofollow.tools",
     "https://gets.tools",
+    "https://siftfox.com/tool/orbi",
     "https://altern.ai/ai/orbi",
     "https://saaspa.ge/product/cmvdfiyyk000mjq06rc8auynb",
     "https://www.tooluck.org/item/orbi",
