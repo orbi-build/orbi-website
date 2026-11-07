@@ -196,7 +196,7 @@
           </ol>
         </details>
 <p>A new user connected a repository to Orbi Cloud. The page said &quot;preparing your workspace&quot;. They waited a while, then left.</p>
-<p>When they left, the workspace was already ready. The page only refreshed every 10 seconds and hadn&#39;t told them yet.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a></aside>
+<p>When they left, the workspace was already ready. The page only refreshed every 10 seconds and hadn&#39;t told them yet.</p><aside class="post-cta-inline"><span>Orbi takes your Issues all the way to a release.</span><a class="button button-signal" data-cta="post-inline-start" href="/cloud/login">Try Orbi Cloud free →</a></aside>
 <p>I started digging that night. Claude Code, the AI assistant I plan work with, told me preparing a workspace took &quot;about five minutes&quot;. I said five minutes is long enough to install an operating system.</p>
 <p>It turned out to be about a minute on a normal day and over two minutes on a bad one. One night later, on our test server, it was about 10 seconds. The fix was 31 tickets; Orbi wrote the code for every one, reviewed it and merged it (Orbi is what I&#39;m building: a lights-out software factory that takes an Issue to a release without anyone watching). Along the way we hit a bug that review had warned us about, which we&#39;d decided wasn&#39;t worth fixing. It bit us the same evening.</p>
 <figure class="post-media"><iframe src="https://www.youtube.com/embed/YpaOJxtK7HA" title="How long new users wait after connecting a repo: 1–2 min before, ~12 s after" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>Both are timed from clicking “Connect repository” until the workspace is ready and the user can hand Orbi a first task. Before, from production records: about a minute on a normal day and over two minutes on a bad one, on a page that only said “a few minutes”. After, recorded on our test server and played back in real time: about 12 seconds.</figcaption></figure><p>Two pieces matter for the rest of the story. Cloud is our website, where users sign in and connect repositories. The host is a machine of ours that runs a sandbox for each connected repository; for security it can only connect outward, so Cloud can never call it directly.</p>
@@ -355,7 +355,7 @@ WantedBy=multi-user.target
 </ol>
 <aside class="post-cta">
   <h2>Orbi takes your Issues all the way to a release.</h2>
-  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try __FREE_DELIVERIES__ deliveries free →</a>
+  <a class="button button-signal" data-cta="post-start" href="/cloud/login">Try Orbi Cloud free →</a>
   <p class="post-cta-note">No credit card required · Orbi only sees the repos you pick</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">Prefer to self-host? It's open source (AGPL) →</a>
 </aside><h2 id="related">Related</h2>

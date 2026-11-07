@@ -193,7 +193,7 @@
           </ol>
         </details>
 <p>AI 代码评审在我的流水线上没有成为主要瓶颈：847 个 PR 从创建到合并，中位数约 21 分钟，包含 CI 和每轮 agent 评审。把窗口内晋升带进生产分支 main 的 PR 一个个算，合入 beta 之后的等待时间中位数是 5.9 小时，十个里有一个超过 62 小时，最长 168 小时。做完的改动在等发版、等晋升。本文说的「合并」都指合入 beta，「晋升」指合入 main。PR 计时从 PR 创建算起，agent 从接下 Issue 到创建 PR 的时间不在本文任何一个数字里。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。托管产品 Orbi Cloud 也是用 Orbi 开发的：agent 接下 GitHub Issue，向预发布分支 beta 提 PR，另一个独立的 agent 会话负责评审。评审和 CI 都过了，就合并。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。托管产品 Orbi Cloud 也是用 Orbi 开发的：agent 接下 GitHub Issue，向预发布分支 beta 提 PR，另一个独立的 agent 会话负责评审。评审和 CI 都过了，就合并。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <p>工作按里程碑分批，里程碑以版本号命名；一个里程碑的票做完，发版票就在 beta 上打出这个版本的发版标签（tag）。之后做晋升（promotion，把带发版标签的版本合进生产分支 main），生产部署再等人点一次批准。orbi-cloud 仓库是私有的，所以这里只给汇总数字，不放仓库链接。</p>
 <h2 id="ai-代码评审花了多久-合并后又等了多久">AI 代码评审花了多久，合并后又等了多久</h2>
 <p>统计窗口是 2026 年 9 月 14 日 0 点到 10 月 22 日 0 点（+08）。847 个 PR 都由 Orbi 执行器在 Orbi Cloud 仓库发起。</p>
@@ -374,7 +374,7 @@ git log --first-parent --merges --format=&#39;%ct %cI %s&#39; origin/main..origi
 <p>这只是一个由 agent 开发的产品、一个维护者、约五周的记录。我用 PR 在 beta 上的合并提交时间表示「合入 beta」，发版标签的计时用它所指提交的提交者时间。合入 main 的时刻早于实际部署。审批票和分支差距告警的数字，都取决于这个团队的流程。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

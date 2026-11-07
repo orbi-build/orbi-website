@@ -195,7 +195,7 @@
           </ol>
         </details>
 <p>Claude Code 沙箱（<code class="post-code--single">/sandbox</code>）给 Claude 执行的 shell 命令套一层操作系统级的隔离。在 Linux 上靠的是 bubblewrap：命令只能写项目目录和一个临时目录，联网要经过一个按域名放行的代理。Claude 自己的 Read、Write、Edit、WebFetch 工具都不归它管。开着 <code class="post-code--single">--dangerously-skip-permissions</code> 跳过权限、只打开沙箱、其余保持默认时，我试的四次越界最终都成功了。</p>
-<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 把 GitHub Issue 一路做到合并、发版，中间没有人工逐条点批准。Orbi 用的是开源编程 agent Pi，不是 Claude Code。两者在无人值守时都得限定 agent 能碰什么。Claude Code 的沙箱和权限规则这两层控制都有文档，我就拿它来实测。<code class="post-code--spaced">claude -p</code> 放进 cron 要加哪些参数、退出码怎么查，写在<a href="/zh/blog/run-claude-code-unattended/">《Claude Code headless 模式下操作被拒，退出码还是 0》</a>里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a></aside>
+<p>我是 Larry 🍀 Orbi，Orbi 的创始人。Orbi 把 GitHub Issue 一路做到合并、发版，中间没有人工逐条点批准。Orbi 用的是开源编程 agent Pi，不是 Claude Code。两者在无人值守时都得限定 agent 能碰什么。Claude Code 的沙箱和权限规则这两层控制都有文档，我就拿它来实测。<code class="post-code--spaced">claude -p</code> 放进 cron 要加哪些参数、退出码怎么查，写在<a href="/zh/blog/run-claude-code-unattended/">《Claude Code headless 模式下操作被拒，退出码还是 0》</a>里。</p><aside class="post-cta-inline"><span>Orbi 把你的 Issue 一路做到发版。</span><a class="button button-signal" data-cta="post-inline-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a></aside>
 <h2 id="怎么测的">怎么测的</h2>
 <p>每次测试都在一个新建的 git 仓库里跑一次 <code class="post-code--spaced">claude -p</code>，都带 <code class="post-code--single">--dangerously-skip-permissions</code>，也就是大家说的 YOLO 模式。提示词让 Claude 做四件事，每件都指定工具：</p>
 <ol>
@@ -398,7 +398,7 @@ then move on.
 <p>Orbi 也能用 Claude 模型：Orbi Cloud 可以填 Anthropic 的 API key，走的是 Anthropic 的 OpenAI 兼容接口（官方定位为测试用，不支持 prompt caching）。截至 2026 年 10 月，Max 和 Team 订阅每月附带一笔 <a href="https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers">API 额度</a>（Max 5x 100 美元、Max 20x 200 美元、Team 全队合计最多 500 美元）。领取额度、关联一个 Claude Console 组织之后，用这个组织的 key，花的就是这笔额度。Orbi 和 Claude Code 各管到哪一步，见 <a href="/zh/compare/claude-code/">Orbi 与 Claude Code 对比</a>。想交给 Orbi 跑，可以<a href="https://orbi.build/zh/cloud/?ref=blog-sandbox">把仓库接入 Orbi Cloud</a>，也可以自托管<a href="https://github.com/orbi-build/orbi">开源 runner</a>。</p>
 <aside class="post-cta">
   <h2>Orbi 把你的 Issue 一路做到发版。</h2>
-  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试 __FREE_DELIVERIES__ 次 →</a>
+  <a class="button button-signal" data-cta="post-start" href="/zh/cloud/login">免费试用 Orbi Cloud →</a>
   <p class="post-cta-note">不用绑定信用卡 · 只授权你选的仓库</p>
   <a class="post-cta-link" data-cta="post-selfhost" href="https://github.com/orbi-build/orbi">想自己部署？开源免费（AGPL）→</a>
 </aside><h2 id="相关">相关</h2>

@@ -21,6 +21,7 @@ const FOUNDING_PARTNER_REMAINING = String(pricing.foundingPartnerRemaining);
 const FOUNDING_PROMO_CODE = pricing.foundingPromoCode;
 const FREE_DELIVERIES = String(pricing.freeDeliveries);
 const FREE_DELIVERIES_TOKEN = pricing.freeDeliveriesToken;
+const FREE_TRIAL_TOKEN = pricing.freeTrialCopyToken;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE = pricing.measuredSmallRepositoryDeliveryRange;
 const MEASURED_SMALL_REPOSITORY_DELIVERY_RANGE_TOKEN = pricing.measuredSmallRepositoryDeliveryRangeToken;
 const MEASURED_SOLO_REPOSITORY_DELIVERY_RANGE = pricing.measuredSoloRepositoryDeliveryRange;
@@ -183,25 +184,92 @@ describe("Cloud monthly price constant (Issue #102)", () => {
 
 });
 
-describe("Free delivery allowance constant (Issue #274)", () => {
-  const FREE_PAGES = ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"];
+// Issue #1216: the free allowance stopped being a per-page promise. One
+// sentence, defined once in pricing.json, appears only in the two pricing notes
+// and on the terms pages; no other product page states a delivery count.
+// Blog articles under content/blog/ are dated writing, not product pages: the
+// ticket's audit covered the 44 non-blog pages, and two articles explain the
+// trial on purpose, so the scans below read the built non-blog pages.
+describe("free trial copy (Issue #1216)", () => {
+  const EN = `First ${FREE_DELIVERIES} merged pull requests free`;
+  const ZH = `前 ${FREE_DELIVERIES} 个合并的 PR 免费`;
+  const ALLOWED = {
+    "index.html": { note: "pricing-summary-trial", copy: EN },
+    "zh/index.html": { note: "pricing-summary-trial", copy: ZH },
+    "cloud/index.html": { note: "pricing-trial-note", copy: EN },
+    "zh/cloud/index.html": { note: "pricing-trial-note", copy: ZH },
+    "terms/index.html": { copy: EN },
+    "zh/terms/index.html": { copy: ZH },
+  };
+  const RETIRED = ["deliveries free", "3-delivery", "FREE_DELIVERY_ALLOWANCE", "免费试 3 次"];
+  const isBlog = (path) => path.includes("/blog/");
 
-  it("keeps the allowance sourced from pricing.json and tokenized in every source", async () => {
+  it("defines the sentence once, with the count filled from pricing.json", () => {
     expect(pricing.freeDeliveries).toBe(3);
+    expect(pricing.freeTrialCopy.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(EN);
+    expect(pricing.freeTrialCopyZh.replace(FREE_DELIVERIES_TOKEN, FREE_DELIVERIES)).toBe(ZH);
+  });
+
+  it("carries the sentence token exactly once on the pricing notes and terms pages, nowhere else", async () => {
     for (const dir of [SITE_PAGES_DIR, PUBLIC_DIR]) {
-      for (const relativePath of FREE_PAGES) {
+      for (const [relativePath, expected] of Object.entries(ALLOWED)) {
         const html = await readFile(`${dir}${relativePath}`, "utf8");
-        expect(html, `${dir}${relativePath}`).toContain(FREE_DELIVERIES_TOKEN);
+        expect(html.split(pricing.freeTrialCopyToken).length - 1, `${dir}${relativePath}: sentence token`).toBe(1);
+        expect(html, `${dir}${relativePath}: no literal copy`).not.toContain(expected.copy);
+      }
+      const allowed = new Set(Object.keys(ALLOWED).map((relativePath) => `${dir}${relativePath}`));
+      for (const path of await listHtmlFiles(dir)) {
+        if (allowed.has(path) || isBlog(path)) continue;
+        const html = await readFile(path, "utf8");
+        expect(html, `${path}: sentence token`).not.toContain(pricing.freeTrialCopyToken);
+        for (const copy of [EN, ZH]) expect(html, `${path}: ${copy}`).not.toContain(copy);
       }
     }
   });
 
-  it("serves the allowance through the real Worker path", async () => {
-    for (const relativePath of FREE_PAGES) {
+  it("renders the one wording through the real Worker path, next to the pricing notes", async () => {
+    for (const [relativePath, expected] of Object.entries(ALLOWED)) {
       const response = await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`);
       const body = await response.text();
+      expect(body, relativePath).not.toContain(pricing.freeTrialCopyToken);
       expect(body, relativePath).not.toContain(FREE_DELIVERIES_TOKEN);
-      expect(body, relativePath).toContain(FREE_DELIVERIES);
+      expect(body.split(expected.copy).length - 1, `${relativePath}: sentence count`).toBe(1);
+      if (expected.note) {
+        const note = body.match(new RegExp(`<p class="${expected.note}">[\\s\\S]*?</p>`))?.[0] ?? "";
+        expect(note, `${relativePath}: the sentence lives in the pricing note`).toContain(expected.copy);
+      }
+    }
+  });
+
+  // Acceptance 1: no delivery count next to the homepage and Cloud buttons.
+  it("states no delivery count beside the homepage and Cloud CTAs", async () => {
+    for (const relativePath of ["index.html", "zh/index.html", "cloud/index.html", "zh/cloud/index.html"]) {
+      const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
+      const note = body.match(/<p class="hero-cta-note">[\s\S]*?<\/p>/)?.[0] ?? "";
+      expect(note, `${relativePath}: hero CTA note`).toBeTruthy();
+      expect(note, `${relativePath}: hero CTA note`).not.toContain(FREE_DELIVERIES_TOKEN);
+      expect(note, `${relativePath}: hero CTA note`).not.toMatch(/[0-9]/);
+      const blocks = [
+        note,
+        ...(body.match(/<div class="pricing-card-actions">[\s\S]*?<\/div>/g) ?? []),
+        ...(body.match(/<div class="cta-row">[\s\S]*?<\/div>/g) ?? []),
+      ];
+      for (const block of blocks) {
+        expect(block, `${relativePath}: no count beside a CTA`).not.toContain(FREE_DELIVERIES_TOKEN);
+        expect(block, `${relativePath}: no count beside a CTA`).not.toMatch(/[0-9]/);
+      }
+    }
+  });
+
+  it("ships none of the retired phrases on any built non-blog page or llms file", async () => {
+    for (const path of await listHtmlFiles(PUBLIC_DIR)) {
+      if (isBlog(path)) continue;
+      const html = await readFile(path, "utf8");
+      for (const phrase of RETIRED) expect(html, `${path}: ${phrase}`).not.toContain(phrase);
+    }
+    for (const name of ["llms.txt", "llms-full.txt"]) {
+      const text = await readFile(`${PUBLIC_DIR}${name}`, "utf8");
+      for (const phrase of RETIRED) expect(text, `${name}: ${phrase}`).not.toContain(phrase);
     }
   });
 });
@@ -221,7 +289,7 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       const html = await readFile(`${SITE_PAGES_DIR}${relativePath}`, "utf8");
       const pricing = html.match(/<section id="pricing"[\s\S]*?<\/section>\n\s*<section class="compare-section shell" aria-labelledby="cost-title">/)?.[0];
       expect(pricing, relativePath).toBeDefined();
-      expect(pricing, relativePath).toContain(FREE_DELIVERIES_TOKEN);
+      expect(pricing, relativePath).toContain(FREE_TRIAL_TOKEN);
       expect(pricing.match(/<article class="pricing-card/g), relativePath).toHaveLength(2);
 
       const cards = [...pricing.matchAll(/<article class="pricing-card[\s\S]*?<\/article>/g)].map(([card]) => card);
@@ -229,7 +297,6 @@ describe("Cloud pricing trial integration (Issue #742)", () => {
       expect(cards[1], relativePath).toContain("<h3>Pro</h3>");
       expect(cards[0], relativePath).toContain(`data-cta="pricing-solo-trial" href="${expected.login}"`);
       expect(cards[1], relativePath).toContain(`data-cta="pricing-pro-trial" href="${expected.login}"`);
-      for (const card of cards) expect(card, relativePath).toContain(FREE_DELIVERIES_TOKEN);
       expect(pricing, relativePath).toContain('data-pricing-subscribe="solo" data-cta="pricing-solo-year" href="/api/checkout?plan=solo&amp;interval=year"');
       expect(pricing, relativePath).toContain('data-pricing-subscribe="pro" data-cta="pricing-pro-year" href="/api/checkout?plan=pro&amp;interval=year"');
     }
@@ -431,7 +498,7 @@ describe("llms.txt ships pricing tokens, never drifted literals (Issues #146, #8
     for (const path of [LLMS, LLMS_FULL]) {
       const raw = await readFile(path, "utf8");
       for (const token of [
-        pricing.freeDeliveriesToken, pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
+        pricing.freeTrialCopyToken, pricing.foundingPartnerLimitToken, pricing.foundingPartnerRemainingToken,
         pricing.soloRepositoriesToken, pricing.proRepositoriesToken,
       ]) expect(raw, path + ": " + token).toContain(token);
     }
