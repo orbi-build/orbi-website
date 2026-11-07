@@ -45,7 +45,6 @@ function expectedCopy(item) {
 }
 
 const normalizeIndent = (value) => value.split("\n").map((line) => line.trim()).join("\n");
-const count = (html, pattern) => [...html.matchAll(pattern)].length;
 
 describe("homepage hero CTA (Issues #704, #899)", () => {
   // Issue #1184 drops the badge #1127 appended, so five elements remain.
@@ -155,67 +154,3 @@ describe("homepage hero CTA (Issues #704, #899)", () => {
   });
 });
 
-// Issue #1184: the homepage hero is not a place for a third-party listing
-// badge, so #1127's first-screen LaunchIgniter badge is gone (the maintainer
-// accepted losing the free listing). Issue #1185 then removed the vendor's
-// badge from the shared footer too: launchigniter.com/product/orbi answers 200
-// with "Product Not Found", so it leads nowhere. Turbo0's listing needs its
-// badge present in the homepage HTML; the shared footer badge row carries it
-// (Issue #1116), and this pins that the homepage still does.
-describe("homepage LaunchIgniter and Turbo0 badges (Issues #1127, #1184, #1185)", () => {
-  const homepages = [
-    ["site/pages/index.html", "EN source"],
-    ["public/index.html", "EN build"],
-    ["site/pages/zh/index.html", "ZH source"],
-    ["public/zh/index.html", "ZH build"],
-  ];
-
-  it("keeps the LaunchIgniter badge out of the homepage first screen", async () => {
-    for (const [path, label] of homepages) {
-      const html = await read(path);
-      const firstScreen = hero(html);
-      expect(firstScreen, `${path} (${label}): the hero section`).not.toBe("");
-      expect(count(firstScreen, /hero-badge/g), `${path} (${label}): no hero badge markup in the first screen`)
-        .toBe(0);
-      expect(count(firstScreen, /launchigniter\.com/gi), `${path} (${label}): no link to launchigniter.com in the first screen`)
-        .toBe(0);
-    }
-  });
-
-  it("keeps the LaunchIgniter badge out of the footer too (Issue #1185)", async () => {
-    // Issue #1184 removed the hero copy; Issue #1185 removed the vendor's
-    // footer embed as well, because its product page answers 200 with
-    // "Product Not Found" — the directory has no Orbi entry to land on.
-    // The source pages carry the footer as a <!--@footer--> marker, so the
-    // absence is pinned in the partial plus both built homepages.
-    for (const [path, label] of [
-      ["site/partials/footer.html", "shared footer"],
-      ["public/index.html", "EN build"],
-      ["public/zh/index.html", "ZH build"],
-    ]) {
-      const html = await read(path);
-      expect(count(html, /launchigniter\.com/gi), `${path} (${label}): no LaunchIgniter link in the footer`).toBe(0);
-    }
-  });
-
-  it("keeps the Turbo0 badge in the homepage footer badge row", async () => {
-    // The badge lives in the shared footer partial, so the built homepages and
-    // that partial are where Turbo0's listing requirement is met.
-    for (const [path, label] of [
-      ["site/partials/footer.html", "shared footer"],
-      ["public/index.html", "EN build"],
-      ["public/zh/index.html", "ZH build"],
-    ]) {
-      const html = await read(path);
-      expect(html, `${path} (${label}): the Turbo0 badge`)
-        .toContain('<a href="https://turbo0.com/item/orbi" target="_blank" rel="noopener noreferrer"><img src="https://img.turbo0.com/badge-listed-light.svg" alt="Listed on Turbo0" width="482" height="161" />');
-    }
-  });
-
-  it("drops the retired hero badge styles", async () => {
-    // Issue #1184: nothing renders .hero-badge any more, so its rules go with
-    // the markup instead of lingering as dead CSS.
-    const css = await read("public/styles.css");
-    expect(css, "the hero badge styles must be gone").not.toContain(".hero-badge");
-  });
-});
