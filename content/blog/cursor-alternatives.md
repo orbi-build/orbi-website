@@ -22,7 +22,7 @@ The [pricing page](https://cursor.com/pricing) makes the model restriction worth
 |---|---|---|
 | Free | $0 | Limited agent and chat requests |
 | Plus | $8 | Grok models only |
-| Premium | $30 | Cloud agents, Bugbot code review and third-party models become available |
+| Premium | $30 | Cloud agents, Bugbot code review and third-party models become available; third-party usage is billed separately |
 | Super | $100 | Includes Premium features; third-party usage stays separate |
 | Ultra | $200 | Includes Super features; third-party usage stays separate |
 | Teams | From $30/user | Cloud agents, Bugbot and third-party model access |
@@ -96,15 +96,17 @@ In [orbi-build/orbi#2123](https://github.com/orbi-build/orbi/issues/2123), Orbi 
 | Claim the Issue (`ai-in-progress`) | 00:06:34 | orbi-build[bot] |
 | Open PR #2124 | 00:50:00 | app/orbi-build |
 | Merge PR #2124 | 01:05:15 | app/orbi-build |
-| Type `/orbi milestone v0.7.38` | 02:52:01 | xqliu |
+| Type `/orbi milestone v0.7.38` on Issue #2125 | 02:52:01 | xqliu |
 | Open release Issue #2126 | 02:56:25 | app/orbi-build |
 | Publish v0.7.38 | 03:11:32 | orbi-build[bot] |
+
+`app/orbi-build` and `orbi-build[bot]` are two spellings GitHub uses for the same Orbi GitHub App.
 
 From the `ai-ready` label, the Issue was claimed after 2 min 49 s, the PR opened after 46 min 15 s, and the PR merged after 61 min 30 s. The release command was typed about 1 h 47 min after the merge, reflecting a person's choice of timing. From that command to the published release took 19 min 31 s.
 
 The [Issue comments](https://github.com/orbi-build/orbi/issues/2123) record Orbi's review verdict: "pass, no findings" in 1 round. The PR's CI checks passed: [tests in 6m31s](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350), [macos-compatibility in 6m51s](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517) and [link in 4s](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151).
 
-This record covers one small change, removing that variable write, with +230 −308 lines across 19 files. It is not an average or a prediction for another task.
+This record covers one narrowly scoped change, removing that variable write, with +230 −308 lines across 19 files. It is not an average or a prediction for another task.
 
 To reproduce the timeline from GitHub, use this script. Paste it into a file and run it with bash; it needs the GitHub CLI logged in. Times are UTC.
 

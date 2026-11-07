@@ -240,7 +240,7 @@
 <tr>
 <th scope="row">Premium</th>
 <td>30</td>
-<td>开放云端 agent、Bugbot 代码评审和第三方模型</td>
+<td>开放云端 agent、Bugbot 代码评审和第三方模型，第三方模型用量另收费</td>
 </tr>
 <tr>
 <th scope="row">Super</th>
@@ -395,7 +395,7 @@
 <td>app/orbi-build</td>
 </tr>
 <tr>
-<th scope="row">输入 <code class="post-code--spaced">/orbi milestone v0.7.38</code></th>
+<th scope="row">在 Issue #2125 输入 <code class="post-code--spaced">/orbi milestone v0.7.38</code></th>
 <td>02:52:01</td>
 <td>xqliu</td>
 </tr>
@@ -410,10 +410,11 @@
 <td>orbi-build[bot]</td>
 </tr>
 </tbody></table></div>
+<p><code class="post-code--single">app/orbi-build</code> 和 <code class="post-code--single">orbi-build[bot]</code> 是 GitHub 对同一个 Orbi GitHub App 的两种写法。</p>
 <p>换成北京时间，都是 2026 年 11 月 6 日：08:03:45 打标签，09:05:15 合并，10:52:01 输入发版命令，11:11:32 发版。</p>
 <p>从 <code class="post-code--single">ai-ready</code> 标签算起，2 分 49 秒后 Issue 被认领，46 分 15 秒后开出 PR，61 分 30 秒后合并。合并约 1 小时 47 分钟后，人才输入发版命令，这段间隔反映的是人工选择发版时机。从输入命令到发布完成，花了 19 分 31 秒。</p>
 <p><a href="https://github.com/orbi-build/orbi/issues/2123">Issue 评论</a>记录的评审结果是「pass, no findings」，1 轮通过，没有发现问题。PR 的 CI 检查均通过：<a href="https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350">tests 用时 6 分 31 秒</a>、<a href="https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517">macos-compatibility 用时 6 分 51 秒</a>、<a href="https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151">link 用时 4 秒</a>。</p>
-<p>这条记录只涉及一次停止写入变量的小改动，跨 19 个文件，新增 230 行、删除 308 行。它不能当成平均耗时，也不能用来预测另一个任务。</p>
+<p>这条记录只涉及一次范围很窄的改动（停止写入那个变量），跨 19 个文件，新增 230 行、删除 308 行。它不能当成平均耗时，也不能用来预测另一个任务。</p>
 <p>要从 GitHub 复查这条时间线，把下面的脚本存成文件，用 bash 运行。需要先登录 GitHub CLI，输出时间为 UTC。</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="已复制">复制</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # Print the Issue -&gt; PR -&gt; release timeline of one Orbi delivery (UTC timestamps from GitHub).

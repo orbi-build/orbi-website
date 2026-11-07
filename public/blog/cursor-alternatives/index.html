@@ -240,7 +240,7 @@
 <tr>
 <th scope="row">Premium</th>
 <td>$30</td>
-<td>Cloud agents, Bugbot code review and third-party models become available</td>
+<td>Cloud agents, Bugbot code review and third-party models become available; third-party usage is billed separately</td>
 </tr>
 <tr>
 <th scope="row">Super</th>
@@ -347,7 +347,7 @@
 <td>app/orbi-build</td>
 </tr>
 <tr>
-<th scope="row">Type <code class="post-code--spaced">/orbi milestone v0.7.38</code></th>
+<th scope="row">Type <code class="post-code--spaced">/orbi milestone v0.7.38</code> on Issue #2125</th>
 <td>02:52:01</td>
 <td>xqliu</td>
 </tr>
@@ -362,9 +362,10 @@
 <td>orbi-build[bot]</td>
 </tr>
 </tbody></table></div>
+<p><code class="post-code--single">app/orbi-build</code> and <code class="post-code--single">orbi-build[bot]</code> are two spellings GitHub uses for the same Orbi GitHub App.</p>
 <p>From the <code class="post-code--single">ai-ready</code> label, the Issue was claimed after 2 min 49 s, the PR opened after 46 min 15 s, and the PR merged after 61 min 30 s. The release command was typed about 1 h 47 min after the merge, reflecting a person&#39;s choice of timing. From that command to the published release took 19 min 31 s.</p>
 <p>The <a href="https://github.com/orbi-build/orbi/issues/2123">Issue comments</a> record Orbi&#39;s review verdict: &quot;pass, no findings&quot; in 1 round. The PR&#39;s CI checks passed: <a href="https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350">tests in 6m31s</a>, <a href="https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517">macos-compatibility in 6m51s</a> and <a href="https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151">link in 4s</a>.</p>
-<p>This record covers one small change, removing that variable write, with +230 −308 lines across 19 files. It is not an average or a prediction for another task.</p>
+<p>This record covers one narrowly scoped change, removing that variable write, with +230 −308 lines across 19 files. It is not an average or a prediction for another task.</p>
 <p>To reproduce the timeline from GitHub, use this script. Paste it into a file and run it with bash; it needs the GitHub CLI logged in. Times are UTC.</p>
 <div class="code-copy"><button class="code-copy-btn" type="button" data-copy data-copied-label="Copied">Copy</button><pre><code class="language-bash" data-copy-source>#!/usr/bin/env bash
 # Print the Issue -&gt; PR -&gt; release timeline of one Orbi delivery (UTC timestamps from GitHub).

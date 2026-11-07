@@ -22,7 +22,7 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 |---|---|---|
 | Free | 0 | agent 和聊天请求次数有限 |
 | Plus | 8 | 只能用 Grok 模型 |
-| Premium | 30 | 开放云端 agent、Bugbot 代码评审和第三方模型 |
+| Premium | 30 | 开放云端 agent、Bugbot 代码评审和第三方模型，第三方模型用量另收费 |
 | Super | 100 | 包含 Premium 功能，第三方模型用量仍另收费 |
 | Ultra | 200 | 包含 Super 功能，第三方模型用量仍另收费 |
 | Teams | 每人 30 起 | 可用云端 agent、Bugbot 和第三方模型 |
@@ -125,9 +125,11 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 | 认领 Issue（`ai-in-progress`） | 00:06:34 | orbi-build[bot] |
 | 创建 PR #2124 | 00:50:00 | app/orbi-build |
 | 合并 PR #2124 | 01:05:15 | app/orbi-build |
-| 输入 `/orbi milestone v0.7.38` | 02:52:01 | xqliu |
+| 在 Issue #2125 输入 `/orbi milestone v0.7.38` | 02:52:01 | xqliu |
 | 创建发版 Issue #2126 | 02:56:25 | app/orbi-build |
 | 发布 v0.7.38 | 03:11:32 | orbi-build[bot] |
+
+`app/orbi-build` 和 `orbi-build[bot]` 是 GitHub 对同一个 Orbi GitHub App 的两种写法。
 
 换成北京时间，都是 2026 年 11 月 6 日：08:03:45 打标签，09:05:15 合并，10:52:01 输入发版命令，11:11:32 发版。
 
@@ -135,7 +137,7 @@ Orbi 也在名单里。这次我没有安装或运行第三方工具，也没有
 
 [Issue 评论](https://github.com/orbi-build/orbi/issues/2123)记录的评审结果是「pass, no findings」，1 轮通过，没有发现问题。PR 的 CI 检查均通过：[tests 用时 6 分 31 秒](https://github.com/orbi-build/orbi/actions/runs/42139673204/job/127636550350)、[macos-compatibility 用时 6 分 51 秒](https://github.com/orbi-build/orbi/actions/runs/42139673569/job/127636551517)、[link 用时 4 秒](https://github.com/orbi-build/orbi/actions/runs/42139672848/job/127636552151)。
 
-这条记录只涉及一次停止写入变量的小改动，跨 19 个文件，新增 230 行、删除 308 行。它不能当成平均耗时，也不能用来预测另一个任务。
+这条记录只涉及一次范围很窄的改动（停止写入那个变量），跨 19 个文件，新增 230 行、删除 308 行。它不能当成平均耗时，也不能用来预测另一个任务。
 
 要从 GitHub 复查这条时间线，把下面的脚本存成文件，用 bash 运行。需要先登录 GitHub CLI，输出时间为 UTC。
 
