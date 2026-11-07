@@ -18,7 +18,7 @@
   <meta property="og:locale:alternate" content="zh_CN">
   <meta property="og:url" content="https://orbi.build/evidence/">
   <meta property="og:title" content="Orbi builds Orbi — public delivery evidence">
-  <meta property="og:description" content="Click the public GitHub records. On each Issue timeline you will see the runner's comments; on each PR, a merge with no human review.">
+  <meta property="og:description" content="Click the public GitHub records. On each Issue timeline you will see Orbi's own comments; on each PR, a merge with no human review.">
   <meta property="og:image" content="https://orbi.build/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -76,7 +76,7 @@
       <section class="compare-hero shell" aria-labelledby="evidence-title">
         <p class="eyebrow">Evidence · public GitHub records · verified 2026-09-14</p>
         <h1 id="evidence-title">Orbi builds Orbi. The record is GitHub</h1>
-        <p class="hero-lede"><strong>Orbi is the delivery line that ships Orbi.</strong> Three public deliveries from orbi-build/orbi are below. Open an Issue to read the runner's comments; open a PR to see a merge with no human review. Each sample tells you what to look at. Click them.</p>
+        <p class="hero-lede"><strong>Orbi is the delivery line that ships Orbi.</strong> Three public deliveries from orbi-build/orbi are below. Open an Issue to read Orbi's own comments; open a PR to see a merge with no human review. Each sample tells you what to look at. Click them.</p>
         <div class="cta-row">
           <a class="button button-ghost" href="#records">Open the public records</a>
           <a class="text-link" href="/cloud/">How a release runs, end to end →</a>
@@ -93,8 +93,8 @@
           <span class="event-era">v0.5.5</span>
           <div>
             <strong >Issue #852, merged PR #854, Release v0.5.5</strong>
-            <p class="orbi-event-list-p">A PyPI trusted-publishing failure entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.5.</p>
-            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #854 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="orbi-event-list-p">PyPI's trusted publishing failed, and the failure was filed as Issue #852 in the public repository. Orbi fixed it, PR #854 merged, and the fix shipped in release v0.5.5.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, Orbi posted four comments: started, plan ready, tests passed, merged. The merged comment says how many review rounds ran. PR #854 has no human review and merged anyway — the review ran in an Orbi session, independent of the one that wrote the code, and its result is written on the Issue. Orbi posts those comments with the maintainer's token, so the author shows as xqliu.</p>
             <p class="src-note orbi-event-list-p">
               <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/852" rel="noopener">Issue #852 timeline</a>
               · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/854" rel="noopener">PR #854</a>
@@ -106,8 +106,8 @@
           <span class="event-era">v0.5.4</span>
           <div>
             <strong >Issue #842, merged PR #845, Release v0.5.4</strong>
-            <p class="orbi-event-list-p">An external-PR takeover that never claimed a ticket without a milestone entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.4.</p>
-            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #845 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="orbi-event-list-p">A pull request opened outside the team was never taken over, because its Issue had no milestone. That was filed as Issue #842 in the public repository; Orbi fixed it, PR #845 merged, and the fix shipped in release v0.5.4.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, Orbi posted four comments: started, plan ready, tests passed, merged. The merged comment says how many review rounds ran. PR #845 has no human review and merged anyway — the review ran in an Orbi session, independent of the one that wrote the code, and its result is written on the Issue. Orbi posts those comments with the maintainer's token, so the author shows as xqliu.</p>
             <p class="src-note orbi-event-list-p">
               <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/842" rel="noopener">Issue #842 timeline</a>
               · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/845" rel="noopener">PR #845</a>
@@ -119,8 +119,8 @@
           <span class="event-era">v0.5.3</span>
           <div>
             <strong >Issue #825, merged PR #830, Release v0.5.3</strong>
-            <p class="orbi-event-list-p">A stuck run after a 502 entered the public Orbi repository, the matching pull request merged, and the fix shipped in tagged release v0.5.3.</p>
-            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, the runner posted four comments: started, plan ready, tests passed, merged. The merged comment includes a <code>review_rounds</code> field. PR #830 has no human review and still merged; the review ran in the runner's independent session, and the result is written on the Issue. The runner posts those comments with the maintainer's token, so the actor shows as xqliu.</p>
+            <p class="orbi-event-list-p">A run hung after a 502 error, and the failure was filed as Issue #825 in the public repository. Orbi fixed it, PR #830 merged, and the fix shipped in release v0.5.3.</p>
+            <p class="orbi-event-list-p"><strong >What to look for on the timeline.</strong> On the Issue, Orbi posted four comments: started, plan ready, tests passed, merged. The merged comment says how many review rounds ran. PR #830 has no human review and merged anyway — the review ran in an Orbi session, independent of the one that wrote the code, and its result is written on the Issue. Orbi posts those comments with the maintainer's token, so the author shows as xqliu.</p>
             <p class="src-note orbi-event-list-p">
               <a class="orbi-src-note-a" data-evidence="issue" href="https://github.com/orbi-build/orbi/issues/825" rel="noopener">Issue #825 timeline</a>
               · <a class="orbi-src-note-a" data-evidence="pr" href="https://github.com/orbi-build/orbi/pull/830" rel="noopener">PR #830</a>

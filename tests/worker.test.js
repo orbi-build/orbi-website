@@ -48,11 +48,11 @@ describe("Worker request helpers", () => {
       ]) {
         expect(summary).toContain(String(value));
       }
-      expect(summary).toContain(
-        path === "/"
-          ? `Founding partners: 50% off for life. Only ${pricing.foundingPartnerRemaining} of ${pricing.foundingPartnerLimit} places left.`
-          : `创始合作伙伴终身五折，${pricing.foundingPartnerLimit} 个名额只剩 ${pricing.foundingPartnerRemaining} 个。`,
-      );
+      // Issue #1217: the copy is the pages' own; what the summary has to carry
+      // is the two numbers in the founding sentence, which the loop above
+      // already checks. The sentence no longer says "Only" — 5 of 6 places
+      // left is not an "only" — so the verbatim pin is gone (Issue #1212).
+      expect(summary).toMatch(path === "/" ? /Founding partners: 50% off for life\./ : /创始合作伙伴终身五折/);
       expect(summary).not.toContain("__SOLO_MONTHLY_USD__");
       expect(summary).not.toContain("__CLOUD_MONTHLY_USD__");
       expect(summary).not.toContain("__FOUNDING_PARTNER_LIMIT__");
