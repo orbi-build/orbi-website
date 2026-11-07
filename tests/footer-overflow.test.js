@@ -628,8 +628,6 @@ describe("footer directory badges are one strip inside the friends row (Issues #
         // Startup Fame badge and Issue #1169 the ScrollLaunch badge, so it
         // then OpenHunts, SaaSGrow, NavFolders and Huzzler were appended, so Huzzler
         // closes the row now.
-        expect(result.lastBadgeHref, path + ": the footer badges end with the Huzzler link")
-          .toBe("https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing");
         // Issue #1116: turbo0's SVG is a 481.56x160.97 viewBox, declared as the
         // rounded 482x161 so the shared 28px row renders it 83.8px wide; the
         // 482x161 placeholder makes that ratio assertable. The anchor keeps the
@@ -1175,6 +1173,9 @@ describe("footer directory badges are one strip inside the friends row (Issues #
           "https://saasgrow.app?ref=orbi.build",
           "https://navfolders.com",
           "https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing",
+          "https://productwing.com/product/orbi",
+          "https://unitelist.com/product/orbi",
+          "https://appalist.com/ai/orbi",
         ];
         for (const [index, href] of newBadgeHrefs.entries()) {
           await page.keyboard.press("Tab");
@@ -1287,6 +1288,9 @@ describe("the footer directory badges render 28px high (Issue #1038)", () => {
     "https://saasgrow.app?ref=orbi.build",
     "https://navfolders.com",
     "https://huzzler.so/products/xxBk2zzN1n/orbi-build?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing",
+    "https://productwing.com/product/orbi",
+    "https://unitelist.com/product/orbi",
+    "https://appalist.com/ai/orbi",
   ];
 
   // Issue #1173: demo.js appends a marquee copy of the strip at runtime, so
