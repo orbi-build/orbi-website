@@ -536,10 +536,12 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
     }
   });
 
-  it("renders tier-specific repository limits in visible FAQ and JSON-LD", async () => {
+  it("renders tier-specific repository limits in the visible FAQ and JSON-LD", async () => {
     // Issue #1212: the answer is copy, so the check follows the structure —
-    // the JSON-LD FAQ answers are the visible FAQ answers verbatim, and the
-    // repository limits the copy states come from pricing.json.
+    // one FAQ answer states both repository limits, and those limits come
+    // from pricing.json. The JSON-LD/visible-FAQ lockstep itself is asserted
+    // once, for both Cloud pages, in tests/pages.test.js ("parses JSON-LD and
+    // keeps FAQPage mainEntity in lockstep with the visible items").
     for (const relativePath of CLOUD_PAGES) {
       const body = await (await serve(await rawPage(relativePath), `/${relativePath.replace(/index\.html$/, "")}`)).text();
       const answers = [...body.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)]
@@ -551,10 +553,6 @@ describe("Cloud paid-tier pricing (Issue #441)", () => {
             .map((question) => question.acceptedAnswer?.text ?? "");
         });
       expect(answers.length, relativePath).toBeGreaterThan(3);
-      for (const answer of answers) {
-        expect(answer, relativePath + ": JSON-LD answer is on the page").toContain(answer);
-        expect(body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " "), relativePath + ": visible answer").toContain(answer);
-      }
       const limits = answers.filter((answer) => answer.includes(String(pricing.soloRepositories)) && answer.includes(String(pricing.proRepositories)));
       expect(limits.length, relativePath + ": one repository-limit answer").toBe(1);
     }
